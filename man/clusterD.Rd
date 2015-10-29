@@ -7,7 +7,7 @@
 \title{Cluster distance matrix from subsampling}
 \usage{
 clusterD(D, clusterFunction = c("hierarchical", "tight", "pam"),
-  type = c("01", "K"), min.size = 2, orderBy = c("size", "best"),
+  typeAlg = c("01", "K"), min.size = 2, orderBy = c("size", "best"),
   format = c("vector", "list"), clusterArgs = NULL, ...)
 
 cluster01(D, clusterFunction = c("hierarchical", "tight"), alpha = 0.1,
@@ -20,6 +20,8 @@ clusterK(D, clusterFunction = c("pam"), findBestK = TRUE, k, kRange,
 \item{D}{the nxn matrix of 0-1 values}
 
 \item{clusterFunction}{clusterFunction a function that clusters a nxn matrix of dissimilarities/distances. Can also be given character values to indicate use of internal wrapper functions for default methods. See Details for the format of what the function must take as arguments and what format the function must return.}
+
+\item{typeAlg}{character value of either '01' or 'K' determining whether the function given in clusterFunction should be called by clusterK or cluster01. Methods provided by the package can also be used by setting clusterFunction to a character vector in which case, clusterD will determine the appropriate input for 'typeAlg'.}
 
 \item{min.size}{the minimum number of samples in a cluster}
 
@@ -42,8 +44,6 @@ clusterK(D, clusterFunction = c("pam"), findBestK = TRUE, k, kRange,
 \item{removeSil}{logical as to whether remove with silhouette < alpha}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in cluster (only if removeSil=TRUE)}
-
-\item{typeAlg}{character value of either '01' or 'K' determining whether the function given in clusterFunction should be called by clusterK or cluster01. Methods provided by the package can also be used by setting clusterFunction to a character vector in which case, clusterD will determine the appropriate input for 'typeAlg'.}
 }
 \value{
 clusterD returns a vector of cluster assignments (if format="vector") or a list of indices for each cluster (if format="list"). Clusters less than min.size are removed. If orderBy="size" the clusters are reordered by the size of the cluster, instead of by the internal ordering of the clusterFunction.

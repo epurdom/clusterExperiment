@@ -5,7 +5,7 @@
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
 seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
-  subsample = TRUE, beta = 0.6, top.can = 15, remain.n = 30,
+  subsample = TRUE, beta = 0.7, top.can = 15, remain.n = 30,
   k.min = 2, k.max = k0 + 10, verbose = TRUE, subsampleArgs = NULL,
   clusterArgs = NULL)
 }
@@ -54,9 +54,8 @@ Each iteration of the algorithm will cluster the current set of samples. Dependi
 \examples{
 load(simData)
 set.seed(44261)
-clustSeqHier<-seqCluster(simData,k0=10,subsample=TRUE,clusterMethod="hierarchical",beta=0.8,
-subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans"),
-subsampleClusterArgs=list(nstart=10),
+clustSeqHier<-seqCluster(simData,k0=10,subsample=TRUE,clusterFunction="hierarchical",beta=0.8,
+subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",clusterArgs=list(nstart=10)),
 clusterArgs=list(min.size=5))
 }
 

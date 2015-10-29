@@ -53,26 +53,21 @@
 #' aheatmap(subD,annCol=clusterDF,annColors=annColors,annLegend=FALSE)
 
 
-clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),type=c("01","K"),min.size=2, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,...){
+clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),min.size=2, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,...){
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
-	if(!is.function(clusterFunction)){
-		method<-match.arg(clusterFunction)	
-		##These return lists of indices of clusters satisifying alpha criteria
-		if(method=="tight") type<-"01"
-		if(method=="hierarchical") type<-"01"
-		if(method=="pam") type<-"K"
-	}	
-	if(type=="01") {
-		res<-do.call("cluster01",c(list(D=D,clusterArgs=clusterArgs),list(...)))
+	clusterFunction<-match.arg(clusterFunction)
+	if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)	
+	if(typeAlg=="01") {
+		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs),list(...)))
 	}
-	if(type=="K") {
-		res<-do.call("clusterK",c(list(D=D,clusterArgs=clusterArgs),list(...)))
+	if(typeAlg=="K") {
+		res<-do.call("clusterK",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs),list(...)))
 	}
 	N<-nrow(D)
 
 	
-	#Now filter/format into desired output
+	#Now format into desired output
 	clusterSize<-sapply(res, length)
     res <- res[clusterSize>=min.size]
 	if(length(res)==0){ #No clusters pass
