@@ -1,0 +1,13 @@
+Package: clusterPackage
+Title: cluster functions
+Version: 0.0.1
+Description: Utility functions for the BRAIN project.
+Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
+            role = c("aut", "cre", "cph")),
+	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com",))
+Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
+Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
+License: Artistic-2.0
+Depends: R (>= 2.10), Biobase
+Imports: BiocGenerics, NMF, RColorBrewer
+

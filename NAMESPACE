@@ -1,0 +1,5 @@
+importFrom(BiocGenerics, combine)
+import(Biobase)
+importFrom(RColorBrewer, brewer.pal, brewer.pal.info)
+importFrom(parallel, mclapply)
+exportPattern("^[^\\.]")

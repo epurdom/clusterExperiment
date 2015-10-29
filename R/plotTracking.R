@@ -1,0 +1,265 @@
+plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=.thisPal,...){
+	if(any(as.character(clusters)%in%c("-1","-2"))){
+		if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
+		#don't think I need this anymore because fixed so not need numeric values.
+		# rnames<-row.names(clusters)
+		# clusters<-apply(clusters,2,as.numeric)
+		# rownames(clusters)<-rnames
+		# if(any(is.na(clusters))) stop("could not convert clusters to numeric, but some samples had value '-1'")
+		out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=FALSE,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
+#		browser()
+		#take out -1
+		newColorLeg<-lapply(1:nrow(clusters),function(i){
+			leg<-out$groupToColorLegend[[i]]
+			if(any(wh<-leg[,"Original"]== -1))
+			leg[wh,"Color"]<-unassignedColor
+			if(any(wh<-leg[,"Original"]== -2))
+			leg[wh,"Color"]<-missingColor
+			return(leg)
+		})
+		names(newColorLeg)<-names(out$groupToColorLegend)
+		xColors<-do.call("rbind",lapply(1:nrow(clusters),function(i){
+			out$colors[i,clusters[i,]=="-1"]<-unassignedColor
+			out$colors[i,clusters[i,]=="-2"]<-missingColor
+			return(out$colors[i,])
+		}))
+		if(plot) clusterTrackingPlot(xColors[,out$index], rownames(out$colors),...)
+		out$colors<-xColors
+		out$groupToColorLegend<-newColorLeg
+	}
+	else{
+		out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=plot,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
+	}	
+	invisible(out)
+}
+.plotTrackingInternal<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,minRequireColor=0.3,startNewColors=FALSE,colPalette=.thisPal,...){
+	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
+	#if given, index is the order of the samples (columns) for plotting. Otherwise determined by program
+	#matchToTop allows that the comparison for color assignment be done, not row by row, but always back to the first row.
+	pastColorVector<-NULL
+	colorM = rbind() #matrix of colors. gives indexes for cluster assignments that give the 'right' color throughout the different rows
+
+	for(i in 1:nrow(clusters)){ 
+		#.setClusterColors <- function(past_ct,ct,colorU,colorList,reuseColors,minRequireColor=0.5){
+			#description: sets common color of clusters between different K
+			#takes previous row's colors and defines color assignments for next row. 
+			#assignments are done by:
+				#start with largest cluster, assign to old cluster with largest overlap
+			#past_ct is the past (i.e. previous row's) assigment to indices;
+			#ct is the new cluster ids that need to be aligned to the past_ct
+			#colorU is set of possible colors to take from
+			#colorList, if given, is three element list giving past assignment
+			    #element 1 is colors for each id 
+			    #element 2 is highest color index used
+			    #element 3 is unique color names; not clear if ever used
+			#returns a (updated) colorList in the above format
+
+	#eap: rewrote a little, to make it easier to read. 5/27/2015
+		currCl<-as.character(unlist(clusters[i,]))#as.numeric(as.character(unlist(clusters[i,]))) #think I've fixed it so don't need to convert to numeric. 
+		if(i == 1) pastCl<-NULL
+		else{
+			if(!matchToTop) pastCl<-as.character(unlist(clusters[i-1,]))#as.numeric(as.character(unlist(clusters[i-1,])))
+			else pastCl<-as.character(unlist(clusters[1,]))#as.numeric(as.character(unlist(clusters[1,])))
+		}
+		#if(i==2) browser()
+		newColorVector<- .setClusterColors(past_ct=pastCl,ct=currCl ,colorU=colPalette,past_colors=pastColorVector,reuseColors=reuseColors,minRequireColor=minRequireColor,startNewColors=startNewColors)
+		if(i == 1) colorListTop<-newColorVector
+		if(any(is.na(newColorVector))) stop("NA values")
+		if(any(sort(table(newColorVector))!=sort(table(unlist(clusters[i,]))))) stop("Coding error, colors to do not have same number as original")
+		crossTab<-paste(newColorVector,unlist(clusters[i,]),sep=";")
+		if(any(sort(table(crossTab))!=sort(table(unlist(clusters[i,]))))) stop("Coding error, colors to do not have same assignments as original")
+		colorM = rbind(colorM,newColorVector) 
+		if(!matchToTop) pastColorVector<-newColorVector
+			else pastColorVector<-colorM[1,]
+	}	
+	
+	if(is.null(index)){
+		tmp<-lapply(1:nrow(colorM),function(i){unlist(colorM[i,])})
+		index<-do.call("order",tmp)
+	}
+
+	if(plot) clusterTrackingPlot(colorM[,index], rownames(clusters),...)
+	dimnames(colorM)<-dimnames(clusters)
+	allColors<-unique(as.vector(colorM))
+	alignCl<-apply(colorM,2,function(x){match(x,allColors)})
+	groupToColorLegend<-lapply(1:nrow(clusters),function(ii){
+		mat<-cbind("Original"=unlist(clusters[ii,]),"Aligned"=unlist(alignCl[ii,]),"Color"=unlist(colorM[ii,]))
+		rownames(mat)<-NULL
+		(unique(mat))
+	})
+	names(groupToColorLegend)<-rownames(clusters)
+	invisible(list(index=index,colors=colorM,aligned=alignCl,groupToColorLegend=groupToColorLegend))
+
+}
+
+.setClusterColors <- function(past_ct,ct,colorU,past_colors,reuseColors,minRequireColor=0.3,startNewColors=FALSE){
+	#description: sets common color of clusters between different K
+	#takes previous row's colors and defines color assignments for next row. 
+	#assignments are done by:
+		#start with largest cluster, assign to old cluster with largest overlap
+	#past_ct is the past (i.e. previous row's) assigment to indices;
+	#ct is the new cluster ids that need to be aligned to the past_ct
+	#colorU is set of possible colors to take from
+	#colorList, if given, is three element list giving past assignment
+	    #element 1 is colors for each id 
+	    #element 2 is highest color index used
+	    #element 3 is unique color names; not clear if ever used
+	#returns a (updated) colorList in the above format
+	
+	
+	colorU<-rep(colorU,30) #so never run out of colors
+	if(is.null(past_colors) | is.null(past_ct)){
+		#map values of ct to 1:(# unique values)
+		ncl<-length(unique(ct))
+		v<-1:ncl
+		names(v)<-sort(unique(ct))
+		clNum<-v[match(ct,names(v))]
+		newColors = colorU[clNum]
+	}
+	else{
+		#############
+		#check that past_ct and past_colors line up
+		#############
+		pastTab<-table(past_ct,past_colors)
+		if(nrow(pastTab)!=ncol(pastTab)) stop("past_ct and past_colors have different numbers of categories")
+		pastTab<-t(apply(pastTab,1,sort,decreasing=TRUE))
+		if(any(colSums(pastTab[,-1])>0)) stop("past_ct and past_colors do not imply the same clustering of samples.")
+
+		if(!startNewColors){
+			whShared<-which(colorU %in% past_colors)
+			m<-max(whShared)
+			colorU<-c(colorU[m:length(colorU)],colorU[1:m]) #puts the used by previous rows colors at the end
+		}
+		colorU<-colorU[!colorU %in% past_colors]
+		colorU<-unique(colorU) #make sure unique colors, at least per cluster
+		if(length(colorU)==0) stop("not enough colors given -- all are in past_colors")
+
+		colori<-0 #index which color will give next.
+		newColors = rep(NA,length=length(past_colors)) #NULL #NA?
+		
+		####Tabulate the two clusters
+		mo=table(past_ct,ct)
+		#m=mo/apply(mo,1,sum) #for each old cluster, tells the percentage of the new cluster. Shouldn't it be the other way around?(EAP)
+		m=mo #use raw number instead of percentage of cluster.
+						# Browse[4]> m
+						#        ct
+						# past_ct  1  2  3  4  9 10
+						#       1 18  7  0  0  0  0
+						#       3  4  0 67 45  0  0
+						#       9  0  0  1  0 21  1
+		
+		#EAP: change so do the one with the most overlap first, simplifies code.
+		orderClusters<-order(apply(m,2,max),decreasing = TRUE) 
+		usedClusters<-c() #index of m of used clusters (pci) if !reuseColors; if reuseColors, used slightly differently
+		for(tci in orderClusters){ # for each cluster EAP: in order of size
+			
+			if(!reuseColors){					
+ 			   #if(tci==1) browser()
+				#pci tells which old cluster has the greatest number of the new cluster
+				vals<-unique(m[,tci])
+				vals<-vals[vals>0] #remove zeros
+				pvals<-vals/sum(m[,tci])
+				maxvals<-max(pvals)
+				vals<-vals[pvals >= min(c(minRequireColor,maxvals))]#require 30% overlap to take on new cluster value
+				if(length(vals)>0){
+					vals<-sort(vals,decreasing=TRUE)
+					#for each value, determine its matching cluster (if any) then take highest
+					matchPci<-sapply(vals,function(v){
+						whMatch<-which(m[,tci]==v) 
+						whAv<-sapply(whMatch,function(x){!x %in% usedClusters})
+						if(any(whAv)) return(whMatch[which(whAv)][1]) #pick the first of the available ones
+						else return(NA)
+					})
+					newColor<-all(is.na(matchPci))
+				}
+				else{ newColor<-TRUE}
+				if( newColor){ #new color
+					colori=colori+1
+					if(colori > length(colorU)) stop("not enough colors in color list (colorU)")
+					newValue<-colorU[colori]	
+				}
+				else{
+					pci <- matchPci[!is.na(matchPci)][1] #take that with highest percentage that matches
+					newValue<-unique(past_colors[which(as.character(past_ct)==rownames(m)[pci])])
+					usedClusters<-c(usedClusters,pci)
+				}
+			}
+			else{
+				#pci tells which old cluster has the greatest number of the new cluster
+				mCurr<-m
+				if(length(usedClusters)>=nrow(m)){
+					colori=colori+1
+					newValue<-colorU[colori]
+				}
+				else{
+					if(length(usedClusters)>0 & length(usedClusters)<nrow(m)){
+						mCurr<-m[-usedClusters, , drop=FALSE]
+					}
+					maxC = max(mCurr[,tci])						
+					pci = row.names(mCurr)[which(mCurr[,tci] == maxC)]
+					newValue<-unique(past_colors[which(as.character(past_ct)==pci)])
+				}
+				usedClusters<-c(usedClusters,grep(pci,row.names(m)))
+			}
+			newColors[which(as.character(ct)==colnames(m)[tci])] <-  newValue #EAP: fixed so no longer assumes cluster assignments were numeric integers with no gaps...
+			tab<-table(newColors,ct)
+			nPerColor<-apply(tab,1,function(x){sum(x!=0)})
+			if(any(nPerColor!=1)) stop("color assigned twice within group.")
+		}
+	}
+	if(any(is.na(newColors))) stop("Coding Error: some samples not given a color")
+	tabOld<-table(ct)
+	tabNew<-table(newColors)
+	
+	if(length(tabNew)!=length(tabOld) || any(sort(tabNew)!=sort(tabOld))) stop("Coding error, didn't get same number of entries of each")
+	return(newColors)
+}
+
+clusterTrackingPlot <- function(m, names=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=2,box=FALSE,...){
+  #description: plots cluster tracking plot
+  #input: m - matrix where rows are k, columns are samples, and entries are color assignments
+  #names: names that correspond with rows of m
+	if(is.null(x)){
+		xleft<-seq(0,1-1/ncol(m),by=1/ncol(m))
+		xright<-seq(1/ncol(m),1,by=1/ncol(m))
+	}
+	else{
+		d<-unique(round(diff(x),6)) #distance between x values; had to round because got differences due to small numerical storage issues
+		if(length(d)!=1) stop("invalid x values given -- not evenly spaced")
+		xleft<-x-d/2
+		xright<-x+d/2
+	}
+	if(is.null(ylim)){
+		ylim<-c(0,1)
+	}
+	d<-(ylim[2]-ylim[1])/nrow(m)
+	if(nrow(m)>1){ #for safety. theoretically works regardless, but if numerical tolerance problems...
+		ybottom<-seq(ylim[2]-d,ylim[1],by=-d)
+		ytop<-seq(ylim[2],ylim[1]+d,by=-d)		
+	}
+	else{
+		ybottom<-ylim[1]
+		ytop<-ylim[2]
+	}
+	if(!add) plot(NULL,xlim=range(c(xleft,xright)),ylim=ylim,axes=FALSE,ylab=ylab,xlab=xlab,bty="n",...)
+	
+	for(i in 1:nrow(m)){
+    rect(  xleft=xleft, xright=xright,  ybottom=rep(ybottom[i],ncol(m)) , ytop=rep(ytop[i],ncol(m)), col=m[i,],border=NA,xpd=NA)   
+  }
+  #hatch lines to indicate samples
+  if(tick){
+	xl = (xleft+xright)/2
+  	axis(1,at=xl,labels=FALSE,tick=TRUE)
+#segments(  xl, rep(-0.1,ncol(m)) , xl, rep(0,ncol(m)), col="black")    #** alt white and black color?
+  }
+	if(!is.null(names)){
+		y<-(ybottom+ytop)/2
+	  	axis(2,at=y,labels=names,xpd=NA,las=2,tick=FALSE,line=axisLine)
+	} 	
+	#draw box around
+	if(box){
+		rect(xleft=min(xleft), ybottom=min(ybottom), xright=max(xright), ytop=max(ytop))
+	}
+}
+
+
