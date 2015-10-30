@@ -35,24 +35,32 @@
 .thisPal<-.thisPal[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
 .thisPal<-.thisPal[-34] #very similar to 2
 .thisPal<-.thisPal[-31] #very similar to 7
+#' Large palette of colors 
+#' @name bigPalette
+#' @aliases bigPalette showThisPal
+#' @details showThisPal creates plot that gives index of each color in bigPalette 
 bigPalette<-.thisPal
+
+#' @rdname bigPalette
 showThisPal<-function(){
 	plot(1:length(.thisPal),y=1:length(.thisPal),pch=19,col=.thisPal,cex=3)
 	text(1:length(.thisPal),x=1:length(.thisPal),y=1:length(.thisPal),pos=1)
 
 }
-#showThisPal()
 
 
-seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
-seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
-seqPal2<-(c("yellow","gold2",seqPal2))
-seqPal2<-rev(seqPal2)
-seqPal3<-rev(brewer.pal(11, "RdBu"))
-seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
-seqPal1<-rev(brewer.pal(11, "Spectral"))
+#' Set of colors useful for heatmap gradients 
+#' @name showHeatmapPalettes
+#' @aliases showHeatmapPalettes seqPal1 seqPal2 seqPal3 seqPal4 seqPal5
+#' @details seqPal1-seqPal4 are palettes for the heatmap. showHeatmapPalettes() will show you
+#' these palettes.
+#'
+#' @examples
+#' #show the palette colors
+#' showPalettes()
+#' 
 
-showPalettes<-function(){
+showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)
 	maxLength<-max(sapply(palettesAll,length))
 	palettesAllAdj<-lapply(palettesAll,function(x){
@@ -66,3 +74,16 @@ showPalettes<-function(){
 		mat<-do.call("rbind",ll)
 		clusterTrackingPlot(mat)
 }
+
+#' @rdname showHeatmapPalettes
+seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
+#' @rdname showHeatmapPalettes
+seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
+seqPal2<-(c("yellow","gold2",seqPal2))
+seqPal2<-rev(seqPal2)
+#' @rdname showHeatmapPalettes
+seqPal3<-rev(brewer.pal(11, "RdBu"))
+#' @rdname showHeatmapPalettes
+seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
+#' @rdname showHeatmapPalettes
+seqPal1<-rev(brewer.pal(11, "Spectral"))

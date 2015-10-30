@@ -9,5 +9,5 @@ Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 License: Artistic-2.0
 Depends: R (>= 2.10), Biobase
-Imports: BiocGenerics, NMF, RColorBrewer
+Imports: BiocGenerics, NMF, RColorBrewer, ape, phylobase
 

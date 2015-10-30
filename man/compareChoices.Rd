@@ -56,7 +56,7 @@ across the range, which can be passed to \code{plotTracking} for visualization.
 Currently there is no functionality to run over the different subsampleClusterMethods, in the sense that there is no way to reuse the same subsampling matrix and try different subsampleClusterMethods on it. This is because if sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample (and if sequential=FALSE, we have not implemented functionality for this reuse). Therefore, only one value of subsampleClusterMethod is allowed
 }
 \examples{
-load(simData)
+data(simData)
 system.time(clusterTrack<-compareChoices(simData, ks=2:15, alphas=c(0.1,0.2,0.3), #'	findBestK=c(TRUE,FALSE),sequential=c(FALSE),subsample=c(FALSE),removeSil=c(TRUE),
 	clusterMethod="pam",
 	clusterArgs = list(min.size = 5,kRange=2:15),

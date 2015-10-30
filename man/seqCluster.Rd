@@ -7,32 +7,32 @@
 seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
   subsample = TRUE, beta = 0.7, top.can = 15, remain.n = 30,
   k.min = 2, k.max = k0 + 10, verbose = TRUE, subsampleArgs = NULL,
-  clusterArgs = NULL)
+  DclusterArgs = NULL)
 }
 \arguments{
 \item{x}{nxp data matrix on which to run the clustering (samples in rows)}
 
-\item{k0}{the value of K at the first iteration of sequential algorithm; only used for initial kmeans/pam clustering which is then subsampled and clustered independently of k0 depending on choices of subsampleClusterMethod.}
+\item{k0}{the value of K at the first iteration of sequential algorithm, see details below or vignette.}
 
-\item{subsample}{logical as to whether to subsample to get the distance matrix; otherwise the distance matrix is dist(x)}
+\item{clusterFunction}{passed to clusterDMat option 'clusterFunction' to indicate method of clustering, see \code{\link{clusterD}}}
+
+\item{subsample}{logical as to whether to subsample via \code{\link{subsampleClustering}} to get the distance matrix at each iteration; otherwise the distance matrix is dist(x)}
 
 \item{beta}{value between 0 and 1 to decide how stable clustership membership has to be before 'finding' and removing the cluster.}
 
-\item{top.can}{computational parameter. Only the top.can clusters from clusterDmat (ranked by 'orderBy' argument given to clusterDmat) will be compared pairwise for stability. Making this very big will remove this parameter and all pairwise comparisons of all clusters found will be considered. This might result in smaller clusters being found. Current default is fairly large, so probably will have little effect.}
+\item{top.can}{only the top.can clusters from \code{\link{clusterD}} (ranked by 'orderBy' argument given to \code{\link{clusterD}}) will be compared pairwise for stability. Making this very big will effectively remove this parameter and all pairwise comparisons of all clusters found will be considered. This might result in smaller clusters being found. Current default is fairly large, so probably will have little effect.}
 
-\item{remain.n}{when only this number of samples are left (i.e. not clustered) then algorithm will stop.}
+\item{remain.n}{when only this number of samples are left (i.e. not yet clustered) then algorithm will stop.}
 
-\item{k.min}{at each iteration of sequential detection of clustering, will decrease the beginning K of subsampling, but not lower than k.min}
+\item{k.min}{each iteration of sequential detection of clustering will decrease the beginning K of subsampling, but not lower than k.min}
 
 \item{k.max}{algorithm will stop if K in iteration is increased beyond this point.}
 
 \item{verbose}{whether the algorithm should print out information as to its progress.}
 
-\item{subsampleArgs}{list of arguments to be passed to subsamplingClustering}
+\item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
 
-\item{clusterArgs}{list of arguments to be passed to clusterDMat}
-
-\item{clusterMethod}{passed to clusterDMat option 'method' to indicate method of clustering.}
+\item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})}
 }
 \value{
 A list with values
@@ -49,13 +49,11 @@ A list with values
 Given a nxp data matrix, this function will call clustering routines, and sequentially remove best clusters, and iterate to find clusters.
 }
 \details{
-Each iteration of the algorithm will cluster the current set of samples. Depending on the method, the number of clusters resulting from clusterDMat may not be equal to K used in the clustering of the subsampled data. The resulting clusters will then be compared to clusters found in the previous iteration that set the subsampling clustering to K-1. For computational (and other?) convenience, only the first top.can clusters of each iteration will be compared to the first top.can clusters of previous iteration for similarity (where top.can currently refers to ordering by size, so first top.can largest clusters).
+Each iteration of the algorithm will cluster the current set of samples. Depending on the method, the number of clusters resulting from \code{\link{clusterD}} may not be equal to the K used in the clustering of the (subsampled) data. The resulting clusters will then be compared to clusters found in the previous iteration that set the subsampling clustering to K-1. For computational (and other?) convenience, only the first top.can clusters of each iteration will be compared to the first top.can clusters of previous iteration for similarity (where top.can currently refers to ordering by size, so first top.can largest clusters).
 }
 \examples{
-load(simData)
+data(simData)
 set.seed(44261)
-clustSeqHier<-seqCluster(simData,k0=10,subsample=TRUE,clusterFunction="hierarchical",beta=0.8,
-subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",clusterArgs=list(nstart=10)),
-clusterArgs=list(min.size=5))
+clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,clusterFunction="hierarchical",beta=0.8, subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",clusterArgs=list(nstart=10)), DclusterArgs=list(min.size=5))
 }
 

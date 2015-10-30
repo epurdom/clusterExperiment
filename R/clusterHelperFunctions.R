@@ -8,7 +8,7 @@
 }
 
 #wrapper that calls the clusterSampling and clusterD routines in reasonable order.
-.clusterWrapper <- function(x, subsample, clusterFunction,clusterArgs=NULL,
+.clusterWrapper <- function(x, subsample, clusterFunction,DclusterArgs=NULL,
     subsampleArgs=NULL,typeAlg) 
 {
 	if(subsample){

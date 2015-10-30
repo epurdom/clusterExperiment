@@ -26,7 +26,7 @@
 #' \item{\code{clusterInfo}}{a list with information regarding clustering result for those clusterings with sequential=TRUE}
 #' }
 #' @examples
-#' load(simData)
+#' data(simData)
 #' system.time(clusterTrack<-compareChoices(simData, ks=2:15, alphas=c(0.1,0.2,0.3), #'	findBestK=c(TRUE,FALSE),sequential=c(FALSE),subsample=c(FALSE),removeSil=c(TRUE),
 #'	clusterMethod="pam",
 #'	clusterArgs = list(min.size = 5,kRange=2:15),

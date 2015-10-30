@@ -37,7 +37,7 @@
 #' @return cluster01 and clusterK return a list of indices of the clusters found, which each element of the list corresponding to a cluster and the elements of that list a vector of indices giving the indices of the samples assigned to that cluster. Indices not included in any list are assumed to have not been clustered. The list is assumed to be ordered in terms of the `best' cluster (as defined by the clusterFunction for cluster01 or by average silhoute for clusterK), for example in terms of most internal similarity of the elements, or average silhouette width. 
 #'
 #' @examples
-#' load(simData)
+#' data(simData)
 #' subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 #' clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,min.size=5)
 #' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5)

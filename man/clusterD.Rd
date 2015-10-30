@@ -57,7 +57,7 @@ Given a nxn matrix of distances, these functions will try to find the clusters b
 cluster01 is for clustering functions that expect as an input D that takes on 0-1 values (e.g. from subclustering). clusterK is for clustering functions that require an input k, the number of clusters, but arbitrary distance/dissimilarity matrix. cluster01 and clusterK are given as separate functions in order to allow the user to provide different clustering functions that expect different types of input and for us to provide different shared processing of the results that is different for these different types of clustering methods (for example, removing low silhouette values is appropriate for clusterK clustering functions rather than cluster01 functions). It is also generally expected that cluster01 algorithms use the 0-1 nature of the input to set criteria as to where to find clusters and therefore do not need a pre-determined 'k'. On the other hand, clusterK functions are assumed to need a predetermined 'k' and are also assumed to cluster all samples to a cluster, and therefore clusterK gives options to exclude poorly clustered samples via silhouette distances.
 }
 \examples{
-load(simData)
+data(simData)
 subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,min.size=5)
 clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5)
