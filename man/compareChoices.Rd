@@ -6,46 +6,46 @@
 \usage{
 compareChoices(data, ks = 2:15, alphas = c(0.1, 0.2, 0.3),
   findBestK = c(TRUE, FALSE), sequential = c(TRUE, FALSE),
-  removeSil = c(TRUE, FALSE), subsample = c(TRUE, FALSE),
+  removeSil = c(TRUE, FALSE), subsample = c(TRUE, FALSE), silCutoff = 0,
   clusterMethod = c("tight", "hierarchical", "pam"),
-  subsampleClusterArgs = list(nstart = 10), clusterArgs = list(min.size =
-  5), subsampleArgs = list(resamp.num = 50), seqArgs = list(beta = 0.9,
-  k.min = 3), ncores = 1, random.seed = NULL, ...)
+  DclusterArgs = list(min.size = 5), subsampleArgs = list(resamp.num = 50),
+  seqArgs = list(beta = 0.9, k.min = 3), ncores = 1, random.seed = NULL,
+  ...)
 }
 \arguments{
 \item{data}{the data on which to run the clustering (samples in rows)}
 
 \item{ks}{the range of k values (see details for meaning for different choices)}
 
-\item{alphas}{values of alpha to be tried. Only used for subsampleClusterMethod either 'tight' or 'hierarchical'; otherwise (i.e. pam) alpha=0 for removal of negative silhouette values [can't adjust this at this time.]}
+\item{alphas}{values of alpha to be tried. Only used for subsampleClusterMethod either 'tight' or 'hierarchical'.}
 
-\item{findBestK}{values of findBestK to be tried (logical).}
+\item{findBestK}{values of findBestK to be tried (logical) (only for 'pam').}
 
-\item{sequential}{values of sequential to be tried (logical)}
+\item{sequential}{values of sequential to be tried (logical) (only for 'pam')}
 
-\item{removeSil}{values of removeSil to be tried (logical)}
+\item{removeSil}{values of removeSil to be tried (logical) (only for 'pam')}
 
-\item{clusterMethod}{if subsampleClusterMethod!="none", method used in clustering of subsampled data; if ="none", method for clustering dist(x) [currently must be "pam]}
+\item{silCutoff}{values of silCutoff to be tried (only for 'pam')}
 
-\item{subsampleClusterArgs}{list of arguments to be passed to clusterDMat}
+\item{clusterMethod}{method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.}
 
-\item{clusterArgs}{list of arguments to be passed to subsampleClustering's argument 'clusterArgs' that control clustering of subsampled data}
+\item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}}
 
-\item{subsampleArgs}{list of arguments to be passed to subsamplingClustering}
+\item{subsampleArgs}{list of arguments to be passed to \code{\link{subsamplingClustering}}}
+
+\item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}}
 
 \item{ncores}{the number of threads}
 
 \item{random.seed}{a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)}
 
 \item{...}{to be passed on to mclapply (if ncores>1)}
-
-\item{subsampleClusterMethod}{if "none", no subsampling is done, and clustering on dist(x) with clusterMethod technique. Otherwise, passed to clusterDMat option 'method' to indicate method of clustering of the co-occurrence matrix from subsampleClustering.}
 }
 \value{
 A list with the following objects:
 \itemize{
 \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
-\item{\code{clusterInfo}}{a list with information regarding clustering result for those clusterings with sequential=TRUE}
+\item{\code{clusterInfo}}{a list with information regarding clustering result (for those clusterings with sequential=TRUE)}
 }
 }
 \description{
@@ -53,13 +53,13 @@ Given a range of k's, this funciton will return a matrix with the clustering of 
 across the range, which can be passed to \code{plotTracking} for visualization.
 }
 \details{
-Currently there is no functionality to run over the different subsampleClusterMethods, in the sense that there is no way to reuse the same subsampling matrix and try different subsampleClusterMethods on it. This is because if sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample (and if sequential=FALSE, we have not implemented functionality for this reuse). Therefore, only one value of subsampleClusterMethod is allowed
+While the function allows for different clusterMethod, they do not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the random.seed value, however, should mean that the subsampled matrix is the same, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters).
 }
 \examples{
 data(simData)
-system.time(clusterTrack<-compareChoices(simData, ks=2:15, alphas=c(0.1,0.2,0.3), #'	findBestK=c(TRUE,FALSE),sequential=c(FALSE),subsample=c(FALSE),removeSil=c(TRUE),
-	clusterMethod="pam",
-	clusterArgs = list(min.size = 5,kRange=2:15),
-	ncores=1,random.seed=48120))
+\dontrun{
+	#following code takes around 1+ minutes to run:
+	system.time(clusterTrack<-compareChoices(simData, ks=2:15, alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", clusterArgs = list(min.size = 5,kRange=2:15),ncores=1,random.seed=48120))
+}
 }
 

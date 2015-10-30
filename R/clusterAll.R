@@ -45,7 +45,7 @@ clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("ti
 		else typeAlg<-DclusterArgs[["typeAlg"]]
 	}
 	if(typeAlg == "K"){
-		if("findBestK" %in% names(DclusterArgs) & !subsample){
+		if("findBestK" %in% names(DclusterArgs) & !subsample & sequential){
 			if(DclusterArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via DclusterArgs. See help documentation.")
 		}
 		
@@ -64,7 +64,7 @@ clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("ti
 		}
 		else if(typeAlg=="K" && !is.null(DclusterArgs) &&  !"k" %in% names(DclusterArgs)){
 			#if don't specify k, then must have findBestK=TRUE in DclusterArgs; is by default, so only need to check that if specified it, set it to TRUE
-			if("findBestK" %in% names(DclusterArgs) && !DclusterArgs[["findBestK"]]) stop("if not sequential and clusterFunction is of type 'K' and findBestK=FALSE in DclusterArgs, must pass 'k' via DclusterArgs list")
+			if("findBestK" %in% names(DclusterArgs) && !DclusterArgs[["findBestK"]]) stop("if not sequential and clusterFunction is of type 'K' (e.g. pam) and findBestK=FALSE in DclusterArgs, must pass 'k' via DclusterArgs list")
 				}
 		finalClusterList<-.clusterWrapper(x,clusterFunction=clusterFunction, subsample=subsample,  subsampleArgs=subsampleArgs,DclusterArgs=DclusterArgs,typeAlg=typeAlg)
 		return(list("clustering"=.convertClusterListToVector(finalClusterList,N)))
