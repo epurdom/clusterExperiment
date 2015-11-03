@@ -60,7 +60,15 @@ clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("ti
 	}
 	else{
 		if(subsample){
-			if(is.null(subsampleArgs) || !("k" %in% names(subsampleArgs))) stop("if not sequential, must pass 'k' in subsampleArgs")
+			if(is.null(subsampleArgs) || !("k" %in% names(subsampleArgs))){
+          if(!is.null(DclusterArgs) & ("k" %in% names(DclusterArgs))){
+            #give by default the DclusterArgs to subsampling. 
+              warning("did not give 'k' in 'subsampleArgs'. Set to 'k' argument in 'DclusterArgs'")
+              if(is.null(subsampleArgs)) subsampleArgs<-list("k"=DclusterArgs[["k"]])
+              else subsampleArgs[["k"]]<-DclusterArgs[["k"]]
+          }
+			  	else	stop("if not sequential and do subsampling, must pass 'k' in subsampleArgs")
+			} 
 		}
 		else if(typeAlg=="K" && !is.null(DclusterArgs) &&  !"k" %in% names(DclusterArgs)){
 			#if don't specify k, then must have findBestK=TRUE in DclusterArgs; is by default, so only need to check that if specified it, set it to TRUE

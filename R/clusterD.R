@@ -85,11 +85,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	} 
 	else{
 		#now reorders final groups by size
-		if(orderBy=="size"){
-			clusterSize<-unlist(lapply(res, length))
-		    res <- res[order(clusterSize,decreasing=TRUE)]			
-		}
-
+		if(orderBy=="size") res <- res[order(clusterSize,decreasing=TRUE)]			
 		names(res)<-as.character(1:length(res))
 	
 		if(format=="list") return(res)	
@@ -120,7 +116,7 @@ cluster01<-function(D, clusterFunction=c("hierarchical","tight"), alpha=0.1, clu
 }
 .argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
 #' @rdname clusterD
-clusterK<-function(D,  clusterFunction=c("pam"),findBestK=TRUE, k, kRange,removeSil=TRUE,silCutoff=0,clusterArgs=NULL)
+clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL)
 {
 	if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
 	if(findBestK){
@@ -136,7 +132,7 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=TRUE, k, kRange,remove
 	##These return lists of indices of clusters satisifying alpha criteria
 	if(!is.function(clusterFunction)){
 		method<-match.arg(clusterFunction)
-		if(method =="pam") clusterFunction<-function(D,k,...){cluster::pam(D,k,...)}
+		if(method =="pam") clusterFunction<-function(D,k,...){cluster::pam(D,k,diss=TRUE,...)}
 	} 
 	if(findBestK) ks<-kRange else ks<-k
 	kmeansClusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk),clusterArgs))})	

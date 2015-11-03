@@ -9,40 +9,252 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup,echo=FALSE, message=FALSE, results="hide", warning=FALSE}
+knitr::opts_chunk$set(cache=FALSE)
+processBoxes<-function(type,nm){
+ # labWidth<-max(strwidth(nm),xadj)
+#  labHeight<-max(strheight(nm),yadj)
+  usrCoord<-par("usr")
+  labWidth<-max(sapply(strsplit(nm,"\n"),strwidth,cex=1.5))#+0.005*diff(usrCoord[1:2])
+  labWidthPerct<-labWidth/diff(usrCoord[1:2])
+  #labWidth<-strwidth(nm)*1.2
+  labHeight<-strheight(nm,cex=1.5)+0.005*diff(usrCoord[3:4])
+  if(is.na(type)){
+      }
+  else{
+    if(type=="function"){
+      textellipse(elpos[i,], rady=labHeight,radx=labWidth,lab =nm , box.col = "green", shadow.col = NA, shadow.size = 0, cex = 1.5)
+      
+    }
+    if(type=="arg"){
+      textdiamond(elpos[i,], rady=labHeight*2,radx=labWidth,lab =nm , box.col = "grey", shadow.col = NA, shadow.size = 0, cex = 1.5)
+      
+    }
+    if(type=="description"){
+      textrect(elpos[i,], rady=labHeight*.75,radx=labWidth*.75,lab =nm , box.col = "white", shadow.col = NA, shadow.size = 0, cex = 1.5)
+      
+    }
+    if(type=="break"){
+      textmulti(mid = elpos[i,], nr = 3, radx = labHeight*3, rady = labWidth, lab = nm,
+box.col="yellow",cex=1.5,angle=270, shadow.col = NA, shadow.size = 0) #inverted because angle is 270
+    }
+    if(type=="stop"){
+      textmulti(mid = elpos[i,], nr = 8, radx = labWidth, rady = labWidthPerct*diff(usrCoord[3:4])*.75, lab = nm,
+box.col="red",cex=1.5, shadow.col = NA, shadow.size = 0)
+    }
+    
+  }
+
+}
+processArrows<-function(coord1,coord2,nm){
+    pos<-straightarrow (to = coord2, from = coord1, lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+    if(!is.na(nm)){
+      text(pos[ 1], pos[ 2], nm,pos=if(coord1[1]<=coord2[1]) 4 else 2,offset=1)
+    }
+}
+```
 
 The goal of this package is to allow the user to try many different clustering algorithms in one package structure. In particular, the package encodes many common practices that are shared across clustering algorithms, like subsampling the data, not clustering samples with negative silhouete scores, sequentially removing clusters and reclustering, and so forth, and allows the user to simply make different choices the parameters as well as the underlying clustering algorithm. The package also allows the user to define their own clustering algorithm. 
 
-There are two main user-functions, `clusterAll` and `compareChoices`. `clusterAll` is the wrapper function that calls the underlying functions and `compareChoices` runs `clusterAll` across combinations of parameter choices.  
+There are two main user-functions, `clusterAll` and `compareChoices`. `clusterAll` is the wrapper function that calls the underlying functions and `compareChoices` runs `clusterAll` across combinations of parameter choices. Another useful function is `subsampleClustering` which does subsampling of the data and returns a $nxn$ matrix $D$ of the proportion of co-occurances of samples in the same cluster.
 
 
-There are three main choices that the user needs to make:
+There are three main choices that the user needs to make for `clusterAll`:
 
-* Whether to run a sequential strategy (`sequential`) which finds the best cluster, removes those samples, and then starts the clustering again.
-* Whether to cluster the co-occurence matrix created by subsampling the data, clustering the subsampled data, and average the number of times the samples are co-clustered (`subsample`). Otherwise `dist(x)` is clustered.
-* What clustering algorithm to use (`clusterFunction`)
+* What clustering algorithm to use (`clusterFunction`). 
+* Whether to cluster the co-occurence matrix created by subsampling the data, clustering the subsampled data, and average the number of times the samples are co-clustered (`subsample`). Otherwise `dist(x)` is clustered. 
+* Whether to run a sequential strategy (`sequential`) which finds the best cluster, removes those samples, and then starts the clustering again. 
 
-Arguments to the underlying functions are passed to `clusterAll` as lists of arguments. 
+The `clusterAll` calls underlying functions for each of these tasks, each of which can take many arguments. For simplicity in syntax, the user passes arguments to each of these underlying functions as lists of arguments. 
+
+* Clustering is done via `clusterD` and arguments to `clusterD` are passed as a list via the argument `DclusterArgs`. See Section XXX below on `clusterD` function for more details about possible arguments.
+* `subsample=TRUE` : if subsampling, `subsampleClustering` is called and arguments to `subsampleClustering` are passed as a list via the argument `subsampleArgs`. See Section XXX below on `subsampleClustering`. 
+* `sequential=TRUE` : if sequential method, `seqCluster` is called, and arguments to `seqCluster` are passed as a list via the argument `seqArgs`. See Section XXX below on `seqCluster`.
+
+For this reason, the next sections will go through the functions that form the components of `clusterAll` so as to better explain the possible options that can be passed. 
 
 
-# Basic Clustering Functions
+# Basic Clustering Sequence
 
-There are two basic parts of the clustering routine. `clusterD` is the basic function that clusters an input $n x n$ dissimilarity matrix $D$ based on the `clusterFunction` option given by the user (which can be either a character string of pre-detemined options or a user-defined functions). There are two flavors of `clusterD` depending on the nature of the dissimilarity matrix $D$, and thus `clusterD` can call two different functions `cluster01` and `clusterK` to do the clustering using the clustering algorithm provided by `clusterFunction`. 
+First we will discuss if `sequential=FALSE`, i.e. the user does not choose to use the sequential removal of clusters.  Then the algorithm performs what we call the "basic clustering sequence"; this basic sequence is called iteratively by the sequential method.
+
+There are two parts to the basic clustering sequence: 
+
+* (Optional, if `subsample=TRUE`) Subsample data and cluster it repeatedly via the function `subsampleClustering`. The arguments passed to `subsampleClustering` are via `subsampleArgs` in `clusterAll`. The most important arguments that a user may need to pass to `subsampleCluster` are:
+  * `x` the $n\times p$ data matrix (which is handled by the argument `x` to `clusterAll` so the user does not need to set it)
+  * `k` the number of clusters to fit in the subsampled data. This must be passed by the user via `subsampleArgs` (unless `sequential=TRUE`, see below, where it is set internally)
+  * `clusterFunction` the function to use to cluster the subsampled data. The default is `pam` from the `cluster` package but can also be user-defined. The argument `clusterFunction` of `clusterAll` is *not* passed to this argument -- `clusterAll` by default uses the `pam` function -- so the user must pass this *via `subsampleArgs`* if they want a different function.
+* Clustering an input $D$ matrix `clusterD`, which can be either the co-occurance matrix from `subsampleClustering` or otherwise is `dist(x)`. The arguments passed to `clusterD` are via the argument `DclusterArgs` in `clusterAll`. The most important arguments are:
+  * `D` the $n\times n$ matrix of dissimilarities
+  * `clusterFunction` the type of clustering to do on the dissimilarity matrix.
+  * Both of the above are handled by the arguments to `clusterAll`. Depending on the choice of `clusterFunction` some other arguments may be necessary to pass via `DclusterArgs` (e.g. if "pam", must also pass an argument `k` or `findBestK=TRUE`)
+
+We will load some simulated data that comes with the package with four underlying clusters. First we will do just basic clustering of the data for 4 clusters using `pam` on the standard distance matrix. 
+
+```{r basicExample}
+#library(clusterPackage)
+#load(simData)
+devtools::load_all(".")
+load("../data/simData.rda")
+simpleCluster<-clusterAll(simData, subsample=FALSE, sequential=FALSE, clusterFunction="pam",DclusterArgs=list('k'=4))
+library(cluster)
+pamCluster<-pam(dist(simData),4)
+table(pamCluster$clustering,simpleCluster$clustering)
+```
+
+Of course, this is not the best use case, since the pam object from `pam` has much more information. Let's instead choose to do subsampling, and then cluster the co-occurance matrix. 
+
+```{r basicSubsampling}
+#library(clusterPackage)
+subsampleCluster<-clusterAll(simData, subsample=TRUE, sequential=FALSE, clusterFunction="pam",DclusterArgs=list('k'=4))
+table(pamCluster$clustering,subsampleCluster$clustering)
+```
+
+Notice that we got a warning. This is because we *could* have chosen to cluster with a different number of clusters on the subsampled data than we clustered the co-occurance data. For example,
+
+```{r basicSubsampling2}
+subsampleCluster2<-clusterAll(simData, subsample=TRUE, sequential=FALSE, clusterFunction="pam",DclusterArgs=list('k'=4),subsampleArgs=list("k"=2))
+table(subsampleCluster2$clustering,subsampleCluster$clustering)
+```
+
+
+The following image shows how these clustering functions are put together by `clusterAll` to form the basic clustering sequence, where the functions are indicated by ovals in the flowchart. 
+
+```{r flowBasicClustering, echo = F, fig.width=10,fig.height=10,out.width=400,out.height=400}
+#results = 'asis'
+#cat('\n<img src="flowchartBasicClustering.png" width="300" height="300" />\n')
+yadj<-0.05
+xadj<-yadj
+library(diagram)
+openplotmat()
+#####
+#make node matrix
+#####
+elpos  <- coordinates (c(1,2,2,4,4))
+rnames<-c("1:subsample","2:clusterD","3:subsampleClustering","4:typeAlg","5:clusterD","6:cluster01","7:clusterK","8:typeAlg","8:typeAlg","remove","remove","9:cluster01","10:clusterK")
+row.names(elpos)<-rnames
+#made 'fake' so nice. need to take average
+whDup<-"8:typeAlg"
+newCoordX<-mean(elpos[which(rnames==whDup),1])
+newCoordY<-unique(elpos[which(rnames==whDup),2])
+whRm<-which(rnames%in%c(whDup,"remove"))
+elpos<-elpos[-whRm,]
+elpos<-rbind(elpos,"8:typeAlg"=c(newCoordX,newCoordY))
+typeBox<-c("1:subsample"="arg","2:clusterD"="function","3:subsampleClustering"="function","4:typeAlg"="arg","5:clusterD"="function","6:cluster01"="function","7:clusterK"="function","8:typeAlg"="arg","9:cluster01"="function","10:clusterK"="function")
+typeBox<-typeBox[match(row.names(elpos),names(typeBox))]
+#####
+#make edge matrix
+#####
+fromtoChar<-rbind(c("1:subsample","2:clusterD"),c("1:subsample","3:subsampleClustering"),c("2:clusterD","4:typeAlg"),c("4:typeAlg","6:cluster01"),c("4:typeAlg","7:clusterK"),c("3:subsampleClustering","5:clusterD"),c("5:clusterD","8:typeAlg"),c("8:typeAlg","9:cluster01"),c("8:typeAlg","10:clusterK")
+    )
+fromto <- cbind(match(fromtoChar[,1],row.names(elpos)),match(fromtoChar[,2],row.names(elpos)))
+row.names(fromto)<-c("TRUE","FALSE",NA,'"01"','"K"',NA,NA,'"01"','"K"')
+nr     <- nrow(fromto)
+############
+###Draw Arrows:
+############
+arrpos <- matrix(ncol = 2, nrow = nr)
+for (i in 1:nrow(fromto)){
+  processArrows(elpos[fromto[i, 1], ],elpos[fromto[i, 2], ],row.names(fromto)[i])
+}
+
+###########
+## Draw boxes
+###########
+nicenames<-sapply(strsplit(row.names(elpos),":"),.subset2,2)
+for(i in 1:nrow(elpos)){
+  processBoxes(typeBox[i],nicenames[i])
+}
+
+
+```
+
+We will go through each of these functions in what follows. 
+
+## Subsampling and Clustering subsampled data.
+
+The 
+
+
+## Clustering
+
+`clusterD` is the basic function that clusters an input $n x n$ dissimilarity matrix $D$ based on the `clusterFunction` option given by the user (which can be either a character string of pre-detemined options or a user-defined functions). There are two flavors of `clusterD` depending on the nature of the dissimilarity matrix $D$, and thus `clusterD` can call two different functions `cluster01` and `clusterK` to do the clustering using the clustering algorithm provided by `clusterFunction`. 
+
+### cluster01
 
 `cluster01` is intended for clustering algorithms that assume the elements of the input matrix $D$ are in $[0,1]$ and use the value of the elements of $D$ to determine the clusters (i.e. don't require an imput $K$ defining the number of clusters). The use case here is when $D$ is given based on subsampling the samples and clustering them and creating a co-occurence matrix. Built-in options include 'tight' and 'hierarchical' both of which search for indices of samples $\mathcal{I}$ of samples for which the submatrix $D[\mathcal{I},\mathcal{I}]$ has values close to $1$ in order to determine a cluster. In this way, instead of requiring the number of clusters, there is a tuning parameter $\alpha\in(0,1)$ which determines if the $D[\mathcal{I},\mathcal{I}]$ values are sufficiently close to $1$. 
 
+### clusterK
+
 `clusterK` is intended for algorithms that expect the user to give a value $K$ giving the number of clusters. This function then includes options appropriate for such algorithms, such as searching over a range of values $K$ and returning the 'best' cluster, or removing samples with low 'silhouette' values. 
 
-The following image shows how these clustering functions are put together by `clusterAll`
-```{r flowspreadSheet2, echo = F, results = 'asis'}
-cat('\n<img src="flowchartBasicClustering.png" width="200" height="200" />\n')
-```
+
 
 
 # Sequential option
-```{r flowspreadSheet1, echo = F, results = 'asis'}
-cat('\n<img src="flowchartTop.png" width="300" height="300" />\n')
+
+The `clusterAll` function also provides the ability to do sequential clustering, namely clustering the data, removing the cluster, and reclustering the remaining data. Since clustering algorithms can be sensitive to what set of samples are being used, this can have an impact on the clustering results. Furthermore, it can avoid the question of setting the number of clusters k, and instead find the number of clusters as when the sequential strategy doesn't find any more clusters (or enough samples) to cluster. Of course the stopping rules themselves requires tuning parameters, so is only a gain if the stopping rules are more intuitive or defensible than picking the number of clusters.
+
+The sequential strategy that is currently implemented follows the `tight` algorithm of XXX[add citation], though we have modified its implementation to be more appropriate to clustering of samples, rather than the gene clustering setting of the original tight algorithm as well as allowing for many more choices.
+
+In short, the sequential strategy iterates the basic clustering strategy described above, continually increasing the `k` parameter of subsampleClustering until there exists a stable cluster when $k$ is increased to $k+1$. A stable cluster is defined as finding one cluster from the clusters using $k$ whose membership is similar enough to that of one of the clusters found for $k-1$, where 'similar' enough is defined by the parameter `beta`,
+$$\text{Put equation here for similarity}$$
+
+Once such a cluster is found, the samples in the cluster are removed, and the process of finding another stable is restarted. 
+
+The following image represents how the sequential strategy works:
+
+```{r flowspreadSeq, echo = F, fig.width=10,fig.height=15,out.height=300*1.5,out.width=300}
+#results = 'asis'}
+#cat('\n<img src="flowchartTop.png" width="300" height="300" />\n')
+yadj<-0.05
+xadj<-yadj
+require(diagram)
+par(mar=c(1.1,1.1,1.1,1.1))
+openplotmat()
+#####
+#make node matrix
+#####
+elpos  <- coordinates (c(1,1,rep(2,4),4,4,4,8))
+rnames<-c("1:clusterAll","2:sequential","3:Basic Clustering\n Routine","4:seqCluster","remove","5:Set k.start=k0\nn=No.samples","remove","6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,...","remove","7:Break if",
+          #"remove","remove","8:k=k.max &\n no similarity < beta", "9:similarity of\n(k,k-1)<beta",
+          "remove","remove","10:Stop","11:Cluster Found\nRemove Samples","remove","remove","remove","12:Reset n","remove","remove","remove","13:n<remain.n",rep("remove",6),"14:Stop","15:Restart with\nk.start=k.start-1\n(but no less than k.min)")
+row.names(elpos)<-rnames
+elpos<-elpos[-which(row.names(elpos)=="remove"),]
+elpos[,1]<-elpos[,1]-min(elpos[,1])*.4
+elpos["14:Stop",1]<-elpos["14:Stop",1]-.1
+
+typeBox<-c("1:clusterAll"="function","2:sequential"="arg","3:Basic Clustering\n Routine"="description","4:seqCluster"="function","5:Set k.start=k0\nn=No.samples"="description","6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,..."="description","7:Break if"="break",
+   #"8:k=k.max &\n no similarity < beta"="description",    "9:similarity of\n(k,k-1)<beta"="description" ,
+   "10:Stop"="stop","11:Cluster Found\nRemove Samples"="description",   "12:Reset n"="description","13:n<remain.n"="arg","14:Stop"="stop","15:Restart with\nk.start=k.start-1\n(but no less than k.min)"="description")
+typeBox<-typeBox[match(row.names(elpos),names(typeBox))]
+#####
+#make edge matrix
+#####
+                    
+fromtoChar<-rbind(c("1:clusterAll","2:sequential"),c("2:sequential","3:Basic Clustering\n Routine"),c("2:sequential","4:seqCluster"),
+                  c("4:seqCluster","5:Set k.start=k0\nn=No.samples"),c("5:Set k.start=k0\nn=No.samples","6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,..."),c("6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,...","7:Break if"),
+                  c("7:Break if","10:Stop"), c("7:Break if","11:Cluster Found\nRemove Samples"),c("11:Cluster Found\nRemove Samples","12:Reset n"),c("12:Reset n","13:n<remain.n"),c("13:n<remain.n","14:Stop"),c("13:n<remain.n","15:Restart with\nk.start=k.start-1\n(but no less than k.min)")
+)
+                           #c("7:Break if","8:k=k.max &\n no similarity < beta"),c("7:Break if","9:similarity of\n(k,k-1)<beta"),c("8:k=k.max &\n no similarity < beta","10:Stop"),c("9:similarity of\n(k,k-1)<beta","11:Cluster Found\nRemove Samples"),                                   
+fromto <- cbind(match(fromtoChar[,1],row.names(elpos)),match(fromtoChar[,2],row.names(elpos)))
+row.names(fromto)<-c(NA,"FALSE","TRUE",rep(NA,3),"k=k.max &\n no similarity < beta","similarity of\n(k,k-1)<beta",rep(NA,2),"TRUE","FALSE")
+############
+###Draw Arrows:
+############
+arrpos <- matrix(ncol = 2, nrow = nrow(fromto))
+for (i in 1:nrow(fromto)){
+  processArrows(elpos[fromto[i, 1], ],elpos[fromto[i, 2], ],row.names(fromto)[i])
+}
+curvedarrow(from = elpos["15:Restart with\nk.start=k.start-1\n(but no less than k.min)", ], to = elpos["5:Set k.start=k0\nn=No.samples", ]+c(.05,0),  lty = 1, lwd=10, lcol = 2,arr.pos=0.9,curve=0.5)
+selfarrow(pos=elpos["6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,...", ]+c(.1,0), path="R", lty = 1, lwd=2, lcol = 2,arr.pos=.4,curve=c(0.1,0.05))
+###########
+## Draw boxes
+###########
+nicenames<-sapply(strsplit(row.names(elpos),":"),.subset2,2)
+for(i in 1:nrow(elpos)){
+  processBoxes(typeBox[i],nicenames[i])
+}
+
+
 ```
-
-
-
-
