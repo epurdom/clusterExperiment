@@ -12,31 +12,31 @@
 #' into a large window...).
 #' 
 #' @name dualHeatmap
-#' @aliases dualHeatmap seqPal1 seqPal2 seqPal3 seqPal4 seqPal5 showPalettes
+#' @aliases dualHeatmap
 #' @docType methods
-#' @param clustVec A vector with cluster assignments to show at top of heatmap
+#' @param clusterVector A vector with cluster assignments to show at top of heatmap
 #' with cells. ``-1'' indicates the sample was not assigned to a cluster and
 #' gets color `white'.
-#' @param fq matrix to define the color scale (i.e. the counts). Will be
-#' converted to log-scale internally. Assumes genes on rows and cells on
+#' @param heatData matrix to define the color scale (i.e. the counts). Will be
+#' converted to log-scale internally. Assumes samples on rows and variables on
 #' columns.
-#' @param correctedY Either a matrix define the hiearchical clustering of
-#' samples (i.e. normalized data) or a dendrogram for clustering the samples
+#' @param clusterData Either a matrix define the hiearchical clustering of
+#' samples (e.g. normalized data) or a dendrogram for clustering the samples
 #' (only used if dual=TRUE).
-#' @param eps Amount to add to fq so can take log
-#' @param dual Logical as to whether should use correctedY for dendrogram;
-#' otherwise fq is used.
-#' @param clusterCells Logical as to whether to do hierarchical clustering of
+#' @param eps Amount to add to heatData so can take log
+#' @param dual Logical as to whether should use clusterData for dendrogram;
+#' otherwise heatData is used.
+#' @param clusterSamples Logical as to whether to do hierarchical clustering of
 #' cells.
-#' @param clusterGenes Logical as to whether to do hiearchical clustering of
+#' @param clusterVar Logical as to whether to do hiearchical clustering of
 #' genes.
-#' @param whGenes Which genes of fq matrix to be used. Default assumes top 500,
+#' @param whVars Which genes of heatData matrix to be used. Default assumes top 500,
 #' which may be nonsensical if matrix not ordered.
-#' @param geneNames Logical as to whether show gene names
-#' @param cellNames Logical as to whether show cell names
+#' @param varNames Logical as to whether show gene names
+#' @param sampleNames Logical as to whether show cell names
 #' @param colorScale palette of colors for the color scale of heatmap
 #' @param annCol data.frame of clusters to show at the top of heatmap (columns
-#' are clusters). If NULL, will show clustVec
+#' are clusters). If NULL, will show clusterVector
 #' @param annColors Assignment of colors to the clusters. If NULL, clusters
 #' will be assigned colors. If `annCol' should be list of length equal to
 #' ncol(annCol) with names equal to the colnames of annCol; each element of the
@@ -49,61 +49,74 @@
 #' number between 0 and 1, indicating that the breaks should be equally spaced
 #' (on the log scale+eps) upto the `breaks' quantile.
 #' @param ... passed to aheatmap
+#' @details The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of this function is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
+#' 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
 #' @return Returns invisibly the breaks, annCol, and annColors that are sent to
 #' aheatmap by the function.
 #' @author Elizabeth Purdom
 #' @examples
 #' 
-#' library(gbcData)
-#' data(fq)
-#' data(correctedY)
-#' data(genesValid)
+#' data(simCount)
+#' data(simData)
+#' cl<-rep(1:3,each=100)
+#' cl2<-cl
+#' changeAssign<-sample(1:length(cl),80)
+#' cl2[changeAssign]<-sample(cl[changeAssign])
 #' 
-#' #simple, minimal, example
-#' cl<-rep(1:10,length=ncol(fq))
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene)
+#' #simple, minimal, example. Show counts, but cluster on underlying means
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData)
 #' 
 #' #assign cluster colors
-#' colors<-bigPalette[20:30]
-#' names(colors)<-1:10
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,annColors=list(colors))
+#' colors<-bigPalette[20:23]
+#' names(colors)<-1:3
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,annColors=list(colors))
 #' 
-#' cl2<-sample(cl)
+#' #show two different clusters
 #' anno<-data.frame(cluster1=cl,cluster2=cl2)
+#' out<-dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno)
 #' #return the values to see format for giving colors to the annotations
-#' out<-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,annCol=anno)
 #' out$annColors
 #' 
-#' #compare the 4 other palettes provided
+#' #assign colors to the clusters based on plotTracking algorithm
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
+#' alignColors=TRUE)
+#' 
+#' #assign colors manually
+#' annoColors<-list(cluster1=c("black","red","green"),
+#' cluster2=c("blue","purple","yellow"))
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
+#' annColors=annoColors)
+#'
+#' #compare changing breaks quantile on visual effect
+#' \dontrun{
 #' par(mfrow=c(2,2))
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal2,main="seqPal2")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal3,main="seqPal3")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal4,main="seqPal4")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal5,main="seqPal5")
-#' 
-#' #compare changing breaks quantile
-#' par(mfrow=c(2,2))
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=1,main="Full length")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.99,main="0.99 Quantile Upper Limit")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.95,main="0.95 Quantile Upper Limit")
-#' dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.90,main="0.90 Quantile Upper Limit")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+#' breaks=1,main="Full length")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+#' breaks=.99,main="0.99 Quantile Upper Limit")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+#' breaks=.95,main="0.95 Quantile Upper Limit")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+#' breaks=.90,main="0.90 Quantile Upper Limit")
+#' }
 #' 
 #' 
-dualHeatmap<-function(clustVec,fq,correctedY,eps=1,dual=TRUE,clusterCells=TRUE, 
-	clusterGenes=TRUE,whGenes=1:500,geneNames=FALSE,cellNames=FALSE,colorScale=seqPal5,
+dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRUE,clusterSamples=TRUE, 
+	clusterVar=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
 	annCol=NULL,annColors=NULL,alignColors=FALSE,breaks=NA,...){
-	#dual=TRUE means use heatmap with fq, hierarch on correctedY; if FALSE both on fq
-	#clustVec a vector giving clusters to color the samples with; if missing, then just do all white (NA)
-	if(missing(clustVec)) clustVec<-rep(NA,length=ncol(fq)) 
+  heatData<-t(data.matrix(heatData))
+	#dual=TRUE means use heatmap with heatData, hierarch on clusterData; if FALSE both on heatData
+	#clusterVector a vector giving clusters to color the samples with; if missing, then just do all white (NA)
+	if(missing(clusterVector)) clusterVector<-rep(NA,length=ncol(heatData)) 
 	else{
-		if(length(clustVec)!=ncol(fq)) stop("clustVec not of same length as ncol(fq)")
-		clustVec[as.character(clustVec)== "-1" ]<- NA #those that don't want to be colored 
+		if(length(clusterVector)!=ncol(heatData)) stop("clusterVector not of same length as ncol(heatData)")
+		clusterVector[as.character(clusterVector)== "-1" ]<- NA #those that don't want to be colored 
 	}
 	
 	#fix up annCol:
 	#not sure why this doesn't give back data.frame with factors
 	#annCol<-apply(annCol,2,function(x){factor(x)})
-	if(is.null(annCol)) annCol<-data.frame(Cluster=clustVec)
+	if(is.null(annCol)) annCol<-data.frame(Cluster=clusterVector)
 	tmpDf<-do.call("data.frame",lapply(1:ncol(annCol),function(ii){factor(annCol[,ii])}))
 	names(tmpDf)<-names(annCol)
 	annCol<-tmpDf
@@ -141,42 +154,43 @@ dualHeatmap<-function(clustVec,fq,correctedY,eps=1,dual=TRUE,clusterCells=TRUE,
 		}
 	}
 	
-	if(dual & clusterCells){
-		if(inherits(correctedY, "dendrogram")){
+	if(dual & clusterSamples){
+		if(inherits(clusterData, "dendrogram")){
 			if("nobs.dendrogram" %in% methods(nobs)){ #not all versions have nobs method for dendrograms; R3.2.0 has it; 3.1.1 doesn't
-				if(nobs(correctedY)!=ncol(fq)) stop("correctedY dendrogram is not on same number of observations as fq")
+				if(nobs(clusterData)!=ncol(heatData)) stop("clusterData dendrogram is not on same number of observations as heatData")
 			}
 			else{warning("This R version doesn't doesn't allow for checking that dendrogram supplied has correct number observations. If not, surprising downstream errors can occur.")}
-			dendroCells<-correctedY	
+			dendroCells<-clusterData	
 		} 
 		else{
-			if(ncol(correctedY)!=ncol(fq)) stop("correctedY matrix not have on same number of observations as fq")
-			dendroCells<-as.dendrogram(hclust(dist(t(correctedY[whGenes,]))))
+		  clusterData<-t(data.matrix(clusterData))
+			if(ncol(clusterData)!=ncol(heatData)) stop("clusterData matrix not have on same number of observations as heatData")
+			dendroCells<-as.dendrogram(hclust(dist(t(clusterData[whVars,]))))
 		}
 	}
-	tmp<-log(data.matrix(fq[whGenes,])+eps) 
-	if(!is.logical(cellNames)){
-		colnames(tmp)<-cellNames
-		cellNames<-TRUE
+	tmp<-log(data.matrix(heatData[whVars,])+eps) 
+	if(!is.logical(sampleNames)){
+		colnames(tmp)<-sampleNames
+		sampleNames<-TRUE
 	}
-	if(!is.logical(geneNames)){
-		rownames(tmp)<-geneNames
-		geneNames<-TRUE
+	if(!is.logical(varNames)){
+		rownames(tmp)<-varNames
+		varNames<-TRUE
 	}
-	if(!clusterCells){ #then use clustVec to order them
-		ord<-order(clustVec)
+	if(!clusterSamples){ #then use clusterVector to order them
+		ord<-order(clusterVector)
 		tmp<-tmp[,ord,drop=FALSE]
-		clustVec<-clustVec[ord]
+		clusterVector<-clusterVector[ord]
 		annCol<-annCol[ord,,drop=FALSE]
-		clusterCells<-NA
-#		if(clusterGenes) dendo<-"row" else dendo<-"none"
+		clusterSamples<-NA
+#		if(clusterVar) dendo<-"row" else dendo<-"none"
 	}
 	else{
-#		if(clusterGenes) dendo<-"both" else dendo<-"col"
+#		if(clusterVar) dendo<-"both" else dendo<-"col"
 	}
-	if(!clusterGenes) clusterGenes<-NA
-	if(!is.factor(clustVec)) clustVec<-factor(clustVec)
-	if(length(breaks)>0 || !is.na(breaks)){ #get arround bug in aheatmap
+	if(!clusterVar) clusterVar<-NA
+	if(!is.factor(clusterVector)) clusterVector<-factor(clusterVector)
+	if(length(breaks)>0 && !is.na(breaks)){ #get arround bug in aheatmap
 		#if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
 		if(length(breaks)==1){
 			if(breaks<=1){
@@ -193,11 +207,11 @@ dualHeatmap<-function(clustVec,fq,correctedY,eps=1,dual=TRUE,clusterCells=TRUE,
 		}
 	}
 
-	# gplots::heatmap.2(tmp, Colv=if(dual & clusterCells) dendroCells else clusterCells, Rowv=clusterGenes,dendrogram=dendo, scale="none",
-	# 	trace="none", key=TRUE, density.info="none", col=colorScale, ColSideColor=col[clustVec],
+	# gplots::heatmap.2(tmp, Colv=if(dual & clusterSamples) dendroCells else clusterSamples, Rowv=clusterVar,dendrogram=dendo, scale="none",
+	# 	trace="none", key=TRUE, density.info="none", col=colorScale, ColSideColor=col[clusterVector],
 	# 	cexRow=ifelse(nrow(tmp)<50,1,.6),
-	# 	margin=c(ifelse(cellNames, 10,0.1), ifelse(geneNames, 10,0.1)),labRow=rownames(tmp),...)
-	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterGenes, Colv = if(dual && !is.na(clusterCells) && clusterCells) dendroCells else clusterCells, 
+	# 	margin=c(ifelse(sampleNames, 10,0.1), ifelse(varNames, 10,0.1)),labRow=rownames(tmp),...)
+	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVar, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
 		 annCol = annCol,annColors=annColors,breaks=breaks,...)
 	invisible(list(heatOut=out,annCol=annCol,annColors=annColors,breaks=breaks))
 }

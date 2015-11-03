@@ -38,16 +38,31 @@
 #'
 #' @examples
 #' data(simData)
-#' subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
-#' #run hierarchical method for finding blocks, with method of evaluating coherence of block set to evalClusterMethod="average", and the hierarchical clustering using single linkage:
-#' clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,min.size=5,clusterArgs=list(evalClusterMethod="average",method="single"))
-#' #note passing the wrong arguments for a '01' clusterFunction is caught internally and ignored, but without warning:
-#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5,removeSil=TRUE)
-#' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,removeSil=TRUE,k=3)
-#' clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,removeSil=TRUE,findBestK=TRUE,kRange=2:10)
-#' #visualize the results
+#' subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",
+#' clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
+#' 
+#' #run hierarchical method for finding blocks, with method of evaluating 
+#' #coherence of block set to evalClusterMethod="average", and the hierarchical 
+#' #clustering using single linkage:
+#' clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,
+#' min.size=5,clusterArgs=list(evalClusterMethod="average",method="single"))
+#' 
+#' #note passing the wrong arguments for a '01' clusterFunction is caught 
+#' #internally and ignored, but without warning:
+#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5,
+#' removeSil=TRUE)
+#' 
+#' #two twists to pam
+#' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+#' removeSil=TRUE,k=3)
+#' clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+#' removeSil=TRUE,findBestK=TRUE,kRange=2:10)
+#' 
+#' #visualize the results of different clusterings
 #' library(NMF)
-#' clusterDF<-data.frame("hier"=factor(clustSubHier),"tight"=factor(clustSubTight),"PamK"=factor(clustSubPamK),"PamBestK"=factor(clustSubPamBestK))
+#' clusterDF<-data.frame("hier"=factor(clustSubHier),
+#' "tight"=factor(clustSubTight),"PamK"=factor(clustSubPamK),
+#' "PamBestK"=factor(clustSubPamBestK))
 #' maxNumb<-max(sapply(clusterDF,function(x){max(as.numeric(levels(x)))}))
 #' cols<-bigPalette[1:(maxNumb+2)]
 #' names(cols)<-as.character(seq(-1,maxNumb,by=1))
@@ -85,7 +100,10 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	} 
 	else{
 		#now reorders final groups by size
-		if(orderBy=="size") res <- res[order(clusterSize,decreasing=TRUE)]			
+		if(orderBy=="size"){
+		  clusterSize<-sapply(res, length) #redo because dropped!
+		  res <- res[order(clusterSize,decreasing=TRUE)]			
+		}
 		names(res)<-as.character(1:length(res))
 	
 		if(format=="list") return(res)	
@@ -295,7 +313,7 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 .pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"))
 {
 	method<-match.arg(method)
-	kmeansClusters<-lapply(ks,FUN=function(k){cluster:::pam(D,k)})		
+	kmeansClusters<-lapply(ks,FUN=function(k){cluster::pam(D,k)})		
 	if(length(ks)>1){
 		whichBest<-which.max(sapply(kmeansClusters, function(z) z$silinfo$avg.width))
 		finalCluster<-kmeansClusters[[whichBest]]		

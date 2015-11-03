@@ -3,55 +3,49 @@
 \docType{methods}
 \name{dualHeatmap}
 \alias{dualHeatmap}
-\alias{seqPal1}
-\alias{seqPal2}
-\alias{seqPal3}
-\alias{seqPal4}
-\alias{seqPal5}
-\alias{showPalettes}
 \title{Heatmap with two different sources for hierarchical clustering and color scale.}
 \usage{
-dualHeatmap(clustVec, fq, correctedY, eps = 1, dual = TRUE,
-  clusterCells = TRUE, clusterGenes = TRUE, whGenes = 1:500,
-  geneNames = FALSE, cellNames = FALSE, colorScale = seqPal5,
-  annCol = NULL, annColors = NULL, alignColors = FALSE, breaks = NA,
-  ...)
+dualHeatmap(clusterVector, heatData, clusterData = heatData, eps = 1,
+  dual = TRUE, clusterSamples = TRUE, clusterVar = TRUE,
+  whVars = 1:nrow(heatData), varNames = FALSE, sampleNames = FALSE,
+  colorScale = seqPal5, annCol = NULL, annColors = NULL,
+  alignColors = FALSE, breaks = NA, ...)
 }
 \arguments{
-\item{clustVec}{A vector with cluster assignments to show at top of heatmap
+\item{clusterVector}{A vector with cluster assignments to show at top of heatmap
 with cells. ``-1'' indicates the sample was not assigned to a cluster and
 gets color `white'.}
 
-\item{fq}{matrix to define the color scale (i.e. the counts). Will be
-converted to log-scale internally. Assumes genes on rows and cells on
+\item{heatData}{matrix to define the color scale (i.e. the counts). Will be
+converted to log-scale internally. Assumes samples on rows and variables on
 columns.}
 
-\item{correctedY}{Either a matrix define the hiearchical clustering of
-samples (i.e. normalized data) or a dendrogram for clustering the samples
+\item{clusterData}{Either a matrix define the hiearchical clustering of
+samples (e.g. normalized data) or a dendrogram for clustering the samples
 (only used if dual=TRUE).}
 
-\item{eps}{Amount to add to fq so can take log}
+\item{eps}{Amount to add to heatData so can take log}
 
-\item{dual}{Logical as to whether should use correctedY for dendrogram;
-otherwise fq is used.}
+\item{dual}{Logical as to whether should use clusterData for dendrogram;
+otherwise heatData is used.}
 
-\item{clusterCells}{Logical as to whether to do hierarchical clustering of
+\item{clusterSamples}{Logical as to whether to do hierarchical clustering of
 cells.}
 
-\item{clusterGenes}{Logical as to whether to do hiearchical clustering of
+\item{clusterVar}{Logical as to whether to do hiearchical clustering of
 genes.}
 
-\item{whGenes}{Which genes of fq matrix to be used. Default assumes top 500,
+\item{whVars}{Which genes of heatData matrix to be used. Default assumes top 500,
 which may be nonsensical if matrix not ordered.}
 
-\item{geneNames}{Logical as to whether show gene names}
+\item{varNames}{Logical as to whether show gene names}
 
-\item{cellNames}{Logical as to whether show cell names}
+\item{sampleNames}{Logical as to whether show cell names}
 
 \item{colorScale}{palette of colors for the color scale of heatmap}
 
 \item{annCol}{data.frame of clusters to show at the top of heatmap (columns
-are clusters). If NULL, will show clustVec}
+are clusters). If NULL, will show clusterVector}
 
 \item{annColors}{Assignment of colors to the clusters. If NULL, clusters
 will be assigned colors. If `annCol' should be list of length equal to
@@ -83,41 +77,54 @@ plot multiple heatmaps via par(mfrow=c(2,2)), etc. However, the dendrograms
 do not resize if you change the size of your plot window in an interactive
 session of R (this might be a problem for RStudio if you want to pop it out
 into a large window...).
+
+The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of this function is to 1) allow for two different matrix inputs, one to visualize and one to cluster.
+2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
 }
 \examples{
-library(gbcData)
-data(fq)
-data(correctedY)
-data(genesValid)
+data(simCount)
+data(simData)
+cl<-rep(1:3,each=100)
+cl2<-cl
+changeAssign<-sample(1:length(cl),80)
+cl2[changeAssign]<-sample(cl[changeAssign])
 
-#simple, minimal, example
-cl<-rep(1:10,length=ncol(fq))
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene)
+#simple, minimal, example. Show counts, but cluster on underlying means
+dualHeatmap(cl,heatData=simCount,clusterData=simData)
 
 #assign cluster colors
-colors<-bigPalette[20:30]
-names(colors)<-1:10
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,annColors=list(colors))
+colors<-bigPalette[20:23]
+names(colors)<-1:3
+dualHeatmap(cl,heatData=simCount,clusterData=simData,annColors=list(colors))
 
-cl2<-sample(cl)
+#show two different clusters
 anno<-data.frame(cluster1=cl,cluster2=cl2)
+out<-dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno)
 #return the values to see format for giving colors to the annotations
-out<-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,annCol=anno)
 out$annColors
 
-#compare the 4 other palettes provided
-par(mfrow=c(2,2))
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal2,main="seqPal2")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal3,main="seqPal3")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal4,main="seqPal4")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal5,main="seqPal5")
+#assign colors to the clusters based on plotTracking algorithm
+dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
+alignColors=TRUE)
 
-#compare changing breaks quantile
+#assign colors manually
+annoColors<-list(cluster1=c("black","red","green"),
+cluster2=c("blue","purple","yellow"))
+dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
+annColors=annoColors)
+
+#compare changing breaks quantile on visual effect
+\dontrun{
 par(mfrow=c(2,2))
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=1,main="Full length")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.99,main="0.99 Quantile Upper Limit")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.95,main="0.95 Quantile Upper Limit")
-dualHeatmap(cl,fq=fq,correctedY=correctedY,whGenes=genesValid$Gene,colorScale=seqPal1,breaks=.90,main="0.90 Quantile Upper Limit")
+dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+breaks=1,main="Full length")
+dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+breaks=.99,main="0.99 Quantile Upper Limit")
+dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+breaks=.95,main="0.95 Quantile Upper Limit")
+dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,
+breaks=.90,main="0.90 Quantile Upper Limit")
+}
 }
 \author{
 Elizabeth Purdom

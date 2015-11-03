@@ -43,7 +43,8 @@ The clusterFunction must be a function that takes as an argument 'x' which is a 
 }
 \examples{
 load(simData)
-subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
+subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",
+clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 heatmap(subD)
 }
 

@@ -4,7 +4,7 @@
 \name{plotTracking}
 \alias{clusterTrackingPlot}
 \alias{plotTracking}
-\title{Functions for Tracking Samples across Clusterings}
+\title{Functions for Visualizing assigments of samples to clusters across multiple clusterings}
 \usage{
 plotTracking(clusters, index = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
@@ -47,6 +47,8 @@ have a large clusters matrix, this can be useful)}
 
 \item{colPalette}{a vector of colors used for the different clusters.}
 
+\item{...}{for \code{plotTracking} arguments passed to \code{clusterTracking}. For \code{clusterTracking}, arguments passed to \code{\link{plot}} if \code{add=FALSE}.}
+
 \item{colorMat}{Matrix where rows are different clusterings, columns are samples,
 and entries of matrix are colors (i.e. characters that define colors)}
 
@@ -56,9 +58,9 @@ and entries of matrix are colors (i.e. characters that define colors)}
 
 \item{x}{values on x-axis at which to plot the columns of m}
 
-\item{ylim}{}
+\item{ylim}{vector of limits of y-axis}
 
-\item{tick}{}
+\item{tick}{logical, whether to draw ticks on x-axis for each sample.}
 
 \item{ylab}{character string for the label of y-axis}
 
@@ -73,13 +75,13 @@ plotTracking provides (invisibly) the orders and other things that
 go into making the matrix. Specifically, a list with the following elements
 \itemize{
 
-\item{\code{index}}{a vector of length equal to ncols(clusters) giving the order of the columns to use to get the original clusters matrix into the order made by plotTracking}
+\item{\code{index}}{ a vector of length equal to ncols(clusters) giving the order of the columns to use to get the original clusters matrix into the order made by plotTracking}
 
-\item{\code{colors}}{matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix colors[,index] is the matrix sent to clusterTrackingPlot}
+\item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix colors[,index] is the matrix sent to clusterTrackingPlot}
 
-\item{\code{aligned}}{matrix of integer valued cluster assignments that match the colors. this is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, matrix is in same order as original clusters matrix}
+\item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. this is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, matrix is in same order as original clusters matrix}
 
-\item{\code{groupToColorLegend}}{matrix with three columns named "Original","Aligned", and "Color" giving the correspondence between the original cluster ids in clusters, the aligned cluster ids in aligned cluster values, and the color (respectively) }
+\item{\code{groupToColorLegend}}{ matrix with three columns named "Original","Aligned", and "Color" giving the correspondence between the original cluster ids in clusters, the aligned cluster ids in aligned cluster values, and the color (respectively) }
 }
 }
 \description{
@@ -89,11 +91,7 @@ values
 \details{
 clusterTrackingPlot is generally called within plotTracking, but is provided
 as separate function for convenience, for example if you want to change a
-color and replot.  printWithIndex and clusterIndInBlock are helper functions
-to try and move around the order in the plotTracking to look prettier.
-
-bigPalette is a long palette of colors (length 62) used by plotTracking and
-accompanying functions.
+color and replot.
 }
 \author{
 Elizabeth Purdom and Marla Johnson

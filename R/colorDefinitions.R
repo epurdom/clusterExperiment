@@ -38,7 +38,8 @@
 #' Large palette of colors 
 #' @name bigPalette
 #' @aliases bigPalette showThisPal
-#' @details showThisPal creates plot that gives index of each color in bigPalette 
+#' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotTracking}} and
+#' accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
 bigPalette<-.thisPal
 
 #' @rdname bigPalette
@@ -58,7 +59,17 @@ showThisPal<-function(){
 #' @examples
 #' #show the palette colors
 #' showPalettes()
+#' #compare the palettes on heatmap
+#' load(simData)
+#' load(simCount)
+#' par(mfrow=c(2,3))
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal2,main="seqPal2")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
 #' 
+
 
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)

@@ -45,7 +45,11 @@
 #' @examples
 #' data(simData)
 #' set.seed(12908)
-#' clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,clusterFunction="hierarchical",beta=0.8, subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",clusterArgs=list(nstart=10)), DclusterArgs=list(min.size=5))
+#' clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,
+#' clusterFunction="hierarchical",beta=0.8, 
+#' subsampleArgs=list(resamp.n=100,samp.p=0.7,
+#' clusterFunction="kmeans",clusterArgs=list(nstart=10)), 
+#' DclusterArgs=list(min.size=5))
 
 seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,DclusterArgs=NULL) 
 {
@@ -173,7 +177,10 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
                 i.temp <- intersect(i.temp, temp[[j]])
                 if(betaNum=="all") u.temp <- union(u.temp, temp[[j]])
             }
-            return(length(i.temp)/length(u.temp))
+            out<-length(i.temp)/length(u.temp)
+            #if(is.na(out)) stop("coding error: invalid similarity calculation")
+            #else 
+              return(out)
 
         }
         beta.temp <- apply(tempIndex, 1, calc.beta) #original code had unlist. I removed it...might cause problems, but if so, should figure them out!

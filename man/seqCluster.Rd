@@ -54,6 +54,10 @@ Each iteration of the algorithm will cluster the current set of samples. Dependi
 \examples{
 data(simData)
 set.seed(12908)
-clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,clusterFunction="hierarchical",beta=0.8, subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",clusterArgs=list(nstart=10)), DclusterArgs=list(min.size=5))
+clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,
+clusterFunction="hierarchical",beta=0.8,
+subsampleArgs=list(resamp.n=100,samp.p=0.7,
+clusterFunction="kmeans",clusterArgs=list(nstart=10)),
+DclusterArgs=list(min.size=5))
 }
 

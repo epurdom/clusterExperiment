@@ -5,7 +5,7 @@
 \alias{bigPalette}
 \alias{showThisPal}
 \title{Large palette of colors}
-\format{\preformatted{ chr [1:60] "#1F78B4" "#33A02C" "#E31A1C" "#FF7F00" "#6A3D9A" "#B15928" "#2ef4ca" "#bd18ea" "#A6CEE3" "#B2DF8A" "#FB9A99" ...
+\format{\preformatted{ chr [1:60] "#1F78B4" "#33A02C" "#E31A1C" "#FF7F00" "#6A3D9A" "#B15928" "#2ef4ca" "#bd18ea" "#A6CEE3" "#B2DF8A" "#FB9A99" "#FDBF6F" "#CAB2D6" ...
 }}
 \usage{
 bigPalette
@@ -16,7 +16,8 @@ showThisPal()
 Large palette of colors
 }
 \details{
-showThisPal creates plot that gives index of each color in bigPalette
+\code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotTracking}} and
+accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
 }
 \keyword{datasets}
 

@@ -81,9 +81,11 @@ First we will discuss if `sequential=FALSE`, i.e. the user does not choose to us
 There are two parts to the basic clustering sequence: 
 
 * (Optional, if `subsample=TRUE`) Subsample data and cluster it repeatedly via the function `subsampleClustering`. The arguments passed to `subsampleClustering` are via `subsampleArgs` in `clusterAll`. The most important arguments that a user may need to pass to `subsampleCluster` are:
+
   * `x` the $n\times p$ data matrix (which is handled by the argument `x` to `clusterAll` so the user does not need to set it)
   * `k` the number of clusters to fit in the subsampled data. This must be passed by the user via `subsampleArgs` (unless `sequential=TRUE`, see below, where it is set internally)
   * `clusterFunction` the function to use to cluster the subsampled data. The default is `pam` from the `cluster` package but can also be user-defined. The argument `clusterFunction` of `clusterAll` is *not* passed to this argument -- `clusterAll` by default uses the `pam` function -- so the user must pass this *via `subsampleArgs`* if they want a different function.
+
 * Clustering an input $D$ matrix `clusterD`, which can be either the co-occurance matrix from `subsampleClustering` or otherwise is `dist(x)`. The arguments passed to `clusterD` are via the argument `DclusterArgs` in `clusterAll`. The most important arguments are:
   * `D` the $n\times n$ matrix of dissimilarities
   * `clusterFunction` the type of clustering to do on the dissimilarity matrix.
@@ -148,7 +150,7 @@ typeBox<-typeBox[match(row.names(elpos),names(typeBox))]
 fromtoChar<-rbind(c("1:subsample","2:clusterD"),c("1:subsample","3:subsampleClustering"),c("2:clusterD","4:typeAlg"),c("4:typeAlg","6:cluster01"),c("4:typeAlg","7:clusterK"),c("3:subsampleClustering","5:clusterD"),c("5:clusterD","8:typeAlg"),c("8:typeAlg","9:cluster01"),c("8:typeAlg","10:clusterK")
     )
 fromto <- cbind(match(fromtoChar[,1],row.names(elpos)),match(fromtoChar[,2],row.names(elpos)))
-row.names(fromto)<-c("TRUE","FALSE",NA,'"01"','"K"',NA,NA,'"01"','"K"')
+row.names(fromto)<-c("FALSE","TRUE",NA,'"01"','"K"',NA,NA,'"01"','"K"')
 nr     <- nrow(fromto)
 ############
 ###Draw Arrows:
@@ -204,13 +206,13 @@ Once such a cluster is found, the samples in the cluster are removed, and the pr
 
 The following image represents how the sequential strategy works:
 
-```{r flowspreadSeq, echo = F, fig.width=10,fig.height=15,out.height=300*1.5,out.width=300}
+```{r flowspreadSeq, echo = F, fig.width=12,fig.height=15,out.height=400*1.5,out.width=400}
 #results = 'asis'}
 #cat('\n<img src="flowchartTop.png" width="300" height="300" />\n')
 yadj<-0.05
 xadj<-yadj
 require(diagram)
-par(mar=c(1.1,1.1,1.1,1.1))
+par(mar=c(.1,.1,.1,.1))
 openplotmat()
 #####
 #make node matrix
@@ -242,12 +244,11 @@ row.names(fromto)<-c(NA,"FALSE","TRUE",rep(NA,3),"k=k.max &\n no similarity < be
 ############
 ###Draw Arrows:
 ############
-arrpos <- matrix(ncol = 2, nrow = nrow(fromto))
 for (i in 1:nrow(fromto)){
   processArrows(elpos[fromto[i, 1], ],elpos[fromto[i, 2], ],row.names(fromto)[i])
 }
-curvedarrow(from = elpos["15:Restart with\nk.start=k.start-1\n(but no less than k.min)", ], to = elpos["5:Set k.start=k0\nn=No.samples", ]+c(.05,0),  lty = 1, lwd=10, lcol = 2,arr.pos=0.9,curve=0.5)
-selfarrow(pos=elpos["6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,...", ]+c(.1,0), path="R", lty = 1, lwd=2, lcol = 2,arr.pos=.4,curve=c(0.1,0.05))
+curvedarrow(from = elpos["15:Restart with\nk.start=k.start-1\n(but no less than k.min)", ], to = elpos["5:Set k.start=k0\nn=No.samples", ]+c(.05,0),  lty = 1, lwd=5, lcol = 2,arr.pos=0.8,curve=0.5,arr.lwd=8,arr.length=0.6)
+selfarrow(pos=elpos["6:Iterate Basic\nClustering Routine\nk=k.start,kstart+1,...", ]+c(.1,0), path="R", lty = 1, lwd=2, lcol = 2,arr.pos=.2,curve=c(0.1,0.05))
 ###########
 ## Draw boxes
 ###########

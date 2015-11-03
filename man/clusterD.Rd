@@ -13,8 +13,8 @@ clusterD(D, clusterFunction = c("hierarchical", "tight", "pam"),
 cluster01(D, clusterFunction = c("hierarchical", "tight"), alpha = 0.1,
   clusterArgs = NULL)
 
-clusterK(D, clusterFunction = c("pam"), findBestK = TRUE, k, kRange,
-  removeSil = TRUE, silCutoff = 0, clusterArgs = NULL)
+clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
+  removeSil = FALSE, silCutoff = 0, clusterArgs = NULL)
 }
 \arguments{
 \item{D}{the nxn matrix of 0-1 values}
@@ -65,16 +65,31 @@ clusterK methods: "pam" performs pam clustering on the input Dmatrix using \code
 }
 \examples{
 data(simData)
-subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
-#run hierarchical method for finding blocks, with method of evaluating coherence of block set to evalClusterMethod="average", and the hierarchical clustering using single linkage:
-clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,min.size=5,clusterArgs=list(evalClusterMethod="average",method="single"))
-#note passing the wrong arguments for a '01' clusterFunction is caught internally and ignored, but without warning:
-clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5,removeSil=TRUE)
-clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,removeSil=TRUE,k=3)
-clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,removeSil=TRUE,findBestK=TRUE,kRange=2:10)
-#visualize the results
+subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",
+clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
+
+#run hierarchical method for finding blocks, with method of evaluating
+#coherence of block set to evalClusterMethod="average", and the hierarchical
+#clustering using single linkage:
+clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,
+min.size=5,clusterArgs=list(evalClusterMethod="average",method="single"))
+
+#note passing the wrong arguments for a '01' clusterFunction is caught
+#internally and ignored, but without warning:
+clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5,
+removeSil=TRUE)
+
+#two twists to pam
+clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+removeSil=TRUE,k=3)
+clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+removeSil=TRUE,findBestK=TRUE,kRange=2:10)
+
+#visualize the results of different clusterings
 library(NMF)
-clusterDF<-data.frame("hier"=factor(clustSubHier),"tight"=factor(clustSubTight),"PamK"=factor(clustSubPamK),"PamBestK"=factor(clustSubPamBestK))
+clusterDF<-data.frame("hier"=factor(clustSubHier),
+"tight"=factor(clustSubTight),"PamK"=factor(clustSubPamK),
+"PamBestK"=factor(clustSubPamBestK))
 maxNumb<-max(sapply(clusterDF,function(x){max(as.numeric(levels(x)))}))
 cols<-bigPalette[1:(maxNumb+2)]
 names(cols)<-as.character(seq(-1,maxNumb,by=1))

@@ -25,13 +25,15 @@ compareChoices(data, ks = 2:15, alphas = c(0.1, 0.2, 0.3),
 
 \item{removeSil}{values of removeSil to be tried (logical) (only for 'pam')}
 
+\item{subsample}{values of subsample to be tried (logical).}
+
 \item{silCutoff}{values of silCutoff to be tried (only for 'pam')}
 
 \item{clusterMethod}{method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.}
 
 \item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}}
 
-\item{subsampleArgs}{list of arguments to be passed to \code{\link{subsamplingClustering}}}
+\item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}}
 
@@ -59,7 +61,10 @@ While the function allows for different clusterMethod, they do not reuse the sam
 data(simData)
 \dontrun{
 	#following code takes around 1+ minutes to run:
-	system.time(clusterTrack<-compareChoices(simData, ks=2:15, alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", clusterArgs = list(min.size = 5,kRange=2:15),ncores=1,random.seed=48120))
+	system.time(clusterTrack<-compareChoices(simData, ks=2:15,
+	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
+	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam",
+	clusterArgs = list(min.size = 5,kRange=2:15),ncores=1,random.seed=48120))
 }
 }
 
