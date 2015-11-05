@@ -22,8 +22,12 @@
 	}
 	else{
 		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
-		Dbar<-as.matrix(dist(x)	)		
-		if(is.null(DclusterArgs) || !"k" %in% names(DclusterArgs)) stop("if not subsampling, must give k in 'DclusterArgs' (or if sequential should have been set by sequential strategy)")
+		Dbar<-as.matrix(dist(x)	)	
+		findBestK<-FALSE	
+		if(!is.null(DclusterArgs) && "findBestK" %in% names(DclusterArgs)){
+				findBestK<-DclusterArgs[["findBestK"]]
+			}
+		if(is.null(DclusterArgs) || (!"k" %in% names(DclusterArgs) && !findBestK)) stop("if not subsampling, must give k in 'DclusterArgs' (or if sequential should have been set by sequential strategy)")
 	}
 	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	

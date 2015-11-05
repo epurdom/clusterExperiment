@@ -4,18 +4,18 @@
 \alias{compareChoices}
 \title{Create a matrix of clustering across values of k}
 \usage{
-compareChoices(data, ks = 2:15, alphas = c(0.1, 0.2, 0.3),
-  findBestK = c(TRUE, FALSE), sequential = c(TRUE, FALSE),
-  removeSil = c(TRUE, FALSE), subsample = c(TRUE, FALSE), silCutoff = 0,
-  clusterMethod = c("tight", "hierarchical", "pam"),
-  DclusterArgs = list(min.size = 5), subsampleArgs = list(resamp.num = 50),
-  seqArgs = list(beta = 0.9, k.min = 3), ncores = 1, random.seed = NULL,
-  ...)
+compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
+  sequential = FALSE, removeSil = FALSE, subsample = FALSE,
+  silCutoff = 0, DclusterArgs = list(min.size = 5),
+  subsampleArgs = list(resamp.num = 50), seqArgs = list(beta = 0.9, k.min =
+  3), ncores = 1, random.seed = NULL, ...)
 }
 \arguments{
-\item{data}{the data on which to run the clustering (samples in rows)}
+\item{data}{the data on which to run the clustering. Must either be a data.frame/matrix (with samples in rows) or a list of datasets overwhich the clusterings should be run.}
 
-\item{ks}{the range of k values (see details for meaning for different choices)}
+\item{ks}{the range of k values (see details for meaning for different choices).}
+
+\item{clusterMethod}{method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.}
 
 \item{alphas}{values of alpha to be tried. Only used for subsampleClusterMethod either 'tight' or 'hierarchical'.}
 
@@ -28,8 +28,6 @@ compareChoices(data, ks = 2:15, alphas = c(0.1, 0.2, 0.3),
 \item{subsample}{values of subsample to be tried (logical).}
 
 \item{silCutoff}{values of silCutoff to be tried (only for 'pam')}
-
-\item{clusterMethod}{method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.}
 
 \item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}}
 
@@ -47,7 +45,7 @@ compareChoices(data, ks = 2:15, alphas = c(0.1, 0.2, 0.3),
 A list with the following objects:
 \itemize{
 \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
-\item{\code{clusterInfo}}{a list with information regarding clustering result (for those clusterings with sequential=TRUE)}
+\item{\code{clusterInfo}}{a list with information regarding clustering result (only relevant entries for those clusterings with sequential=TRUE)}
 }
 }
 \description{
@@ -59,8 +57,22 @@ While the function allows for different clusterMethod, they do not reuse the sam
 }
 \examples{
 data(simData)
+#clustering using pam: try using different dimensions of pca and different k
+ps<-c(5,10,50)
+names(ps)<-paste("npc=",ps,sep="")
+pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+colnames(cl$clMat)
+#make names shorter for plotting
+colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
+colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
+colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
+par(mar=c(2,10,1,1))
+plotTracking(cl$clMat,axisLine=-2)
+
+
 \dontrun{
-	#following code takes around 1+ minutes to run:
+	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:
 	system.time(clusterTrack<-compareChoices(simData, ks=2:15,
 	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam",

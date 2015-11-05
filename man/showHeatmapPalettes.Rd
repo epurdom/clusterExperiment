@@ -9,7 +9,7 @@
 \alias{seqPal5}
 \alias{showHeatmapPalettes}
 \title{Set of colors useful for heatmap gradients}
-\format{\preformatted{ chr [1:16] "#000000" "#00003B" "#000077" "#00009E" "#0000C2" "#0826CD" "#135CCD" "#247AB5" "#39848B" "#378B5C" "#168B26" "#149306" "#5CB21E" ...
+\format{\preformatted{ chr [1:16] "#000000" "#00003B" "#000077" "#00009E" "#0000C2" ...
 }}
 \usage{
 showHeatmapPalettes()
