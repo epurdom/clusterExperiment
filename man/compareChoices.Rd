@@ -8,7 +8,7 @@ compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
   sequential = FALSE, removeSil = FALSE, subsample = FALSE,
   silCutoff = 0, DclusterArgs = list(min.size = 5),
   subsampleArgs = list(resamp.num = 50), seqArgs = list(beta = 0.9, k.min =
-  3), ncores = 1, random.seed = NULL, ...)
+  3, verbose = FALSE), ncores = 1, random.seed = NULL, run = TRUE, ...)
 }
 \arguments{
 \item{data}{the data on which to run the clustering. Must either be a data.frame/matrix (with samples in rows) or a list of datasets overwhich the clusterings should be run.}
@@ -39,6 +39,8 @@ compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
 
 \item{random.seed}{a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)}
 
+\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned)}
+
 \item{...}{to be passed on to mclapply (if ncores>1)}
 }
 \value{
@@ -61,6 +63,9 @@ data(simData)
 ps<-c(5,10,50)
 names(ps)<-paste("npc=",ps,sep="")
 pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+#check how many and what runs user choices will imply:
+checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
+ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE)
 cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 colnames(cl$clMat)
 #make names shorter for plotting

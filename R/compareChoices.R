@@ -17,6 +17,7 @@
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
 #' @param ncores the number of threads
 #' @param random.seed a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)
+#' @param run logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned)
 #' @param ... to be passed on to mclapply (if ncores>1)
 #'
 #' @details While the function allows for different clusterMethod, they do not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the random.seed value, however, should mean that the subsampled matrix is the same, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters). 
@@ -33,6 +34,9 @@
 #' ps<-c(5,10,50)
 #' names(ps)<-paste("npc=",ps,sep="")
 #' pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+#' #check how many and what runs user choices will imply:
+#' checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
+#' ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE)
 #' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 #' colnames(cl$clMat) 
 #' #make names shorter for plotting
@@ -48,19 +52,19 @@
 #'	system.time(clusterTrack<-compareChoices(simData, ks=2:15, 
 #'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 #'	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", 
-#'	clusterArgs = list(min.size = 5,kRange=2:15),ncores=1,random.seed=48120))
+#'	clusterArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 #' }
 #' 
 
 
-
+###To do: allow the user to give matrix of param to bypass the checks, etc. in case user wants to delete some.
 
 compareChoices <- function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
 removeSil=FALSE, subsample=FALSE,silCutoff=0,
-    DclusterArgs=list(min.size=5),
+    DclusterArgs=list(minSize=5),
 	subsampleArgs=list(resamp.num=50),
-	seqArgs=list(beta=0.9,k.min=3),
-	ncores=1,random.seed=NULL,...
+	seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+	ncores=1,random.seed=NULL,run=TRUE,...
 	)
 {
 	# if(clusterMethod %in% c("pam")){ #alpha values not used -- assume cutoff silhouette at negative.
@@ -126,6 +130,7 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 	else stop("set of parameters imply only 1 combination")
 	cnames<-gsub("dataset=","",cnames)
 	cnames<-gsub("= ","=",cnames)
+	cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
 	cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
 	paramFun<-function(i){
 		par<-param[i,]
@@ -149,68 +154,35 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 		DclusterArgs[["removeSil"]]<-removeSil
 		DclusterArgs[["silCutoff"]]<-par[["silCutoff"]]
 		if(!is.null(random.seed)) set.seed(random.seed)
-			clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  DclusterArgs=DclusterArgs,subsampleArgs=subsampleArgs,
+		clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  DclusterArgs=DclusterArgs,subsampleArgs=subsampleArgs,
 			seqArgs=seqArgs, sequential=sequential) 
 	}
-	if(ncores>1) out<-mclapply(1:nrow(param),FUN=paramFun,mc.cores=ncores,...)
-	else out<-lapply(1:nrow(param),FUN=paramFun)
+	if(run){
+		if(ncores>1) out<-mclapply(1:nrow(param),FUN=paramFun,mc.cores=ncores,...)
+		else out<-lapply(1:nrow(param),FUN=paramFun)
 
-	clMat<-sapply(out,function(x){x$clustering})
-	colnames(clMat)<-cnames
+		clMat<-sapply(out,function(x){x$clustering})
+		colnames(clMat)<-cnames
 	
-	#   #just return matrices of clusters
-	#   out<-lapply(allTracking,function(trackTightAlpha){
-	#     sapply(trackTightAlpha,function(x){x$cluster})
-	#   })
-	if(any(param[,"sequential"])){
-		clusterInfo<-lapply(out,function(x){
-			# if(all(c("clusterInfo","whyStop") %in% names(x))) return(x[c("clusterInfo","whyStop")])
-	# 		else return(NULL)
-			return(x[c("clusterInfo","whyStop")])
-		})
-		 names(clusterInfo)<-cnames		
+		#   #just return matrices of clusters
+		#   out<-lapply(allTracking,function(trackTightAlpha){
+		#     sapply(trackTightAlpha,function(x){x$cluster})
+		#   })
+		if(any(param[,"sequential"])){
+			clusterInfo<-lapply(out,function(x){
+				# if(all(c("clusterInfo","whyStop") %in% names(x))) return(x[c("clusterInfo","whyStop")])
+		# 		else return(NULL)
+				return(x[c("clusterInfo","whyStop")])
+			})
+			 names(clusterInfo)<-cnames		
+		}
+		else clusterInfo<-NULL
+	
+		return(list(clMat=clMat,clusterInfo=clusterInfo))
 	}
-	else clusterInfo<-NULL
-	
-	return(list(clMat=clMat,clusterInfo=clusterInfo))
+	else{
+	  rownames(param)<-cnames
+	  return(param)
+	}
 }
 
-# .trackPam<-function(data, ks){
-#   d <- dist(data)
-#   pamRes <- lapply(ks, function(z) pam(d,k=z))
-#   clMat<-sapply(pamRes,function(x){x$clustering})
-#   colnames(clMat)<-paste("K=",ks,sep="")
-#   return(list(clMat=clMat))
-# }
-#
-# .trackTight<-function(data, ks=2:15, pickLargestBeta=TRUE, nstart=10, resamp.num=50,
-#                       k.stop=3, alphas=c(0.1,0.2,0.3), target=100, beta=0.9, standardize.gene=FALSE,
-#                       random.seed=NULL, ncores=1, verbose=FALSE, ...){
-#   tightFun<-function(k,a){
-#     if(verbose) cat("--------- k0=",k,"----------")
-#     tight.clust.fixed(data,target=target,k.min=k,alpha=a,beta=beta,standardize.gene=standardize.gene,random.seed =random.seed,pickLargestBeta=pickLargestBeta,nstart=nstart,resamp.num=resamp.num,k.stop=k.stop,verbose=verbose)
-#   }
-#   alphaFun<-function(a){
-#     if(verbose) cat("######## alpha=",a,"########")
-#     trackTightAlpha<-lapply(ks,tightFun,a=a)
-#     names(trackTightAlpha)<-paste("K=",ks,sep="")
-#     return(trackTightAlpha)
-#   }
-#   if(ncores>1){
-#     allTracking<-mclapply(alphas,FUN=alphaFun,mc.cores=ncores,...)
-#   }
-#   else{
-#     allTracking<-lapply(alphas,alphaFun)
-#   }
-#   names(allTracking)<-paste("alpha=",alphas,sep="")
-#
-#   #just return matrices of clusters
-#   out<-lapply(allTracking,function(trackTightAlpha){
-#     sapply(trackTightAlpha,function(x){x$cluster})
-#   })
-#   clusterInfo<-lapply(allTracking,function(trackTightAlpha){
-#     lapply(trackTightAlpha,function(x){x$clusterInfo})
-#   })
-#   names(out)<-names(allTracking)
-#   return(list(clMat=out,clusterInfo=clusterInfo))
-# }

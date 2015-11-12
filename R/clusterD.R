@@ -10,7 +10,7 @@
 #' @param D the nxn matrix of 0-1 values
 #' @param clusterFunction clusterFunction a function that clusters a nxn matrix of dissimilarities/distances. Can also be given character values to indicate use of internal wrapper functions for default methods. See Details for the format of what the function must take as arguments and what format the function must return.
 #' @param typeAlg character value of either '01' or 'K' determining whether the function given in clusterFunction should be called by clusterK or cluster01. Only used if clusterFunction is a user-defined function. Otherwise, for methods provided by the package (i.e. by user setting clusterFunction to a character value) clusterD will determine the appropriate input for 'typeAlg' and will ignore user input.
-#' @param min.size the minimum number of samples in a cluster. Clusters found below this size will be discarded and samples in the cluster will be given a cluster assignment of "-1" to indicate that they were not clustered.
+#' @param minSize the minimum number of samples in a cluster. Clusters found below this size will be discarded and samples in the cluster will be given a cluster assignment of "-1" to indicate that they were not clustered.
 #' @param orderBy how to order the cluster (either by size or by maximum alpha value)
 #' @param format whether to return a list of indices in a cluster or a vector of clustering assignments. List is mainly for compatibility with sequential part. 
 #' @param clusterArgs arguments to be passed directly to the clusterFunction, beyond the required input.
@@ -26,13 +26,13 @@
 #'
 #' cluster01 required format for input and output for clusterFunction: clusterFunction should be a function that takes (as a minimum) an argument "D" and "alpha". 0-1 clustering algorithms are expected to use the fact that the D input is 0-1 range to find the clusters, rather than a user defined number of clusters; "alpha" is the parameter that tunes the finding of such clusters. For example, a candidate block of samples might be considered a cluster if all values of D are greater than or equal to 1-alpha. The output is a list with each element corresponding to a cluster and the elements of the list corresponding to the indices of the samples that are in the cluster. The list is expected to be in order of 'best clusters' (as defined by the clusterFunction), with first being the best and last being worst.
 #'
-#' cluster01 methods: "tight" method refers to the method of finding clusters from a subsampling matrix given in the tight algorithm of Tsang and Wong. Arguments for the tight method are 'min.size.core' (default=2), which sets the minimimum number of samples that form a core cluster. "hierarchical" refers to running the hclust algorithm on D and transversing down the tree until getting a block of samples with whose summary of the values  is greater than or equal to 1-alpha. Arguments that can be passed to 'hierarchical' are 'evalClusterMethod' which determines how to summarize the samples' values of D[samples,samples] for comparison to 1-alpha: "minimum" (default) takes the minimum of D[samples,samples] and requires it to be greater than or equal to 1-alpha; "average" requires that each row mean of D[samples,samples] be greater than or equal to 1-alpha. Arguments of hclust can also be passed via clusterArgs to control the hierarchical clustering of D.
+#' cluster01 methods: "tight" method refers to the method of finding clusters from a subsampling matrix given in the tight algorithm of Tsang and Wong. Arguments for the tight method are 'minSize.core' (default=2), which sets the minimimum number of samples that form a core cluster. "hierarchical" refers to running the hclust algorithm on D and transversing down the tree until getting a block of samples with whose summary of the values  is greater than or equal to 1-alpha. Arguments that can be passed to 'hierarchical' are 'evalClusterMethod' which determines how to summarize the samples' values of D[samples,samples] for comparison to 1-alpha: "minimum" (default) takes the minimum of D[samples,samples] and requires it to be greater than or equal to 1-alpha; "average" requires that each row mean of D[samples,samples] be greater than or equal to 1-alpha. Arguments of hclust can also be passed via clusterArgs to control the hierarchical clustering of D.
 #'
 #' clusterK required format for input and output for clusterFunction: clusterFunction should be a function that takes as a minimum an argument 'D' and 'k'. The output must be a list similar to that of 'partition.object' of cluster package. Specifically, an element 'clustering' which gives the vector of clusters; and an argument 'silinfo' like that of the partition.object that is a list with silhouette values. Whether these are actually silhouette values is up to the clusterFunction, but they will be used in the following way: silinfo$avg.width will be used to pick the best k (if findBestK=TRUE), silinfo$widths[,"sil_width"] will be used to exclude poorly clustered samples (if removeSil=TRUE), and clusters will be ordered by the average of the values silinfo$widths[,"sil_width"] in each cluster (after removing poorly clustered samples, if removeSil=TRUE). 
 
 #' clusterK methods: "pam" performs pam clustering on the input Dmatrix using \code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are given by D and k directly.
 #'
-#' @return clusterD returns a vector of cluster assignments (if format="vector") or a list of indices for each cluster (if format="list"). Clusters less than min.size are removed. If orderBy="size" the clusters are reordered by the size of the cluster, instead of by the internal ordering of the clusterFunction. 
+#' @return clusterD returns a vector of cluster assignments (if format="vector") or a list of indices for each cluster (if format="list"). Clusters less than minSize are removed. If orderBy="size" the clusters are reordered by the size of the cluster, instead of by the internal ordering of the clusterFunction. 
 #'
 #' cluster01 and clusterK return a list of indices of the clusters found, which each element of the list corresponding to a cluster and the elements of that list a vector of indices giving the indices of the samples assigned to that cluster. Indices not included in any list are assumed to have not been clustered. The list is assumed to be ordered in terms of the `best' cluster (as defined by the clusterFunction for cluster01 or by average silhoute for clusterK), for example in terms of most internal similarity of the elements, or average silhouette width. 
 #'
@@ -45,17 +45,17 @@
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical 
 #' #clustering using single linkage:
 #' clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,
-#' min.size=5,clusterArgs=list(evalClusterMethod="average",method="single"))
+#' minSize=5,clusterArgs=list(evalClusterMethod="average",method="single"))
 #' 
 #' #note passing the wrong arguments for a '01' clusterFunction is caught 
 #' #internally and ignored, but without warning:
-#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,min.size=5,
+#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
 #' removeSil=TRUE)
 #' 
 #' #two twists to pam
-#' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+#' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
 #' removeSil=TRUE,k=3)
-#' clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,min.size=5,
+#' clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
 #' removeSil=TRUE,findBestK=TRUE,kRange=2:10)
 #' 
 #' #visualize the results of different clusterings
@@ -70,7 +70,7 @@
 #' aheatmap(subD,annCol=clusterDF,annColors=annColors,annLegend=FALSE)
 
 
-clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),min.size=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,...){
+clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
@@ -93,7 +93,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	
 	#Now format into desired output
 	clusterSize<-sapply(res, length)
-    res <- res[clusterSize>=min.size]
+    res <- res[clusterSize>=minSize]
 	if(length(res)==0){ #No clusters pass
 		if(format=="list") return(res)
 		else return(rep(-1,nrow(D)))
@@ -257,12 +257,12 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
     res <- res[order(alphaMax, decreasing=TRUE)]					
 	
 }
-.tightClusterDMat <- function(D, alpha, min.size.core=2) 
+.tightClusterDMat <- function(D, alpha, minSize.core=2) 
 {
     find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
 		#what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is. 
-		if(all(tmp<min.size.core)){ #i.e. only core size groups less than min.size.core (default is 1)
+		if(all(tmp<minSize.core)){ #i.e. only core size groups less than minSize.core (default is 1)
 			return(NULL)
 		}
 		whMax<-which(tmp == max(tmp))

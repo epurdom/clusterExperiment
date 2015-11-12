@@ -49,7 +49,7 @@
 #' clusterFunction="hierarchical",beta=0.8, 
 #' subsampleArgs=list(resamp.n=100,samp.p=0.7,
 #' clusterFunction="kmeans",clusterArgs=list(nstart=10)), 
-#' DclusterArgs=list(min.size=5))
+#' DclusterArgs=list(minSize=5))
 
 seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,DclusterArgs=NULL) 
 {
