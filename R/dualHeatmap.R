@@ -219,20 +219,29 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVar, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
 		 annCol = annCol,annColors=annColors,breaks=breaks,...)
 		 
-# 	NMF:::vplayout("cann") #open up the annotations
+# 	NMF:::vplayout("cann") #open up the annotations box (see NMF:::vplayout for list of them)
 # 	#	         draw_annotations(annotation, border_color)
 # 	grid.text()
-# 	grid::upViewport()
+# NMF:::vplayout("leg")
+# grid::pushViewport(grid::viewport(layout.pos.row = 3, layout.pos.col = 4:5, name = "annLab"))
+# y <- seq(0.5,1,length=n)
+# grid::grid.text(1:n, x = grid::unit(0,"npc"), y = grid::unit(y,"npc"), vjust = 0.5, hjust = 0)
+# grid::grid.rect()
+# 	grid::upViewport() #close it
 # 	# > NMF:::draw_annotations
+#annCol<-cbind(FinalCluster=as.factor(clBrain1), annoMat_all)
 # 	draw_annoLabels<-function (annCol, border_color, horizontal = TRUE)
 # 	{
 # 	    n = ncol(annCol)
 # 	    m = nrow(annCol)
 # 	    if (horizontal) {
-# 	        x = (1:m)/m - 1/2/m
-# 	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-# 			for (i in 1:m) {
-# 		        grid.text(x=x[i],y=y[1])
+# 	        x <- (1:m)/m - 1/2/m
+# 	        
+#
+# 			for (i in 1:n) {
+# 				
+# 		        grid::grid.text(i,x=1,y=y[i])
+# 			}
 # # 	            grid.rect(x = x[i], unit(y[n:1], "bigpts"), width = 1/m,
 # # 	                height = unit(8, "bigpts"), gp = gpar(fill = converted_annotations[i,
 # # 	                  ], col = border_color))
@@ -247,6 +256,6 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 # 	                ], col = border_color))
 # 	        }
 # 	    }
-# 	} 
+# 	}
 	invisible(list(heatOut=out,annCol=annCol,annColors=annColors,breaks=breaks))
 }
