@@ -48,7 +48,7 @@ clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
 sequential=TRUE,subsample=TRUE,
 	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
-	DclusterArgs=list(min.size=5))
+	DclusterArgs=list(minSize=5))
 }
 #use clusterAll to do just clustering k=3 with no subsampling
 clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,

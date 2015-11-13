@@ -6,7 +6,7 @@
 \usage{
 compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
   sequential = FALSE, removeSil = FALSE, subsample = FALSE,
-  silCutoff = 0, DclusterArgs = list(min.size = 5),
+  silCutoff = 0, DclusterArgs = list(minSize = 5),
   subsampleArgs = list(resamp.num = 50), seqArgs = list(beta = 0.9, k.min =
   3, verbose = FALSE), ncores = 1, random.seed = NULL, run = TRUE, ...)
 }
@@ -81,7 +81,7 @@ plotTracking(cl$clMat,axisLine=-2)
 	system.time(clusterTrack<-compareChoices(simData, ks=2:15,
 	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam",
-	clusterArgs = list(min.size = 5,kRange=2:15),ncores=1,random.seed=48120))
+	clusterArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 }
 }
 

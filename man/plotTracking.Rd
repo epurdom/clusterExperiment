@@ -49,14 +49,14 @@ have a large clusters matrix, this can be useful)}
 
 \item{...}{for \code{plotTracking} arguments passed to \code{clusterTracking}. For \code{clusterTracking}, arguments passed to \code{\link{plot}} if \code{add=FALSE}.}
 
-\item{colorMat}{Matrix where rows are different clusterings, columns are samples,
+\item{colorMat}{Matrix where columns are different clusterings, rows are samples,
 and entries of matrix are colors (i.e. characters that define colors)}
 
-\item{names}{names to go with the rows (clusterings) in matrix m}
+\item{names}{names to go with the columns (clusterings) in matrix colorMat}
 
 \item{add}{whether to add to existing plot}
 
-\item{x}{values on x-axis at which to plot the columns of m}
+\item{x}{values on x-axis at which to plot the rows of m}
 
 \item{ylim}{vector of limits of y-axis}
 

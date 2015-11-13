@@ -36,21 +36,24 @@
 #' @param sampleNames Logical as to whether show cell names
 #' @param colorScale palette of colors for the color scale of heatmap
 #' @param annCol data.frame of clusters to show at the top of heatmap (columns
-#' are clusters). If NULL, will show clusterVector
+#' are clusters). If NULL, will show clusterVector. Can also be continuous valued data, but see details.
 #' @param annColors Assignment of colors to the clusters. If NULL, clusters
 #' will be assigned colors. If `annCol' should be list of length equal to
 #' ncol(annCol) with names equal to the colnames of annCol; each element of the
 #' list should be a vector of colors with names corresponding to the levels of
 #' the column of annCol. If annCol=NULL (i.e. use clusterVec), then the name of
 #' the length-1 list should be `Cluster'
+#' @param whAnnCont which columns of annCol are continuous data; only relevant if annCol=NULL (i.e. function assigns the clusters)
 #' @param alignColors Logical as to whether should align the clusters when
 #' colors are assigned
 #' @param breaks Either a vector of breaks (should be equal to length 52), or a
 #' number between 0 and 1, indicating that the breaks should be equally spaced
 #' (on the log scale+eps) upto the `breaks' quantile.
 #' @param ... passed to aheatmap
-#' @details The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of this function is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
+#' @details The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{dualHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
 #' 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
+#'
+#' @details if \code{annCol} contains a column of continuous data, and \code{annColors} is not provided (i.e. equals NULL), then ...
 #' @return Returns invisibly the breaks, annCol, and annColors that are sent to
 #' aheatmap by the function.
 #' @author Elizabeth Purdom
@@ -103,7 +106,7 @@
 #' 
 dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRUE,clusterSamples=TRUE, 
 	clusterVar=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
-	annCol=NULL,annColors=NULL,alignColors=FALSE,breaks=NA,...){
+	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,...){
   heatData<-t(data.matrix(heatData))
 	#dual=TRUE means use heatmap with heatData, hierarch on clusterData; if FALSE both on heatData
 	#clusterVector a vector giving clusters to color the samples with; if missing, then just do all white (NA)
@@ -121,36 +124,38 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 	names(tmpDf)<-names(annCol)
 	annCol<-tmpDf
 	if(is.null(annColors)){
-		if(alignColors){
-			#align the clusters and give them colors from .thisPal
-			clMat<-t(data.matrix(annCol)) #converts them all to numbers, required for plotTracking
-			#for each column of clDf, get colors from plotTracking
-			clMat[clMat== -1]<-max(clMat)+1
-			alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"
-			annColors<-mapply(alignObj$groupToColorLegend,annCol,FUN=function(x,fac){
-				cols<-x[,"Color"]
-				xnam<-levels(fac)[as.numeric(x[,"Original"])-2]
-				# print(levels(fac))
-	# 			print(as.numeric(x[,"Original"])-2)
-				names(cols)<-xnam
-				cols[names(cols)=="-1"]<-"white" #unassigned get white
-				cols<-cols[order(names(cols))]
-				return(cols)
+		if(is.null(whAnnCont) || length(whAnnCont)<ncol(annCol)){
+			if(alignColors){
+				#align the clusters and give them colors from .thisPal
+				clMat<-data.matrix(annCol[,-whAnnCont,drop=FALSE]) #converts them all to numbers, required for plotTracking
+				#for each column of clDf, get colors from plotTracking
+				clMat[clMat== -1]<-max(clMat)+1
+				alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"
+				annColors<-mapply(alignObj$groupToColorLegend,annCol[,-whAnnCont,drop=FALSE],FUN=function(x,fac){
+					cols<-x[,"Color"]
+					xnam<-levels(fac)[as.numeric(x[,"Original"])-2]
+					# print(levels(fac))
+		# 			print(as.numeric(x[,"Original"])-2)
+					names(cols)<-xnam
+					cols[names(cols)=="-1"]<-"white" #unassigned get white
+					cols<-cols[order(names(cols))]
+					return(cols)
+					},SIMPLIFY=FALSE)
+			}
+			else{#make them have separate colors
+				maxPerAnn<-sapply(annCol[,-whAnnCont,drop=FALSE],function(x){max(as.numeric(x))})
+				annColors<-mapply(annCol[,-whAnnCont,drop=FALSE],c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
+					cols<-.thisPal[1:nlevels(fac)+add]
+					names(cols)<-levels(fac)
+					cols[names(cols)=="-1"]<-"white" #unassigned get white
+					cols<-cols[order(names(cols))]
+					return(cols)
 				},SIMPLIFY=FALSE)
-		}
-		else{#make them have separate colors
-			maxPerAnn<-sapply(annCol,function(x){max(as.numeric(x))})
-			annColors<-mapply(annCol,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
-				cols<-.thisPal[1:nlevels(fac)+add]
-				names(cols)<-levels(fac)
-				cols[names(cols)=="-1"]<-"white" #unassigned get white
-				cols<-cols[order(names(cols))]
-				return(cols)
-			},SIMPLIFY=FALSE)
-		}
-		if(ncol(annCol)==1){
-			#annCol<-annCol[,1]
-			#annColors<-annColors[[1]]
+			}
+			if(ncol(annCol)==1){
+				#annCol<-annCol[,1]
+				#annColors<-annColors[[1]]
+			}
 		}
 	}
 	
@@ -213,5 +218,35 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 	# 	margin=c(ifelse(sampleNames, 10,0.1), ifelse(varNames, 10,0.1)),labRow=rownames(tmp),...)
 	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVar, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
 		 annCol = annCol,annColors=annColors,breaks=breaks,...)
+		 
+# 	NMF:::vplayout("cann") #open up the annotations
+# 	#	         draw_annotations(annotation, border_color)
+# 	grid.text()
+# 	grid::upViewport()
+# 	# > NMF:::draw_annotations
+# 	draw_annoLabels<-function (annCol, border_color, horizontal = TRUE)
+# 	{
+# 	    n = ncol(annCol)
+# 	    m = nrow(annCol)
+# 	    if (horizontal) {
+# 	        x = (1:m)/m - 1/2/m
+# 	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+# 			for (i in 1:m) {
+# 		        grid.text(x=x[i],y=y[1])
+# # 	            grid.rect(x = x[i], unit(y[n:1], "bigpts"), width = 1/m,
+# # 	                height = unit(8, "bigpts"), gp = gpar(fill = converted_annotations[i,
+# # 	                  ], col = border_color))
+# 	        }
+# 	    }
+# 	    else {
+# 	        x = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+# 	        y = (1:m)/m - 1/2/m
+# 	        for (i in 1:m) {
+# 	            grid.rect(x = unit(x[1:n], "bigpts"), y = y[i], width = unit(8,
+# 	                "bigpts"), height = 1/m, gp = gpar(fill = converted_annotations[i,
+# 	                ], col = border_color))
+# 	        }
+# 	    }
+# 	} 
 	invisible(list(heatOut=out,annCol=annCol,annColors=annColors,breaks=breaks))
 }

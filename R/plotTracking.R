@@ -97,12 +97,12 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 			return(leg)
 		})
 		names(newColorLeg)<-names(out$groupToColorLegend)
-		xColors<-do.call("rbind",lapply(1:nrow(clusters),function(i){
-			out$colors[i,clusters[i,]=="-1"]<-unassignedColor
-			out$colors[i,clusters[i,]=="-2"]<-missingColor
-			return(out$colors[i,])
+		xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
+			out$colors[clusters[i,]=="-1",i]<-unassignedColor
+			out$colors[clusters[i,]=="-2",i]<-missingColor
+			return(out$colors[,i])
 		}))
-		if(plot) clusterTrackingPlot(t(xColors[,out$index]), rownames(out$colors),...)
+		if(plot) clusterTrackingPlot(xColors[out$index,], colnames(out$colors),...)
 		out$colors<-xColors
 		out$groupToColorLegend<-newColorLeg
 	}
@@ -297,11 +297,11 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 
 #' @rdname plotTracking
 #' 
-#' @param colorMat Matrix where rows are different clusterings, columns are samples,
+#' @param colorMat Matrix where columns are different clusterings, rows are samples,
 #' and entries of matrix are colors (i.e. characters that define colors)
-#' @param names names to go with the rows (clusterings) in matrix m
+#' @param names names to go with the columns (clusterings) in matrix colorMat
 #' @param add whether to add to existing plot
-#' @param x values on x-axis at which to plot the columns of m
+#' @param x values on x-axis at which to plot the rows of m
 #' @param ylim vector of limits of y-axis
 #' @param tick logical, whether to draw ticks on x-axis for each sample.
 #' @param ylab character string for the label of y-axis 
