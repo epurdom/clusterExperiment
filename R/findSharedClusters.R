@@ -16,7 +16,7 @@
 #'
 #' \item{\code{clustering}}{vector of cluster assignments, with "-1" implying unassigned}
 #'
-#' \item{\code{percentageShared}}{a nsample x nsample matrix of the percent co-occurance across clusters used to find the final clusters}
+#' \item{\code{percentageShared}}{a nsample x nsample matrix of the percent co-occurance across clusters used to find the final clusters. Percentage is out of those not '-1'}
 #' \item{\code{noUnassignedCorrection}{a vector of cluster assignments before samples were converted to '-1' because had >\code{propUnassigned} '-1' values (i.e. the direct output of the \code{clusterD} output.)}}
 #' }
 
@@ -40,34 +40,43 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 			typeAlg<-.checkAlgType(clusterFunction)
 			if(typeAlg!="01") stop("findSharedClusters is only implemented for '01' type clustering functions (see help of clusterD)")
 		}
-		sharedPerct<-diag(rep(1,length=nrow(clusterMat)))
-		calcPercent<-function(x,y){
-			vAssigned<-as.character(x)!="-1" & as.character(y)!="-1" #those where both are assigned to a cluster
-			w<-x==y & vAssigned
-			percentOverlapAssigned<-sum(w)/sum(vAssigned)
-			return(percentOverlapAssigned)
-		}
-		#is this any faster?
-		if(require(gtools)){
-			clusterMat<-data.frame(t(clusterMat))
-			indMat<-gtools::combinations(n=ncol(clusterMat),r=2) #combinations of columns; so can handle "-1" separately.
-			tmp<-unlist(mapply(clusterMat[indMat[,1]],clusterMat[indMat[,2]], FUN=calcPercent,SIMPLIFY=FALSE))
-			tmp[is.na(tmp)]<-0
-			sharedPerct[lower.tri(sharedPerct)]<-tmp
-			sharedPerct<-t(sharedPerct)
-			sharedPerct[lower.tri(sharedPerct)]<-tmp
-			sharedPerct[sharedPerct<proportion]<-0
-			cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector")
-			# clB<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-			# clB2<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, findCoreType="track",minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-			# browser()
-			# par(mfrow=c(1,2))
-			if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
-			# aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(clB2)),Colv="Rowv",annColors=list(brainUtils:::.thisPal))
-			
-		}
-		
-		else{ stop("Must have gtools installed")}
+		clusterMat[clusterMat=="-1"]<-NA
+		sharedPerct<-.hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back
+		cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
+		# clB<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
+		# clB2<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, findCoreType="track",minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
+		# browser()
+		# par(mfrow=c(1,2))
+		if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
+
+		# sharedPerct<-diag(rep(1,length=nrow(clusterMat)))
+		# calcPercent<-function(x,y){
+		# 	vAssigned<-as.character(x)!="-1" & as.character(y)!="-1" #those where both are assigned to a cluster
+		# 	w<-x==y & vAssigned
+		# 	percentOverlapAssigned<-sum(w)/sum(vAssigned)
+		# 	return(percentOverlapAssigned)
+		# }
+		# #is this any faster than outer?
+		# if(require(gtools)){
+		# 	clusterMat<-data.frame(t(clusterMat))
+		# 	indMat<-gtools::combinations(n=ncol(clusterMat),r=2) #combinations of columns; so can handle "-1" separately.
+		# 	tmp<-unlist(mapply(clusterMat[indMat[,1]],clusterMat[indMat[,2]], FUN=calcPercent,SIMPLIFY=FALSE))
+		# 	tmp[is.na(tmp)]<-0
+		# 	sharedPerct[lower.tri(sharedPerct)]<-tmp
+		# 	sharedPerct<-t(sharedPerct)
+		# 	sharedPerct[lower.tri(sharedPerct)]<-tmp
+		# 	sharedPerct[sharedPerct<proportion]<-0
+		# 	cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
+		# 	# clB<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
+		# 	# clB2<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, findCoreType="track",minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
+		# 	# browser()
+		# 	# par(mfrow=c(1,2))
+		# 	if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
+		# 	# aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(clB2)),Colv="Rowv",annColors=list(brainUtils:::.thisPal))
+		#
+		# }
+		#
+		# else{ stop("Must have gtools installed")}
 		# for(ii in 1:(ncol(sharedPerct)-1)){
 		# 	for(jj in (ii+1):ncol(sharedPerct)){
 		# 		x<-clusterMat[ii,]
@@ -91,3 +100,43 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 		return(list(clustering=clUnassigned,percentageShared=sharedPerct,noUnassignedCorrection=cl))
 	}
 }
+
+
+#from: https://johanndejong.wordpress.com/2015/10/02/faster-hamming-distance-in-r-2/
+.hammingdist <- function(X, Y,uniqValue=1539263) {
+	#samples are in the rows!
+    if ( missing(Y) ) {
+        uniqs <- na.omit(unique(as.vector(X)))
+		if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
+		isobsX<-abs(is.na(X)-1)
+		if(any(is.na(X))){
+			X[is.na(X)]<-uniqValue
+		}
+    	U <- X == uniqs[1]
+        H <- t(U) %*% U
+        N <- t(isobsX) %*% (isobsX)
+ 		for ( uniq in uniqs[-1] ) {
+            U <- X == uniq
+            H <- H + t(U) %*% U
+        }
+    } else {
+        uniqs <- na.omit(union(X, Y))
+		if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
+		isobsX<-abs(is.na(X)-1)
+		if(any(is.na(X))){
+			X[is.na(X)]<-uniqValue
+		}
+		isobsY<-abs(is.na(Y)-1)
+		if(any(is.na(Y))){
+			Y[is.na(Y)]<-uniqValue
+		}
+        H <- t(X == uniqs[1]) %*% (Y == uniqs[1])
+        N <- t(isobsX) %*% (isobsY)
+ 		for ( uniq in uniqs[-1] ) {
+			A<-t(X == uniq) %*% (Y == uniq)
+           H <- H + A
+        }
+    }
+    H/N
+}
+

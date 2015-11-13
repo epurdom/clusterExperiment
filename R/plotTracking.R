@@ -77,6 +77,7 @@
 #' plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
 
 plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,...){
+	dnames<-dimnames(clusters)
 	clusters<-t(clusters)
 	if(any(as.character(clusters)%in%c("-1","-2"))){
 		if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
@@ -104,6 +105,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 		}))
 		if(plot) clusterTrackingPlot(xColors[out$index,], colnames(out$colors),...)
 		out$colors<-xColors
+		dimnames(out$colors)<-dnames
 		out$groupToColorLegend<-newColorLeg
 	}
 	else{
@@ -161,6 +163,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 	dimnames(colorM)<-dimnames(clusters)
 	allColors<-unique(as.vector(colorM))
 	alignCl<-apply(colorM,2,function(x){match(x,allColors)})
+	dimnames(alignCl)<-dimnames(clusters)
 	groupToColorLegend<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("Original"=unlist(clusters[ii,]),"Aligned"=unlist(alignCl[ii,]),"Color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
@@ -310,7 +313,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 #' @param box logical, whether to draw box around the plot
 #' @param ... for \code{plotTracking} arguments passed to \code{clusterTracking}. For \code{clusterTracking}, arguments passed to \code{\link{plot}} if \code{add=FALSE}.
 
-clusterTrackingPlot <- function(colorMat, names=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=2,box=FALSE,...){
+clusterTrackingPlot <- function(colorMat, names=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
   	m<-t(colorMat)
   #description: plots cluster tracking plot
   #input: m - matrix where rows are k, columns are samples, and entries are color assignments
@@ -356,6 +359,18 @@ clusterTrackingPlot <- function(colorMat, names=rownames(m),add=FALSE,x=NULL,yli
 	if(box){
 		rect(xleft=min(xleft), ybottom=min(ybottom), xright=max(xright), ytop=max(ytop))
 	}
+}
+
+
+#' Make anno for input to dualHeatmap from output of plotTracking
+#'
+#' @param trackingOut the output from \code{\link{plotTracking}}
+makeAnnoColor<-function(trackingOut){
+	lapply(trackingOut$groupToColorLegend,function(x){
+		z<-as.character(x[,"Color"])
+		names(z)<-as.character(as.numeric(x[,"Original"]))
+		return(z)
+	})
 }
 
 ###After this point, don't export, but didn't want to lose the functions.

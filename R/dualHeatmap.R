@@ -28,7 +28,7 @@
 #' otherwise heatData is used.
 #' @param clusterSamples Logical as to whether to do hierarchical clustering of
 #' cells.
-#' @param clusterVar Logical as to whether to do hiearchical clustering of
+#' @param clusterVars Logical as to whether to do hiearchical clustering of
 #' genes.
 #' @param whVars Which genes of heatData matrix to be used. Default assumes top 500,
 #' which may be nonsensical if matrix not ordered.
@@ -43,21 +43,29 @@
 #' list should be a vector of colors with names corresponding to the levels of
 #' the column of annCol. If annCol=NULL (i.e. use clusterVec), then the name of
 #' the length-1 list should be `Cluster'
-#' @param whAnnCont which columns of annCol are continuous data; only relevant if annCol=NULL (i.e. function assigns the clusters)
+#' @param whAnnCont which columns of annCol are continuous data; only used if annCol=NULL (i.e. function \code{dualHeatmap} assigns the clusters' colors)
 #' @param alignColors Logical as to whether should align the clusters when
-#' colors are assigned
+#' colors are assigned (only used if annCol=NULL)
 #' @param breaks Either a vector of breaks (should be equal to length 52), or a
 #' number between 0 and 1, indicating that the breaks should be equally spaced
-#' (on the log scale+eps) upto the `breaks' quantile.
+#' (on the log scale+eps) upto the `breaks' quantile, see details
 #' @param unassignedColor color assigned to cluster values of '-1' ("unassigned")
 #' @param missingColor color assigned to cluster values of '-2' ("missing")
 #' @param ... passed to aheatmap
 #' @details The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{dualHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
-#' 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
+#' 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity. 
+#' The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.  
 #'
-#' @details if \code{annCol} contains a column of continuous data, and \code{annColors} is not provided (i.e. equals NULL), then ...
-#' @return Returns invisibly the breaks, annCol, and annColors that are sent to
-#' aheatmap by the function.
+#' @details If \code{annCol} contains a column of continuous data, whAnnCont should give the index of the column(s); otherwise the annotation data for those columns will be forced into a non-sensical factor (with nlevels equal the the number of samples). 
+#'
+#' @details If breaks is a numeric value between 0 and 1, then \code{breaks} is assumed to indicate the upper quantile (on the log scale) at which the heatmap color scale should stop. For example, if breaks=0.9, then the breaks will evenly spaced up until the 0.9 upper quantile of the log of the \code{heatData}, and then all values after the 0.9 quantile will be absorbed by the upper-most color bin. This can help to reduce the visual impact of a few highly expressed genes (variables). 
+#'
+#' @return Returns (invisibly) a list with elements that are passed to aheatmap.
+#' \itemize{
+#' \item{\code{breaks}}{The breaks used for aheatmap, after adjusting for quantile}
+#' \item{\code{annCol}}{the annotation data.frame given to aheatmap}
+#' \item{\code{annColors}}{the annotation colors given to aheatmap}
+#' }
 #' @author Elizabeth Purdom
 #' @examples
 #' 
@@ -112,64 +120,67 @@
 #' 
 #' 
 dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRUE,clusterSamples=TRUE, 
-	clusterVar=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
+	clusterVars=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
 	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,unassignedColor="white",missingColor="grey",...){
-  heatData<-t(data.matrix(heatData))
+	heatData<-t(data.matrix(heatData))
 	#dual=TRUE means use heatmap with heatData, hierarch on clusterData; if FALSE both on heatData
 	#clusterVector a vector giving clusters to color the samples with; if missing, then just do all white (NA)
-	if(missing(clusterVector)) clusterVector<-rep(NA,length=ncol(heatData)) 
-	else{
-		if(length(clusterVector)!=ncol(heatData)) stop("clusterVector not of same length as ncol(heatData)")
-		clusterVector[as.character(clusterVector)== "-1" ]<- NA #those that don't want to be colored 
-	}
+
 	
 	#fix up annCol:
 	#not sure why this doesn't give back data.frame with factors
 	#annCol<-apply(annCol,2,function(x){factor(x)})
-	if(is.null(annCol)) annCol<-data.frame(Cluster=clusterVector)
-	tmpDf<-do.call("data.frame",lapply(1:ncol(annCol),function(ii){factor(annCol[,ii])}))
-	names(tmpDf)<-names(annCol)
-	if(!is.null(whAnnCont)) tmpDf[,whAnnCont]<-annCol[,whAnnCont]
-	annCol<-tmpDf
-	if(is.null(annColors)){
-		if(is.null(whAnnCont) || length(whAnnCont)<ncol(annCol)){
-			if(!is.null(whAnnCont)) tmpDf<- annCol[,-whAnnCont,drop=FALSE] else tmpDf<-annCol
-			if(alignColors){
-				#align the clusters and give them colors from .thisPal
-				clMat<-data.matrix(tmpDf) #converts them all to numbers, required for plotTracking
-				#for each column of clDf, get colors from plotTracking
-				clMat[clMat== -1]<-max(clMat)+1
-				alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"; probably don't need now
-				annColors<-mapply(alignObj$groupToColorLegend,tmpDf,FUN=function(x,fac){
-					cols<-x[,"Color"]
-					xnam<-levels(fac)[as.numeric(x[,"Original"])-2]
-					# print(levels(fac))
-		# 			print(as.numeric(x[,"Original"])-2)
-					names(cols)<-xnam
-					cols[names(cols)=="-1"]<-unassignedColor #unassigned get white
-					cols[names(cols)=="-2"]<-missingColor #unassigned get white
-					cols<-cols[order(names(cols))]
-					return(cols)
+	if(!missing(clusterVector)){
+		if(length(clusterVector)!=ncol(heatData)) stop("clusterVector not of same length as ncol(heatData)")
+		#clusterVector[as.character(clusterVector)== "-1" ]<- NA #those that don't want to be colored 
+	}
+	if(is.null(annCol) & !missing(clusterVector)) annCol<-data.frame(Cluster=clusterVector)
+	if(!is.null(annCol)){
+		###Make them explicitly factors
+		tmpDf<-do.call("data.frame",lapply(1:ncol(annCol),function(ii){factor(annCol[,ii])}))
+		names(tmpDf)<-names(annCol)
+		if(!is.null(whAnnCont)) tmpDf[,whAnnCont]<-annCol[,whAnnCont]
+		annCol<-tmpDf
+		if(is.null(annColors)){
+			if(is.null(whAnnCont) || length(whAnnCont)<ncol(annCol)){
+				if(!is.null(whAnnCont)) tmpDf<- annCol[,-whAnnCont,drop=FALSE] else tmpDf<-annCol
+				if(alignColors){
+					#align the clusters and give them colors from .thisPal
+					clMat<-data.matrix(tmpDf) #converts them all to numbers, required for plotTracking
+					#for each column of clDf, get colors from plotTracking
+					clMat[clMat== -1]<-max(clMat)+1
+					alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"; probably don't need now
+					annColors<-mapply(alignObj$groupToColorLegend,tmpDf,FUN=function(x,fac){
+						cols<-x[,"Color"]
+						xnam<-levels(fac)[as.numeric(x[,"Original"])-2]
+						# print(levels(fac))
+			# 			print(as.numeric(x[,"Original"])-2)
+						names(cols)<-xnam
+						cols[names(cols)=="-1"]<-unassignedColor #unassigned get white
+						cols[names(cols)=="-2"]<-missingColor #unassigned get white
+						cols<-cols[order(names(cols))]
+						return(cols)
+						},SIMPLIFY=FALSE)
+				}
+				else{#make them have separate colors
+					maxPerAnn<-sapply(tmpDf,function(x){max(as.numeric(x))})
+					annColors<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
+						cols<-.thisPal[1:nlevels(fac)+add]
+						names(cols)<-levels(fac)
+						cols[names(cols)=="-1"]<-unassignedColor #unassigned 
+						cols[names(cols)=="-2"]<-missingColor #
+						cols<-cols[order(names(cols))]
+						return(cols)
 					},SIMPLIFY=FALSE)
+				}
+				# if(ncol(tmpDf)==1){
+				# 	#annCol<-annCol[,1]
+				# 	#annColors<-annColors[[1]]
+				# }
 			}
-			else{#make them have separate colors
-				maxPerAnn<-sapply(tmpDf,function(x){max(as.numeric(x))})
-				annColors<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
-					cols<-.thisPal[1:nlevels(fac)+add]
-					names(cols)<-levels(fac)
-					cols[names(cols)=="-1"]<-unassignedColor #unassigned 
-					cols[names(cols)=="-2"]<-missingColor #
-					cols<-cols[order(names(cols))]
-					return(cols)
-				},SIMPLIFY=FALSE)
-			}
-			# if(ncol(tmpDf)==1){
-			# 	#annCol<-annCol[,1]
-			# 	#annColors<-annColors[[1]]
-			# }
 		}
 	}
-	
+
 	if(dual & clusterSamples){
 		if(inherits(clusterData, "dendrogram")){
 			if("nobs.dendrogram" %in% methods(nobs)){ #not all versions have nobs method for dendrograms; R3.2.0 has it; 3.1.1 doesn't
@@ -193,21 +204,19 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 		rownames(tmp)<-varNames
 		varNames<-TRUE
 	}
-	if(!clusterSamples){ #then use clusterVector to order them
-		ord<-order(clusterVector)
-		tmp<-tmp[,ord,drop=FALSE]
-		clusterVector<-clusterVector[ord]
-		annCol<-annCol[ord,,drop=FALSE]
-		clusterSamples<-NA
-#		if(clusterVar) dendo<-"row" else dendo<-"none"
+	if(!clusterSamples){
+		if(!missing(clusterVector)){ #then use clusterVector to order them
+			ord<-order(clusterVector)
+			tmp<-tmp[,ord,drop=FALSE]
+			clusterVector<-clusterVector[ord]
+			annCol<-annCol[ord,,drop=FALSE]
+			clusterSamples<-NA
+		}
 	}
-	else{
-#		if(clusterVar) dendo<-"both" else dendo<-"col"
-	}
-	if(!clusterVar) clusterVar<-NA
-	if(!is.factor(clusterVector)) clusterVector<-factor(clusterVector)
+	if(!clusterVars) clusterVars<-NA
 	if(length(breaks)>0 && !is.na(breaks)){ #get arround bug in aheatmap
 		#if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
+		#might not need any more with updated aheatmap.
 		if(length(breaks)==1){
 			if(breaks<=1){
 				ncols<-51
@@ -223,14 +232,16 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 		}
 	}
 
-	# gplots::heatmap.2(tmp, Colv=if(dual & clusterSamples) dendroCells else clusterSamples, Rowv=clusterVar,dendrogram=dendo, scale="none",
+	# gplots::heatmap.2(tmp, Colv=if(dual & clusterSamples) dendroCells else clusterSamples, Rowv=clusterVars,dendrogram=dendo, scale="none",
 	# 	trace="none", key=TRUE, density.info="none", col=colorScale, ColSideColor=col[clusterVector],
 	# 	cexRow=ifelse(nrow(tmp)<50,1,.6),
 	# 	margin=c(ifelse(sampleNames, 10,0.1), ifelse(varNames, 10,0.1)),labRow=rownames(tmp),...)
-	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVar, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
+	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVars, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
 		 annCol = annCol,annColors=annColors,breaks=breaks,...)
 		 
+	#############
 	# add labels to clusters
+	#############
 #	browser()
 	if(!is.null(annCol)){
 		newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
@@ -249,47 +260,21 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 		grid::upViewport() #close it
 		grid::upViewport() #close it
 	}
-# 	# > NMF:::draw_annotations
-#annCol<-cbind(FinalCluster=as.factor(clBrain1), annoMat_all)
-# 	draw_annoLabels<-function (annCol, border_color, horizontal = TRUE)
-# 	{
-# 	    n = ncol(annCol)
-# 	    m = nrow(annCol)
-# 	    if (horizontal) {
-# 	        x <- (1:m)/m - 1/2/m
-# 	        
-#
-# 			for (i in 1:n) {
-# 				
-# 		        grid::grid.text(i,x=1,y=y[i])
-# 			}
-# # 	            grid.rect(x = x[i], unit(y[n:1], "bigpts"), width = 1/m,
-# # 	                height = unit(8, "bigpts"), gp = gpar(fill = converted_annotations[i,
-# # 	                  ], col = border_color))
-# 	        }
-# 	    }
-# 	    else {
-# 	        x = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-# 	        y = (1:m)/m - 1/2/m
-# 	        for (i in 1:m) {
-# 	            grid.rect(x = unit(x[1:n], "bigpts"), y = y[i], width = unit(8,
-# 	                "bigpts"), height = 1/m, gp = gpar(fill = converted_annotations[i,
-# 	                ], col = border_color))
-# 	        }
-# 	    }
-# 	}
+
 	invisible(list(heatOut=out,annCol=annCol,annColors=annColors,breaks=breaks))
 }
 
-pos<-rbind(main = c(1,3),
-            ctree = c(2,3),
-       cann = c(3,3),
-       rtree = c(4,1),
-	   rann = c(4,2),
-	   mat = c(4,3),
-	   rnam = c(4,4),
-leg = c(4,5),aleg = c(4,6),
-cnam = c(5,3),sub = c(6,3),info = c(7,3))
-colnames(pos)<-c("row", "col")
-matPos<-matrix(NA,nrow=max(pos[,"row"]),ncol=max(pos[,"col"]))
-for(i in 1:nrow(pos)){matPos[pos[i,"row"],pos[i,"col"]]<-rownames(pos)[i]}
+# pos<-rbind(main = c(1,3),
+#             ctree = c(2,3),
+#        cann = c(3,3),
+#        rtree = c(4,1),
+# 	   rann = c(4,2),
+# 	   mat = c(4,3),
+# 	   rnam = c(4,4),
+# leg = c(4,5),aleg = c(4,6),
+# cnam = c(5,3),sub = c(6,3),info = c(7,3))
+# colnames(pos)<-c("row", "col")
+# matPos<-matrix(NA,nrow=max(pos[,"row"]),ncol=max(pos[,"col"]))
+# for(i in 1:nrow(pos)){matPos[pos[i,"row"],pos[i,"col"]]<-rownames(pos)[i]}
+
+
