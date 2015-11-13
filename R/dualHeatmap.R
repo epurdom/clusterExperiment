@@ -49,6 +49,8 @@
 #' @param breaks Either a vector of breaks (should be equal to length 52), or a
 #' number between 0 and 1, indicating that the breaks should be equally spaced
 #' (on the log scale+eps) upto the `breaks' quantile.
+#' @param unassignedColor color assigned to cluster values of '-1' ("unassigned")
+#' @param missingColor color assigned to cluster values of '-2' ("missing")
 #' @param ... passed to aheatmap
 #' @details The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{dualHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
 #' 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity

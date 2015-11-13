@@ -64,6 +64,10 @@ colors are assigned}
 number between 0 and 1, indicating that the breaks should be equally spaced
 (on the log scale+eps) upto the `breaks' quantile.}
 
+\item{unassignedColor}{color assigned to cluster values of '-1' ("unassigned")}
+
+\item{missingColor}{color assigned to cluster values of '-2' ("missing")}
+
 \item{...}{passed to aheatmap}
 }
 \value{
