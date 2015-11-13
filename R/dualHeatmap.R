@@ -90,6 +90,11 @@
 #' dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
 #' annColors=annoColors)
 #'
+#' #give a continuous valued -- need to indicate columns
+#' anno2<-cbind(anno,Cont=c(rnorm(100,0),rnorm(100,2),rnorm(100,3)))
+#' dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno2,
+#' whAnnCont=3)
+
 #' #compare changing breaks quantile on visual effect
 #' \dontrun{
 #' par(mfrow=c(2,2))
@@ -106,7 +111,7 @@
 #' 
 dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRUE,clusterSamples=TRUE, 
 	clusterVar=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
-	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,...){
+	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,unassignedColor="white",missingColor="grey",...){
   heatData<-t(data.matrix(heatData))
 	#dual=TRUE means use heatmap with heatData, hierarch on clusterData; if FALSE both on heatData
 	#clusterVector a vector giving clusters to color the samples with; if missing, then just do all white (NA)
@@ -122,40 +127,44 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 	if(is.null(annCol)) annCol<-data.frame(Cluster=clusterVector)
 	tmpDf<-do.call("data.frame",lapply(1:ncol(annCol),function(ii){factor(annCol[,ii])}))
 	names(tmpDf)<-names(annCol)
+	if(!is.null(whAnnCont)) tmpDf[,whAnnCont]<-annCol[,whAnnCont]
 	annCol<-tmpDf
 	if(is.null(annColors)){
 		if(is.null(whAnnCont) || length(whAnnCont)<ncol(annCol)){
+			if(!is.null(whAnnCont)) tmpDf<- annCol[,-whAnnCont,drop=FALSE] else tmpDf<-annCol
 			if(alignColors){
 				#align the clusters and give them colors from .thisPal
-				clMat<-data.matrix(annCol[,-whAnnCont,drop=FALSE]) #converts them all to numbers, required for plotTracking
+				clMat<-data.matrix(tmpDf) #converts them all to numbers, required for plotTracking
 				#for each column of clDf, get colors from plotTracking
 				clMat[clMat== -1]<-max(clMat)+1
-				alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"
-				annColors<-mapply(alignObj$groupToColorLegend,annCol[,-whAnnCont,drop=FALSE],FUN=function(x,fac){
+				alignObj<-plotTracking(clMat+2,plot=FALSE) #in case any "-1"; probably don't need now
+				annColors<-mapply(alignObj$groupToColorLegend,tmpDf,FUN=function(x,fac){
 					cols<-x[,"Color"]
 					xnam<-levels(fac)[as.numeric(x[,"Original"])-2]
 					# print(levels(fac))
 		# 			print(as.numeric(x[,"Original"])-2)
 					names(cols)<-xnam
-					cols[names(cols)=="-1"]<-"white" #unassigned get white
+					cols[names(cols)=="-1"]<-unassignedColor #unassigned get white
+					cols[names(cols)=="-2"]<-missingColor #unassigned get white
 					cols<-cols[order(names(cols))]
 					return(cols)
 					},SIMPLIFY=FALSE)
 			}
 			else{#make them have separate colors
-				maxPerAnn<-sapply(annCol[,-whAnnCont,drop=FALSE],function(x){max(as.numeric(x))})
-				annColors<-mapply(annCol[,-whAnnCont,drop=FALSE],c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
+				maxPerAnn<-sapply(tmpDf,function(x){max(as.numeric(x))})
+				annColors<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
 					cols<-.thisPal[1:nlevels(fac)+add]
 					names(cols)<-levels(fac)
-					cols[names(cols)=="-1"]<-"white" #unassigned get white
+					cols[names(cols)=="-1"]<-unassignedColor #unassigned 
+					cols[names(cols)=="-2"]<-missingColor #
 					cols<-cols[order(names(cols))]
 					return(cols)
 				},SIMPLIFY=FALSE)
 			}
-			if(ncol(annCol)==1){
-				#annCol<-annCol[,1]
-				#annColors<-annColors[[1]]
-			}
+			# if(ncol(tmpDf)==1){
+			# 	#annCol<-annCol[,1]
+			# 	#annColors<-annColors[[1]]
+			# }
 		}
 	}
 	
@@ -219,15 +228,25 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 	out<-NMF::aheatmap(tmp, color = colorScale, scale = "none", Rowv =clusterVar, Colv = if(dual && !is.na(clusterSamples) && clusterSamples) dendroCells else clusterSamples, 
 		 annCol = annCol,annColors=annColors,breaks=breaks,...)
 		 
-# 	NMF:::vplayout("cann") #open up the annotations box (see NMF:::vplayout for list of them)
-# 	#	         draw_annotations(annotation, border_color)
-# 	grid.text()
-# NMF:::vplayout("leg")
-# grid::pushViewport(grid::viewport(layout.pos.row = 3, layout.pos.col = 4:5, name = "annLab"))
-# y <- seq(0.5,1,length=n)
-# grid::grid.text(1:n, x = grid::unit(0,"npc"), y = grid::unit(y,"npc"), vjust = 0.5, hjust = 0)
-# grid::grid.rect()
-# 	grid::upViewport() #close it
+	# add labels to clusters
+#	browser()
+	if(!is.null(annCol)){
+		newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
+		newNameList<-strsplit(newName,"\\.")[[1]]
+		oldIndex<-as.numeric(newNameList[[3]])-1
+		newNameList[[3]]<-oldIndex
+		oldName<-paste(newNameList,collapse=".")
+		grid::seekViewport(sprintf("aheatmap-%s",oldName))
+		NMF:::vplayout(3,4:5)
+		#grid::grid.rect()
+		y <- seq(0,1,length=ncol(annCol))
+		n<-ncol(annCol)
+		y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+#		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+		grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+		grid::upViewport() #close it
+		grid::upViewport() #close it
+	}
 # 	# > NMF:::draw_annotations
 #annCol<-cbind(FinalCluster=as.factor(clBrain1), annoMat_all)
 # 	draw_annoLabels<-function (annCol, border_color, horizontal = TRUE)
@@ -259,3 +278,16 @@ dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRU
 # 	}
 	invisible(list(heatOut=out,annCol=annCol,annColors=annColors,breaks=breaks))
 }
+
+pos<-rbind(main = c(1,3),
+            ctree = c(2,3),
+       cann = c(3,3),
+       rtree = c(4,1),
+	   rann = c(4,2),
+	   mat = c(4,3),
+	   rnam = c(4,4),
+leg = c(4,5),aleg = c(4,6),
+cnam = c(5,3),sub = c(6,3),info = c(7,3))
+colnames(pos)<-c("row", "col")
+matPos<-matrix(NA,nrow=max(pos[,"row"]),ncol=max(pos[,"col"]))
+for(i in 1:nrow(pos)){matPos[pos[i,"row"],pos[i,"col"]]<-rownames(pos)[i]}

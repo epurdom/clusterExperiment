@@ -9,7 +9,8 @@ dualHeatmap(clusterVector, heatData, clusterData = heatData, eps = 1,
   dual = TRUE, clusterSamples = TRUE, clusterVar = TRUE,
   whVars = 1:nrow(heatData), varNames = FALSE, sampleNames = FALSE,
   colorScale = seqPal5, annCol = NULL, annColors = NULL,
-  alignColors = FALSE, breaks = NA, ...)
+  whAnnCont = NULL, alignColors = FALSE, breaks = NA,
+  unassignedColor = "white", missingColor = "grey", ...)
 }
 \arguments{
 \item{clusterVector}{A vector with cluster assignments to show at top of heatmap
@@ -45,7 +46,7 @@ which may be nonsensical if matrix not ordered.}
 \item{colorScale}{palette of colors for the color scale of heatmap}
 
 \item{annCol}{data.frame of clusters to show at the top of heatmap (columns
-are clusters). If NULL, will show clusterVector}
+are clusters). If NULL, will show clusterVector. Can also be continuous valued data, but see details.}
 
 \item{annColors}{Assignment of colors to the clusters. If NULL, clusters
 will be assigned colors. If `annCol' should be list of length equal to
@@ -53,6 +54,8 @@ ncol(annCol) with names equal to the colnames of annCol; each element of the
 list should be a vector of colors with names corresponding to the levels of
 the column of annCol. If annCol=NULL (i.e. use clusterVec), then the name of
 the length-1 list should be `Cluster'}
+
+\item{whAnnCont}{which columns of annCol are continuous data; only relevant if annCol=NULL (i.e. function assigns the clusters)}
 
 \item{alignColors}{Logical as to whether should align the clusters when
 colors are assigned}
@@ -78,7 +81,7 @@ do not resize if you change the size of your plot window in an interactive
 session of R (this might be a problem for RStudio if you want to pop it out
 into a large window...).
 
-The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of this function is to 1) allow for two different matrix inputs, one to visualize and one to cluster.
+The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{dualHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster.
 2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
 }
 \examples{
@@ -113,6 +116,10 @@ cluster2=c("blue","purple","yellow"))
 dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno,
 annColors=annoColors)
 
+#give a continuous valued -- need to indicate columns
+anno2<-cbind(anno,Cont=c(rnorm(100,0),rnorm(100,2),rnorm(100,3)))
+dualHeatmap(cl,heatData=simCount,clusterData=simData,annCol=anno2,
+whAnnCont=3)
 #compare changing breaks quantile on visual effect
 \dontrun{
 par(mfrow=c(2,2))

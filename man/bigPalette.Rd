@@ -5,7 +5,7 @@
 \alias{bigPalette}
 \alias{showThisPal}
 \title{Large palette of colors}
-\format{\preformatted{ chr [1:60] "#1F78B4" "#33A02C" "#E31A1C" "#FF7F00" "#6A3D9A" ...
+\format{\preformatted{ chr [1:60] "#1F78B4" "#33A02C" "#E31A1C" "#FF7F00" "#6A3D9A" "#B15928" ...
 }}
 \usage{
 bigPalette
