@@ -117,6 +117,10 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
 	#if given, index is the order of the samples (columns) for plotting. Otherwise determined by program
 	#matchToTop allows that the comparison for color assignment be done, not row by row, but always back to the first row.
+	##Check that no row has more than length(colPalette) number of unique entries
+	tabVals<-apply(clusters,1,function(x){length(table(x))})
+	if(any(tabVals> length(colPalette))) stop("Must give colPalette longer than number of clusters. Largest number of distinct clusters in the clusterings:",max(tabVals),". Length of colPalette:",length(colPalette))
+	
 	pastColorVector<-NULL
 	colorM = rbind() #matrix of colors. gives indexes for cluster assignments that give the 'right' color throughout the different rows
 
