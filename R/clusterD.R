@@ -93,7 +93,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	
 	#Now format into desired output
 	clusterSize<-sapply(res, length)
-    res <- res[clusterSize>=minSize]
+    if(length(res)>0) res <- res[clusterSize>=minSize]
 	if(length(res)==0){ #No clusters pass
 		if(format=="list") return(res)
 		else return(rep(-1,nrow(D)))
