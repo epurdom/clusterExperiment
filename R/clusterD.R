@@ -250,12 +250,15 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 }
 .orderByAlpha<-function(res,D)
 {
-	alphaMax<-unlist(lapply(res, function(x){
-		vals<-lower.tri(D[x,x]) #don't grab diag
-		1-min(vals) #max(alpha)=1-min(D)
-	}))
-    res <- res[order(alphaMax, decreasing=TRUE)]					
-	
+	if(length(res)>0){
+		alphaMax<-unlist(lapply(res, function(x){
+			vals<-lower.tri(D[x,x]) #don't grab diag
+			1-min(vals) #max(alpha)=1-min(D)
+		}))
+	    res <- res[order(alphaMax, decreasing=TRUE)]					
+		
+	}
+	else return(res)
 }
 .tightClusterDMat <- function(D, alpha, minSize.core=2) 
 {

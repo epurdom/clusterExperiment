@@ -71,7 +71,7 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 	# 	alphas<-0
 	# }
 	#browser()
-	if(!is.data.frame(data)){
+	if(!is.null(dim(data))){
 		if(!is.list(data) || !all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is not a data.frame, it must be a list with each element of the list a a data.frame or matrix")
 		if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
 		dataList<-data
