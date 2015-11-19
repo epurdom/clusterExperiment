@@ -2,26 +2,22 @@
 % Please edit documentation in R/plotTracking.R
 \docType{methods}
 \name{plotTracking}
-\alias{clusterTrackingPlot}
 \alias{plotTracking}
 \title{Functions for Visualizing assigments of samples to clusters across multiple clusterings}
 \usage{
 plotTracking(clusters, index = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
-  colPalette = bigPalette, ...)
-
-clusterTrackingPlot(colorMat, names = rownames(m), add = FALSE, x = NULL,
-  ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 2,
-  box = FALSE, ...)
+  colPalette = bigPalette, input = c("clusters", "colors"),
+  xnames = rownames(clusters), add = FALSE, x = NULL, ylim = NULL,
+  tick = FALSE, ylab = "", xlab = "", axisLine = 0, box = FALSE, ...)
 }
 \arguments{
 \item{clusters}{A matrix of with each column corresponding to a clustering and
 each row a sample. The plotting will plot them in order of this matrix,
 and their order influences the plot greatly.}
 
-\item{index}{A predefined order in which the samples will be plotted.
-Otherwise the order is found internally}
+\item{index}{A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})}
 
 \item{reuseColors}{Logical. Whether each row should consist of the same set
 of colors. By default (FALSE) each cluster that the algorithm doesn't
@@ -45,14 +41,9 @@ should the colors restart at beginning of colPalette as long as colors are not i
 (some of the colors at the end of bigPalette are a bit wonky, and so if you
 have a large clusters matrix, this can be useful)}
 
-\item{colPalette}{a vector of colors used for the different clusters.}
+\item{colPalette}{a vector of colors used for the different clusters. Must be as long as the maximum number of clusters found in any single clustering/column given in \code{clusters} or will otherwise return an error.}
 
-\item{...}{for \code{plotTracking} arguments passed to \code{clusterTracking}. For \code{clusterTracking}, arguments passed to \code{\link{plot}} if \code{add=FALSE}.}
-
-\item{colorMat}{Matrix where columns are different clusterings, rows are samples,
-and entries of matrix are colors (i.e. characters that define colors)}
-
-\item{names}{names to go with the columns (clusterings) in matrix colorMat}
+\item{input}{indicate whether the input matrix is matrix of integer assigned clusters, or contains the colors. If \code{input="colors"}, then the object \code{clusters} is a matrix of colors and there is no alignment (this option allows the user to manually adjust the colors and replot, for example)}
 
 \item{add}{whether to add to existing plot}
 
@@ -69,29 +60,30 @@ and entries of matrix are colors (i.e. characters that define colors)}
 \item{axisLine}{the number of lines in the axis labels on y-axis should be (passed to line=... in the axis call)}
 
 \item{box}{logical, whether to draw box around the plot}
+
+\item{...}{for \code{plotTracking} arguments passed to \code{\link{plot}} if \code{add=FALSE}.}
+
+\item{colorMat}{Matrix where columns are different clusterings, rows are samples,
+and entries of matrix are colors (i.e. characters that define colors)}
+
+\item{names}{names to go with the columns (clusterings) in matrix colorMat}
 }
 \value{
-plotTracking provides (invisibly) the orders and other things that
+plotTracking returns (invisibly) the orders and other things that
 go into making the matrix. Specifically, a list with the following elements
 \itemize{
 
 \item{\code{index}}{ a vector of length equal to ncols(clusters) giving the order of the columns to use to get the original clusters matrix into the order made by plotTracking}
 
-\item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix colors[,index] is the matrix sent to clusterTrackingPlot}
+\item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix \code{colors[index,]} is the matrix that can be given back to plotTracking to recreate the plot (see examples)}
 
-\item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. this is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, matrix is in same order as original clusters matrix}
+\item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
 
-\item{\code{groupToColorLegend}}{ matrix with three columns named "Original","Aligned", and "Color" giving the correspondence between the original cluster ids in clusters, the aligned cluster ids in aligned cluster values, and the color (respectively) }
+\item{\code{groupToColorLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
 }
 }
 \description{
-Align clusters of the same set of samples and provide a plot of their shared
-values
-}
-\details{
-clusterTrackingPlot is generally called within plotTracking, but is provided
-as separate function for convenience, for example if you want to manually change a
-color in the output of plotTracking and replot.
+Align multiple clusters of the same set of samples and provide a color-coded plot of their shared cluster assignments
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k
@@ -109,6 +101,9 @@ out<-plotTracking(cl$clMat,axisLine=-2)
 out$groupToColorLegend[1:2]
 head(out$color[out$index,1:2])
 
+#We can also change the order of the rows. Notice how this dramatically changes the plot!
+plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
+
 #notice that the blue and orange are really arbitrarily different colors because not next to each other in row.
 #We can manually change the blue to orange :
 #first find out color names by looking at the out$colors (but in right order using out$index)
@@ -116,11 +111,8 @@ out$colors[out$index[1:10],c("npc=5,k=NA,findBestK=TRUE","npc=5,k=3,findBestK=FA
 #change "#1F78B4" to "#FF7F00"
 newColorMat<-out$colors
 newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
-#replot by calling clusterTrackingPlot directly
-clusterTrackingPlot(newColorMat[out$index,])
-
-#We can also change the order of the rows. Notice how this dramatically changes the plot!
-plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
+#replot by setting 'input="colors"'
+plotTracking(newColorMat[out$index,],input="colors")
 }
 \author{
 Elizabeth Purdom and Marla Johnson

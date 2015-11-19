@@ -1,21 +1,15 @@
 #' Functions for Visualizing assigments of samples to clusters across multiple clusterings
 #' 
-#' Align clusters of the same set of samples and provide a plot of their shared
-#' values
-#' 
-#' clusterTrackingPlot is generally called within plotTracking, but is provided
-#' as separate function for convenience, for example if you want to manually change a
-#' color in the output of plotTracking and replot. 
+#' Align multiple clusters of the same set of samples and provide a color-coded plot of their shared cluster assignments
 #' 
 #' @name plotTracking
-#' @aliases plotTracking clusterTrackingPlot 
+#' @aliases plotTracking 
 #' @docType methods
 
 #' @param clusters A matrix of with each column corresponding to a clustering and
 #' each row a sample. The plotting will plot them in order of this matrix,
 #' and their order influences the plot greatly.
-#' @param index A predefined order in which the samples will be plotted.
-#' Otherwise the order is found internally
+#' @param index A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})
 #' @param reuseColors Logical. Whether each row should consist of the same set
 #' of colors. By default (FALSE) each cluster that the algorithm doesn't
 #' identify to the previous rows clusters gets a new color
@@ -31,18 +25,33 @@
 #' should the colors restart at beginning of colPalette as long as colors are not in immediately proceeding row
 #' (some of the colors at the end of bigPalette are a bit wonky, and so if you
 #' have a large clusters matrix, this can be useful)
-#' @param colPalette a vector of colors used for the different clusters.
-#' @return plotTracking provides (invisibly) the orders and other things that
+#' @param colPalette a vector of colors used for the different clusters. Must be as long as the maximum number of clusters found in any single clustering/column given in \code{clusters} or will otherwise return an error.
+#' @param input indicate whether the input matrix is matrix of integer assigned clusters, or contains the colors. If \code{input="colors"}, then the object \code{clusters} is a matrix of colors and there is no alignment (this option allows the user to manually adjust the colors and replot, for example)
+#' @param colorMat Matrix where columns are different clusterings, rows are samples,
+#' and entries of matrix are colors (i.e. characters that define colors)
+#' @param names names to go with the columns (clusterings) in matrix colorMat
+#' @param add whether to add to existing plot
+#' @param x values on x-axis at which to plot the rows of m
+#' @param ylim vector of limits of y-axis
+#' @param tick logical, whether to draw ticks on x-axis for each sample.
+#' @param ylab character string for the label of y-axis 
+#' @param xlab character string for the label of x-axis 
+#' @param axisLine the number of lines in the axis labels on y-axis should be (passed to line=... in the axis call)
+#' @param box logical, whether to draw box around the plot
+#' @param ... for \code{plotTracking} arguments passed to \code{\link{plot}} if \code{add=FALSE}.
+
+
+#' @return plotTracking returns (invisibly) the orders and other things that
 #' go into making the matrix. Specifically, a list with the following elements
 #' \itemize{
 #'
 #' \item{\code{index}}{ a vector of length equal to ncols(clusters) giving the order of the columns to use to get the original clusters matrix into the order made by plotTracking}
 #'
-#' \item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix colors[,index] is the matrix sent to clusterTrackingPlot}
+#' \item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix \code{colors[index,]} is the matrix that can be given back to plotTracking to recreate the plot (see examples)}
 #'
-#' \item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. this is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, matrix is in same order as original clusters matrix}
+#' \item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
 #'
-#' \item{\code{groupToColorLegend}}{ matrix with three columns named "Original","Aligned", and "Color" giving the correspondence between the original cluster ids in clusters, the aligned cluster ids in aligned cluster values, and the color (respectively) }
+#' \item{\code{groupToColorLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson
@@ -62,6 +71,9 @@
 #' out<-plotTracking(cl$clMat,axisLine=-2)
 #' out$groupToColorLegend[1:2]
 #' head(out$color[out$index,1:2])
+#' 
+#' #We can also change the order of the rows. Notice how this dramatically changes the plot!
+#' plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
 #'
 #' #notice that the blue and orange are really arbitrarily different colors because not next to each other in row.
 #' #We can manually change the blue to orange :
@@ -70,48 +82,54 @@
 #' #change "#1F78B4" to "#FF7F00"
 #' newColorMat<-out$colors
 #' newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
-#' #replot by calling clusterTrackingPlot directly
-#' clusterTrackingPlot(newColorMat[out$index,])
+#' #replot by setting 'input="colors"'
+#' plotTracking(newColorMat[out$index,],input="colors")
 #'
-#' #We can also change the order of the rows. Notice how this dramatically changes the plot!
-#' plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
 
-plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,...){
+plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,input=c("clusters","colors"),xnames=rownames(clusters),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
 	dnames<-dimnames(clusters)
-	clusters<-t(clusters)
-	if(any(as.character(clusters)%in%c("-1","-2"))){
-		if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
-		#don't think I need this anymore because fixed so not need numeric values.
-		# rnames<-row.names(clusters)
-		# clusters<-apply(clusters,2,as.numeric)
-		# rownames(clusters)<-rnames
-		# if(any(is.na(clusters))) stop("could not convert clusters to numeric, but some samples had value '-1'")
-		out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=FALSE,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
-#		browser()
-		#take out -1
-		newColorLeg<-lapply(1:nrow(clusters),function(i){
-			leg<-out$groupToColorLegend[[i]]
-			if(any(wh<-leg[,"Original"]== -1))
-			leg[wh,"Color"]<-unassignedColor
-			if(any(wh<-leg[,"Original"]== -2))
-			leg[wh,"Color"]<-missingColor
-			return(leg)
-		})
-		names(newColorLeg)<-names(out$groupToColorLegend)
-		xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
-			out$colors[clusters[i,]=="-1",i]<-unassignedColor
-			out$colors[clusters[i,]=="-2",i]<-missingColor
-			return(out$colors[,i])
-		}))
-		if(plot) clusterTrackingPlot(xColors[out$index,], colnames(out$colors),...)
-		out$colors<-xColors
-		dimnames(out$colors)<-dnames
-		out$groupToColorLegend<-newColorLeg
+	input<-match.arg(input)
+
+	if(input=="clusters"){
+		clusters<-t(clusters)
+		if(any(as.character(clusters)%in%c("-1","-2"))){
+			if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
+			#don't think I need this anymore because fixed so not need numeric values.
+			# rnames<-row.names(clusters)
+			# clusters<-apply(clusters,2,as.numeric)
+			# rownames(clusters)<-rnames
+			# if(any(is.na(clusters))) stop("could not convert clusters to numeric, but some samples had value '-1'")
+			out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=FALSE,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,xnames=xnames,add=add,x=x,ylim=ylim,tick=tick,ylab=ylab,xlab=xlab,axisLine=axisLine,box=box,...)
+	#		browser()
+			#take out -1
+			newColorLeg<-lapply(1:nrow(clusters),function(i){
+				leg<-out$groupToColorLegend[[i]]
+				if(any(wh<-leg[,"Original"]== -1))
+				leg[wh,"Color"]<-unassignedColor
+				if(any(wh<-leg[,"Original"]== -2))
+				leg[wh,"Color"]<-missingColor
+				return(leg)
+			})
+			names(newColorLeg)<-names(out$groupToColorLegend)
+			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
+				out$colors[clusters[i,]=="-1",i]<-unassignedColor
+				out$colors[clusters[i,]=="-2",i]<-missingColor
+				return(out$colors[,i])
+			}))
+			if(plot) .clusterTrackingPlot(xColors[out$index,], colnames(out$colors),...)
+			out$colors<-xColors
+			dimnames(out$colors)<-dnames
+			out$groupToColorLegend<-newColorLeg
+		}
+		else{
+			out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=plot,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
+		}	
+		invisible(out)
 	}
 	else{
-		out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=plot,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
-	}	
-	invisible(out)
+		.clusterTrackingPlot(clusters, ...)
+		
+	}
 }
 .plotTrackingInternal<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,minRequireColor=0.3,startNewColors=FALSE,colPalette=.thisPal,...){
 	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
@@ -163,7 +181,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 		index<-do.call("order",tmp)
 	}
 
-	if(plot) clusterTrackingPlot(t(colorM[,index]), rownames(clusters),...)
+	if(plot) .clusterTrackingPlot(t(colorM[,index]),...)
 	dimnames(colorM)<-dimnames(clusters)
 	allColors<-unique(as.vector(colorM))
 	alignCl<-apply(colorM,2,function(x){match(x,allColors)})
@@ -302,22 +320,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 	return(newColors)
 }
 
-#' @rdname plotTracking
-#' 
-#' @param colorMat Matrix where columns are different clusterings, rows are samples,
-#' and entries of matrix are colors (i.e. characters that define colors)
-#' @param names names to go with the columns (clusterings) in matrix colorMat
-#' @param add whether to add to existing plot
-#' @param x values on x-axis at which to plot the rows of m
-#' @param ylim vector of limits of y-axis
-#' @param tick logical, whether to draw ticks on x-axis for each sample.
-#' @param ylab character string for the label of y-axis 
-#' @param xlab character string for the label of x-axis 
-#' @param axisLine the number of lines in the axis labels on y-axis should be (passed to line=... in the axis call)
-#' @param box logical, whether to draw box around the plot
-#' @param ... for \code{plotTracking} arguments passed to \code{clusterTracking}. For \code{clusterTracking}, arguments passed to \code{\link{plot}} if \code{add=FALSE}.
-
-clusterTrackingPlot <- function(colorMat, names=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
+.clusterTrackingPlot <- function(colorMat, xnames=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
   	m<-t(colorMat)
   #description: plots cluster tracking plot
   #input: m - matrix where rows are k, columns are samples, and entries are color assignments
@@ -355,9 +358,9 @@ clusterTrackingPlot <- function(colorMat, names=rownames(m),add=FALSE,x=NULL,yli
   	axis(1,at=xl,labels=FALSE,tick=TRUE)
 #segments(  xl, rep(-0.1,ncol(m)) , xl, rep(0,ncol(m)), col="black")    #** alt white and black color?
   }
-	if(!is.null(names)){
+	if(!is.null(xnames)){
 		y<-(ybottom+ytop)/2
-	  	axis(2,at=y,labels=names,xpd=NA,las=2,tick=FALSE,line=axisLine)
+	  	axis(2,at=y,labels=xnames,xpd=NA,las=2,tick=FALSE,line=axisLine)
 	} 	
 	#draw box around
 	if(box){
@@ -426,7 +429,7 @@ makeAnnoColor<-function(trackingOut){
 		par(mar=mar)
 		xcol<-apply(x,2,function(y){.thisPal[y]})
 		dimnames(xcol)<-dimnames(x)
-		if(plot) clusterTrackingPlot(xcol[,order$index], names=row.names(x),main=main,...)
+		if(plot) .clusterTrackingPlot(xcol[,order$index], names=row.names(x),main=main,...)
 #		image(x=1:ncol(x),y=1:nrow(x),t(x)[order$index,],col=.thisPal,xlab="",ylab="",xaxt="n",yaxt="n",main=main)
 #		axis(2,at=1:nrow(x),labels=rownames(x),las=2,cex=.5)
 		invisible(list(x=x,xcol=xcol,order=order$index))

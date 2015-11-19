@@ -6,7 +6,7 @@
 \title{Heatmap with two different sources for hierarchical clustering and color scale.}
 \usage{
 dualHeatmap(clusterVector, heatData, clusterData = heatData, eps = 1,
-  dual = TRUE, clusterSamples = TRUE, clusterVar = TRUE,
+  dual = TRUE, clusterSamples = TRUE, clusterVars = TRUE,
   whVars = 1:nrow(heatData), varNames = FALSE, sampleNames = FALSE,
   colorScale = seqPal5, annCol = NULL, annColors = NULL,
   whAnnCont = NULL, alignColors = FALSE, breaks = NA,
@@ -33,7 +33,7 @@ otherwise heatData is used.}
 \item{clusterSamples}{Logical as to whether to do hierarchical clustering of
 cells.}
 
-\item{clusterVar}{Logical as to whether to do hiearchical clustering of
+\item{clusterVars}{Logical as to whether to do hiearchical clustering of
 genes.}
 
 \item{whVars}{Which genes of heatData matrix to be used. Default assumes top 500,
@@ -55,14 +55,14 @@ list should be a vector of colors with names corresponding to the levels of
 the column of annCol. If annCol=NULL (i.e. use clusterVec), then the name of
 the length-1 list should be `Cluster'}
 
-\item{whAnnCont}{which columns of annCol are continuous data; only relevant if annCol=NULL (i.e. function assigns the clusters)}
+\item{whAnnCont}{which columns of annCol are continuous data; only used if annCol=NULL (i.e. function \code{dualHeatmap} assigns the clusters' colors)}
 
 \item{alignColors}{Logical as to whether should align the clusters when
-colors are assigned}
+colors are assigned (only used if annCol=NULL)}
 
 \item{breaks}{Either a vector of breaks (should be equal to length 52), or a
 number between 0 and 1, indicating that the breaks should be equally spaced
-(on the log scale+eps) upto the `breaks' quantile.}
+(on the log scale+eps) upto the `breaks' quantile, see details}
 
 \item{unassignedColor}{color assigned to cluster values of '-1' ("unassigned")}
 
@@ -71,8 +71,12 @@ number between 0 and 1, indicating that the breaks should be equally spaced
 \item{...}{passed to aheatmap}
 }
 \value{
-Returns invisibly the breaks, annCol, and annColors that are sent to
-aheatmap by the function.
+Returns (invisibly) a list with elements that are passed to aheatmap.
+\itemize{
+\item{\code{breaks}}{The breaks used for aheatmap, after adjusting for quantile}
+\item{\code{annCol}}{the annotation data.frame given to aheatmap}
+\item{\code{annColors}}{the annotation colors given to aheatmap}
+}
 }
 \description{
 Make heatmap with color scale from one matrix and hiearchical clustering
@@ -86,7 +90,8 @@ session of R (this might be a problem for RStudio if you want to pop it out
 into a large window...).
 
 The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{dualHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster.
-2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity
+2) to assign colors to the clusters like in \code{\link{plotTracking}} that lines them up based on their similarity.
+The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.
 }
 \examples{
 data(simCount)
