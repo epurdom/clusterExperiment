@@ -24,9 +24,9 @@
 findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchical",propUnassigned=.5,plot=FALSE,minSize=5){
 	#clusterMat a nsample x nclusteringMethod matrix of integered valued clusterings
 	#minSize determines minimimum size needed to declare cluster replicated
-	singleValueClusters<-apply(clusterMat,1,paste,collapse=";")
-	allUnass<-paste(rep("-1",length=ncol(clusterMat)),collapse=";")
 	if(proportion==1){
+		singleValueClusters<-apply(clusterMat,1,paste,collapse=";")
+		allUnass<-paste(rep("-1",length=ncol(clusterMat)),collapse=";")
 		uniqueSingleValueClusters<-unique(singleValueClusters)
 		tab<-	table(singleValueClusters)
 		tab<-tab[tab>=minSize]
@@ -40,63 +40,18 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 			typeAlg<-.checkAlgType(clusterFunction)
 			if(typeAlg!="01") stop("findSharedClusters is only implemented for '01' type clustering functions (see help of clusterD)")
 		}
-		clusterMat[clusterMat=="-1"]<-NA
+		##Make clusterMat character, just in case
+		clusterMat<-apply(clusterMat,2,as.character)
+		clusterMat[clusterMat== "-1"]<-NA
 		sharedPerct<-.hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back
 		cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
-		# clB<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-		# clB2<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, findCoreType="track",minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-		# browser()
-		# par(mfrow=c(1,2))
 		if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
-
-		# sharedPerct<-diag(rep(1,length=nrow(clusterMat)))
-		# calcPercent<-function(x,y){
-		# 	vAssigned<-as.character(x)!="-1" & as.character(y)!="-1" #those where both are assigned to a cluster
-		# 	w<-x==y & vAssigned
-		# 	percentOverlapAssigned<-sum(w)/sum(vAssigned)
-		# 	return(percentOverlapAssigned)
-		# }
-		# #is this any faster than outer?
-		# if(require(gtools)){
-		# 	clusterMat<-data.frame(t(clusterMat))
-		# 	indMat<-gtools::combinations(n=ncol(clusterMat),r=2) #combinations of columns; so can handle "-1" separately.
-		# 	tmp<-unlist(mapply(clusterMat[indMat[,1]],clusterMat[indMat[,2]], FUN=calcPercent,SIMPLIFY=FALSE))
-		# 	tmp[is.na(tmp)]<-0
-		# 	sharedPerct[lower.tri(sharedPerct)]<-tmp
-		# 	sharedPerct<-t(sharedPerct)
-		# 	sharedPerct[lower.tri(sharedPerct)]<-tmp
-		# 	sharedPerct[sharedPerct<proportion]<-0
-		# 	cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
-		# 	# clB<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-		# 	# clB2<-findBlocks(Dbar=sharedPerct,alpha = 1-proportion, findCoreType="track",minSize=minSize, minSize.core=2, format="vector",coreValue=proportion)
-		# 	# browser()
-		# 	# par(mfrow=c(1,2))
-		# 	if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
-		# 	# aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(clB2)),Colv="Rowv",annColors=list(brainUtils:::.thisPal))
-		#
-		# }
-		#
-		# else{ stop("Must have gtools installed")}
-		# for(ii in 1:(ncol(sharedPerct)-1)){
-		# 	for(jj in (ii+1):ncol(sharedPerct)){
-		# 		x<-clusterMat[ii,]
-		# 		y<-clusterMat[jj,]
-		# 		share<-which(as.character(x)!="-1" & as.character(y)!="-1")
-		# 		if(length(share)==0){
-		# 			sharedPerct[ii,jj]<-sharedPerct[jj,ii]<-0
-		# 		}
-		# 		else{
-		# 			x<-x[share]
-		# 			y<-y[share]
-		# 			sharedPerct[ii,jj]<-sharedPerct[jj,ii]<-length(which(x==y))/length(y)
-		# 		}
-		# 	}
-		# }
 		
+		if(is.character(cl)) stop("coding error -- clusterD should return numeric vector")
 		##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
-		whUnassigned<-which(apply(clusterMat,2,function(x){sum(x=="-1")/length(x)>propUnassigned}))
+		whUnassigned<-which(apply(clusterMat,2,function(x){sum(x== -1)/length(x)>propUnassigned}))
 		clUnassigned<-cl
-		clUnassigned[whUnassigned]<-"-1"
+		clUnassigned[whUnassigned]<- -1
 		return(list(clustering=clUnassigned,percentageShared=sharedPerct,noUnassignedCorrection=cl))
 	}
 }
