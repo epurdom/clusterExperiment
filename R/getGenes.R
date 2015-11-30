@@ -59,7 +59,7 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 	}
 	if(type%in% c("Pairs","Dendro")){
 	  designContr<-model.matrix(~0+cl)
-	  colnames(design)<-make.names(levels(cl))
+	  colnames(designContr)<-make.names(levels(cl))
 	  fitContr<-limma::lmFit(tmp,designContr)
 	  
 	}
