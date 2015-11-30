@@ -7,11 +7,11 @@
 #' @param subsample logical as to whether to subsample via \code{\link{subsampleClustering}} to get the distance matrix at each iteration; otherwise the distance matrix is dist(x)
 #' @param sequential logical whether to use the sequential strategy.
 #' @param clusterFunction passed to \code{\link{clusterD}} option 'clusterFunction' to indicate method of clustering, see \code{\link{clusterD}}
-#' @param DclusterArgs list of additional arguments to be passed to \code{\link{clusterD}} 
+#' @param clusterDArgs list of additional arguments to be passed to \code{\link{clusterD}} 
 #' @param subsampleArgs list of arguments to be passed to \code{\link{subsampleClustering}}
 #' @param seqArgs list of additional arguments to be passed to \code{\link{seqCluster}}
 #' 
-#' @details If sequential=TRUE, the sequential clustering controls the 'k' argument of the underlying clustering so setting 'k=' in the list given to DclusterArgs or subsampleArgs will not do anything and will produce a warning to that effect. 
+#' @details If sequential=TRUE, the sequential clustering controls the 'k' argument of the underlying clustering so setting 'k=' in the list given to clusterDArgs or subsampleArgs will not do anything and will produce a warning to that effect. 
 #'
 #' @return A list with values 
 #' \itemize{
@@ -34,13 +34,13 @@
 #' sequential=TRUE,subsample=TRUE,
 #'	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 #'	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
-#'	DclusterArgs=list(minSize=5))
+#'	clusterDArgs=list(minSize=5))
 #' }
 #' #use clusterAll to do just clustering k=3 with no subsampling
 #' clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
-#' sequential=FALSE, DclusterArgs=list(k=3))
+#' sequential=FALSE, clusterDArgs=list(k=3))
 
-clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("tight","hierarchical","pam","kmeans"),  DclusterArgs=NULL,subsampleArgs=NULL,seqArgs=NULL) 
+clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("tight","hierarchical","pam","kmeans"),  clusterDArgs=NULL,subsampleArgs=NULL,seqArgs=NULL) 
 {
     if(!is.function(clusterFunction)){
 		clusterFunction<-match.arg(clusterFunction)
@@ -48,12 +48,12 @@ clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("ti
 		typeAlg<-.checkAlgType(clusterFunction)
 	}
 	else{
-		if(! "typeAlg" %in% DclusterArgs) stop("if you provide your own clustering algorithm to be passed to clusterD, then you must specify 'typeAlg' in DclusterArgs")
-		else typeAlg<-DclusterArgs[["typeAlg"]]
+		if(! "typeAlg" %in% clusterDArgs) stop("if you provide your own clustering algorithm to be passed to clusterD, then you must specify 'typeAlg' in clusterDArgs")
+		else typeAlg<-clusterDArgs[["typeAlg"]]
 	}
 	if(typeAlg == "K"){
-		if("findBestK" %in% names(DclusterArgs) & !subsample & sequential){
-			if(DclusterArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via DclusterArgs. See help documentation.")
+		if("findBestK" %in% names(clusterDArgs) & !subsample & sequential){
+			if(clusterDArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
 		}
 		
 	}	
@@ -61,27 +61,27 @@ clusterAll<-function(x,  subsample=TRUE, sequential=FALSE, clusterFunction=c("ti
 	if(sequential){
 		if(is.null(seqArgs)) stop("must give seqArgs so as to identify k0")
 		if(!"k0"%in%names(seqArgs)) stop("seqArgs must contain element 'k0'")
-		seqOut<-do.call("seqCluster",c(list(x=x,subsample=subsample,subsampleArgs=subsampleArgs,DclusterArgs=DclusterArgs,clusterFunction=clusterFunction),seqArgs))
+		seqOut<-do.call("seqCluster",c(list(x=x,subsample=subsample,subsampleArgs=subsampleArgs,clusterDArgs=clusterDArgs,clusterFunction=clusterFunction),seqArgs))
 		#	browser()
 		return(seqOut)
 	}
 	else{
 		if(subsample){
 			if(is.null(subsampleArgs) || !("k" %in% names(subsampleArgs))){
-          if(!is.null(DclusterArgs) & ("k" %in% names(DclusterArgs))){
-            #give by default the DclusterArgs to subsampling. 
-              warning("did not give 'k' in 'subsampleArgs'. Set to 'k' argument in 'DclusterArgs'")
-              if(is.null(subsampleArgs)) subsampleArgs<-list("k"=DclusterArgs[["k"]])
-              else subsampleArgs[["k"]]<-DclusterArgs[["k"]]
+          if(!is.null(clusterDArgs) & ("k" %in% names(clusterDArgs))){
+            #give by default the clusterDArgs to subsampling. 
+              warning("did not give 'k' in 'subsampleArgs'. Set to 'k' argument in 'clusterDArgs'")
+              if(is.null(subsampleArgs)) subsampleArgs<-list("k"=clusterDArgs[["k"]])
+              else subsampleArgs[["k"]]<-clusterDArgs[["k"]]
           }
 			  	else	stop("if not sequential and do subsampling, must pass 'k' in subsampleArgs")
 			} 
 		}
-		else if(typeAlg=="K" && !is.null(DclusterArgs) &&  !"k" %in% names(DclusterArgs)){
-			#if don't specify k, then must have findBestK=TRUE in DclusterArgs; is by default, so only need to check that if specified it, set it to TRUE
-			if("findBestK" %in% names(DclusterArgs) && !DclusterArgs[["findBestK"]]) stop("if not sequential and clusterFunction is of type 'K' (e.g. pam) and findBestK=FALSE in DclusterArgs, must pass 'k' via DclusterArgs list")
+		else if(typeAlg=="K" && !is.null(clusterDArgs) &&  !"k" %in% names(clusterDArgs)){
+			#if don't specify k, then must have findBestK=TRUE in clusterDArgs; is by default, so only need to check that if specified it, set it to TRUE
+			if("findBestK" %in% names(clusterDArgs) && !clusterDArgs[["findBestK"]]) stop("if not sequential and clusterFunction is of type 'K' (e.g. pam) and findBestK=FALSE in clusterDArgs, must pass 'k' via clusterDArgs list")
 				}
-		finalClusterList<-.clusterWrapper(x,clusterFunction=clusterFunction, subsample=subsample,  subsampleArgs=subsampleArgs,DclusterArgs=DclusterArgs,typeAlg=typeAlg)
+		finalClusterList<-.clusterWrapper(x,clusterFunction=clusterFunction, subsample=subsample,  subsampleArgs=subsampleArgs,clusterDArgs=clusterDArgs,typeAlg=typeAlg)
 		return(list("clustering"=.convertClusterListToVector(finalClusterList,N)))
 	}
 }

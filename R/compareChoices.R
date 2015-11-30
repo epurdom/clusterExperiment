@@ -12,7 +12,7 @@
 #' @param subsample values of subsample to be tried (logical).
 #' @param silCutoff values of silCutoff to be tried (only for 'pam')
 #' @param clusterMethod method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.
-#' @param DclusterArgs list of arguments to be passed to \code{\link{clusterD}}
+#' @param clusterDArgs list of arguments to be passed to \code{\link{clusterD}}
 #' @param subsampleArgs list of arguments to be passed to \code{\link{subsampleClustering}}
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
 #' @param ncores the number of threads
@@ -23,7 +23,7 @@
 #'
 #' @details While the function allows for multiple values of clusterMethod, the code does not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the \code{random.seed} value, however, should mean that the subsampled matrix is the same for each, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters). 
 #'
-#' @details The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the DclusterArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available. 
+#' @details The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the clusterDArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available. 
 #' @return If \code{run=TRUE}, a list with the following objects:
 #' \itemize{
 #' \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
@@ -64,7 +64,7 @@
 
 compareChoices <- function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
 removeSil=FALSE, subsample=FALSE,silCutoff=0,
-    DclusterArgs=list(minSize=5),
+    clusterDArgs=list(minSize=5),
 	subsampleArgs=list(resamp.num=50),
 	seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
 	ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
@@ -100,7 +100,7 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 			param[typeK,"alpha"]<-0.01 #just a nothing value
 			whFindBestK<-which(param[,"findBestK"])
 			if(length(whFindBestK)>0){ #remove 'k' and see if same
-				if(!"kRange" %in% names(DclusterArgs)) DclusterArgs[["kRange"]]<-ks
+				if(!"kRange" %in% names(clusterDArgs)) clusterDArgs[["kRange"]]<-ks
 				param[whFindBestK,"k"]<-NA
 			}
 		}
@@ -110,12 +110,12 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 			param[type01,"removeSil"]<-FALSE
 			param[type01,"silCutoff"]<-0
 		}
-		#if provide kRange in DclusterArgs, and findBestK=TRUE, don't need to search over different k
+		#if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
 		param<-unique(param)  
 	
 		#deal with those that are invalid combinations:
 		#Error in clusterAll(x = data, subsample = subsample, clusterFunction = clusterMethod,  : 
-	#  Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via DclusterArgs. See help documentation.
+	#  Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.
 
 	   	whInvalid<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
 		if(length(whInvalid)>0) param<-param[-whInvalid,]
@@ -156,15 +156,15 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 			else{
 				#to be safe, set both in case user set one. 
 				subsampleArgs[["k"]]<-par[["k"]]
-				DclusterArgs[["k"]]<-par[["k"]]
+				clusterDArgs[["k"]]<-par[["k"]]
 			}			
 		}
-		DclusterArgs[["alpha"]]<-par[["alpha"]]
-		DclusterArgs[["findBestK"]]<-findBestK
-		DclusterArgs[["removeSil"]]<-removeSil
-		DclusterArgs[["silCutoff"]]<-par[["silCutoff"]]
+		clusterDArgs[["alpha"]]<-par[["alpha"]]
+		clusterDArgs[["findBestK"]]<-findBestK
+		clusterDArgs[["removeSil"]]<-removeSil
+		clusterDArgs[["silCutoff"]]<-par[["silCutoff"]]
 		if(!is.null(random.seed)) set.seed(random.seed)
-		clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  DclusterArgs=DclusterArgs,subsampleArgs=subsampleArgs,
+		clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
 			seqArgs=seqArgs, sequential=sequential) 
 	}
 	if(run){

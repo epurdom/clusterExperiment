@@ -13,7 +13,7 @@
 #' @param k.max algorithm will stop if K in iteration is increased beyond this point.
 #' @param verbose whether the algorithm should print out information as to its progress.
 #' @param subsampleArgs list of arguments to be passed to \code{\link{subsampleClustering}}
-#' @param DclusterArgs list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})
+#' @param clusterDArgs list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})
 #' 
 #' @details Each iteration of the algorithm will cluster the current set of samples. Depending on the method, the number of clusters resulting from \code{\link{clusterD}} may not be equal to the K used in the clustering of the (subsampled) data. The resulting clusters will then be compared to clusters found in the previous iteration that set the subsampling clustering to K-1. For computational (and other?) convenience, only the first top.can clusters of each iteration will be compared to the first top.can clusters of previous iteration for similarity (where top.can currently refers to ordering by size, so first top.can largest clusters). 
 
@@ -25,13 +25,13 @@
 #'
 #' @details 'subsample' controls what is the D (distance) matrix used for clustering at each iteration. If subsample=TRUE, D is given via \code{\link{subsampleClustering}} function with k=K (with additional arguments passed via subsampleArgs). If subsample=FALSE, D is dist(x), for the samples currently considered in the iteration and clusterFunction must be of the 'K' type (e.g. "pam", see \code{\link{clusterD}}) or an error will be produced. The nsample x nsample matrix D is then clustered via \code{\link{clusterD}} to find clusters. The option 'clusterFunction' is passed to the argument 'clusterFunction' of \code{\link{clusterD}} to control what method is used to cluster D. 
 #'
-#' @details If clusterFunction is of type 'K' (e.g. "pam", see \code{\link{clusterD}}) the 'k' argument of \code{\link{clusterK}} called by \code{\link{clusterD}} is set to the current iteration of K by the sequential iteration, so setting 'k=' in the list given to DclusterArgs will not do anything and will produce a warning to that effect. 
+#' @details If clusterFunction is of type 'K' (e.g. "pam", see \code{\link{clusterD}}) the 'k' argument of \code{\link{clusterK}} called by \code{\link{clusterD}} is set to the current iteration of K by the sequential iteration, so setting 'k=' in the list given to clusterDArgs will not do anything and will produce a warning to that effect. 
 #'
 #' @details Similarly, the current K of the iteration also determines the 'k' argument passed to \code{\link{subsampleClustering}}  so setting 'k=' in the list given to the subsampleArgs will not do anything and will produce a warning to that effect. 
 #'
-#' @details If subsample=FALSE and 'findBestK=FALSE' is passed to DclusterArgs, then each iteration will run the clustering given by clusterFunction on dist(x) iterating over k. However, if subsample=FALSE, you should not set 'findBestK=TRUE' (otherwise clustering dist(x) will be essentially the same for iterating over different k and there is no method implemented to change the choice of how to remove a cluster other than similarity as you change k); an error message will be given if this combination of options are set. 
+#' @details If subsample=FALSE and 'findBestK=FALSE' is passed to clusterDArgs, then each iteration will run the clustering given by clusterFunction on dist(x) iterating over k. However, if subsample=FALSE, you should not set 'findBestK=TRUE' (otherwise clustering dist(x) will be essentially the same for iterating over different k and there is no method implemented to change the choice of how to remove a cluster other than similarity as you change k); an error message will be given if this combination of options are set. 
 #'
-#' @details However, if clusterFunction="pam" (or is of type 'K') and subsample=TRUE passing either 'findBestK=TRUE' or 'findBestK=FALSE' will function as expected. In particular, the iteration over K will set the number of clusters for clustering of each subsample. If findBestK=FALSE, that same K will be used for clustering of DMat. If findBestK=TRUE, then \code{\link{clusterD}} will search for best k; note that the default 'kRange' over which \code{\link{clusterD}} searches when findBestK=TRUE depends on the input value of 'k' (you can change this to a fixed set of values by setting 'kRange' explicitly in the DclusterArgs list).
+#' @details However, if clusterFunction="pam" (or is of type 'K') and subsample=TRUE passing either 'findBestK=TRUE' or 'findBestK=FALSE' will function as expected. In particular, the iteration over K will set the number of clusters for clustering of each subsample. If findBestK=FALSE, that same K will be used for clustering of DMat. If findBestK=TRUE, then \code{\link{clusterD}} will search for best k; note that the default 'kRange' over which \code{\link{clusterD}} searches when findBestK=TRUE depends on the input value of 'k' (you can change this to a fixed set of values by setting 'kRange' explicitly in the clusterDArgs list).
 #'
 #' @return A list with values 
 #' \itemize{
@@ -49,9 +49,9 @@
 #' clusterFunction="hierarchical",beta=0.8, 
 #' subsampleArgs=list(resamp.n=100,samp.p=0.7,
 #' clusterFunction="kmeans",clusterArgs=list(nstart=10)), 
-#' DclusterArgs=list(minSize=5))
+#' clusterDArgs=list(minSize=5))
 
-seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,DclusterArgs=NULL) 
+seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL) 
 {
 	#for now, if use pam for subsampleClusterMethod, just use given k.
     if(!is.function(clusterFunction)){
@@ -60,12 +60,12 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
 		if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
 	}
 	else{
-		if(! "typeAlg" %in% DclusterArgs) stop("if you provide your own clustering algorithm to be passed to clusterD, then you must specify 'typeAlg' in DclusterArgs")
-			else typeAlg<-DclusterArgs[["typeAlg"]]
+		if(! "typeAlg" %in% clusterDArgs) stop("if you provide your own clustering algorithm to be passed to clusterD, then you must specify 'typeAlg' in clusterDArgs")
+			else typeAlg<-clusterDArgs[["typeAlg"]]
 	}
 	if(typeAlg == "K"){
-		if("findBestK" %in% names(DclusterArgs) & !subsample){
-			if(DclusterArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via DclusterArgs. See help documentation.")
+		if("findBestK" %in% names(clusterDArgs) & !subsample){
+			if(clusterDArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
 		}
 		
 	}
@@ -107,10 +107,10 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
 		warning("Setting 'k' in subsampleArgs when the seqCluster is called will have no effect.")
 		subsampleArgs<-subsampleArgs[-whK]
 	}
-	if("k" %in% names(DclusterArgs)){
-		whK<-which(names(DclusterArgs)=="k")
-		warning("Setting 'k' in DclusterArgs when the seqCluster is called will have no effect.")
-		DclusterArgs<-DclusterArgs[-whK]
+	if("k" %in% names(clusterDArgs)){
+		whK<-which(names(clusterDArgs)=="k")
+		warning("Setting 'k' in clusterDArgs when the seqCluster is called will have no effect.")
+		clusterDArgs<-clusterDArgs[-whK]
 	}
 	while (remain >= remain.n && (found || k <= k.max)) {
         if (found) { #i.e. start finding new cluster
@@ -122,7 +122,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
             for (i in 1:seq.num) {
                 if(verbose) cat(paste("k =", k + i - 1,"\n"))
 				tempSubsampleArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
-				res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, DclusterArgs=DclusterArgs,typeAlg=typeAlg)
+				res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)
 				# if(length(res)==0) {
 # 					cat(paste("Found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),". Stopping because zero-length cluster.\n"))
 # 								whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+i-1,"and previous clusters not similar enough.")
@@ -137,7 +137,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
             if(verbose) cat(paste("k =", k + seq.num - 1, "\n"))
 				#add new k (because always list o)
 			tempSubsampleArgs<-c(list(k=k + seq.num - 1),subsampleArgs) #set k for clustering
-			res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, DclusterArgs=DclusterArgs,typeAlg=typeAlg)
+			res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)
 			if(length(res)>0) res <- res[1:min(top.can,length(res))] 
             candidates[[seq.num]] <- res
         }

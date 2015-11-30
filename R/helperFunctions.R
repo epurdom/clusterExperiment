@@ -8,15 +8,15 @@
 }
 
 #wrapper that calls the clusterSampling and clusterD routines in reasonable order.
-.clusterWrapper <- function(x, subsample, clusterFunction,DclusterArgs=NULL,
+.clusterWrapper <- function(x, subsample, clusterFunction,clusterDArgs=NULL,
     subsampleArgs=NULL,typeAlg) 
 {
 	if(subsample){
 		if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
 		Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
 		if(typeAlg=="K"){
-			if(is.null(DclusterArgs)) DclusterArgs<-list(k=subsampleArgs[["k"]])
-			else if(!"k" %in% names(DclusterArgs)) DclusterArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
+			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
+			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
 		}
 
 	}
@@ -24,14 +24,14 @@
 		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
 		Dbar<-as.matrix(dist(x)	)	
 		findBestK<-FALSE	
-		if(!is.null(DclusterArgs) && "findBestK" %in% names(DclusterArgs)){
-				findBestK<-DclusterArgs[["findBestK"]]
+		if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+				findBestK<-clusterDArgs[["findBestK"]]
 			}
-		if(is.null(DclusterArgs) || (!"k" %in% names(DclusterArgs) && !findBestK)) stop("if not subsampling, must give k in 'DclusterArgs' (or if sequential should have been set by sequential strategy)")
+		if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not subsampling, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
 	}
 	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	
-	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),DclusterArgs)) 
+	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
 	return(res) #nothing found
 }
 
