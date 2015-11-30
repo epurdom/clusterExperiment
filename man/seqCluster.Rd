@@ -7,7 +7,7 @@
 seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
   subsample = TRUE, beta = 0.7, top.can = 15, remain.n = 30,
   k.min = 2, k.max = k0 + 10, verbose = TRUE, subsampleArgs = NULL,
-  DclusterArgs = NULL)
+  clusterDArgs = NULL)
 }
 \arguments{
 \item{x}{nxp data matrix on which to run the clustering (samples in rows)}
@@ -32,7 +32,7 @@ seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
 
 \item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
 
-\item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})}
+\item{clusterDArgs}{list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})}
 }
 \value{
 A list with values
@@ -58,6 +58,6 @@ clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,
 clusterFunction="hierarchical",beta=0.8,
 subsampleArgs=list(resamp.n=100,samp.p=0.7,
 clusterFunction="kmeans",clusterArgs=list(nstart=10)),
-DclusterArgs=list(minSize=5))
+clusterDArgs=list(minSize=5))
 }
 

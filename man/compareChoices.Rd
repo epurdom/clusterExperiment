@@ -6,9 +6,10 @@
 \usage{
 compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
   sequential = FALSE, removeSil = FALSE, subsample = FALSE,
-  silCutoff = 0, DclusterArgs = list(minSize = 5),
+  silCutoff = 0, clusterDArgs = list(minSize = 5),
   subsampleArgs = list(resamp.num = 50), seqArgs = list(beta = 0.9, k.min =
-  3, verbose = FALSE), ncores = 1, random.seed = NULL, run = TRUE, ...)
+  3, verbose = FALSE), ncores = 1, random.seed = NULL, run = TRUE,
+  paramMatrix = NULL, ...)
 }
 \arguments{
 \item{data}{the data on which to run the clustering. Must either be a data.frame/matrix (with samples in rows) or a list of datasets overwhich the clusterings should be run.}
@@ -29,7 +30,7 @@ compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
 
 \item{silCutoff}{values of silCutoff to be tried (only for 'pam')}
 
-\item{DclusterArgs}{list of arguments to be passed to \code{\link{clusterD}}}
+\item{clusterDArgs}{list of arguments to be passed to \code{\link{clusterD}}}
 
 \item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
 
@@ -39,23 +40,27 @@ compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
 
 \item{random.seed}{a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)}
 
-\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned)}
+\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned).}
 
-\item{...}{to be passed on to mclapply (if ncores>1)}
+\item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example).}
+
+\item{...}{arguments to be passed on to mclapply (if ncores>1)}
 }
 \value{
-A list with the following objects:
+If \code{run=TRUE}, a list with the following objects:
 \itemize{
 \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
 \item{\code{clusterInfo}}{a list with information regarding clustering result (only relevant entries for those clusterings with sequential=TRUE)}
 }
+
+If \code{run=FALSE}, a matrix which each row corresponding to a set of parameters to pass to \code{\link{clusterAll}}. This matrix can be given to \code{paramMatrix} to then run these parameter choices.
 }
 \description{
 Given a range of k's, this funciton will return a matrix with the clustering of the samples
 across the range, which can be passed to \code{plotTracking} for visualization.
 }
 \details{
-While the function allows for different clusterMethod, they do not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the random.seed value, however, should mean that the subsampled matrix is the same, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters).
+While the function allows for multiple values of clusterMethod, the code does not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the \code{random.seed} value, however, should mean that the subsampled matrix is the same for each, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters).
 }
 \examples{
 data(simData)
@@ -74,7 +79,9 @@ colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
 colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
 par(mar=c(2,10,1,1))
 plotTracking(cl$clMat,axisLine=-2)
-
+#get rid of some of the choices manually
+checkParams<-checkParams[-c(1,2),]
+clSmaller<-compareChoices(paramMatrix=checkParams)
 
 \dontrun{
 	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:

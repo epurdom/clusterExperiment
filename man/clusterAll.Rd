@@ -6,7 +6,7 @@
 \usage{
 clusterAll(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
-  DclusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (samples in rows)}
@@ -17,7 +17,7 @@ clusterAll(x, subsample = TRUE, sequential = FALSE,
 
 \item{clusterFunction}{passed to \code{\link{clusterD}} option 'clusterFunction' to indicate method of clustering, see \code{\link{clusterD}}}
 
-\item{DclusterArgs}{list of additional arguments to be passed to \code{\link{clusterD}}}
+\item{clusterDArgs}{list of additional arguments to be passed to \code{\link{clusterD}}}
 
 \item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
 
@@ -35,7 +35,7 @@ A list with values
 Given a nxp data matrix, this function will find clusters
 }
 \details{
-If sequential=TRUE, the sequential clustering controls the 'k' argument of the underlying clustering so setting 'k=' in the list given to DclusterArgs or subsampleArgs will not do anything and will produce a warning to that effect.
+If sequential=TRUE, the sequential clustering controls the 'k' argument of the underlying clustering so setting 'k=' in the list given to clusterDArgs or subsampleArgs will not do anything and will produce a warning to that effect.
 }
 \examples{
 data(simData)
@@ -48,10 +48,10 @@ clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
 sequential=TRUE,subsample=TRUE,
 	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
-	DclusterArgs=list(minSize=5))
+	clusterDArgs=list(minSize=5))
 }
 #use clusterAll to do just clustering k=3 with no subsampling
 clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
-sequential=FALSE, DclusterArgs=list(k=3))
+sequential=FALSE, clusterDArgs=list(k=3))
 }
 
