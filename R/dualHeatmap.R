@@ -121,12 +121,8 @@
 #' 
 dualHeatmap<-function(clusterVector,heatData,clusterData=heatData,eps=1,dual=TRUE,clusterSamples=TRUE, 
 	clusterVars=TRUE,whVars=1:nrow(heatData),varNames=FALSE,sampleNames=FALSE,colorScale=seqPal5,
-	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,unassignedColor="white",missingColor="grey",...){
-	heatData<-t(data.matrix(heatData))
-	#dual=TRUE means use heatmap with heatData, hierarch on clusterData; if FALSE both on heatData
-	#clusterVector a vector giving clusters to color the samples with; if missing, then just do all white (NA)
-
-	
+	annCol=NULL,annColors=NULL,whAnnCont=NULL,alignColors=FALSE,breaks=NA,unassignedColor="white",missingColor="grey",...){	
+	heatData<-t(data.matrix(heatData)) #so didn't have to rewrite code...
 	#fix up annCol:
 	#not sure why this doesn't give back data.frame with factors
 	#annCol<-apply(annCol,2,function(x){factor(x)})
