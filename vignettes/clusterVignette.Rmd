@@ -96,8 +96,10 @@ We will load some simulated data that comes with the package with four underlyin
 
 ```{r basicExample}
 library(clusterCells)
-load(simData)
-simpleCluster<-clusterAll(simData, subsample=FALSE, sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
+data(simData)
+simpleCluster<-clusterAll(simData, subsample=FALSE, 
+                          sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
+#compare to direct call of pam
 library(cluster)
 pamCluster<-pam(dist(simData),4)
 table(pamCluster$clustering,simpleCluster$clustering)
@@ -107,14 +109,17 @@ Of course, this is not the best use case, since the pam object from `pam` has mu
 
 ```{r basicSubsampling}
 #library(clusterPackage)
-subsampleCluster<-clusterAll(simData, subsample=TRUE, sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
+subsampleCluster<-clusterAll(simData, subsample=TRUE, 
+                             sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
 table(pamCluster$clustering,subsampleCluster$clustering)
 ```
 
 Notice that we got a warning. This is because we *could* have chosen to cluster with a different number of clusters on the subsampled data than we clustered the co-occurance data. Similarly, the 'clusterFunction' argument is passed to `clusterD` -- i.e. the clustering that is done on the co-occurance matrix. We could use something different for clustering of the subsampled data. For example, the following clusters the subsampled data with k=2 and use kmeans, but then clusters the co-occurance matrix with k=4 and pam.
 
 ```{r basicSubsampling2}
-subsampleCluster2<-clusterAll(simData, subsample=TRUE, sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4),subsampleArgs=list("k"=2, clusterFunction="kmeans"))
+subsampleCluster2<-clusterAll(simData, subsample=TRUE, sequential=FALSE,
+                              clusterFunction="pam",clusterDArgs=list('k'=4),
+                              subsampleArgs=list("k"=2, clusterFunction="kmeans"))
 table(subsampleCluster2$clustering,subsampleCluster$clustering)
 ```
 
