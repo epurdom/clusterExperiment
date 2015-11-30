@@ -38,7 +38,7 @@
 #'
 #' @return A data.frame in the same format as \code{\link{topTable}}, except that the column name \code{ProbeID} is changed to \code{Gene} and a column \code{IndexInOriginal} is provided to give the row index of the gene in the original dataset.
 
-getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=NULL,returnType=c("Index","Table"),contrastAdj=c("PerContrast","AfterF","All"),...){
+getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=NULL,returnType=c("Index","Table"),contrastAdj=c("All","PerContrast","AfterF"),...){
 	#... is always sent to topTable, and nothing else
 #	require(limma)
 	dat<-t(data.matrix(dat))
