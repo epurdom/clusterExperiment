@@ -62,8 +62,8 @@ There are two main user-functions, `clusterAll` and `compareChoices`. `clusterAl
 There are three main choices that the user needs to make for `clusterAll`:
 
 * What clustering algorithm to use (`clusterFunction`). 
-* Whether to cluster the co-occurence matrix created by subsampling the data, clustering the subsampled data, and average the number of times the samples are co-clustered (`subsample`). Otherwise `dist(x)` is clustered. 
-* Whether to run a sequential strategy (`sequential`) which finds the best cluster, removes those samples, and then starts the clustering again. 
+* Whether to cluster the co-occurence matrix created by clustering subsampled data (`subsample=TRUE`). Otherwise `dist(x)` is clustered (`subsample=FALSE`). 
+* Whether to run a sequential strategy (`sequential=TRUE`) which finds the best cluster, removes those samples, and then starts the clustering again. 
 
 The `clusterAll` calls underlying functions for each of these tasks, each of which can take many arguments. For simplicity in syntax, the user passes arguments to each of these underlying functions as lists of arguments. 
 
@@ -95,10 +95,8 @@ There are two parts to the basic clustering sequence:
 We will load some simulated data that comes with the package with four underlying clusters. First we will do just basic clustering of the data for 4 clusters using `pam` on the standard distance matrix. 
 
 ```{r basicExample}
-#library(clusterPackage)
-#load(simData)
-devtools::load_all(".")
-load("../data/simData.rda")
+library(clusterCells)
+load(simData)
 simpleCluster<-clusterAll(simData, subsample=FALSE, sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
 library(cluster)
 pamCluster<-pam(dist(simData),4)
@@ -300,3 +298,5 @@ for(i in 1:nrow(elpos)){
 
 
 ```
+
+# Compare many parameters (`compareChoices`)
