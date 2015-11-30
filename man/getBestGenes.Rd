@@ -17,13 +17,16 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs"), dendro = NULL,
 
 \item{dendro}{The dendrogram to traverse if type="Dendro". Note that this should be the dendrogram of the clusters, not of the individual samples.}
 
-\item{pairMat}{pairs of clusters for which to do pair-wise contrasts (must match to elements of cl). If NULL, will do all pairwise of the cl (excluding "-1")}
+\item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise contrasts (must match to elements of cl). If NULL, will do all pairwise of the clusters in \code{cl} (excluding "-1" categories). Each row is a pair to be compared and must match the names of the clusters in the vector \code{cl}.}
 
 \item{returnType}{Whether to return the index of genes, or the full table given by topTable or topTableF.}
 
-\item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
+\item{contrastAdj}{What type of FDR correction to do for contrasts tests (i.e. type='Dendro' or 'Pairs').}
 
-\item{requireF}{whether a significant omnibus F-statistic should be required before testing for significant contrasts (only for option type="Dendro" or "Pairs"). In which case the user must supply an option 'p.value' to be sent to}
+\item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
+}
+\value{
+A data.frame in the same format as \code{\link{topTable}}, except that the column name \code{ProbeID} is changed to \code{Gene} and a column \code{IndexInOriginal} is provided to give the row index of the gene in the original dataset.
 }
 \description{
 Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).
