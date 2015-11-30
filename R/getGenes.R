@@ -17,6 +17,9 @@
 #         return(whGenes)
 # }
 
+
+#' @title Function for finding best genes associated with clusters
+#' @description Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).
 #' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
 #' @param dat data for the test, samples in rows
 #' @param type What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side, and `Pairs' does pair-wise contrasts based on the pairs given in pairMat.

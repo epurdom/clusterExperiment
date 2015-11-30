@@ -1,6 +1,5 @@
 #' @title Make hierarchy of set of clusters
 #'
-#'
 #' @description Makes a dendrogram of a set of clusters based on hclust on the mediods of the cluster.
 #'
 #'

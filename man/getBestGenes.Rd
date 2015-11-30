@@ -2,6 +2,7 @@
 % Please edit documentation in R/getGenes.R
 \name{getBestGenes}
 \alias{getBestGenes}
+\title{Function for finding best genes associated with clusters}
 \usage{
 getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs"), dendro = NULL,
   pairMat = NULL, returnType = c("Index", "Table"),
@@ -23,6 +24,9 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs"), dendro = NULL,
 \item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
 
 \item{requireF}{whether a significant omnibus F-statistic should be required before testing for significant contrasts (only for option type="Dendro" or "Pairs"). In which case the user must supply an option 'p.value' to be sent to}
+}
+\description{
+Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).
 }
 \details{
 getBestGenes returns best genes corresponding to a cluster assignment. It uses limma to fit the models, and limma's functions topTable or topTableF to find the best genes.  See the options of these functions to put better control on what gets returned (e.g. only if significant, only if log-fc is above a certain amount, etc.). In particular, set 'number=' to define how many significant genes to return (where number is per contrast for the 'Pairs' or 'Dendro' option)

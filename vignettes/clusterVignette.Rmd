@@ -122,7 +122,7 @@ table(subsampleCluster2$clustering,subsampleCluster$clustering)
 
 If we want to see the co-occurance matrix, rather than just cluster it, we need to call `subsampleClustering` directly, in which case we can plot it and visualize the results. 
 
-```{r basicSubsampling2}
+```{r subsampling}
 subD<-subsampleClustering(simData, clusterFunction="pam",k=2)
 require(NMF)
 aheatmap(subD)
