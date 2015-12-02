@@ -86,7 +86,7 @@ clustSubPamBestK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
 removeSil=TRUE,findBestK=TRUE,kRange=2:10)
 
 #visualize the results of different clusterings
-library(NMF)
+if(require(NMF)){
 clusterDF<-data.frame("hier"=factor(clustSubHier),
 "tight"=factor(clustSubTight),"PamK"=factor(clustSubPamK),
 "PamBestK"=factor(clustSubPamBestK))
@@ -95,5 +95,6 @@ cols<-bigPalette[1:(maxNumb+2)]
 names(cols)<-as.character(seq(-1,maxNumb,by=1))
 annColors<-list("hier"=cols,"tight"=cols,"PamK"=cols,"PamBestK"=cols)
 aheatmap(subD,annCol=clusterDF,annColors=annColors,annLegend=FALSE)
+}
 }
 

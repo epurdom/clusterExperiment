@@ -27,11 +27,9 @@
 #' have a large clusters matrix, this can be useful)
 #' @param colPalette a vector of colors used for the different clusters. Must be as long as the maximum number of clusters found in any single clustering/column given in \code{clusters} or will otherwise return an error.
 #' @param input indicate whether the input matrix is matrix of integer assigned clusters, or contains the colors. If \code{input="colors"}, then the object \code{clusters} is a matrix of colors and there is no alignment (this option allows the user to manually adjust the colors and replot, for example)
-#' @param colorMat Matrix where columns are different clusterings, rows are samples,
-#' and entries of matrix are colors (i.e. characters that define colors)
-#' @param names names to go with the columns (clusterings) in matrix colorMat
+#' @param clNames names to go with the columns (clusterings) in matrix colorMat
 #' @param add whether to add to existing plot
-#' @param x values on x-axis at which to plot the rows of m
+#' @param xCoord values on x-axis at which to plot the rows (samples) 
 #' @param ylim vector of limits of y-axis
 #' @param tick logical, whether to draw ticks on x-axis for each sample.
 #' @param ylab character string for the label of y-axis 
@@ -61,7 +59,7 @@
 #' ps<-c(5,10,50)
 #' names(ps)<-paste("npc=",ps,sep="")
 #' pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
-#' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+#' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
 #' colnames(cl$clMat) 
 #' #make names shorter for plotting
 #' colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
@@ -78,7 +76,7 @@
 #' #notice that the blue and orange are really arbitrarily different colors because not next to each other in row.
 #' #We can manually change the blue to orange :
 #' #first find out color names by looking at the out$colors (but in right order using out$index)
-#' out$colors[out$index[1:10],c("npc=5,k=NA,findBestK=TRUE","npc=5,k=3,findBestK=FALSE")]
+#' out$colors[out$index[1:10],c("npc=5,findBestK=T","npc=5,k=3,findBestK=F")]
 #' #change "#1F78B4" to "#FF7F00"
 #' newColorMat<-out$colors
 #' newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
@@ -86,10 +84,13 @@
 #' plotTracking(newColorMat[out$index,],input="colors")
 #'
 
-plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,input=c("clusters","colors"),xnames=rownames(clusters),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
+plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,input=c("clusters","colors"),clNames=colnames(clusters),add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
 	dnames<-dimnames(clusters)
 	input<-match.arg(input)
 
+	clusterPlotArgs<-list(clNames=clNames,add=add,xCoord=xCoord,ylim=ylim,tick=tick,ylab=ylab,xlab=xlab,axisLine=axisLine,box=box)
+	plotTrackArgs<-list(index=index,reuseColors=reuseColors,matchToTop=matchToTop,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette)
+	plotTrackArgs<-list(index=index,reuseColors=reuseColors,matchToTop=matchToTop,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette)
 	if(input=="clusters"){
 		clusters<-t(clusters)
 		if(any(as.character(clusters)%in%c("-1","-2"))){
@@ -99,7 +100,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 			# clusters<-apply(clusters,2,as.numeric)
 			# rownames(clusters)<-rnames
 			# if(any(is.na(clusters))) stop("could not convert clusters to numeric, but some samples had value '-1'")
-			out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=FALSE,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,xnames=xnames,add=add,x=x,ylim=ylim,tick=tick,ylab=ylab,xlab=xlab,axisLine=axisLine,box=box,...)
+			out<-do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 	#		browser()
 			#take out -1
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
@@ -116,22 +117,21 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 				out$colors[clusters[i,]=="-2",i]<-missingColor
 				return(out$colors[,i])
 			}))
-			if(plot) .clusterTrackingPlot(xColors[out$index,], colnames(out$colors),...)
+			if(plot) do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=TRUE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
 			out$groupToColorLegend<-newColorLeg
 		}
 		else{
-			out<-.plotTrackingInternal(clusters, index=index,reuseColors=reuseColors,matchToTop=matchToTop,plot=plot,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette,...)
+			out<-do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=plot),plotTrackArgs,clusterPlotArgs ,list(...)))
 		}	
 		invisible(out)
 	}
 	else{
-		.clusterTrackingPlot(clusters, ...)
-		
+		do.call(".clusterTrackingPlot",c(list(colorMat=clusters),clusterPlotArgs,list(...)))		
 	}
 }
-.plotTrackingInternal<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,minRequireColor=0.3,startNewColors=FALSE,colPalette=.thisPal,...){
+.plotTrackingInternal<-function(clusters, index, reuseColors, matchToTop, plot, minRequireColor, startNewColors, colPalette, ...){
 	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
 	#if given, index is the order of the samples (columns) for plotting. Otherwise determined by program
 	#matchToTop allows that the comparison for color assignment be done, not row by row, but always back to the first row.
@@ -196,7 +196,7 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 
 }
 
-.setClusterColors <- function(past_ct,ct,colorU,past_colors,reuseColors,minRequireColor=0.3,startNewColors=FALSE){
+.setClusterColors <- function(past_ct,ct,colorU,past_colors,reuseColors,minRequireColor,startNewColors){
 	#description: sets common color of clusters between different K
 	#takes previous row's colors and defines color assignments for next row. 
 	#assignments are done by:
@@ -320,20 +320,20 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 	return(newColors)
 }
 
-.clusterTrackingPlot <- function(colorMat, xnames=rownames(m),add=FALSE,x=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
+.clusterTrackingPlot <- function(colorMat, clNames, add, xCoord, ylim, tick, ylab, xlab, axisLine, box, ...){
   	m<-t(colorMat)
   #description: plots cluster tracking plot
   #input: m - matrix where rows are k, columns are samples, and entries are color assignments
   #names: names that correspond with rows of m
-	if(is.null(x)){
+	if(is.null(xCoord)){
 		xleft<-seq(0,1-1/ncol(m),by=1/ncol(m))
 		xright<-seq(1/ncol(m),1,by=1/ncol(m))
 	}
 	else{
-		d<-unique(round(diff(x),6)) #distance between x values; had to round because got differences due to small numerical storage issues
+		d<-unique(round(diff(xCoord),6)) #distance between x values; had to round because got differences due to small numerical storage issues
 		if(length(d)!=1) stop("invalid x values given -- not evenly spaced")
-		xleft<-x-d/2
-		xright<-x+d/2
+		xleft<-xCoord-d/2
+		xright<-xCoord+d/2
 	}
 	if(is.null(ylim)){
 		ylim<-c(0,1)
@@ -358,9 +358,9 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
   	axis(1,at=xl,labels=FALSE,tick=TRUE)
 #segments(  xl, rep(-0.1,ncol(m)) , xl, rep(0,ncol(m)), col="black")    #** alt white and black color?
   }
-	if(!is.null(xnames)){
+	if(!is.null(clNames)){
 		y<-(ybottom+ytop)/2
-	  	axis(2,at=y,labels=xnames,xpd=NA,las=2,tick=FALSE,line=axisLine)
+	  	axis(2,at=y,labels=clNames,xpd=NA,las=2,tick=FALSE,line=axisLine)
 	} 	
 	#draw box around
 	if(box){
@@ -430,8 +430,6 @@ makeAnnoColor<-function(trackingOut){
 		xcol<-apply(x,2,function(y){.thisPal[y]})
 		dimnames(xcol)<-dimnames(x)
 		if(plot) .clusterTrackingPlot(xcol[,order$index], names=row.names(x),main=main,...)
-#		image(x=1:ncol(x),y=1:nrow(x),t(x)[order$index,],col=.thisPal,xlab="",ylab="",xaxt="n",yaxt="n",main=main)
-#		axis(2,at=1:nrow(x),labels=rownames(x),las=2,cex=.5)
 		invisible(list(x=x,xcol=xcol,order=order$index))
 }
 
