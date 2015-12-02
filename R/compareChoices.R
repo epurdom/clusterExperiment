@@ -57,7 +57,7 @@
 #'	system.time(clusterTrack<-compareChoices(simData, ks=2:15, 
 #'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 #'	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", 
-#'	clusterArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
+#'	clusterDArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 #' }
 #' 
 
@@ -97,11 +97,18 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 		#also deals with just in case the user gave duplicated values of something by mistake.
 		typeK<-which(param[,"clusterMethod"] %in% c("pam"))
 		if(length(typeK)>0){
-			param[typeK,"alpha"]<-0.01 #just a nothing value
+			param[typeK,"alpha"]<-NA #just a nothing value
 			whFindBestK<-which(param[,"findBestK"])
 			if(length(whFindBestK)>0){ #remove 'k' and see if same
 				if(!"kRange" %in% names(clusterDArgs)) clusterDArgs[["kRange"]]<-ks
+        #if findBestK=TRUE, and sequential=FALSE, then user needs to set k via subsampleArgs
 				param[whFindBestK,"k"]<-NA
+        whNoSeq<-which(!param[,"sequential"])
+        if(length(intersect(whFindBestK,whNoSeq))>0){
+          if(is.null(subsampleArgs[["k"]])) stop("must provide k in subsampleArgs for those with findBestK=TRUE and sequential=FALSE")
+  #        else param[intersect(whFindBestK,whNoSeq),"k"]<-subsampleArgs[["k"]]
+        } 
+        
 			}
 		}
 		type01<-which(param[,"clusterMethod"] %in% c("hierarchical","tight"))
