@@ -42,7 +42,7 @@ co-occurance
 The clusterFunction must be a function that takes as an argument 'x' which is a nxp matrix  of data and integer 'k'. It minimally must return a list with element named 'clustering' giving the vector of cluster ids. To be incorporated with the larger hierarchy, it should be list with elements of a partition object, just as is returned by pam. Generally, the user will need to write a wrapper function to do this. In the case of pam or kmeans, the user can identify clusterFunction as "pam" or "kmeans", and the package functions will use internally written wrappers for the clusterFunction and classifyFunction arguments. Additional arguments should be supplied via clusterArgs.
 }
 \examples{
-load(simData)
+data(simData)
 subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",
 clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 heatmap(subD)

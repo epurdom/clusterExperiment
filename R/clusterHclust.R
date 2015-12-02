@@ -7,7 +7,8 @@
 #' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
 #' @param full Logical as to whether to expand to include all samples as tips (useful for heatmap), or to have dendrogram just of the clusters (useful for getBestGenes)
 #' @param unassigned what to do with with unassigned ("-1") cluster; only relevant if full=TRUE. Default is to remove those samples, so that only get heatmap of clustered observations. ``outgroup'' puts the unassigned into an outgroup on the dendrogram. ``cluster'' clusters them with the mediods. 
-#'@details If full=TRUE, then the expanded dendrogram is created by giving all of the samples the mediod of the cluster and applying hclust to it; if further unassigned=="cluster", then the expanded dendrogram is created by hclust of the expanded mediod data plus the original unclustered observations.
+#' @param ... arguments passed to hclust
+#' @details If full=TRUE, then the expanded dendrogram is created by giving all of the samples the mediod of the cluster and applying hclust to it; if further unassigned=="cluster", then the expanded dendrogram is created by hclust of the expanded mediod data plus the original unclustered observations.
 #'
 #'
 

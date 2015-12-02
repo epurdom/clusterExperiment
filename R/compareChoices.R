@@ -37,10 +37,17 @@
 #' ps<-c(5,10,50)
 #' names(ps)<-paste("npc=",ps,sep="")
 #' pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+#' 
 #' #check how many and what runs user choices will imply:
+#' #Note that this causes error:
+#' \dontrun{
 #' checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
 #' ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE)
-#' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+#' }
+#' #fixes error, but really, not clear what best subsampling k should be
+#' checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
+#' ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE,subsampleArgs=list("k"=3))
+#' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
 #' colnames(cl$clMat) 
 #' #make names shorter for plotting
 #' colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
@@ -50,7 +57,7 @@
 #' plotTracking(cl$clMat,axisLine=-2)
 #' #get rid of some of the choices manually
 #' checkParams<-checkParams[-c(1,2),]
-#' clSmaller<-compareChoices(paramMatrix=checkParams)
+#' clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),paramMatrix=checkParams)
 #' 
 #' \dontrun{
 #'	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:
@@ -74,18 +81,20 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 	# 	alphas<-0
 	# }
 	#browser()
-	if(is.null(paramMatrix)){
-		if(is.null(dim(data))){
-			if(!is.list(data) || !all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is not a data.frame, it must be a list with each element of the list a a data.frame or matrix")
-			if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
-			dataList<-data
+	if(missing(data)) stop("Must provide data or list of data matrices!")
+	if(is.null(dim(data))){
+		if(!is.list(data) || !all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is not a data.frame, it must be a list with each element of the list a a data.frame or matrix")
+		if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
+		dataList<-data
 
-		}
-		else{
-			dataList<-list(data)
-			names(dataList)<-"dataset1"
-		}
-		dataName<-names(dataList)
+	}
+	else{
+		dataList<-list(data)
+		names(dataList)<-"dataset1"
+	}
+	dataName<-names(dataList)
+	if(is.null(paramMatrix)){
+
 		# #check if ks=NA; no longer an option
 		# if(is.na(ks)){
 		# 	if(!all(clusterMethod=="pam")) stop("if clusterMethod includes methods that are not 'pam', must provide ks")

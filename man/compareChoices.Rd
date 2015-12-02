@@ -68,10 +68,17 @@ data(simData)
 ps<-c(5,10,50)
 names(ps)<-paste("npc=",ps,sep="")
 pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+
 #check how many and what runs user choices will imply:
+#Note that this causes error:
+\dontrun{
 checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
 ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE)
-cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+}
+#fixes error, but really, not clear what best subsampling k should be
+checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
+ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE,subsampleArgs=list("k"=3))
+cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
 colnames(cl$clMat)
 #make names shorter for plotting
 colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
@@ -81,14 +88,14 @@ par(mar=c(2,10,1,1))
 plotTracking(cl$clMat,axisLine=-2)
 #get rid of some of the choices manually
 checkParams<-checkParams[-c(1,2),]
-clSmaller<-compareChoices(paramMatrix=checkParams)
+clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),paramMatrix=checkParams)
 
 \dontrun{
 	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:
 	system.time(clusterTrack<-compareChoices(simData, ks=2:15,
 	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam",
-	clusterArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
+	clusterDArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 }
 }
 
