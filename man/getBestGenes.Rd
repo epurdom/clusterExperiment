@@ -4,16 +4,16 @@
 \alias{getBestGenes}
 \title{Function for finding best genes associated with clusters}
 \usage{
-getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs"), dendro = NULL,
-  pairMat = NULL, returnType = c("Index", "Table"),
-  contrastAdj = c("PerContrast", "AfterF", "All"), ...)
+getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
+  dendro = NULL, pairMat = NULL, returnType = c("Table", "Index"),
+  contrastAdj = c("All", "PerContrast", "AfterF"), ...)
 }
 \arguments{
 \item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
 
 \item{dat}{data for the test, samples in rows}
 
-\item{type}{What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side, and `Pairs' does pair-wise contrasts based on the pairs given in pairMat.}
+\item{type}{What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side,  `Pairs' does pair-wise contrasts based on the pairs given in pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares each cluster to the average of all others.}
 
 \item{dendro}{The dendrogram to traverse if type="Dendro". Note that this should be the dendrogram of the clusters, not of the individual samples.}
 
@@ -33,5 +33,25 @@ Calls limma on input data to determine genes most associated with found clusters
 }
 \details{
 getBestGenes returns best genes corresponding to a cluster assignment. It uses limma to fit the models, and limma's functions topTable or topTableF to find the best genes.  See the options of these functions to put better control on what gets returned (e.g. only if significant, only if log-fc is above a certain amount, etc.). In particular, set 'number=' to define how many significant genes to return (where number is per contrast for the 'Pairs' or 'Dendro' option)
+}
+\examples{
+data(simData)
+#create a clustering, for 8 clusters (truth was 4)
+cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(k=8))$cl
+#basic F test, return all, even if not significant:
+testF<-getBestGenes(cl,simData,type="F",number=nrow(simData))
+#Do all pairwise, only return significant, try different adjustments:
+pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",p.value=0.05,)
+pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",p.value=0.05,)
+pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",p.value=0.05,)
+#not useful for this silly example, but could look at overlap with Venn
+allGenes<-paste("Row",1:nrow(simData),sep="")
+if(require(limma)){
+	vennC<-vennCounts(cbind(PerContrast=allGenes\%in\%pairsPerC$Gene,AllJoint=allGenes\%in\%pairsAll$Gene,FHier=allGenes\%in\% pairsAfterF$Gene))
+	vennDiagram(vennC,main="FDR Overlap")
+}
+#Do one cluster against all others
+oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05,)
 }
 

@@ -46,7 +46,7 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 		sharedPerct<-.hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back.
 		sharedPerct[is.na(sharedPerct)|is.nan(sharedPerct)]<-0 #have no clusterings for which they are both not '-1'
 		cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
-		if(plot && require(NMF)) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
+		if(plot) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
 		
 		if(is.character(cl)) stop("coding error -- clusterD should return numeric vector")
 		##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat

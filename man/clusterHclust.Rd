@@ -15,6 +15,8 @@ clusterHclust(dat, cl, full = TRUE, unassigned = c("remove", "outgroup",
 \item{full}{Logical as to whether to expand to include all samples as tips (useful for heatmap), or to have dendrogram just of the clusters (useful for getBestGenes)}
 
 \item{unassigned}{what to do with with unassigned ("-1") cluster; only relevant if full=TRUE. Default is to remove those samples, so that only get heatmap of clustered observations. ``outgroup'' puts the unassigned into an outgroup on the dendrogram. ``cluster'' clusters them with the mediods.}
+
+\item{...}{arguments passed to hclust}
 }
 \description{
 Makes a dendrogram of a set of clusters based on hclust on the mediods of the cluster.

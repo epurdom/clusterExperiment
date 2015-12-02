@@ -58,10 +58,12 @@ showThisPal<-function(){
 #'
 #' @examples
 #' #show the palette colors
-#' showPalettes()
+#' showHeatmapPalettes()
 #' #compare the palettes on heatmap
-#' load(simData)
-#' load(simCount)
+#' data(simData)
+#' data(simCount)
+#' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' par(mfrow=c(2,3))
 #' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")
 #' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal2,main="seqPal2")
@@ -77,13 +79,13 @@ showHeatmapPalettes<-function(){
 	palettesAllAdj<-lapply(palettesAll,function(x){
 		if(length(x)<maxLength) x<-c(x,rep("white",maxLength-length(x)))
 			return(x)})
-		ll<-list()
-		sapply(1:length(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
-		sapply(1:(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
-		names(ll)[seq(1,length(ll),by=2)]<-names(palettesAll)
-		names(ll)[seq(2,length(ll),by=2)]<-rep("",length(palettesAll)-1)
-		mat<-do.call("rbind",ll)
-		clusterTrackingPlot(mat)
+	ll<-list()
+	sapply(1:length(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
+	sapply(1:(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
+	names(ll)[seq(1,length(ll),by=2)]<-names(palettesAll)
+	names(ll)[seq(2,length(ll),by=2)]<-rep("",length(palettesAll)-1)
+	mat<-do.call("cbind",ll)
+	plotTracking(mat,input="colors")
 }
 
 #' @rdname showHeatmapPalettes

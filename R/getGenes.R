@@ -22,7 +22,7 @@
 #' @description Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).
 #' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
 #' @param dat data for the test, samples in rows
-#' @param type What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side, and `Pairs' does pair-wise contrasts based on the pairs given in pairMat.
+#' @param type What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side,  `Pairs' does pair-wise contrasts based on the pairs given in pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares each cluster to the average of all others. 
 #' @param dendro The dendrogram to traverse if type="Dendro". Note that this should be the dendrogram of the clusters, not of the individual samples.
 #' @param pairMat matrix giving the pairs of clusters for which to do pair-wise contrasts (must match to elements of cl). If NULL, will do all pairwise of the clusters in \code{cl} (excluding "-1" categories). Each row is a pair to be compared and must match the names of the clusters in the vector \code{cl}. 
 #' @param returnType Whether to return the index of genes, or the full table given by topTable or topTableF.
@@ -37,8 +37,29 @@
 #' @details  Note that the default option for \code{\link{topTable}} is to not filter based on adjusted p-values (\code{p.value=1}) and return only the top 10 most significant (\code{number=10}) -- these are options the user can change (these arguments are passed via the \code{...} in getBestGenes). In particular, it only makes sense to set \code{requireF=TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05); the default value of \code{p.value=1} will not result in any effect on the adjusted p-value otherwise. 
 #'
 #' @return A data.frame in the same format as \code{\link{topTable}}, except that the column name \code{ProbeID} is changed to \code{Gene} and a column \code{IndexInOriginal} is provided to give the row index of the gene in the original dataset.
+#'
+#' @examples
+#' data(simData)
+#' #create a clustering, for 8 clusters (truth was 4)
+#' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))$cl
+#' #basic F test, return all, even if not significant:
+#' testF<-getBestGenes(cl,simData,type="F",number=nrow(simData))
+#' #Do all pairwise, only return significant, try different adjustments:
+#' pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",p.value=0.05,)
+#' pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",p.value=0.05,)
+#' pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",p.value=0.05,)
+#'#not useful for this silly example, but could look at overlap with Venn
+#' allGenes<-paste("Row",1:nrow(simData),sep="")
+#' if(require(limma)){
+#'	vennC<-vennCounts(cbind(PerContrast=allGenes%in%pairsPerC$Gene,AllJoint=allGenes%in%pairsAll$Gene,FHier=allGenes%in% pairsAfterF$Gene))
+#'	vennDiagram(vennC,main="FDR Overlap")
+#' }
+#' #Do one cluster against all others
+#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05,)
 
-getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=NULL,returnType=c("Index","Table"),contrastAdj=c("All","PerContrast","AfterF"),...){
+
+getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),...){
 	#... is always sent to topTable, and nothing else
 #	require(limma)
 	dat<-t(data.matrix(dat))
@@ -57,7 +78,7 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 		if(is.null(dendro)) stop("must provide dendro")
 		if(!inherits(dendro,"dendrogram")) stop("dendro must be of class 'dendrogram'")
 	}
-	if(type%in% c("Pairs","Dendro")){
+	if(type%in% c("Pairs","Dendro","OneAgainstAll")){
 	  designContr<-model.matrix(~0+cl)
 	  colnames(designContr)<-make.names(levels(cl))
 	  fitContr<-limma::lmFit(tmp,designContr)
@@ -70,7 +91,8 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 	else fitF<-NULL
 	tops<-switch(type,"F"=.getBestFGenes(fitF,...),
 		"Dendro"=.getBestDendroGenes(cl=cl,dendro=dendro,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...),
-		"Pairs"=.getBestPairsGenes(cl=cl,pairMat=pairMat,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...)
+		"Pairs"=.getBestPairsGenes(cl=cl,pairMat=pairMat,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...),
+		"OneAgainstAll"=.getBestOne(cl,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...)
 		)
 	tops<-data.frame(IndexInOriginal=match(tops$Gene,rownames(tmp)),tops)
 	if(returnType=="Index"){
@@ -86,7 +108,7 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 	## basic limma design
 	fit2<-limma::eBayes(fit)
 	#tops<-topTableF(fit2,number=nGenes,genelist=rownames(fit$coef),...)
-	tops<-limma::topTable(fit2,genelist=rownames(fit$coef),...)
+	tops<-limma::topTableF(fit2,genelist=rownames(fit$coef),...)
 	colnames(tops)[colnames(tops)=="ProbeID"]<-"Gene"
 
 	return(tops)
@@ -195,7 +217,18 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 	x <- apply(pairMat,1,function(y){y<-make.names(as.character(y));paste(y[1],y[2],sep="-")})
 	return(.testContrasts(contrastNames=x, ...))
 }
-
+.getBestOne<-function(cl,...){
+	levs<-levels(cl)
+	contrVect<-sapply(levs,function(x){
+		one<-make.names(x)
+		all<-make.names(levs[-which(levs==x)])
+		all<-paste("(",paste(all,collapse="+"),")/",length(all),sep="")
+		contr<-paste(all,"-",one,sep="")
+		return(contr)
+	})
+	names(contrVect)<-levs
+	return(.testContrasts(contrastNames=contrVect, ...))
+}
 .testContrasts<-function(contrastNames,fit,fitF,contrastAdj,...){
 	ncontr<-length(contrastNames)
 	cont.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=fit$design)
@@ -243,7 +276,8 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs"),dendro=NULL,pairMat=N
 			tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[1:min(c(nGenes,nrow(x))),,drop=FALSE]}))
 		}
 	}
-
+	row.names(tops)<-NULL
+	
 	return(tops)
 	
 }

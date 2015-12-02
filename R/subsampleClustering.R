@@ -22,7 +22,7 @@
 #' @return A nxn matrix of co-occurances
 #'
 #' @examples 
-#' load(simData)
+#' data(simData)
 #' subD<-subsampleClustering(simData,k=3,clusterFunction="kmeans",
 #' clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 #' heatmap(subD)
