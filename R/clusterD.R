@@ -75,6 +75,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
+	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)	
 	if(length(passedArgs)>0){ 
 		#get rid of wrong args passed because of user confusion between the two
