@@ -17,7 +17,7 @@
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
 #' @param ncores the number of threads
 #' @param random.seed a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)
-#' @param run logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned). 
+#' @param run logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object that would be returned if \code{run=TRUE}). 
 #' @param paramMatrix matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example). 
 #' @param ... arguments to be passed on to mclapply (if ncores>1)
 #'
@@ -111,13 +111,12 @@ removeSil=FALSE, subsample=FALSE,silCutoff=0,
 			if(length(whFindBestK)>0){ #remove 'k' and see if same
 				if(!"kRange" %in% names(clusterDArgs)) clusterDArgs[["kRange"]]<-ks
         #if findBestK=TRUE, and sequential=FALSE, then user needs to set k via subsampleArgs
-				param[whFindBestK,"k"]<-NA
-        whNoSeq<-which(!param[,"sequential"])
+				whNoSeq<-which(!param[,"sequential"])
         if(length(intersect(whFindBestK,whNoSeq))>0){
+          param[intersect(whFindBestK,whNoSeq),"k"]<-NA
           if(is.null(subsampleArgs[["k"]])) stop("must provide k in subsampleArgs for those with findBestK=TRUE and sequential=FALSE")
   #        else param[intersect(whFindBestK,whNoSeq),"k"]<-subsampleArgs[["k"]]
         } 
-        
 			}
 		}
 		type01<-which(param[,"clusterMethod"] %in% c("hierarchical","tight"))

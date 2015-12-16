@@ -40,7 +40,7 @@ compareChoices(data, ks, clusterMethod, alphas = 0.1, findBestK = FALSE,
 
 \item{random.seed}{a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)}
 
-\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object returned).}
+\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run for inspection by user (with rownames equal to the names of the resulting column names of clMat object that would be returned if \code{run=TRUE}).}
 
 \item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example).}
 

@@ -21,7 +21,7 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
 
 \item{returnType}{Whether to return the index of genes, or the full table given by topTable or topTableF.}
 
-\item{contrastAdj}{What type of FDR correction to do for contrasts tests (i.e. type='Dendro' or 'Pairs').}
+\item{contrastAdj}{What type of FDR correction to do for contrasts tests (i.e. if type='Dendro' or 'Pairs').}
 
 \item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
 }
