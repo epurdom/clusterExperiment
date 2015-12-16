@@ -83,13 +83,19 @@
 #' #replot by setting 'input="colors"'
 #' plotTracking(newColorMat[out$index,],input="colors")
 #'
+#' #set some arbitrarily to "-1", meaning not clustered.
+#' clNew<-apply(cl$clMat,2,function(x){
+#'	wh<-sample(1:nrow(cl$clMat),size=10)
+#'	x[wh]<- -1
+#'	return(x)
+#'	})
+#' plotTracking(clNew)
 
 plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,input=c("clusters","colors"),clNames=colnames(clusters),add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
 	dnames<-dimnames(clusters)
 	input<-match.arg(input)
 
 	clusterPlotArgs<-list(clNames=clNames,add=add,xCoord=xCoord,ylim=ylim,tick=tick,ylab=ylab,xlab=xlab,axisLine=axisLine,box=box)
-	plotTrackArgs<-list(index=index,reuseColors=reuseColors,matchToTop=matchToTop,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette)
 	plotTrackArgs<-list(index=index,reuseColors=reuseColors,matchToTop=matchToTop,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette)
 	if(input=="clusters"){
 		clusters<-t(clusters)
@@ -117,7 +123,8 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 				out$colors[clusters[i,]=="-2",i]<-missingColor
 				return(out$colors[,i])
 			}))
-			if(plot) do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=TRUE),plotTrackArgs,clusterPlotArgs ,list(...)))
+			if(plot) do.call(".clusterTrackingPlot",c(list(colorMat=xColors[out$index,]),clusterPlotArgs,list(...)))
+				# do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=TRUE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
 			out$groupToColorLegend<-newColorLeg
