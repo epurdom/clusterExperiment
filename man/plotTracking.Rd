@@ -110,6 +110,14 @@ newColorMat<-out$colors
 newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
 #replot by setting 'input="colors"'
 plotTracking(newColorMat[out$index,],input="colors")
+
+#set some arbitrarily to "-1", meaning not clustered.
+clNew<-apply(cl$clMat,2,function(x){
+	wh<-sample(1:nrow(cl$clMat),size=10)
+	x[wh]<- -1
+	return(x)
+	})
+plotTracking(clNew)
 }
 \author{
 Elizabeth Purdom and Marla Johnson
