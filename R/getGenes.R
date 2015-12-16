@@ -60,7 +60,7 @@
 #' #Do dendrogram testing
 #' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
 #' allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
-#' contrastAdj=c("All"),number=nrow(dat),p.value=0.05)
+#' contrastAdj=c("All"),number=ncol(dat),p.value=0.05)
 
 
 getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),...){
@@ -120,13 +120,13 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendr
 .getBestDendroGenes<-function(cl,dendro,...){ #... is given above, not used by this function
 	####
 	#Convert to object used by phylobase so can navigate easily -- might should make generic function...
-	tempPhylo<-try(dendextend::as.phylo.dendrogram(dendro),FALSE)
-	if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-	# require(phylobase)
-	phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-	if(inherits(phylo4Obj, "try-error")) stop("the created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-	phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-	
+	# tempPhylo<-try(dendextend::as.phylo.dendrogram(dendro),FALSE)
+	# if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
+	# # require(phylobase)
+	# phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE)
+	# if(inherits(phylo4Obj, "try-error")) stop("the created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
+	# phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+	phylo4Obj<-.makePhylobaseTree(dendro,type="dendro")
 	
 	clChar<-as.character(cl)
 	allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]

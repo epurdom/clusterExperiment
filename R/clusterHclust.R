@@ -11,7 +11,14 @@
 #' @details If full=TRUE, then the expanded dendrogram is created by giving all of the samples the mediod of the cluster and applying hclust to it; if further unassigned=="cluster", then the expanded dendrogram is created by hclust of the expanded mediod data plus the original unclustered observations.
 #'
 #'
-
+#' @examples
+#' data(simData)
+#' #create a clustering, for 8 clusters (truth was 3)
+#' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))$cl
+#' #create dendrogram
+#' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+ 
 clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","cluster"),...){
 	unassigned<-match.arg(unassigned)
 	if(nrow(dat)!=length(cl)) stop("cl must be the same length as the number of rows of dat")
@@ -77,24 +84,51 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #' @param dendro A dendrogram giving a hierarchical relationships between the clusters
 #' @param cutoff A value between 0,1 at which you merge the children together (i.e. if the proportion non-null in the test is below this value, then merge the two children nodes). If set to '1', will be ignored, and only the estimated proportions will be returned
 #' 
-#' 
-data(simData)
-#create a clustering, for 8 clusters (truth was 3)
-cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=8))$cl
-#create dendrogram
-hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+#' @details Implementation of "JC" method of Ji and Cai (2007) is copied from code available on Jiashin Ji's website, December 16, 2015 (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). 
 
-dat<-simData
-dendro<-hcl
-#'
-mergeClusters<-function(dat,cl,dendro,method=c("localfdr","MB","JC")){
+# @examples
+# data(simData)
+# #create a clustering, for 8 clusters (truth was 3)
+# cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+# sequential=FALSE, clusterDArgs=list(k=8))$cl
+# #create dendrogram
+# hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+#
+# dat<-simData
+# dendro<-hcl
+
+mergeClusters<-function(dat,cl,dendro,mergeMethod=c("none","locfdr","MB","JC"),cutoff=0.1){
 	#get test-statistics for the contrasts corresponding to each node (and return all)
-	sigTable<-getBestGenes(cl,dat,type=c("Dendro"),dendro=dendro,returnType=c("Table"),contrastAdj=c("All"),number=nrow(dat),p.value=1)
+	sigTable<-getBestGenes(cl,dat,type=c("Dendro"),dendro=dendro,returnType=c("Table"),contrastAdj=c("All"),number=ncol(dat),p.value=1)
 	#divide table into each node.
-	
+	sigByNode<-by(sigTable,sigTable$ContrastName,function(x){
+		mb<-.myTryFunc(pvalues=x$P.Value,FUN=.m1_MB)
+		locfdr<-.myTryFunc(tstats=x$t,FUN=.m1_locfdr)
+		jc<-.myTryFunc(tstats=x$t,FUN=.m1_JC)
+		return(c("locfdr"=locfdr,"MB"=mb,"JC"=jc))
+	})
 	#apply estimation to each node
 }
 
+.myTryFunc<-function(FUN,...){
+	x<-try(FUN(...))
+	if(!inherits(x, "try-error")) return(x)
+	else return(NA)
+}
 
-.m0MB<-function()
+#functions for estimating m1/m, the proportion of non-null
+.m1_MB<-function(pvalues){
+	nCorrect<-max(lowerbound(howmany(pvalues))) #the most you can call correctly
+	return(nCorrect/length(pvalues))
+}
+
+.m1_locfdr<-function(tstats){
+	locfdrResults<-locfdr::locfdr(tstats,plot=0)#ignore issue of df of t-statistic -- topTable doesn't give it out, and with large samples won't matter.
+	p0<-locfdrResults$fp0["mlest","p0"] #estimate proportion null; ignore estimate of variability for now
+	return(1-p0)
+}
+.m1_JC<-function(tstats){
+	#copied code from Jianshin's website
+	musigma<-try(.EstNull.func(tstats))
+	.epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
+}

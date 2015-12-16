@@ -69,7 +69,7 @@
 #' @author Elizabeth Purdom
 #' @examples
 #' 
-#' data(simCount)
+#' data(simData)
 #' data(simData)
 #' cl<-rep(1:3,each=100)
 #' cl2<-cl

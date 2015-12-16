@@ -8,21 +8,30 @@
 #' @keywords data
 #' @examples 
 #' #code used to create data:
-#' nvar<-50
-#' x<-rbind(matrix(rnorm(100*nvar,mean=5),ncol=nvar),
-#' matrix(rnorm(100*nvar,mean=-5),ncol=nvar),
-#' matrix(rnorm(100*nvar,mean=0),ncol=nvar))
+#' nvar<-51 #multiple of 3
+#' n<-100
+#' x<-rbind(matrix(rnorm(n*nvar,mean=5),ncol=nvar),
+#' matrix(rnorm(n*nvar,mean=-5),ncol=nvar),
+#' matrix(rnorm(n*nvar,mean=0),ncol=nvar))
+#' #make some of them flipped effects (better for testing if both sig under/over expressed variables)
+#' geneGroup<-sample(rep(1:3,each=floor(nvar/3)))
+#' gpIndex<-list(1:n,(n+1):(n*2),(2*n+1):(n*3))
+#' x[,geneGroup==1]<-x[unlist(gpIndex[c(3,1,2)]),geneGroup==1]
+#' x[,geneGroup==2]<-x[unlist(gpIndex[c(2,3,1)]),geneGroup==2]
+#' 
 #' #add in differences in variable means
 #' smp<-sample(1:ncol(x),10)
 #' x[,smp]<-x[,smp]+10
-#' y<-rbind(matrix(rnorm(100*nvar,mean=1),ncol=nvar),
-#' matrix(rnorm(100*nvar,mean=-1),ncol=nvar),
-#' matrix(rnorm(100*nvar,mean=0),ncol=nvar))
-#' y<-y[sample(1:nrow(y)),]+ matrix(rnorm(300*nvar,sd=3),ncol=nvar)
+#' y<-rbind(matrix(rnorm(n*nvar,mean=1),ncol=nvar),
+#' matrix(rnorm(n*nvar,mean=-1),ncol=nvar),
+#' matrix(rnorm(n*nvar,mean=0),ncol=nvar))
+#' y<-y[sample(1:nrow(y)),]+ matrix(rnorm(3*n*nvar,sd=3),ncol=nvar)
 #' simData<-x+y
+#' #add pure noise variables
+#' simData<-cbind(simData,matrix(rnorm(3*n*nvar,mean=10),ncol=nvar),matrix(rnorm(3*n*nvar,mean=5),ncol=nvar))
 #' countMean<-exp(simData/2)
 #' simCount<-matrix(rpois(n=length(as.vector(countMean)),
 #' lambda =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))
-#' trueCluster<-rep(c(1:3),each=100)
-#' #save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+#' trueCluster<-rep(c(1:3),each=n)
+#' #save(list=c("simCount","simData","trueCluster"),file="../data/simData.rda")
 NULL

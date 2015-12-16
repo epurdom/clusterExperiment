@@ -193,18 +193,21 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
 	hDmat<-hclust(dist(D),...)
-	dendro<-as.dendrogram(hDmat)
 	method<-evalClusterMethod
-	############
-	#convert into phylo4 (phylobase) object so can traverse tree easily.
-	############
-	#first into phylo from ape package
-	tempPhylo<-try(ape::as.phylo(hDmat),FALSE)
-	if(inherits(tempPhylo, "try-error")) stop("the hclust of D cannot be converted to a phylo class (ape package).")
-	# require(phylobase)
-	phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-	if(inherits(phylo4Obj, "try-error")) stop("the created phylo object from hclust cannot be converted to a phylo4 class.")
-	phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
+	# ############
+	# #convert into phylo4 (phylobase) object so can traverse tree easily.
+	# ############
+	# #first into phylo from ape package
+	# tempPhylo<-try(ape::as.phylo(hDmat),FALSE)
+	# if(inherits(tempPhylo, "try-error")) stop("the hclust of D cannot be converted to a phylo class (ape package).")
+	# # require(phylobase)
+	# phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE)
+	# if(inherits(phylo4Obj, "try-error")) stop("the created phylo object from hclust cannot be converted to a phylo4 class.")
+	# phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+
+
+
 	allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
 	#each internal node (including root) calculate whether passes value of alpha or not
 	nodesToCheck<-phylobase::rootNode(phylo4Obj)
