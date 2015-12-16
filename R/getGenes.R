@@ -56,7 +56,11 @@
 #'	vennDiagram(vennC,main="FDR Overlap")
 #' }
 #' #Do one cluster against all others
-#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05,)
+#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05)
+#' #Do dendrogram testing
+#' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+#' allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
+#' contrastAdj=c("All"),number=nrow(dat),p.value=0.05)
 
 
 getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),...){

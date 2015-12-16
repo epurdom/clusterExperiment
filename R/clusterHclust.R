@@ -66,3 +66,35 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 		return(as.dendrogram(stats::hclust(dist(mediods)^2,members=nPerCluster,...)))		
 	}
 }
+
+#' @title Merge clusters based on dendrogram
+#'
+#' @description Takes an input of hierarchical clusterings of clusters and returns estimates of number of proportion of non-null and merges those below a certain cutoff.
+#'
+#'
+#' @param dat data to perform the test on. Samples on rows, features on columns
+#' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
+#' @param dendro A dendrogram giving a hierarchical relationships between the clusters
+#' @param cutoff A value between 0,1 at which you merge the children together (i.e. if the proportion non-null in the test is below this value, then merge the two children nodes). If set to '1', will be ignored, and only the estimated proportions will be returned
+#' 
+#' 
+data(simData)
+#create a clustering, for 8 clusters (truth was 3)
+cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(k=8))$cl
+#create dendrogram
+hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+
+dat<-simData
+dendro<-hcl
+#'
+mergeClusters<-function(dat,cl,dendro,method=c("localfdr","MB","JC")){
+	#get test-statistics for the contrasts corresponding to each node (and return all)
+	sigTable<-getBestGenes(cl,dat,type=c("Dendro"),dendro=dendro,returnType=c("Table"),contrastAdj=c("All"),number=nrow(dat),p.value=1)
+	#divide table into each node.
+	
+	#apply estimation to each node
+}
+
+
+.m0MB<-function()
