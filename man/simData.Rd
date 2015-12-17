@@ -2,6 +2,7 @@
 % Please edit documentation in R/dataCreation.R
 \docType{data}
 \name{simData}
+\alias{simCount}
 \alias{simData}
 \title{Simulated data for running examples}
 \format{Three objects are loaded, two data frame(s) of simulated data each with 300 samples/rows and 50 variables/columns, and a vector of length 300 with the true cluster assignments.}
