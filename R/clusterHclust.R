@@ -181,8 +181,6 @@ mergeClusters<-function(dat,cl,mergeMethod=c("none","adjP","locfdr","MB","JC"),c
 				phyloObj$node.label<-as.character(valsPerNode)
 		}
 		if(plotType=="all") phyloObj$node.label<-sapply(sigByNode[m],function(x){paste(paste(names(x),signif(x,2),sep=":"),collapse=",\n")})
-		
-		library(ade4)
 		ape::plot.phylo(phyloObj,show.node=TRUE,edge.lty=edgeLty,...)
 	}
 	nodePropTable<-do.call("rbind",sigByNode)

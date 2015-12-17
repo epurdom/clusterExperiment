@@ -1,6 +1,8 @@
 #' Simulated data for running examples
 #'
 #' @name simData
+#' @aliases simCount 
+#' @aliases trueCluster
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
 #' @format Three objects are loaded, two data frame(s) of simulated data each with 300 samples/rows and 50 variables/columns, and a vector of length 300 with the true cluster assignments.
