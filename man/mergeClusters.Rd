@@ -4,22 +4,40 @@
 \alias{mergeClusters}
 \title{Merge clusters based on dendrogram}
 \usage{
-mergeClusters(dat, cl, dendro, mergeMethod = c("none", "locfdr", "MB", "JC"),
-  cutoff = 0.1)
+mergeClusters(dat, cl, mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
+  cutoff = 0.1, plotType = c("none", "all", "mergeMethod"), ...)
 }
 \arguments{
 \item{dat}{data to perform the test on. Samples on rows, features on columns}
 
 \item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
 
-\item{dendro}{A dendrogram giving a hierarchical relationships between the clusters}
+\item{mergeMethod}{method for calculating proportion of non-null that will be used to merge clusters (if 'none', no merging will be done). See details for description of methods.}
 
-\item{cutoff}{A value between 0,1 at which you merge the children together (i.e. if the proportion non-null in the test is below this value, then merge the two children nodes). If set to '1', will be ignored, and only the estimated proportions will be returned}
+\item{cutoff}{cutoff for merging clusters based on the proportion of non-nulls in the comparison of the clusters (i.e. value between 0,1, where lower values will make it harder to merge clusters).}
+
+\item{plotType}{what type of plotting of dendrogram. If 'all', then all the estimates of proportion non-null will be plotted; if 'mergeMethod', then only the value used in the merging is plotted for each node.}
+
+\item{...}{arguments passed to the \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.}
 }
 \description{
 Takes an input of hierarchical clusterings of clusters and returns estimates of number of proportion of non-null and merges those below a certain cutoff.
 }
 \details{
-Implementation of "JC" method of Ji and Cai (2007) is copied from code available on Jiashin Ji's website, December 16, 2015 (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/).
+"JC" refers to the method of Ji and Cai (2007), and implementation of "JC" method is copied from code available on Jiashin Ji's website, December 16, 2015 (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr" refers to the method of Efron (2004) and is implemented in the package \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann (2005) and is implemented in the package \code{\link{howmany}}. "adjP" refers to the proportion of genes that are found significant based on a FDR adjusted p-values (method "BH") and a cutoff of 0.05.
+
+If \code{mergeMethod} is not equal to 'none' then the plotting will indicate the merged clusters (assuming \code{plotType} is not 'none').
+}
+\examples{
+data(simData)
+ #create a clustering, for 8 clusters (truth was 3)
+ cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+ sequential=FALSE, clusterDArgs=list(k=8))$cl
+#merge clusters with plotting. Note argument 'use.edge.length' can improve readability
+mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",mergeMethod="adjP",use.edge.length=FALSE)
+#compare merged to original on heatmap
+hclData<-clusterHclust(dat=simData,cl,full=TRUE)
+dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 }
 

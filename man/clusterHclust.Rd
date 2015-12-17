@@ -29,7 +29,13 @@ data(simData)
 #create a clustering, for 8 clusters (truth was 3)
 cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))$cl
-#create dendrogram
+#create dendrogram of clusters:
 hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+plot(hcl)
+
+#create dendrogram for plotting with data in heatmap:
+hclData<-clusterHclust(dat=simData,cl,full=TRUE)
+dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+annCol=data.frame(PAM8=cl,Truth=trueCluster))
 }
 

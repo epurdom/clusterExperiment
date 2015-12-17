@@ -60,7 +60,7 @@
 #' #Do dendrogram testing
 #' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
 #' allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
-#' contrastAdj=c("All"),number=ncol(dat),p.value=0.05)
+#' contrastAdj=c("All"),number=ncol(simData),p.value=0.05)
 
 
 getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),...){

@@ -1,6 +1,6 @@
 Package: clusterCells
 Title: Compare clusterings for single-cell sequencing
-Version: 0.0.0.9004
+Version: 0.0.0.9005
 Description: This package provides functions for running and comparing many
     different clusterings of single-cell sequencing data.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -8,6 +8,7 @@ Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
 	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com",))
 Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
+BugReports: https://github.com/epurdom/clusterCells/issues
 License: Artistic-2.0
 Depends:
     R (>= 2.10),
@@ -21,12 +22,13 @@ Imports:
     cluster,
     stats,
     limma,
-    dendextend
+    dendextend,
+	howmany,
+	locfdr
 Suggests:
     knitr,
     rmarkdown,
-    diagram,
-    testthat
+    diagram
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 5.0.1
