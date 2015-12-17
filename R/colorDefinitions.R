@@ -61,7 +61,7 @@ showThisPal<-function(){
 #' showHeatmapPalettes()
 #' #compare the palettes on heatmap
 #' data(simData)
-#' data(simCount)
+#' data(simData)
 #' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' par(mfrow=c(2,3))
