@@ -92,6 +92,8 @@ plotTracking(cl$clMat,axisLine=-2)
 checkParams<-checkParams[-c(1,2),]
 clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),paramMatrix=checkParams)
 
+
+
 \dontrun{
 #following code takes around 1+ minutes to run because of the subsampling that is redone each time:
 system.time(clusterTrack<-compareChoices(simData, ks=2:15, 

@@ -51,6 +51,11 @@
 #' #internally and ignored, but without warning:
 #' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
 #' removeSil=TRUE)
+#' #passing arguments appropriate for 'tight' to hier and vice-versa gives warning:
+#' clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,
+#' clusterArgs=list(evalClusterMethod="average"))
+#' clustSubHier_test<-clusterD(subD,clusterFunction="hier",alpha=0.1,
+#' clusterArgs=list(minSize.core=4))
 #' 
 #' #two twists to pam
 #' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
