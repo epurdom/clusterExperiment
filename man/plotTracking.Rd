@@ -87,7 +87,8 @@ Align multiple clusters of the same set of samples and provide a color-coded plo
 ps<-c(5,10,50)
 names(ps)<-paste("npc=",ps,sep="")
 pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
-cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
+cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),
+clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
 colnames(cl$clMat)
 #make names shorter for plotting
 colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))

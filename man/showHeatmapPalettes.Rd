@@ -9,7 +9,7 @@
 \alias{seqPal5}
 \alias{showHeatmapPalettes}
 \title{Set of colors useful for heatmap gradients}
-\format{\preformatted{ chr [1:16] "#000000" "#00003B" "#000077" "#00009E" "#0000C2" "#0826CD" ...
+\format{\preformatted{ chr [1:16] "#000000" "#00003B" "#000077" "#00009E" ...
 }}
 \usage{
 showHeatmapPalettes()
@@ -36,7 +36,7 @@ these palettes.
 showHeatmapPalettes()
 #compare the palettes on heatmap
 data(simData)
-data(simCount)
+data(simData)
 cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))$cl
 par(mfrow=c(2,3))

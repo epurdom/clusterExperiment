@@ -94,7 +94,7 @@ The dualHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The 
 The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.
 }
 \examples{
-data(simCount)
+data(simData)
 data(simData)
 cl<-rep(1:3,each=100)
 cl2<-cl

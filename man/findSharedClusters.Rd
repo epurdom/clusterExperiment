@@ -16,9 +16,9 @@ findSharedClusters(clusterMat, proportion = 1,
 
 \item{clusterFunction}{the clustering to use (passed to \code{\link{clusterD}}); currently must be of type '01'.}
 
-\item{propUnassigned}{samples with greater than this proportion of assignments equal to '-1' are assigned a '-1' cluster value.}
+\item{propUnassigned}{samples with greater than this proportion of assignments equal to '-1' are assigned a '-1' cluster value as a last step (only if proportion<1}
 
-\item{plot}{logical. If true, will create a heatmap of the shared percentages with the final cluster found by function}
+\item{plot}{logical. If true, will create a heatmap of the shared percentages with the final cluster found by function (only if proportion<1)}
 
 \item{minSize}{minimum size required for a set of samples to be considered in a cluster because of shared clustering, passed to \code{\link{clusterD}}}
 }
@@ -31,6 +31,24 @@ A list with values
 \item{\code{percentageShared}}{a nsample x nsample matrix of the percent co-occurance across clusters used to find the final clusters. Percentage is out of those not '-1'}
 \item{\code{noUnassignedCorrection}{a vector of cluster assignments before samples were converted to '-1' because had >\code{propUnassigned} '-1' values (i.e. the direct output of the \code{clusterD} output.)}}
 }
+
+
+ps<-c(5,10,50)
+names(ps)<-paste("npc=",ps,sep="")
+pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(FALSE),removeSil=TRUE,subsample=FALSE)
+#make names shorter for plotting
+colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
+colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
+colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
+#require 100% agreement -- very strict
+clCommon100<-findSharedClusters(cl$clMat,proportion=1,minSize=10)
+#require 70% agreement based on clustering of overlap
+clCommon70<-findSharedClusters(cl$clMat,proportion=0.7,plot=TRUE,minSize=10)
+oldpar<-par()
+par(mar=c(1.1,12.1,1.1,1.1))
+plotTracking(cbind("70%Similarity"=clCommon70$clustering,cl$clMat,"100%Similarity"=clCommon100$clustering),axisLine=-2)
+par(oldpar)
 }
 \description{
 Find sets of samples that stay together across clusterings

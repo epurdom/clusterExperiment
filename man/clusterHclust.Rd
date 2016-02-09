@@ -24,4 +24,18 @@ Makes a dendrogram of a set of clusters based on hclust on the mediods of the cl
 \details{
 If full=TRUE, then the expanded dendrogram is created by giving all of the samples the mediod of the cluster and applying hclust to it; if further unassigned=="cluster", then the expanded dendrogram is created by hclust of the expanded mediod data plus the original unclustered observations.
 }
+\examples{
+data(simData)
+#create a clustering, for 8 clusters (truth was 3)
+cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(k=8))$cl
+#create dendrogram of clusters:
+hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+plot(hcl)
+
+#create dendrogram for plotting with data in heatmap:
+hclData<-clusterHclust(dat=simData,cl,full=TRUE)
+dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+	annCol=data.frame(PAM8=cl,Truth=trueCluster))
+}
 

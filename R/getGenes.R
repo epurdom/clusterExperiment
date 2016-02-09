@@ -1,3 +1,4 @@
+# #Very old code
 # getBestFGenes<-function(cl,dat,nGenes=100,correctedY=correctedY){
 #         tmp<-dat
 #         if(any(cl== -1)){ #only use those assigned to a cluster to get good genes.
@@ -27,6 +28,7 @@
 #' @param pairMat matrix giving the pairs of clusters for which to do pair-wise contrasts (must match to elements of cl). If NULL, will do all pairwise of the clusters in \code{cl} (excluding "-1" categories). Each row is a pair to be compared and must match the names of the clusters in the vector \code{cl}. 
 #' @param returnType Whether to return the index of genes, or the full table given by topTable or topTableF.
 #' @param contrastAdj What type of FDR correction to do for contrasts tests (i.e. if type='Dendro' or 'Pairs'). 
+#' @param voomCorrection Whether to perform voom correction on counts. If input to dat is count matrix, should be set to TRUE. Otherwise, dat should be log of counts (which is not preferable). Currently default is set to FALSE simply because it has not been heavily tested, but should be the default for RNA-Seq data.
 #' @param ... options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)
 #' @details getBestGenes returns best genes corresponding to a cluster assignment. It uses limma to fit the models, and limma's functions topTable or topTableF to find the best genes.  See the options of these functions to put better control on what gets returned (e.g. only if significant, only if log-fc is above a certain amount, etc.). In particular, set 'number=' to define how many significant genes to return (where number is per contrast for the 'Pairs' or 'Dendro' option)
 #'
@@ -44,22 +46,37 @@
 #' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' #basic F test, return all, even if not significant:
-#' testF<-getBestGenes(cl,simData,type="F",number=nrow(simData))
+#' testF<-getBestGenes(cl,simData,type="F",number=nrow(simData),
+#' voomCorrection=FALSE)
 #' #Do all pairwise, only return significant, try different adjustments:
-#' pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",p.value=0.05,)
-#' pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",p.value=0.05,)
-#' pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",p.value=0.05,)
+#' pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",
+#' p.value=0.05,voomCorrection=FALSE)
+#' pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",
+#' p.value=0.05,voomCorrection=FALSE)
+#' pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",
+#' p.value=0.05,voomCorrection=FALSE)
 #'#not useful for this silly example, but could look at overlap with Venn
 #' allGenes<-paste("Row",1:nrow(simData),sep="")
 #' if(require(limma)){
-#'	vennC<-vennCounts(cbind(PerContrast=allGenes%in%pairsPerC$Gene,AllJoint=allGenes%in%pairsAll$Gene,FHier=allGenes%in% pairsAfterF$Gene))
+#'	vennC<-vennCounts(cbind(PerContrast=allGenes%in%pairsPerC$Gene,
+#' AllJoint=allGenes%in%pairsAll$Gene,FHier=allGenes%in% pairsAfterF$Gene))
 #'	vennDiagram(vennC,main="FDR Overlap")
 #' }
 #' #Do one cluster against all others
-#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05,)
+#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05)
+#' #Do dendrogram testing
+#' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+#' allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
+#' contrastAdj=c("All"),number=ncol(simData),p.value=0.05)
+#'
+#' # do DE on counts using voom
+#' # compare results to if used simData instead (not on count scale). 
+#' # Again, not relevant for this silly example, but basic principle useful
+#' testFVoom<-getBestGenes(cl,simCount,type="F",number=nrow(simData),voomCorrection=TRUE)
+#' plot(testF$P.Value[order(testF$Index)],testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
 
-getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),...){
+getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),voomCorrection=FALSE,...){
 	#... is always sent to topTable, and nothing else
 #	require(limma)
 	dat<-t(data.matrix(dat))
@@ -79,16 +96,26 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendr
 		if(!inherits(dendro,"dendrogram")) stop("dendro must be of class 'dendrogram'")
 	}
 	if(type%in% c("Pairs","Dendro","OneAgainstAll")){
-	  designContr<-model.matrix(~0+cl)
+		  designContr<-model.matrix(~0+cl)
 	  colnames(designContr)<-make.names(levels(cl))
-	  fitContr<-limma::lmFit(tmp,designContr)
+	  if(voomCorrection){
+		  v <- limma::voom(tmp,design=designContr,plot=FALSE,normalize.method = "none")
+		  fitContr<-limma::lmFit(v,designContr)
+	  }
+	  else fitContr<-limma::lmFit(tmp,designContr)
 	  
 	}
 	if(type=="F" || contrastAdj=="AfterF"){
 	  designF<-model.matrix(~cl)
-	  fitF<-limma::lmFit(tmp,designF)
+	   if(voomCorrection){
+ 		  v <- limma::voom(tmp,design=designF,plot=FALSE,normalize.method = "none")
+ 		  fitF<-limma::lmFit(v,designF)
+	   }
+	   else fitF<-limma::lmFit(tmp,designF)
 	}
 	else fitF<-NULL
+
+		
 	tops<-switch(type,"F"=.getBestFGenes(fitF,...),
 		"Dendro"=.getBestDendroGenes(cl=cl,dendro=dendro,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...),
 		"Pairs"=.getBestPairsGenes(cl=cl,pairMat=pairMat,contrastAdj=contrastAdj,fit=fitContr,fitF=fitF,...),
@@ -116,13 +143,13 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendr
 .getBestDendroGenes<-function(cl,dendro,...){ #... is given above, not used by this function
 	####
 	#Convert to object used by phylobase so can navigate easily -- might should make generic function...
-	tempPhylo<-try(dendextend::as.phylo.dendrogram(dendro),FALSE)
-	if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-	# require(phylobase)
-	phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-	if(inherits(phylo4Obj, "try-error")) stop("the created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-	phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-	
+	# tempPhylo<-try(dendextend::as.phylo.dendrogram(dendro),FALSE)
+	# if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
+	# # require(phylobase)
+	# phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE)
+	# if(inherits(phylo4Obj, "try-error")) stop("the created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
+	# phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+	phylo4Obj<-.makePhylobaseTree(dendro,type="dendro")
 	
 	clChar<-as.character(cl)
 	allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]

@@ -6,7 +6,8 @@
 \usage{
 getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
   dendro = NULL, pairMat = NULL, returnType = c("Table", "Index"),
-  contrastAdj = c("All", "PerContrast", "AfterF"), ...)
+  contrastAdj = c("All", "PerContrast", "AfterF"), voomCorrection = FALSE,
+  ...)
 }
 \arguments{
 \item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
@@ -22,6 +23,8 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
 \item{returnType}{Whether to return the index of genes, or the full table given by topTable or topTableF.}
 
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests (i.e. if type='Dendro' or 'Pairs').}
+
+\item{voomCorrection}{Whether to perform voom correction on counts. If input to dat is count matrix, should be set to TRUE. Otherwise, dat should be log of counts (which is not preferable). Currently default is set to FALSE simply because it has not been heavily tested, but should be the default for RNA-Seq data.}
 
 \item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
 }
@@ -40,18 +43,33 @@ data(simData)
 cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))$cl
 #basic F test, return all, even if not significant:
-testF<-getBestGenes(cl,simData,type="F",number=nrow(simData))
+testF<-getBestGenes(cl,simData,type="F",number=nrow(simData),
+voomCorrection=FALSE)
 #Do all pairwise, only return significant, try different adjustments:
-pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",p.value=0.05,)
-pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",p.value=0.05,)
-pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",p.value=0.05,)
+pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",
+p.value=0.05,voomCorrection=FALSE)
+pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",
+p.value=0.05,voomCorrection=FALSE)
+pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",
+p.value=0.05,voomCorrection=FALSE)
 #not useful for this silly example, but could look at overlap with Venn
 allGenes<-paste("Row",1:nrow(simData),sep="")
 if(require(limma)){
-	vennC<-vennCounts(cbind(PerContrast=allGenes\%in\%pairsPerC$Gene,AllJoint=allGenes\%in\%pairsAll$Gene,FHier=allGenes\%in\% pairsAfterF$Gene))
+	vennC<-vennCounts(cbind(PerContrast=allGenes\%in\%pairsPerC$Gene,
+AllJoint=allGenes\%in\%pairsAll$Gene,FHier=allGenes\%in\% pairsAfterF$Gene))
 	vennDiagram(vennC,main="FDR Overlap")
 }
 #Do one cluster against all others
-oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05,)
+oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05)
+#Do dendrogram testing
+hcl<-clusterHclust(dat=simData,cl,full=FALSE)
+allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
+contrastAdj=c("All"),number=ncol(simData),p.value=0.05)
+
+# do DE on counts using voom
+# compare results to if used simData instead (not on count scale).
+# Again, not relevant for this silly example, but basic principle useful
+testFVoom<-getBestGenes(cl,simCount,type="F",number=nrow(simData),voomCorrection=TRUE)
+plot(testF$P.Value[order(testF$Index)],testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 }
 
