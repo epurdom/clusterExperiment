@@ -1,8 +1,7 @@
 #' Simulated data for running examples
 #'
 #' @name simData
-#' @aliases simCount 
-#' @aliases trueCluster
+#' @aliases simCount trueCluster
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
 #' @format Three objects are loaded, two data frame(s) of simulated data each with 300 samples/rows and 50 variables/columns, and a vector of length 300 with the true cluster assignments.
@@ -30,7 +29,8 @@
 #' y<-y[sample(1:nrow(y)),]+ matrix(rnorm(3*n*nvar,sd=3),ncol=nvar)
 #' simData<-x+y
 #' #add pure noise variables
-#' simData<-cbind(simData,matrix(rnorm(3*n*nvar,mean=10),ncol=nvar),matrix(rnorm(3*n*nvar,mean=5),ncol=nvar))
+#' simData<-cbind(simData,matrix(rnorm(3*n*nvar,mean=10),ncol=nvar),
+#' matrix(rnorm(3*n*nvar,mean=5),ncol=nvar))
 #' countMean<-exp(simData/2)
 #' simCount<-matrix(rpois(n=length(as.vector(countMean)),
 #' lambda =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))

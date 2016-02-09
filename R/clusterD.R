@@ -20,6 +20,7 @@
 #' @param kRange vector of integers. If findBestK=TRUE, this gives the range of k's to look over. Default is k-2 to k+20, subject to those values being greater than 2. Note that default values depend on the input k, so running for different choices of k and findBestK=TRUE can give different answers unless kRange is set to be the same.
 #' @param silCutoff Requirement on minimum silhouette width to be included in cluster (only if removeSil=TRUE)
 #' @param removeSil logical as to whether remove when silhouette < silCutoff
+#' @param checkArgs logical as to whether should give warning if arguments given that don't match clustering choices given. Otherwise, inapplicable arguments will be ignored without warning
 #' @param ... arguments given to clusterD to be passed to cluster01 or clusterK (depending on the value of typeAlg). Examples include 'k' for clusterK or 'alpha' for cluster01. These should not be the arguments needed by clusterFunction (which should be passed via the argument 'clusterArgs') but the actual arguments of cluster01 or clusterK.
 #' 
 #' @details cluster01 is for clustering functions that expect as an input D that takes on 0-1 values (e.g. from subclustering). clusterK is for clustering functions that require an input k, the number of clusters, but arbitrary distance/dissimilarity matrix. cluster01 and clusterK are given as separate functions in order to allow the user to provide different clustering functions that expect different types of input and for us to provide different shared processing of the results that is different for these different types of clustering methods (for example, removing low silhouette values is appropriate for clusterK clustering functions rather than cluster01 functions). It is also generally expected that cluster01 algorithms use the 0-1 nature of the input to set criteria as to where to find clusters and therefore do not need a pre-determined 'k'. On the other hand, clusterK functions are assumed to need a predetermined 'k' and are also assumed to cluster all samples to a cluster, and therefore clusterK gives options to exclude poorly clustered samples via silhouette distances.
@@ -46,17 +47,9 @@
 #' #clustering using single linkage:
 #' clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,
 #' minSize=5,clusterArgs=list(evalClusterMethod="average",method="single"))
-#' 
-#' #note passing the wrong arguments for a '01' clusterFunction is caught 
-#' #internally and ignored, but without warning:
-#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
-#' removeSil=TRUE)
-#' #passing arguments appropriate for 'tight' to hier and vice-versa gives warning:
-#' clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,
-#' clusterArgs=list(evalClusterMethod="average"))
-#' clustSubHier_test<-clusterD(subD,clusterFunction="hier",alpha=0.1,
-#' clusterArgs=list(minSize.core=4))
-#' 
+#' #do tight
+#' clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5)
+#'
 #' #two twists to pam
 #' clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
 #' removeSil=TRUE,k=3)
@@ -74,9 +67,22 @@
 #' annColors<-list("hier"=cols,"tight"=cols,"PamK"=cols,"PamBestK"=cols)
 #' aheatmap(subD,annCol=clusterDF,annColors=annColors,annLegend=FALSE)
 #' }
+#' 
+#' #note the following examples pass the wrong arguments and give warnings
+#' #(which can be turned off with checkArgs)
+#' clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
+#' removeSil=TRUE)
+#' clustSubPam_test<-clusterD(subD,clusterFunction="pam",alpha=0.1,minSize=5,
+#' removeSil=TRUE,findBestK=TRUE)
+#' #passing arguments appropriate for 'tight' to hier and vice-versa gives warning:
+#' clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,
+#' clusterArgs=list(evalClusterMethod="average"))
+#' clustSubHier_test<-clusterD(subD,clusterFunction="hier",alpha=0.1,
+#' clusterArgs=list(minSize.core=4))
 
 
-clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,...){
+
+clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
@@ -86,14 +92,15 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 	if(length(passedArgs)>0){ 
 		#get rid of wrong args passed because of user confusion between the two
 		whRightArgs<-which(names(passedArgs) %in% switch(typeAlg,"01"=.args01,"K"=.argsK))
+		if(length(whRightArgs)!=length(passedArgs) & checkArgs) warning("Some arguments passed via '...' do not match the choice of typeAlg")
 		if(length(whRightArgs)>0) passedArgs<-passedArgs[whRightArgs]
 		else passedArgs<-NULL
 	}
 	if(typeAlg=="01") {
-		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs),passedArgs))
+		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 	if(typeAlg=="K") {
-		res<-do.call("clusterK",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs),passedArgs))
+		res<-do.call("clusterK",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 	N<-nrow(D)
 
@@ -128,7 +135,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 
 .args01<-c("alpha")
 #' @rdname clusterD
-cluster01<-function(D, clusterFunction=c("hierarchical","tight"), alpha=0.1, clusterArgs=NULL)
+cluster01<-function(D, clusterFunction=c("hierarchical","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
 {
 	if(!is.function(clusterFunction)){
 		method<-match.arg(clusterFunction)	
@@ -136,12 +143,12 @@ cluster01<-function(D, clusterFunction=c("hierarchical","tight"), alpha=0.1, clu
 		if(method=="tight") clusterFunction<-.tightClusterDMat
 		if(method=="hierarchical") clusterFunction<-.hierClusterDMat
 	}
-	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha),clusterArgs))
+	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)
 }
 .argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
 #' @rdname clusterD
-clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL)
+clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
 {
 	if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
 	if(findBestK){
@@ -157,10 +164,18 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 	##These return lists of indices of clusters satisifying alpha criteria
 	if(!is.function(clusterFunction)){
 		method<-match.arg(clusterFunction)
-		if(method =="pam") clusterFunction<-function(D,k,...){cluster::pam(D,k,diss=TRUE,...)}
+		if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
+			passedArgs<-list(...)
+			pamArgs<-names(as.list(args(cluster::pam)))
+			if(any(wh<-!passedArgs %in% pamArgs)){
+				passedArgs<-passedArgs[-which(wh)]
+				if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
+			}
+			do.call(cluster::pam,c(list(x=D,k=k,diss=TRUE),passedArgs))
+		}
 	} 
 	if(findBestK) ks<-kRange else ks<-k
-	kmeansClusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk),clusterArgs))})	
+	kmeansClusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk,checkArgs=checkArgs),clusterArgs))})	
 	if(length(ks)>1){
 		whichBest<-which.max(sapply(kmeansClusters, function(z) z$silinfo$avg.width))
 		finalCluster<-kmeansClusters[[whichBest]]		
@@ -193,17 +208,17 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 }
 
 
-.hierClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),...)
+.hierClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),checkArgs,...)
 {
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
-		passedArgs<-list(...)
-	hclustArgs<-names(as.list(args(hclust)))
+	passedArgs<-list(...)
+	hclustArgs<-names(as.list(args(stats::hclust)))
 	if(any(wh<-!passedArgs %in% hclustArgs)){
 		passedArgs<-passedArgs[-which(wh)]
-		warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
+		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
-	hDmat<-hclust(dist(D),...)
+	hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
 	method<-evalClusterMethod
 	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
 	# ############
@@ -276,9 +291,9 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 	}
 	else return(res)
 }
-.tightClusterDMat <- function(D, alpha, minSize.core=2,...) 
+.tightClusterDMat <- function(D, alpha, minSize.core=2,checkArgs,...) 
 {
-    if(length(list(...))>0) 	warning("some arguments passed via clusterArgs to tight clustering method not applicable")
+    if(length(list(...))>0 & checkArgs) 	warning("some arguments passed via clusterArgs to tight clustering method are not applicable")
 	find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
 		#what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is. 
@@ -330,10 +345,10 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 
 }
 
-.pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"),...)
+.pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"),checkArgs,...)
 {
 	#... doesn't go anywhere. Just so if giving arguments that don't match, won't kickup error
-	if(length(list(...))>0) warning("some arguments passed via clusterArgs to tight clustering method not applicable")
+	if(length(list(...))>0 & checkArgs) warning("some arguments passed via clusterArgs to tight clustering method not applicable")
 	method<-match.arg(method)
 	kmeansClusters<-lapply(ks,FUN=function(k){cluster::pam(D,k)})		
 	if(length(ks)>1){

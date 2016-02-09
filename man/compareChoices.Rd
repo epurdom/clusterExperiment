@@ -79,7 +79,8 @@ ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE)
 checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
 ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE,subsampleArgs=list("k"=3))
 #Now actually run it
-cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
+cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),
+subsampleArgs=list("k"=3))
 colnames(cl$clMat)
 #make names shorter for plotting
 colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
@@ -89,7 +90,8 @@ par(mar=c(2,10,1,1))
 plotTracking(cl$clMat,axisLine=-2)
 #get rid of some of the choices manually
 checkParams<-checkParams[-c(1,2),]
-clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),paramMatrix=checkParams)
+clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),
+paramMatrix=checkParams)
 
 
 
