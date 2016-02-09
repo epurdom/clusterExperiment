@@ -47,6 +47,7 @@
 #' #fixes error, but really, not clear what best subsampling k should be
 #' checkParams <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",
 #' ks=2:4,findBestK=c(TRUE,FALSE),run=FALSE,subsampleArgs=list("k"=3))
+#' #Now actually run it
 #' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),subsampleArgs=list("k"=3))
 #' colnames(cl$clMat) 
 #' #make names shorter for plotting

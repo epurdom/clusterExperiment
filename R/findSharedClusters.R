@@ -5,8 +5,8 @@
 #' @param clusterFunction the clustering to use (passed to \code{\link{clusterD}}); currently must be of type '01'. 
 #' @param minSize minimum size required for a set of samples to be considered in a cluster because of shared clustering, passed to \code{\link{clusterD}}
 #' @param proportion The proportion of times that two sets of samples should be together in order to be grouped into a cluster (if <1, passed to clusterD via alpha=1-proportion)
-#' @param propUnassigned samples with greater than this proportion of assignments equal to '-1' are assigned a '-1' cluster value.
-#' @param plot logical. If true, will create a heatmap of the shared percentages with the final cluster found by function
+#' @param propUnassigned samples with greater than this proportion of assignments equal to '-1' are assigned a '-1' cluster value as a last step (only if proportion<1
+#' @param plot logical. If true, will create a heatmap of the shared percentages with the final cluster found by function (only if proportion<1)
 #'
 #' @details The function tries to find a consensus cluster across many different clusterings of the same sample. It does so by creating a nsample x nsample matrix of the percentage of co-occurance of each sample and then calling clusterD to cluster the co-occurance matrix. The function assumes that '-1' labels indicate clusters that are not assigned to a cluster. Co-occurance with the unassigned cluster is treated differently than other clusters. The percent co-occurance is taken only with respect to those clusterings where both samples were assigned. Then samples with more than \code{propUnassigned} values that are '-1' across all of the clusterings are assigned a '-1' regardless of their cluster assignment. 
 #'
@@ -19,6 +19,25 @@
 #' \item{\code{percentageShared}}{a nsample x nsample matrix of the percent co-occurance across clusters used to find the final clusters. Percentage is out of those not '-1'}
 #' \item{\code{noUnassignedCorrection}{a vector of cluster assignments before samples were converted to '-1' because had >\code{propUnassigned} '-1' values (i.e. the direct output of the \code{clusterD} output.)}}
 #' }
+#'
+#' 
+#' ps<-c(5,10,50)
+#' names(ps)<-paste("npc=",ps,sep="")
+#' pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
+#' cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(FALSE),removeSil=TRUE,subsample=FALSE)
+#' #make names shorter for plotting
+#' colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
+#' colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
+#' colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
+
+#' #require 100% agreement -- very strict
+#' clCommon100<-findSharedClusters(cl$clMat,proportion=1,minSize=10)
+#' #require 70% agreement based on clustering of overlap
+#' clCommon70<-findSharedClusters(cl$clMat,proportion=0.7,plot=TRUE,minSize=10)
+#' oldpar<-par()
+#' par(mar=c(1.1,12.1,1.1,1.1))
+#' plotTracking(cbind("70%Similarity"=clCommon70$clustering,cl$clMat,"100%Similarity"=clCommon100$clustering),axisLine=-2)
+#' par(oldpar)
 
 
 findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchical",propUnassigned=.5,plot=FALSE,minSize=5){
@@ -33,7 +52,7 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 		tab<-tab[names(tab)!=allUnass]
 		cl<-match(singleValueClusters,names(tab))
 		cl[is.na(cl)]<- -1		
-		return(cl)
+		sharedPerct<-NULL
 	}
 	else{
 		if(is.character(clusterFunction)){
@@ -46,15 +65,16 @@ findSharedClusters<-function(clusterMat,proportion=1,clusterFunction="hierarchic
 		sharedPerct<-.hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back.
 		sharedPerct[is.na(sharedPerct)|is.nan(sharedPerct)]<-0 #have no clusterings for which they are both not '-1'
 		cl<-clusterD(D=sharedPerct,clusterFunction=clusterFunction,alpha = 1-proportion, minSize=minSize, format="vector",clusterArgs=list(evalClusterMethod=c("average")))
-		if(plot) NMF::aheatmap(sharedPerct,annCol=data.frame("Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
+		if(plot) NMF::aheatmap(sharedPerct,annCol=data.frame("Final Cluster"=factor(cl)),Colv="Rowv",annColors=list(bigPalette))
 		
 		if(is.character(cl)) stop("coding error -- clusterD should return numeric vector")
-		##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
-		whUnassigned<-which(apply(clusterMat,2,function(x){sum(x== -1)/length(x)>propUnassigned}))
-		clUnassigned<-cl
-		clUnassigned[whUnassigned]<- -1
-		return(list(clustering=clUnassigned,percentageShared=sharedPerct,noUnassignedCorrection=cl))
 	}
+	##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
+	whUnassigned<-which(apply(clusterMat,2,function(x){sum(x== -1)/length(x)>propUnassigned}))
+	clUnassigned<-cl
+	clUnassigned[whUnassigned]<- -1
+	return(list(clustering=clUnassigned,percentageShared=sharedPerct,noUnassignedCorrection=cl))
+	
 }
 
 
