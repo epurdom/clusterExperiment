@@ -32,7 +32,8 @@ data(simData)
  cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
  sequential=FALSE, clusterDArgs=list(k=8))$cl
 #merge clusters with plotting. Note argument 'use.edge.length' can improve readability
-mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",mergeMethod="adjP",use.edge.length=FALSE)
+mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
+mergeMethod="adjP",use.edge.length=FALSE)
 #compare merged to original on heatmap
 hclData<-clusterHclust(dat=simData,cl,full=TRUE)
 dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,

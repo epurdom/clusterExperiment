@@ -8,13 +8,13 @@
 \usage{
 clusterD(D, clusterFunction = c("hierarchical", "tight", "pam"),
   typeAlg = c("01", "K"), minSize = 1, orderBy = c("size", "best"),
-  format = c("vector", "list"), clusterArgs = NULL, ...)
+  format = c("vector", "list"), clusterArgs = NULL, checkArgs = TRUE, ...)
 
 cluster01(D, clusterFunction = c("hierarchical", "tight"), alpha = 0.1,
-  clusterArgs = NULL)
+  clusterArgs = NULL, checkArgs)
 
 clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
-  removeSil = FALSE, silCutoff = 0, clusterArgs = NULL)
+  removeSil = FALSE, silCutoff = 0, clusterArgs = NULL, checkArgs)
 }
 \arguments{
 \item{D}{the nxn matrix of 0-1 values}
@@ -30,6 +30,8 @@ clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
 \item{format}{whether to return a list of indices in a cluster or a vector of clustering assignments. List is mainly for compatibility with sequential part.}
 
 \item{clusterArgs}{arguments to be passed directly to the clusterFunction, beyond the required input.}
+
+\item{checkArgs}{logical as to whether should give warning if arguments given that don't match clustering choices given. Otherwise, inapplicable arguments will be ignored without warning}
 
 \item{...}{arguments given to clusterD to be passed to cluster01 or clusterK (depending on the value of typeAlg). Examples include 'k' for clusterK or 'alpha' for cluster01. These should not be the arguments needed by clusterFunction (which should be passed via the argument 'clusterArgs') but the actual arguments of cluster01 or clusterK.}
 
@@ -73,16 +75,8 @@ clusterArgs=list(nstart=10),resamp.n=100,samp.p=0.7)
 #clustering using single linkage:
 clustSubHier<-clusterD(subD,clusterFunction="hierarchical",alpha=0.1,
 minSize=5,clusterArgs=list(evalClusterMethod="average",method="single"))
-
-#note passing the wrong arguments for a '01' clusterFunction is caught
-#internally and ignored, but without warning:
-clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
-removeSil=TRUE)
-#passing arguments appropriate for 'tight' to hier and vice-versa gives warning:
-clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,
-clusterArgs=list(evalClusterMethod="average"))
-clustSubHier_test<-clusterD(subD,clusterFunction="hier",alpha=0.1,
-clusterArgs=list(minSize.core=4))
+#do tight
+clustSubTight<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5)
 
 #two twists to pam
 clustSubPamK<-clusterD(subD,clusterFunction="pam",silCutoff=0,minSize=5,
@@ -101,5 +95,17 @@ names(cols)<-as.character(seq(-1,maxNumb,by=1))
 annColors<-list("hier"=cols,"tight"=cols,"PamK"=cols,"PamBestK"=cols)
 aheatmap(subD,annCol=clusterDF,annColors=annColors,annLegend=FALSE)
 }
+
+#note the following examples pass the wrong arguments and give warnings
+#(which can be turned off with checkArgs)
+clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,minSize=5,
+removeSil=TRUE)
+clustSubPam_test<-clusterD(subD,clusterFunction="pam",alpha=0.1,minSize=5,
+removeSil=TRUE,findBestK=TRUE)
+#passing arguments appropriate for 'tight' to hier and vice-versa gives warning:
+clustSubTight_test<-clusterD(subD,clusterFunction="tight",alpha=0.1,
+clusterArgs=list(evalClusterMethod="average"))
+clustSubHier_test<-clusterD(subD,clusterFunction="hier",alpha=0.1,
+clusterArgs=list(minSize.core=4))
 }
 
