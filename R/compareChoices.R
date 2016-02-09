@@ -59,14 +59,22 @@
 #' checkParams<-checkParams[-c(1,2),]
 #' clSmaller<-compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}),paramMatrix=checkParams)
 #' 
+#' 
+#'
 #' \dontrun{
 #'	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:
 #'	system.time(clusterTrack<-compareChoices(simData, ks=2:15, 
 #'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
 #'	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", 
 #'	clusterDArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
+
 #' }
 #' 
+#Work up example:
+# clusterTrack<-compareChoices(simData, ks=2:3,
+# alphas=c(0.1), findBestK=c(TRUE),sequential=c(FALSE),
+# subsample=c(TRUE),removeSil=c(TRUE), clusterMethod=c("pam","tight","hierarchical",
+# clusterDArgs = list(minSize = 5,kRange=2:15),subsampleArgsncores=1,random.seed=48120)
 
 
 compareChoices <- function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,

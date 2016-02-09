@@ -155,7 +155,7 @@ mergeClusters<-function(dat,cl,mergeMethod=c("none","adjP","locfdr","MB","JC"),c
 			#make consecutive integers
 			newcl<-as.numeric(factor(newcl,levels=unique(cl[cl>0])))
 			#deal with -1/-2
-			newcl[is.na(newcl)]<-cl[is.na(cl)]
+			newcl[is.na(newcl)]<-cl[is.na(newcl)]
 		}
 	}
 	if(plotType!="none"){

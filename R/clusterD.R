@@ -192,6 +192,12 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 {
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
+		passedArgs<-list(...)
+	hclustArgs<-names(as.list(args(hclust)))
+	if(any(wh<-!passedArgs %in% hclustArgs)){
+		passedArgs<-passedArgs[-which(wh)]
+		warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
+	}
 	hDmat<-hclust(dist(D),...)
 	method<-evalClusterMethod
 	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
@@ -265,9 +271,10 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 	}
 	else return(res)
 }
-.tightClusterDMat <- function(D, alpha, minSize.core=2) 
+.tightClusterDMat <- function(D, alpha, minSize.core=2,...) 
 {
-    find.candidates.one <- function(x) {
+    if(length(list(...))>0) 	warning("some arguments passed via clusterArgs to tight clustering method not applicable")
+	find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
 		#what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is. 
 		if(all(tmp<minSize.core)){ #i.e. only core size groups less than minSize.core (default is 1)
@@ -318,8 +325,10 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 
 }
 
-.pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"))
+.pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"),...)
 {
+	#... doesn't go anywhere. Just so if giving arguments that don't match, won't kickup error
+	if(length(list(...))>0) warning("some arguments passed via clusterArgs to tight clustering method not applicable")
 	method<-match.arg(method)
 	kmeansClusters<-lapply(ks,FUN=function(k){cluster::pam(D,k)})		
 	if(length(ks)>1){
