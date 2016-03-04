@@ -4,7 +4,7 @@
 #'
 #'
 #' @param dat data to define the mediods from. Samples on rows, features on columns
-#' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
+#' @param cl A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
 #' @param full Logical as to whether to expand to include all samples as tips (useful for heatmap), or to have dendrogram just of the clusters (useful for getBestGenes)
 #' @param unassigned what to do with with unassigned ("-1") cluster; only relevant if full=TRUE. Default is to remove those samples, so that only get heatmap of clustered observations. ``outgroup'' puts the unassigned into an outgroup on the dendrogram. ``cluster'' clusters them with the mediods. 
 #' @param ... arguments passed to hclust
@@ -29,6 +29,9 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 	unassigned<-match.arg(unassigned)
 	if(nrow(dat)!=length(cl)) stop("cl must be the same length as the number of rows of dat")
 	if(is.null(rownames(dat))) rownames(dat)<-as.character(1:nrow(dat))
+	if(is.factor(cl)){warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
+			cl<-as.numeric(as.character(cl))
+	}
 	whRm<- which(cl!=-1)
 	clFactor<-factor(cl[whRm])
 	mediods<-do.call("rbind",by(dat[whRm,],clFactor,function(x){apply(x,2,median)}))
@@ -86,7 +89,8 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #'
 #'
 #' @param dat data to perform the test on. Samples on rows, features on columns
-#' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
+#' @param cl A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
+#' @param dendro If provided, is dendrogram providing hierarchical clustering of clusters in cl; mainly useful to speed up calculations if clusterHclust has already been called on the (cl,dat) pair. The default (NULL) is to recalculate it with the given (cl,dat) pair.
 #' @param mergeMethod method for calculating proportion of non-null that will be used to merge clusters (if 'none', no merging will be done). See details for description of methods. 
 #' @param cutoff cutoff for merging clusters based on the proportion of non-nulls in the comparison of the clusters (i.e. value between 0,1, where lower values will make it harder to merge clusters).
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the estimates of proportion non-null will be plotted; if 'mergeMethod', then only the value used in the merging is plotted for each node. 
@@ -109,13 +113,26 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #'	annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 
  
-mergeClusters<-function(dat,cl,mergeMethod=c("none","adjP","locfdr","MB","JC"),cutoff=0.1,plotType=c("none","all","mergeMethod"),...){
-	dendro<-clusterHclust(dat=dat,cl,full=FALSE)
+mergeClusters<-function(dat,cl,dendro=NULL,mergeMethod=c("none","adjP","locfdr","MB","JC"),cutoff=0.1,plotType=c("none","all","mergeMethod"),countData=TRUE,...){
+	if(is.factor(cl)){warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
+			cl<-as.numeric(as.character(cl))
+	}
+	if(!is.null(dendro)){
+		#check valid
+		ncluster<-length(table(cl[cl>0]))
+		if(nobs(dendro)!=ncluster){
+			warning("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl). Will recompute dendrogram")
+			dendro<-NULL
+		}
+	}
+	if(is.null(dendro)){
+		dendro<-if(countData) clusterHclust(dat=log(dat+1),cl,full=FALSE) else clusterHclust(dat=dat,cl,full=FALSE)		
+	}
   	mergeMethod<-match.arg(mergeMethod)
   	plotType<-match.arg(plotType)
 	if(plotType=="mergeValue" & mergeMethod=="none") stop("can only plot merge method values if one method is selected")
 	#get test-statistics for the contrasts corresponding to each node (and return all)
-	sigTable<-getBestGenes(cl,dat,type=c("Dendro"),dendro=dendro,returnType=c("Table"),contrastAdj=c("All"),number=ncol(dat),p.value=1)
+	sigTable<-getBestGenes(cl,dat,type=c("Dendro"),dendro=dendro,returnType=c("Table"),contrastAdj=c("All"),number=ncol(dat),p.value=1,voomCorrection=countData)
 	#divide table into each node.
 	sigByNode<-by(sigTable,sigTable$ContrastName,function(x){
 		mb<-.myTryFunc(pvalues=x$P.Value,FUN=.m1_MB)

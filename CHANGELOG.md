@@ -1,5 +1,11 @@
 Unreleased:
 
+* fixed so that mergeClusters, clusterHclust, and getBestGenes will appropriately convert if the input of clusters is a factor rather than numeric (with warning).
+* fixed mergeClusters to have option to indicate that input matrix is a count matrix (in which case will create dendrogram with log(counts+1) and will do getBestGenes with the voom correction) 
+
+
+0.0.0.9005
+
 * Changed simulated data so load all with data(simData) rather than separate calls for simData and simCount. Also added 'trueCluster' vector to give true cluster assignments of simulated data
 * added dendro example to getBestGenes
 * added example to clusterHclust
