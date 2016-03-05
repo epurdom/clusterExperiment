@@ -12,9 +12,14 @@ knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", f
 library(diagram)
 drawClusterAll <- function(arguments=NULL, subsample=NULL,plotLayer2=FALSE){
 	Layer1Names<-c("clusterFunction","subsample", "sequential")
-	Layer1Pos<-c("clusterFunction","subsample", "sequential")
+	Layer1XPos<-c("clusterFunction"=c(0.25, 0.77),"subsample"=c(0.50,0.77), "sequential"=c(0.75, 0.77))
+
+    posMatrix = matrix(c(0.5, 0.95,  , 0.243, 0.59, , ,
+                         , , , , 0.50, 0.23, 0.70, 0.23), ncol=2, byrow = TRUE) 
+	
 	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical", "pam", "kmeans"), "subsample"=c("FALSE","TRUE"), "sequential"=c("FALSE","TRUE"))
-	Layer2Names<-c("clusterFunction"="clusterDArgs","subsample"="subsampleArgs","sequential"="seqArgs")
+	Layer1OptionsPos<-list("clusterFunction"=c("tight"=c( 0.081, 0.59), "hierarchical"=c(0.162, 0.59), "pam"=c(0.243, 0.59), "kmeans"=c(0.324, 0.59)), "subsample"=c("FALSE"=c(0.45, 0.59),"TRUE"=c(0.55, 0.59)), "sequential"=c("FALSE"=c(0.77, 0.59),"TRUE"=c(0.88, 0.59)))
+	Layer2Names<-c("clusterFunction"="clusterDArgs"=c(0.2,0.44),"subsample"="subsampleArgs","sequential"="seqArgs")
 	
 	#string vector, specifying the names of elements, dimension = number of rows (columns) of A.
 	names<-c("clusterAll",Layer1Names,unlist(Layer1Options),unlist(Layer2Names))
