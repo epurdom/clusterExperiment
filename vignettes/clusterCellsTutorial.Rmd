@@ -8,17 +8,22 @@ output: html_document
 #knitr::opts_chunk$set sets the global options. cache, cache.path options, fig.path make knit run faster once it has already been run.  
 #Sys.setenv(RSTUDIO_PANDOC="/Applications/RStudio.app/Contents/MacOS/pandoc")
 #rmarkdown::render("clusterCellsTutorial.Rmd")
-knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", fig.path="R_figure/", fig.width=6,fig.height=6)
+knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", fig.path="R_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE)
+knitr::dep_auto()
 library(diagram)
-drawClusterAll <- function(highlight=NULL,
-Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
+library(clusterCells)
+drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
 	plotLayer2<-length(Layer2Options)>0 | !Layer2OnlyIfUsed
-	arguments<-NULL
-	
+	box.cex<-0.5
+	boxRadx<-function(st){
+		rad<-strwidth(paste(" ",st," ",sep=""),units="user",cex=box.cex)/2
+		pmax(rad,rep(0.03,length(rad)))
+	}
+	diagram::openplotmat(main = "", xlim =c(0,1), ylim = c(0,1)) #so have plot open to determine string width
 	Layer1Names<-c("clusterFunction","subsample", "sequential")
 	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical", "pam", "kmeans"), "subsample"=c("subsample.FALSE","subsample.TRUE"), "sequential"=c("sequential.FALSE","sequential.TRUE"))
 	
-	Layer2Names<-c("clusterDArgs\n-->clusterD( )","subsampleArgs\n-->subsampleClustering( )","seqArgs\n-->seqCluster( )")
+	Layer2Names<-c("clusterDArgs","subsampleArgs","seqArgs")
 	Layer2NamesSimple<-c("clusterDArgs","subsampleArgs","seqArgs")
 	#x,y,box.size,box.prop,box.type
 	makeDf<-function(x,y,box.size,box.prop,box.type){data.frame(x=x,y=y,box.size=box.size,box.prop=box.prop,box.type=box.type,stringsAsFactors =FALSE)}
@@ -27,15 +32,17 @@ Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
 	
 	values<-"ellipse"
 	options<-"rect"
-	Layer1Pos<-list("clusterFunction"=makeDf(0.25, 0.77,0.06,0.4,options),"subsample"=makeDf(0.50,0.77,0.06,0.4,options), "sequential"=makeDf(0.75, 0.77,0.06,0.4,options))
+	Layer1Pos<-list("clusterFunction"=makeDf(0.25, 0.77,boxRadx("clusterFunction"),0.4,options),"subsample"=makeDf(0.50,0.77,0.06,0.4,options), "sequential"=makeDf(0.75, 0.77,0.06,0.4,options))
 	Layer1OptionsPos<-list(
-		"clusterFunction"=list("tight"=makeDf( 0.081, 0.59,0.03,0.4,values), "hierarchical"=makeDf(0.162, 0.59,0.045,0.4,values), "pam"=makeDf(0.243, 0.59,0.03,0.4,values), "kmeans"=makeDf(0.324, 0.59,0.03,0.4,values)), 
+		"clusterFunction"=list(
+			"tight"=makeDf( 0.081, 0.59,boxRadx("tight"),0.4,values), "hierarchical"=makeDf(0.162, 0.59,boxRadx("hierarchical"),0.4,values), 
+			"pam"=makeDf(0.243, 0.59,boxRadx("pam"),0.4,values), "kmeans"=makeDf(0.324, 0.59,boxRadx("kmeans"),0.4,values)), 
 		"subsample"=list("subsample.FALSE"=makeDf(0.45, 0.59,0.03,0.4,values),"subsample.TRUE"=makeDf(0.55, 0.59,0.03,0.4,values)), 
 		"sequential"=list("sequential.FALSE"=makeDf(0.77, 0.59,0.03,0.4,values),"sequential.TRUE"=makeDf(0.88, 0.59,0.03,0.4,values))
 		)
-	Layer2Pos<-list("clusterDArgs"=makeDf(0.2,0.44,0.08,0.4,options), 
-		"subsampleArgs"=makeDf(0.5,.44,0.08,0.4,options), 
-		"seqArgs"=makeDf(0.825, 0.44,0.08,0.4,options))
+	Layer2Pos<-list("clusterDArgs"=makeDf(0.2,0.44,boxRadx(Layer2Names[1]),0.4,options), 
+		"subsampleArgs"=makeDf(0.5,.44,boxRadx(Layer2Names[2]),0.4,options), 
+		"seqArgs"=makeDf(0.825, 0.44,boxRadx(Layer2Names[3]),0.4,options))
 	
 		#remove Layer2 if not used
 	if(any(!names(Layer2Options) %in% Layer2NamesSimple)) warning("some names of the Layer2Options list are not valid")
@@ -66,7 +73,7 @@ Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
 		Layer2OptionsPos<-lapply(names(Layer2Options),function(nam){
 			opts<-Layer2Options[[nam]]
 			ys<-0.44-cumsum(rep(0.05,length(opts)))
-			 data.frame(x=Layer2Pos[[nam]][,"x"], y=ys, box.size=0.03,box.prop=0.4,box.type=options,boxCol="red")
+			 data.frame(x=Layer2Pos[[nam]][,"x"], y=ys, box.size=boxRadx(opts),box.prop=0.4,box.type=options,boxCol="red")
 		})
 		posMatrix<-rbind(posMatrix,do.call(rbind,Layer2OptionsPos))
 		names<-c(names,unlist(Layer2Options))
@@ -93,16 +100,8 @@ Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
 #	print(M)
 	names<-sapply(strsplit(names,"[.]"),function(x){if(length(x)>1) x[2] else x[1]})
 	par(mar=c(1, 1, 2, 1))
-	diagram::plotmat(M, pos = data.matrix(posMatrix[,c("x","y")]), name = names, absent="0",lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = posMatrix[,"box.size"], box.type = posMatrix[,"box.type"], box.prop = posMatrix[,"box.prop"], curve = 0, main="", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=posMatrix[,"boxCol"])
+	diagram::plotmat(M, pos = data.matrix(posMatrix[,c("x","y")]), name = names, absent="0",lwd = 1, box.lwd = 2, box.cex = box.cex, box.size = posMatrix[,"box.size"], box.type = posMatrix[,"box.type"], box.prop = posMatrix[,"box.prop"], curve = 0, main="", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=posMatrix[,"boxCol"])
 
-	# M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 2] <- M[6, 2] <- M[7, 2] <- M[8, 2] <- M[9, 3] <- M[10, 3] <- M[11, 4] <-
-	#   M[12, 4] <-  M[13, 10] <- M[14, 13] <- M[15, 13] <- ""
-	#vector, specifying the number of elements in each graph row, or a 2-column matrix with element position, or NULL. If a 2-column matrix, the values should be withing 0 and 1.
-
-	# posMatrix = matrix(c(0.5, 0.95, 0.25, 0.77, 0.50, 0.77, 0.75, 0.77, 0.081, 0.59, 0.162, 0.59, 0.243, 0.59, 0.324, 0.59, 0.45, 0.59,
-	#            0.55, 0.59, 0.77, 0.59, 0.88, 0.59, 0.60, 0.41, 0.50, 0.23, 0.70, 0.23), ncol=2, byrow = TRUE)
-	# diagram::plotmat(M, pos = posMatrix, name = names, lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = c(rep(0.06, 4), 0.03, 0.045, rep(0.03, 6), rep(0.06, 2), rep(0.055, 2)), box.type = c("diamond", rep("square", 15)), box.prop = c(rep(0.4, 5), 0.27, rep(0.4, 6), rep(0.27, 2), rep(0.4, 2)), curve = 0, main="clusterAll", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
-	# #par(mar=c(1, 4, 2, 2))
 }
 ```
 # Introduction
@@ -184,7 +183,7 @@ legend("topleft", c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4", "Cluster
 ```
 
 
-# Clustering with `ClusterAll`
+# Clustering with `clusterAll`
 
 Let us start with a walkthrough of `clusterAll`.  `clusterAll` is the primary function for performing the primary clustering tasks. Each of these tasks has a underlying (user-accessible) function and `clusterAll` is a wrapper around these tasks:
 
@@ -201,10 +200,10 @@ clusterAll(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight",
 
 The primary arguments `clusterFunction`,`subsample`, and `sequential` govern each of these tasks:
 
-We can visualize these as a diagram: 
+We can visualize arguments and the values they can take on as a diagram: 
 
 ```{r, echo=FALSE, message=FALSE}
-drawClusterAll(Options=1,Layers=c(1))
+drawClusterAll()
 ```
 
 The remaining  arguments (`clusterDArgs`, `subsampleArgs`, and `seqArgs`) are for passing additional options to each of these tasks, and we will show examples of how they are used. 
@@ -215,7 +214,7 @@ Let us use the function `clusterAll` to perform simple PAM clustering on our exp
 To do standard pam clustering, we set `clusterFunction="pam"`. The remaining tasks (subsampling and sequential), we will not perform, so we set `subsample=FALSE` and `sequential=FALSE`, which we can visualize as:
 
 ```{r, echo=FALSE}
-drawClusterAll(Options=1,Layers=1,highlight = c("pam", "subsample.FALSE", "sequential.FALSE"))
+drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"))
 ```
 
 However, notice that doing this gets me an error:
@@ -270,32 +269,39 @@ Cluster<-clusterAll(expression, subsample=FALSE, sequential=FALSE, clusterFuncti
 table(Cluster$clustering)
 ```
 
-Note, that at the current implementation, if we are not going to do the subsample task (`subsample=FALSE`), then `clusterFunction` *must* be `pam` because the other clustering options for `clusterFunction` assume a 0-1 distance matrix based on subsampling. If there is no subsampling, `clusterAll` makes the distance matrix by default with `dist(x)` and therefore must be used with `pam`. 
-## Subsampling
-When `subsample=TRUE`, `clusterAll` will first subsample the rows of the data matrix, cluster the subsamples using a certain clustering algorithm, and return a clustering co-occurance matrix. Then, `clusterAll` will cluster the co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in subsampling. 
+**Note:** at the current time, if we are not going to do the subsample task (`subsample=FALSE`), then `clusterFunction` *must* be `pam` because the other clustering options for `clusterFunction` assume a 0-1 distance matrix based on subsampling. If there is no subsampling, `clusterAll` makes the distance matrix by default with `dist(x)` and therefore must be used with `pam`. 
 
-In this demonstration let us cluster the subsamples using `kmeans` with `k=5`, then cluster the co-occurance matrix using the tight clustering algorithm. 
+## Subsampling
+We can add the additional task to our clustering pipeline to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterAll` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
+
+Then, `clusterAll` will cluster this co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in clustering the subsampled data, but doesn't have to be. Indeed, several of the cluster algorithm options (`tight` and `hierarchical`) are designed to cluster 0-1 co-occurance matrices from subsampling. 
+
+In this demonstration let us cluster the subsamples using `kmeans` with `k=5`, then cluster the co-occurance matrix using the tight clustering algorithm. Now we have options we want to set for the subsampling portion of the task. 
 
 ```{r, echo=FALSE}
-drawClusterAll(arguments = c("tight", "yes", "FALSE"), subsample = "kmeans")
+drawClusterAll(highlight = c("tight", "subsample.TRUE", "sequential.FALSE"),Layer2Options=list("subsampleArgs"=c("k","clusterFunction")),plotOptions=TRUE)
+
 ```
 ```{r}
 Cluster<-clusterAll(expression, subsample=TRUE, sequential=FALSE, clusterFunction="tight", subsampleArgs=list("k"=5, clusterFunction="kmeans"))
-
 table(Cluster$clustering)
 ```
 
 ## Sequential 
-When `sequential=TRUE`, `clusterCells` performs sequential clustering, namely clustering the data, removing the cluster, and reclustering the remaining data. 
+The last additional task is to sequentially remove the best cluster, and then recluster the remaining samples. This is performed using  `sequential=TRUE`.
 
-In this demonstration of sequential clustering, the necessary argument `k0=5` is passed to `seqArgs` as the value of K at the first iteration of sequential algorithm. 
+Again, we need to pass arguments to control how this is done, now as a list to the argument `seqArgs`. A necessary argument `k0` must be passed to `seqArgs`. What this argument means depends on what other choices are being made, but if we also set `subsample=TRUE` (recommended), then `k0` is the value of K passed to the subsampling clustering method at the first iteration of sequential algorithm. 
+
+This time we will use the hierarchical method for clustering the 0-1 co-occurance matrix. 
+
 ```{r, echo=FALSE}
-drawClusterAll(arguments = c("hierarchical", "TRUE", "TRUE"), subsample = "kmeans")
+drawClusterAll(highlight = c("hierarchical", "subsample.TRUE", "sequential.TRUE"),Layer2Options=list("subsampleArgs"=c("clusterFunction"),seqArgs=c("k0","verbose")),plotOptions=TRUE)
 ```
 ```{r}
 Cluster<-clusterAll(expression, subsample=TRUE, sequential=TRUE, clusterFunction="hierarchical", seqArgs=list(k0=5, verbose = FALSE), subsampleArgs = list(clusterFunction="kmeans"))
 ```
-Running `clusterAll` with `sequential=TRUE` will return a list of the three elements `clustering`, `clusterInfo`, and `whyStop`. `clusterInfo` is a matrix of information regarding the algorithm behavior for each cluster (the starting and stopping K for each cluster, and the number of iterations for each cluster). `whyStop` is a character string explaining what triggered the algorithm to stop.
+
+Running `clusterAll` with `sequential=TRUE` will return a list of the three elements `clustering`, `clusterInfo`, and `whyStop`. `clusterInfo` is a matrix of information regarding the algorithm behavior for each cluster (the starting and stopping K set for subsampling clustering for each cluster, and the number of iterations for each cluster). `whyStop` is a character string explaining what triggered the algorithm to stop. 
 
 ```{r}
 table(Cluster$clustering)
@@ -303,26 +309,105 @@ Cluster$clusteringInfo
 Cluster$whyStop
 ```
 
-# Processing clusterAll Output with getBestGenes
-The function `getBestGenes` calls limma on input data to determine the gene features most associated with found clusters. The minimal arguments to `getBestGenes` are `type` and `contrastAdj`, which indicate what tests to perform and what type of FDR correction to do for contrast tests respectively. 
 
-In this demonstration, `getBestGenes` will be called to determine the features most associated with the clusters found in a new 300x50 dataset called `simData`. Clustering will first be performed with PAM with `k=4`. 
+# Finding Marker Genes
+
+The function `getBestGenes` calls `limma` on input data to determine the gene features most associated with found clusters. The minimal required input is the expression data and a vector of the (numeric) cluster labels. The method ignores samples in clusters marked by "-1" ("-1" always signifies samples not clustered). By default,  `getBestGenes` finds significant genes based on a F-test between the clusters, but the option `type` can provide other measures and is the most common one to be changed by the user. 
+
+In this demonstration, clustering will first be performed with basic PAM with K=4 and removing negative silhouette widths. We use the simulated data found in  the package `simData`.
+
+`getBestGenes` will be called to determine the features most associated pairwise comparisons between the clusters. By default, `topTable` in `limma` only returns the top 10, which `getBestGenes` will mean 10 per each of the pairwise comparisons.
+
 ```{r}
 data(simData)
-cl = clusterAll(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4))
-pairsAll<-getBestGenes(cl$clustering,simData,type="Pairs",contrastAdj="All")
+cl = clusterAll(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+pairsAll<-getBestGenes(cl$clustering,simData,type="Pairs")
 
 head(pairsAll)
 ```
-The significantly associated features are indicated in the `IndexInOriginal` column of the dataframe returned by `getBestGenes`. One way to visualize samples with only the features in `IndexInOriginal` is to use the `dualHeatmap()` function. The `dualHeatmap()` function minimally requires two arguments - a vector of cluster assignments and the data matrix. `dualHeatmap()` is different from regular heatmaps in that it also plots cluster assignments on the top, where different colors denote different cluster assignments. In the code example below, `clusterData` is set to the data matrix to define the color scale. 
-```{r, warning=FALSE}
-dataMatrix = simData[, unique(pairsAll$IndexInOriginal)]
-cluster = cl$clustering
-dualHeatmap(cluster, dataMatrix, clusterData=dataMatrix)
+The column `Cluster`  in the output signifies the pairwise difference (or contrast) for which the information on the row comes from. `IndexInOriginal` gives matches the gene to the index of the gene in the original dataset. The other columns are provided by `topTable` in `limma` (see documentation therein).
+
+`getBestGenes` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned for each contrast. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05.
+
+```{r}
+data(simData)
+cl = clusterAll(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+pairsAll2<-getBestGenes(cl$clustering,simData,type="Pairs",p.value=0.05,number=ncol(simData))
+table(pairsAll2$Contrast)
+```
+Notice that the same genes can be replicated across different contrasts:
+
+```{r}
+nrow(pairsAll2)
+length(unique(pairsAll2$Gene))
 ```
 
+Note that by using contrasts, we are making use of all of the data, not just the samples in the particular cluster pairs being compared. This means the variance is estimated with all samples.
 
-# compareChoices Workflow
+## Heatmaps of Marker Genes
+
+One way to visualize samples with only the features found by `getBestGenes` is to use the `dualHeatmap` function. The `dualHeatmap` function minimally requires two arguments - a vector of cluster assignments and the data matrix. `dualHeatmap` uses the heatmap function `aheatmap` in the package `NMF`, but provides an interface that is useful for the standard plots desired for evaluating the clustering output. In particular, it is designed to draw the cluster assignments of the samples on the top, where different colors denote different cluster assignments; lack of assignment, denoted by "-1", are automatically colored white.  In the code example below, `clusterData` is set to the data matrix to define the color scale. Currently, `dualHeatmap` takes the log of the input data (i.e. argument `heatData`); this will be fixed to be an option in future versions, but currently to not do this requires exponentiating the data.
+
+```{r}
+dataMatrix = simData[, unique(pairsAll2$IndexInOriginal)]
+cluster = cl$clustering
+dualHeatmap(cluster, exp(dataMatrix), eps=0, clusterData=dataMatrix)
+```
+
+Additional covariates can also be plotted by giving a matrix of values to `annCol`; unlike `aheatmap`, `dualHeatmap` will assume that such values should be converted to factors unless told otherwise by the argument `whAnnCont`. 
+
+
+Another feature of dualHeatmap is that a different dataset can be used for determining the clustering than for determining the color-scale image of the heatmap. This can be useful, for example, for clustering on the normalized data which is not on the count-scale, but showing the original count-scale in the color-scale which is more interpretable. 
+
+
+
+## Clustering Clusters
+
+It can be useful to create heatmaps that keep the clusters together. However, arbitrarily ordered clusters will not make compelling heatmaps either. The function `clusterHclust` will perform hierarchical clustering of the cluster mediods, and provide a dendrogram that will order the samples according to this clustering of the clusters.
+
+```{r, warning=FALSE}
+clDendro<-clusterHclust(dataMatrix,cl$clustering,full=FALSE)
+plot(clDendro)
+```
+
+More usefull, however, is to use this in conjunction with dualHeatmap, in which case we want the individual samples in the dendrogram, not just the clusters. Notice that `full=TRUE` is necessary to get such a dendrogram. Then we give the data as `heatData` to `dualHeatmap` indicate it should be used for creating the color-image of the data, but provide our dendrogram to `clusterData` to indicate it will provide the clustering of the data. 
+
+```{r}
+clDendroFull<-clusterHclust(dataMatrix,cl$clustering,full=TRUE,unassigned="outgroup")
+dualHeatmap(cl$clustering,heatData=exp(dataMatrix),eps=0,clusterData=clDendroFull)
+```
+Notice that the unassigned samples ("-1") are chosen in `clusterHclust` to be assigned to an outgroup in the dendrogram based on the argument `unassigned`.
+
+I could also choose to remove them, but I then need to make sure that my input data matrix to `dualHeatmap` doesn't contain these samples.
+
+```{r, warning=FALSE}
+clDendroFull<-clusterHclust(dataMatrix,cl$clustering,full=TRUE,unassigned="remove")
+whRm<-which(cl$clustering>0)
+dualHeatmap(cl$clustering[whRm],heatData=exp(dataMatrix)[whRm,],eps=0,clusterData=clDendroFull)
+```
+
+### Hierarchical Contrasts and Merging clusters
+
+We can also perform tests based on this hierarchy of clusters. Specifically, we can test for each node of the hierarchy, whether the mean of the set of clusters to the right split of the node is equal to the mean on the left split. We do this by creating a contrast of the corresponding means and testing it for each gene via `getBestGenes`, where the type is set to `"Dendro"` and we provide the dendrogram created by `clusterHclust` (but setting `full=FALSE` so that individual samples are not in the dendrogram).
+
+```{r}
+dendroGenes<-getBestGenes(cl$clustering,simData,type="Dendro",p.value=0.05,number=ncol(simData),dendro=clDendro)
+head(dendroGenes)
+```
+The output is similar to before, only now there are two identifies for the contrast: one is `ContrastName` which gives the Node being compared, and the other is `Contrast` which is the actual mathematical statement of the mean comparison between clusters that is being performed.
+
+We can use this basic idea to merge clusters based on what percentage of genes are found differentially expressed. The `mergeClusters` function performs such contrasts for each node, and then calculates the proportion of significant hypotheses. There are several methods implemented, but the simplest is just the proportion found by doing BH adjusted p-values and determine the proportion that are DE. 
+
+```{r}
+mergeOut<-mergeClusters(dat=simData, cl=cl$clustering, mergeMethod = c("adjP"), cutoff = 0.1, plotType = "mergeMethod")
+table(mergeOut$cl,cl$clustering)
+print(mergeOut$propDE)
+```
+
+The function optionally creates a plot showing the dendrogram and what clusters were merged. `mergeClusters` invisibly returns information, including the merged clusters (`cl`), and a matrix of different estimates based on different methods for computing the proportion (`propDE`). 
+
+# Running and Comparing Many Cluster Choices (`compareChoices`)
+
 ```{r, echo=FALSE, message=FALSE}
 drawCompareChoices = function(arguments=NULL){
 if (!is.null(arguments)){
@@ -332,84 +417,74 @@ par(mar=c(1, 4, 2, 2))
 names = c("compareChoices", "clusterAll", "clusterAll", "...", "clusterAll", "output", "plotTracking", "findSharedClusters")
 M = matrix(0, nrow=8, ncol=8, byrow=TRUE)
 M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 1] <- M[6, 2] <- M[6, 3] <- M[6, 4] <- M[6, 5] <- M[7, 6] <- M[8, 6] <- ""
-plotmat(M, pos=c(1, 4, 1, 2), name=names, lwd=1, box.lwd=2, box.cex=0.5, box.size=0.08, box.type=c(rep("square", 5), "diamond", rep("square", 2)), box.prop=0.2, curve=0, main="compareChoices Workflow", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
+diagram::plotmat(M, pos=c(1, 4, 1, 2), name=names, lwd=1, box.lwd=2, box.cex=0.5, box.size=0.08, box.type=c(rep("square", 5), "diamond", rep("square", 2)), box.prop=0.2, curve=0, main="compareChoices Workflow", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
 par(mar=c(5.1, 4.1, 4.1, 2.1))
 }
 ```
-`compareChoices` is a function for running many different combinations of parameters or different datasets. Before running clustering on these combinations, it may be a good idea to inspect all the parameter combinations by setting `run`=FALSE. In this example, the combination of parameters we are testing are the range of k values for clustering and whether `removeSil` is TRUE or FALSE. 
-```{r}
-parameters = compareChoices(expression, ks=c(3:7), clusterMethod=c("pam", "kmeans"), run=FALSE)
-head(parameters)
-```
-Let us run `compareChoices` on the original `expression` data set we simulated.
-```{r}
-result = compareChoices(expression, ks=c(3:7), clusterMethod=c("pam"), subsample=FALSE, removeSil = c(TRUE, FALSE))
-head(result$clMat)
-```
-Actually running `compareChoices` will return a list with elements `clMat` and `clusterInfo`. `clusterInfo` will be a list with information regarding clustering result only when sequential=TRUE while `clMat` will be a matrix with each row representing a sample and each column the cluster assignments from a particular combination of parameters. 
+`compareChoices` is a function for running many different combinations of parameters or different datasets. All combinations given by the user are run through `clusterAll` (though the function does some (minimal) checking to remove nonsensical combinations). 
+The calls to `clusterAll` can also be parallelized across multiple cores (by setting the argument `ncores` to be greater than 1).
 
-After `compareChoices` is run, the function `plotTracking` can be used to visualize a color-coded plot of cluster assignments across different combinations of parameters. `plotTracking` minimally takes as its argument a matrix of cluster assignments where each row represents a sample and each column a clustering. 
+After `compareChoices` is run, the function `plotTracking` can be used to visualize the many different cluster assignments that resulted, and `findSharedClusters` can be used to determine a consensus clustering across the parameter combinations. And `mergeClusters` described above can be used to help the user determine whether some clusters in the consensus clustering should be merged.
+
 ```{r, echo=FALSE}
 drawCompareChoices(arguments = "plotTracking")
 ```
+
+## Compare Choices
+In this example, the combination of parameters we are testing are the range of k values for clustering and whether `removeSil` is TRUE or FALSE, and whether `pam` or `kmeans` is used.
+
+Before running the clustering on these combinations, it is a good idea to first inspect what parameter combinations will be run by calling `compareChoices` and setting `run`=FALSE. The resulting output is a matrix where each column corresponds to a parameter setting and each row is a combination of parameters that will be sent to `clusterAll`.
+
+```{r}
+parameters = compareChoices(expressions, ks=c(3:7), clusterMethod=c("pam", "kmeans"), run=FALSE)
+head(parameters)
+dim(parameters)
+```
+
+**Note:** The output can be fed back into `compareChoices`. For example if some combinations are not of interest, those rows could be removed and then the resulting matrix given as an argument
+
+Let us now run `compareChoices` on the original data set we simulated.
+
+```{r}
+result = compareChoices(expressions, ks=c(3:7), clusterMethod=c("pam"), subsample=FALSE, removeSil = c(TRUE, FALSE))
+head(result$clMat)
+```
+Actually running `compareChoices` will return a list with elements `clMat` and `clusterInfo`. `clMat` is the main object of interest and will be a matrix with each row representing a sample and each column the cluster assignments from a particular combination of parameters. `clusterInfo` will only be informative when `sequential=TRUE`, in which case it will be list with information regarding clustering result. 
+
+## Evaluating the many clusters
+
+To visualize the several clusters created by `compareChoices`, we run `plotTracking` to visualize the assignments.  `plotTracking` minimally takes as its argument a matrix of cluster assignments where each row represents a sample and each column a clustering. The result of `plotTracking` is a color representation of the clusters, where each column of the plot is a sample, and the rows are the different clusterings (note this is the inverse of the input clustering matrix so as to conserve space). Within each row/clustering, the samples are color coded as to their cluster assignment. Furthermore, `plotTracking` tries to order the samples so that the clusters are assigned colors that make clusters composed of similar samples get the same cluster color. 
+
 ```{r}
 par(mar=c(2, 8, 1, 1))
 plotTracking(result$clMat)
-par(mar=c(4, 4, 1, 1))
 ```
+
+Notice that the unassigned ("-1") entries are always color-coded white.
+
+The alignment (and color assignments) created by `plotTracking` are invisibly returned and can be used for other purposes (see help documentation). The alignment of the clusters is highly dependent on the order of the clusters, with the alignment starting with the first cluster in the first column, then the second aligned to the first, and so forth. Different orderings of the clusters can greatly change the visualizations.
 
 To find a consensus cluster across many different clusterings of the same data `findSharedClusters` can be used. The minimal input to `findSharedClusters` is a cluster matrix with samples as rows and different clustering assignments for each column. 
-
-```{r, echo=FALSE}
-drawCompareChoices(arguments = "findSharedClusters")
-```
 
 As an example, let us find the consensus cluster from the output of `compareChoices`. 
 
 ```{r}
-r = findSharedClusters(result$clMat)
+r <-findSharedClusters(result$clMat)
 table(r$clustering)
+plotTracking(cbind(FINAL=r$clustering,result$clMat))
 ```
 
-#Change Arguments
-The functions in package `clusterAll` accept a myraid of arguments, and while most parameters have default settings, it is important to know how to change arguments to suit a particular need. The best way to learn about additional arguments for a function is to read the appropriate help files by executing `?` followed by the name of the function. 
+Let's look at the options we chose here. To determine whether samples should be clustered together, the parameter `proportion` is used to set the proportion of co-occurance we want as a cutoff. If we want to be strict, we can determine clusters only if they are always together in any clustering (`proportion=1`, the default). Samples that are unassigned in greater than `propUnassigned` will always be assigned a value of `-1` (i.e. will also be unassigned in the final clustering). And the option `minSize` forces all resulting cluster to have a minimal size equal to `minSize`.
 
-Let us look at an example of changing arguments in `clusterAll` with `clusterFunction="tight"`, `subsample=TRUE`, and `sequential=FALSE`. 
 ```{r}
-cluster<-clusterAll(expression, subsample=TRUE, sequential=FALSE, clusterFunction="tight", clusterDArgs=list(alpha=0.05), subsampleArgs=list("k"=5, clusterFunction="kmeans"))
-table(cluster$clustering)
+r <-findSharedClusters(result$clMat, proportion=.7,minSize=10)
+table(r$clustering)
+plotTracking(cbind(FINAL=r$clustering,result$clMat))
 ```
-In the code just executed, the arguments fed to `clusterAll` are minimum arguments to make this particular clustering algorithm run. However, the rest of the arguments are set at default value. 
 
-Pretend that the user is interested in adjusting the subsampling process so that the proportion of subsamples is 0.3 and the number of times sampled is 10. How would he or she learn how to change the arguments in `clusteAll` to execute the desired change? A good way to begin would be to access the help file for `clusterAll`.
-```{r, eval=FALSE}
-?clusterAll
-```
-A help file will have many sections. The `Usage` section will illustrate how to pass arguments into a function and indicate any default values. The `Arguments` section will explain what each argument means. In our example, because we are adjusting the subsampling procedure, feeding arguments to `subsampleArgs` seems like a reasonable choice. The `Arguments` section of the help file explains that `subsampleArgs` is: 
+We can also visualize the co-occurance matrix along with the final clusters, which is returned with the output of `findSharedClusters` (if `proportion<1`)
 
-> list of arguments to be passed to subsampleClustering
-
-What are those arguments? It appears that `clusterAll` will pass arguments in `subsampleArgs` to the function `subsampleClustering` during execution, so it will be informative to look at the help file for `subsampleClustering`. 
-```{r, eval=FALSE}
-?subsampleClustering
-```
-Now the help file for `subsampleClustering` explains that the arguments `resamp.num` and `samp.p` are the arguments that set the number of subsamples to draw and the proportion of samples to draw respectively. We now know what arguments to pass to the original `subsampleArgs` in `clusterAll`. 
 ```{r}
-cluster<-clusterAll(expression, subsample=TRUE, sequential=FALSE, clusterFunction="tight", clusterDArgs=list(alpha=0.05), subsampleArgs=list("k"=5, clusterFunction="kmeans", resamp.num=10, samp.p=0.3))
-table(cluster$clustering)
+dualHeatmap(clusterVector=r$clustering,heatData=exp(r$percentageShared),eps=0)
 ```
 
-Learning how to changing other arguments for other functions will likely invoke a similar logic, and it is up to the user to decide what to explore. 
-
-
-******
-# Generate co-occurance matrix
-To generate the co-occurance matrix after clustering subsamples of the data matrix, one can call the `subsampleClustering` function. The main arguments for the `subsampleClustering` are as follows: 
-
-`subsampleClustering` returns a $n x n$ matrix of probability of co-occurance in the same cluster, with $n$ = number of samples. Let us generate a co-occurance matrix from our gene expression data set with 100 subsamples, each composed of 70% of the data. 
-
-```{r, warning=FALSE}
-require(gplots)
-d = subsampleClustering(expression, k=5, clusterFunction="kmeans", resamp.num=100, sam.p=0.7)
-heatmap.2(d, col=redgreen(75), scale="none", density.info="none", trace="none") 
-```
