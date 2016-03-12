@@ -10,59 +10,99 @@ output: html_document
 #rmarkdown::render("clusterCellsTutorial.Rmd")
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", fig.path="R_figure/", fig.width=6,fig.height=6)
 library(diagram)
-drawClusterAll <- function(arguments=NULL, subsample=NULL,plotLayer2=FALSE){
+drawClusterAll <- function(highlight=NULL,
+Layer2Options=NULL,plotOptions=TRUE,Layer2OnlyIfUsed=TRUE){
+	plotLayer2<-length(Layer2Options)>0 | !Layer2OnlyIfUsed
+	arguments<-NULL
+	
 	Layer1Names<-c("clusterFunction","subsample", "sequential")
-	Layer1XPos<-c("clusterFunction"=c(0.25, 0.77),"subsample"=c(0.50,0.77), "sequential"=c(0.75, 0.77))
-
-    posMatrix = matrix(c(0.5, 0.95,  , 0.243, 0.59, , ,
-                         , , , , 0.50, 0.23, 0.70, 0.23), ncol=2, byrow = TRUE) 
+	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical", "pam", "kmeans"), "subsample"=c("subsample.FALSE","subsample.TRUE"), "sequential"=c("sequential.FALSE","sequential.TRUE"))
 	
-	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical", "pam", "kmeans"), "subsample"=c("FALSE","TRUE"), "sequential"=c("FALSE","TRUE"))
-	Layer1OptionsPos<-list("clusterFunction"=c("tight"=c( 0.081, 0.59), "hierarchical"=c(0.162, 0.59), "pam"=c(0.243, 0.59), "kmeans"=c(0.324, 0.59)), "subsample"=c("FALSE"=c(0.45, 0.59),"TRUE"=c(0.55, 0.59)), "sequential"=c("FALSE"=c(0.77, 0.59),"TRUE"=c(0.88, 0.59)))
-	Layer2Names<-c("clusterFunction"="clusterDArgs"=c(0.2,0.44),"subsample"="subsampleArgs","sequential"="seqArgs")
+	Layer2Names<-c("clusterDArgs\n-->clusterD( )","subsampleArgs\n-->subsampleClustering( )","seqArgs\n-->seqCluster( )")
+	Layer2NamesSimple<-c("clusterDArgs","subsampleArgs","seqArgs")
+	#x,y,box.size,box.prop,box.type
+	makeDf<-function(x,y,box.size,box.prop,box.type){data.frame(x=x,y=y,box.size=box.size,box.prop=box.prop,box.type=box.type,stringsAsFactors =FALSE)}
+	posMatrix<-makeDf(x=0.5,y=0.95,box.size=0.06,box.prop=0.4,box.type="diamond")
+	names<-c("clusterAll")
 	
-	#string vector, specifying the names of elements, dimension = number of rows (columns) of A.
-	names<-c("clusterAll",Layer1Names,unlist(Layer1Options),unlist(Layer2Names))
-	# names <- c("clusterAll", "clusterFunction", "subsample", "sequential", "tight", "hierarchical", "pam", "kmeans", "FALSE", "TRUE", "FALSE", "TRUE", "clusterFunction", "pam", "kmeans")
-  if(is.null(arguments)){colargs="black"}else{
-    colargs = c(rep("red", 4), rep("black", 11))
-    colargs[match(arguments[1], names)] = "red"
-    if (arguments[2] == "FALSE"){
-      colargs[9] = "red"
-    }else{
-      colargs[10] = "red"
-      colargs[13] = "red"
-      if (subsample == "pam"){
-        colargs[14] = "red"
-      }else{
-        colargs[15] = "red"
-      }
-    }
-    if (arguments[3] == "FALSE"){colargs[11] = "red"}else{colargs[12] = "red"}
-  }
-  par(mar=c(1, 1, 2, 1))
-  #square coefficient matrix, specifying the links (rows=to, cols=from)
-  M = matrix(NA,nrow=15, ncol=15)
-  rownames(M)<-names
-  colnames(M)<-names
-  M["clusterAll",Layer1Names]<-1
-  lapply(Layer1Names,function(x){M[x,Layer1Options[[x]] ]<<-1})
-  lapply(names(Layer2Names),function(x){
-	  opts<-Layer1Options[[x]]
-	  if("TRUE" %in% opts) opts<-"TRUE"
-	  M[opts,Layer2Names[[x]] ]<<-1
-  })
-  
-  diagram::plotmat(M, pos = posMatrix, name = names, absent=NA,lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = c(rep(0.06, 4), 0.03, 0.045, rep(0.03, 6), rep(0.06, 2), rep(0.055, 2)), box.type = c("diamond", rep("square", 15)), box.prop = c(rep(0.4, 5), 0.27, rep(0.4, 6), rep(0.27, 2), rep(0.4, 2)), curve = 0, main="", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
-  
-  # M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 2] <- M[6, 2] <- M[7, 2] <- M[8, 2] <- M[9, 3] <- M[10, 3] <- M[11, 4] <-
-  #   M[12, 4] <-  M[13, 10] <- M[14, 13] <- M[15, 13] <- ""
-#vector, specifying the number of elements in each graph row, or a 2-column matrix with element position, or NULL. If a 2-column matrix, the values should be withing 0 and 1.
+	values<-"ellipse"
+	options<-"rect"
+	Layer1Pos<-list("clusterFunction"=makeDf(0.25, 0.77,0.06,0.4,options),"subsample"=makeDf(0.50,0.77,0.06,0.4,options), "sequential"=makeDf(0.75, 0.77,0.06,0.4,options))
+	Layer1OptionsPos<-list(
+		"clusterFunction"=list("tight"=makeDf( 0.081, 0.59,0.03,0.4,values), "hierarchical"=makeDf(0.162, 0.59,0.045,0.4,values), "pam"=makeDf(0.243, 0.59,0.03,0.4,values), "kmeans"=makeDf(0.324, 0.59,0.03,0.4,values)), 
+		"subsample"=list("subsample.FALSE"=makeDf(0.45, 0.59,0.03,0.4,values),"subsample.TRUE"=makeDf(0.55, 0.59,0.03,0.4,values)), 
+		"sequential"=list("sequential.FALSE"=makeDf(0.77, 0.59,0.03,0.4,values),"sequential.TRUE"=makeDf(0.88, 0.59,0.03,0.4,values))
+		)
+	Layer2Pos<-list("clusterDArgs"=makeDf(0.2,0.44,0.08,0.4,options), 
+		"subsampleArgs"=makeDf(0.5,.44,0.08,0.4,options), 
+		"seqArgs"=makeDf(0.825, 0.44,0.08,0.4,options))
+	
+		#remove Layer2 if not used
+	if(any(!names(Layer2Options) %in% Layer2NamesSimple)) warning("some names of the Layer2Options list are not valid")
+	Layer2Options<-Layer2Options[names(Layer2Options) %in% Layer2NamesSimple]
+	if(Layer2OnlyIfUsed) {
+		Layer2Names<-Layer2Names[Layer2NamesSimple %in% names(Layer2Options)]
+		Layer2Pos<-Layer2Pos[names(Layer2Pos)%in%names(Layer2Options)]
+	}
 
-  posMatrix = matrix(c(0.5, 0.95, 0.25, 0.77, 0.50, 0.77, 0.75, 0.77, 0.081, 0.59, 0.162, 0.59, 0.243, 0.59, 0.324, 0.59, 0.45, 0.59,
-                       0.55, 0.59, 0.77, 0.59, 0.88, 0.59, 0.60, 0.41, 0.50, 0.23, 0.70, 0.23), ncol=2, byrow = TRUE) 
-  diagram::plotmat(M, pos = posMatrix, name = names, lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = c(rep(0.06, 4), 0.03, 0.045, rep(0.03, 6), rep(0.06, 2), rep(0.055, 2)), box.type = c("diamond", rep("square", 15)), box.prop = c(rep(0.4, 5), 0.27, rep(0.4, 6), rep(0.27, 2), rep(0.4, 2)), curve = 0, main="clusterAll", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
-  par(mar=c(1, 4, 2, 2))
+	posMatrix<-rbind(posMatrix,do.call("rbind",Layer1Pos))
+	names<-c(names,Layer1Names)
+	if(plotOptions){
+		posMatrix<-rbind(posMatrix,do.call("rbind",unlist(Layer1OptionsPos,recursive=FALSE)))
+		names<-c(names,unlist(Layer1Options))
+	}
+	if(plotLayer2){
+		posMatrix<-rbind(posMatrix,do.call("rbind",Layer2Pos))
+		names<-c(names,Layer2Names)
+	}
+	posMatrix$boxCol="black"
+	if(!is.null(highlight)){
+		if(any(!highlight %in% names)) warning("some highlight values not matching node names and will be ignored")
+		highlight<-highlight[highlight %in% names]
+		m<-match(highlight,names)
+		posMatrix$boxCol[m]<-"red"
+	}
+	if(length(Layer2Options)>0){
+		Layer2OptionsPos<-lapply(names(Layer2Options),function(nam){
+			opts<-Layer2Options[[nam]]
+			ys<-0.44-cumsum(rep(0.05,length(opts)))
+			 data.frame(x=Layer2Pos[[nam]][,"x"], y=ys, box.size=0.03,box.prop=0.4,box.type=options,boxCol="red")
+		})
+		posMatrix<-rbind(posMatrix,do.call(rbind,Layer2OptionsPos))
+		names<-c(names,unlist(Layer2Options))
+	}
+
+
+
+	#square coefficient matrix, specifying the links (rows=to, cols=from)
+	M<-matrix("0",nrow=length(names), ncol=length(names))
+	rownames(M)<-names
+	colnames(M)<-names
+	
+	M["clusterAll",Layer1Names]<-""
+	if(plotOptions) lapply(Layer1Names,function(x){M[x,Layer1Options[[x]] ]<<-""})
+		# if(2 %in% LayersToPlot){
+	# 	M["clusterAll",Layer2Names]<-""
+	# }
+	# lapply(names(Layer2Names),function(x){
+# 		opts<-Layer1Options[[x]]
+# 		if("TRUE" %in% opts) opts<-"TRUE"
+# 		M[opts,Layer2Names[[x]] ]<<-1
+# 	})
+
+#	print(M)
+	names<-sapply(strsplit(names,"[.]"),function(x){if(length(x)>1) x[2] else x[1]})
+	par(mar=c(1, 1, 2, 1))
+	diagram::plotmat(M, pos = data.matrix(posMatrix[,c("x","y")]), name = names, absent="0",lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = posMatrix[,"box.size"], box.type = posMatrix[,"box.type"], box.prop = posMatrix[,"box.prop"], curve = 0, main="", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=posMatrix[,"boxCol"])
+
+	# M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 2] <- M[6, 2] <- M[7, 2] <- M[8, 2] <- M[9, 3] <- M[10, 3] <- M[11, 4] <-
+	#   M[12, 4] <-  M[13, 10] <- M[14, 13] <- M[15, 13] <- ""
+	#vector, specifying the number of elements in each graph row, or a 2-column matrix with element position, or NULL. If a 2-column matrix, the values should be withing 0 and 1.
+
+	# posMatrix = matrix(c(0.5, 0.95, 0.25, 0.77, 0.50, 0.77, 0.75, 0.77, 0.081, 0.59, 0.162, 0.59, 0.243, 0.59, 0.324, 0.59, 0.45, 0.59,
+	#            0.55, 0.59, 0.77, 0.59, 0.88, 0.59, 0.60, 0.41, 0.50, 0.23, 0.70, 0.23), ncol=2, byrow = TRUE)
+	# diagram::plotmat(M, pos = posMatrix, name = names, lwd = 1, box.lwd = 2, box.cex = 0.5, box.size = c(rep(0.06, 4), 0.03, 0.045, rep(0.03, 6), rep(0.06, 2), rep(0.055, 2)), box.type = c("diamond", rep("square", 15)), box.prop = c(rep(0.4, 5), 0.27, rep(0.4, 6), rep(0.27, 2), rep(0.4, 2)), curve = 0, main="clusterAll", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
+	# #par(mar=c(1, 4, 2, 2))
 }
 ```
 # Introduction
@@ -83,14 +123,15 @@ We find that many methods for choosing the appropriate number of clusters for me
 
 ## Finding related genes
 
-A common practice after determining clusters is to perform differential gene expression analysis between the clusters in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are invalid, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters as to perform differential expression analysis. 
+A common practice after determining clusters is to perform differential gene expression analysis between the clusters in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are not valid p-values, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters as to perform differential expression analysis. 
 
-Since this is a common task, we provide the function `getBestGenes` to perform various kinds of differential expression analysis between the clusters. A common F-statistic is performed. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestGenes` function. 
+Since this is a common task, we provide the function `getBestGenes` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestGenes` function. The `getBestGenes` function uses the DE analysis provided by the `limma` package. 
 
-In addition, the `getBestGenes` function provides the ability to do a "voom" correction to account for the mean-variance relationship that is common in count data (or FPKM or TPM). Unlike edgeR or DESeq, the voom correction does not require a count matrix, and therefore can be used on FPKM or TPM entries, as well as normalized data. 
+In addition, the `getBestGenes` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. Unlike edgeR or DESeq, the voom correction does not require a count matrix, and therefore can be used on FPKM or TPM entries, as well as normalized data. 
 
 ## Visualization
 
+We provide a visualization to compare many clusterings of the same data in the function `plotTracking`.  We also provide some functions that are wrappers for common visualization tasks in clustering gene expression data. We provide an heatmap function that is an interface to the `aheatmap` function in `NMF` package. Our wrapper simply does some simple pre-processing common to clustering. 
 
 ## Data example
 
@@ -143,22 +184,52 @@ legend("topleft", c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4", "Cluster
 ```
 
 
-# `ClusterAll`
+# Clustering with `ClusterAll`
 
-Let us start with a walkthrough of `clusterAll`. As a wrapper function, `clusterAll` can receive a variety of arguments to perform different clustering algorithms. (The options are documented in the more detailed documentation vignette). Here are the argument calls for `clusterAll`: 
+Let us start with a walkthrough of `clusterAll`.  `clusterAll` is the primary function for performing the primary clustering tasks. Each of these tasks has a underlying (user-accessible) function and `clusterAll` is a wrapper around these tasks:
+
+* clustering of a distance matrix (`clusterD`)
+* subsampling the samples, clustering the subsamples, and forming a co-occurance matrix (`subsampleClustering`)
+* sequentially removing the best cluster, and reclustering the remaining clusters (`seqCluster`)
+
+The arguments of `clusterAll` indicate which of these tasks should be performed and allow the user to pass options for each of these tasks (that are passed to the downstream functions). The options are documented in the more detailed documentation vignette, but here we run through some common examples. 
+
+Here are the argument calls for `clusterAll`:
 ```{r, eval=FALSE}
 clusterAll(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 ```
-These arguments can be better organized and visualized as a diagram: 
+
+The primary arguments `clusterFunction`,`subsample`, and `sequential` govern each of these tasks:
+
+We can visualize these as a diagram: 
+
 ```{r, echo=FALSE, message=FALSE}
-drawClusterAll()
+drawClusterAll(Options=1,Layers=c(1))
 ```
 
-## PAM Clustering
-Let us use the function `clusterAll` from the `clusterCells` package to perform simple `pam` clustering on our expression data set with `k=5`. In this expression matrix, rows are samples and columns are features. In the first example of pam clustering, `subsample=FALSE` and `sequential=FALSE`. If `subsample=FALSE`, then `clusterFunction` must be `pam`. pam clustering with `clusterAll` returns a one-element list with a vector of cluster assignments for each sample.
+The remaining  arguments (`clusterDArgs`, `subsampleArgs`, and `seqArgs`) are for passing additional options to each of these tasks, and we will show examples of how they are used. 
+
+## Example: PAM Clustering
+Let us use the function `clusterAll` to perform simple PAM clustering on our expression data set with `k=5`. In this expression matrix, rows are samples and columns are features. 
+
+To do standard pam clustering, we set `clusterFunction="pam"`. The remaining tasks (subsampling and sequential), we will not perform, so we set `subsample=FALSE` and `sequential=FALSE`, which we can visualize as:
 
 ```{r, echo=FALSE}
-drawClusterAll(arguments = c("pam", "FALSE", "FALSE"))
+drawClusterAll(Options=1,Layers=1,highlight = c("pam", "subsample.FALSE", "sequential.FALSE"))
+```
+
+However, notice that doing this gets me an error:
+```{r}
+simpleCluster = clusterAll(expressions, subsample=FALSE, sequential=FALSE, clusterFunction="pam")
+```
+This is because even to perform just simple PAM, the PAM algorithm needs additional parameters to be set, namely to choose 'k' the number of groups. 
+
+However, there is no argument in `clusterAll` for this. Because it is specific to a particular choice of clustering function, we don't want to clutter up `clusterAll` with all the possible options that might be needed downstream for a particularly task. Instead, `clusterAll` lets you pass such arguments to the function that actually does the task of clustering a distance matrix, `clusterD` via the `clusterDArgs` option. So the user doesn't need to call `clusterD` explicitly, but often will need to pass an argument to `clusterD`.  
+
+In this case we need to pass the argument 'k'. Specifically, we need to create a list with an element of name "k" that takes on the value, say 5, for our k.
+
+```{r, echo=FALSE}
+drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("clusterDArgs"="k"),plotOptions=TRUE)
 ```
 
 ```{r, warning=FALSE, message=FALSE}
@@ -169,6 +240,7 @@ expression = expressions[, 1:3]
 simpleCluster = clusterAll(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list('k'=5))
 table(simpleCluster$clustering)
 ```
+The result is a one-element list with a vector of cluster assignments for each sample.
 
 Let us compare this result with the result from calling `pam` with `k=5` from the `cluster` package. 
 
@@ -179,12 +251,26 @@ barplot(tab, xlab="Clusters", ylab="Counts", main="clusterAll vs pam", legend=ro
 ```
 We have now verified that these two function calls perform the same task. 
 
-Now let us perform pam clustering with adjustments to the parameters `findBestK`, `kRange`, and `removeSil`. These parameters are passed to the argument `clusterDArgs` in `clusterAll`. The default cutoff for the minimum silhouette width is 0. This cutoff can be adjusted via the parameter `silCutoff` passed to `clusterDArgs`. 
+### More options for PAM clustering
+
+There are other options we can pick to change the clustering of the distance matrix. A full documentation of possible options can be found in the help files of `clusterD`. Some of the useful options associated with PAM are the following common tasks:
+
+* Finding the best k, based on silhouette width (`findBestK`) over a range of possible K (`kRange`)
+* Removing samples with low silhouette values (`removeSil`). The default cutoff for the minimum silhouette width is 0. This cutoff can be adjusted via the parameter `silCutoff`.
+
+We can pass these arguments to `clusterD`, again as a list:
+
+```{r, echo=FALSE}
+drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("clusterDArgs"=c("k","findBestK","removeSil","kRange")),plotOptions=TRUE)
+```
+
 ```{r}
 Cluster<-clusterAll(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list(findBestK=TRUE, removeSil=TRUE, kRange=2:10))
 
 table(Cluster$clustering)
 ```
+
+Note, that at the current implementation, if we are not going to do the subsample task (`subsample=FALSE`), then `clusterFunction` *must* be `pam` because the other clustering options for `clusterFunction` assume a 0-1 distance matrix based on subsampling. If there is no subsampling, `clusterAll` makes the distance matrix by default with `dist(x)` and therefore must be used with `pam`. 
 ## Subsampling
 When `subsample=TRUE`, `clusterAll` will first subsample the rows of the data matrix, cluster the subsamples using a certain clustering algorithm, and return a clustering co-occurance matrix. Then, `clusterAll` will cluster the co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in subsampling. 
 
