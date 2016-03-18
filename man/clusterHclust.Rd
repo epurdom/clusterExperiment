@@ -10,13 +10,16 @@ clusterHclust(dat, cl, full = TRUE, unassigned = c("remove", "outgroup",
 \arguments{
 \item{dat}{data to define the mediods from. Samples on rows, features on columns}
 
-\item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
+\item{cl}{A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
 
 \item{full}{Logical as to whether to expand to include all samples as tips (useful for heatmap), or to have dendrogram just of the clusters (useful for getBestGenes)}
 
 \item{unassigned}{what to do with with unassigned ("-1") cluster; only relevant if full=TRUE. Default is to remove those samples, so that only get heatmap of clustered observations. ``outgroup'' puts the unassigned into an outgroup on the dendrogram. ``cluster'' clusters them with the mediods.}
 
 \item{...}{arguments passed to hclust}
+}
+\value{
+A dendrogram for the clusters. If full=TRUE, the number of leaves is equal to the number of samples. If full=FALSE, the number of leaves is equal to the number of clusters.
 }
 \description{
 Makes a dendrogram of a set of clusters based on hclust on the mediods of the cluster.

@@ -1,8 +1,8 @@
-Unreleased:
+0.0.0.9006:
 
-* fixed so that mergeClusters, clusterHclust, and getBestGenes will appropriately convert if the input of clusters is a factor rather than numeric (with warning).
+* fixed so that mergeClusters, clusterHclust, and getBestGenes will appropriately convert if the input of clustering vector is a factor rather than numeric (with warning).
 * fixed mergeClusters to have option to indicate that input matrix is a count matrix (in which case will create dendrogram with log(counts+1) and will do getBestGenes with the voom correction) 
-
+* added more tutoral-oriented vignette (old vignette is now the documentation vignette with more detail about the internal workings of package). Currently is just simulated data, but will be updated to real single-cell sequencing dataset.
 
 0.0.0.9005
 

@@ -102,7 +102,8 @@ head(out$color[out$index,1:2])
 #We can also change the order of the rows. Notice how this dramatically changes the plot!
 plotTracking(cl$clMat[,c(3:6,1:2,7:ncol(cl$clMat))],axisLine=-2)
 
-#notice that the blue and orange are really arbitrarily different colors because not next to each other in row.
+#notice that the blue and orange are really arbitrarily different
+#colors because not next to each other in row.
 #We can manually change the blue to orange :
 #first find out color names by looking at the out$colors (but in right order using out$index)
 out$colors[out$index[1:10],c("npc=5,findBestK=T","npc=5,k=3,findBestK=F")]

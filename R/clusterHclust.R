@@ -11,6 +11,8 @@
 #' @details If full=TRUE, then the expanded dendrogram is created by giving all of the samples the mediod of the cluster and applying hclust to it; if further unassigned=="cluster", then the expanded dendrogram is created by hclust of the expanded mediod data plus the original unclustered observations.
 #'
 #'
+#' @return A dendrogram for the clusters. If full=TRUE, the number of leaves is equal to the number of samples. If full=FALSE, the number of leaves is equal to the number of clusters.
+
 #' @examples
 #' data(simData)
 #' #create a clustering, for 8 clusters (truth was 3)
@@ -94,11 +96,20 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #' @param mergeMethod method for calculating proportion of non-null that will be used to merge clusters (if 'none', no merging will be done). See details for description of methods. 
 #' @param cutoff cutoff for merging clusters based on the proportion of non-nulls in the comparison of the clusters (i.e. value between 0,1, where lower values will make it harder to merge clusters).
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the estimates of proportion non-null will be plotted; if 'mergeMethod', then only the value used in the merging is plotted for each node. 
+#' @param countData logical as to whether input data is a count matrix (in which case log(count+1) will be used for \code{\link{clusterHclust}} and voom correction will be used in \code{\link{getBestGenes}}).
 #' @param ... arguments passed to the \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram. 
 #' 
 #' @details "JC" refers to the method of Ji and Cai (2007), and implementation of "JC" method is copied from code available on Jiashin Ji's website, December 16, 2015 (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr" refers to the method of Efron (2004) and is implemented in the package \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann (2005) and is implemented in the package \code{\link{howmany}}. "adjP" refers to the proportion of genes that are found significant based on a FDR adjusted p-values (method "BH") and a cutoff of 0.05. 
 #'
 #' @details If \code{mergeMethod} is not equal to 'none' then the plotting will indicate the merged clusters (assuming \code{plotType} is not 'none'). 
+#' @return Returns (invisibly) a list with elements
+#' \itemize{
+
+#' \item{\code{clustering}}{a vector of length equal to nrows(dat) giving the integer-valued cluster ids for each sample. "-1" indicates the sample was not clustered.}
+#' \item{\code{oldClToNew}}{A table of the old cluster labels to the new cluster labels}
+#' \item{\code{propDE}}{A table of the proportions that are DE on each node}
+#' \item{\code{originalClusterDendro}}{The dendrogram on which the merging was based (based on the original clustering)}
+#' }
 #' @examples
 #' data(simData)
 #'  #create a clustering, for 8 clusters (truth was 3)
@@ -106,7 +117,7 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #'  sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' #merge clusters with plotting. Note argument 'use.edge.length' can improve readability
 #' mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
-#' mergeMethod="adjP",use.edge.length=FALSE)
+#' mergeMethod="adjP",use.edge.length=FALSE,countData=FALSE)
 #' #compare merged to original on heatmap
 #' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
 #' dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
@@ -204,7 +215,7 @@ mergeClusters<-function(dat,cl,dendro=NULL,mergeMethod=c("none","adjP","locfdr",
 	nodePropTable<-do.call("rbind",sigByNode)
 	nodePropTable<-data.frame("Node"=names(sigByNode),"Contrast"=sigTable$Contrast[match(names(sigByNode),sigTable$ContrastName)],nodePropTable)
 
-	invisible(list(cl=newcl,oldClToNew=table(Original=cl,New=newcl),propDE=nodePropTable,originalClusterDendro=dendro))
+	invisible(list(clustering=newcl,oldClToNew=table(Original=cl,New=newcl),propDE=nodePropTable,originalClusterDendro=dendro))
 }
 
 .myTryFunc<-function(FUN,...){
