@@ -21,14 +21,14 @@
 
 #' @title Function for finding best genes associated with clusters
 #' @description Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).
-#' @param cl A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
+#' @param cl A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.
 #' @param dat data for the test, samples in rows
 #' @param type What type of test to do. `F' gives the omnibus F-statistic, `Dendro' traverses the given dendrogram and does contrasts of the samples in each side,  `Pairs' does pair-wise contrasts based on the pairs given in pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares each cluster to the average of all others. 
 #' @param dendro The dendrogram to traverse if type="Dendro". Note that this should be the dendrogram of the clusters, not of the individual samples.
 #' @param pairMat matrix giving the pairs of clusters for which to do pair-wise contrasts (must match to elements of cl). If NULL, will do all pairwise of the clusters in \code{cl} (excluding "-1" categories). Each row is a pair to be compared and must match the names of the clusters in the vector \code{cl}. 
 #' @param returnType Whether to return the index of genes, or the full table given by topTable or topTableF.
 #' @param contrastAdj What type of FDR correction to do for contrasts tests (i.e. if type='Dendro' or 'Pairs'). 
-#' @param voomCorrection Whether to perform voom correction on counts. If input to dat is count matrix, should be set to TRUE. Otherwise, dat should be log of counts (which is not preferable). Currently default is set to FALSE simply because it has not been heavily tested, but should be the default for RNA-Seq data.
+#' @param voomCorrection Whether to perform voom correction to data, e.g. if input data matrix is counts/TPM/FPKM. If input to dat consists of counts/TPM/FPKM, this argument should be set to TRUE. Otherwise, dat should be something like log of counts (which is not preferable for count data) or some other kind of similar input data that does not need a variance stabilization (e.g. microarray data). Currently the default is set to FALSE, simply because the voomCorrection has not been heavily tested. But TRUE with dat being counts/TPM/FPKM really should be the default for RNA-Seq data.
 #' @param ... options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)
 #' @details getBestGenes returns best genes corresponding to a cluster assignment. It uses limma to fit the models, and limma's functions topTable or topTableF to find the best genes.  See the options of these functions to put better control on what gets returned (e.g. only if significant, only if log-fc is above a certain amount, etc.). In particular, set 'number=' to define how many significant genes to return (where number is per contrast for the 'Pairs' or 'Dendro' option)
 #'
@@ -38,7 +38,16 @@
 #'
 #' @details  Note that the default option for \code{\link{topTable}} is to not filter based on adjusted p-values (\code{p.value=1}) and return only the top 10 most significant (\code{number=10}) -- these are options the user can change (these arguments are passed via the \code{...} in getBestGenes). In particular, it only makes sense to set \code{requireF=TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05); the default value of \code{p.value=1} will not result in any effect on the adjusted p-value otherwise. 
 #'
-#' @return A data.frame in the same format as \code{\link{topTable}}, except that the column name \code{ProbeID} is changed to \code{Gene} and a column \code{IndexInOriginal} is provided to give the row index of the gene in the original dataset.
+#' @return A data.frame in the same format as \code{\link{topTable}}, except for the following additional or changed columns:
+#' \itemize{
+
+#' \item{\code{Gene}}{This is the column called 'ProbeID' by \code{\link{topTable}}}
+
+#' \item{\code{IndexInOriginal}}{Gives the index of the gene to the original input dataset, \code{dat}}
+
+#' \item{\code{Contrast}}{The contrast that the results corresponds to (if applicable, depends on \code{type} argument)}
+#' \item{\code{ContrastName}}{The name of the contrast that the results corresponds to. For dendrogram searches, this will be the node of the tree of the dendrogram.}
+#' }
 #'
 #' @examples
 #' data(simData)
@@ -79,6 +88,9 @@
 getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendro=NULL,pairMat=NULL,returnType=c("Table","Index"),contrastAdj=c("All","PerContrast","AfterF"),voomCorrection=FALSE,...){
 	#... is always sent to topTable, and nothing else
 #	require(limma)
+	if(is.factor(cl)){warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
+			cl<-as.numeric(as.character(cl))
+	}
 	dat<-t(data.matrix(dat))
 	type<-match.arg(type)
 	contrastAdj<-match.arg(contrastAdj)
@@ -283,7 +295,9 @@ getBestGenes<-function(cl,dat,type=c("F","Dendro","Pairs","OneAgainstAll"),dendr
 		colnames(tt)[colnames(tt)=="ID"]<-"Gene"
 		if(nrow(tt)>0){
 			tt<-data.frame("Contrast"=unname(contrastNames[ii]),tt,row.names=NULL)
-			if(!is.null(names(contrastNames))) tt<-data.frame("ContrastName"=names(contrastNames)[ii],tt,row.names=NULL)
+			if(!is.null(names(contrastNames))){
+				 tt<-data.frame("ContrastName"=names(contrastNames)[ii],tt,row.names=NULL)
+			}
 		}
 		return(tt)
 		}))

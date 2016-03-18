@@ -14,7 +14,7 @@
 #' @name dualHeatmap
 #' @aliases dualHeatmap
 #' @docType methods
-#' @param clusterVector A vector with cluster assignments to show at top of heatmap
+#' @param clusterVector A numeric vector with cluster assignments to show at top of heatmap
 #' with cells. ``-1'' indicates the sample was not assigned to a cluster and
 #' gets color `white'.
 #' @param heatData matrix to define the color scale (i.e. the counts). Will be

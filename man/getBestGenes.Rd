@@ -10,7 +10,7 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
   ...)
 }
 \arguments{
-\item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
+\item{cl}{A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
 
 \item{dat}{data for the test, samples in rows}
 
@@ -24,12 +24,18 @@ getBestGenes(cl, dat, type = c("F", "Dendro", "Pairs", "OneAgainstAll"),
 
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests (i.e. if type='Dendro' or 'Pairs').}
 
-\item{voomCorrection}{Whether to perform voom correction on counts. If input to dat is count matrix, should be set to TRUE. Otherwise, dat should be log of counts (which is not preferable). Currently default is set to FALSE simply because it has not been heavily tested, but should be the default for RNA-Seq data.}
+\item{voomCorrection}{Whether to perform voom correction to data, e.g. if input data matrix is counts/TPM/FPKM. If input to dat consists of counts/TPM/FPKM, this argument should be set to TRUE. Otherwise, dat should be something like log of counts (which is not preferable for count data) or some other kind of similar input data that does not need a variance stabilization (e.g. microarray data). Currently the default is set to FALSE, simply because the voomCorrection has not been heavily tested. But TRUE with dat being counts/TPM/FPKM really should be the default for RNA-Seq data.}
 
 \item{...}{options to pass to \code{\link{topTable}} or \code{\link{topTableF}} (see \code{\link{limma}} package)}
 }
 \value{
-A data.frame in the same format as \code{\link{topTable}}, except that the column name \code{ProbeID} is changed to \code{Gene} and a column \code{IndexInOriginal} is provided to give the row index of the gene in the original dataset.
+A data.frame in the same format as \code{\link{topTable}}, except for the following additional or changed columns:
+\itemize{
+\item{\code{Gene}}{This is the column called 'ProbeID' by \code{\link{topTable}}}
+\item{\code{IndexInOriginal}}{Gives the index of the gene to the original input dataset, \code{dat}}
+\item{\code{Contrast}}{The contrast that the results corresponds to (if applicable, depends on \code{type} argument)}
+\item{\code{ContrastName}}{The name of the contrast that the results corresponds to. For dendrogram searches, this will be the node of the tree of the dendrogram.}
+}
 }
 \description{
 Calls limma on input data to determine genes most associated with found clusters (either pairwise comparisons, or following a tree that clusters the clusters).

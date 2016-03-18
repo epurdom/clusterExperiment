@@ -13,7 +13,7 @@ dualHeatmap(clusterVector, heatData, clusterData = heatData, eps = 1,
   unassignedColor = "white", missingColor = "grey", ...)
 }
 \arguments{
-\item{clusterVector}{A vector with cluster assignments to show at top of heatmap
+\item{clusterVector}{A numeric vector with cluster assignments to show at top of heatmap
 with cells. ``-1'' indicates the sample was not assigned to a cluster and
 gets color `white'.}
 

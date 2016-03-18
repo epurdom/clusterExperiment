@@ -4,13 +4,16 @@
 \alias{mergeClusters}
 \title{Merge clusters based on dendrogram}
 \usage{
-mergeClusters(dat, cl, mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
-  cutoff = 0.1, plotType = c("none", "all", "mergeMethod"), ...)
+mergeClusters(dat, cl, dendro = NULL, mergeMethod = c("none", "adjP",
+  "locfdr", "MB", "JC"), cutoff = 0.1, plotType = c("none", "all",
+  "mergeMethod"), countData = TRUE, ...)
 }
 \arguments{
 \item{dat}{data to perform the test on. Samples on rows, features on columns}
 
-\item{cl}{A vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
+\item{cl}{A numeric vector with cluster assignments to compare to clRef.``-1'' indicates the sample was not assigned to a cluster.}
+
+\item{dendro}{If provided, is dendrogram providing hierarchical clustering of clusters in cl; mainly useful to speed up calculations if clusterHclust has already been called on the (cl,dat) pair. The default (NULL) is to recalculate it with the given (cl,dat) pair.}
 
 \item{mergeMethod}{method for calculating proportion of non-null that will be used to merge clusters (if 'none', no merging will be done). See details for description of methods.}
 
@@ -18,7 +21,18 @@ mergeClusters(dat, cl, mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
 
 \item{plotType}{what type of plotting of dendrogram. If 'all', then all the estimates of proportion non-null will be plotted; if 'mergeMethod', then only the value used in the merging is plotted for each node.}
 
+\item{countData}{logical as to whether input data is a count matrix (in which case log(count+1) will be used for \code{\link{clusterHclust}} and voom correction will be used in \code{\link{getBestGenes}}).}
+
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.}
+}
+\value{
+Returns (invisibly) a list with elements
+\itemize{
+\item{\code{clustering}}{a vector of length equal to nrows(dat) giving the integer-valued cluster ids for each sample. "-1" indicates the sample was not clustered.}
+\item{\code{oldClToNew}}{A table of the old cluster labels to the new cluster labels}
+\item{\code{propDE}}{A table of the proportions that are DE on each node}
+\item{\code{originalClusterDendro}}{The dendrogram on which the merging was based (based on the original clustering)}
+}
 }
 \description{
 Takes an input of hierarchical clusterings of clusters and returns estimates of number of proportion of non-null and merges those below a certain cutoff.
@@ -33,7 +47,7 @@ data(simData)
  sequential=FALSE, clusterDArgs=list(k=8))$cl
 #merge clusters with plotting. Note argument 'use.edge.length' can improve readability
 mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
-mergeMethod="adjP",use.edge.length=FALSE)
+mergeMethod="adjP",use.edge.length=FALSE,countData=FALSE)
 #compare merged to original on heatmap
 hclData<-clusterHclust(dat=simData,cl,full=TRUE)
 dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
