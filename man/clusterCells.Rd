@@ -14,6 +14,9 @@ clusterCells(se, labels, isLog)
 data.}
 
 \item{labels}{a vector with cluster labels.}
+
+\item{isLog}{logical. Whether the data are in log (TRUE) or linear (FALSE)
+scale}
 }
 \value{
 A \code{ClusterCells} object.
