@@ -143,7 +143,7 @@ setMethod(
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
                         subsampleArgs=NULL, seqArgs=NULL) {
-    outlist <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
+    outlist <- clusterAll(t(assay(x)), subsample=subsample, sequential=sequential,
                           clusterFunction=clusterFunction,
                           clusterDArgs = clusterDArgs,
                           subsampleArgs = subsampleArgs, seqArgs = seqArgs)
