@@ -74,6 +74,8 @@ setValidity("ClusterCells", function(object) {
 #'@param se a matrix or \code{SummarizedExperiment} containing the clustered
 #'data.
 #'@param labels a vector with cluster labels.
+#'@param isLog logical. Whether the data are in log (TRUE) or linear (FALSE)
+#'scale
 #'
 #'@return A \code{ClusterCells} object.
 #'
@@ -126,3 +128,4 @@ setMethod("[", c("ClusterCells", "ANY", "ANY"),
             return(out)
           }
 )
+

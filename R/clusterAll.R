@@ -161,10 +161,10 @@ setMethod(
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
                         subsampleArgs=NULL, seqArgs=NULL) {
-    if(isLog) {
-      data <- expm1(assay(x))
+    if(isLog(x)) {
+      data <- t(expm1(assay(x)))
     } else {
-      data <- assay(x)
+      data <- t(assay(x))
     }
 
     outlist <- clusterAll(data, subsample=subsample, sequential=sequential,
@@ -173,6 +173,7 @@ setMethod(
                           subsampleArgs = subsampleArgs, seqArgs = seqArgs)
 
     colData(x)$clusterLabels <- outlist$clustering
+    labels(x) <- as.matrix(outlist$clustering)
     metadata(x) <- list(clusterInfo = outlist$clusterInfo,
                              whyStop = outlist$whyStop)
     return(x)
@@ -185,3 +186,30 @@ setMethod(
 ## For now, the matrix method should be equivalent to the previous version of
 ## clusterAll: i.e., input is a matrix and output is a list.
 ## Eventually, the output should be an object of class ClusterCells.
+## We also want to re-write clusterAll to work on a genes by samples matrix.
+
+## helper methods
+setMethod(
+  f = "isLog",
+  signature = "ClusterCells",
+  definition = function(x) {
+    return(x@isLog)
+  }
+)
+
+setMethod(
+  f = "labels",
+  signature = "ClusterCells",
+  definition = function(x) {
+    return(x@labels)
+  }
+)
+
+setReplaceMethod(
+  f = "labels",
+  signature = "ClusterCells",
+  definition = function(object, value) {
+    object@labels <- value
+    return(object)
+  }
+)

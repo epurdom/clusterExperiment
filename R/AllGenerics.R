@@ -6,3 +6,24 @@ setGeneric(
     standardGeneric("clusterAll")
   }
 )
+
+setGeneric(
+  name = "isLog",
+  def = function(x) {
+    standardGeneric("isLog")
+  }
+)
+
+setGeneric(
+  name = "labels",
+  def = function(x) {
+    standardGeneric("labels")
+  }
+)
+
+setGeneric(
+  name = "labels<-",
+  def = function(object, value) {
+    standardGeneric("labels<-")
+  }
+)
