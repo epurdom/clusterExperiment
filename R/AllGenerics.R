@@ -15,15 +15,64 @@ setGeneric(
 )
 
 setGeneric(
-  name = "labels",
+  name = "allClusters",
   def = function(x) {
-    standardGeneric("labels")
+    standardGeneric("allClusters")
   }
 )
 
 setGeneric(
-  name = "labels<-",
+  name = "primaryCluster",
+  def = function(x) {
+    standardGeneric("primaryCluster")
+  }
+)
+
+setGeneric(
+  name = "primaryClusterIndex",
+  def = function(x) {
+    standardGeneric("primaryClusterIndex")
+  }
+)
+
+setGeneric(
+  name = "primaryClusterIndex<-",
   def = function(object, value) {
-    standardGeneric("labels<-")
+    standardGeneric("primaryClusterIndex<-")
+  }
+)
+
+setGeneric(
+  name = "coClustering",
+  def = function(x) {
+    standardGeneric("coClustering")
+  }
+)
+
+setGeneric(
+  name = "dendrogram",
+  def = function(x) {
+    standardGeneric("dendrogram")
+  }
+)
+
+setGeneric(
+  name = "clusterType",
+  def = function(x) {
+    standardGeneric("clusterType")
+  }
+)
+
+setGeneric(
+  name = "addClusters",
+  def = function(x, y) {
+    standardGeneric("addClusters")
+  }
+)
+
+setGeneric(
+  name = "removeUnclustered",
+  def = function(x) {
+    standardGeneric("removeUnclustered")
   }
 )

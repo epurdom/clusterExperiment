@@ -136,6 +136,7 @@ setMethod(
   }
 )
 
+#' @rdname clusterAll
 setMethod(
   f = "clusterAll",
   signature = signature(x = "SummarizedExperiment"),
@@ -154,6 +155,8 @@ setMethod(
   }
 )
 
+
+#' @rdname clusterAll
 setMethod(
   f = "clusterAll",
   signature = signature(x = "ClusterCells"),
@@ -188,28 +191,3 @@ setMethod(
 ## Eventually, the output should be an object of class ClusterCells.
 ## We also want to re-write clusterAll to work on a genes by samples matrix.
 
-## helper methods
-setMethod(
-  f = "isLog",
-  signature = "ClusterCells",
-  definition = function(x) {
-    return(x@isLog)
-  }
-)
-
-setMethod(
-  f = "labels",
-  signature = "ClusterCells",
-  definition = function(x) {
-    return(x@labels)
-  }
-)
-
-setReplaceMethod(
-  f = "labels",
-  signature = "ClusterCells",
-  definition = function(object, value) {
-    object@labels <- value
-    return(object)
-  }
-)

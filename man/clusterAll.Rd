@@ -4,11 +4,20 @@
 \name{clusterAll,matrix-method}
 \alias{clusterAll}
 \alias{clusterAll,ClusterCells-method}
+\alias{clusterAll,SummarizedExperiment-method}
 \alias{clusterAll,matrix-method}
 \alias{clusterAll-methods}
 \title{General wrap-around for all clustering methods we're trying.}
 \usage{
 \S4method{clusterAll}{matrix}(x, subsample = TRUE, sequential = FALSE,
+  clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+
+\S4method{clusterAll}{SummarizedExperiment}(x, subsample = TRUE,
+  sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam",
+  "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+
+\S4method{clusterAll}{ClusterCells}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 }

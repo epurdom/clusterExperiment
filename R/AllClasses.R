@@ -3,13 +3,15 @@
 setClass(
   Class = "ClusterCells",
   contains = "SummarizedExperiment",
-  slots = list(isLog = "logical", labels = "matrix", dendrogram = "list",
-                        coClustering = "matrix")
+  slots = list(isLog = "logical",
+               clusterLabels = "matrix",
+               primaryIndex = "numeric",
+               clusterInfo = "list",
+               clusterType = "character",
+               dendrogram = "list",
+               coClustering = "matrix")
 )
 
-## this class extends SummarizedExperiment (I'm on an old version of R now, should be changed from SummarizedExperiment0)
-## the idea is to store the data into the assay slot, having a primary cluster label as a column of colData
-## in principle, we could just use the additional slots as element of the metadata list, but we loose the ability to check for the right class.
 ## One question is how to extend the "[" method, i.e., how do we subset the co-occurance matrix and the dendrogram?
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
 ## Q: do we want to enforce the cluster labels to be numeric? Or factor?
@@ -24,26 +26,36 @@ setValidity("ClusterCells", function(object) {
   if(any(is.na(assay(object)))) {
     return("NA values are not allowed.")
   }
-  if(!("clusterLabels" %in% names(colData(object)))) {
-    return("colData must contain a column named `clusterLabels`.")
+  if(!all(is.na((object@clusterLabels))) &
+     !(NROW(object@clusterLabels) == NCOL(object))) {
+    return("If present, `clusterLabels` must have as many row as cells.")
   }
-  if(NROW(object@labels) > 0 & !(NROW(object@labels) == NCOL(object))) {
-    return("If present, `labels` must have as many row as cells.")
-  }
-  if(!is.numeric(object@labels)) {
-    return("`labels` must be a numeric matrix.")
+  if(!is.numeric(object@clusterLabels)) {
+    return("`clusterLabels` must be a numeric matrix.")
   }
   if(length(object@dendrogram) > 0) {
     if(class(object@dendrogram) != "dendrogram") {
       return("`dendrogram` must be of class dendrogram.")
     }
   }
-  if(NROW(object@coClustering)>0 &
+  if(!all(is.na(object@coClustering)>0) &
        (NROW(object@coClustering) != NCOL(object@coClustering)
        | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
   }
-
+  if(!all(is.na(object@clusterLabels)) & length(object@primaryIndex) != 1) {
+    return("If more than one set of cluster labels, a primary cluster must
+           be specified.")
+  }
+  if(!all(is.na(object@clusterLabels)) &
+     (object@primaryIndex > NCOL(object@clusterLabels) |
+      object@primaryIndex < 1)) {
+    return("`primaryIndex` out of bounds.")
+  }
+  if(!all(is.na(object@clusterLabels)) &
+     NCOL(object@clusterLabels) != length(object@clusterType)) {
+    return("`clusterType` must be the same length of `clusterLabels`.")
+  }
   return(TRUE)
 })
 
@@ -55,8 +67,13 @@ setValidity("ClusterCells", function(object) {
 #' \code{ClusterCells} object has the following additional slots:
 #' \itemize{
 #' \item isLog: logical. Whether the data are in the linear or log scale.
-#' \item labels: matrix. A matrix of cluster labels, useful for consensus
+#' \item clusterLabels: matrix. A matrix of cluster labels, useful for consensus
 #' clustering.
+#' \item primaryIndex: numeric. An index that specifies the primary set of
+#' labels.
+#' \item clusterInfo: list. A list with info about the clustering.
+#' \itam clusterType: character vector with the origin of each column of
+#' clusterLabels.
 #' \item dendrogram: dendrogram. A dendrogram containing the cluster
 #' relationship.
 #' \item coClustering: matrix. A matrix with the cluster co-occurrence
@@ -94,38 +111,28 @@ clusterCells <- function(se, labels, isLog) {
   if(NCOL(se) != length(labels)) {
     stop("`labels` must be a vector of length equal to the number of samples.")
   }
-  if(is(se, "SummarizedExperiment")) {
-    cd <- colData(se)
-    cd$clusterLabels <- labels
-    out <- new("ClusterCells",
-               assays = Assays(assays(se)),
-               elementMetadata = mcols(se),
-               colData = cd,
-               isLog = isLog,
-               labels = matrix(data=labels, ncol=1))
-  } else if(is.matrix(se)) {
-    out <- new("ClusterCells",
-               assays = Assays(se),
-               elementMetadata = new("DataFrame", nrows=nrow(se)),
-               isLog = isLog,
-               labels = matrix(data=labels, ncol=1),
-               colData = DataFrame(clusterLabels=labels)
-               )
-  } else {
+  if(!is(se, "SummarizedExperiment") & !is.matrix(se)) {
     stop("`se` must be a matrix or SummarizedExperiment object.")
   }
 
+  if(is.factor(labels)) {
+    labels <- as.numeric(labels)
+    warning("The factor `labels` was coerced to numeric.")
+  }
+
+  if(is.matrix(se)) {
+    se <- SummarizedExperiment(se)
+  }
+
+  out <- new("ClusterCells",
+             assays = Assays(assays(se)),
+             elementMetadata = mcols(se),
+             colData = colData(se),
+             isLog = isLog,
+             clusterLabels = matrix(data=labels, ncol=1),
+             primaryIndex = 1,
+             clusterType = "User"
+             )
+
   return(out)
 }
-
-## subsetting
-setMethod("[", c("ClusterCells", "ANY", "ANY"),
-          function(x, i, j, ..., drop=TRUE) {
-            out <- callNextMethod()
-            out@labels <- as.matrix(out@labels[j,])
-            out@coClustering <- new("matrix")
-            out@dendrogram <- list()
-            return(out)
-          }
-)
-
