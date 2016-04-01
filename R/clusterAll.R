@@ -1,8 +1,9 @@
 #' General wrap-around for all clustering methods we're trying.
 #'
-#' Given a nxp data matrix, this function will find clusters
+#' Given a data matrix, SummarizedExperiment, or ClusterCells object,
+#' this function will find clusters.
 #'
-#' @param x the data on which to run the clustering (samples in rows)
+#' @param x the data on which to run the clustering (genes in rows)
 #' @param subsample logical as to whether to subsample via
 #' \code{\link{subsampleClustering}} to get the distance matrix at each
 #' iteration; otherwise the distance matrix is dist(x).
@@ -16,28 +17,15 @@
 #' \code{\link{subsampleClustering}}.
 #' @param seqArgs list of additional arguments to be passed to
 #' \code{\link{seqCluster}}.
+#' @param isLog logical. Whether the data are in log (TRUE) or linear (FALSE)
+#'scale.
 #'
 #' @details If sequential=TRUE, the sequential clustering controls the 'k'
 #' argument of the underlying clustering so setting 'k=' in the list given to
 #' clusterDArgs or subsampleArgs will not do anything and will produce a warning
 #' to that effect.
 #'
-#' @return A list with values
-#' \itemize{
-
-#' \item{\code{clustering}}{a vector of length equal to nrows(x) giving the
-#' integer-valued cluster ids for each sample. The integer values are assigned
-#' in the order that the clusters were found, if sequential=TRUE. "-1" indicates
-#' the sample was not clustered.}
-
-#' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
-#' found, a matrix of information regarding the algorithm behavior for each
-#' cluster (the starting and stopping K for each cluster, and the number of
-#' iterations for each cluster).}
-
-#' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
-#' found, a character string explaining what triggered the algorithm to stop.}
-#' }
+#' @return A \code{\link{ClusterCells}} object.
 #'
 #' @examples
 #' data(simData)
@@ -46,14 +34,14 @@
 #' #use clusterAll to do sequential clustering
 #' #(same as example in seqCluster only using clusterAll ...)
 #' set.seed(44261)
-#' clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
+#' clustSeqHier_v2<-clusterAll(t(simData),clusterFunction="hierarchical",
 #' sequential=TRUE,subsample=TRUE,
 #'	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 #'	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
 #'	clusterDArgs=list(minSize=5))
 #' }
 #' #use clusterAll to do just clustering k=3 with no subsampling
-#' clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' clustNothing<-clusterAll(t(simData),clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
 #' @aliases clusterAll clusterAll-methods clusterAll,matrix-method
@@ -62,10 +50,10 @@
 setMethod(
   f = "clusterAll",
   signature = signature(x = "matrix"),
-  definition = function(x,  subsample=TRUE, sequential=FALSE,
+  definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
+                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
       if(!subsample & clusterFunction !="pam")
@@ -88,16 +76,15 @@ setMethod(
       }
 
     }
-    N <- dim(x)[1]
+    N <- dim(x)[2]
     if(sequential){
       if(is.null(seqArgs)) stop("must give seqArgs so as to identify k0")
       if(!"k0"%in%names(seqArgs)) stop("seqArgs must contain element 'k0'")
-      seqOut <- do.call("seqCluster",
-                        c(list(x=x, subsample=subsample,
+      outlist <- do.call("seqCluster",
+                        c(list(x=t(x), subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs,
                                clusterFunction=clusterFunction), seqArgs))
-      return(seqOut)
     }
     else{
       if(subsample){
@@ -126,13 +113,25 @@ setMethod(
                and findBestK=FALSE in clusterDArgs, must pass 'k' via
                clusterDArgs list")
       }
-      finalClusterList <- .clusterWrapper(x, clusterFunction=clusterFunction,
+      finalClusterList <- .clusterWrapper(t(x), clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,
                                           typeAlg=typeAlg)
-      return(list("clustering"=.convertClusterListToVector(finalClusterList,N)))
+      outlist <- list("clustering"=.convertClusterListToVector(finalClusterList,N))
     }
+
+    retval <- clusterCells(x, outlist$clustering, isLog)
+    retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
+                                whyStop = outlist$whyStop,
+                                subsample = subsample,
+                                sequential = sequential,
+                                clusterFunction = clusterFunction,
+                                clusterDArgs = clusterDArgs,
+                                subsampleArgs = subsampleArgs,
+                                seqArgs = seqArgs)
+    retval@clusterType <- "clusterAll"
+    return(retval)
   }
 )
 
@@ -143,14 +142,16 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
-    outlist <- clusterAll(t(assay(x)), subsample=subsample, sequential=sequential,
-                          clusterFunction=clusterFunction,
-                          clusterDArgs = clusterDArgs,
-                          subsampleArgs = subsampleArgs, seqArgs = seqArgs)
-    retval <- clusterCells(x, outlist$clustering, isLog=FALSE)
-    metadata(retval) <- list(clusterInfo = outlist$clusterInfo,
-                             whyStop = outlist$whyStop)
+                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
+
+    outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
+                         clusterFunction=clusterFunction,
+                         clusterDArgs = clusterDArgs,
+                         subsampleArgs = subsampleArgs, seqArgs = seqArgs,
+                         isLog=isLog)
+    retval <- clusterCells(x, primaryCluster(outval), isLog=isLog)
+    retval@clusterInfo <- clusterInfo(outval)
+    retval@clusterType <- clusterType(outval)
     return(retval)
   }
 )
@@ -163,31 +164,19 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
-    if(isLog(x)) {
-      data <- t(expm1(assay(x)))
-    } else {
-      data <- t(assay(x))
-    }
+                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
 
-    outlist <- clusterAll(data, subsample=subsample, sequential=sequential,
-                          clusterFunction=clusterFunction,
-                          clusterDArgs = clusterDArgs,
-                          subsampleArgs = subsampleArgs, seqArgs = seqArgs)
+    outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
+                         clusterFunction=clusterFunction,
+                         clusterDArgs = clusterDArgs,
+                         subsampleArgs = subsampleArgs, seqArgs = seqArgs,
+                         isLog=isLog(x))
 
-    colData(x)$clusterLabels <- outlist$clustering
-    labels(x) <- as.matrix(outlist$clustering)
-    metadata(x) <- list(clusterInfo = outlist$clusterInfo,
-                             whyStop = outlist$whyStop)
-    return(x)
+    ## do we want to add the clustering or replace it?
+    ## for now, replacing it
+    retval <- clusterCells(x, primaryCluster(outval), isLog=isLog)
+    retval@clusterInfo <- clusterInfo(outval)
+    retval@clusterType <- clusterType(outval)
+    return(retval)
   }
 )
-
-## for now, I'm adding the clusterInfo and whyStop information as elements of
-## the metadata. However, we may want to standardize the output and add these
-## as slots in the object.
-## For now, the matrix method should be equivalent to the previous version of
-## clusterAll: i.e., input is a matrix and output is a list.
-## Eventually, the output should be an object of class ClusterCells.
-## We also want to re-write clusterAll to work on a genes by samples matrix.
-

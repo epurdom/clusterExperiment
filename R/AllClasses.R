@@ -14,7 +14,6 @@ setClass(
 
 ## One question is how to extend the "[" method, i.e., how do we subset the co-occurance matrix and the dendrogram?
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
-## Q: do we want to enforce the cluster labels to be numeric? Or factor?
 
 setValidity("ClusterCells", function(object) {
   if(length(assays(object)) != 1) {
@@ -67,8 +66,10 @@ setValidity("ClusterCells", function(object) {
 #' \code{ClusterCells} object has the following additional slots:
 #' \itemize{
 #' \item isLog: logical. Whether the data are in the linear or log scale.
-#' \item clusterLabels: matrix. A matrix of cluster labels, useful for consensus
-#' clustering.
+#' \item clusterLabels: matrix. A matrix giving the
+#' integer-valued cluster ids for each sample. The integer values are assigned
+#' in the order that the clusters were found, if sequential=TRUE. "-1" indicates
+#' the sample was not clustered.
 #' \item primaryIndex: numeric. An index that specifies the primary set of
 #' labels.
 #' \item clusterInfo: list. A list with info about the clustering.
@@ -79,6 +80,19 @@ setValidity("ClusterCells", function(object) {
 #' \item coClustering: matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{compareChoices}).
+#' }
+#'
+#' If created from \code{\link{clusterAll}}, clusterInfo will include the
+#' parameter used for the call, and the call itself. If \code{sequential = TRUE}
+#' it will also include the following components.
+#'
+#' \itemize{
+#' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
+#' found, a matrix of information regarding the algorithm behavior for each
+#' cluster (the starting and stopping K for each cluster, and the number of
+#' iterations for each cluster).}
+#' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
+#' found, a character string explaining what triggered the algorithm to stop.}
 #' }
 #'
 #' The constructor \code{clusterCells} creates an object of the class
@@ -92,7 +106,7 @@ setValidity("ClusterCells", function(object) {
 #'data.
 #'@param labels a vector with cluster labels.
 #'@param isLog logical. Whether the data are in log (TRUE) or linear (FALSE)
-#'scale
+#'scale.
 #'
 #'@return A \code{ClusterCells} object.
 #'

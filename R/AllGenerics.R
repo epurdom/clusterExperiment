@@ -2,7 +2,8 @@ setGeneric(
   name = "clusterAll",
   def = function(x,  subsample=TRUE, sequential=FALSE,
                  clusterFunction=c("tight", "hierarchical", "pam", "kmeans"),
-                 clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL) {
+                 clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
+                 isLog=TRUE) {
     standardGeneric("clusterAll")
   }
 )
@@ -74,5 +75,12 @@ setGeneric(
   name = "removeUnclustered",
   def = function(x) {
     standardGeneric("removeUnclustered")
+  }
+)
+
+setGeneric(
+  name = "clusterInfo",
+  def = function(x) {
+    standardGeneric("clusterInfo")
   }
 )

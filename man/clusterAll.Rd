@@ -11,18 +11,21 @@
 \usage{
 \S4method{clusterAll}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  isLog = TRUE)
 
 \S4method{clusterAll}{SummarizedExperiment}(x, subsample = TRUE,
   sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam",
-  "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+  "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  isLog = TRUE)
 
 \S4method{clusterAll}{ClusterCells}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  isLog = TRUE)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (samples in rows)}
+\item{x}{the data on which to run the clustering (genes in rows)}
 
 \item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}} to get the distance matrix at each
@@ -42,24 +45,16 @@ iteration; otherwise the distance matrix is dist(x).}
 
 \item{seqArgs}{list of additional arguments to be passed to
 \code{\link{seqCluster}}.}
+
+\item{isLog}{logical. Whether the data are in log (TRUE) or linear (FALSE)
+scale.}
 }
 \value{
-A list with values
-\itemize{
-\item{\code{clustering}}{a vector of length equal to nrows(x) giving the
-integer-valued cluster ids for each sample. The integer values are assigned
-in the order that the clusters were found, if sequential=TRUE. "-1" indicates
-the sample was not clustered.}
-\item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
-found, a matrix of information regarding the algorithm behavior for each
-cluster (the starting and stopping K for each cluster, and the number of
-iterations for each cluster).}
-\item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
-found, a character string explaining what triggered the algorithm to stop.}
-}
+A \code{\link{ClusterCells}} object.
 }
 \description{
-Given a nxp data matrix, this function will find clusters
+Given a data matrix, SummarizedExperiment, or ClusterCells object,
+this function will find clusters.
 }
 \details{
 If sequential=TRUE, the sequential clustering controls the 'k'
@@ -74,14 +69,14 @@ data(simData)
 #use clusterAll to do sequential clustering
 #(same as example in seqCluster only using clusterAll ...)
 set.seed(44261)
-clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
+clustSeqHier_v2<-clusterAll(t(simData),clusterFunction="hierarchical",
 sequential=TRUE,subsample=TRUE,
 subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
 clusterDArgs=list(minSize=5))
 }
 #use clusterAll to do just clustering k=3 with no subsampling
-clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+clustNothing<-clusterAll(t(simData),clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=3))
 }
 

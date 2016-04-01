@@ -1,5 +1,4 @@
 ## subsetting
-#' @rdname clusterCells
 setMethod(
   f = "[",
   signature = c("ClusterCells", "ANY", "ANY"),
@@ -100,6 +99,7 @@ setMethod(
   }
 )
 
+
 #' @rdname clusterCells
 setMethod(
   f = "addClusters",
@@ -148,5 +148,14 @@ setMethod(
   signature = "ClusterCells",
   definition = function(x) {
     return(x[,primaryCluster(x) > 0])
+  }
+)
+
+#' @rdname clusterCells
+setMethod(
+  f = "clusterInfo",
+  signature = "ClusterCells",
+  definition = function(x) {
+    return(x@clusterInfo)
   }
 )

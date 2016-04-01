@@ -4,12 +4,12 @@
 \name{ClusterCells-class}
 \alias{ClusterCells}
 \alias{ClusterCells-class}
-\alias{[,ClusterCells,ANY,ANY,ANY-method}
 \alias{addClusters,ClusterCells,ClusterCells-method}
 \alias{addClusters,ClusterCells,matrix-method}
 \alias{addClusters,ClusterCells,numeric-method}
 \alias{allClusters,ClusterCells-method}
 \alias{clusterCells}
+\alias{clusterInfo,ClusterCells-method}
 \alias{clusterType,ClusterCells-method}
 \alias{coClustering,ClusterCells-method}
 \alias{dendrogram,ClusterCells-method}
@@ -22,8 +22,6 @@
 \title{ClusterCells object and constructor}
 \usage{
 clusterCells(se, labels, isLog)
-
-\S4method{[}{ClusterCells,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ClusterCells}(object)
 
@@ -50,6 +48,8 @@ clusterCells(se, labels, isLog)
 \S4method{addClusters}{ClusterCells,ClusterCells}(x, y)
 
 \S4method{removeUnclustered}{ClusterCells}(x)
+
+\S4method{clusterInfo}{ClusterCells}(x)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the clustered
@@ -58,7 +58,7 @@ data.}
 \item{labels}{a vector with cluster labels.}
 
 \item{isLog}{logical. Whether the data are in log (TRUE) or linear (FALSE)
-scale}
+scale.}
 }
 \value{
 A \code{ClusterCells} object.
@@ -70,8 +70,10 @@ In addition to the slots of the \code{SummarizedExperiment} class, the
 \code{ClusterCells} object has the following additional slots:
 \itemize{
 \item isLog: logical. Whether the data are in the linear or log scale.
-\item clusterLabels: matrix. A matrix of cluster labels, useful for consensus
-clustering.
+\item clusterLabels: matrix. A matrix giving the
+integer-valued cluster ids for each sample. The integer values are assigned
+in the order that the clusters were found, if sequential=TRUE. "-1" indicates
+the sample was not clustered.
 \item primaryIndex: numeric. An index that specifies the primary set of
 labels.
 \item clusterInfo: list. A list with info about the clustering.
@@ -85,6 +87,19 @@ across parameter sets (see \code{compareChoices}).
 }
 }
 \details{
+If created from \code{\link{clusterAll}}, clusterInfo will include the
+parameter used for the call, and the call itself. If \code{sequential = TRUE}
+it will also include the following components.
+
+\itemize{
+\item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
+found, a matrix of information regarding the algorithm behavior for each
+cluster (the starting and stopping K for each cluster, and the number of
+iterations for each cluster).}
+\item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
+found, a character string explaining what triggered the algorithm to stop.}
+}
+
 The constructor \code{clusterCells} creates an object of the class
 \code{ClusterCells}. However, the typical way of creating these objects is
 the result of a call to \code{compareChoices} or \code{clusterAll}.
