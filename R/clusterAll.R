@@ -52,8 +52,12 @@ setMethod(
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
+                                          "kmeans"), isLog, eps=1, clusterDArgs=NULL,
+                        subsampleArgs=NULL, seqArgs=NULL) {
+    if(missing(isLog)) stop("must indicate whether input data is on the log scale.")
+    origX<-x
+    if(isLog) x<-log(x+eps)
+
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
       if(!subsample & clusterFunction !="pam")
@@ -141,14 +145,14 @@ setMethod(
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
+                                          "kmeans"), isLog, eps=1,clusterDArgs=NULL,
+                        subsampleArgs=NULL, seqArgs=NULL) {
 
     outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         isLog=isLog)
+                         isLog=isLog,eps=eps)
     retval <- clusterCells(x, primaryCluster(outval), isLog=isLog)
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval)
@@ -164,13 +168,13 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL, isLog=TRUE) {
+                        subsampleArgs=NULL, seqArgs=NULL) {
 
     outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         isLog=isLog(x))
+                         isLog=isLog(x)) #need to deal with eps here.
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it

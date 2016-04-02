@@ -21,8 +21,7 @@
 
 \S4method{clusterAll}{ClusterCells}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isLog = TRUE)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (genes in rows)}

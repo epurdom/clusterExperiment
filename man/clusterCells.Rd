@@ -71,8 +71,9 @@ In addition to the slots of the \code{SummarizedExperiment} class, the
 \itemize{
 \item isLog: logical. Whether the data are in the linear or log scale.
 \item clusterLabels: matrix. A matrix giving the
-integer-valued cluster ids for each sample. The integer values are assigned
-in the order that the clusters were found, if sequential=TRUE. "-1" indicates
+integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
+The integer values are assigned
+in the order that the clusters were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
 the sample was not clustered.
 \item primaryIndex: numeric. An index that specifies the primary set of
 labels.
@@ -83,7 +84,7 @@ clusterLabels.
 relationship.
 \item coClustering: matrix. A matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering
-across parameter sets (see \code{compareChoices}).
+across parameter sets (see \code{compareChoices}). The matrix is a square matrix with number of rows/columns equal to the number of samples.
 }
 }
 \details{
