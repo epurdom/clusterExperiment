@@ -21,7 +21,12 @@ setGeneric(
     standardGeneric("transformation")
   }
 )
-
+setGeneric(
+  name = "transform",
+  def = function(x) {
+    standardGeneric("transform")
+  }
+)
 
 setGeneric(
   name = "allClusters",

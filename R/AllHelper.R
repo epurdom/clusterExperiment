@@ -34,12 +34,23 @@ setMethod(
 #   }
 # )
 
+
 #' @rdname clusterCells
 setMethod(
   f = "transformation",
   signature = "ClusterCells",
   definition = function(x) {
     return(x@transformation)
+  }
+)
+#' @rdname clusterCells
+setMethod(
+  f = "transform",
+  signature = "ClusterCells",
+  definition = function(x) {
+    fun<-x@transformation
+    dat<-assay(x)
+    return(fun(dat))
   }
 )
 

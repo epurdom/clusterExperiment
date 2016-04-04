@@ -34,14 +34,14 @@
 #' #use clusterAll to do sequential clustering
 #' #(same as example in seqCluster only using clusterAll ...)
 #' set.seed(44261)
-#' clustSeqHier_v2<-clusterAll(t(simData),clusterFunction="hierarchical",
+#' clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
 #' sequential=TRUE,subsample=TRUE,
 #'	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 #'	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
 #'	clusterDArgs=list(minSize=5))
 #' }
 #' #use clusterAll to do just clustering k=3 with no subsampling
-#' clustNothing<-clusterAll(t(simData),clusterFunction="pam",subsample=FALSE,
+#' clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
 #' @aliases clusterAll clusterAll-methods clusterAll,matrix-method
@@ -161,7 +161,7 @@ setMethod(
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
                          transFun=transFun)
-    retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
+    retval <- clusterCells(x, primaryCluster(outval), transFun)
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval)
     return(retval)
