@@ -25,14 +25,24 @@ setMethod(
   }
 )
 
+# #' @rdname clusterCells
+# setMethod(
+#   f = "isLog",
+#   signature = "ClusterCells",
+#   definition = function(x) {
+#     return(x@isLog)
+#   }
+# )
+
 #' @rdname clusterCells
 setMethod(
-  f = "isLog",
+  f = "transformation",
   signature = "ClusterCells",
   definition = function(x) {
-    return(x@isLog)
+    return(x@transformation)
   }
 )
+
 
 #' @rdname clusterCells
 setMethod(

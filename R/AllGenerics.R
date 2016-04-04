@@ -3,17 +3,25 @@ setGeneric(
   def = function(x,  subsample=TRUE, sequential=FALSE,
                  clusterFunction=c("tight", "hierarchical", "pam", "kmeans"),
                  clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-                 isLog=TRUE) {
+                 isCount,transFun) {
     standardGeneric("clusterAll")
   }
 )
 
+# setGeneric(
+#   name = "isLog",
+#   def = function(x) {
+#     standardGeneric("isLog")
+#   }
+# )
+
 setGeneric(
-  name = "isLog",
+  name = "transformation",
   def = function(x) {
-    standardGeneric("isLog")
+    standardGeneric("transformation")
   }
 )
+
 
 setGeneric(
   name = "allClusters",

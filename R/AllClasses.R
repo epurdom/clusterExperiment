@@ -3,8 +3,9 @@
 setClass(
   Class = "ClusterCells",
   contains = "SummarizedExperiment",
-  slots = list(isLog = "logical",
-               clusterLabels = "matrix",
+  slots = list(
+    transformation="function",
+              clusterLabels = "matrix",
                primaryIndex = "numeric",
                clusterInfo = "list",
                clusterType = "character",
@@ -25,6 +26,14 @@ setValidity("ClusterCells", function(object) {
   if(any(is.na(assay(object)))) {
     return("NA values are not allowed.")
   }
+  tX<-try(transformation(object)(assay(object)))
+  if(inherits(tX, "try-error")){
+    stop(paste("User-supplied `transformation` produces error on the input data matrix:\n",x))
+  }
+  if(any(is.na(tX))) {
+    return("NA values after transforming data matrix are not allowed.")
+  }
+  
   if(!all(is.na((object@clusterLabels))) &
      !(NROW(object@clusterLabels) == NCOL(object))) {
     return("If present, `clusterLabels` must have as many row as cells.")
@@ -65,7 +74,7 @@ setValidity("ClusterCells", function(object) {
 #' In addition to the slots of the \code{SummarizedExperiment} class, the
 #' \code{ClusterCells} object has the following additional slots:
 #' \itemize{
-#' \item isLog: logical. Whether the data are in the linear or log scale.
+#' \item transformation: function. Function to transform the data by when methods that assume normal-like data (e.g. log)
 #' \item clusterLabels: matrix. A matrix giving the
 #' integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
 #' The integer values are assigned
@@ -106,8 +115,7 @@ setValidity("ClusterCells", function(object) {
 #'@param se a matrix or \code{SummarizedExperiment} containing the clustered
 #'data.
 #'@param labels a vector with cluster labels.
-#'@param isLog logical. Whether the data are in log (TRUE) or linear (FALSE)
-#'scale.
+#'@param transformation function. A function to transform the data before performing steps that assume normal-like (i.e. constant variance), such as the log
 #'
 #'@return A \code{ClusterCells} object.
 #'
@@ -120,9 +128,9 @@ setValidity("ClusterCells", function(object) {
 #'se <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterCells(se, as.numeric(labels), isLog = TRUE)
+#'cc <- clusterCells(se, as.numeric(labels), transformation = function(x){x})
 #'
-clusterCells <- function(se, labels, isLog) {
+clusterCells <- function(se, labels, transformation) {
   if(NCOL(se) != length(labels)) {
     stop("`labels` must be a vector of length equal to the number of samples.")
   }
@@ -143,7 +151,7 @@ clusterCells <- function(se, labels, isLog) {
              assays = Assays(assays(se)),
              elementMetadata = mcols(se),
              colData = colData(se),
-             isLog = isLog,
+             transformation=transformation,
              clusterLabels = matrix(data=labels, ncol=1),
              primaryIndex = 1,
              clusterType = "User"

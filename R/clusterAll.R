@@ -17,8 +17,8 @@
 #' \code{\link{subsampleClustering}}.
 #' @param seqArgs list of additional arguments to be passed to
 #' \code{\link{seqCluster}}.
-#' @param isLog logical. Whether the data are in log (TRUE) or linear (FALSE)
-#'scale.
+#' @param isCount logical. Whether the data are in counts, in which case the default \code{transFun} argument is set as log(x+1). This is simply a convenience to the user, and can be overridden by giving an explicit function to \code{transFun}.
+#' @param transFun function A function to use to transform the input data matrix before clustering.
 #'
 #' @details If sequential=TRUE, the sequential clustering controls the 'k'
 #' argument of the underlying clustering so setting 'k=' in the list given to
@@ -51,13 +51,17 @@ setMethod(
   f = "clusterAll",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-                        clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"), isLog, eps=1, clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
-    if(missing(isLog)) stop("must indicate whether input data is on the log scale.")
+      clusterFunction=c("tight", "hierarchical", "pam","kmeans"), 
+      clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
+      isCount=FALSE,
+      transFun) {
+    if(missing(transFun)){
+      transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
+    }
     origX<-x
-    if(isLog) x<-log(x+eps)
-
+    x<-try(transFun(x),silent=TRUE)
+    if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
+    
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
       if(!subsample & clusterFunction !="pam")
@@ -125,7 +129,7 @@ setMethod(
       outlist <- list("clustering"=.convertClusterListToVector(finalClusterList,N))
     }
 
-    retval <- clusterCells(x, outlist$clustering, isLog)
+    retval <- clusterCells(origX, outlist$clustering, transformation=transFun)
     retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
                                 whyStop = outlist$whyStop,
                                 subsample = subsample,
@@ -145,15 +149,19 @@ setMethod(
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"), isLog, eps=1,clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
-
+                                          "kmeans"),clusterDArgs=NULL,
+                        subsampleArgs=NULL, seqArgs=NULL,isCount=FALSE,
+                        transFun) {
+    if(missing(transFun)){
+      transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
+    }
+    
     outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         isLog=isLog,eps=eps)
-    retval <- clusterCells(x, primaryCluster(outval), isLog=isLog)
+                         transFun=transFun)
+    retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval)
     return(retval)
@@ -174,11 +182,11 @@ setMethod(
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         isLog=isLog(x)) #need to deal with eps here.
+                         transFun=transformation(x)) 
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it
-    retval <- clusterCells(x, primaryCluster(outval), isLog=isLog)
+    retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval)
     return(retval)
