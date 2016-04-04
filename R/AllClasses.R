@@ -41,6 +41,11 @@ setValidity("ClusterCells", function(object) {
   if(!is.numeric(object@clusterLabels)) {
     return("`clusterLabels` must be a numeric matrix.")
   }
+  
+  if(NCOL(object@clusterLabels)!= length(object@clusterType)) return("length of clusterType must be same as NCOL of the clusterLabels")
+  
+  if(NCOL(object@clusterLabels)!= length(object@clusterInfo)) return("length of clusterInfo must be same as NCOL of the clusterLabels")
+
   if(length(object@dendrogram) > 0) {
     if(class(object@dendrogram) != "dendrogram") {
       return("`dendrogram` must be of class dendrogram.")
@@ -130,7 +135,7 @@ setValidity("ClusterCells", function(object) {
 #'
 #'cc <- clusterCells(se, as.numeric(labels), transformation = function(x){x})
 #'
-clusterCells <- function(se, labels, transformation) {
+clusterCells <- function(se, labels, transformation,clusterType="User",clusterInfo=list(NULL)) {
   if(NCOL(se) != length(labels)) {
     stop("`labels` must be a vector of length equal to the number of samples.")
   }
@@ -154,7 +159,8 @@ clusterCells <- function(se, labels, transformation) {
              transformation=transformation,
              clusterLabels = matrix(data=labels, ncol=1),
              primaryIndex = 1,
-             clusterType = "User"
+             clusterType = clusterType,
+             clusterInfo=clusterInfo
              )
 
   return(out)

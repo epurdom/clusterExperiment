@@ -19,9 +19,14 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-    cat("primary clustering:")
+    cat("Table of clusters (of primary clustering):")
     print(table(object@clusterLabels[,object@primaryIndex]))
-    cat("cluster type:", object@clusterType[object@primaryIndex])
+    cat("Primary cluster type:", object@clusterType[object@primaryIndex],"\n")
+    cat("Total number of clusterings:", NCOL(object@clusterLabels),"\n")
+    typeTab<-names(table(clusterType(object)))
+        cat("compareChoices run?",if("compareChoices" %in% typeTab) "Yes" else "No","\n")
+        cat("findSharedClusters run?",if("findSharedClusters" %in% typeTab) "Yes" else "No","\n")
+        cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
 
@@ -125,12 +130,15 @@ setMethod(
 setMethod(
   f = "addClusters",
   signature = signature("ClusterCells", "matrix"),
-  definition = function(x, y) {
+  definition = function(x, y, type="User") {
     if(!(NROW(y) == NCOL(x))) {
       stop("Incompatible dimensions.")
     }
     x@clusterLabels <- cbind(x@clusterLabels, y)
-    x@clusterType <- c(x@clusterType, rep("User", NCOL(y)))
+    if(length(type)==1) type<-rep(type, NCOL(y))
+    x@clusterType <- c(x@clusterType, type)
+    yClusterInfo<-rep(list(NULL),NCOL(y))
+    x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
     return(x)
   }
 )
@@ -139,12 +147,15 @@ setMethod(
 setMethod(
   f = "addClusters",
   signature = signature("ClusterCells", "numeric"),
-  definition = function(x, y) {
+  definition = function(x, y, type="User") {
     if(!(length(y) == NCOL(x))) {
       stop("Incompatible dimensions.")
     }
     x@clusterLabels <- cbind(x@clusterLabels, y)
-    x@clusterType <- c(x@clusterType, "User")
+    if(length(type)==1) type<-rep(type, 1)
+    yClusterInfo<-rep(list(NULL),1)
+    x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
+    x@clusterType <- c(x@clusterType, type)
     return(x)
   }
 )
@@ -159,6 +170,7 @@ setMethod(
     }
     x@clusterLabels <- cbind(x@clusterLabels, y@clusterLabels)
     x@clusterType <- c(x@clusterType, y@clusterType)
+    x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
     return(x)
   }
 )

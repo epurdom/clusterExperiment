@@ -53,15 +53,29 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical", "pam","kmeans"), 
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,
-      transFun) {
+      isCount=FALSE,transFun, npcs=NA) {
     if(missing(transFun)){
       transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
     }
     origX<-x
+    
+    ##########
+    ##transformation to data x that will be input to clustering
+    ##########
     x<-try(transFun(x),silent=TRUE)
     if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
+    if(any(is.na(x))) stop("User-supplied `transFun` produces NA values")
     
+    if(!is.na(npcs)){
+      if(npcs>=NROW(x)) stop("npcs must be strictly less than the number of rows of input data matrix")
+      x<-t(stats::prcomp(t(x))$x[,1:npcs])
+    }
+    
+    N <- dim(x)[2]
+    
+    ##########
+    ##Checks that arguments make sense:
+    ##########
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
       if(!subsample & clusterFunction !="pam")
@@ -84,7 +98,6 @@ setMethod(
       }
 
     }
-    N <- dim(x)[2]
     if(sequential){
       if(is.null(seqArgs)) stop("must give seqArgs so as to identify k0")
       if(!"k0"%in%names(seqArgs)) stop("seqArgs must contain element 'k0'")
@@ -121,14 +134,22 @@ setMethod(
                and findBestK=FALSE in clusterDArgs, must pass 'k' via
                clusterDArgs list")
       }
+      ##########
+      ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
+      ##########
       finalClusterList <- .clusterWrapper(t(x), clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,
                                           typeAlg=typeAlg)
-      outlist <- list("clustering"=.convertClusterListToVector(finalClusterList,N))
+      outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$results,N))
+
     }
 
+    ##########
+    ## Convert to clusterCells Object
+    ##########
+    
     retval <- clusterCells(origX, outlist$clustering, transformation=transFun)
     retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
                                 whyStop = outlist$whyStop,
@@ -139,6 +160,7 @@ setMethod(
                                 subsampleArgs = subsampleArgs,
                                 seqArgs = seqArgs)
     retval@clusterType <- "clusterAll"
+    if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
     return(retval)
   }
 )
@@ -163,7 +185,7 @@ setMethod(
                          transFun=transFun)
     retval <- clusterCells(x, primaryCluster(outval), transFun)
     retval@clusterInfo <- clusterInfo(outval)
-    retval@clusterType <- clusterType(outval)
+    retval@clusterType <- clusterType(outval) #shouldn't this add to the end
     return(retval)
   }
 )
@@ -186,9 +208,12 @@ setMethod(
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it
-    retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
-    retval@clusterInfo <- clusterInfo(outval)
-    retval@clusterType <- clusterType(outval)
+    #     retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
+    #     retval@clusterInfo <- clusterInfo(outval)
+    #     retval@clusterType <- clusterType(outval)
+    
+    ## eap: I think we should add it. You might try a couple of versions.
+    retval<-addClusters(outval,x) #should keep primary cluster same as most recent
     return(retval)
   }
 )

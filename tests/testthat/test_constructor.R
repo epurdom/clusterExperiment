@@ -29,14 +29,31 @@ test_that("`clusterCells` constructor works with matrix and
 
 test_that("adding clusters, setting primary labels and remove unclustered cells
           work as promised", {
-            c1 <- addClusters(cc, rep(c(-1, 1), each=5))
             expect_equal(NCOL(allClusters(cc)), 1)
-            expect_equal(NCOL(allClusters(c1)), 2)
-            expect_equal(primaryCluster(c1), primaryCluster(cc))
             expect_is(transformation(cc),"function")
+
+            c1 <- addClusters(cc, rep(c(-1, 1), each=5))
+            expect_equal(NCOL(allClusters(c1)), 2)
+            expect_equal(length(clusterType(c1)), 2)
+            expect_equal(length(clusterInfo(c1)), 2)
+            expect_equal(primaryCluster(c1), primaryCluster(cc))
             primaryClusterIndex(c1) <- 2
             expect_false(all(primaryCluster(c1)==primaryCluster(cc)))
 
+              #check adding a clusterCellsObject
+            c3<-addClusters(cc,cc)
+            expect_equal(NCOL(allClusters(c3)), 2)
+            expect_equal(length(clusterType(c3)), 2)
+            expect_equal(length(clusterInfo(c3)), 2)
+            expect_equal(primaryCluster(c3), primaryCluster(cc))
+ 
+              #check adding matrix of clusters
+            c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)))
+            expect_equal(NCOL(allClusters(c4)), 3)
+            expect_equal(length(clusterType(c4)), 3)
+            expect_equal(length(clusterInfo(c4)), 3)
+            expect_equal(primaryCluster(c4), primaryCluster(cc))
+            
             expect_equal(cc, removeUnclustered(cc))
 
             c2 <- removeUnclustered(c1)

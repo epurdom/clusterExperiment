@@ -18,7 +18,7 @@
 			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
 			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
 		}
-
+    subDbar<-Dbar
 	}
 	else{
 		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
@@ -28,11 +28,12 @@
 				findBestK<-clusterDArgs[["findBestK"]]
 			}
 		if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not subsampling, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+	  subDbar<-NULL
 	}
 	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
-	return(res) #nothing found
+	return(list(results=res,subsampleCocluster=subDbar)) #nothing found
 }
 
 #convert list output into cluster vector.

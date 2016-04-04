@@ -3,7 +3,7 @@ setGeneric(
   def = function(x,  subsample=TRUE, sequential=FALSE,
                  clusterFunction=c("tight", "hierarchical", "pam", "kmeans"),
                  clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-                 isCount,transFun) {
+                 isCount,transFun,npcs=NA) {
     standardGeneric("clusterAll")
   }
 )
@@ -79,7 +79,7 @@ setGeneric(
 
 setGeneric(
   name = "addClusters",
-  def = function(x, y) {
+  def = function(x, y,...) {
     standardGeneric("addClusters")
   }
 )
