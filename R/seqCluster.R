@@ -121,24 +121,37 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
 			#find clusters for K,K+1
             for (i in 1:seq.num) {
                 if(verbose) cat(paste("k =", k + i - 1,"\n"))
-				tempSubsampleArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
-				res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)
+        				if(subsample){
+        				  tempArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
+        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+        				}
+        				else{
+        				  tempArgs<-c(list(k=k + i - 1),clusterDArgs) #set k
+        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+        				  
+        				}
 				# if(length(res)==0) {
 # 					cat(paste("Found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),". Stopping because zero-length cluster.\n"))
 # 								whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+i-1,"and previous clusters not similar enough.")
 # 				}
-				if(length(res)>0) res <- res[1:min(top.can,length(res))] 
-				candidates[[i]]<-res
-
+        				if(length(res)>0) res <- res[1:min(top.can,length(res))] 
+        				candidates[[i]]<-res
             }
         }		
         else { #need to go increase to K+2,K+3, etc.
             candidates <- candidates[-1] #remove old k
             if(verbose) cat(paste("k =", k + seq.num - 1, "\n"))
 				#add new k (because always list o)
-			tempSubsampleArgs<-c(list(k=k + seq.num - 1),subsampleArgs) #set k for clustering
-			res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)
-			if(length(res)>0) res <- res[1:min(top.can,length(res))] 
+            if(subsample){
+              tempArgs<-c(list(k=k + seq.num - 1),subsampleArgs)  #set k
+              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+            }
+            else{
+              tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k
+              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+              
+            }
+      			if(length(res)>0) res <- res[1:min(top.can,length(res))] 
             candidates[[seq.num]] <- res
         }
 		##################

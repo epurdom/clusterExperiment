@@ -57,7 +57,7 @@ setMethod(
     if(missing(transFun)){
       transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
     }
-    origX<-x
+    origX<-x #ngenes x nsamples
     
     ##########
     ##transformation to data x that will be input to clustering
@@ -69,6 +69,7 @@ setMethod(
     if(!is.na(npcs)){
       if(npcs>=NROW(x)) stop("npcs must be strictly less than the number of rows of input data matrix")
       x<-t(stats::prcomp(t(x))$x[,1:npcs])
+      if(NCOL(x)!=NCOL(origX)) stop("error in coding of principle components.")
     }
     
     N <- dim(x)[2]

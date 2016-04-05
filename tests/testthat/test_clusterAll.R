@@ -24,7 +24,7 @@ test_that("`clusterAll` works with matrix, ClusterCells objects, and
             expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterAll")
             
 
-  #check isCount
+            #check isCount
             clustCount <- clusterAll(simCount, clusterFunction="pam",
                                      subsample=FALSE, sequential=FALSE,
                                      clusterDArgs=list(k=3),isCount=TRUE)
@@ -37,6 +37,7 @@ test_that("`clusterAll` works with matrix, ClusterCells objects, and
                                      subsample=TRUE, sequential=FALSE,
                                      subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE)
             expect_equal(NCOL(coClustering(clustSubsample)),NCOL(simData))
+            
             #check npcs
             clustNPCS <- clusterAll(simData, clusterFunction="pam",
                                          subsample=FALSE, sequential=FALSE,npcs=3,
@@ -45,6 +46,13 @@ test_that("`clusterAll` works with matrix, ClusterCells objects, and
                                                   subsample=FALSE, sequential=FALSE,npcs=NROW(simData)+1,
                                                   clusterDArgs=list(k=3),isCount=FALSE))
             
-            
+           #check sequential
+           clustSeq <- clusterAll(simData, clusterFunction="pam",
+                                   subsample=FALSE, sequential=TRUE,npcs=3,
+                                   isCount=FALSE,seqArgs=list(k0=5))
+           expect_error(  clusterAll(simData, clusterFunction="pam",
+                                     subsample=FALSE, sequential=TRUE,npcs=3,
+                                     isCount=FALSE)) #must specify k0
+           
             
           })
