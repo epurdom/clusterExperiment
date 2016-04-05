@@ -23,36 +23,36 @@ test_that("`clusterAll` works with matrix, ClusterCells objects, and
             expect_equal(NCOL(allClusters(clustNothing3)),2)
             expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterAll")
             
-
-            #check isCount
-            clustCount <- clusterAll(simCount, clusterFunction="pam",
-                                     subsample=FALSE, sequential=FALSE,
-                                     clusterDArgs=list(k=3),isCount=TRUE)
-            expect_error(clusterAll(simData, clusterFunction="pam",
-                                    subsample=FALSE, sequential=FALSE,
-                                    clusterDArgs=list(k=3),isCount=TRUE),info="test error handling for isCount=TRUE when can't take log")
-
-            #check subsample
-            clustSubsample <- clusterAll(simData, clusterFunction="pam",
-                                     subsample=TRUE, sequential=FALSE,
-                                     subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE)
-            expect_equal(NCOL(coClustering(clustSubsample)),NCOL(simData))
-            
-            #check npcs
-            clustNPCS <- clusterAll(simData, clusterFunction="pam",
-                                         subsample=FALSE, sequential=FALSE,npcs=3,
-                                         clusterDArgs=list(k=3),isCount=FALSE)
-           expect_error(  clusterAll(simData, clusterFunction="pam",
-                                                  subsample=FALSE, sequential=FALSE,npcs=NROW(simData)+1,
-                                                  clusterDArgs=list(k=3),isCount=FALSE))
-            
-           #check sequential
-           clustSeq <- clusterAll(simData, clusterFunction="pam",
-                                   subsample=FALSE, sequential=TRUE,npcs=3,
-                                   isCount=FALSE,seqArgs=list(k0=5))
-           expect_error(  clusterAll(simData, clusterFunction="pam",
-                                     subsample=FALSE, sequential=TRUE,npcs=3,
-                                     isCount=FALSE)) #must specify k0
-           
-            
           })
+
+test_that("Different options of `clusterAll` ", {
+  #check isCount
+  clustCount <- clusterAll(simCount, clusterFunction="pam",
+                           subsample=FALSE, sequential=FALSE,
+                           clusterDArgs=list(k=3),isCount=TRUE)
+  expect_error(clusterAll(simData, clusterFunction="pam",
+                          subsample=FALSE, sequential=FALSE,
+                          clusterDArgs=list(k=3),isCount=TRUE),info="test error handling for isCount=TRUE when can't take log")
+  
+  #check subsample
+  clustSubsample <- clusterAll(simData, clusterFunction="pam",
+                               subsample=TRUE, sequential=FALSE,
+                               subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE)
+  expect_equal(NCOL(coClustering(clustSubsample)),NCOL(simData))
+  
+  #check npcs
+  clustNPCS <- clusterAll(simData, clusterFunction="pam",
+                          subsample=FALSE, sequential=FALSE,npcs=3,
+                          clusterDArgs=list(k=3),isCount=FALSE)
+  expect_error(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=FALSE,npcs=NROW(simData)+1,
+                            clusterDArgs=list(k=3),isCount=FALSE))
+  
+  #check sequential
+  clustSeq <- clusterAll(simData, clusterFunction="pam",
+                         subsample=FALSE, sequential=TRUE,npcs=3,
+                         isCount=FALSE,seqArgs=list(k0=5))
+  expect_error(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=TRUE,npcs=3,
+                            isCount=FALSE)) #must specify k0
+})

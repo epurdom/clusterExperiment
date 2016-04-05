@@ -53,24 +53,14 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical", "pam","kmeans"), 
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun, npcs=NA) {
-    if(missing(transFun)){
-      transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
-    }
+      isCount=FALSE,transFun=NULL, npcs=NA) {
+    
     origX<-x #ngenes x nsamples
     
     ##########
     ##transformation to data x that will be input to clustering
     ##########
-    x<-try(transFun(x),silent=TRUE)
-    if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
-    if(any(is.na(x))) stop("User-supplied `transFun` produces NA values")
-    
-    if(!is.na(npcs)){
-      if(npcs>=NROW(x)) stop("npcs must be strictly less than the number of rows of input data matrix")
-      x<-t(stats::prcomp(t(x))$x[,1:npcs])
-      if(NCOL(x)!=NCOL(origX)) stop("error in coding of principle components.")
-    }
+    x<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
     
     N <- dim(x)[2]
     

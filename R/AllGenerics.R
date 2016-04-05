@@ -8,12 +8,19 @@ setGeneric(
   }
 )
 
-# setGeneric(
-#   name = "isLog",
-#   def = function(x) {
-#     standardGeneric("isLog")
-#   }
-# )
+setGeneric(
+  name = "compareChoices",
+  def = compareChoices <- function(data, ks, npcs,clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                                   removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                                   clusterDArgs=list(minSize=5),
+                                   subsampleArgs=list(resamp.num=50),
+                                   seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                                   transFun=NULL,isCount=FALSE,
+                                   ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  ) {
+    standardGeneric("compareChoices")
+  }
+)
 
 setGeneric(
   name = "transformation",

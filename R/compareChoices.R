@@ -80,151 +80,202 @@
 # subsample=c(TRUE),removeSil=c(TRUE), clusterMethod=c("pam","tight","hierarchical",
 # clusterDArgs = list(minSize = 5,kRange=2:15),subsampleArgsncores=1,random.seed=48120)
 
+#' @rdname compareChoices
+setMethod(
+  f = "compareChoices",
+  signature = signature(x = "matrix"),
+  definition = function(x, ks, npcs=NA,clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        clusterDArgs=list(minSize=5),
+                        subsampleArgs=list(resamp.num=50),
+                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        transFun=NULL,isCount=FALSE,
+                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  ){
+    x<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
+    if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
+    outval<-compareChoices(dataList, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
+                           sequential=sequential,removeSil=removeSil,subsample=subsample,silCutoff=silCutoff,
+                           clusterDArgs=clusterDargs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
+  
 
-compareChoices <- function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
-removeSil=FALSE, subsample=FALSE,silCutoff=0,
-    clusterDArgs=list(minSize=5),
-	subsampleArgs=list(resamp.num=50),
-	seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
-	ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
-	)
-{
-	# if(clusterMethod %in% c("pam")){ #alpha values not used -- assume cutoff silhouette at negative.
-	# 	alphas<-0
-	# }
-	#browser()
-	if(missing(data)) stop("Must provide data or list of data matrices!")
-	if(is.null(dim(data))){
-		if(!is.list(data) || !all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is not a data.frame, it must be a list with each element of the list a a data.frame or matrix")
-		if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
-		dataList<-data
+    }
 
-	}
-	else{
-		dataList<-list(data)
-		names(dataList)<-"dataset1"
-	}
-	dataName<-names(dataList)
-	if(is.null(paramMatrix)){
+)
 
-		# #check if ks=NA; no longer an option
-		# if(is.na(ks)){
-		# 	if(!all(clusterMethod=="pam")) stop("if clusterMethod includes methods that are not 'pam', must provide ks")
-		# 	else if(!all(findBestK)) stop("if findBestK!=TRUE, must provide ks")
-		# }
-		param<-expand.grid(dataset=dataName,k=ks,alpha=alphas,findBestK=findBestK,sequential=sequential,removeSil=removeSil,subsample=subsample,clusterMethod=clusterMethod,silCutoff=silCutoff)
-		#don't vary them across ones that don't matter (i.e. 0-1 versus K); 
-		#code sets to single value and then will do unique
-		#also deals with just in case the user gave duplicated values of something by mistake.
-		typeK<-which(param[,"clusterMethod"] %in% c("pam"))
-		if(length(typeK)>0){
-			param[typeK,"alpha"]<-NA #just a nothing value
-			whFindBestK<-which(param[,"findBestK"])
-			if(length(whFindBestK)>0){ #remove 'k' and see if same
-				if(!"kRange" %in% names(clusterDArgs)) clusterDArgs[["kRange"]]<-ks
-        #if findBestK=TRUE, and sequential=FALSE, then user needs to set k via subsampleArgs
-				whNoSeq<-which(!param[,"sequential"])
-        if(length(intersect(whFindBestK,whNoSeq))>0){
-          param[intersect(whFindBestK,whNoSeq),"k"]<-NA
-          if(is.null(subsampleArgs[["k"]])) stop("must provide k in subsampleArgs for those with findBestK=TRUE and sequential=FALSE")
-  #        else param[intersect(whFindBestK,whNoSeq),"k"]<-subsampleArgs[["k"]]
-        } 
-			}
-		}
-		type01<-which(param[,"clusterMethod"] %in% c("hierarchical","tight"))
-		if(length(type01)>0){
-			param[type01,"findBestK"]<-FALSE
-			param[type01,"removeSil"]<-FALSE
-			param[type01,"silCutoff"]<-0
-		}
-		#if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
-		param<-unique(param)  
-	
-		#deal with those that are invalid combinations:
-		#Error in clusterAll(x = data, subsample = subsample, clusterFunction = clusterMethod,  : 
-	#  Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.
+#' @rdname compareChoices
+setMethod(
+  f = "compareChoices",
+  signature = signature(x = "list"),
+  definition = function(x, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        clusterDArgs=list(minSize=5),
+                        subsampleArgs=list(resamp.num=50),
+                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  )
+  {
+    data<-x
+    if(!all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
+    if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
+    dataList<-data
+    dataName<-names(dataList)
+    if(is.null(paramMatrix)){
+      
+      # #check if ks=NA; no longer an option
+      # if(is.na(ks)){
+      # 	if(!all(clusterMethod=="pam")) stop("if clusterMethod includes methods that are not 'pam', must provide ks")
+      # 	else if(!all(findBestK)) stop("if findBestK!=TRUE, must provide ks")
+      # }
+      param<-expand.grid(dataset=dataName,k=ks,alpha=alphas,findBestK=findBestK,sequential=sequential,removeSil=removeSil,subsample=subsample,clusterMethod=clusterMethod,silCutoff=silCutoff)
+      #don't vary them across ones that don't matter (i.e. 0-1 versus K); 
+      #code sets to single value and then will do unique
+      #also deals with just in case the user gave duplicated values of something by mistake.
+      typeK<-which(param[,"clusterMethod"] %in% c("pam"))
+      if(length(typeK)>0){
+        param[typeK,"alpha"]<-NA #just a nothing value
+        whFindBestK<-which(param[,"findBestK"])
+        if(length(whFindBestK)>0){ #remove 'k' and see if same
+          if(!"kRange" %in% names(clusterDArgs)) clusterDArgs[["kRange"]]<-ks
+          #if findBestK=TRUE, and sequential=FALSE, then user needs to set k via subsampleArgs
+          whNoSeq<-which(!param[,"sequential"])
+          if(length(intersect(whFindBestK,whNoSeq))>0){
+            param[intersect(whFindBestK,whNoSeq),"k"]<-NA
+            if(is.null(subsampleArgs[["k"]])) stop("must provide k in subsampleArgs for those with findBestK=TRUE and sequential=FALSE")
+            #        else param[intersect(whFindBestK,whNoSeq),"k"]<-subsampleArgs[["k"]]
+          } 
+        }
+      }
+      type01<-which(param[,"clusterMethod"] %in% c("hierarchical","tight"))
+      if(length(type01)>0){
+        param[type01,"findBestK"]<-FALSE
+        param[type01,"removeSil"]<-FALSE
+        param[type01,"silCutoff"]<-0
+      }
+      #if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
+      param<-unique(param)  
+      
+      #deal with those that are invalid combinations:
+      #Error in clusterAll(x = data, subsample = subsample, clusterFunction = clusterMethod,  : 
+      #  Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.
+      
+      whInvalid<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
+      if(length(whInvalid)>0) param<-param[-whInvalid,]
+      
+      
+      whExtra<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
+      if(length(whInvalid)>0) param<-param[-whInvalid,]
+      
+      
+      if(nrow(param)<=1) stop("set of parameters imply only 1 combination")
+      
+    }
+    else{
+      if(is.null(paramMatrix)) stop("invalid input for paramMatrix; must be data.frame or matrix")
+      param<-paramMatrix
+    }
+    
+    #find names of the parameter combinations.
+    whVary<-which(apply(param,2,function(x){length(unique(x))>1}))
+    if(length(whVary)>0) cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
+      paste(colnames(param)[whVary],x,sep="=",collapse=",")})
+    else stop("set of parameters imply only 1 combination")
+    cnames<-gsub("dataset=","",cnames)
+    cnames<-gsub("= ","=",cnames)
+    cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
+    cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
+    paramFun<-function(i){
+      par<-param[i,]
+      #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
+      #well, sometimes. Maybe don't need this?
+      removeSil<-as.logical(gsub(" ","",par["removeSil"]))
+      sequential<-as.logical(gsub(" ","",par["sequential"]))
+      subsample<-as.logical(gsub(" ","",par["subsample"]))
+      findBestK<-as.logical(gsub(" ","",par["findBestK"]))
+      clusterMethod<-as.character(par[["clusterMethod"]])
+      if(!is.na(par[["k"]])){
+        if(sequential) seqArgs[["k0"]]<-par[["k"]] 
+        else{
+          #to be safe, set both in case user set one. 
+          subsampleArgs[["k"]]<-par[["k"]]
+          clusterDArgs[["k"]]<-par[["k"]]
+        }			
+      }
+      clusterDArgs[["alpha"]]<-par[["alpha"]]
+      clusterDArgs[["findBestK"]]<-findBestK
+      clusterDArgs[["removeSil"]]<-removeSil
+      clusterDArgs[["silCutoff"]]<-par[["silCutoff"]]
+      clusterDArgs[["checkArgs"]]<-FALSE #turn off printing of warnings that arguments off
+      if(!is.null(random.seed)) set.seed(random.seed)
+      clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
+                 seqArgs=seqArgs, sequential=sequential) 
+    }
+    if(run){
+      if(ncores>1){
+        out<-mclapply(1:nrow(param),FUN=paramFun,mc.cores=ncores,...)
+        nErrors<-which(sapply(out,function(x){inherits(x, "try-error")}))
+        if(length(nErrors)>0)stop(nErrors,"parameter values hit an error. The first was:\n",out[nErrors[1]])
+      }
+      else out<-lapply(1:nrow(param),FUN=paramFun)
+      
+      clMat<-sapply(out,function(x){x$clustering})
+      colnames(clMat)<-cnames
+      
+      #   #just return matrices of clusters
+      #   out<-lapply(allTracking,function(trackTightAlpha){
+      #     sapply(trackTightAlpha,function(x){x$cluster})
+      #   })
+      if(any(param[,"sequential"])){
+        clusterInfo<-lapply(out,function(x){
+          # if(all(c("clusterInfo","whyStop") %in% names(x))) return(x[c("clusterInfo","whyStop")])
+          # 		else return(NULL)
+          return(x[c("clusterInfo","whyStop")])
+        })
+        names(clusterInfo)<-cnames		
+      }
+      else clusterInfo<-NULL
+      
+      return(list(clMat=clMat,clusterInfo=clusterInfo,paramMatrix=paramMatrix))
+    }
+    else{
+      rownames(param)<-cnames
+      return(param)
+    }
+  }
+)
+#' @rdname compareChoices
+setMethod(
+  f = "compareChoices",
+  signature = signature(x = "ClusterCells"),
+  definition = function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        clusterDArgs=list(minSize=5),
+                        subsampleArgs=list(resamp.num=50),
+                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  )
+  {
+    ##Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
+    
+  }
+)
 
-	   	whInvalid<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
-		if(length(whInvalid)>0) param<-param[-whInvalid,]
+
+#' @rdname compareChoices
+setMethod(
+  f = "compareChoices",
+  signature = signature(x = "SummarizedExperiment"),
+  definition = function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        clusterDArgs=list(minSize=5),
+                        subsampleArgs=list(resamp.num=50),
+                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  )
+  {
+    
+  }
+)
 
 
-		whExtra<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
-			if(length(whInvalid)>0) param<-param[-whInvalid,]
-
-
-		if(nrow(param)<=1) stop("set of parameters imply only 1 combination")
-		
-	}
-	else{
-		if(is.null(paramMatrix)) stop("invalid input for paramMatrix; must be data.frame or matrix")
-		param<-paramMatrix
-	}
-
-	#find names of the parameter combinations.
-	whVary<-which(apply(param,2,function(x){length(unique(x))>1}))
-	if(length(whVary)>0) cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-		paste(colnames(param)[whVary],x,sep="=",collapse=",")})
-	else stop("set of parameters imply only 1 combination")
-	cnames<-gsub("dataset=","",cnames)
-	cnames<-gsub("= ","=",cnames)
-	cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
-	cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
-	paramFun<-function(i){
-		par<-param[i,]
-		#make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
-		#well, sometimes. Maybe don't need this?
-		removeSil<-as.logical(gsub(" ","",par["removeSil"]))
-		sequential<-as.logical(gsub(" ","",par["sequential"]))
-		subsample<-as.logical(gsub(" ","",par["subsample"]))
-		findBestK<-as.logical(gsub(" ","",par["findBestK"]))
-		clusterMethod<-as.character(par[["clusterMethod"]])
-		if(!is.na(par[["k"]])){
-			if(sequential) seqArgs[["k0"]]<-par[["k"]] 
-			else{
-				#to be safe, set both in case user set one. 
-				subsampleArgs[["k"]]<-par[["k"]]
-				clusterDArgs[["k"]]<-par[["k"]]
-			}			
-		}
-		clusterDArgs[["alpha"]]<-par[["alpha"]]
-		clusterDArgs[["findBestK"]]<-findBestK
-		clusterDArgs[["removeSil"]]<-removeSil
-		clusterDArgs[["silCutoff"]]<-par[["silCutoff"]]
-		clusterDArgs[["checkArgs"]]<-FALSE #turn off printing of warnings that arguments off
-		if(!is.null(random.seed)) set.seed(random.seed)
-		clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
-			seqArgs=seqArgs, sequential=sequential) 
-	}
-	if(run){
-		if(ncores>1){
-			out<-mclapply(1:nrow(param),FUN=paramFun,mc.cores=ncores,...)
-			nErrors<-which(sapply(out,function(x){inherits(x, "try-error")}))
-			if(length(nErrors)>0)stop(nErrors,"parameter values hit an error. The first was:\n",out[nErrors[1]])
-		}
-		else out<-lapply(1:nrow(param),FUN=paramFun)
-
-		clMat<-sapply(out,function(x){x$clustering})
-		colnames(clMat)<-cnames
-	
-		#   #just return matrices of clusters
-		#   out<-lapply(allTracking,function(trackTightAlpha){
-		#     sapply(trackTightAlpha,function(x){x$cluster})
-		#   })
-		if(any(param[,"sequential"])){
-			clusterInfo<-lapply(out,function(x){
-				# if(all(c("clusterInfo","whyStop") %in% names(x))) return(x[c("clusterInfo","whyStop")])
-		# 		else return(NULL)
-				return(x[c("clusterInfo","whyStop")])
-			})
-			 names(clusterInfo)<-cnames		
-		}
-		else clusterInfo<-NULL
-	
-		return(list(clMat=clMat,clusterInfo=clusterInfo))
-	}
-	else{
-	  rownames(param)<-cnames
-	  return(param)
-	}
-}
 
