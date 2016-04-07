@@ -3,21 +3,22 @@ setGeneric(
   def = function(x,  subsample=TRUE, sequential=FALSE,
                  clusterFunction=c("tight", "hierarchical", "pam", "kmeans"),
                  clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-                 isCount,transFun,npcs=NA) {
+                 isCount=FALSE,transFun=NULL,dimReduce=c("none","PCA","mostVar"),ndims=NA) {
     standardGeneric("clusterAll")
   }
 )
 
 setGeneric(
   name = "compareChoices",
-  def = compareChoices <- function(data, ks, npcs,clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+  def = compareChoices <- function(x, ks=3:5, clusterMethod="pam", alphas=0.1, findBestK=FALSE,sequential=FALSE,
                                    removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                                   dimReduce="none",nVarDims=NA,nPCADims=NA,
                                    clusterDArgs=list(minSize=5),
                                    subsampleArgs=list(resamp.num=50),
                                    seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
                                    transFun=NULL,isCount=FALSE,
                                    ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
-  ) {
+                                   ) {
     standardGeneric("compareChoices")
   }
 )
@@ -30,7 +31,7 @@ setGeneric(
 )
 setGeneric(
   name = "transform",
-  def = function(x) {
+  def = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
     standardGeneric("transform")
   }
 )

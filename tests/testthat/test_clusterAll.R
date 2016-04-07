@@ -40,19 +40,50 @@ test_that("Different options of `clusterAll` ", {
                                subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE)
   expect_equal(NCOL(coClustering(clustSubsample)),NCOL(simData))
   
-  #check npcs
-  clustNPCS <- clusterAll(simData, clusterFunction="pam",
-                          subsample=FALSE, sequential=FALSE,npcs=3,
+  #check pca reduction
+  clustndims <- clusterAll(simData, clusterFunction="pam",
+                          subsample=FALSE, sequential=FALSE,dimReduce="PCA",ndims=3,
                           clusterDArgs=list(k=3),isCount=FALSE)
   expect_error(  clusterAll(simData, clusterFunction="pam",
-                            subsample=FALSE, sequential=FALSE,npcs=NROW(simData)+1,
+                            subsample=FALSE, sequential=FALSE,dimReduce="PCA",ndims=NROW(simData)+1,
+                            clusterDArgs=list(k=3),isCount=FALSE))
+  
+  #check var reduction
+  clustndims <- clusterAll(simData, clusterFunction="pam",
+                          subsample=FALSE, sequential=FALSE,dimReduce="mostVar",ndims=3,
+                          clusterDArgs=list(k=3),isCount=FALSE)
+  expect_error(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=FALSE,dimReduce="mostVar",ndims=NROW(simData)+1,
+                            clusterDArgs=list(k=3),isCount=FALSE))
+  expect_warning(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=FALSE,dimReduce="none",ndims =3,
                             clusterDArgs=list(k=3),isCount=FALSE))
   
   #check sequential
   clustSeq <- clusterAll(simData, clusterFunction="pam",
-                         subsample=FALSE, sequential=TRUE,npcs=3,
+                         subsample=FALSE, sequential=TRUE,ndims=3,
                          isCount=FALSE,seqArgs=list(k0=5))
   expect_error(  clusterAll(simData, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,npcs=3,
+                            subsample=FALSE, sequential=TRUE,ndims=3,
                             isCount=FALSE)) #must specify k0
+
+  #check warning combinations
+  expect_error(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=TRUE,
+                            isCount=FALSE,clusterDArgs=list("typeAlg"=="K"))) 
+  expect_error(  clusterAll(simData, clusterFunction="pam",
+                            subsample=FALSE, sequential=TRUE,
+                            isCount=FALSE,clusterDArgs=list("findBestK"==TRUE))) 
+  expect_error(clusterAll(simData, clusterFunction="tight",
+                          subsample=FALSE, sequential=FALSE,
+                          subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE))
+  expect_warning(clusterAll(simData, clusterFunction="pam",
+                            subsample=TRUE, sequential=FALSE,
+                            subsampleArgs=list(resamp.num=3),clusterDArgs=list(k=3),isCount=FALSE))
+  expect_error(clusterAll(simData, clusterFunction="pam",
+                          subsample=TRUE, sequential=FALSE,
+                          subsampleArgs=list(resamp.num=3),isCount=FALSE)) #must give k
+  expect_warning(clusterAll(simData, clusterFunction="tight",
+                            subsample=TRUE, sequential=FALSE,
+                            subsampleArgs=list(resamp.num=3,k=3),clusterDArgs=list(findBestK=TRUE),isCount=FALSE)) #K argument not match tight
 })

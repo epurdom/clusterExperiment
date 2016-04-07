@@ -59,3 +59,19 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             c2 <- removeUnclustered(c1)
             expect_equal(NCOL(c2), 5)
           })
+test_that("accessing transformed data works as promised", {
+#check all of the option handling on the dimensionality reduction arguments
+  expect_equal(dim(transform(cc)), dim(assay(cc)))
+  expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="mostVar",nVarDims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nVarDims=2)),c(2,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=2)),c(2,NCOL(assay(cc))))
+  expect_equal(length(transform(cc,dimReduce="mostVar",nVarDims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce="PCA",nPCADims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nVarDims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2,3),nVarDims=4)),3)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(3),nVarDims=4)),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2),nVarDims=c(3,4))),3)
+  
+            })

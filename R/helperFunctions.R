@@ -1,28 +1,3 @@
-#transform data
-#if npcs=NA or length of npcs=1, returns matrix; otherwise returns list of pc reduced data.
-.transData<-function(x,transFun=NULL,isCount=FALSE,npcs=NA){
-  if(is.null(transFun)){
-    transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
-  }
-  x<-try(transFun(x),silent=TRUE)
-  if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
-  if(any(is.na(x))) stop("User-supplied `transFun` produces NA values")
-  
-  if(!is.na(npcs)){
-    if(max(npcs)>=NROW(x)) stop("npcs must be strictly less than the number of rows of input data matrix")
-    if(min(npcs)<1) stop("npcs must be equal to 1 or greater")
-    if(length(npcs)==1){
-      x<-t(stats::prcomp(t(x))$x[,1:npcs])
-      if(NCOL(x)!=NCOL(origX)) stop("error in coding of principle components.")
-    }
-    else{
-      x<-lapply(npcs,function(nn){t(stats::prcomp(t(x))$x[,1:nn])})
-      names(x)<-paste("nPCs=",npcs,sep="")
-    }
-  }
-  return(x)
-}
-
 
 #check what type
 .checkAlgType<-function(clusterFunction){

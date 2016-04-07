@@ -23,7 +23,9 @@
 #'
 #' @details While the function allows for multiple values of clusterMethod, the code does not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the \code{random.seed} value, however, should mean that the subsampled matrix is the same for each, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters). 
 #'
-#' @details The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the clusterDArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available. 
+#' @details Note that the behavior of compareChoices for dimensionality reduction is slightly different if the input is a list of datasets rather than a matrix. If the input is a single matrix, a single dimensionality step is performed, while if the input is a list of datasets, the dimensionality reduction step is performed for every combination (i.e. the program is not smart in realizing it is the same set of data across different dimensions and so only one dimensionality reduction is needed). 
+#'
+#' @details The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the clusterDArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available in compareChoices. 
 #' @return If \code{run=TRUE}, a list with the following objects:
 #' \itemize{
 #' \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
@@ -84,21 +86,67 @@
 setMethod(
   f = "compareChoices",
   signature = signature(x = "matrix"),
-  definition = function(x, ks, npcs=NA,clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+  definition = function(x, ks=3:5, clusterMethod="pam", alphas=0.1, findBestK=FALSE,sequential=FALSE,
                         removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        dimReduce="none",nVarDims=NA,nPCADims=NA,
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
                         transFun=NULL,isCount=FALSE,
                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
   ){
-    x<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
+    origX<-x
+    transObj<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
+    x<-transObj$x
+    transFun<-transObj$transFun
     if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
     outval<-compareChoices(dataList, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
                            sequential=sequential,removeSil=removeSil,subsample=subsample,silCutoff=silCutoff,
-                           clusterDArgs=clusterDargs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
-  
-
+                           clusterDArgs=clusterDargs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,
+                           dimReduce="none",nVarDims=NA,nPCADims=NA, #because already did it above
+                           random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
+    ##########
+    ## Convert to clusterCells Object
+    ##########
+    
+    retval <- clusterCells(origX, outval$clMat, transformation=transFun)
+    pList<-lapply(1:nrow(outval$paramMatrix),function(i){
+      x<-paramMatrix[i,]
+      names(x)<-colnames(paramMatrix)})
+    if(is.null(outval$clusterInfo)){
+      clInfo<-lapply(pList,function(y){
+        list(clusterInfo = NA,
+             whyStop = NA,
+             parameters=y,
+             clusterDArgs = clusterDArgs,
+             subsampleArgs = subsampleArgs,
+             seqArgs = seqArgs)
+      })
+    }
+    else{
+      #need to inmprove this
+      clInfo<-mapply(outval$clusterInfo , pList,function(x,y){
+        list(clusterInfo = x$clusterInfo,
+             whyStop = x$whyStop,
+             parameters=y,
+             clusterDArgs = clusterDArgs,
+             subsampleArgs = subsampleArgs,
+             seqArgs = seqArgs)
+      })
+      retval@clusterInfo<-clInfo
+        
+    }
+    #     retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
+#                                whyStop = outlist$whyStop,
+#                                subsample = subsample,
+#                                sequential = sequential,
+#                                clusterFunction = clusterFunction,
+#                                clusterDArgs = clusterDArgs,
+#                                subsampleArgs = subsampleArgs,
+#                                seqArgs = seqArgs)
+    retval@clusterType <- rep("compareChoices",NROW(outval$clMat))
+    return(retval)
+    
     }
 
 )
@@ -127,7 +175,10 @@ setMethod(
       # 	if(!all(clusterMethod=="pam")) stop("if clusterMethod includes methods that are not 'pam', must provide ks")
       # 	else if(!all(findBestK)) stop("if findBestK!=TRUE, must provide ks")
       # }
-      param<-expand.grid(dataset=dataName,k=ks,alpha=alphas,findBestK=findBestK,sequential=sequential,removeSil=removeSil,subsample=subsample,clusterMethod=clusterMethod,silCutoff=silCutoff)
+      param<-expand.grid(dataset=dataName,#dimReduce="none",nVarDims=NA,nPCADims=NA,
+                         k=ks,alpha=alphas,findBestK=findBestK,sequential=sequential,
+                         removeSil=removeSil,subsample=subsample,
+                         clusterMethod=clusterMethod,silCutoff=silCutoff)
       #don't vary them across ones that don't matter (i.e. 0-1 versus K); 
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
@@ -152,8 +203,32 @@ setMethod(
         param[type01,"removeSil"]<-FALSE
         param[type01,"silCutoff"]<-0
       }
+#       ##
+#       #remove extra combinations from dimReduce
+#       ##
+#       makeNone1<-which(param[,"dimReduce"] %in% c("PCA") & is.na(param[,"nPCADim"]))
+#       if(length(makeNone1)>0) param<-param[makeNone1,"dimReduce"]<-"none"
+#       makeNone2<-which(param[,"dimReduce"] %in% c("mostVar") & is.na(param[,"nVarDim"]))
+#       if(length(makeNone2)>0) param<-param[makeNone2,"dimReduce"]<-"none"
+#       dimNone<-which(param[,"dimReduce"] %in% c("none"))
+#       if(length(dimNone)>0){
+#         param[dimNone,"nVarDim"]<-NA
+#         param[dimNone,"nPCADim"]<-NA
+#       }
+#       dimPCA<-which(param[,"dimReduce"] %in% c("PCA"))
+#       if(length(dimPCA)>0){
+#         param[dimPCA,"nVarDim"]<-NA
+#       }
+#       dimVar<-which(param[,"dimReduce"] %in% c("mostVar"))
+#       if(length(dimVar)>0){
+#         param[dimVar,"nPCADim"]<-NA
+#       }
+
       #if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
       param<-unique(param)  
+      
+      
+      
       
       #deal with those that are invalid combinations:
       #Error in clusterAll(x = data, subsample = subsample, clusterFunction = clusterMethod,  : 
@@ -193,6 +268,9 @@ setMethod(
       subsample<-as.logical(gsub(" ","",par["subsample"]))
       findBestK<-as.logical(gsub(" ","",par["findBestK"]))
       clusterMethod<-as.character(par[["clusterMethod"]])
+#       dimReduce<-as.character(par[["dimReduce"]])
+#       if(dimReduce=="PCA") ndims<-par[["nPCADims"]]
+#       if(dimReduce=="mostVar") ndims<-par[["nVarDims"]]
       if(!is.na(par[["k"]])){
         if(sequential) seqArgs[["k0"]]<-par[["k"]] 
         else{
@@ -208,7 +286,7 @@ setMethod(
       clusterDArgs[["checkArgs"]]<-FALSE #turn off printing of warnings that arguments off
       if(!is.null(random.seed)) set.seed(random.seed)
       clusterAll(x=dataList[[par[["dataset"]]]],  subsample=subsample,clusterFunction=clusterMethod,  clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
-                 seqArgs=seqArgs, sequential=sequential) 
+                 seqArgs=seqArgs, sequential=sequential,transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
       if(ncores>1){
@@ -243,20 +321,36 @@ setMethod(
     }
   }
 )
+
 #' @rdname compareChoices
 setMethod(
   f = "compareChoices",
   signature = signature(x = "ClusterCells"),
-  definition = function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
                         removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        dimReduce="none",nVarDims=NA,nPCADims=NA,
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
   )
   {
-    ##Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
     
+    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
+                           findBestK=findBestK,sequential=sequential,
+                           removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
+                           dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
+                           clusterDArgs=clusterDArgs,
+                           subsampleArgs=subsampleArgs,
+                           seqArgs=seqArgs,
+                           transFun=transformation(x),
+                           ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
+    )
+    ##Not yet implemented: Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
+    
+    #need to redo it to make sure get any other part of summarized experiment
+    addClusters(outval,x)
+    return(retval)
   }
 )
 
@@ -265,15 +359,32 @@ setMethod(
 setMethod(
   f = "compareChoices",
   signature = signature(x = "SummarizedExperiment"),
-  definition = function(data, ks, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
                         removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        dimReduce="none",nVarDims=NA,nPCADims=NA,
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        transFun=NULL,isCount=FALSE,
                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
   )
   {
-    
+    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
+             findBestK=findBestK,sequential=sequential,
+             removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
+             dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
+             clusterDArgs=clusterDArgs,
+             subsampleArgs=subsampleArgs,
+             seqArgs=seqArgs,
+             transFun=transFun,isCount=isCount,
+             ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
+    )
+      #need to redo it to make sure get any other part of summarized experiment
+      retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
+      retval@clusterInfo <- clusterInfo(outval)
+      retval@clusterType <- clusterType(outval) 
+      return(retval)
+      
   }
 )
 

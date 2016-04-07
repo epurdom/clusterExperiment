@@ -19,6 +19,8 @@
 #' \code{\link{seqCluster}}.
 #' @param isCount logical. Whether the data are in counts, in which case the default \code{transFun} argument is set as log(x+1). This is simply a convenience to the user, and can be overridden by giving an explicit function to \code{transFun}.
 #' @param transFun function A function to use to transform the input data matrix before clustering.
+#' @param dimReduce character A character identifying what type of dimensionality reduction to perform before clustering
+#' @param ndims integer An integer identifying how many dimensions to reduce to in the reduction specified by \code{dimReduce}
 #'
 #' @details If sequential=TRUE, the sequential clustering controls the 'k'
 #' argument of the underlying clustering so setting 'k=' in the list given to
@@ -53,15 +55,21 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical", "pam","kmeans"), 
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun=NULL, npcs=NA) {
+      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
     
     origX<-x #ngenes x nsamples
-    
     ##########
     ##transformation to data x that will be input to clustering
     ##########
-    x<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
-    
+    dimReduce<-match.arg(dimReduce) #should be only 1
+    if(length(ndims)>1) stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try compareChoices")
+    if(!is.na(ndims) & dimReduce=="none") warning("specifying ndims has no effect if dimReduce==`none`")
+    nPCADims<-if(dimReduce=="PCA") ndims else NA
+    nVarDims<-if(dimReduce=="mostVar") ndims else NA
+    transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
+    x<-transObj$x
+    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
+    transFun<-transObj$transFun #need it later to create clusterCellsObject
     N <- dim(x)[2]
     
     ##########
@@ -164,17 +172,13 @@ setMethod(
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"),clusterDArgs=NULL,
                         subsampleArgs=NULL, seqArgs=NULL,isCount=FALSE,
-                        transFun) {
-    if(missing(transFun)){
-      transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
-    }
-    
+                        transFun, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
     outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         transFun=transFun)
-    retval <- clusterCells(x, primaryCluster(outval), transFun)
+                         transFun=transFun,dimReduce=dimReduce,ndims=ndims)
+    retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval) #shouldn't this add to the end
     return(retval)
@@ -189,13 +193,13 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
                         clusterFunction=c("tight", "hierarchical", "pam",
                                           "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL) {
+                        subsampleArgs=NULL, seqArgs=NULL, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
 
     outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
                          clusterFunction=clusterFunction,
                          clusterDArgs = clusterDArgs,
                          subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         transFun=transformation(x)) 
+                         transFun=transformation(x),dimReduce=dimReduce,ndims=ndims) 
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it
@@ -203,8 +207,8 @@ setMethod(
     #     retval@clusterInfo <- clusterInfo(outval)
     #     retval@clusterType <- clusterType(outval)
     
-    ## eap: I think we should add it. You might try a couple of versions.
-    retval<-addClusters(outval,x) #should keep primary cluster same as most recent
+    ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
+    retval<-addClusters(outval,x) #should keep primary cluster as most recent, so outval first
     return(retval)
   }
 )
