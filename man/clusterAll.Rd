@@ -12,16 +12,19 @@
 \S4method{clusterAll}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isLog = TRUE)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
+  "mostVar"), ndims = NA)
 
 \S4method{clusterAll}{SummarizedExperiment}(x, subsample = TRUE,
   sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam",
   "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isLog = TRUE)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
+  "mostVar"), ndims = NA)
 
 \S4method{clusterAll}{ClusterCells}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical", "pam", "kmeans"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  dimReduce = c("none", "PCA", "mostVar"), ndims = NA)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (genes in rows)}
@@ -45,8 +48,13 @@ iteration; otherwise the distance matrix is dist(x).}
 \item{seqArgs}{list of additional arguments to be passed to
 \code{\link{seqCluster}}.}
 
-\item{isLog}{logical. Whether the data are in log (TRUE) or linear (FALSE)
-scale.}
+\item{isCount}{logical. Whether the data are in counts, in which case the default \code{transFun} argument is set as log(x+1). This is simply a convenience to the user, and can be overridden by giving an explicit function to \code{transFun}.}
+
+\item{transFun}{function A function to use to transform the input data matrix before clustering.}
+
+\item{dimReduce}{character A character identifying what type of dimensionality reduction to perform before clustering}
+
+\item{ndims}{integer An integer identifying how many dimensions to reduce to in the reduction specified by \code{dimReduce}}
 }
 \value{
 A \code{\link{ClusterCells}} object.
@@ -68,14 +76,14 @@ data(simData)
 #use clusterAll to do sequential clustering
 #(same as example in seqCluster only using clusterAll ...)
 set.seed(44261)
-clustSeqHier_v2<-clusterAll(t(simData),clusterFunction="hierarchical",
+clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
 sequential=TRUE,subsample=TRUE,
 subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
 clusterDArgs=list(minSize=5))
 }
 #use clusterAll to do just clustering k=3 with no subsampling
-clustNothing<-clusterAll(t(simData),clusterFunction="pam",subsample=FALSE,
+clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=3))
 }
 

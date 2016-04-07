@@ -1,5 +1,6 @@
 library(clusterCells)
 data(simData)
+if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version.
 
 test_that("`clusterAll` works with matrix, ClusterCells objects, and
           SummarizedExperiments", {

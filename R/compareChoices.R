@@ -96,54 +96,24 @@ setMethod(
                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
   ){
     origX<-x
-    transObj<-.transData(x,npcs=npcs,transFun=transFun,isCount=isCount)
+    transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
     x<-transObj$x
-    transFun<-transObj$transFun
+    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
+    transFun<-transObj$transFun #need it later to create clusterCellsObject
+    
     if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
-    outval<-compareChoices(dataList, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
+    outval<-compareChoices(x, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
                            sequential=sequential,removeSil=removeSil,subsample=subsample,silCutoff=silCutoff,
-                           clusterDArgs=clusterDargs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,
+                           clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,
                            dimReduce="none",nVarDims=NA,nPCADims=NA, #because already did it above
                            random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
     ##########
     ## Convert to clusterCells Object
     ##########
     
-    retval <- clusterCells(origX, outval$clMat, transformation=transFun)
-    pList<-lapply(1:nrow(outval$paramMatrix),function(i){
-      x<-paramMatrix[i,]
-      names(x)<-colnames(paramMatrix)})
-    if(is.null(outval$clusterInfo)){
-      clInfo<-lapply(pList,function(y){
-        list(clusterInfo = NA,
-             whyStop = NA,
-             parameters=y,
-             clusterDArgs = clusterDArgs,
-             subsampleArgs = subsampleArgs,
-             seqArgs = seqArgs)
-      })
-    }
-    else{
-      #need to inmprove this
-      clInfo<-mapply(outval$clusterInfo , pList,function(x,y){
-        list(clusterInfo = x$clusterInfo,
-             whyStop = x$whyStop,
-             parameters=y,
-             clusterDArgs = clusterDArgs,
-             subsampleArgs = subsampleArgs,
-             seqArgs = seqArgs)
-      })
-      retval@clusterInfo<-clInfo
-        
-    }
-    #     retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
-#                                whyStop = outlist$whyStop,
-#                                subsample = subsample,
-#                                sequential = sequential,
-#                                clusterFunction = clusterFunction,
-#                                clusterDArgs = clusterDArgs,
-#                                subsampleArgs = subsampleArgs,
-#                                seqArgs = seqArgs)
+    retval <- clusterCells(origX, outval$clMat[,1], transformation=transFun)
+    if(NROW(outval$clMat)>1) retval<-addClusters(retval,outval$clMat[,1])
+    retval@clusterInfo<-outval$clusterInfo
     retval@clusterType <- rep("compareChoices",NROW(outval$clMat))
     return(retval)
     
@@ -164,7 +134,9 @@ setMethod(
   )
   {
     data<-x
-    if(!all(sapply(data,function(x){is.matrix(x) || is.data.frame(x)}))) stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
+    if(!all(sapply(data,function(y){is.matrix(y) || is.data.frame(y)}))) stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
+    #check all same number of observations:
+    if(!length(unique(sapply(data,NCOL)))==1) stop("All data sets must have the same number of observations")
     if(is.null(names(data))) names(data)<-paste("dataset",1:length(data),sep="")
     dataList<-data
     dataName<-names(dataList)
@@ -226,21 +198,13 @@ setMethod(
 
       #if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
       param<-unique(param)  
-      
-      
-      
-      
+
       #deal with those that are invalid combinations:
-      #Error in clusterAll(x = data, subsample = subsample, clusterFunction = clusterMethod,  : 
-      #  Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.
-      
       whInvalid<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
       if(length(whInvalid)>0) param<-param[-whInvalid,]
       
-      
       whExtra<-which(!param[,"subsample"] & param[,"sequential"] & param[,"findBestK"])
       if(length(whInvalid)>0) param<-param[-whInvalid,]
-      
       
       if(nrow(param)<=1) stop("set of parameters imply only 1 combination")
       
@@ -259,6 +223,7 @@ setMethod(
     cnames<-gsub("= ","=",cnames)
     cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
     cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
+    rownames(param)<-cnames
     paramFun<-function(i){
       par<-param[i,]
       #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
@@ -295,64 +260,58 @@ setMethod(
         if(length(nErrors)>0)stop(nErrors,"parameter values hit an error. The first was:\n",out[nErrors[1]])
       }
       else out<-lapply(1:nrow(param),FUN=paramFun)
-      
-      clMat<-sapply(out,function(x){x$clustering})
+#      browser()
+      clMat<-sapply(out,function(x){primaryCluster(x)})
       colnames(clMat)<-cnames
+      pList<-lapply(1:nrow(param),function(i){
+        x<-param[i,]
+        names(x)<-colnames(param)
+        return(x)})
+      #browser()
+      clInfo<-mapply(pList,out,FUN=function(x,y){
+        c(list(choicesParam=x),clusterInfo(y))
+      },SIMPLIFY=FALSE)
       
-      #   #just return matrices of clusters
-      #   out<-lapply(allTracking,function(trackTightAlpha){
-      #     sapply(trackTightAlpha,function(x){x$cluster})
-      #   })
-      if(any(param[,"sequential"])){
-        clusterInfo<-lapply(out,function(x){
-          # if(all(c("clusterInfo","whyStop") %in% names(x))) return(x[c("clusterInfo","whyStop")])
-          # 		else return(NULL)
-          return(x[c("clusterInfo","whyStop")])
-        })
-        names(clusterInfo)<-cnames		
-      }
-      else clusterInfo<-NULL
-      
-      return(list(clMat=clMat,clusterInfo=clusterInfo,paramMatrix=paramMatrix))
+      return(list(clMat=clMat,clusterInfo=clInfo,paramMatrix=param))
     }
     else{
-      rownames(param)<-cnames
       return(param)
     }
   }
 )
 
-#' @rdname compareChoices
-setMethod(
-  f = "compareChoices",
-  signature = signature(x = "ClusterCells"),
-  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
-                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
-                        dimReduce="none",nVarDims=NA,nPCADims=NA,
-                        clusterDArgs=list(minSize=5),
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
-                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
-  )
-  {
-    
-    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
-                           findBestK=findBestK,sequential=sequential,
-                           removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
-                           dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-                           clusterDArgs=clusterDArgs,
-                           subsampleArgs=subsampleArgs,
-                           seqArgs=seqArgs,
-                           transFun=transformation(x),
-                           ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
-    )
-    ##Not yet implemented: Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
-    
-    #need to redo it to make sure get any other part of summarized experiment
-    addClusters(outval,x)
-    return(retval)
-  }
-)
+##Not yet implemented
+# #' @rdname compareChoices
+# setMethod(
+#   f = "compareChoices",
+#   signature = signature(x = "ClusterCells"),
+#   definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+#                         removeSil=FALSE, subsample=FALSE,silCutoff=0,
+#                         dimReduce="none",nVarDims=NA,nPCADims=NA,
+#                         clusterDArgs=list(minSize=5),
+#                         subsampleArgs=list(resamp.num=50),
+#                         seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+#                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+#   )
+#   {
+#     
+#     outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
+#                            findBestK=findBestK,sequential=sequential,
+#                            removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
+#                            dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
+#                            clusterDArgs=clusterDArgs,
+#                            subsampleArgs=subsampleArgs,
+#                            seqArgs=seqArgs,
+#                            transFun=transformation(x),
+#                            ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
+#     )
+#     ##Not yet implemented: Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
+#     
+#     #need to redo it to make sure get any other part of summarized experiment
+#     addClusters(outval,x)
+#     return(retval)
+#   }
+# )
 
 
 #' @rdname compareChoices
@@ -381,6 +340,7 @@ setMethod(
     )
       #need to redo it to make sure get any other part of summarized experiment
       retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
+      retval@clusterLabels<-outval@clusterLabels
       retval@clusterInfo <- clusterInfo(outval)
       retval@clusterType <- clusterType(outval) 
       return(retval)
