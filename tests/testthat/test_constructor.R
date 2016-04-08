@@ -48,7 +48,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(primaryCluster(c3), primaryCluster(cc))
  
               #check adding matrix of clusters
-            c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)))
+            c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type="New")
             expect_equal(NCOL(allClusters(c4)), 3)
             expect_equal(length(clusterType(c4)), 3)
             expect_equal(length(clusterInfo(c4)), 3)
@@ -58,7 +58,38 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
 
             c2 <- removeUnclustered(c1)
             expect_equal(NCOL(c2), 5)
-          })
+            
+            #check removing index of clusters
+            c5<-removeClusters(c4,1)
+            expect_equal(NCOL(allClusters(c5)), 2)
+            expect_equal(length(clusterType(c5)), 2)
+            expect_equal(length(clusterInfo(c5)), 2)
+            expect_equal(primaryCluster(c4), primaryCluster(removeClusters(c4,2)))
+            
+            c6<-removeClusters(c4,c(1,3))
+            expect_equal(NCOL(allClusters(c6)), 1)
+            expect_equal(length(clusterType(c6)), 1)
+            expect_equal(length(clusterInfo(c6)), 1)
+            
+            expect_error(removeClusters(c4,c(1,4)))
+            c7<-removeClusters(c4,"User")
+            expect_equal(NCOL(allClusters(c7)), 2)
+            expect_equal(length(clusterType(c7)), 2)
+            expect_equal(length(clusterInfo(c7)), 2)
+            
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("compareChoices","mergeClusters"))
+            expect_equal(dim(pipelineClusters(ppC)),c(10,2))
+            
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5)),type=c("compareChoices"))
+            expect_equal(dim(pipelineClusters(ppC)),c(10,1))
+            
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("compareChoices","mergeClusters_1"))
+            expect_equal(dim(pipelineClusters(ppC)),c(10,1))
+            expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(10,2))
+            expect_null(pipelineClusters(cc,iteration=NA))
+            
+            
+        })
 test_that("accessing transformed data works as promised", {
 #check all of the option handling on the dimensionality reduction arguments
   expect_equal(dim(transform(cc)), dim(assay(cc)))

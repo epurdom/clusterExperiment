@@ -7,6 +7,20 @@ setGeneric(
     standardGeneric("clusterAll")
   }
 )
+#' @rdname clusterCells
+setGeneric(
+  name = "pipelineClusters",
+  def = function(x,iteration=0) {
+    standardGeneric("pipelineClusters")
+  }
+)
+#' @rdname clusterCells
+setGeneric(
+  name = "pipelineClusterIndex",
+  def = function(x, printTable=TRUE) {
+    standardGeneric("pipelineClusterIndex")
+  }
+)
 
 setGeneric(
   name = "compareChoices",
@@ -17,7 +31,7 @@ setGeneric(
                                    subsampleArgs=list(resamp.num=50),
                                    seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
                                    transFun=NULL,isCount=FALSE,
-                                   ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+                                   ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,eraseOld=FALSE,...
                                    ) {
     standardGeneric("compareChoices")
   }
@@ -91,7 +105,13 @@ setGeneric(
     standardGeneric("addClusters")
   }
 )
-
+#' @rdname clusterCells
+setGeneric(
+  name = "removeClusters",
+  def = function(x, whichRemove,exactMatch=TRUE) {
+    standardGeneric("removeClusters")
+  }
+)
 setGeneric(
   name = "removeUnclustered",
   def = function(x) {

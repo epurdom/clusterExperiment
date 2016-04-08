@@ -105,16 +105,16 @@ setMethod(
     outval<-compareChoices(x, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
                            sequential=sequential,removeSil=removeSil,subsample=subsample,silCutoff=silCutoff,
                            clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,
-                           dimReduce="none",nVarDims=NA,nPCADims=NA, #because already did it above
+                           #dimReduce="none",nVarDims=NA,nPCADims=NA, #because already did it above
                            random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
     ##########
     ## Convert to clusterCells Object
     ##########
-    
+    #browser()
     retval <- clusterCells(origX, outval$clMat[,1], transformation=transFun)
-    if(NROW(outval$clMat)>1) retval<-addClusters(retval,outval$clMat[,1])
+    if(NCOL(outval$clMat)>1) retval<-addClusters(retval,outval$clMat[,-1])
     retval@clusterInfo<-outval$clusterInfo
-    retval@clusterType <- rep("compareChoices",NROW(outval$clMat))
+    retval@clusterType <- rep("compareChoices",NCOL(outval$clMat))
     return(retval)
     
     }
@@ -280,38 +280,53 @@ setMethod(
   }
 )
 
-##Not yet implemented
-# #' @rdname compareChoices
-# setMethod(
-#   f = "compareChoices",
-#   signature = signature(x = "ClusterCells"),
-#   definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
-#                         removeSil=FALSE, subsample=FALSE,silCutoff=0,
-#                         dimReduce="none",nVarDims=NA,nPCADims=NA,
-#                         clusterDArgs=list(minSize=5),
-#                         subsampleArgs=list(resamp.num=50),
-#                         seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
-#                         ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
-#   )
-#   {
-#     
-#     outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
-#                            findBestK=findBestK,sequential=sequential,
-#                            removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
-#                            dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-#                            clusterDArgs=clusterDArgs,
-#                            subsampleArgs=subsampleArgs,
-#                            seqArgs=seqArgs,
-#                            transFun=transformation(x),
-#                            ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
-#     )
-#     ##Not yet implemented: Check if compareChoices already ran previously; if so, delete old compareChoices (with warning)
-#     
-#     #need to redo it to make sure get any other part of summarized experiment
-#     addClusters(outval,x)
-#     return(retval)
-#   }
-# )
+#Not yet implemented
+#' @rdname compareChoices
+setMethod(
+  f = "compareChoices",
+  signature = signature(x = "ClusterCells"),
+  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
+                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+                        dimReduce="none",nVarDims=NA,nPCADims=NA,
+                        clusterDArgs=list(minSize=5),
+                        subsampleArgs=list(resamp.num=50),
+                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+  )
+  {
+    
+    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
+                           findBestK=findBestK,sequential=sequential,
+                           removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
+                           dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
+                           clusterDArgs=clusterDArgs,
+                           subsampleArgs=subsampleArgs,
+                           seqArgs=seqArgs,
+                           transFun=transformation(x),
+                           ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,eraseOld=FALSE,...
+    )
+    ##Check if compareChoices already ran previously
+    ppIndex<-pipelineClusterIndex(x,print=FALSE)
+    if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
+      if(eraseOld){ #remove all of them, not just current
+        x<-removeClusters(x,ppIndex[,"index"])
+      }
+      else{
+        if(0 %in% ppIndex[,"iteration"]){
+          newIteration<-max(ppIndex[,"iteration"])+1
+          whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
+          updateCluster<-clusterType(x)
+          updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
+          x@clusterType<-updateCluster          
+        }
+      }
+      
+    }
+    
+    retval<-addClusters(outval,x)
+    return(retval)
+  }
+)
 
 
 #' @rdname compareChoices
