@@ -12,7 +12,7 @@ setMethod(
 )
 
 ## show
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "show",
   signature = "ClusterCells",
@@ -30,7 +30,7 @@ setMethod(
   }
 )
 
-# #' @rdname clusterCells
+# #' @rdname ClusterCells-class
 # setMethod(
 #   f = "isLog",
 #   signature = "ClusterCells",
@@ -40,7 +40,7 @@ setMethod(
 # )
 
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "transformation",
   signature = "ClusterCells",
@@ -51,7 +51,7 @@ setMethod(
 
 
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "allClusters",
   signature = "ClusterCells",
@@ -60,7 +60,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "primaryCluster",
   signature = "ClusterCells",
@@ -69,7 +69,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "primaryClusterIndex",
   signature = "ClusterCells",
@@ -78,7 +78,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setReplaceMethod(
   f = "primaryClusterIndex",
   signature = signature("ClusterCells", "numeric"),
@@ -89,7 +89,7 @@ setReplaceMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "coClustering",
   signature = "ClusterCells",
@@ -98,7 +98,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "dendrogram",
   signature = "ClusterCells",
@@ -107,7 +107,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "clusterType",
   signature = "ClusterCells",
@@ -116,7 +116,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterCells","character"),
@@ -128,7 +128,7 @@ setMethod(
     removeClusters(x,wh)
   }
 )
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterCells","numeric"),
@@ -153,7 +153,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "addClusters",
   signature = signature("ClusterCells", "matrix"),
@@ -171,7 +171,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "pipelineClusterIndex",
   signature = signature("ClusterCells"),
@@ -202,7 +202,7 @@ setMethod(
     
   }
 )
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "pipelineClusters",
   signature = signature("ClusterCells"),
@@ -222,7 +222,7 @@ setMethod(
 )
 
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "addClusters",
   signature = signature("ClusterCells", "numeric"),
@@ -240,7 +240,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "addClusters",
   signature = signature("ClusterCells", "ClusterCells"),
@@ -256,7 +256,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "removeUnclustered",
   signature = "ClusterCells",
@@ -265,7 +265,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setMethod(
   f = "clusterInfo",
   signature = "ClusterCells",
@@ -273,3 +273,27 @@ setMethod(
     return(x@clusterInfo)
   }
 )
+
+# # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of compareChoices (and compatible with it)
+# #' @rdname ClusterCells-class
+# setMethod(
+#   f= "paramValues",
+#   signature = "ClusterCells",
+#   definition=function(x,type){
+#     whCC<-which(clusterType(x)==type)
+#     if(length(wwCC)==0) stop("No clusterings of type equal to ",type,"are found")
+#     if(type=="compareChoices"){
+#       #recreate the paramMatrix return value
+#       paramMatrix<-do.call("rbind",lapply(wwCC,function(ii){
+#         data.frame(index=ii,clusterInfo(x)[[ii]]["choicesParam"])
+#       }))
+#       
+#     }
+#     else if(type=="clusterAll"){
+#       
+#     }
+#     else{ 
+#       return(clusterInfo(x)[whCC])
+#     }
+#   }
+# )

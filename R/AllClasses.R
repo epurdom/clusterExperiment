@@ -1,5 +1,45 @@
-#' @rdname clusterCells
-#' @export
+
+#' @title Class ClusterCells
+#' 
+#' @describe \code{ClusterCells} is a class that extends \code{SummarizedExperiment} and is
+#' used to store the single-cell RNA-seq data and clustering information.
+#' 
+#' @describe In addition to the slots of the \code{SummarizedExperiment} class, the
+#' \code{ClusterCells} object has the following additional slots:
+#' @docType class
+#' @aliases ClusterCells ClusterCells-class clusterCells
+#' @slot transformation function. Function to transform the data by when methods that assume normal-like data (e.g. log)
+#' @slot clusterLabels matrix. A matrix giving the
+#' integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
+#' The integer values are assigned
+#' in the order that the clusters were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
+#' the sample was not clustered.
+#' @slot primaryIndex: numeric. An index that specifies the primary set of
+#' labels.
+#' @slot clusterInfo: list. A list with info about the clustering. 
+#' If created from \code{\link{clusterAll}}, clusterInfo will include the
+#' parameter used for the call, and the call itself. If \code{sequential = TRUE}
+#' it will also include the following components.
+#'
+#' \itemize{
+#' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
+#' found, a matrix of information regarding the algorithm behavior for each
+#' cluster (the starting and stopping K for each cluster, and the number of
+#' iterations for each cluster).}
+#' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
+#' found, a character string explaining what triggered the algorithm to stop.}
+#' }
+#' @slot clusterType: character vector with the origin of each column of
+#' clusterLabels.
+#' @slot dendrogram: dendrogram. A dendrogram containing the cluster
+#' relationship.
+#' @slot coClustering: matrix. A matrix with the cluster co-occurrence
+#' information; this can either be based on subsampling or on co-clustering
+#' across parameter sets (see \code{compareChoices}). The matrix is a square matrix with number of rows/columns equal to the number of samples.
+#' @name ClusterCells-class
+#' @rdname ClusterCells-class
+#' @exportClass 
+#' 
 setClass(
   Class = "ClusterCells",
   contains = "SummarizedExperiment",
@@ -72,49 +112,11 @@ setValidity("ClusterCells", function(object) {
   return(TRUE)
 })
 
-#' ClusterCells object and constructor
-#'
-#' \code{ClusterCells} is a class that extends \code{SummarizedExperiment},
-#' used to store the single-cell RNA-seq data and clustering information.
-#' In addition to the slots of the \code{SummarizedExperiment} class, the
-#' \code{ClusterCells} object has the following additional slots:
-#' \itemize{
-#' \item transformation: function. Function to transform the data by when methods that assume normal-like data (e.g. log)
-#' \item clusterLabels: matrix. A matrix giving the
-#' integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
-#' The integer values are assigned
-#' in the order that the clusters were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
-#' the sample was not clustered.
-#' \item primaryIndex: numeric. An index that specifies the primary set of
-#' labels.
-#' \item clusterInfo: list. A list with info about the clustering.
-#' \itam clusterType: character vector with the origin of each column of
-#' clusterLabels.
-#' \item dendrogram: dendrogram. A dendrogram containing the cluster
-#' relationship.
-#' \item coClustering: matrix. A matrix with the cluster co-occurrence
-#' information; this can either be based on subsampling or on co-clustering
-#' across parameter sets (see \code{compareChoices}). The matrix is a square matrix with number of rows/columns equal to the number of samples.
-#' }
-#'
-#' If created from \code{\link{clusterAll}}, clusterInfo will include the
-#' parameter used for the call, and the call itself. If \code{sequential = TRUE}
-#' it will also include the following components.
-#'
-#' \itemize{
-#' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
-#' found, a matrix of information regarding the algorithm behavior for each
-#' cluster (the starting and stopping K for each cluster, and the number of
-#' iterations for each cluster).}
-#' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
-#' found, a character string explaining what triggered the algorithm to stop.}
-#' }
-#'
-#' The constructor \code{clusterCells} creates an object of the class
+#' @describe The constructor \code{clusterCells} creates an object of the class
 #' \code{ClusterCells}. However, the typical way of creating these objects is
 #' the result of a call to \code{compareChoices} or \code{clusterAll}.
 #'
-#' Note that when subsetting the data, the co-clustering and dendrogram
+#' @describe Note that when subsetting the data, the co-clustering and dendrogram
 #' information are lost.
 #'
 #'@param se a matrix or \code{SummarizedExperiment} containing the clustered
@@ -124,9 +126,7 @@ setValidity("ClusterCells", function(object) {
 #'
 #'@return A \code{ClusterCells} object.
 #'
-#'@aliases ClusterCells ClusterCells-class
 #'
-#'@docType class
 #'
 #'@examples
 #'
@@ -135,6 +135,7 @@ setValidity("ClusterCells", function(object) {
 #'
 #'cc <- clusterCells(se, as.numeric(labels), transformation = function(x){x})
 #'
+#' @rdname ClusterCells-class
 clusterCells <- function(se, labels, transformation,clusterType="User",clusterInfo=list(NULL)) {
   if(NCOL(se) != length(labels)) {
     stop("`labels` must be a vector of length equal to the number of samples.")

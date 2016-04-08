@@ -157,7 +157,10 @@ setMethod(
                                 clusterFunction = clusterFunction,
                                 clusterDArgs = clusterDArgs,
                                 subsampleArgs = subsampleArgs,
-                                seqArgs = seqArgs)
+                                seqArgs = seqArgs,
+                                dimReduce=dimReduce,
+                                ndims=ndims
+                               )
     retval@clusterType <- "clusterAll"
     if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
     return(retval)

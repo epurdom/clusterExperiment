@@ -1,4 +1,29 @@
-#' @rdname clusterCells
+#' Transform the original data in a ClusterCells object
+#' 
+#' Provides the transformed data (as defined by the object), as well as dimensionality reduction
+#' 
+#' @param x a ClusterCells object
+#' @param nPCADims Numeric vector giving the number of PC dimensions to use in PCA dimensionality reduction. If NA no PCA dimensionality reduction is done.
+#' @param nVarDims Numeric vector giving the number of features (i.e. genes) to keep, based on MAD variability
+#' @param dimReduce Character vector specifying the dimensionality reduction to perform, any combination of 'none', 'PCA' and 'mostVar'. See details.
+#' 
+#' @details The data matrix defined by \code{assay(x)} is transformed based on the transformation function defined in x. If \code{dimReduce="none"} the transformed matrix is returned. 
+#' Otherwise, the user can request dimensionality reduction of the transformed data via \code{dimReduce}. 'PCA' refers to PCA of the transformed data with the top nPCADims kept. 'mostVar' refers to keeping the top most variable features (defined by taking the MAD across all samples), and nVarDims defines how many such features to keep.
+#' \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a vector of values, in which case a list will be returned with the appropriate datasets as elements of the list.
+#' 
+#' @return If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of length 1, a matrix will be returned of the same dimensions as assay(x). If these terms are vectors, then a list of data matrices will be return, each corresponding to the multiple choices implied by these parameters.
+#' 
+#' @examples 
+#' mat <- matrix(data=rnorm(200), ncol=10)
+#' mat[1,1]<- -1 #force a negative value
+#' labels <- gl(5, 2)
+#' cc <- clusterCells(mat, as.numeric(labels), transformation = function(x){x^2}) #define transformation as x^2
+#' x<-transform(cc,dimReduce="PCA",nPCADims=3) #transform and take top 3 dimensions
+#' y<-transform(cc,dimReduce="mostVar",nVarDims=c(NA,5,10)) #transform and take return untransformed, top 5 features, and top 10 features
+#' names(y)
+#' z<-transform(cc) #just return tranformed data
+
+#' @rdname transform
 setMethod(
   f = "transform",
   signature = "ClusterCells",
@@ -49,7 +74,9 @@ setMethod(
       nVarDims<-nVarDims[!is.na(nVarDims)]
     }
   }
-  
+  dimReduce<-unique(dimReduce)
+  nVarDims<-unique(nVarDims)
+  nPCADims<-unique(nPCADims)
   xPCA<-xVAR<-xNone<-NULL #possible values
   listReturn<-FALSE
   #for each dim reduction method requested

@@ -15,7 +15,7 @@
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), transFun = NULL,
   isCount = FALSE, ncores = 1, random.seed = NULL, run = TRUE,
-  paramMatrix = NULL, ...)
+  paramMatrix = NULL, eraseOld = FALSE, ...)
 
 \S4method{compareChoices}{list}(x, ks = 3:5, clusterMethod = "pam",
   alphas = 0.1, findBestK = FALSE, sequential = FALSE,
@@ -24,7 +24,7 @@
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), transFun = NULL,
   isCount = FALSE, ncores = 1, random.seed = NULL, run = TRUE,
-  paramMatrix = NULL, ...)
+  paramMatrix = NULL, eraseOld = FALSE, ...)
 
 \S4method{compareChoices}{ClusterCells}(x, ks = 3:5, clusterMethod = "pam",
   alphas = 0.1, findBestK = FALSE, sequential = FALSE,
@@ -33,7 +33,7 @@
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), transFun = NULL,
   isCount = FALSE, ncores = 1, random.seed = NULL, run = TRUE,
-  paramMatrix = NULL, ...)
+  paramMatrix = NULL, eraseOld = FALSE, ...)
 
 \S4method{compareChoices}{SummarizedExperiment}(x, ks = 3:5,
   clusterMethod = "pam", alphas = 0.1, findBestK = FALSE,
@@ -42,7 +42,7 @@
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), transFun = NULL,
   isCount = FALSE, ncores = 1, random.seed = NULL, run = TRUE,
-  paramMatrix = NULL, ...)
+  paramMatrix = NULL, eraseOld = FALSE, ...)
 }
 \arguments{
 \item{ks}{the range of k values (see details for meaning for different choices).}

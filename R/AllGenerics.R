@@ -7,18 +7,25 @@ setGeneric(
     standardGeneric("clusterAll")
   }
 )
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setGeneric(
   name = "pipelineClusters",
   def = function(x,iteration=0) {
     standardGeneric("pipelineClusters")
   }
 )
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setGeneric(
   name = "pipelineClusterIndex",
   def = function(x, printTable=TRUE) {
     standardGeneric("pipelineClusterIndex")
+  }
+)
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "paramValues",
+  def = function(x,type) {
+    standardGeneric("paramValues")
   }
 )
 
@@ -105,7 +112,7 @@ setGeneric(
     standardGeneric("addClusters")
   }
 )
-#' @rdname clusterCells
+#' @rdname ClusterCells-class
 setGeneric(
   name = "removeClusters",
   def = function(x, whichRemove,exactMatch=TRUE) {
