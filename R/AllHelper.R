@@ -20,9 +20,9 @@ setMethod(
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
     cat("Table of clusters (of primary clustering):")
-    print(table(object@clusterLabels[,object@primaryIndex]))
-    cat("Primary cluster type:", object@clusterType[object@primaryIndex],"\n")
-    cat("Total number of clusterings:", NCOL(object@clusterLabels),"\n")
+    print(table(allClusters(object)[,primaryClusterIndex(object)]))
+    cat("Primary cluster type:", clusterType(object)[primaryClusterIndex(object)],"\n")
+    cat("Total number of clusterings:", NCOL(allClusters(object)),"\n")
     typeTab<-names(table(clusterType(object)))
         cat("compareChoices run?",if("compareChoices" %in% typeTab) "Yes" else "No","\n")
         cat("findSharedClusters run?",if("findSharedClusters" %in% typeTab) "Yes" else "No","\n")
@@ -65,7 +65,7 @@ setMethod(
   f = "primaryCluster",
   signature = "ClusterCells",
   definition = function(x) {
-    return(x@clusterLabels[,x@primaryIndex])
+    return(x@clusterLabels[,primaryClusterIndex(x)])
   }
 )
 
@@ -83,7 +83,7 @@ setReplaceMethod(
   f = "primaryClusterIndex",
   signature = signature("ClusterCells", "numeric"),
   definition = function(object, value) {
-    object@primaryIndex <- value
+    primaryClusterIndex(object) <- value
     validObject(object)
     return(object)
   }
@@ -146,7 +146,7 @@ setMethod(
     else primaryIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
     retval<-clusterCells(assay(x),newClLabels[,1],transformation(x))
     retval@clusterLabels<-newClLabels
-    retval@primaryIndex<-primaryIndex
+    primaryClusterIndex(retval)<-primaryIndex
     retval@clusterInfo<-newClusterInfo
     retval@clusterType<-newClusterType
     return(retval)
@@ -166,6 +166,7 @@ setMethod(
     x@clusterType <- c(x@clusterType, type)
     yClusterInfo<-rep(list(NULL),NCOL(y))
     x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
+    validObject(x)
     return(x)
   }
 )
@@ -234,6 +235,7 @@ setMethod(
     yClusterInfo<-rep(list(NULL),1)
     x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
     x@clusterType <- c(x@clusterType, type)
+    validObject(x)
     return(x)
   }
 )
@@ -249,6 +251,7 @@ setMethod(
     x@clusterLabels <- cbind(x@clusterLabels, y@clusterLabels)
     x@clusterType <- c(x@clusterType, y@clusterType)
     x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
+    validObject(x)
     return(x)
   }
 )

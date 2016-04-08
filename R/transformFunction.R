@@ -3,9 +3,9 @@ setMethod(
   f = "transform",
   signature = "ClusterCells",
   definition = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
-    fun<-x@transformation
+    fun<-transformation(x)
     dat<-assay(x)
-    return(.transData(dat,transFun=fun,nPCADims=nPCADims,nVarDims=nVarDims,dimReduce=dimReduce))
+    return(.transData(dat,transFun=fun,nPCADims=nPCADims,nVarDims=nVarDims,dimReduce=dimReduce)$x)
   }
 )
 
@@ -22,22 +22,35 @@ setMethod(
   if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
   if(any(is.na(x))) stop("User-supplied `transFun` produces NA values")
   
+  ###################
   ###Dim Reduction
-  if(length(nPCADims)>1 & any(is.na(nPCADims))) stop("if nPCA has multiple values, none can be NA")
-  if(length(nVarDims)>1 & any(is.na(nVarDims))) stop("if nPCA has multiple values, none can be NA")
-  if(length(dimReduce)>1 & "none" %in% dimReduce) stop("cannot give multiple values of dimReduce if `none` is one of the values")
-  if("mostVar" %in% dimReduce & any(is.na(nVarDims))){
-    #remove most Var
-    if(length(dimReduce)==1) dimReduce<-"none"
-    else dimReduce<-dimReduce[-match("mostVar",dimReduce)]
+  ###################
+  ##Check user inputs
+  ###################
+  if(any(is.na(nPCADims)) & "PCA" %in% dimReduce){
+    if(length(nPCADims)==1){
+      if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
+      if(length(dimReduce)>1) dimReduce<-dimReduce[-match("PCA",dimReduce)] #assume user goofed and didn't mean to also include 
+    } 
+    else{
+      #add 'none' option to dimReduce and get rid of NA
+      dimReduce<-unique(c("none",dimReduce)) 
+      nPCADims<-nPCADims[!is.na(nPCADims)]
+    }
   }
-  if("PCA" %in% dimReduce & any(is.na(nPCADims))){
-    #remove most Var
-    if(length(dimReduce)==1) dimReduce<-"none"
-    else dimReduce<-dimReduce[-match("PCA",dimReduce)]
+  if(any(is.na(nVarDims)) & "mostVar" %in% dimReduce){ 
+    if(length(nVarDims)==1){
+      if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
+      if(length(dimReduce)>1) dimReduce<-dimReduce[-match("mostVar",dimReduce)] #assume user goofed and didn't mean to also include 
+      
+    } 
+    else{#assume user meant to do none as well as dimReduce with other values.
+      dimReduce<-unique(c("none",dimReduce)) #add 'none' and remove NA
+      nVarDims<-nVarDims[!is.na(nVarDims)]
+    }
   }
   
-  xPCA<-xVAR<-NULL #possible values
+  xPCA<-xVAR<-xNone<-NULL #possible values
   listReturn<-FALSE
   #for each dim reduction method requested
   if("PCA" %in% dimReduce & !all(is.na(nPCADims))){ #do PCA dim reduction
@@ -52,7 +65,7 @@ setMethod(
     }
     else{
       xPCA<-lapply(nPCADims,function(nn){prc[1:nn,]})
-      names(xPCA)<-paste("nPCFeatures=",nPCADims,sep="")
+      names(xPCA)<-paste("nPCAFeatures=",nPCADims,sep="")
       listReturn<-TRUE
     }
   }
@@ -73,6 +86,12 @@ setMethod(
       listReturn<-TRUE
     }
   }
-  if(listReturn) x<-c(xVAR,xPCA)
+  if("none" %in% dimReduce & length(dimReduce)>1){
+    xNone<-list("noDimReduce"=x)
+    listReturn<-TRUE
+  }
+  #browser()
+  
+  if(listReturn) x<-c(xNone,xVAR,xPCA)
   return(list(x=x,transFun=transFun))
 }

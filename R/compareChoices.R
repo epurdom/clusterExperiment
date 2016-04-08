@@ -98,7 +98,7 @@ setMethod(
     origX<-x
     transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
     x<-transObj$x
-    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
+    if(!is.null(dim(x)) && NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
     transFun<-transObj$transFun #need it later to create clusterCellsObject
     
     if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
@@ -110,14 +110,16 @@ setMethod(
     ##########
     ## Convert to clusterCells Object
     ##########
-    #browser()
-    retval <- clusterCells(origX, outval$clMat[,1], transformation=transFun)
-    if(NCOL(outval$clMat)>1) retval<-addClusters(retval,outval$clMat[,-1])
-    retval@clusterInfo<-outval$clusterInfo
-    retval@clusterType <- rep("compareChoices",NCOL(outval$clMat))
-    return(retval)
-    
+    if(run){#browser()
+      retval <- clusterCells(origX, outval$clMat[,1], transformation=transFun)
+      retval@clusterLabels<-outval$clMat
+      retval@clusterInfo<-outval$clusterInfo
+      retval@clusterType <- rep("compareChoices",NCOL(outval$clMat))
+      validObject(retval)
+      return(retval)
     }
+    else return(outval)
+  }
 
 )
 
@@ -175,26 +177,6 @@ setMethod(
         param[type01,"removeSil"]<-FALSE
         param[type01,"silCutoff"]<-0
       }
-#       ##
-#       #remove extra combinations from dimReduce
-#       ##
-#       makeNone1<-which(param[,"dimReduce"] %in% c("PCA") & is.na(param[,"nPCADim"]))
-#       if(length(makeNone1)>0) param<-param[makeNone1,"dimReduce"]<-"none"
-#       makeNone2<-which(param[,"dimReduce"] %in% c("mostVar") & is.na(param[,"nVarDim"]))
-#       if(length(makeNone2)>0) param<-param[makeNone2,"dimReduce"]<-"none"
-#       dimNone<-which(param[,"dimReduce"] %in% c("none"))
-#       if(length(dimNone)>0){
-#         param[dimNone,"nVarDim"]<-NA
-#         param[dimNone,"nPCADim"]<-NA
-#       }
-#       dimPCA<-which(param[,"dimReduce"] %in% c("PCA"))
-#       if(length(dimPCA)>0){
-#         param[dimPCA,"nVarDim"]<-NA
-#       }
-#       dimVar<-which(param[,"dimReduce"] %in% c("mostVar"))
-#       if(length(dimVar)>0){
-#         param[dimVar,"nPCADim"]<-NA
-#       }
 
       #if provide kRange in clusterDArgs, and findBestK=TRUE, don't need to search over different k
       param<-unique(param)  
@@ -208,22 +190,28 @@ setMethod(
       
       if(nrow(param)<=1) stop("set of parameters imply only 1 combination")
       
+      #find names of the parameter combinations.
+      whVary<-which(apply(param,2,function(x){length(unique(x))>1}))
+      if(length(whVary)>0) cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
+        paste(colnames(param)[whVary],x,sep="=",collapse=",")})
+      else stop("set of parameters imply only 1 combination")
+      
+      cnames<-gsub("dataset=","",cnames)
+      cnames<-gsub("= ","=",cnames)
+      cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
+      cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
+      rownames(param)<-cnames
     }
     else{
+      if(!run) stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
       if(is.null(paramMatrix)) stop("invalid input for paramMatrix; must be data.frame or matrix")
       param<-paramMatrix
+      if(is.null(rownames(paramMatrix))) stop("input paramMatrix must have row names")
+      cnames<-rownames(paramMatrix)
+
     }
     
-    #find names of the parameter combinations.
-    whVary<-which(apply(param,2,function(x){length(unique(x))>1}))
-    if(length(whVary)>0) cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-      paste(colnames(param)[whVary],x,sep="=",collapse=",")})
-    else stop("set of parameters imply only 1 combination")
-    cnames<-gsub("dataset=","",cnames)
-    cnames<-gsub("= ","=",cnames)
-    cnames[param[,"sequential"]]<-gsub("k=","k0=",cnames[param[,"sequential"]])
-    cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
-    rownames(param)<-cnames
+
     paramFun<-function(i){
       par<-param[i,]
       #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
@@ -233,9 +221,6 @@ setMethod(
       subsample<-as.logical(gsub(" ","",par["subsample"]))
       findBestK<-as.logical(gsub(" ","",par["findBestK"]))
       clusterMethod<-as.character(par[["clusterMethod"]])
-#       dimReduce<-as.character(par[["dimReduce"]])
-#       if(dimReduce=="PCA") ndims<-par[["nPCADims"]]
-#       if(dimReduce=="mostVar") ndims<-par[["nVarDims"]]
       if(!is.na(par[["k"]])){
         if(sequential) seqArgs[["k0"]]<-par[["k"]] 
         else{
@@ -254,20 +239,21 @@ setMethod(
                  seqArgs=seqArgs, sequential=sequential,transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
+      cat("Running Clustering on Parameter Combinations...")
       if(ncores>1){
         out<-mclapply(1:nrow(param),FUN=paramFun,mc.cores=ncores,...)
         nErrors<-which(sapply(out,function(x){inherits(x, "try-error")}))
         if(length(nErrors)>0)stop(nErrors,"parameter values hit an error. The first was:\n",out[nErrors[1]])
       }
       else out<-lapply(1:nrow(param),FUN=paramFun)
-#      browser()
+      cat("done.\n")
       clMat<-sapply(out,function(x){primaryCluster(x)})
-      colnames(clMat)<-cnames
+      
+      colnames(clMat)<-unname(cnames)
       pList<-lapply(1:nrow(param),function(i){
         x<-param[i,]
         names(x)<-colnames(param)
         return(x)})
-      #browser()
       clInfo<-mapply(pList,out,FUN=function(x,y){
         c(list(choicesParam=x),clusterInfo(y))
       },SIMPLIFY=FALSE)
@@ -275,6 +261,7 @@ setMethod(
       return(list(clMat=clMat,clusterInfo=clInfo,paramMatrix=param))
     }
     else{
+      cat("Returning Parameter Combinations without running them (to run them choose run=TRUE)\n")
       return(param)
     }
   }
@@ -305,26 +292,30 @@ setMethod(
                            transFun=transformation(x),
                            ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,eraseOld=FALSE,...
     )
-    ##Check if compareChoices already ran previously
-    ppIndex<-pipelineClusterIndex(x,print=FALSE)
-    if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
-      if(eraseOld){ #remove all of them, not just current
-        x<-removeClusters(x,ppIndex[,"index"])
-      }
-      else{
-        if(0 %in% ppIndex[,"iteration"]){
-          newIteration<-max(ppIndex[,"iteration"])+1
-          whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
-          updateCluster<-clusterType(x)
-          updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
-          x@clusterType<-updateCluster          
+    if(run){
+      ##Check if compareChoices already ran previously
+      ppIndex<-pipelineClusterIndex(x,print=FALSE)
+      if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
+        if(eraseOld){ #remove all of them, not just current
+          x<-removeClusters(x,ppIndex[,"index"])
         }
+        else{
+          if(0 %in% ppIndex[,"iteration"]){
+            newIteration<-max(ppIndex[,"iteration"])+1
+            whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
+            updateCluster<-clusterType(x)
+            updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
+            x@clusterType<-updateCluster          
+          }
+        }
+        
       }
       
+      retval<-addClusters(outval,x)
+      validObject(retval)
+      return(retval)
     }
-    
-    retval<-addClusters(outval,x)
-    return(retval)
+    else return(outval)
   }
 )
 
@@ -353,13 +344,16 @@ setMethod(
              transFun=transFun,isCount=isCount,
              ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
     )
-      #need to redo it to make sure get any other part of summarized experiment
+    if(run){
       retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
       retval@clusterLabels<-outval@clusterLabels
       retval@clusterInfo <- clusterInfo(outval)
       retval@clusterType <- clusterType(outval) 
+      validObject(retval)
       return(retval)
       
+    }  #need to redo it to make sure get any other part of summarized experiment
+    else return(outval)  
   }
 )
 
