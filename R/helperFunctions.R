@@ -1,3 +1,26 @@
+#change current pipeline to old iteration -- i.e. add number to it:
+.updateCurrentPipeline<-function(x,eraseOld){
+  ppIndex<-pipelineClusterIndex(x,print=FALSE)
+  if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
+    if(eraseOld){ #removes all of them, not just current
+      newX<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
+    }
+    else{
+      if(0 %in% ppIndex[,"iteration"]){
+        newIteration<-max(ppIndex[,"iteration"])+1
+        whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
+        updateCluster<-clusterType(x)
+        updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
+        newX<-x
+        newX@clusterType<-updateCluster          
+      }
+    }
+    
+  }
+  else newX<-x
+  validObject(newX)
+  return(newX)
+}
 
 #check what type
 .checkAlgType<-function(clusterFunction){

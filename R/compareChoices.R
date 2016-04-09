@@ -284,25 +284,7 @@ setMethod(
     #browser()
     if(class(outval)=="ClusterCells"){
       ##Check if compareChoices already ran previously
-      ppIndex<-pipelineClusterIndex(x,print=FALSE)
-      if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
-        if(eraseOld){ #remove all of them, not just current
-          #browser()
-          newX<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
-        }
-        else{
-          if(0 %in% ppIndex[,"iteration"]){
-            newIteration<-max(ppIndex[,"iteration"])+1
-            whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
-            updateCluster<-clusterType(x)
-            updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
-            newX<-x
-            newX@clusterType<-updateCluster          
-          }
-        }
-        
-      }
-      else newX<-x
+      x<-.updateCurrentPipeline(x,eraseOld)
       
       retval<-addClusters(outval,x)
       validObject(retval)

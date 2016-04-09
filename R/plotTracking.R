@@ -94,6 +94,26 @@
 #'	return(x)
 #'	})
 #' plotTracking(clNew)
+
+#' @rdname ="plotTracking"
+setMethod(
+  f = "plotTracking",
+  signature = signature(clusters = "ClusterCells",whClusters="character"),
+  definition = function(clusters, whClusters,...)
+  {
+    #To Do: should add something for adding additional metadata, perhaps from SummarizedExperiment or user-entered
+    plotTracking(allClusters(clusters),...)
+  })
+#' @rdname ="plotTracking"
+setMethod(
+  f = "plotTracking",
+  signature = signature(clusters = "ClusterCells",whClusters="numeric"),
+  definition = function(clusters, whClusters,...)
+  {
+    #To Do: should add something for adding additional metadata, perhaps from SummarizedExperiment or user-entered
+    plotTracking(allClusters(clusters)[,whClusters],...)
+  })
+#' @rdname ="plotTracking"
 setMethod(
   f = "plotTracking",
   signature = signature(clusters = "matrix"),
@@ -155,14 +175,6 @@ setMethod(
 		do.call(".clusterTrackingPlot",c(list(colorMat=clusters),clusterPlotArgs,list(...)))		
 	}
 })
-setMethod(
-  f = "plotTracking",
-  signature = signature(clusters = "ClusterCells"),
-  definition = function(clusters,orderClusters, ...)
-  {
-  clMat<-allClusters(clusters)[,orderClusters]
-  plotTracking(clMat,...)
-    })
 
 .plotTrackingInternal<-function(clusters, index, reuseColors, matchToTop, plot, minRequireColor, startNewColors, colPalette, ...){
 	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
@@ -225,7 +237,7 @@ setMethod(
 		(unique(mat))
 	})
 	names(groupToColorLegend)<-rownames(clusters)
-	invisible(list(index=index,colors=t(colorM),aligned=t(alignCl),groupToColorLegend=groupToColorLegend))
+	invisible(list(orderClusters=index,colors=t(colorM),aligned=t(alignCl),groupToColorLegend=groupToColorLegend))
 
 }
 

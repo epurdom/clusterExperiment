@@ -35,7 +35,12 @@ setMethod(
 )
 
 #function to transform assay data into clustering data (or other normal-like data input)
-#if npcs=NA or length of npcs=1, returns matrix; otherwise returns list of pc reduced data.
+#Note for developers:
+# .transData (unlike transform() ) returns a list:
+# 1st element is the transformed data 
+# if npcs=NA or length of npcs=1, transformed data is matrix; otherwise returns list of data matrices.
+# 2nd element is the transformation function 
+# The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterCells Object)
 .transData<-function(x,transFun=NULL,isCount=FALSE,nPCADims,nVarDims,dimReduce)
 {
   origX<-x
