@@ -66,7 +66,7 @@ setValidity("ClusterCells", function(object) {
   if(any(is.na(assay(object)))) {
     return("NA values are not allowed.")
   }
-  tX<-try(transform(object))
+  tX<-try(transform(object),silent=TRUE)
   if(inherits(tX, "try-error")){
     stop(paste("User-supplied `transformation` produces error on the input data matrix:\n",x))
   }

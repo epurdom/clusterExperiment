@@ -110,7 +110,7 @@ setMethod(
     ##########
     ## Convert to clusterCells Object
     ##########
-    if(run){
+    if("clMat" %in% names(outval)){
       retval <- clusterCells(origX, outval$clMat[,1], transformation=transFun)
       retval@clusterLabels<-outval$clMat
       retval@clusterInfo<-outval$clusterInfo
@@ -278,18 +278,17 @@ setMethod(
                         eraseOld=FALSE,...
   )
   {
-    
+    #browser()
     outval<-compareChoices(assay(x), dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-                           transFun=transformation(x),
-                           ...
-    )
+                           transFun=transformation(x),...)
+    #browser()
     if(class(outval)=="ClusterCells"){
       ##Check if compareChoices already ran previously
       ppIndex<-pipelineClusterIndex(x,print=FALSE)
       if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
         if(eraseOld){ #remove all of them, not just current
           #browser()
-          x<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
+          newX<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
         }
         else{
           if(0 %in% ppIndex[,"iteration"]){
@@ -297,11 +296,13 @@ setMethod(
             whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
             updateCluster<-clusterType(x)
             updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
-            x@clusterType<-updateCluster          
+            newX<-x
+            newX@clusterType<-updateCluster          
           }
         }
         
       }
+      else newX<-x
       
       retval<-addClusters(outval,x)
       validObject(retval)

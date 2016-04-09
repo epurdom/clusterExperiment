@@ -172,16 +172,8 @@ setMethod(
 setMethod(
   f = "clusterAll",
   signature = signature(x = "SummarizedExperiment"),
-  definition = function(x, subsample=TRUE, sequential=FALSE,
-                        clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"),clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL,isCount=FALSE,
-                        transFun, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
-    outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
-                         clusterFunction=clusterFunction,
-                         clusterDArgs = clusterDArgs,
-                         subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         transFun=transFun,dimReduce=dimReduce,ndims=ndims)
+  definition = function(x, ...) {
+    outval <- clusterAll(assay(x), ...)
     retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval) #shouldn't this add to the end
@@ -194,16 +186,9 @@ setMethod(
 setMethod(
   f = "clusterAll",
   signature = signature(x = "ClusterCells"),
-  definition = function(x, subsample=TRUE, sequential=FALSE,
-                        clusterFunction=c("tight", "hierarchical", "pam",
-                                          "kmeans"), clusterDArgs=NULL,
-                        subsampleArgs=NULL, seqArgs=NULL, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
+  definition = function(x, ...) {
 
-    outval <- clusterAll(assay(x), subsample=subsample, sequential=sequential,
-                         clusterFunction=clusterFunction,
-                         clusterDArgs = clusterDArgs,
-                         subsampleArgs = subsampleArgs, seqArgs = seqArgs,
-                         transFun=transformation(x),dimReduce=dimReduce,ndims=ndims) 
+    outval <- clusterAll(assay(x),...) 
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it

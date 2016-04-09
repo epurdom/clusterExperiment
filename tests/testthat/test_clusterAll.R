@@ -62,18 +62,18 @@ test_that("Different options of `clusterAll` ", {
   
   #check sequential
   clustSeq <- clusterAll(simData, clusterFunction="pam",
-                         subsample=FALSE, sequential=TRUE,ndims=3,
-                         isCount=FALSE,seqArgs=list(k0=5))
+                         subsample=FALSE, sequential=TRUE,
+                         isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
   expect_error(  clusterAll(simData, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,ndims=3,
+                            subsample=FALSE, sequential=TRUE,
                             isCount=FALSE)) #must specify k0
 
   #check warning combinations
   expect_error(  clusterAll(simData, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,
+                            subsample=FALSE, sequential=TRUE,seqArgs=list(verbose=FALSE),
                             isCount=FALSE,clusterDArgs=list("typeAlg"=="K"))) 
   expect_error(  clusterAll(simData, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,
+                            subsample=FALSE, sequential=TRUE,seqArgs=list(verbose=FALSE),
                             isCount=FALSE,clusterDArgs=list("findBestK"==TRUE))) 
   expect_error(clusterAll(simData, clusterFunction="tight",
                           subsample=FALSE, sequential=FALSE,

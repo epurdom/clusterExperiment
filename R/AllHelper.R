@@ -83,7 +83,7 @@ setReplaceMethod(
   f = "primaryClusterIndex",
   signature = signature("ClusterCells", "numeric"),
   definition = function(object, value) {
-    primaryClusterIndex(object) <- value
+    object@primaryIndex <- value
     validObject(object)
     return(object)
   }
@@ -121,6 +121,7 @@ setMethod(
   f = "removeClusters",
   signature = signature("ClusterCells","character"),
   definition = function(x, whichRemove,exactMatch=TRUE) {
+    browser()
     if(exactMatch) wh<-which(clusterType(x) %in% whichRemove)
     else{
       sapply(whichRemove,grep, clusterType(x))
@@ -133,7 +134,7 @@ setMethod(
   f = "removeClusters",
   signature = signature("ClusterCells","numeric"),
   definition = function(x, whichRemove) {
-   
+   #browser()
     if(any(whichRemove>NCOL(allClusters(x)))) stop("invalid indices -- must be between 1 and",NCOL(allClusters(x)))
     if(length(whichRemove)==NCOL(allClusters(x))){ 
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
@@ -142,13 +143,14 @@ setMethod(
     newClLabels<-allClusters(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove,drop=FALSE]
     newClusterType<-clusterType(x)[-whichRemove,drop=FALSE]
-    if(primaryClusterIndex(x) %in% whichRemove) primaryIndex<-1
-    else primaryIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
+    if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
+    else pIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
     retval<-clusterCells(assay(x),newClLabels[,1],transformation(x))
     retval@clusterLabels<-newClLabels
-    primaryClusterIndex(retval)<-primaryIndex
+    primaryClusterIndex(retval)<-pIndex
     retval@clusterInfo<-newClusterInfo
     retval@clusterType<-newClusterType
+    validObject(retval)
     return(retval)
   }
 )

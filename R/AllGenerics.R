@@ -1,9 +1,6 @@
 setGeneric(
   name = "clusterAll",
-  def = function(x,  subsample=TRUE, sequential=FALSE,
-                 clusterFunction=c("tight", "hierarchical", "pam", "kmeans"),
-                 clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-                 isCount=FALSE,transFun=NULL,dimReduce=c("none","PCA","mostVar"),ndims=NA) {
+  def = function(x,  ...) {
     standardGeneric("clusterAll")
   }
 )
@@ -32,15 +29,7 @@ setGeneric(
 #' @rdname compareChoices
 setGeneric(
   name = "compareChoices",
-  def = compareChoices <- function(x, ks=3:5, clusterMethod="pam", alphas=0.1, findBestK=FALSE,sequential=FALSE,
-                                   removeSil=FALSE, subsample=FALSE,silCutoff=0,
-                                   dimReduce="none",nVarDims=NA,nPCADims=NA,
-                                   clusterDArgs=list(minSize=5),
-                                   subsampleArgs=list(resamp.num=50),
-                                   seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
-                                   transFun=NULL,isCount=FALSE,
-                                   ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,eraseOld=FALSE,...
-                                   ) {
+  def = compareChoices <- function(x, ... ) {
     standardGeneric("compareChoices")
   }
 )
