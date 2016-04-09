@@ -150,7 +150,7 @@ setMethod(
     ##########
     
     retval <- clusterCells(origX, outlist$clustering, transformation=transFun)
-    retval@clusterInfo <- list(clusterInfo = outlist$clusterInfo,
+    retval@clusterInfo <- list(list(clusterInfo = outlist$clusterInfo,
                                 whyStop = outlist$whyStop,
                                 subsample = subsample,
                                 sequential = sequential,
@@ -160,9 +160,10 @@ setMethod(
                                 seqArgs = seqArgs,
                                 dimReduce=dimReduce,
                                 ndims=ndims
-                               )
+                               ))
     retval@clusterType <- "clusterAll"
     if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
+    validObject(retval)
     return(retval)
   }
 )

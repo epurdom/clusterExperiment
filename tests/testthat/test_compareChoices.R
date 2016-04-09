@@ -26,7 +26,7 @@ test_that("`compareChoices` works with matrix, list of data, ClusterCells object
                                            isCount=FALSE)
             clustNothing4<- compareChoices(clustNothing3, ks=c(3:4),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,
-                                           isCount=FALSE,eraseOld=TRUE)
+                                           isCount=FALSE,eraseOld=TRUE) #hitting error. Need to go back (infinite recursion -- why?)
             expect_equal(clustNothing3,clustNothing4)
             clustNothing5<- compareChoices(clustNothing3, ks=c(5:6),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,

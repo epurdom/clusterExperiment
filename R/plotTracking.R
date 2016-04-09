@@ -9,7 +9,8 @@
 #' @param clusters A matrix of with each column corresponding to a clustering and
 #' each row a sample. The plotting will plot them in order of this matrix,
 #' and their order influences the plot greatly.
-#' @param index A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})
+#' @param orderClusters A predefined order for the clusterings in the plot
+#' @param orderSamples A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})
 #' @param reuseColors Logical. Whether each row should consist of the same set
 #' of colors. By default (FALSE) each cluster that the algorithm doesn't
 #' identify to the previous rows clusters gets a new color
@@ -54,6 +55,7 @@
 #'
 #' @author Elizabeth Purdom and Marla Johnson
 #' 
+#' @seealso consensusClustering package
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' ps<-c(5,10,50)
@@ -92,24 +94,38 @@
 #'	return(x)
 #'	})
 #' plotTracking(clNew)
+setMethod(
+  f = "plotTracking",
+  signature = signature(clusters = "matrix"),
+  definition = function(clusters, orderClusters=NULL,
+              orderSamples=NULL,reuseColors=FALSE,matchToTop=FALSE,
+              plot=TRUE,unassignedColor="white",missingColor="grey",
+              minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,
+              input=c("clusters","colors"),clNames=colnames(clusters),
+              add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",
+              axisLine=0,box=FALSE,...)
+{
+  #reorder so
+  if(is.null(orderSamples)) orderSamples<-1:nrow(clusters)
+  else{ if(!all(orderSamples %in% 1:nrow(clusters))) stop("invalid values for orderSamples")}
+  if(is.null(orderClusters)) orderClusters<-1:ncol(clusters)
+  else{if(!all(orderClusters %in% 1:ncol(clusters))) stop("invalid values for orderClusters")}
 
-plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,plot=TRUE,unassignedColor="white",missingColor="grey",minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,input=c("clusters","colors"),clNames=colnames(clusters),add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...){
-	dnames<-dimnames(clusters)
+  index<-orderSamples #match to old arguments
+  clusters<-clusters[,orderClusters] #reorder clusters.
+                                                   
+  dnames<-dimnames(clusters)
 	input<-match.arg(input)
 
+	#arguments to be passed at various calls
 	clusterPlotArgs<-list(clNames=clNames,add=add,xCoord=xCoord,ylim=ylim,tick=tick,ylab=ylab,xlab=xlab,axisLine=axisLine,box=box)
 	plotTrackArgs<-list(index=index,reuseColors=reuseColors,matchToTop=matchToTop,minRequireColor=minRequireColor,startNewColors=startNewColors,colPalette=colPalette)
+
 	if(input=="clusters"){
 		clusters<-t(clusters)
 		if(any(as.character(clusters)%in%c("-1","-2"))){
 			if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
-			#don't think I need this anymore because fixed so not need numeric values.
-			# rnames<-row.names(clusters)
-			# clusters<-apply(clusters,2,as.numeric)
-			# rownames(clusters)<-rnames
-			# if(any(is.na(clusters))) stop("could not convert clusters to numeric, but some samples had value '-1'")
 			out<-do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
-	#		browser()
 			#take out -1
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
 				leg<-out$groupToColorLegend[[i]]
@@ -126,7 +142,6 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 				return(out$colors[,i])
 			}))
 			if(plot) do.call(".clusterTrackingPlot",c(list(colorMat=xColors[out$index,]),clusterPlotArgs,list(...)))
-				# do.call(".plotTrackingInternal",c(list(clusters=clusters,plot=TRUE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
 			out$groupToColorLegend<-newColorLeg
@@ -139,7 +154,16 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 	else{
 		do.call(".clusterTrackingPlot",c(list(colorMat=clusters),clusterPlotArgs,list(...)))		
 	}
-}
+})
+setMethod(
+  f = "plotTracking",
+  signature = signature(clusters = "ClusterCells"),
+  definition = function(clusters,orderClusters, ...)
+  {
+  clMat<-allClusters(clusters)[,orderClusters]
+  plotTracking(clMat,...)
+    })
+
 .plotTrackingInternal<-function(clusters, index, reuseColors, matchToTop, plot, minRequireColor, startNewColors, colPalette, ...){
 	#clusters is a nmethods x nsamples matrix. The order of the rows determines how the tracking will be done.
 	#if given, index is the order of the samples (columns) for plotting. Otherwise determined by program
@@ -378,9 +402,10 @@ plotTracking<-function(clusters, index=NULL,reuseColors=FALSE,matchToTop=FALSE,p
 }
 
 
-#' Make anno for input to dualHeatmap from output of plotTracking
+#' Make color annotation for input to dualHeatmap from output of plotTracking
 #'
 #' @param trackingOut the output from \code{\link{plotTracking}}
+#' @rdname plotTracking
 makeAnnoColor<-function(trackingOut){
 	lapply(trackingOut$groupToColorLegend,function(x){
 		z<-as.character(x[,"Color"])
@@ -388,180 +413,4 @@ makeAnnoColor<-function(trackingOut){
 		return(z)
 	})
 }
-
-###After this point, don't export, but didn't want to lose the functions.
-
-.makeFactorsNumbers<-function(mat,MARGIN,sharedFactors=FALSE){
-	if(sharedFactors){
-		if(is.data.frame(mat)) mat<-as.matrix(mat)
-		allcolors<-unique(as.vector(mat))
-		out<-apply(mat,MARGIN,function(y){as.numeric(factor(y,levels=allcolors))})
-	}
-	else out<-apply(mat,MARGIN,function(y){as.numeric(factor(y))})
-	if(MARGIN==1) return(t(out)) #apply inverts it when do apply to rows
-	else return(out)
-}
-.plotWithClinical<-function(clusters,clinical,clinicalNumbers=NULL,index=NULL,whClinical=NULL,main="",split=TRUE,mar=c(2.1,7.1,1.1,1.1),plot=TRUE,...){
-	cl<-clusters
-		order<-plotTracking(cl, ylab="",index=index,tick=FALSE,reuseColors=FALSE,plot=FALSE)	
-		if(is.null(clinicalNumbers)) clinicalNumbers<-.makeFactorsNumbers(clinical,MARGIN=2)
-		rn<-row.names(cl)
-		cn<-colnames(cl)
-		cl<-.makeFactorsNumbers(order$colors,MARGIN=1,sharedFactors=TRUE)
-	#	cl<-apply(cl,2,as.character)
-		##Put them in the middle
-		if(split){
-			if(is.null(whClinical)){
-				nabove<-floor(ncol(clinicalNumbers)/2)
-				x<-rbind(tail(t(clinicalNumbers),-nabove),cl,head(t(clinicalNumbers),nabove))
-				rownames(x)<-c(tail( colnames(clinical),-nabove),rn,head(colnames(clinical),nabove))
-			}
-			else{
-				nabove<-floor(ncol(clinicalNumbers[,whClinical])/2)
-				x<-rbind(tail(t(clinicalNumbers[,whClinical]),-nabove),cl,head(t(clinicalNumbers[,whClinical]),nabove))
-				rownames(x)<-c(tail( whClinical,-nabove),rn,head(whClinical,nabove))
-			}
-		}
-		else{
-			if(is.null(whClinical)) {
-				x<-rbind(t(clinicalNumbers),cl)
-				rownames(x)<-c(colnames(clinical),rn)				
-			}
-			else{
-				x<-rbind(t(clinicalNumbers[,whClinical]),cl)
-				rownames(x)<-c(whClinical,rn)				
-				
-			}
-		}
-		colnames(x)<-cn
-
-		par(mar=mar)
-		xcol<-apply(x,2,function(y){.thisPal[y]})
-		dimnames(xcol)<-dimnames(x)
-		if(plot) .clusterTrackingPlot(xcol[,order$index], names=row.names(x),main=main,...)
-		invisible(list(x=x,xcol=xcol,order=order$index))
-}
-
-.alignClusters<-function(clAlign,clRef=NULL,index=NULL){
-	if(!is.null(clRef)){
-		if(is.null(dim(clRef))) clRef<-matrix(clRef,nrow=1)
-		else if(nrow(clRef)>1) stop("clRef can only be a single alignment at this time")
-		colnames(clRef)<-colnames(clAlign)
-		if(is.null(row.names(clRef))) rownames(clRef)<-as.character(1:nrow(clRef))
-		nrowRef<-nrow(clRef)
-		alignCluster<-plotTracking(rbind(clRef,clAlign),index=index,plot=FALSE)
-	} 
-	else alignCluster<-plotTracking(clAlign,index=index,plot=FALSE)
-
-	if(!is.null(clRef)){ #assume clRef already correct
-		oldAssign<-alignCluster$aligned[1:nrowRef, ,drop=FALSE]
-		newAssign<-clRef
-	}
-	else{
-		oldAssign<-clAlign
-		newAssign<-alignCluster$aligned
-		dimnames(newAssign)<-dimnames(clAlign)
-	}
-	##Make color mapping
-	allClId<-sort(unique(as.vector(unlist(newAssign))))
-	oldToNew<-lapply(1:nrow(newAssign),function(ii){unique(cbind("New"=unlist(newAssign[ii,]),"Old"=unlist(oldAssign[ii,])))})
-	oldToNew<-sapply(oldToNew,function(z){z[match(allClId,z[,"New"]),"Old"]  })
-	colnames(oldToNew)<-rownames(newAssign) 
-	rownames(oldToNew)<-NULL
-	colorMapping<-data.frame("NewClusterId"=as.numeric(allClId),"Color"=.thisPal[allClId],oldToNew,check.names=FALSE)
-	
-	if(is.null(clRef)){
-		return(list(colorMapping=colorMapping,alignedClusters=newAssign,alignedColors=alignCluster$colors))
-	}
-	else{
-		rm(oldAssign)
-		rm(newAssign)
-		oldAssign<-alignCluster$align[-c(1:nrowRef), , drop=FALSE] #what want to align to
-		singlePlotTrackingId<-apply(colorMapping[,-c(1:2),drop=FALSE],1,function(x){unique(na.omit(x))})
-		colorMapping<-data.frame(colorMapping[,c(1:2)],"plotTrackingId"=singlePlotTrackingId)
-		oldInRef<-na.omit(unique(as.vector(unlist(colorMapping[,-c(1:2)]))))
-		# tempMap<-unique(cbind(tempId=lamlAlignCluster[sprintf("Iso: K=%s",kIso),],newId=isoIdAssignments[sprintf("Iso: K=%s",kIso),]))
-		#match gene/iso to prop colors already decided on
-		notInRef<-unique(as.vector(unlist(oldAssign)))
-		notInRef<-setdiff(notInRef,oldInRef)
-		notUsed<-setdiff(1:max(colorMapping$NewClusterId),colorMapping$NewClusterId)
-		remaining<-c(notUsed,(max(colorMapping$NewClusterId)+1):length(.thisPal))
-		if(length(remaining)< length(notInRef)) stop("Not enough in .thisPal to cover all")
-		#conver plotTrackingId to final 'NewClusterId'
-		tempMap<-rbind(colorMapping[,c(1,3)],cbind("NewClusterId"=remaining[1:length(notInRef)],plotTrackingId=notInRef))
-		newAssign<-apply(oldAssign,2,function(x){tempMap[,"NewClusterId"][match(x,tempMap[,"plotTrackingId"])]})
-		dimnames(newAssign)<-dimnames(clAlign)
-		#make color/cluster mapping
-		allClId<-sort(unique(as.vector(newAssign)))
-		oldToNew<-lapply(1:nrow(newAssign),function(ii){unique(cbind("New"=unlist(newAssign[ii,]),"Old"=unlist(oldAssign[ii,])))})
-		oldToNew<-sapply(oldToNew,function(z){z[match(allClId,z[,"New"]),"Old"]  })
-		colnames(oldToNew)<-rownames(newAssign) 
-		rownames(oldToNew)<-NULL
-		colorMapping<-data.frame("NewClusterId"=allClId,"Color"=.thisPal[allClId],oldToNew,check.names=FALSE)
-		alignedColors<-apply(newAssign,2,function(x){.thisPal[x]})
-		rownames(alignedColors)<-row.names(clAlign)
-		rownames(newAssign)<-row.names(clAlign)
-		return(list(colorMapping=colorMapping,alignedClusters=newAssign,alignedColors=alignedColors))
-
-	}
-	
-}
-
-
-###Functions to manipulate order of blocks of samples.
-.printWithIndex<-function(x,whBlockRow=1,blockOrder=NULL,whRow=NULL,whBlocks=NULL,checkAllIndices=TRUE){
-	if(is.null(whRow)) whRow<-1:nrow(x$aligned)
-	allCols<-c(1:ncol(x$aligned))
-	newx<-rbind(Index=allCols,x$aligned[whRow,])
-	# if(is.null(whCol)) whCol<-1:ncol(x$aligned)
-	# newIndex<-match(x$index, allCols[whCol])
-	newIndex<-x$index
-	orderedX<-newx[,newIndex]
-	zoom<-orderedX[whBlockRow+1,]
-	runs<-rle(zoom)
-	blocks<-rep(1:length(runs$lengths),times=runs$length)
-	orderedX<-rbind(Blocks=blocks,orderedX)
-	if(!is.null(blockOrder)){
-		if(length(blockOrder)>length(runs$lengths) | max(blockOrder) > length(runs$lengths)) stop("invalid block orders -- too long")
-		blockStarts<-c(1,head(cumsum(runs$lengths),-1)+1)
-		blockEnds<-cumsum(runs$lengths)
-		if(length(blockStarts)!=length(blockEnds) | length(blockEnds)!=length(runs$lengths)) stop("coding error")
-		orderedX<-do.call("cbind",mapply(blockStarts[blockOrder],blockEnds[blockOrder],FUN=function(s,e){orderedX[,seq(s,e)]},SIMPLIFY=FALSE))
-	}
-	if(checkAllIndices & ! length(unique(orderedX["Index",]))==length(allCols)) stop("whBlocks doesn't capture all indices")
-	return(orderedX)
-}
-.clusterIndInBlock<-function(x,whInd,whBlockRow=1,whBlocks,rightLeftPerBlock=NULL){
-	whBlocks<-sort(whBlocks) #don't want to rearrange order of blocks...
-	#get indices that are in block:
-	orderedX<-.printWithIndex(x,whBlockRow=whBlockRow,blockOrder=NULL)
-	blockX<-.printWithIndex(x,whBlockRow=whBlockRow,blockOrder=whBlocks,checkAllIndices=FALSE)[1:2,]
-	isFac<-as.numeric(blockX["Index",] %in% whInd)
-	blockX<-rbind(blockX,isFac) #make third row in matrix the indicator that have it.
-	index<-orderedX["Index",]
-	if(!is.null(rightLeftPerBlock)){
-		out<-mapply(whBlocks,rightLeftPerBlock,FUN=function(bl,dir){
-			x<-blockX[,blockX["Blocks",]==bl]
-			isFacX<-which(x[3,]==1)
-			newX<-if(dir=="right") cbind(x[,-isFacX],x[,isFacX]) else cbind(x[,isFacX],x[,-isFacX])		
-			newIndex<-newX["Index",]
-			m<-match(newIndex,index)
-			index[sort(m)]<<-newIndex
-		})
-	}
-	else{
-		out<-by(t(blockX),blockX["Blocks",],function(x){
-			x<-t(x)
-			isFacX<-which(x[3,]==1)
-			#now replace old matrix index with this one
-			newX<-cbind(x[,isFacX],x[,-isFacX])
-			newIndex<-newX["Index",]
-			m<-match(newIndex,index)
-			index[sort(m)]<<-newIndex
-			})		
-	}
-	orderedX["Index",]<-index
-	return(orderedX)
-}
-
 

@@ -94,14 +94,10 @@
 setMethod(
   f = "compareChoices",
   signature = signature(x = "matrix"),
-  definition = function(x, ks=3:5, clusterMethod="pam", alphas=0.1, findBestK=FALSE,sequential=FALSE,
-                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
+  definition = function(x, 
                         dimReduce="none",nVarDims=NA,nPCADims=NA,
-                        clusterDArgs=list(minSize=5),
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
                         transFun=NULL,isCount=FALSE,
-                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+                        ...
   ){
     origX<-x
     transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
@@ -110,10 +106,7 @@ setMethod(
     transFun<-transObj$transFun #need it later to create clusterCellsObject
     
     if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
-    outval<-compareChoices(x, ks=ks,clusterMethod=clusterMethod,alphas=alphas,findBestK=findBestK,
-                           sequential=sequential,removeSil=removeSil,subsample=subsample,silCutoff=silCutoff,
-                           clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,seqArgs=seqArgs,ncores=ncores,
-                           random.seed=random.seed,run=run,paramMatrix=paramMatrix,...)
+    outval<-compareChoices(x, ...)
     ##########
     ## Convert to clusterCells Object
     ##########
@@ -281,32 +274,22 @@ setMethod(
 setMethod(
   f = "compareChoices",
   signature = signature(x = "ClusterCells"),
-  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
-                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
-                        dimReduce="none",nVarDims=NA,nPCADims=NA,
-                        clusterDArgs=list(minSize=5),
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
-                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,eraseOld=FALSE,...
+  definition = function(x, dimReduce="none",nVarDims=NA,nPCADims=NA,
+                        eraseOld=FALSE,...
   )
   {
     
-    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
-                           findBestK=findBestK,sequential=sequential,
-                           removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
-                           dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-                           clusterDArgs=clusterDArgs,
-                           subsampleArgs=subsampleArgs,
-                           seqArgs=seqArgs,
+    outval<-compareChoices(assay(x), dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                            transFun=transformation(x),
-                           ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
+                           ...
     )
-    if(run){
+    if(class(outval)=="ClusterCells"){
       ##Check if compareChoices already ran previously
       ppIndex<-pipelineClusterIndex(x,print=FALSE)
       if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
         if(eraseOld){ #remove all of them, not just current
-          x<-removeClusters(x,ppIndex[,"index"])
+          #browser()
+          x<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
         }
         else{
           if(0 %in% ppIndex[,"iteration"]){
@@ -333,27 +316,16 @@ setMethod(
 setMethod(
   f = "compareChoices",
   signature = signature(x = "SummarizedExperiment"),
-  definition = function(x, ks=3:5, clusterMethod, alphas=0.1, findBestK=FALSE,sequential=FALSE,
-                        removeSil=FALSE, subsample=FALSE,silCutoff=0,
-                        dimReduce="none",nVarDims=NA,nPCADims=NA,
-                        clusterDArgs=list(minSize=5),
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9,k.min=3, verbose=FALSE),
+  definition = function(x, dimReduce="none",nVarDims=NA,nPCADims=NA,
                         transFun=NULL,isCount=FALSE,
-                        ncores=1,random.seed=NULL,run=TRUE,paramMatrix=NULL,...
+                        ...
   )
   {
-    outval<-compareChoices(assay(x), ks=ks, clusterMethod=clusterMethod, alphas=alphas,
-             findBestK=findBestK,sequential=sequential,
-             removeSil=removeSil, subsample=subsample,silCutoff=silCutoff,
+    outval<-compareChoices(assay(x), 
              dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-             clusterDArgs=clusterDArgs,
-             subsampleArgs=subsampleArgs,
-             seqArgs=seqArgs,
-             transFun=transFun,isCount=isCount,
-             ncores=ncores,random.seed=random.seed,run=run,paramMatrix=paramMatrix,...
+             transFun=transFun,isCount=isCount,...
     )
-    if(run){
+    if(class(outval)=="ClusterCells"){
       retval <- clusterCells(x, primaryCluster(outval), transformation(outval))
       retval@clusterLabels<-outval@clusterLabels
       retval@clusterInfo <- clusterInfo(outval)

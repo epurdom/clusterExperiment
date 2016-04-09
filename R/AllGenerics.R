@@ -29,6 +29,7 @@ setGeneric(
   }
 )
 
+#' @rdname compareChoices
 setGeneric(
   name = "compareChoices",
   def = compareChoices <- function(x, ks=3:5, clusterMethod="pam", alphas=0.1, findBestK=FALSE,sequential=FALSE,
@@ -44,19 +45,36 @@ setGeneric(
   }
 )
 
+#' @rdname plotTracking
+setGeneric(
+  name="plotTracking",
+  def=function(clusters, orderClusters=NULL,
+               orderSamples=NULL,index=NULL,reuseColors=FALSE,matchToTop=FALSE,
+               plot=TRUE,unassignedColor="white",missingColor="grey",
+               minRequireColor=0.3,startNewColors=FALSE,
+               colPalette=bigPalette,input=c("clusters","colors"),
+               clNames=colnames(clusters),add=FALSE,xCoord=NULL,
+               ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...)
+    {
+    standardGeneric("plotTracking")
+  }
+)
+#' @rdname ClusterCells-class
 setGeneric(
   name = "transformation",
   def = function(x) {
     standardGeneric("transformation")
   }
 )
-setGeneric(
+#' @rdname ClusterCells-class
+  setGeneric(
   name = "transform",
   def = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
     standardGeneric("transform")
   }
 )
 
+#' @rdname ClusterCells-class
 setGeneric(
   name = "allClusters",
   def = function(x) {
