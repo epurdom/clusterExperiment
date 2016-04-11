@@ -1,4 +1,5 @@
 ## subsetting
+#' @rdname ClusterExperiments-class
 setMethod(
   f = "[",
   signature = c("ClusterExperiments", "ANY", "ANY"),
@@ -193,37 +194,20 @@ setMethod(
       #make it Summarized Experiment
     }
     newClLabels<-allClusters(x)[,-whichRemove,drop=FALSE]
-    newClusterInfo<-clusterInfo(x)[-whichRemove,drop=FALSE]
-    newClusterType<-clusterType(x)[-whichRemove,drop=FALSE]
+    newClusterInfo<-clusterInfo(x)[-whichRemove]
+    newClusterType<-clusterType(x)[-whichRemove]
+    newClusterColors<-clusterColors(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
     else pIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
-    retval<-clusterExperiments(assay(x),newClLabels[,1],transformation(x))
-    retval@clusterMatrix<-newClLabels
-    retval@clusterInfo<-newClusterInfo
-    retval@clusterType<-newClusterType
+    retval<-clusterExperiments(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
     validObject(retval)
+    clusterColors(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
     return(retval)
   }
 )
 
-#' @rdname ClusterExperiments-class
-setMethod(
-  f = "addClusters",
-  signature = signature("ClusterExperiments", "matrix"),
-  definition = function(x, y, type="User") {
-    if(!(NROW(y) == NCOL(x))) {
-      stop("Incompatible dimensions.")
-    }
-    x@clusterMatrix <- cbind(x@clusterMatrix, y)
-    if(length(type)==1) type<-rep(type, NCOL(y))
-    x@clusterType <- c(x@clusterType, type)
-    yClusterInfo<-rep(list(NULL),NCOL(y))
-    x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
-    validObject(x)
-    return(x)
-  }
-)
+
 
 #Update here if change pipeline values. Also defines the order of them.
 .pipelineValues<-c("final","mergeClusters","findSharedClusters","clusterMany")
@@ -285,40 +269,41 @@ setMethod(
 }
 )
 
-
+#' @rdname ClusterExperiments-class
+setMethod(
+    f = "addClusters",
+    signature = signature("ClusterExperiments", "ClusterExperiments"),
+    definition = function(x, y) {
+        if(!all(assay(y) == assay(x))) {
+            stop("Cannot merge clusters from different data.")
+        }
+        x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
+        x@clusterType <- c(x@clusterType, y@clusterType)
+        x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
+        x@clusterColors<-c(x@clusterColors,y@clusterColors)
+        validObject(x)
+        return(x)
+    }
+)
+#' @rdname ClusterExperiments-class
+setMethod(
+    f = "addClusters",
+    signature = signature("ClusterExperiments", "matrix"),
+    definition = function(x, y, type="User") {
+        ccObj<-clusterExperiments(assay(x),y,transformation=transformation(x),clusterType=type)
+        addClusters(x,ccObj)
+    }
+)
 #' @rdname ClusterExperiments-class
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiments", "numeric"),
-  definition = function(x, y, type="User") {
-    if(!(length(y) == NCOL(x))) {
-      stop("Incompatible dimensions.")
-    }
-    x@clusterMatrix <- cbind(x@clusterMatrix, y)
-    if(length(type)==1) type<-rep(type, 1)
-    yClusterInfo<-rep(list(NULL),1)
-    x@clusterInfo<-c(x@clusterInfo,yClusterInfo)
-    x@clusterType <- c(x@clusterType, type)
-    validObject(x)
-    return(x)
+  definition = function(x, y, ...) {
+    addClusters(x,matrix(y,ncol=1),...)
   }
 )
 
-#' @rdname ClusterExperiments-class
-setMethod(
-  f = "addClusters",
-  signature = signature("ClusterExperiments", "ClusterExperiments"),
-  definition = function(x, y) {
-    if(!all(assay(y) == assay(x))) {
-      stop("Cannot merge clusters from different data.")
-    }
-    x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
-    x@clusterType <- c(x@clusterType, y@clusterType)
-    x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
-    validObject(x)
-    return(x)
-  }
-)
+
 
 #' @rdname ClusterExperiments-class
 setMethod(
@@ -336,6 +321,45 @@ setMethod(
   definition = function(x) {
     return(x@clusterInfo)
   }
+)
+#need to implement replacement functions for these clusterInfo, clusterType, clusterColors
+
+#' @rdname ClusterExperiments-class
+setMethod(
+    f = "clusterColors",
+    signature = "ClusterExperiments",
+    definition = function(x) {
+        return(x@clusterColors)
+    }
+)
+#' @rdname ClusterExperiments-class
+setReplaceMethod(
+    f = "clusterColors",
+    signature = signature(object="ClusterExperiments", value="list"),
+    definition = function(object, value) {
+        object@clusterColors<-value
+        validObject(object)
+        return(object)
+    }
+)
+
+#' @rdname ClusterExperiments-class
+setMethod(
+    f = "orderSamples",
+    signature = "ClusterExperiments",
+    definition = function(x) {
+        return(x@orderSamples)
+    }
+)
+#' @rdname ClusterExperiments-class
+setReplaceMethod(
+    f = "orderSamples",
+    signature = signature(object="ClusterExperiments", value="numeric"),
+    definition = function(object, value) {
+        object@orderSamples<-value
+        validObject(object)
+        return(object)
+    }
 )
 
 # # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of clusterMany (and compatible with it)

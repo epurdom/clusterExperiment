@@ -100,19 +100,34 @@ setValidity("ClusterExperiments", function(object) {
        | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
   }
-  if(!all(is.na(object@clusterMatrix)) & length(object@primaryIndex) != 1) {
-    return("If more than one set of cluster labels, a primary cluster must
-           be specified.")
-  }
-  if(!all(is.na(object@clusterMatrix)) &
-     (object@primaryIndex > NCOL(object@clusterMatrix) |
-      object@primaryIndex < 1)) {
-    return("`primaryIndex` out of bounds.")
-  }
-  if(!all(is.na(object@clusterMatrix)) &
-     NCOL(object@clusterMatrix) != length(object@clusterType)) {
-    return("`clusterType` must be the same length of `clusterMatrix`.")
-  }
+  if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
+      if(length(object@primaryIndex) != 1) return("If more than one set of cluster labels, a primary cluster must be specified.")
+    if(object@primaryIndex > NCOL(object@clusterMatrix) | object@primaryIndex < 1) return("`primaryIndex` out of bounds.")
+    if(NCOL(object@clusterMatrix) != length(object@clusterType)) return("`clusterType` must be the same length as NCOL of `clusterMatrix`.")
+    
+      #test that @clusterColors is proper form
+    if(length(object@clusterColors)!=NCOL(object@clusterMatrix)) return("'clusterColors' must be list of same length as NCOL of 'clusterMatrix")
+    testIsMatrix<-sapply(object@clusterColors,function(x){!is.null(dim(x))})
+    if(!all(testIsMatrix)) return("Each element of 'clusterColors' list must be a matrix")
+    testColorRows<-sapply(object@clusterColors,function(x){nrow(x)})
+    testClusterMat<-apply(object@clusterMatrix,2,function(x){length(unique(x))})
+    if(!all(testColorRows==testClusterMat)) return("each element of 'clusterColors' must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in clusterMatrix")
+    testColorCols1<-sapply(object@clusterColors,function(x){"color" %in% colnames(x)})
+    testColorCols2<-sapply(object@clusterColors,function(x){"clusterIds" %in% colnames(x)})
+    if(!all(testColorCols1) || !all(testColorCols2)) return("each element of 'clusterColors' must be matrix with at least 2 columns, and at least 2 columns have names 'clusterIds' and 'color'")
+    testColorCols1<-sapply(object@clusterColors,function(x){is.character(x)})
+    if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix of character values")
+    testColorCols1<-sapply(1:length(object@clusterColors),function(ii){
+        col<-object@clusterColors[[ii]]
+        x<-object@clusterMatrix[,ii]
+        y<-as.numeric(col[,"clusterIds"])
+        all(y %in% x)
+    })
+    if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix with column 'clusterIds' matching the corresponding integer valued clusterMatrix values")
+    
+  } 
+  if(length(object@orderSamples)!=NCOL(assay(object))) return("'orderSamples' must be of same length as number of samples (NCOL(assay(object)))") 
+  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) return("'orderSamples' must be values between 1 and the number of samples.") 
   return(TRUE)
 })
 
@@ -191,8 +206,6 @@ setMethod(
     }
     if(length(clusterType)==1) clusterType<-rep(clusterType,length=NCOL(clusters))
     if(is.null(clusterInfo)) clusterInfo<-rep(list(NULL),length=NCOL(clusters))
-    if(length(clusterType)!=NCOL(clusters)) stop("clusterType must be of length equal to number of clusters in `clusters`")
-    if(length(clusterInfo)!=NCOL(clusters)) stop("clusterType must be of length equal to number of clusters in `clusters`")
     out <- new("ClusterExperiments",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),
@@ -201,14 +214,16 @@ setMethod(
                clusterMatrix = clusters,
                primaryIndex = 1,
                clusterType = clusterType,
-               clusterInfo=clusterInfo
+               clusterInfo=clusterInfo,
+               clusterColors=.makeColors(clusters, colors=bigPalette)$colorList,
+               orderSamples=1:ncol(se)
     )
-    
+    validObject(out)
     return(out)
   })
 
 
-#replaced this with S4 function.
+#replaced this with S4 functions above.
 # clusterExperiments <- function(se, labels, transformation,clusterType="User",clusterInfo=list(NULL)) {
 #   if(NCOL(se) != length(labels)) {
 #     stop("`labels` must be a vector of length equal to the number of samples.")

@@ -1,3 +1,61 @@
+##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
+.makeIntegerClusters<-function(clMat){
+    if(!is.null(dim(clMat)) && ncol(clMat)>1){
+        return(apply(clMat,2,function(x){ #make it numbers from 1:length(x), except for -1,-2
+            vals<-unique(x[!x<0])
+            y<-match(x,vals)
+            y[x%in%c(-1,-2)]<-x[x<0]
+            return(y)
+        })  )
+    } 
+    else{
+        if(is.matrix(clMat)) clMat<-clMat[,1]
+        vals<-unique(clMat[clMat>=0])
+        y<-match(clMat,vals)
+        y[clMat%in%c(-1,-2)]<-clMat[clMat<0]
+        return(matrix(y,ncol=1))
+    }
+}
+##Universal way to convert matrix of clusters into colors
+.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey"){
+    if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
+    if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
+    cNames<-colnames(clMat)
+    clMat<-.makeIntegerClusters(clMat)
+    
+    if(ncol(clMat)>1){
+        colorMat<-apply(clMat,2,function(x){
+            y<-vector("character",length(x))
+            y[x>=0]<-colors[x[x>=0]]
+            return(y)
+        })
+    }
+    else{
+        if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
+        y<-vector("character",length(x))
+        y[x>=0]<-colors[x[x>=0]]
+        colorMat<-matrix(y,ncol=1)
+    }
+    colorMat[clMat== -1]<-unassignedColor
+    colorMat[clMat== -2]<-missingColor
+
+    #convert ids into list of matrices:
+    colorList<-lapply(1:ncol(clMat),function(ii){
+        col<-colorMat[,ii]
+        ids<-clMat[,ii]
+        uniqueIds<-unique(ids)
+        mIds<-match(uniqueIds,ids)
+        uniqueCols<-col[mIds]
+        mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
+        rownames(mat)<-uniqueIds
+        return(mat)
+    })
+    names(colorList)<-cNames
+    colnames(colorMat)<-cNames
+    return(list(colorList=colorList,convertedToColor=colorMat))
+}
+
+
 ##Universal way to change character indication of clusterType into indices.
 .TypeIntoIndices<-function(x,whClusters=c("pipeline","all")){
   test<-try(match.arg(whClusters),silent=TRUE)
@@ -9,7 +67,7 @@
           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
         }))
       }
-      else stop("There are no (current) pipeline clusters in the ClusterExperiments object")
+      else stop("There are no (current) pipeline clusters in the ClusterExperiment object")
     }
     if(test=="all") wh<-1:ncol(allClusters(x))
   }

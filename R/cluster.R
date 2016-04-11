@@ -148,20 +148,18 @@ setMethod(
     ##########
     ## Convert to clusterExperiments Object
     ##########
-    
-    retval <- clusterExperiments(origX, outlist$clustering, transformation=transFun)
-    retval@clusterInfo <- list(list(clusterInfo = outlist$clusterInfo,
-                                whyStop = outlist$whyStop,
-                                subsample = subsample,
-                                sequential = sequential,
-                                clusterFunction = clusterFunction,
-                                clusterDArgs = clusterDArgs,
-                                subsampleArgs = subsampleArgs,
-                                seqArgs = seqArgs,
-                                dimReduce=dimReduce,
-                                ndims=ndims
-                               ))
-    retval@clusterType <- "clusterAll"
+    clInfo<-list(list(clusterInfo = outlist$clusterInfo,
+                      whyStop = outlist$whyStop,
+                      subsample = subsample,
+                      sequential = sequential,
+                      clusterFunction = clusterFunction,
+                      clusterDArgs = clusterDArgs,
+                      subsampleArgs = subsampleArgs,
+                      seqArgs = seqArgs,
+                      dimReduce=dimReduce,
+                      ndims=ndims
+    ))
+    retval <- clusterExperiments(origX, outlist$clustering, transformation=transFun,clusterInfo=clInfo,clusterType="clusterAll")
     if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
     validObject(retval)
     return(retval)

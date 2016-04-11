@@ -111,10 +111,7 @@ setMethod(
     ## Convert to clusterExperiments Object
     ##########
     if("clMat" %in% names(outval)){
-      retval <- clusterExperiments(origX, outval$clMat[,1], transformation=transFun)
-      retval@clusterMatrix<-outval$clMat
-      retval@clusterInfo<-outval$clusterInfo
-      retval@clusterType <- rep("clusterMany",NCOL(outval$clMat))
+      retval <- clusterExperiments(origX, outval$clMat, transformation=transFun,clusterInfo=outval$clusterInfo,clusterType="clusterMany")
       validObject(retval)
       return(retval)
     }
@@ -285,7 +282,6 @@ setMethod(
     if(class(outval)=="ClusterExperiments"){
       ##Check if clusterMany already ran previously
       x<-.updateCurrentPipeline(x,eraseOld)
-      
       retval<-addClusters(outval,x)
       validObject(retval)
       return(retval)
@@ -309,13 +305,7 @@ setMethod(
              transFun=transFun,isCount=isCount,...
     )
     if(class(outval)=="ClusterExperiments"){
-      retval <- clusterExperiments(x, primaryCluster(outval), transformation(outval))
-      retval@clusterMatrix<-outval@clusterMatrix
-      retval@clusterInfo <- clusterInfo(outval)
-      retval@clusterType <- clusterType(outval) 
-      validObject(retval)
-      return(retval)
-      
+        return(outval)
     }  #need to redo it to make sure get any other part of summarized experiment
     else return(outval)  
   }

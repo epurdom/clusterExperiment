@@ -7,13 +7,47 @@ setGeneric(
 )
 
 
-
+#' @rdname ClusterExperiments-class
+setGeneric(
+    name = "clusterColors",
+    def = function(x) {
+        standardGeneric("clusterColors")
+    }
+)
+#' @rdname ClusterExperiments-class
+setGeneric(
+    name = "clusterColors<-",
+    def = function(object, value) {
+        standardGeneric("clusterColors<-")
+    }
+)
+#' @rdname ClusterExperiments-class
+setGeneric(
+    name = "orderSamples",
+    def = function(x) {
+        standardGeneric("orderSamples")
+    }
+)
+#' @rdname ClusterExperiments-class
+setGeneric(
+    name = "orderSamples<-",
+    def = function(object, value) {
+        standardGeneric("orderSamples<-")
+    }
+)
 #' @rdname ClusterExperiments-class
 setGeneric(
   name = "clusterLabels",
   def = function(x, whichClusters) {
     standardGeneric("clusterLabels")
   }
+)
+#' @rdname ClusterExperiments-class
+setGeneric(
+    name = "clusterLabels<-",
+    def = function(object, value) {
+        standardGeneric("clusterLabels<-")
+    }
 )
 #' @rdname ClusterExperiments-class
 setGeneric(
@@ -37,13 +71,7 @@ setGeneric(
   }
 )
 
-#' @rdname ClusterExperiments-class
-setGeneric(
-  name = "clusterLabels<-",
-  def = function(object, value) {
-    standardGeneric("clusterLabels<-")
-  }
-)
+
 #' @rdname ClusterExperiments-class
 setGeneric(
   name = "pipelineClusters",

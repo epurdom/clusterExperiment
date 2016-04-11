@@ -3,7 +3,7 @@
 \docType{methods}
 \name{clusterAll}
 \alias{clusterAll}
-\alias{clusterAll,ClusterExperiments-method}
+\alias{clusterAll,ClusterExperiment-method}
 \alias{clusterAll,SummarizedExperiment-method}
 \alias{clusterAll,matrix-method}
 \alias{clusterAll-methods}
@@ -19,7 +19,7 @@ clusterAll(x, ...)
 
 \S4method{clusterAll}{SummarizedExperiment}(x, ...)
 
-\S4method{clusterAll}{ClusterExperiments}(x, ...)
+\S4method{clusterAll}{ClusterExperiment}(x, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (genes in rows)}
@@ -52,10 +52,10 @@ iteration; otherwise the distance matrix is dist(x).}
 \item{ndims}{integer An integer identifying how many dimensions to reduce to in the reduction specified by \code{dimReduce}}
 }
 \value{
-A \code{\link{ClusterExperiments}} object.
+A \code{\link{ClusterExperiment}} object.
 }
 \description{
-Given a data matrix, SummarizedExperiment, or ClusterExperiments object,
+Given a data matrix, SummarizedExperiment, or ClusterExperiment object,
 this function will find clusters.
 }
 \details{
