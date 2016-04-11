@@ -203,6 +203,7 @@ setGeneric(
     standardGeneric("removeClusters")
   }
 )
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "removeUnclustered",
   def = function(x) {
@@ -210,9 +211,18 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "clusterInfo",
   def = function(x) {
     standardGeneric("clusterInfo")
   }
+)
+
+#' @rdname ClusterExperiment-class
+setGeneric(
+    name = "convertClusterColors",
+    def = function(x) {
+        standardGeneric("convertClusterColors")
+    }
 )

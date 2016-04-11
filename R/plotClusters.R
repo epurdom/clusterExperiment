@@ -187,14 +187,16 @@ setMethod(
 		clusters<-t(clusters) #original code had clusters in rows, rather than columns.
 		if(any(apply(clusters,1,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
 		if(any(as.character(clusters)%in%c("-1","-2"))){
+            ###To Do: somehow reuse internal code of .makeColors to do this.
+		    #align them, including "-1","-2"
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
 				leg<-out$groupToColorLegend[[i]]
-				if(any(wh<-leg[,"Original"]== -1))
-				leg[wh,"Color"]<-unassignedColor
-				if(any(wh<-leg[,"Original"]== -2))
-				leg[wh,"Color"]<-missingColor
+				if(any(wh<-leg[,"clusterIds"]== -1))
+				leg[wh,"color"]<-unassignedColor
+				if(any(wh<-leg[,"clusterIds"]== -2))
+				leg[wh,"color"]<-missingColor
 				return(leg)
 			})
 			names(newColorLeg)<-names(out$groupToColorLegend)
@@ -263,15 +265,14 @@ setMethod(
 			else pastColorVector<-colorM[1,]
 	}	
 	dimnames(colorM)<-dimnames(clusters)
-	allColors<-unique(as.vector(colorM))
+	
 	#give integer values to alignCl
+	allColors<-unique(as.vector(colorM))
 	if(nrow(colorM)>1) alignCl<-apply(colorM,2,function(x){match(x,allColors)})
 	else alignCl<-matrix(match(colorM[1,],allColors),nrow=1)
-	#browser()
-
 	dimnames(alignCl)<-dimnames(clusters)
 	
-  ###Order the samples
+    ###Order the samples
 	if(is.null(index)){
 		tmp<-lapply(1:nrow(alignCl),function(i){unlist(alignCl[i,])})
 		index<-do.call("order",tmp)
@@ -280,7 +281,7 @@ setMethod(
 	
 	if(plot) .clusterTrackingPlot(t(colorM[,index,drop=FALSE]),...)
 	groupToColorLegend<-lapply(1:nrow(clusters),function(ii){
-		mat<-cbind("Original"=unlist(clusters[ii,]),"Aligned"=unlist(alignCl[ii,]),"Color"=unlist(colorM[ii,]))
+		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
 		(unique(mat))
 	})
@@ -458,15 +459,27 @@ setMethod(
 }
 
 
+##from colorList, make color matrix
+convertClusterColors<-function(ceObject,output=c("aheatmap","matrix")){
+    if(!inherits(ceObject,"ClusterExperiments")) stop("ceObject must be a ClusterExperiments object")
+    output<-match.arg(clusterColors)
+    colorList<-clusterColors(ceObject)
+    if(output=="aheatmap"){
+        
+    }
+    if(output=="matrix"){
+        
+    }
+}
 #' Make color annotation for input to plotHeatmap from output of plotClusters
 #'
 #' @param trackingOut the output from \code{\link{plotClusters}}
 #' @rdname plotClusters
 makeAnnoColor<-function(trackingOut){
-	lapply(trackingOut$groupToColorLegend,function(x){
-		z<-as.character(x[,"Color"])
-		names(z)<-as.character(as.numeric(x[,"Original"]))
-		return(z)
-	})
+    lapply(trackingOut$groupToColorLegend,function(x){
+        z<-as.character(x[,"Color"])
+        names(z)<-as.character(as.numeric(x[,"Original"]))
+        return(z)
+    })
 }
 

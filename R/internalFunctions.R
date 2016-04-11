@@ -17,23 +17,25 @@
     }
 }
 ##Universal way to convert matrix of clusters into colors
-.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey"){
+.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey",makeIntegers=TRUE){
     if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
     if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
     cNames<-colnames(clMat)
-    clMat<-.makeIntegerClusters(clMat)
+    if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from plotClusters
     
     if(ncol(clMat)>1){
         colorMat<-apply(clMat,2,function(x){
             y<-vector("character",length(x))
-            y[x>=0]<-colors[x[x>=0]]
+            currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
+            y[x>0]<-currcolors[x[x>0]]
             return(y)
         })
     }
     else{
         if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
         y<-vector("character",length(x))
-        y[x>=0]<-colors[x[x>=0]]
+        currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
+        y[x>=0]<-currcolors[x[x>=0]]
         colorMat<-matrix(y,ncol=1)
     }
     colorMat[clMat== -1]<-unassignedColor
@@ -54,7 +56,6 @@
     colnames(colorMat)<-cNames
     return(list(colorList=colorList,convertedToColor=colorMat))
 }
-
 
 ##Universal way to change character indication of clusterType into indices.
 .TypeIntoIndices<-function(x,whClusters=c("pipeline","all")){
