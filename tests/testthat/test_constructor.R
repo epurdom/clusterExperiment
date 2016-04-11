@@ -1,4 +1,4 @@
-library(clusterExperiments)
+library(clusterExperiment)
 
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
@@ -6,31 +6,31 @@ labels <- gl(5, 2)
 labMat<-cbind(labels,labels)
 se <- SummarizedExperiment(mat)
 
-cc <- clusterExperiments(mat, as.numeric(labels), transformation = function(x){x})
-cc2 <- clusterExperiments(se, as.numeric(labels), transformation = function(x){x})
-test_that("`clusterExperiments` constructor works with matrix and
+cc <- clusterExperiment(mat, as.numeric(labels), transformation = function(x){x})
+cc2 <- clusterExperiment(se, as.numeric(labels), transformation = function(x){x})
+test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_equal(cc, cc2)
-            expect_error(clusterExperiments(mat), "missing")
-            expect_error(clusterExperiments(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
-            expect_error(clusterExperiments(mat, as.numeric(labels)), "missing")
-            expect_error(clusterExperiments(mat, labels[1:2], function(x){x}),
-                         "must be a vector of length equal to the number of samples")
-            expect_error(clusterExperiments(as.data.frame(mat), labels, function(x){x}),
+            expect_error(clusterExperiment(mat), "missing")
+            expect_error(clusterExperiment(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
+            expect_error(clusterExperiment(mat, as.numeric(labels)), "missing")
+            expect_error(clusterExperiment(mat, labels[1:2], function(x){x}),
+                         "must be a vector of length equal")
+            expect_error(clusterExperiment(as.data.frame(mat), labels, function(x){x}),
                          "unable to find an inherited method for function")
-            expect_warning(clusterExperiments(mat, as.character(labels), function(x){x}),"was coerced to integer values")
-            expect_warning(clusterExperiments(mat, labels, function(x){x}), "was coerced to numeric")
+            expect_warning(clusterExperiment(mat, as.character(labels), function(x){x}),"was coerced to integer values")
+            expect_warning(clusterExperiment(mat, labels, function(x){x}), "was coerced to numeric")
 
-            expect_is(cc, "ClusterExperiments")
+            expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")
             
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
             expect_equal(nClusters(cc),1)
 
-            clusterExperiments(se,labMat,transformation=function(x){x})
-            expect_warning(clusterExperiments(se,labels,transformation=function(x){x}))
-            expect_warning(clusterExperiments(se,as.character(labels),transformation=function(x){x}))
+            clusterExperiment(se,labMat,transformation=function(x){x})
+            expect_warning(clusterExperiment(se,labels,transformation=function(x){x}))
+            expect_warning(clusterExperiment(se,as.character(labels),transformation=function(x){x}))
             
                       })
 
@@ -47,7 +47,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             primaryClusterIndex(c1) <- 2
             expect_false(all(primaryCluster(c1)==primaryCluster(cc)))
 
-              #check adding a clusterExperimentsObject
+              #check adding a clusterExperimentObject
             c3<-addClusters(cc,cc)
             expect_equal(NCOL(allClusters(c3)), 2)
             expect_equal(length(clusterType(c3)), 2)
@@ -105,8 +105,8 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             clusterColors(c4)[1]<-x
             clusterColors(c4)[[1]]<-x[[1]]
             
-            expect_error(clusterColors(c4)[2]<-x,"must be matrix with number of rows equal to the number of clusters")
-            expect_error(clusterColors(c4)[[2]]<-x[[1]],"must be matrix with number of rows equal to the number of clusters")
+            expect_error(clusterColors(c4)[2]<-x,"must be matrix with")
+            expect_error(clusterColors(c4)[[2]]<-x[[1]],"must be matrix with")
         })
 test_that("accessing transformed data works as promised", 
           {

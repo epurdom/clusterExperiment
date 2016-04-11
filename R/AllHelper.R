@@ -1,8 +1,8 @@
 ## subsetting
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "[",
-  signature = c("ClusterExperiments", "ANY", "ANY"),
+  signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
     out <- callNextMethod()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j,])
@@ -13,10 +13,10 @@ setMethod(
 )
 
 ## show
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "show",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
@@ -31,19 +31,19 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "transformation",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@transformation)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setReplaceMethod(
   f = "clusterLabels",
-  signature = signature(object="ClusterExperiments", value="character"),
+  signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(allClusters(object))) stop("value must be a vector of length equal to NCOL(allClusters(object)):",NCOL(allClusters(object)))
 #note, don't currently require unique labels. Probably best, since mainly used for plotting
@@ -53,10 +53,10 @@ setReplaceMethod(
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterLabels",
-  signature = signature(x = "ClusterExperiments",whichClusters="numeric"),
+  signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
   definition = function(x, whichClusters){
     if(!all(whichClusters %in% 1:NCOL(allClusters(x)))) stop("Invalid indices for clusterLabels")
     labels<-colnames(allClusters(x))[whichClusters]
@@ -64,78 +64,78 @@ setMethod(
     return(labels)
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterLabels",
-  signature = signature(x = "ClusterExperiments", whichClusters ="character"),
+  signature = signature(x = "ClusterExperiment", whichClusters ="character"),
   definition = function(x, whichClusters="all"){
     wh<-.TypeIntoIndices(x,whClusters=whichClusters)
     return(clusterLabels(x,wh))
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterLabels",
-  signature = signature(x = "ClusterExperiments",whichClusters="missing"),
+  signature = signature(x = "ClusterExperiment",whichClusters="missing"),
   definition = function(x, whichClusters){
     return(clusterLabels(x,whichClusters="all"))
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "nClusters",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x){
     return(NCOL(allClusters(x)))
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "nFeatures",
-  signature =  "ClusterExperiments",
+  signature =  "ClusterExperiment",
   definition = function(x){
     return(NROW(assay(x)))
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "nSamples",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x){
     return(NCOL(assay(x)))
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "allClusters",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@clusterMatrix)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "primaryCluster",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@clusterMatrix[,primaryClusterIndex(x)])
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "primaryClusterIndex",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@primaryIndex)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setReplaceMethod(
   f = "primaryClusterIndex",
-  signature = signature("ClusterExperiments", "numeric"),
+  signature = signature("ClusterExperiment", "numeric"),
   definition = function(object, value) {
     object@primaryIndex <- value
     validObject(object)
@@ -143,37 +143,37 @@ setReplaceMethod(
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "coClustering",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@coClustering)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "dendrogram",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@dendrogram)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterType",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@clusterType)
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "removeClusters",
-  signature = signature("ClusterExperiments","character"),
+  signature = signature("ClusterExperiment","character"),
   definition = function(x, whichRemove,exactMatch=TRUE) {
     if(exactMatch) wh<-which(clusterType(x) %in% whichRemove)
     else{
@@ -182,10 +182,10 @@ setMethod(
     removeClusters(x,wh)
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "removeClusters",
-  signature = signature("ClusterExperiments","numeric"),
+  signature = signature("ClusterExperiment","numeric"),
   definition = function(x, whichRemove) {
    #browser()
     if(any(whichRemove>NCOL(allClusters(x)))) stop("invalid indices -- must be between 1 and",NCOL(allClusters(x)))
@@ -199,7 +199,7 @@ setMethod(
     newClusterColors<-clusterColors(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
     else pIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
-    retval<-clusterExperiments(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
+    retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
     validObject(retval)
     clusterColors(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
@@ -214,10 +214,10 @@ setMethod(
 #' @rdname pipelineClusters
 setMethod(
   f = "pipelineClusterDetails",
-  signature = signature("ClusterExperiments"),
+  signature = signature("ClusterExperiment"),
   definition = function(x) {
     
-    if(length(clusterType(x))!=NCOL(allClusters(x))) stop("Invalid ClusterExperiments object")
+    if(length(clusterType(x))!=NCOL(allClusters(x))) stop("Invalid ClusterExperiment object")
     #check if old iterations already exist; note assumes won't have previous iteration unless have current one. 
     existingOld<-lapply(.pipelineValues,function(ch){
       regex<-paste(ch,"_",sep="")
@@ -244,7 +244,7 @@ setMethod(
 #' @rdname pipelineClusters
 setMethod(
   f = "pipelineClusterTable",
-  signature = signature("ClusterExperiments"),
+  signature = signature("ClusterExperiment"),
   definition = function(x){
     ppIndex<-pipelineClusterDetails(x)
     table(Type=factor(ppIndex[,"type"],levels=.pipelineValues),Iteration=factor(ppIndex[,"iteration"]))
@@ -253,7 +253,7 @@ setMethod(
 #' @rdname pipelineClusters
 setMethod(
   f = "pipelineClusters",
-  signature = signature("ClusterExperiments"),
+  signature = signature("ClusterExperiment"),
   definition = function(x,iteration=0) {
     ppIndex<-pipelineClusterDetails(x)
     if(is.na(iteration)) iteration<-unique(ppIndex[,"iteration"])
@@ -269,10 +269,10 @@ setMethod(
 }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
     f = "addClusters",
-    signature = signature("ClusterExperiments", "ClusterExperiments"),
+    signature = signature("ClusterExperiment", "ClusterExperiment"),
     definition = function(x, y) {
         if(!all(assay(y) == assay(x))) {
             stop("Cannot merge clusters from different data.")
@@ -285,19 +285,19 @@ setMethod(
         return(x)
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
     f = "addClusters",
-    signature = signature("ClusterExperiments", "matrix"),
+    signature = signature("ClusterExperiment", "matrix"),
     definition = function(x, y, type="User") {
-        ccObj<-clusterExperiments(assay(x),y,transformation=transformation(x),clusterType=type)
+        ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterType=type)
         addClusters(x,ccObj)
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "addClusters",
-  signature = signature("ClusterExperiments", "numeric"),
+  signature = signature("ClusterExperiment", "numeric"),
   definition = function(x, y, ...) {
     addClusters(x,matrix(y,ncol=1),...)
   }
@@ -305,37 +305,37 @@ setMethod(
 
 
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "removeUnclustered",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x[,primaryCluster(x) > 0])
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterInfo",
-  signature = "ClusterExperiments",
+  signature = "ClusterExperiment",
   definition = function(x) {
     return(x@clusterInfo)
   }
 )
 #need to implement replacement functions for these clusterInfo, clusterType, clusterColors
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
     f = "clusterColors",
-    signature = "ClusterExperiments",
+    signature = "ClusterExperiment",
     definition = function(x) {
         return(x@clusterColors)
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setReplaceMethod(
     f = "clusterColors",
-    signature = signature(object="ClusterExperiments", value="list"),
+    signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
         object@clusterColors<-value
         validObject(object)
@@ -343,18 +343,18 @@ setReplaceMethod(
     }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
     f = "orderSamples",
-    signature = "ClusterExperiments",
+    signature = "ClusterExperiment",
     definition = function(x) {
         return(x@orderSamples)
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setReplaceMethod(
     f = "orderSamples",
-    signature = signature(object="ClusterExperiments", value="numeric"),
+    signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
         object@orderSamples<-value
         validObject(object)
@@ -363,10 +363,10 @@ setReplaceMethod(
 )
 
 # # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of clusterMany (and compatible with it)
-# #' @rdname ClusterExperiments-class
+# #' @rdname ClusterExperiment-class
 # setMethod(
 #   f= "paramValues",
-#   signature = "ClusterExperiments",
+#   signature = "ClusterExperiment",
 #   definition=function(x,type){
 #     whCC<-which(clusterType(x)==type)
 #     if(length(wwCC)==0) stop("No clusterings of type equal to ",type,"are found")

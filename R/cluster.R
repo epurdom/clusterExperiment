@@ -1,6 +1,6 @@
 #' General wrap-around for all clustering methods we're trying.
 #'
-#' Given a data matrix, SummarizedExperiment, or ClusterExperiments object,
+#' Given a data matrix, SummarizedExperiment, or ClusterExperiment object,
 #' this function will find clusters.
 #'
 #' @param x the data on which to run the clustering (genes in rows)
@@ -27,7 +27,7 @@
 #' clusterDArgs or subsampleArgs will not do anything and will produce a warning
 #' to that effect.
 #'
-#' @return A \code{\link{ClusterExperiments}} object.
+#' @return A \code{\link{ClusterExperiment}} object.
 #'
 #' @examples
 #' data(simData)
@@ -47,7 +47,7 @@
 #' sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
 #' @aliases clusterAll clusterAll-methods clusterAll,matrix-method
-#' clusterAll,ClusterExperiments-method
+#' clusterAll,ClusterExperiment-method
 #' @rdname clusterAll
 setMethod(
   f = "clusterAll",
@@ -69,7 +69,7 @@ setMethod(
     transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
     x<-transObj$x
     if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
-    transFun<-transObj$transFun #need it later to create clusterExperimentsObject
+    transFun<-transObj$transFun #need it later to create clusterExperimentObject
     N <- dim(x)[2]
     
     ##########
@@ -146,7 +146,7 @@ setMethod(
     }
 
     ##########
-    ## Convert to clusterExperiments Object
+    ## Convert to clusterExperiment Object
     ##########
     clInfo<-list(list(clusterInfo = outlist$clusterInfo,
                       whyStop = outlist$whyStop,
@@ -159,7 +159,7 @@ setMethod(
                       dimReduce=dimReduce,
                       ndims=ndims
     ))
-    retval <- clusterExperiments(origX, outlist$clustering, transformation=transFun,clusterInfo=clInfo,clusterType="clusterAll")
+    retval <- clusterExperiment(origX, outlist$clustering, transformation=transFun,clusterInfo=clInfo,clusterType="clusterAll")
     if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
     validObject(retval)
     return(retval)
@@ -172,7 +172,7 @@ setMethod(
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, ...) {
     outval <- clusterAll(assay(x), ...)
-    retval <- clusterExperiments(x, primaryCluster(outval), transformation(outval))
+    retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval) #shouldn't this add to the end
     return(retval)
@@ -183,14 +183,14 @@ setMethod(
 #' @rdname clusterAll
 setMethod(
   f = "clusterAll",
-  signature = signature(x = "ClusterExperiments"),
+  signature = signature(x = "ClusterExperiment"),
   definition = function(x, ...) {
 
     outval <- clusterAll(assay(x),...) 
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it
-    #     retval <- clusterExperiments(x, primaryCluster(outval), transformation(outval))
+    #     retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
     #     retval@clusterInfo <- clusterInfo(outval)
     #     retval@clusterType <- clusterType(outval)
     

@@ -1,13 +1,13 @@
-library(clusterExperiments)
+library(clusterExperiment)
 data(simData)
 if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version.
 
-test_that("`clusterAll` works with matrix, ClusterExperiments objects, and
+test_that("`clusterAll` works with matrix, ClusterExperiment objects, and
           SummarizedExperiments", {
             clustNothing <- clusterAll(simData, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
-            expect_is(clustNothing, "ClusterExperiments")
+            expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
             
  
@@ -17,7 +17,7 @@ test_that("`clusterAll` works with matrix, ClusterExperiments objects, and
                                        clusterDArgs=list(k=3),isCount=FALSE)
             expect_equal(clustNothing, clustNothing2)
 
-            #test running on clusterExperiments Object -- should add the new clustering
+            #test running on clusterExperiment Object -- should add the new clustering
             clustNothing3 <- clusterAll(clustNothing2, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=4),is=FALSE)

@@ -1,15 +1,15 @@
 
-#' @title Class ClusterExperiments
+#' @title Class ClusterExperiment
 #'
-#' @description \code{ClusterExperiments} is a class that extends
+#' @description \code{ClusterExperiment} is a class that extends
 #' \code{SummarizedExperiment} and is used to store the single-cell RNA-seq data
 #' and clustering information.
 #'
 #' @docType class
-#' @aliases ClusterExperiments ClusterExperiments-class clusterExperiments
+#' @aliases ClusterExperiment ClusterExperiment-class clusterExperiment
 #'
 #' @description In addition to the slots of the \code{SummarizedExperiment}
-#' class, the \code{ClusterExperiments} object has the following additional
+#' class, the \code{ClusterExperiment} object has the following additional
 #' slots:
 #' @slot transformation function. Function to transform the data by when methods
 #' that assume normal-like data (e.g. log)
@@ -47,12 +47,12 @@
 #' @slot orderSamples a numeric vector (of integers) defining the order of
 #' samples to be used for plotting of samples. Usually set internally by other
 #' functions.
-#' @name ClusterExperiments-class
-#' @rdname ClusterExperiments-class
+#' @name ClusterExperiment-class
+#' @rdname ClusterExperiment-class
 #' @exportClass
 #'
 setClass(
-  Class = "ClusterExperiments",
+  Class = "ClusterExperiment",
   contains = "SummarizedExperiment",
   slots = list(
     transformation="function",
@@ -70,7 +70,7 @@ setClass(
 ## One question is how to extend the "[" method, i.e., how do we subset the co-occurance matrix and the dendrogram?
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
 
-setValidity("ClusterExperiments", function(object) {
+setValidity("ClusterExperiment", function(object) {
   if(length(assays(object)) != 1) {
     return("There must be one assay slot.")
   }
@@ -166,8 +166,8 @@ setValidity("ClusterExperiments", function(object) {
   return(TRUE)
 })
 
-#' @description The constructor \code{clusterExperiments} creates an object of
-#' the class \code{ClusterExperiments}. However, the typical way of creating
+#' @description The constructor \code{clusterExperiment} creates an object of
+#' the class \code{ClusterExperiment}. However, the typical way of creating
 #' these objects is the result of a call to \code{clusterMany} or
 #' \code{clusterAll}.
 #'
@@ -181,63 +181,63 @@ setValidity("ClusterExperiments", function(object) {
 #'performing steps that assume normal-like (i.e. constant variance), such as
 #'the log
 #'
-#'@return A \code{ClusterExperiments} object.
+#'@return A \code{ClusterExperiment} object.
 #'
 #'@examples
 #'
 #'se <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterExperiments(se, as.numeric(labels),
+#'cc <- clusterExperiment(se, as.numeric(labels),
 #'                         transformation = function(x){x})
 #'
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
-  name = "clusterExperiments",
+  name = "clusterExperiment",
   def = function(se,  clusters,...) {
-    standardGeneric("clusterExperiments")
+    standardGeneric("clusterExperiment")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiments",
+  f = "clusterExperiment",
   signature = signature("matrix","ANY"),
   definition = function(se, clusters, ...){
-    clusterExperiments(SummarizedExperiment(se), clusters, ...)
+    clusterExperiment(SummarizedExperiment(se), clusters, ...)
   })
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiments",
+  f = "clusterExperiment",
   signature = signature("SummarizedExperiment", "numeric"),
   definition = function(se, clusters, ...){
     if(NCOL(se) != length(clusters)) {
       stop("`clusters` must be a vector of length equal to the number of
            samples.")
     }
-  clusterExperiments(se,matrix(data=clusters, ncol=1),...)
+  clusterExperiment(se,matrix(data=clusters, ncol=1),...)
 })
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiments",
+  f = "clusterExperiment",
   signature = signature("SummarizedExperiment","character"),
   definition = function(se, clusters,...){
     clusters <- as.numeric(factor(clusters))
     warning("The character vector `clusters` was coerced to integer values (one
             per cluster)")
-    clusterExperiments(se,clusters,...)
+    clusterExperiment(se,clusters,...)
     })
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiments",
+  f = "clusterExperiment",
   signature = signature("SummarizedExperiment","factor"),
   definition = function(se, clusters,...){
     clusters <- as.numeric(clusters)
     warning("The factor `clusters` was coerced to numeric.")
-    clusterExperiments(se,clusters,...)
+    clusterExperiment(se,clusters,...)
   })
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiments",
+  f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
   definition = function(se, clusters, transformation,clusterType="User",
                         clusterInfo=NULL){
@@ -262,7 +262,7 @@ setMethod(
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
 
-    out <- new("ClusterExperiments",
+    out <- new("ClusterExperiment",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),
                colData = colData(se),

@@ -10,9 +10,9 @@ clMatNew<-apply(allClusters(cl),2,function(x){
 	return(x)
 	})
 	#make a new object with -1 values
-cl3<-clusterExperiments(assay(cl),clMatNew,transformation=transformation(cl))
+cl3<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
 
-test_that("`plotClusters` works with matrix, ClusterExperiments objects", {
+test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
   plotClusters(cl) 
   plotClusters(cl3) #test -1
   x<-plotClusters(cl2,orderClusters="pipeline")

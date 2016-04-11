@@ -7,63 +7,63 @@ setGeneric(
 )
 
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
     name = "clusterColors",
     def = function(x) {
         standardGeneric("clusterColors")
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
     name = "clusterColors<-",
     def = function(object, value) {
         standardGeneric("clusterColors<-")
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
     name = "orderSamples",
     def = function(x) {
         standardGeneric("orderSamples")
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
     name = "orderSamples<-",
     def = function(object, value) {
         standardGeneric("orderSamples<-")
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "clusterLabels",
   def = function(x, whichClusters) {
     standardGeneric("clusterLabels")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
     name = "clusterLabels<-",
     def = function(object, value) {
         standardGeneric("clusterLabels<-")
     }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "nClusters",
   def = function(x) {
     standardGeneric("nClusters")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "nFeatures",
   def = function(x) {
     standardGeneric("nFeatures")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "nSamples",
   def = function(x) {
@@ -72,28 +72,28 @@ setGeneric(
 )
 
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "pipelineClusters",
   def = function(x,iteration=0) {
     standardGeneric("pipelineClusters")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "pipelineClusterDetails",
   def = function(x) {
     standardGeneric("pipelineClusterDetails")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "pipelineClusterTable",
   def = function(x) {
     standardGeneric("pipelineClusterTable")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "paramValues",
   def = function(x,type) {
@@ -125,14 +125,14 @@ setGeneric(
     standardGeneric("plotHeatmap")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "transformation",
   def = function(x) {
     standardGeneric("transformation")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
   setGeneric(
   name = "transform",
   def = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
@@ -140,7 +140,7 @@ setGeneric(
   }
 )
 
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "allClusters",
   def = function(x) {
@@ -196,7 +196,7 @@ setGeneric(
     standardGeneric("addClusters")
   }
 )
-#' @rdname ClusterExperiments-class
+#' @rdname ClusterExperiment-class
 setGeneric(
   name = "removeClusters",
   def = function(x, whichRemove,exactMatch=TRUE) {

@@ -95,7 +95,7 @@ There are two parts to the basic clustering sequence:
 We will load some simulated data that comes with the package with four underlying clusters. First we will do just basic clustering of the data for 4 clusters using `pam` on the standard distance matrix. 
 
 ```{r basicExample}
-library(clusterExperiments)
+library(clusterExperiment)
 data(simData)
 simpleCluster<-clusterAll(simData, subsample=FALSE, 
                           sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))

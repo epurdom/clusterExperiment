@@ -1,12 +1,12 @@
-library(clusterExperiments)
+library(clusterExperiment)
 data(simData)
 if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
-test_that("`clusterMany` works with matrix, list of data, ClusterExperiments objects, and
+test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {
             clustNothing <- clusterMany(simData, ks=c(3,4),clusterMethod="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        isCount=FALSE,verbose=FALSE)
-            expect_is(clustNothing, "ClusterExperiments")
+            expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
             clusterLabels(clustNothing,whichClusters="pipeline")
             
@@ -16,7 +16,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiments obj
                                             isCount=FALSE,verbose=FALSE)
             expect_equal(clustNothing, clustNothing2)
             
-            #test running on clusterExperiments Object -- should add the new clustering
+            #test running on clusterExperiment Object -- should add the new clustering
             #not yet implemented
             test <- clusterAll(se, clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,

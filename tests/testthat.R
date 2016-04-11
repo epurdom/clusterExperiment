@@ -1,4 +1,4 @@
 library(testthat)
-library(clusterExperiments)
+library(clusterExperiment)
 
-test_check("clusterExperiments")
+test_check("clusterExperiment")

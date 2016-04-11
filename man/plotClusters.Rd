@@ -4,20 +4,20 @@
 \name{plotClusters}
 \alias{makeAnnoColor}
 \alias{plotClusters}
-\alias{plotClusters,ClusterExperiments,missing-method}
-\alias{plotClusters,ClusterExperiments,numeric-method}
+\alias{plotClusters,ClusterExperiment,missing-method}
+\alias{plotClusters,ClusterExperiment,numeric-method}
 \alias{plotClusters,matrix,missing-method}
 \alias{plotClusters,matrix,numeric-method}
 \title{Functions for Visualizing assigments of samples to clusters across multiple clusterings}
 \usage{
 plotClusters(clusters, orderClusters, ...)
 
-\S4method{plotClusters}{ClusterExperiments,character}(clusters,
+\S4method{plotClusters}{ClusterExperiment,character}(clusters,
   orderClusters = c("pipeline", "all"), ...)
 
-\S4method{plotClusters}{ClusterExperiments,numeric}(clusters, orderClusters, ...)
+\S4method{plotClusters}{ClusterExperiment,numeric}(clusters, orderClusters, ...)
 
-\S4method{plotClusters}{ClusterExperiments,missing}(clusters, orderClusters, ...)
+\S4method{plotClusters}{ClusterExperiment,missing}(clusters, orderClusters, ...)
 
 \S4method{plotClusters}{matrix,missing}(clusters, orderClusters, ...)
 
@@ -36,7 +36,7 @@ makeAnnoColor(trackingOut)
 each row a sample. The plotting will plot them in order of this matrix,
 and their order influences the plot greatly.}
 
-\item{orderClusters}{If numeric, a predefined order for the clusterings in the plot. If x is a ClusterExperiments object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.}
+\item{orderClusters}{If numeric, a predefined order for the clusterings in the plot. If x is a ClusterExperiment object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.}
 
 \item{...}{for \code{plotClusters} arguments passed to \code{\link{plot}} if \code{add=FALSE}.}
 
@@ -152,7 +152,7 @@ x[wh]<- -2
 return(x)
 })
 #make a new object
-cl2<-clusterExperiments(assay(cl),clMatNew,transformation=transformation(cl))
+cl2<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
 plotClusters(cl2)
 }
 \author{

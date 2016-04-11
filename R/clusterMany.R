@@ -3,7 +3,7 @@
 #' Given a range of k's, this funciton will return a matrix with the clustering of the samples
 #' across the range, which can be passed to \code{plotClusters} for visualization.
 #'
-#' @param x the data on which to run the clustering. Can be: data.frame/matrix (with samples in rows), a list of datasets overwhich the clusterings should be run, a \code{SummarizedExperiment} object, or a \code{ClusterExperiments} object.
+#' @param x the data on which to run the clustering. Can be: data.frame/matrix (with samples in rows), a list of datasets overwhich the clusterings should be run, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
 #' @param ks the range of k values (see details for meaning for different choices). 
 #' @param alphas values of alpha to be tried. Only used for subsampleClusterMethod either 'tight' or 'hierarchical'.
 #' @param findBestK values of findBestK to be tried (logical) (only for 'pam').
@@ -17,7 +17,7 @@
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified in \code{dimReduce}). If NA is included, then the full dataset will also be included.
 #' @param transFun function to use to transform the data
 #' @param isCount logical. If transFun is missing, will be used to determine the transformation. log(x+1) will be the transformation for isCount=TRUE and otherwise the identify function x.
-#' @param eraseOld logical. Only relevant if input \code{x} is of class \code{ClusterExperiments}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and findSharedClusters). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.
+#' @param eraseOld logical. Only relevant if input \code{x} is of class \code{ClusterExperiment}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and findSharedClusters). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.
 #' @param clusterDArgs list of arguments to be passed to \code{\link{clusterD}}
 #' @param subsampleArgs list of arguments to be passed to \code{\link{subsampleClustering}}
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
@@ -32,7 +32,7 @@
 #' @details Note that the behavior of clusterMany for dimensionality reduction is slightly different if the input is a list of datasets rather than a matrix. If the input is a single matrix, a single dimensionality step is performed, while if the input is a list of datasets, the dimensionality reduction step is performed for every combination (i.e. the program is not smart in realizing it is the same set of data across different dimensions and so only one dimensionality reduction is needed). 
 #'
 #' @details The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the clusterDArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available in clusterMany. 
-#' @return If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterExperiments} object, will return a \code{ClusterExperiments} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex
+#' @return If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, will return a \code{ClusterExperiment} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex
 #' 
 #' @return If \code{run=TRUE} and the input is a list of data sets, a list with the following objects:
 #' \itemize{
@@ -103,15 +103,15 @@ setMethod(
     transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
     x<-transObj$x
     if(!is.null(dim(x)) && NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
-    transFun<-transObj$transFun #need it later to create clusterExperimentsObject
+    transFun<-transObj$transFun #need it later to create clusterExperimentObject
     
     if(!is.null(dim(x))) x<-list(dataset1=x) #if npcs=NA, then .transData returns a matrix.
     outval<-clusterMany(x, ...)
     ##########
-    ## Convert to clusterExperiments Object
+    ## Convert to clusterExperiment Object
     ##########
     if("clMat" %in% names(outval)){
-      retval <- clusterExperiments(origX, outval$clMat, transformation=transFun,clusterInfo=outval$clusterInfo,clusterType="clusterMany")
+      retval <- clusterExperiment(origX, outval$clMat, transformation=transFun,clusterInfo=outval$clusterInfo,clusterType="clusterMany")
       validObject(retval)
       return(retval)
     }
@@ -270,7 +270,7 @@ setMethod(
 #' @rdname clusterMany
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "ClusterExperiments"),
+  signature = signature(x = "ClusterExperiment"),
   definition = function(x, dimReduce="none",nVarDims=NA,nPCADims=NA,
                         eraseOld=FALSE,...
   )
@@ -279,7 +279,7 @@ setMethod(
     outval<-clusterMany(assay(x), dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                            transFun=transformation(x),...)
     #browser()
-    if(class(outval)=="ClusterExperiments"){
+    if(class(outval)=="ClusterExperiment"){
       ##Check if clusterMany already ran previously
       x<-.updateCurrentPipeline(x,eraseOld)
       retval<-addClusters(outval,x)
@@ -304,7 +304,7 @@ setMethod(
              dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
              transFun=transFun,isCount=isCount,...
     )
-    if(class(outval)=="ClusterExperiments"){
+    if(class(outval)=="ClusterExperiment"){
         return(outval)
     }  #need to redo it to make sure get any other part of summarized experiment
     else return(outval)  
