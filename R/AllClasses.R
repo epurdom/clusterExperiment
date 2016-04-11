@@ -1,22 +1,26 @@
 
 #' @title Class ClusterExperiments
-#' 
-#' @description \code{ClusterExperiments} is a class that extends \code{SummarizedExperiment} and is
-#' used to store the single-cell RNA-seq data and clustering information.
-#' 
-#' @description In addition to the slots of the \code{SummarizedExperiment} class, the
-#' \code{ClusterExperiments} object has the following additional slots:
+#'
+#' @description \code{ClusterExperiments} is a class that extends
+#' \code{SummarizedExperiment} and is used to store the single-cell RNA-seq data
+#' and clustering information.
+#'
 #' @docType class
 #' @aliases ClusterExperiments ClusterExperiments-class clusterExperiments
-#' @slot transformation function. Function to transform the data by when methods that assume normal-like data (e.g. log)
-#' @slot clusterMatrix matrix. A matrix giving the
-#' integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
-#' The integer values are assigned
-#' in the order that the clusters were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
+#'
+#' @description In addition to the slots of the \code{SummarizedExperiment}
+#' class, the \code{ClusterExperiments} object has the following additional
+#' slots:
+#' @slot transformation function. Function to transform the data by when methods
+#' that assume normal-like data (e.g. log)
+#' @slot clusterMatrix matrix. A matrix giving the integer-valued cluster ids
+#' for each sample. The rows of the matrix correspond to clusterings and columns
+#' to samples. The integer values are assigned in the order that the clusters
+#' were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
 #' the sample was not clustered.
 #' @slot primaryIndex: numeric. An index that specifies the primary set of
 #' labels.
-#' @slot clusterInfo: list. A list with info about the clustering. 
+#' @slot clusterInfo: list. A list with info about the clustering.
 #' If created from \code{\link{clusterAll}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
@@ -34,13 +38,19 @@
 #' relationship.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
-#' across parameter sets (see \code{clusterMany}). The matrix is a square matrix with number of rows/columns equal to the number of samples.
-#' @slot clusterColors a list, one per cluster in \code{clusterMatrix}. Each element of the list is a matrix with nrows equal to the number of different clusters in the clustering, and consisting of at least two columns with the following column names: "clusterId" and "color". 
-#' @slot orderSamples a numeric vector (of integers) defining the order of samples to be used for plotting of samples. Usually set internally by other functions.
+#' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
+#' with number of rows/columns equal to the number of samples.
+#' @slot clusterColors a list, one per cluster in \code{clusterMatrix}. Each
+#' element of the list is a matrix with nrows equal to the number of different
+#' clusters in the clustering, and consisting of at least two columns with the
+#' following column names: "clusterId" and "color".
+#' @slot orderSamples a numeric vector (of integers) defining the order of
+#' samples to be used for plotting of samples. Usually set internally by other
+#' functions.
 #' @name ClusterExperiments-class
 #' @rdname ClusterExperiments-class
-#' @exportClass 
-#' 
+#' @exportClass
+#'
 setClass(
   Class = "ClusterExperiments",
   contains = "SummarizedExperiment",
@@ -70,14 +80,15 @@ setValidity("ClusterExperiments", function(object) {
   if(any(is.na(assay(object)))) {
     return("NA values are not allowed.")
   }
-  tX<-try(transform(object),silent=TRUE)
+  tX <- try(transform(object),silent=TRUE)
   if(inherits(tX, "try-error")){
-    stop(paste("User-supplied `transformation` produces error on the input data matrix:\n",x))
+    stop(paste("User-supplied `transformation` produces error on the input data
+               matrix:\n",x))
   }
   if(any(is.na(tX))) {
     return("NA values after transforming data matrix are not allowed.")
   }
-  
+
   if(!all(is.na((object@clusterMatrix))) &
      !(NROW(object@clusterMatrix) == NCOL(object))) {
     return("If present, `clusterMatrix` must have as many row as cells.")
@@ -85,10 +96,14 @@ setValidity("ClusterExperiments", function(object) {
   if(!is.numeric(object@clusterMatrix)) {
     return("`clusterMatrix` must be a numeric matrix.")
   }
-  
-  if(NCOL(object@clusterMatrix)!= length(object@clusterType)) return("length of clusterType must be same as NCOL of the clusterMatrix")
-  
-  if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) return("length of clusterInfo must be same as NCOL of the clusterMatrix")
+
+  if(NCOL(object@clusterMatrix)!= length(object@clusterType)) {
+    return("length of clusterType must be same as NCOL of the clusterMatrix")
+  }
+
+  if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
+    return("length of clusterInfo must be same as NCOL of the clusterMatrix")
+  }
 
   if(length(object@dendrogram) > 0) {
     if(class(object@dendrogram) != "dendrogram") {
@@ -101,19 +116,39 @@ setValidity("ClusterExperiments", function(object) {
     return("`coClustering` must be a sample by sample matrix.")
   }
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-      if(length(object@primaryIndex) != 1) return("If more than one set of cluster labels, a primary cluster must be specified.")
-    if(object@primaryIndex > NCOL(object@clusterMatrix) | object@primaryIndex < 1) return("`primaryIndex` out of bounds.")
-    if(NCOL(object@clusterMatrix) != length(object@clusterType)) return("`clusterType` must be the same length as NCOL of `clusterMatrix`.")
-    
+      if(length(object@primaryIndex) != 1) {
+        return("If more than one set of cluster labels, a primary cluster must
+               be specified.")
+      }
+      if(object@primaryIndex > NCOL(object@clusterMatrix) |
+         object@primaryIndex < 1) {
+        return("`primaryIndex` out of bounds.")
+      }
+      if(NCOL(object@clusterMatrix) != length(object@clusterType)) {
+        return("`clusterType` must be the same length as NCOL of
+               `clusterMatrix`.")
+      }
       #test that @clusterColors is proper form
-    if(length(object@clusterColors)!=NCOL(object@clusterMatrix)) return("'clusterColors' must be list of same length as NCOL of 'clusterMatrix")
-    testIsMatrix<-sapply(object@clusterColors,function(x){!is.null(dim(x))})
-    if(!all(testIsMatrix)) return("Each element of 'clusterColors' list must be a matrix")
-    testColorRows<-sapply(object@clusterColors,function(x){nrow(x)})
-    testClusterMat<-apply(object@clusterMatrix,2,function(x){length(unique(x))})
-    if(!all(testColorRows==testClusterMat)) return("each element of 'clusterColors' must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in clusterMatrix")
-    testColorCols1<-sapply(object@clusterColors,function(x){"color" %in% colnames(x)})
-    testColorCols2<-sapply(object@clusterColors,function(x){"clusterIds" %in% colnames(x)})
+      if(length(object@clusterColors) != NCOL(object@clusterMatrix)) {
+        return("`clusterColors` must be list of same length as NCOL of
+               `clusterMatrix`")
+      }
+      testIsMatrix <- sapply(object@clusterColors,
+                             function(x) {!is.null(dim(x))})
+      if(!all(testIsMatrix)) {
+        return("Each element of `clusterColors` list must be a matrix")
+      }
+      testColorRows <- sapply(object@clusterColors, function(x){nrow(x)})
+      testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
+        length(unique(x))})
+      if(!all(testColorRows == testClusterMat)) {
+        return("each element of `clusterColors` must be matrix with number of
+               rows equal to the number of clusters (including -1 or -2 values)
+               in `clusterMatrix`")
+      }
+      testColorCols1 <- sapply(object@clusterColors, function(x) {
+        "color" %in% colnames(x)})
+      testColorCols2<-sapply(object@clusterColors,function(x){"clusterIds" %in% colnames(x)})
     if(!all(testColorCols1) || !all(testColorCols2)) return("each element of 'clusterColors' must be matrix with at least 2 columns, and at least 2 columns have names 'clusterIds' and 'color'")
     testColorCols1<-sapply(object@clusterColors,function(x){is.character(x)})
     if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix of character values")
@@ -124,35 +159,37 @@ setValidity("ClusterExperiments", function(object) {
         all(y %in% x)
     })
     if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix with column 'clusterIds' matching the corresponding integer valued clusterMatrix values")
-    
-  } 
-  if(length(object@orderSamples)!=NCOL(assay(object))) return("'orderSamples' must be of same length as number of samples (NCOL(assay(object)))") 
-  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) return("'orderSamples' must be values between 1 and the number of samples.") 
+
+  }
+  if(length(object@orderSamples)!=NCOL(assay(object))) return("'orderSamples' must be of same length as number of samples (NCOL(assay(object)))")
+  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) return("'orderSamples' must be values between 1 and the number of samples.")
   return(TRUE)
 })
 
-#' @description The constructor \code{clusterExperiments} creates an object of the class
-#' \code{ClusterExperiments}. However, the typical way of creating these objects is
-#' the result of a call to \code{clusterMany} or \code{clusterAll}.
+#' @description The constructor \code{clusterExperiments} creates an object of
+#' the class \code{ClusterExperiments}. However, the typical way of creating
+#' these objects is the result of a call to \code{clusterMany} or
+#' \code{clusterAll}.
 #'
-#' @description Note that when subsetting the data, the co-clustering and dendrogram
-#' information are lost.
+#' @description Note that when subsetting the data, the co-clustering and
+#' dendrogram information are lost.
 #'
 #'@param se a matrix or \code{SummarizedExperiment} containing the clustered
 #'data.
 #'@param labels a vector with cluster labels.
-#'@param transformation function. A function to transform the data before performing steps that assume normal-like (i.e. constant variance), such as the log
+#'@param transformation function. A function to transform the data before
+#'performing steps that assume normal-like (i.e. constant variance), such as
+#'the log
 #'
 #'@return A \code{ClusterExperiments} object.
-#'
-#'
 #'
 #'@examples
 #'
 #'se <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterExperiments(se, as.numeric(labels), transformation = function(x){x})
+#'cc <- clusterExperiments(se, as.numeric(labels),
+#'                         transformation = function(x){x})
 #'
 #' @rdname ClusterExperiments-class
 setGeneric(
@@ -166,25 +203,27 @@ setMethod(
   f = "clusterExperiments",
   signature = signature("matrix","ANY"),
   definition = function(se, clusters, ...){
-    clusterExperiments(SummarizedExperiment(se),clusters,...)
+    clusterExperiments(SummarizedExperiment(se), clusters, ...)
   })
 #' @rdname ClusterExperiments-class
 setMethod(
   f = "clusterExperiments",
-  signature = signature("SummarizedExperiment","numeric"),
+  signature = signature("SummarizedExperiment", "numeric"),
   definition = function(se, clusters, ...){
     if(NCOL(se) != length(clusters)) {
-      stop("`clusters` must be a vector of length equal to the number of samples.")
+      stop("`clusters` must be a vector of length equal to the number of
+           samples.")
     }
   clusterExperiments(se,matrix(data=clusters, ncol=1),...)
-})    
+})
 #' @rdname ClusterExperiments-class
 setMethod(
   f = "clusterExperiments",
   signature = signature("SummarizedExperiment","character"),
   definition = function(se, clusters,...){
     clusters <- as.numeric(factor(clusters))
-    warning("The character vector `clusters` was coerced to integer values (one per cluster)")
+    warning("The character vector `clusters` was coerced to integer values (one
+            per cluster)")
     clusterExperiments(se,clusters,...)
     })
 #' @rdname ClusterExperiments-class
@@ -200,12 +239,29 @@ setMethod(
 setMethod(
   f = "clusterExperiments",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, transformation,clusterType="User",clusterInfo=NULL){
+  definition = function(se, clusters, transformation,clusterType="User",
+                        clusterInfo=NULL){
     if(NCOL(se) != nrow(clusters)) {
-      stop("`clusters` must be a matrix of rows equal to the number of samples.")
+      stop("`clusters` must be a matrix of rows equal to the number of
+           samples.")
     }
-    if(length(clusterType)==1) clusterType<-rep(clusterType,length=NCOL(clusters))
-    if(is.null(clusterInfo)) clusterInfo<-rep(list(NULL),length=NCOL(clusters))
+    if(length(clusterType)==1) {
+      clusterType <- rep(clusterType, length=NCOL(clusters))
+    }
+    if(is.null(clusterInfo)) {
+      clusterInfo<-rep(list(NULL),length=NCOL(clusters))
+    }
+    if(length(clusterType)!=NCOL(clusters)) {
+      stop("clusterType must be of length equal to number of clusters in
+           `clusters`")
+    }
+    if(length(clusterType) == 1) {
+        clusterType <- rep(clusterType, length=NCOL(clusters))
+    }
+    if(is.null(clusterInfo)) {
+        clusterInfo <- rep(list(NULL), length=NCOL(clusters))
+    }
+
     out <- new("ClusterExperiments",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),
@@ -221,36 +277,3 @@ setMethod(
     validObject(out)
     return(out)
   })
-
-
-#replaced this with S4 functions above.
-# clusterExperiments <- function(se, labels, transformation,clusterType="User",clusterInfo=list(NULL)) {
-#   if(NCOL(se) != length(labels)) {
-#     stop("`labels` must be a vector of length equal to the number of samples.")
-#   }
-#   if(!is(se, "SummarizedExperiment") & !is.matrix(se)) {
-#     stop("`se` must be a matrix or SummarizedExperiment object.")
-#   }
-# 
-#   if(is.factor(labels)) {
-#     labels <- as.numeric(labels)
-#     warning("The factor `labels` was coerced to numeric.")
-#   }
-# 
-#   if(is.matrix(se)) {
-#     se <- SummarizedExperiment(se)
-#   }
-# 
-#   out <- new("ClusterExperiments",
-#              assays = Assays(assays(se)),
-#              elementMetadata = mcols(se),
-#              colData = colData(se),
-#              transformation=transformation,
-#              clusterMatrix = matrix(data=labels, ncol=1),
-#              primaryIndex = 1,
-#              clusterType = clusterType,
-#              clusterInfo=clusterInfo
-#              )
-# 
-#   return(out)
-# }
