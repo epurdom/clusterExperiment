@@ -62,7 +62,7 @@ setMethod(
     ##transformation to data x that will be input to clustering
     ##########
     dimReduce<-match.arg(dimReduce) #should be only 1
-    if(length(ndims)>1) stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try compareChoices")
+    if(length(ndims)>1) stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
     if(!is.na(ndims) & dimReduce=="none") warning("specifying ndims has no effect if dimReduce==`none`")
     nPCADims<-if(dimReduce=="PCA") ndims else NA
     nVarDims<-if(dimReduce=="mostVar") ndims else NA

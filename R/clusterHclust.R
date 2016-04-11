@@ -24,7 +24,7 @@
 #'
 #' #create dendrogram for plotting with data in heatmap:
 #' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-#' dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+#' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 #'	annCol=data.frame(PAM8=cl,Truth=trueCluster))
  
 clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","cluster"),...){
@@ -120,7 +120,7 @@ clusterHclust<-function(dat,cl,full=TRUE,unassigned=c("remove","outgroup","clust
 #' mergeMethod="adjP",use.edge.length=FALSE,countData=FALSE)
 #' #compare merged to original on heatmap
 #' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-#' dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+#' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 #'	annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 
  

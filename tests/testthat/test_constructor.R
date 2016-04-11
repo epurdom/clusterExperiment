@@ -3,11 +3,11 @@ library(clusterCells)
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
 labels <- gl(5, 2)
+labMat<-cbind(labels,labels)
 se <- SummarizedExperiment(mat)
 
 cc <- clusterCells(mat, as.numeric(labels), transformation = function(x){x})
 cc2 <- clusterCells(se, as.numeric(labels), transformation = function(x){x})
-
 test_that("`clusterCells` constructor works with matrix and
           SummarizedExperiments", {
             expect_equal(cc, cc2)
@@ -25,7 +25,16 @@ test_that("`clusterCells` constructor works with matrix and
 
             expect_is(cc, "ClusterCells")
             expect_is(cc, "SummarizedExperiment")
-          })
+            
+            expect_equal(nSamples(cc),ncol(mat))
+            expect_equal(nFeatures(cc),nrow(mat))
+            expect_equal(nClusters(cc),1)
+
+            clusterCells(se,labMat,transformation=function(x){x})
+            expect_warning(clusterCells(se,labels,transformation=function(x){x}))
+            expect_warning(clusterCells(se,as.character(labels),transformation=function(x){x}))
+            
+                      })
 
 test_that("adding clusters, setting primary labels and remove unclustered cells
           work as promised", {
@@ -47,6 +56,11 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterInfo(c3)), 2)
             expect_equal(primaryCluster(c3), primaryCluster(cc))
  
+            expect_null(clusterLabels(c3))
+            clusterLabels(c3)<-c("User","User")
+            expect_equal(length(clusterLabels(c3)),2)
+            expect_error(clusterLabels(c3,"pipeline"))
+            
               #check adding matrix of clusters
             c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type="New")
             expect_equal(NCOL(allClusters(c4)), 3)
@@ -77,20 +91,21 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterType(c7)), 2)
             expect_equal(length(clusterInfo(c7)), 2)
             
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("compareChoices","mergeClusters"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,2))
             
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5)),type=c("compareChoices"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5)),type=c("clusterMany"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,1))
             
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("compareChoices","mergeClusters_1"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters_1"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,1))
             expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(10,2))
             expect_null(pipelineClusters(cc,iteration=NA))
             
             
         })
-test_that("accessing transformed data works as promised", {
+test_that("accessing transformed data works as promised", 
+          {
 #check all of the option handling on the dimensionality reduction arguments
   expect_equal(dim(transform(cc)), dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3)), c(3,NCOL(assay(cc))))

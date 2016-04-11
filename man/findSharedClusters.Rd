@@ -36,7 +36,7 @@ A list with values
 ps<-c(5,10,50)
 names(ps)<-paste("npc=",ps,sep="")
 pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
-cl <- compareChoices(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(FALSE),removeSil=TRUE,subsample=FALSE)
+cl <- clusterMany(lapply(ps,function(p){pcaData$x[,1:p]}), clusterMethod="pam",ks=2:4,findBestK=c(FALSE),removeSil=TRUE,subsample=FALSE)
 #make names shorter for plotting
 colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
 colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
@@ -47,7 +47,7 @@ clCommon100<-findSharedClusters(cl$clMat,proportion=1,minSize=10)
 clCommon70<-findSharedClusters(cl$clMat,proportion=0.7,plot=TRUE,minSize=10)
 oldpar<-par()
 par(mar=c(1.1,12.1,1.1,1.1))
-plotTracking(cbind("70%Similarity"=clCommon70$clustering,cl$clMat,"100%Similarity"=clCommon100$clustering),axisLine=-2)
+plotClusters(cbind("70%Similarity"=clCommon70$clustering,cl$clMat,"100%Similarity"=clCommon100$clustering),axisLine=-2)
 par(oldpar)
 }
 \description{

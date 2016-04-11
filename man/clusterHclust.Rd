@@ -38,7 +38,7 @@ plot(hcl)
 
 #create dendrogram for plotting with data in heatmap:
 hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 annCol=data.frame(PAM8=cl,Truth=trueCluster))
 }
 

@@ -1,7 +1,47 @@
+#' @rdname clusterAll
 setGeneric(
   name = "clusterAll",
   def = function(x,  ...) {
     standardGeneric("clusterAll")
+  }
+)
+
+
+
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "clusterLabels",
+  def = function(x, whichClusters) {
+    standardGeneric("clusterLabels")
+  }
+)
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "nClusters",
+  def = function(x) {
+    standardGeneric("nClusters")
+  }
+)
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "nFeatures",
+  def = function(x) {
+    standardGeneric("nFeatures")
+  }
+)
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "nSamples",
+  def = function(x) {
+    standardGeneric("nSamples")
+  }
+)
+
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "clusterLabels<-",
+  def = function(object, value) {
+    standardGeneric("clusterLabels<-")
   }
 )
 #' @rdname ClusterCells-class
@@ -13,9 +53,16 @@ setGeneric(
 )
 #' @rdname ClusterCells-class
 setGeneric(
-  name = "pipelineClusterIndex",
-  def = function(x, printTable=TRUE) {
-    standardGeneric("pipelineClusterIndex")
+  name = "pipelineClusterDetails",
+  def = function(x) {
+    standardGeneric("pipelineClusterDetails")
+  }
+)
+#' @rdname ClusterCells-class
+setGeneric(
+  name = "pipelineClusterTable",
+  def = function(x) {
+    standardGeneric("pipelineClusterTable")
   }
 )
 #' @rdname ClusterCells-class
@@ -26,26 +73,28 @@ setGeneric(
   }
 )
 
-#' @rdname compareChoices
+#' @rdname clusterMany
 setGeneric(
-  name = "compareChoices",
-  def = compareChoices <- function(x, ... ) {
-    standardGeneric("compareChoices")
+  name = "clusterMany",
+  def = clusterMany <- function(x, ... ) {
+    standardGeneric("clusterMany")
   }
 )
 
-#' @rdname plotTracking
+#' @rdname plotClusters
 setGeneric(
-  name="plotTracking",
-  def=function(clusters, orderClusters=NULL,
-               orderSamples=NULL,index=NULL,reuseColors=FALSE,matchToTop=FALSE,
-               plot=TRUE,unassignedColor="white",missingColor="grey",
-               minRequireColor=0.3,startNewColors=FALSE,
-               colPalette=bigPalette,input=c("clusters","colors"),
-               clNames=colnames(clusters),add=FALSE,xCoord=NULL,
-               ylim=NULL,tick=FALSE,ylab="",xlab="",axisLine=0,box=FALSE,...)
+  name="plotClusters",
+  def=function(clusters, orderClusters,...)
     {
-    standardGeneric("plotTracking")
+    standardGeneric("plotClusters")
+  }
+)
+#' @rdname plotHeatmap
+setGeneric(
+  name="plotHeatmap",
+  def=function(x,...)
+  {
+    standardGeneric("plotHeatmap")
   }
 )
 #' @rdname ClusterCells-class

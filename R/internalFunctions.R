@@ -1,6 +1,31 @@
-#change current pipeline to old iteration -- i.e. add number to it:
+##Universal way to change character indication of clusterType into indices.
+.TypeIntoIndices<-function(x,whClusters=c("pipeline","all")){
+  test<-try(match.arg(whClusters),silent=TRUE)
+  if(!inherits(test,"try-error")){
+    if(test=="pipeline"){
+      ppIndex<-pipelineClusterDetails(x)
+      if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
+        wh<-unlist(lapply(.pipelineValues,function(tt){
+          ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
+        }))
+      }
+      else stop("There are no (current) pipeline clusters in the ClusterCells object")
+    }
+    if(test=="all") wh<-1:ncol(allClusters(x))
+  }
+  else{
+    if(!any(whClusters %in% clusterType(x))) stop("none of orderClusters match a clusterType of x")
+    if(!all(whClusters %in% clusterType(x))) warning("not all of orderClusters match a clusterType of x")
+    wh<-which(clusterType(x) %in% whClusters)
+  }
+  return(wh)
+}
+
+#change current pipeline to old iteration 
+# add number to it if eraseOld=FALSE
+# delete ALL pipeline if eraseOld=TRUE (not just the current iteration)
 .updateCurrentPipeline<-function(x,eraseOld){
-  ppIndex<-pipelineClusterIndex(x,print=FALSE)
+  ppIndex<-pipelineClusterDetails(x)
   if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
     if(eraseOld){ #removes all of them, not just current
       newX<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?

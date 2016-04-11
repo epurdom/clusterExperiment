@@ -38,7 +38,7 @@
 #' Large palette of colors 
 #' @name bigPalette
 #' @aliases bigPalette showThisPal
-#' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotTracking}} and
+#' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotClusters}} and
 #' accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
 bigPalette<-.thisPal
 
@@ -65,11 +65,11 @@ showThisPal<-function(){
 #' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' par(mfrow=c(2,3))
-#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")
-#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal2,main="seqPal2")
-#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
-#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
-#' dualHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
+#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")
+#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal2,main="seqPal2")
+#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
+#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
+#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
 #' 
 
 
@@ -85,7 +85,7 @@ showHeatmapPalettes<-function(){
 	names(ll)[seq(1,length(ll),by=2)]<-names(palettesAll)
 	names(ll)[seq(2,length(ll),by=2)]<-rep("",length(palettesAll)-1)
 	mat<-do.call("cbind",ll)
-	plotTracking(mat,input="colors")
+	plotClusters(mat,input="colors")
 }
 
 #' @rdname showHeatmapPalettes

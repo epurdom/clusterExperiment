@@ -52,7 +52,7 @@ mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
 mergeMethod="adjP",use.edge.length=FALSE,countData=FALSE)
 #compare merged to original on heatmap
 hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-dualHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
+plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 }
 

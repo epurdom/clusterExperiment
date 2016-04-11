@@ -15,7 +15,7 @@ showThisPal()
 Large palette of colors
 }
 \details{
-\code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotTracking}} and
+\code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotClusters}} and
 accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
 }
 \keyword{datasets}
