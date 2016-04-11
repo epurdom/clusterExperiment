@@ -17,10 +17,8 @@ test_that("`clusterExperiments` constructor works with matrix and
             expect_error(clusterExperiments(mat, labels[1:2], function(x){x}),
                          "must be a vector of length equal to the number of samples")
             expect_error(clusterExperiments(as.data.frame(mat), labels, function(x){x}),
-                         "must be a matrix or SummarizedExperiment object")
-            expect_error(clusterExperiments(mat, as.character(labels), function(x){x}),
-                         "must be a numeric matrix")
-
+                         "unable to find an inherited method for function")
+            expect_warning(clusterExperiments(mat, as.character(labels), function(x){x}),"was coerced to integer values")
             expect_warning(clusterExperiments(mat, labels, function(x){x}), "was coerced to numeric")
 
             expect_is(cc, "ClusterExperiments")
