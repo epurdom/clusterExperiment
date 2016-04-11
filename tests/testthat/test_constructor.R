@@ -1,4 +1,4 @@
-library(clusterCells)
+library(clusterExperiments)
 
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
@@ -6,33 +6,33 @@ labels <- gl(5, 2)
 labMat<-cbind(labels,labels)
 se <- SummarizedExperiment(mat)
 
-cc <- clusterCells(mat, as.numeric(labels), transformation = function(x){x})
-cc2 <- clusterCells(se, as.numeric(labels), transformation = function(x){x})
-test_that("`clusterCells` constructor works with matrix and
+cc <- clusterExperiments(mat, as.numeric(labels), transformation = function(x){x})
+cc2 <- clusterExperiments(se, as.numeric(labels), transformation = function(x){x})
+test_that("`clusterExperiments` constructor works with matrix and
           SummarizedExperiments", {
             expect_equal(cc, cc2)
-            expect_error(clusterCells(mat), "missing")
-            expect_error(clusterCells(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
-            expect_error(clusterCells(mat, as.numeric(labels)), "missing")
-            expect_error(clusterCells(mat, labels[1:2], function(x){x}),
+            expect_error(clusterExperiments(mat), "missing")
+            expect_error(clusterExperiments(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
+            expect_error(clusterExperiments(mat, as.numeric(labels)), "missing")
+            expect_error(clusterExperiments(mat, labels[1:2], function(x){x}),
                          "must be a vector of length equal to the number of samples")
-            expect_error(clusterCells(as.data.frame(mat), labels, function(x){x}),
+            expect_error(clusterExperiments(as.data.frame(mat), labels, function(x){x}),
                          "must be a matrix or SummarizedExperiment object")
-            expect_error(clusterCells(mat, as.character(labels), function(x){x}),
+            expect_error(clusterExperiments(mat, as.character(labels), function(x){x}),
                          "must be a numeric matrix")
 
-            expect_warning(clusterCells(mat, labels, function(x){x}), "was coerced to numeric")
+            expect_warning(clusterExperiments(mat, labels, function(x){x}), "was coerced to numeric")
 
-            expect_is(cc, "ClusterCells")
+            expect_is(cc, "ClusterExperiments")
             expect_is(cc, "SummarizedExperiment")
             
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
             expect_equal(nClusters(cc),1)
 
-            clusterCells(se,labMat,transformation=function(x){x})
-            expect_warning(clusterCells(se,labels,transformation=function(x){x}))
-            expect_warning(clusterCells(se,as.character(labels),transformation=function(x){x}))
+            clusterExperiments(se,labMat,transformation=function(x){x})
+            expect_warning(clusterExperiments(se,labels,transformation=function(x){x}))
+            expect_warning(clusterExperiments(se,as.character(labels),transformation=function(x){x}))
             
                       })
 
@@ -49,7 +49,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             primaryClusterIndex(c1) <- 2
             expect_false(all(primaryCluster(c1)==primaryCluster(cc)))
 
-              #check adding a clusterCellsObject
+              #check adding a clusterExperimentsObject
             c3<-addClusters(cc,cc)
             expect_equal(NCOL(allClusters(c3)), 2)
             expect_equal(length(clusterType(c3)), 2)

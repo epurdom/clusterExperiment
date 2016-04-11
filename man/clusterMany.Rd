@@ -3,7 +3,7 @@
 \docType{methods}
 \name{clusterMany}
 \alias{clusterMany}
-\alias{clusterMany,ClusterCells-method}
+\alias{clusterMany,ClusterExperiments-method}
 \alias{clusterMany,SummarizedExperiment-method}
 \alias{clusterMany,list-method}
 \alias{clusterMany,matrix-method}
@@ -21,14 +21,14 @@ clusterMany(x, ...)
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
   random.seed = NULL, run = TRUE, paramMatrix = NULL, ...)
 
-\S4method{clusterMany}{ClusterCells}(x, dimReduce = "none", nVarDims = NA,
+\S4method{clusterMany}{ClusterExperiments}(x, dimReduce = "none", nVarDims = NA,
   nPCADims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
 }
 \arguments{
-\item{x}{the data on which to run the clustering. Can be: data.frame/matrix (with samples in rows), a list of datasets overwhich the clusterings should be run, a \code{SummarizedExperiment} object, or a \code{ClusterCells} object.}
+\item{x}{the data on which to run the clustering. Can be: data.frame/matrix (with samples in rows), a list of datasets overwhich the clusterings should be run, a \code{SummarizedExperiment} object, or a \code{ClusterExperiments} object.}
 
 \item{...}{arguments to be passed on to mclapply (if ncores>1)}
 
@@ -72,10 +72,10 @@ clusterMany(x, ...)
 
 \item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example).}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class \code{ClusterCells}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and findSharedClusters). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.}
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class \code{ClusterExperiments}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and findSharedClusters). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.}
 }
 \value{
-If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterCells} object, will return a \code{ClusterCells} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex
+If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterExperiments} object, will return a \code{ClusterExperiments} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex
 
 If \code{run=TRUE} and the input is a list of data sets, a list with the following objects:
 \itemize{

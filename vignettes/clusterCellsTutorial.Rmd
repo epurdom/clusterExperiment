@@ -1,5 +1,5 @@
 ---
-title: "clusterCells Tutorial"
+title: "clusterExperiments Tutorial"
 author: "Calvin Chi and Elizabeth Purdom"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -12,11 +12,11 @@ vignette: >
 ```{r GlobalOptions, results="hide", include=FALSE}
 #knitr::opts_chunk$set sets the global options. cache, cache.path options, fig.path make knit run faster once it has already been run.  
 #Sys.setenv(RSTUDIO_PANDOC="/Applications/RStudio.app/Contents/MacOS/pandoc")
-#rmarkdown::render("clusterCellsTutorial.Rmd")
+#rmarkdown::render("clusterExperimentsTutorial.Rmd")
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", fig.path="R_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
 library(diagram)
-library(clusterCells)
+library(clusterExperiments)
 ```
 
 ```{r drawClusterDefinition}
@@ -127,7 +127,7 @@ The package encodes many common practices that are shared across clustering algo
 
 There are two main user functions for clustering, `clusterAll` and `clusterMany`. `clusterAll` is the wrapper function that calls the underlying clustering functions. `clusterMany` is a convenience function that implements `clusterAll` across combinations of parameter choices. Such parameter choices can be the clustering method, whether to subsample the data, or the specific parameters of the clustering algorithm (e.g. the number of clusters in kmeans).
 
-A common workflow could be to apply `clusterMany` to the data to get a large collection of clusterings, each from clustering based on different parameters. To try to find a clustering presumably robust to the parameter choices, `clusterCells` provides a function `findSharedClusters` that tries to find a unifying clustering of the samples. 
+A common workflow could be to apply `clusterMany` to the data to get a large collection of clusterings, each from clustering based on different parameters. To try to find a clustering presumably robust to the parameter choices, `clusterExperiments` provides a function `findSharedClusters` that tries to find a unifying clustering of the samples. 
 
 We find that many methods for choosing the appropriate number of clusters for methods like k-means err on the side of smaller number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data (and many of the default parameters are set for finding many clusters). We provide the function `clusterHclust` to perform hierarchical clustering of the resulting clusters and the function `mergeClusters` to follow that hiearchy and merge the clusters based on the percentage of significantly different genes found in the comparisons of different arms of the hiearchy.
 
@@ -246,7 +246,7 @@ drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer
 ```
 
 ```{r clusterAllPam, warning=FALSE, message=FALSE}
-library(clusterCells)
+library(clusterExperiments)
 library(cluster)
 #load("data/expressions.Rda")
 expression = expressions[, 1:3]
@@ -260,8 +260,8 @@ Let us compare this result with the result from calling `pam` with `k=5` from th
 
 ```{r comparePam}
 pamCluster = pam(dist(expression), 5)
-table(clusterCells=simpleCluster$clustering, cluster=pamCluster$clustering)
-table(clusterCells=simpleCluster$clustering, true=expressions$cluster)
+table(clusterExperiments=simpleCluster$clustering, cluster=pamCluster$clustering)
+table(clusterExperiments=simpleCluster$clustering, true=expressions$cluster)
 ```
 
 We have now verified that these two function calls perform the same task. Incidentally, if we know the true number of clusters, a simple PAM procedure leads to good performances in this toy example. This is not surprising, since the clusters are simulated with Gaussian noise, in low dimensions.
@@ -335,7 +335,7 @@ table(Cluster$clustering)
 Cluster$clusteringInfo
 Cluster$whyStop
 
-table(true=expressions$cluster, clusterCells=Cluster$clustering)
+table(true=expressions$cluster, clusterExperiments=Cluster$clustering)
 ```
 
 This procedure leads to many more clusters, many of which are very small size.
@@ -391,7 +391,7 @@ plotHeatmap(cluster, exp(dataMatrix), eps=0, clusterData=dataMatrix)
 Additional covariates can also be plotted by giving a matrix of values to `annCol`; unlike `aheatmap`, `plotHeatmap` will assume that such values should be converted to factors unless told otherwise by the argument `whAnnCont`.
 
 ```{r}
-plotHeatmap(cluster, exp(dataMatrix), eps=0, clusterData=dataMatrix, annCol = data.frame(clusterCells=cluster, TrueClusters=trueCluster))
+plotHeatmap(cluster, exp(dataMatrix), eps=0, clusterData=dataMatrix, annCol = data.frame(clusterExperiments=cluster, TrueClusters=trueCluster))
 ```
 
 Another feature of plotHeatmap is that a different dataset can be used for determining the clustering than for determining the color-scale image of the heatmap. This can be useful, for example, for clustering on the normalized data which is not on the count-scale, but showing the original count-scale in the color-scale which is more interpretable. 
@@ -409,7 +409,7 @@ More useful, however, is to use this in conjunction with `plotHeatmap`, in which
 
 ```{r plotHeatmapHclust}
 clDendroFull<-clusterHclust(dataMatrix,cl$clustering,full=TRUE,unassigned="outgroup")
-plotHeatmap(cl$clustering,heatData=exp(dataMatrix),eps=0,clusterData=clDendroFull,annCol = data.frame(clusterCells=cluster, TrueClusters=trueCluster))
+plotHeatmap(cl$clustering,heatData=exp(dataMatrix),eps=0,clusterData=clDendroFull,annCol = data.frame(clusterExperiments=cluster, TrueClusters=trueCluster))
 ```
 
 Notice that the unassigned samples ("-1") are chosen in `clusterHclust` to be assigned to an outgroup in the dendrogram based on the argument `unassigned`.
@@ -419,7 +419,7 @@ One could also choose to remove them, making sure that the input data matrix to 
 ```{r, warning=FALSE}
 clDendroFull<-clusterHclust(dataMatrix,cl$clustering,full=TRUE,unassigned="remove")
 whRm<-which(cl$clustering>0)
-plotHeatmap(cl$clustering[whRm],heatData=exp(dataMatrix)[whRm,],eps=0,clusterData=clDendroFull,annCol = data.frame(clusterCells=cluster[whRm], TrueClusters=trueCluster[whRm]))
+plotHeatmap(cl$clustering[whRm],heatData=exp(dataMatrix)[whRm,],eps=0,clusterData=clDendroFull,annCol = data.frame(clusterExperiments=cluster[whRm], TrueClusters=trueCluster[whRm]))
 ```
 
 ### Hierarchical Contrasts and Merging clusters

@@ -1,8 +1,8 @@
-#' Transform the original data in a ClusterCells object
+#' Transform the original data in a ClusterExperiments object
 #' 
 #' Provides the transformed data (as defined by the object), as well as dimensionality reduction
 #' 
-#' @param x a ClusterCells object
+#' @param x a ClusterExperiments object
 #' @param nPCADims Numeric vector giving the number of PC dimensions to use in PCA dimensionality reduction. If NA no PCA dimensionality reduction is done.
 #' @param nVarDims Numeric vector giving the number of features (i.e. genes) to keep, based on MAD variability
 #' @param dimReduce Character vector specifying the dimensionality reduction to perform, any combination of 'none', 'PCA' and 'mostVar'. See details.
@@ -17,7 +17,7 @@
 #' mat <- matrix(data=rnorm(200), ncol=10)
 #' mat[1,1]<- -1 #force a negative value
 #' labels <- gl(5, 2)
-#' cc <- clusterCells(mat, as.numeric(labels), transformation = function(x){x^2}) #define transformation as x^2
+#' cc <- clusterExperiments(mat, as.numeric(labels), transformation = function(x){x^2}) #define transformation as x^2
 #' x<-transform(cc,dimReduce="PCA",nPCADims=3) #transform and take top 3 dimensions
 #' y<-transform(cc,dimReduce="mostVar",nVarDims=c(NA,5,10)) #transform and take return untransformed, top 5 features, and top 10 features
 #' names(y)
@@ -26,7 +26,7 @@
 #' @rdname transform
 setMethod(
   f = "transform",
-  signature = "ClusterCells",
+  signature = "ClusterExperiments",
   definition = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
     fun<-transformation(x)
     dat<-assay(x)
@@ -40,7 +40,7 @@ setMethod(
 # 1st element is the transformed data 
 # if npcs=NA or length of npcs=1, transformed data is matrix; otherwise returns list of data matrices.
 # 2nd element is the transformation function 
-# The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterCells Object)
+# The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiments Object)
 .transData<-function(x,transFun=NULL,isCount=FALSE,nPCADims,nVarDims,dimReduce)
 {
   origX<-x

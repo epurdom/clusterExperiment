@@ -9,7 +9,7 @@
 #' @param clusters A matrix of with each column corresponding to a clustering and
 #' each row a sample. The plotting will plot them in order of this matrix,
 #' and their order influences the plot greatly.
-#' @param orderClusters If numeric, a predefined order for the clusterings in the plot. If x is a ClusterCells object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.
+#' @param orderClusters If numeric, a predefined order for the clusterings in the plot. If x is a ClusterExperiments object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.
 #' @param orderSamples A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})
 #' @param metaData Additional cluster/metaData on the samples to be plotted with the clusterings in clusters. Values in metaData will be added to the end (bottom) of the plot.
 #' @param reuseColors Logical. Whether each row should consist of the same set
@@ -98,7 +98,7 @@
 #'	return(x)
 #'	})
 #'	#make a new object
-#' cl2<-clusterCells(assay(cl),clMatNew,transformation=transformation(cl))
+#' cl2<-clusterExperiments(assay(cl),clMatNew,transformation=transformation(cl))
 #' plotClusters(cl2)
 
 #' @rdname plotClusters
@@ -106,7 +106,7 @@
 #To Do: if pipeline, put them in logical order -- which is?
 setMethod(
   f = "plotClusters",
-  signature = signature(clusters = "ClusterCells",orderClusters="character"),
+  signature = signature(clusters = "ClusterExperiments",orderClusters="character"),
   definition = function(clusters, orderClusters=c("pipeline","all"),...)
   {
     wh<-.TypeIntoIndices(clusters,whClusters=orderClusters)
@@ -118,7 +118,7 @@ setMethod(
 #' @rdname plotClusters
 setMethod(
   f = "plotClusters",
-  signature = signature(clusters = "ClusterCells",orderClusters="numeric"),
+  signature = signature(clusters = "ClusterExperiments",orderClusters="numeric"),
   definition = function(clusters, orderClusters,...)
   {
     plotClusters(allClusters(clusters),orderClusters=orderClusters,input="clusters",...)
@@ -127,7 +127,7 @@ setMethod(
 #' @rdname plotClusters
 setMethod(
   f = "plotClusters",
-  signature = signature(clusters = "ClusterCells",orderClusters="missing"),
+  signature = signature(clusters = "ClusterExperiments",orderClusters="missing"),
   definition = function(clusters, orderClusters,...)
   {
     if(!is.null(pipelineClusterDetails(clusters))) plotClusters(clusters,orderClusters="pipeline",...)

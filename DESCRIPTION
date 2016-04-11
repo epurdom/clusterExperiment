@@ -1,4 +1,4 @@
-Package: clusterCells
+Package: clusterExperiments
 Title: Compare clusterings for single-cell sequencing
 Version: 0.0.1.0001
 Description: This package provides functions for running and comparing many
@@ -8,7 +8,7 @@ Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
 	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com",))
 Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
-BugReports: https://github.com/epurdom/clusterCells/issues
+BugReports: https://github.com/epurdom/clusterExperiments/issues
 License: Artistic-2.0
 Depends:
     R (>= 3.3),

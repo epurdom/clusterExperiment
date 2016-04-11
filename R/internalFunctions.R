@@ -9,7 +9,7 @@
           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
         }))
       }
-      else stop("There are no (current) pipeline clusters in the ClusterCells object")
+      else stop("There are no (current) pipeline clusters in the ClusterExperiments object")
     }
     if(test=="all") wh<-1:ncol(allClusters(x))
   }
