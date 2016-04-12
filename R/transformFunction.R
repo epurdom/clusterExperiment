@@ -41,6 +41,7 @@ setMethod(
 # if npcs=NA or length of npcs=1, transformed data is matrix; otherwise returns list of data matrices.
 # 2nd element is the transformation function 
 # The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiment Object)
+# 3rd element is the index of most variable (if dimReduce="mostVar" and returns a simple matrix) otherwise NULL
 .transData<-function(x,transFun=NULL,isCount=FALSE,nPCADims,nVarDims,dimReduce)
 {
   origX<-x
@@ -84,6 +85,7 @@ setMethod(
   nPCADims<-unique(nPCADims)
   xPCA<-xVAR<-xNone<-NULL #possible values
   listReturn<-FALSE
+  whFeatures<-NULL
   #for each dim reduction method requested
   if("PCA" %in% dimReduce & !all(is.na(nPCADims))){ #do PCA dim reduction
     if(max(nPCADims)>=NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
@@ -111,6 +113,8 @@ setMethod(
     if(NCOL(xVarOrdered)!=NCOL(origX)) stop("error in coding of principle components.")
     if(length(nVarDims)==1 & length(dimReduce)==1){ #just return single matrix
       x<-xVarOrdered[1:nVarDims,]
+      whFeatures<-ord[1:nVarDims]
+      
     }
     else{ #otherwise make it a list
       xVAR<-lapply(nVarDims,function(nn){xVarOrdered[1:nn,]})
@@ -125,5 +129,5 @@ setMethod(
   #browser()
   
   if(listReturn) x<-c(xNone,xVAR,xPCA)
-  return(list(x=x,transFun=transFun))
+  return(list(x=x,transFun=transFun,whMostVar=whFeatures))
 }

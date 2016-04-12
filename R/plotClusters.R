@@ -496,22 +496,5 @@ setMethod(
 }
 
 
-# ##from colorList, make color matrix
-# #' @rdname plotClusters
-# convertClusterColors<-function(clusters,output=c("aheatmapFormat","matrix"),newClusterList=NULL){
-#     output<-match.arg(clusterColors)
-#     
-#     
-# }
-# #' Make color annotation for input to plotHeatmap from output of plotClusters
-# #'
-# #' @param trackingOut the output from \code{\link{plotClusters}}
-# #' @rdname plotClusters
-# makeAnnoColor<-function(trackingOut){
-#     lapply(trackingOut$clusterColors,function(x){
-#         z<-as.character(x[,"Color"])
-#         names(z)<-as.character(as.numeric(x[,"Original"]))
-#         return(z)
-#     })
-# }
+
 

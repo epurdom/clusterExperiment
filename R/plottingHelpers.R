@@ -1,3 +1,50 @@
+#' @param output character value, indicating desired type of conversion. Currently only 'aheatmapFormat' is implemented.
+#' @param clusterings optional matrix of clusterings to be converted to color matrix (if output = "matrix")
+#' @rdname plottingFunctions
+convertClusterColors<-function(clusterColors,output=c("aheatmapFormat","matrix"),clusterings=NULL){
+    output<-match.arg(output)
+    if(output=="aheatmapFormat"){
+        #make in format of vector of colors with names of vector equal to the factor
+        outval<-lapply(clusterColors,function(x){
+            z<-as.character(x[,"color"])
+            names(z)<-as.character(as.numeric(x[,"clusterIds"]))
+            return(z)
+        })
+    }
+    if(output=="matrix"){
+        return("matrix format is not yet implemented")
+        #         #convert clusterings into a color matrix based on clusterColors
+        #         if(is.null(clusterings)) stop("clusterings must be a matrix")
+    }
+    return(outval)    
+    
+}
+#' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
+#' @rdname plottingFunctions
+setBreaks<-function(breaks,data){
+    if(length(breaks)>0 && !is.na(breaks)){ 
+        #get arround bug in aheatmap
+        #if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
+        #TO DO: might not need any more with updated aheatmap.
+        if(length(breaks)==1){
+            if(breaks<=1){
+                ncols<-51
+                if(breaks<1) breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))				
+                else breaks<-seq(min(data),max(data),length=ncols+1)
+            }
+            else{
+                warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used. We don't recommend that you set the breaks to a integer number, but let aheatmap determine the breaks")
+            }
+        }
+        else{
+            if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used")
+        }
+    }
+    return(breaks)
+    
+}
+
+
 .thisPal = c(			
 	"#A6CEE3",#light blue
 	"#1F78B4",#dark blue
@@ -36,7 +83,7 @@
 .thisPal<-.thisPal[-34] #very similar to 2
 .thisPal<-.thisPal[-31] #very similar to 7
 #' Large palette of colors 
-#' @name bigPalette
+#' @name plottingFunctions
 #' @aliases bigPalette showBigPalette
 #' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotClusters}} and
 #' accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
@@ -59,7 +106,7 @@ showBigPalette<-function(wh=NULL){
 
 
 #' Set of colors useful for heatmap gradients 
-#' @name showHeatmapPalettes
+#' @rdname plottingFunctions
 #' @aliases showHeatmapPalettes seqPal1 seqPal2 seqPal3 seqPal4 seqPal5
 #' @details seqPal1-seqPal4 are palettes for the heatmap. showHeatmapPalettes() will show you
 #' these palettes.
@@ -79,8 +126,6 @@ showBigPalette<-function(wh=NULL){
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
 #' 
-
-
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)
 	maxLength<-max(sapply(palettesAll,length))
@@ -96,15 +141,15 @@ showHeatmapPalettes<-function(){
 	plotClusters(mat,input="colors")
 }
 
-#' @rdname showHeatmapPalettes
+#' @rdname plottingFunctions
 seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
-#' @rdname showHeatmapPalettes
+#' @rdname plottingFunctions
 seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
 seqPal2<-(c("yellow","gold2",seqPal2))
 seqPal2<-rev(seqPal2)
-#' @rdname showHeatmapPalettes
+#' @rdname plottingFunctions
 seqPal3<-rev(brewer.pal(11, "RdBu"))
-#' @rdname showHeatmapPalettes
+#' @rdname plottingFunctions
 seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
-#' @rdname showHeatmapPalettes
+#' @rdname plottingFunctions
 seqPal1<-rev(brewer.pal(11, "Spectral"))
