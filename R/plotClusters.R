@@ -41,8 +41,8 @@
 #' @param ... for \code{plotClusters} arguments passed to \code{\link{plot}} if \code{add=FALSE}.
 
 #' @details If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, findSharedClusters, clusterMany.
-
-#' @return plotClusters returns (invisibly) the orders and other things that
+#' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterColors and/or orderSamples slots have been updated (depending on the arguments)
+#' @return If \code{clusters} is a matrix, plotClusters returns (invisibly) the orders and other things that
 #' go into making the matrix. Specifically, a list with the following elements
 #' \itemize{
 #'
@@ -71,24 +71,27 @@
 #' x<-gsub("Features","",x)
 #' clusterLabels(cl)<-x
 #' par(mar=c(2,10,1,1))
-#' out<-plotClusters(cl,axisLine=-1)
-#' out$clusterColors[1:2]
-#' head(out$color[out$orderSamples,1:2])
-#' 
+#' #this will make the choices of plotClusters 
+#' cl<-plotClusters(cl,axisLine=-1,resetOrderSamples=TRUE,resetColors=TRUE)
+#' #see the new cluster colors
+#' clusterColors(cl)[1:2]
+#'
 #' #We can also change the order of the clusterings. Notice how this dramatically changes the plot!
-#' plotClusters(cl, orderClusters=c(3:6,1:2,7:ncol(allClusters(cl))),axisLine=-2)
+#' clOrder<-c(3:6,1:2,7:ncol(allClusters(cl)))
+#' cl<-plotClusters(cl, orderClusters=clOrder,resetColors=TRUE,resetOrder=TRUE,axisLine=-2)
 #'
-#' #notice that the blue and orange are really arbitrarily different 
-#' #colors because not next to each other in row.
-#' #We can manually change the blue to orange :
-#' #first find out color names by looking at the out$colors (but in right order using out$orderSamples)
-#' out$colors[out$orderSamples[1:10],c("nPCA=5,findBestK=T","nPCA=5,k=3,findBestK=F")]
+#' #We can manually switch the red ("#E31A1C") and green ("#33A02C") in the first cluster:
 #' #change "#1F78B4" to "#FF7F00"
-#' newColorMat<-out$colors
-#' newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
+#' showBigPalette(wh=1:5) #see what the default colors are and their names
+#' newColorMat<-clusterColors(cl)[[clOrder[1]]]
+#' newColorMat[2:3,"color"]<-c("#E31A1C","#33A02C")
+#' clusterColors(cl)[[clOrder[1]]]<-newColorMat
 #' #replot by setting 'input="colors"'
-#' plotClusters(newColorMat[out$orderSamples,],input="colors")
-#'
+#' par(mfrow=c(1,2))
+#' plotClusters(cl,orderClusters=clOrder,orderSamples=orderSamples(cl),existingColors="all")
+#' plotClusters(cl, orderClusters=clOrder,resetColors=TRUE,resetOrder=TRUE,axisLine=-2)
+#' par(mfrow=c(1,1))
+
 #' #set some of clusterings arbitrarily to "-1", meaning not clustered (white), and "-2" (another possible designation getting gray, usually for samples not included in original clustering)
 #' clMatNew<-apply(allClusters(cl),2,function(x){
 #'	wh<-sample(1:nSamples(cl),size=10)
@@ -118,10 +121,10 @@ setMethod(
 #' @rdname plotClusters
 #' @param existingColors how to make use of the exiting colors in the 
 #' ClusterExperiment object. 'ignore' will ignore them and assign new colors. 
-#' 'firstOnly' will use the existing colors of only the 1st clustering, 
-#' and then give new colors for the remaining. 'all' will use all of the existing colors
+#' 'firstOnly' will use the existing colors of only the 1st clustering,
+#' and then give new colors for the remaining (not implemented yet). 'all' will use all of the existing colors
 #' @param resetColors logical. Whether to reset the clusterColors in the ClusterExperiment object
-#' @param updateOrer logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.
+#' @param resetOrderSamples logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.
 setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",orderClusters="numeric"),

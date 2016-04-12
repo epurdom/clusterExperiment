@@ -37,16 +37,24 @@
 .thisPal<-.thisPal[-31] #very similar to 7
 #' Large palette of colors 
 #' @name bigPalette
-#' @aliases bigPalette showThisPal
+#' @aliases bigPalette showBigPalette
 #' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotClusters}} and
 #' accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
 bigPalette<-.thisPal
 
 #' @rdname bigPalette
-showThisPal<-function(){
-	plot(1:length(.thisPal),y=1:length(.thisPal),pch=19,col=.thisPal,cex=3)
-	text(1:length(.thisPal),x=1:length(.thisPal),y=1:length(.thisPal),pos=1)
-
+showBigPalette<-function(wh=NULL){
+  oldMar<-par("mar")
+  if(is.null(wh)){
+    col<-.thisPal
+    wh<-1:length(col)
+  }
+  else{ col<-.thisPal[wh]}
+  par(mar=c(2.1,2.1,2.1,2.1))
+	plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+	text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
+	text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
+	par(mar=oldMar)
 }
 
 
