@@ -261,7 +261,6 @@ setMethod(
     if(is.null(clusterInfo)) {
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
-
     out <- new("ClusterExperiment",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),

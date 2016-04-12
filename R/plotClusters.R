@@ -52,7 +52,7 @@
 #'
 #' \item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
 #'
-#' \item{\code{groupToColorLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
+#' \item{\code{clusterColors}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson
@@ -72,7 +72,7 @@
 #' clusterLabels(cl)<-x
 #' par(mar=c(2,10,1,1))
 #' out<-plotClusters(cl,axisLine=-1)
-#' out$groupToColorLegend[1:2]
+#' out$clusterColors[1:2]
 #' head(out$color[out$orderSamples,1:2])
 #' 
 #' #We can also change the order of the clusterings. Notice how this dramatically changes the plot!
@@ -116,12 +116,46 @@ setMethod(
 
 
 #' @rdname plotClusters
+#' @param existingColors how to make use of the exiting colors in the 
+#' ClusterExperiment object. 'ignore' will ignore them and assign new colors. 
+#' 'firstOnly' will use the existing colors of only the 1st clustering, 
+#' and then give new colors for the remaining. 'all' will use all of the existing colors
+#' @param resetColors logical. Whether to reset the clusterColors in the ClusterExperiment object
+#' @param updateOrer logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.
 setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",orderClusters="numeric"),
-  definition = function(clusters, orderClusters,...)
+  definition = function(clusters, orderClusters,existingColors=c("ignore","all"),resetColors=FALSE,resetOrderSamples=FALSE,...)
   {
-    plotClusters(allClusters(clusters),orderClusters=orderClusters,input="clusters",...)
+      #ToDo: implement a 'firstOnly' option that would only make use of the colors of the first row. Will require monkeying around with the internal plotting functions.
+    existingColors<-match.arg(existingColors)
+    if(existingColors!="ignore") currPlot<-FALSE else currPlot<-TRUE
+    if(!currPlot){
+        args<-list(...)
+        if("plot" %in% names(args) ){
+            whPlot<-which(names(args)=="plot")
+            if(length(args)>length(whPlot)) args<-args[-whPlot]
+            else args<-NULL
+        }
+        outval<-do.call(plotClusters,c(list(clusters=allClusters(clusters),orderClusters=orderClusters,input="clusters",plot=FALSE),args))
+        #make new color matrix with existingColors
+        existingClusters<-allClusters(clusters)[,orderClusters]
+        existingClusterColors<-clusterColors(clusters)[orderClusters]
+        newColorMat<-do.call("cbind",lapply(1:ncol(existingClusters),function(ii){
+            colMat<-existingClusterColors[[ii]]
+            cl<-existingClusters[,ii]
+            m<-match(as.character(cl),colMat[,"clusterIds"])
+            colVect<-colMat[m,"color"]
+        }))
+        do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=TRUE),args))
+        
+        if(resetColors) clusterColors(clusters)[orderClusters]<-outval$clusterColors
+        
+    }
+    else outval<-plotClusters(clusters=allClusters(clusters),orderClusters=orderClusters,input="clusters",...)
+    if(resetOrderSamples) orderSamples(clusters)<-outval$orderSamples
+    invisible(clusters)   
+    
   })
 
 #' @rdname plotClusters
@@ -192,14 +226,14 @@ setMethod(
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
-				leg<-out$groupToColorLegend[[i]]
+				leg<-out$clusterColors[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
 				if(any(wh<-leg[,"clusterIds"]== -2))
 				leg[wh,"color"]<-missingColor
 				return(leg)
 			})
-			names(newColorLeg)<-names(out$groupToColorLegend)
+			names(newColorLeg)<-names(out$clusterColors)
 			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
 				out$colors[clusters[i,]=="-1",i]<-unassignedColor
 				out$colors[clusters[i,]=="-2",i]<-missingColor
@@ -208,7 +242,7 @@ setMethod(
 			if(plot) do.call(".clusterTrackingPlot",c(list(colorMat=xColors[out$orderSamples,]),clusterPlotArgs,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
-			out$groupToColorLegend<-newColorLeg
+			out$clusterColors<-newColorLeg
 		}
 		else{
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=plot),plotTrackArgs,clusterPlotArgs ,list(...)))
@@ -280,13 +314,13 @@ setMethod(
 	#browser()
 	
 	if(plot) .clusterTrackingPlot(t(colorM[,index,drop=FALSE]),...)
-	groupToColorLegend<-lapply(1:nrow(clusters),function(ii){
+	clusterColors<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
 		(unique(mat))
 	})
-	names(groupToColorLegend)<-rownames(clusters)
-	invisible(list(orderSamples=index,colors=t(colorM),aligned=t(alignCl),groupToColorLegend=groupToColorLegend))
+	names(clusterColors)<-rownames(clusters)
+	invisible(list(orderSamples=index,colors=t(colorM),aligned=t(alignCl),clusterColors=clusterColors))
 
 }
 
@@ -459,27 +493,22 @@ setMethod(
 }
 
 
-##from colorList, make color matrix
-convertClusterColors<-function(ceObject,output=c("aheatmap","matrix")){
-    if(!inherits(ceObject,"ClusterExperiment")) stop("ceObject must be a ClusterExperiment object")
-    output<-match.arg(clusterColors)
-    colorList<-clusterColors(ceObject)
-    if(output=="aheatmap"){
-        
-    }
-    if(output=="matrix"){
-        
-    }
-}
-#' Make color annotation for input to plotHeatmap from output of plotClusters
-#'
-#' @param trackingOut the output from \code{\link{plotClusters}}
-#' @rdname plotClusters
-makeAnnoColor<-function(trackingOut){
-    lapply(trackingOut$groupToColorLegend,function(x){
-        z<-as.character(x[,"Color"])
-        names(z)<-as.character(as.numeric(x[,"Original"]))
-        return(z)
-    })
-}
+# ##from colorList, make color matrix
+# #' @rdname plotClusters
+# convertClusterColors<-function(clusters,output=c("aheatmapFormat","matrix"),newClusterList=NULL){
+#     output<-match.arg(clusterColors)
+#     
+#     
+# }
+# #' Make color annotation for input to plotHeatmap from output of plotClusters
+# #'
+# #' @param trackingOut the output from \code{\link{plotClusters}}
+# #' @rdname plotClusters
+# makeAnnoColor<-function(trackingOut){
+#     lapply(trackingOut$clusterColors,function(x){
+#         z<-as.character(x[,"Color"])
+#         names(z)<-as.character(as.numeric(x[,"Original"]))
+#         return(z)
+#     })
+# }
 

@@ -13,21 +13,28 @@ clMatNew<-apply(allClusters(cl),2,function(x){
 cl3<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
-  plotClusters(cl) 
-  plotClusters(cl3) #test -1
-  x<-plotClusters(cl2,orderClusters="pipeline")
-  expect_equal(dim(allClusters(cl)),dim(x$colors))
-  expect_equal(dim(allClusters(cl)),dim(x$aligned))
-  expect_equal(length(x$groupToColorLegend),ncol(allClusters(cl)))
-  xx<-plotClusters(cl2,orderClusters="clusterMany")
-  expect_equal(x,xx)
+    #test matrix version
+    x<-plotClusters(clusters=allClusters(cl))
+    expect_equal(dim(allClusters(cl)),dim(x$colors))
+    expect_equal(dim(allClusters(cl)),dim(x$aligned))
+    expect_equal(length(x$clusterColors),ncol(allClusters(cl)))
+    xx<-plotClusters(cl2,orderClusters="clusterMany")
+    expect_equal(plotClusters(clusters=cl2,orderClusters="pipeline"),xx)
+    
+    #test CE version
+    x<-plotClusters(cl)
+    expect_is(x,"ClusterExperiment")
+    expect_equal( x,cl)
+    plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
+    x2<-plotClusters(cl,existingColors="all")
+    expect_false(isTRUE(all.equal(x1,x2)))
+    #test -1
+    plotClusters(cl3) 
+    x1<-plotClusters(clusters=cl2,orderClusters="pipeline")
+
+  
   wh<-c(3,4,NCOL(allClusters(cl)))
   x2<-plotClusters(cl,orderClusters=wh)
-  expect_equal(dim(x2$colors),c(NCOL(simData),3))
-  expect_equal(dim(x2$aligned),c(NCOL(simData),3))
-  expect_equal(length(x2$groupToColorLegend),3)
-  x3<-plotClusters(cl,orderClusters=wh)
-  expect_equal(x3,x2)
   x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)])
   expect_false(isTRUE(all.equal(x3,x4)))
   x5<-plotClusters(cl,orderClusters=2)

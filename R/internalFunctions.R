@@ -21,7 +21,8 @@
     if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
     if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
     cNames<-colnames(clMat)
-    if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from plotClusters
+    origClMat<-clMat
+    if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from some plots where very carefully already chosen
     
     if(ncol(clMat)>1){
         colorMat<-apply(clMat,2,function(x){
@@ -43,13 +44,15 @@
 
     #convert ids into list of matrices:
     colorList<-lapply(1:ncol(clMat),function(ii){
-        col<-colorMat[,ii]
-        ids<-clMat[,ii]
-        uniqueIds<-unique(ids)
-        mIds<-match(uniqueIds,ids)
-        uniqueCols<-col[mIds]
-        mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
-        rownames(mat)<-uniqueIds
+#         col<-colorMat[,ii]
+#         ids<-clMat[,ii]
+#         origids<-origClMat[,ii]
+#         uniqueIds<-unique(ids)
+#         mIds<-match(uniqueIds,ids)
+#         uniqueCols<-col[mIds]
+#         mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
+        mat<-unique(cbind("clusterIds"=origClMat[,ii],"color"=colorMat[,ii]))
+        rownames(mat)<-mat[,"clusterIds"]
         return(mat)
     })
     names(colorList)<-cNames

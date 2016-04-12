@@ -6,7 +6,7 @@ labels <- gl(5, 2)
 labMat<-cbind(labels,labels)
 se <- SummarizedExperiment(mat)
 
-cc <- clusterExperiment(mat, as.numeric(labels), transformation = function(x){x})
+cc <- clusterExperiment(mat, as.numeric(labels)+2, transformation = function(x){x})
 cc2 <- clusterExperiment(se, as.numeric(labels), transformation = function(x){x})
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
