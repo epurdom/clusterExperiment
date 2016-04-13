@@ -28,7 +28,7 @@
 #' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
 #' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 #'	annCol=data.frame(PAM8=cl,Truth=trueCluster))
- 
+#' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
@@ -37,6 +37,7 @@ setMethod(
     makeDendrogram(x=assay(x),cl=primaryCluster(x),...)
   })
 
+#' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
   signature = "matrix",
@@ -102,6 +103,14 @@ setMethod(
     else{
       return(as.dendrogram(stats::hclust(dist(mediods)^2,members=nPerCluster,...)))		
     }
-  }
+  
 })
 
+#' @rdname plotDendrogram
+setMethod(
+    f = "plotDendrogram",
+    signature = "ClusterExperiment",
+    definition = function(x,...)
+    {
+        plot(dendrogram(x),...)
+    })

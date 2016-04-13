@@ -115,14 +115,21 @@ setGeneric(
     standardGeneric("clusterMany")
   }
 )
-
+#' @rdname plotDendrogram
+setGeneric(
+  name="plotDendrogram",
+  def=function(x,...)
+    {
+    standardGeneric("plotDendrogram")
+  }
+)
 #' @rdname plotClusters
 setGeneric(
-  name="plotClusters",
-  def=function(clusters, orderClusters,...)
+    name="plotClusters",
+    def=function(clusters, orderClusters,...)
     {
-    standardGeneric("plotClusters")
-  }
+        standardGeneric("plotClusters")
+    }
 )
 #' @rdname plotHeatmap
 setGeneric(
