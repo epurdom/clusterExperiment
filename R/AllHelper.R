@@ -153,6 +153,17 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+setReplaceMethod(
+  f = "coClustering",
+  signature = signature(object="ClusterExperiment", value="matrix"),
+  definition = function(object, value) {
+    object@coClustering <- value
+    validObject(object)
+    return(object)
+  }
+)
+
+#' @rdname ClusterExperiment-class
 setMethod(
   f = "dendrogram",
   signature = "ClusterExperiment",
@@ -189,7 +200,7 @@ setMethod(
   definition = function(x, whichRemove) {
    #browser()
     if(any(whichRemove>NCOL(allClusters(x)))) stop("invalid indices -- must be between 1 and",NCOL(allClusters(x)))
-    if(length(whichRemove)==NCOL(allClusters(x))){ 
+    if(length(whichRemove)==NCOL(allClusters(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
     }
@@ -216,17 +227,17 @@ setMethod(
   f = "pipelineClusterDetails",
   signature = signature("ClusterExperiment"),
   definition = function(x) {
-    
+
     if(length(clusterType(x))!=NCOL(allClusters(x))) stop("Invalid ClusterExperiment object")
-    #check if old iterations already exist; note assumes won't have previous iteration unless have current one. 
+    #check if old iterations already exist; note assumes won't have previous iteration unless have current one.
     existingOld<-lapply(.pipelineValues,function(ch){
       regex<-paste(ch,"_",sep="")
       grep(regex,clusterType(x))
-      
+
     })
     st<-strsplit(clusterType(x)[unlist(existingOld)],"_")
     oldValues<-data.frame(index=unlist(existingOld),type=sapply(st,.subset2,1),iteration=as.numeric(sapply(st,.subset2,2)),stringsAsFactors=FALSE)
-    
+
     wh<-which(clusterType(x) %in% .pipelineValues) #current iteration
     if(length(wh)>0){
       existingValues<-data.frame(index=wh,type=clusterType(x)[wh], iteration=0,stringsAsFactors=FALSE) #0 indicates current iteration
@@ -236,9 +247,9 @@ setMethod(
       if(nrow(oldValues)>0) existingValues<-oldValues
       else   return(NULL)
     }
-    
+
     return(existingValues)
-    
+
   }
 )
 #' @rdname pipelineClusters
@@ -260,7 +271,7 @@ setMethod(
     if(!is.null(ppIndex)){
       whIteration<-which(ppIndex[,"iteration"]%in%iteration)
       if(length(whIteration)>0){
-        index<-ppIndex[whIteration,"index"]  
+        index<-ppIndex[whIteration,"index"]
         return(allClusters(x)[,index,drop=FALSE])
       }
       else return(NULL)
@@ -375,12 +386,12 @@ setReplaceMethod(
 #       paramMatrix<-do.call("rbind",lapply(wwCC,function(ii){
 #         data.frame(index=ii,clusterInfo(x)[[ii]]["choicesParam"])
 #       }))
-#       
+#
 #     }
 #     else if(type=="clusterAll"){
-#       
+#
 #     }
-#     else{ 
+#     else{
 #       return(clusterInfo(x)[whCC])
 #     }
 #   }

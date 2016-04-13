@@ -17,10 +17,16 @@
 #' \code{\link{subsampleClustering}}.
 #' @param seqArgs list of additional arguments to be passed to
 #' \code{\link{seqCluster}}.
-#' @param isCount logical. Whether the data are in counts, in which case the default \code{transFun} argument is set as log(x+1). This is simply a convenience to the user, and can be overridden by giving an explicit function to \code{transFun}.
-#' @param transFun function A function to use to transform the input data matrix before clustering.
-#' @param dimReduce character A character identifying what type of dimensionality reduction to perform before clustering
-#' @param ndims integer An integer identifying how many dimensions to reduce to in the reduction specified by \code{dimReduce}
+#' @param isCount logical. Whether the data are in counts, in which case the
+#' default \code{transFun} argument is set as log(x+1). This is simply a
+#' convenience to the user, and can be overridden by giving an explicit function
+#' to \code{transFun}.
+#' @param transFun function A function to use to transform the input data matrix
+#' before clustering.
+#' @param dimReduce character A character identifying what type of
+#' dimensionality reduction to perform before clustering
+#' @param ndims integer An integer identifying how many dimensions to reduce to
+#' in the reduction specified by \code{dimReduce}
 #'
 #' @details If sequential=TRUE, the sequential clustering controls the 'k'
 #' argument of the underlying clustering so setting 'k=' in the list given to
@@ -53,25 +59,34 @@ setMethod(
   f = "clusterAll",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical", "pam","kmeans"), 
+      clusterFunction=c("tight", "hierarchical", "pam","kmeans"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),ndims=NA) {
-    
-    origX<-x #ngenes x nsamples
+      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
+      ndims=NA) {
+
+    origX <- x #ngenes x nsamples
     ##########
     ##transformation to data x that will be input to clustering
     ##########
-    dimReduce<-match.arg(dimReduce) #should be only 1
-    if(length(ndims)>1) stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
-    if(!is.na(ndims) & dimReduce=="none") warning("specifying ndims has no effect if dimReduce==`none`")
-    nPCADims<-if(dimReduce=="PCA") ndims else NA
-    nVarDims<-if(dimReduce=="mostVar") ndims else NA
-    transObj<-.transData(x,nPCADims=nPCADims, nVarDims=nVarDims,dimReduce=dimReduce,transFun=transFun,isCount=isCount)
-    x<-transObj$x
-    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) stop("Error in the internal transformation of x")
-    transFun<-transObj$transFun #need it later to create clusterExperimentObject
+    dimReduce <- match.arg(dimReduce) #should be only 1
+    if(length(ndims)>1) {
+      stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
+    }
+    if(!is.na(ndims) & dimReduce=="none") {
+      warning("specifying ndims has no effect if dimReduce==`none`")
+    }
+    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
+                           dimReduce=dimReduce, transFun=transFun,
+                           isCount=isCount)
+    x <- transObj$x
+    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
+      stop("Error in the internal transformation of x")
+    }
+    transFun <- transObj$transFun #need it later to create clusterExperimentObject
     N <- dim(x)[2]
-    
+
     ##########
     ##Checks that arguments make sense:
     ##########
@@ -79,14 +94,14 @@ setMethod(
       clusterFunction <- match.arg(clusterFunction)
       if(!subsample & clusterFunction !="pam")
         stop("If not subsampling, clusterFunction must be 'pam'")
-      typeAlg<-.checkAlgType(clusterFunction)
+      typeAlg <- .checkAlgType(clusterFunction)
     }
     else{
       if(! "typeAlg" %in% clusterDArgs)
         stop("if you provide your own clustering algorithm to be passed to
              clusterD, then you must specify 'typeAlg' in clusterDArgs")
       else
-        typeAlg<-clusterDArgs[["typeAlg"]]
+        typeAlg <- clusterDArgs[["typeAlg"]]
     }
     if(typeAlg == "K"){
       if("findBestK" %in% names(clusterDArgs) & !subsample & sequential){
@@ -98,8 +113,12 @@ setMethod(
 
     }
     if(sequential){
-      if(is.null(seqArgs)) stop("must give seqArgs so as to identify k0")
-      if(!"k0"%in%names(seqArgs)) stop("seqArgs must contain element 'k0'")
+      if(is.null(seqArgs)) {
+        stop("must give seqArgs so as to identify k0")
+      }
+      if(!"k0"%in%names(seqArgs)) {
+        stop("seqArgs must contain element 'k0'")
+      }
       outlist <- do.call("seqCluster",
                         c(list(x=t(x), subsample=subsample,
                                subsampleArgs=subsampleArgs,
@@ -141,7 +160,7 @@ setMethod(
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,
                                           typeAlg=typeAlg)
-      outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$results,N))
+      outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$results, N))
 
     }
 
@@ -159,8 +178,13 @@ setMethod(
                       dimReduce=dimReduce,
                       ndims=ndims
     ))
-    retval <- clusterExperiment(origX, outlist$clustering, transformation=transFun,clusterInfo=clInfo,clusterType="clusterAll")
-    if(subsample) retval@coClustering<-finalClusterList$subsampleCocluster
+    retval <- clusterExperiment(origX, outlist$clustering,
+                                transformation=transFun,
+                                clusterInfo=clInfo,
+                                clusterType="clusterAll")
+    if(subsample) {
+      retval@coClustering<-finalClusterList$subsampleCocluster
+    }
     validObject(retval)
     return(retval)
   }
@@ -172,7 +196,8 @@ setMethod(
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, ...) {
     outval <- clusterAll(assay(x), ...)
-    retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
+    retval <- clusterExperiment(x, primaryCluster(outval),
+                                transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval) #shouldn't this add to the end
     return(retval)
@@ -186,16 +211,16 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, ...) {
 
-    outval <- clusterAll(assay(x),...) 
+    outval <- clusterAll(assay(x),...)
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it
     #     retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
     #     retval@clusterInfo <- clusterInfo(outval)
     #     retval@clusterType <- clusterType(outval)
-    
+
     ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
-    retval<-addClusters(outval,x) #should keep primary cluster as most recent, so outval first
+    retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
     return(retval)
   }
 )

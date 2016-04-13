@@ -148,21 +148,37 @@ setValidity("ClusterExperiment", function(object) {
       }
       testColorCols1 <- sapply(object@clusterColors, function(x) {
         "color" %in% colnames(x)})
-      testColorCols2<-sapply(object@clusterColors,function(x){"clusterIds" %in% colnames(x)})
-    if(!all(testColorCols1) || !all(testColorCols2)) return("each element of 'clusterColors' must be matrix with at least 2 columns, and at least 2 columns have names 'clusterIds' and 'color'")
-    testColorCols1<-sapply(object@clusterColors,function(x){is.character(x)})
-    if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix of character values")
-    testColorCols1<-sapply(1:length(object@clusterColors),function(ii){
+      testColorCols2 <- sapply(object@clusterColors, function(x) {
+        "clusterIds" %in% colnames(x)})
+    if(!all(testColorCols1) || !all(testColorCols2)) {
+      return("each element of `clusterColors` must be matrix with at least 2
+             columns, and at least 2 columns have names `clusterIds` and
+             `color`")
+    }
+    testColorCols1 <- sapply(object@clusterColors, function(x){is.character(x)})
+    if(!all(testColorCols1)) {
+      return("each element of `clusterColors` must be matrix of character
+             values")
+    }
+    testColorCols1 <- sapply(1:length(object@clusterColors), function(ii){
         col<-object@clusterColors[[ii]]
         x<-object@clusterMatrix[,ii]
         y<-as.numeric(col[,"clusterIds"])
         all(y %in% x)
     })
-    if(!all(testColorCols1)) return("each element of 'clusterColors' must be matrix with column 'clusterIds' matching the corresponding integer valued clusterMatrix values")
-
+    if(!all(testColorCols1)) {
+      return("each element of `clusterColors` must be matrix with column
+             `clusterIds` matching the corresponding integer valued
+             clusterMatrix values")
+    }
   }
-  if(length(object@orderSamples)!=NCOL(assay(object))) return("'orderSamples' must be of same length as number of samples (NCOL(assay(object)))")
-  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) return("'orderSamples' must be values between 1 and the number of samples.")
+  if(length(object@orderSamples)!=NCOL(assay(object))) {
+    return("`orderSamples` must be of same length as number of samples
+         (NCOL(assay(object)))")
+  }
+  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) {
+    return("`orderSamples` must be values between 1 and the number of samples.")
+  }
   return(TRUE)
 })
 
