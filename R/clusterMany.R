@@ -11,38 +11,24 @@
 #' @param ks the range of k values (see details for meaning for different
 #' choices).
 #' @param alphas values of alpha to be tried. Only used for
-#' subsampleClusterMethod either 'tight' or 'hierarchical'.
-#' @param findBestK values of findBestK to be tried (logical) (only for 'pam')
-#' @param sequential values of sequential to be tried (logical) (only for 'pam')
-#' @param removeSil values of removeSil to be tried (logical) (only for 'pam')
-#' @param subsample values of subsample to be tried (logical)
-#' @param silCutoff values of silCutoff to be tried (only for 'pam')
-#' @param clusterMethod method used in clustering of subsampled data passed to
-#' argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other
-#' functions of this package, this must be a character vector of pre-defined
-#' clustering techniques provided by the package, and can not be user-defined.
-#' @param dimReduce character vector of dimensionality reduction methods to try,
-#' that should be some combination of 'PCA', 'mostVar' and 'none'
+#' subsampleclusterFunction either 'tight' or 'hierarchical'.
+#' @param clusterFunction method used in clustering of passed to clusterAll. 
+#' Note that unlike \code{clusterSingle}, this must be a character vector of pre-defined
+#' clustering techniques provided by the package, and can not be a user-defined function.
 #' @param nVarDims vector of the number of the most variable features to keep
 #' (when "mostVar" is identified in \code{dimReduce}). If NA is included, then
 #' the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
 #' in \code{dimReduce}). If NA is included, then the full dataset will also be
 #' included.
-#' @param transFun function to use to transform the data
-#' @param isCount logical. If transFun is missing, will be used to determine the
-#' transformation. log(x+1) will be the transformation for isCount=TRUE and
-#' otherwise the identify function x.
 #' @param eraseOld logical. Only relevant if input \code{x} is of class
 #' \code{ClusterExperiment}. If TRUE, will erase existing pipeline results
 #' (clusterMany as well as mergeClusters and combineMany). If FALSE,
 #' existing pipeline results will have "\code{_i}" added to the clusterType
 #' value, where \code{i} is one more than the largest such existing pipeline
 #' clusterType.
-#' @param clusterDArgs list of arguments to be passed to \code{\link{clusterD}}
-#' @param subsampleArgs list of arguments to be passed to
-#' \code{\link{subsampleClustering}}
-#' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
+#' @inheritParams clusterSingle
+#' @inheritParams clusterD
 #' @param ncores the number of threads
 #' @param random.seed a value to set seed before each run of clusterSingle
 #' (so that all of the runs are run on the same subsample of the data)
@@ -57,9 +43,9 @@
 #' \code{run=FALSE} back into the algorithm (see example).
 #' @param ... arguments to be passed on to mclapply (if ncores>1)
 #'
-#' @details While the function allows for multiple values of clusterMethod, the
+#' @details While the function allows for multiple values of clusterFunction, the
 #' code does not reuse the same subsampling matrix and try different
-#' clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods
+#' clusterFunctions on it. If sequential=TRUE, different subsampleclusterFunctions
 #' will create different sets of data to subsample so it is not possible; if
 #' sequential=FALSE, we have not implemented functionality for this reuse.
 #' Setting the \code{random.seed} value, however, should mean that the
@@ -77,7 +63,7 @@
 #'
 #' @details The argument 'ks' is interpreted differently for different choices
 #' of the other parameters. When/if sequential=TRUE, ks defines the argument k0
-#' of \code{\link{seqCluster}}. When/if clusterMethod="pam" and
+#' of \code{\link{seqCluster}}. When/if clusterFunction="pam" and
 #' "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}}
 #' unless kRange is specified by the user via the clusterDArgs; note this means
 #' that the default option of setting kRange that depends on the input k (see
@@ -118,12 +104,12 @@
 
 #' #check how many and what runs user choices will imply:
 #' checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-#' clusterMethod="pam",
+#' clusterFunction="pam",
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(checkParams$paramMatrix)
 #' #Now actually run it
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-#' clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
+#' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
 #' colnames(allClusters(cl))
 #' #make names shorter for plotting
@@ -147,7 +133,7 @@
 #'	#following code takes around 1+ minutes to run because of the subsampling that is redone each time:
 #'	system.time(clusterTrack<-clusterMany(simData, ks=2:15,
 #'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
-#'	subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam",
+#'	subsample=c(FALSE),removeSil=c(TRUE), clusterFunction="pam",
 #'	clusterDArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 
 #' }
@@ -155,7 +141,7 @@
 #Work up example:
 # clusterTrack<-clusterMany(simData, ks=2:3,
 # alphas=c(0.1), findBestK=c(TRUE),sequential=c(FALSE),
-# subsample=c(TRUE),removeSil=c(TRUE), clusterMethod=c("pam","tight","hierarchical",
+# subsample=c(TRUE),removeSil=c(TRUE), clusterFunction=c("pam","tight","hierarchical",
 # clusterDArgs = list(minSize = 5,kRange=2:15),subsampleArgsncores=1,random.seed=48120)
 #' @rdname clusterMany
 setMethod(
@@ -202,7 +188,7 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "list"),
-  definition = function(x, ks, clusterMethod, alphas=0.1, findBestK=FALSE,
+  definition = function(x, ks, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, verbose=FALSE,
                         clusterDArgs=list(minSize=5),
@@ -230,14 +216,14 @@ setMethod(
                          k=ks, alpha=alphas, findBestK=findBestK,
                          sequential=sequential,
                          removeSil=removeSil, subsample=subsample,
-                         clusterMethod=clusterMethod, silCutoff=silCutoff)
+                         clusterFunction=clusterFunction, silCutoff=silCutoff)
       ###########
       #Check param matrix:
       #don't vary them across ones that don't matter (i.e. 0-1 versus K);
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
       ###########
-      typeK <- which(param[,"clusterMethod"] %in% c("pam"))
+      typeK <- which(param[,"clusterFunction"] %in% c("pam"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
 
@@ -263,7 +249,7 @@ setMethod(
           }
         }
       }
-      type01 <- which(param[,"clusterMethod"] %in% c("hierarchical","tight"))
+      type01 <- which(param[,"clusterFunction"] %in% c("hierarchical","tight"))
       if(length(type01)>0){
         param[type01,"findBestK"] <- FALSE
         param[type01,"removeSil"] <- FALSE
@@ -330,7 +316,7 @@ setMethod(
       sequential <- as.logical(gsub(" ","",par["sequential"]))
       subsample <- as.logical(gsub(" ","",par["subsample"]))
       findBestK <- as.logical(gsub(" ","",par["findBestK"]))
-      clusterMethod <- as.character(par[["clusterMethod"]])
+      clusterFunction <- as.character(par[["clusterFunction"]])
       if(!is.na(par[["k"]])){
         if(sequential) {
           seqArgs[["k0"]] <- par[["k"]]
@@ -349,7 +335,7 @@ setMethod(
         set.seed(random.seed)
       }
       clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
-                 clusterFunction=clusterMethod, clusterDArgs=clusterDArgs,
+                 clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }

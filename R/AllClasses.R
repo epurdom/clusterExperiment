@@ -1,3 +1,4 @@
+setOldClass("dendrogram")
 
 #' @title Class ClusterExperiment
 #'
@@ -60,7 +61,7 @@ setClass(
                primaryIndex = "numeric",
                clusterInfo = "list",
                clusterType = "character",
-               dendrogram = "list",
+               dendrogram = "dendrogram",
                coClustering = "matrix",
               clusterColors="list",
               orderSamples="numeric"
@@ -105,11 +106,15 @@ setValidity("ClusterExperiment", function(object) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
 
-  if(length(object@dendrogram) > 0) {
-    if(class(object@dendrogram) != "dendrogram") {
-      return("`dendrogram` must be of class dendrogram.")
-    }
-  }
+# now have assigned class to slot and constructor creates one automatically
+#   if(length(object@dendrogram) > 0) {
+#     if(class(object@dendrogram) != "dendrogram") {
+#       return("`dendrogram` must be of class dendrogram.")
+#     }
+#   }
+  ##Check dendrogram is on samples
+  if(nobs(object@dendrogram)!=NCOL(object)) return("dendrogram must have the same number of leaves as the number of samples")
+
   if(!all(is.na(object@coClustering)>0) &
        (NROW(object@coClustering) != NCOL(object@coClustering)
        | NCOL(object@coClustering) != NCOL(object))) {
@@ -287,7 +292,8 @@ setMethod(
                clusterType = clusterType,
                clusterInfo=clusterInfo,
                clusterColors=.makeColors(clusters, colors=bigPalette)$colorList,
-               orderSamples=1:ncol(se)
+               orderSamples=1:ncol(se),
+               dendrogram=makeDendrogram(Assays(assays(se))[[1]],clusters[,1],leaves="samples",unassigned="outgroup")
     )
     validObject(out)
     return(out)

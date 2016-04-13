@@ -290,10 +290,7 @@
 #         ###Create the clustering dendrogram:
 #         if(clusterSamples){
 #             if(inherits(clusterSamplesData, "dendrogram")){
-#                 if("nobs.dendrogram" %in% methods(nobs)){ #not all versions have nobs method for dendrograms; R3.2.0 has it; 3.1.1 doesn't
-#                     if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-#                 }
-#                 else{warning("This R version doesn't doesn't allow for checking that dendrogram supplied has correct number observations. If not, surprising downstream errors can occur.")}
+#                 if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
 #                 dendroCells<-clusterSamplesData	
 #             } 
 #             else{
@@ -308,10 +305,7 @@
 #         }
 #         if(clusterFeatures){
 #             if(inherits(clusterFeaturesData, "dendrogram")){
-#                 if("nobs.dendrogram" %in% methods(nobs)){ #not all versions have nobs method for dendrograms; R3.2.0 has it; 3.1.1 doesn't
-#                     if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-#                 }
-#                 else{warning("This R version doesn't doesn't allow for checking that dendrogram supplied has correct number observations. If not, surprising downstream errors can occur.")}
+#                 if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
 #                 dendroFeatures<-clusterFeaturesData	
 #             } 
 #             else{

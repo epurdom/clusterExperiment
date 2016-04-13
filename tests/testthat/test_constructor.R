@@ -2,7 +2,9 @@ library(clusterExperiment)
 
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
-labels <- gl(5, 2)
+labels <- as.character(gl(5, 2))
+labels[c(1:2)]<- c("-1","-2") #make sure some not assigned
+labels<-factor(labels)
 labMat<-cbind(labels,labels)
 se <- SummarizedExperiment(mat)
 

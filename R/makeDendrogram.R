@@ -44,16 +44,17 @@ setMethod(
   definition = function(x,cluster,
                    leaves=c("samples","clusters"),
                    unassignedSamples=c("outgroup","cluster","remove"),...){
-    
+    leaves<-match.arg(leaves)
     unassigned<-match.arg(unassignedSamples)
     dat<-x
     cl<-cluster
     if(leaves=="samples") full<-TRUE else full<-FALSE
-    if(nrow(dat)!=length(cl)) stop("cl must be the same length as the number of rows of dat")
-    if(is.null(rownames(dat))) rownames(dat)<-as.character(1:nrow(dat))
+    if(ncol(dat)!=length(cl)) stop("cl must be the same length as the number of columns of dat")
+    if(is.null(colnames(dat))) colnames(dat)<-as.character(1:ncol(dat))
     if(is.factor(cl)){warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
       cl<-as.numeric(as.character(cl))
     }
+    dat<-t(dat) #make like was in old code
     whRm<- which(cl!=-1)
     clFactor<-factor(cl[whRm])
     mediods<-do.call("rbind",by(dat[whRm,],clFactor,function(x){apply(x,2,median)}))
@@ -107,10 +108,13 @@ setMethod(
 })
 
 #' @rdname plotDendrogram
+#' @inheritParams makeDendrogram
 setMethod(
     f = "plotDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x,...)
+    definition = function(x,leaves=c("samples","clusters"),...)
     {
-        plot(dendrogram(x),...)
+        leaves<-match.arg(leaves)
+        if(leaves=="samples") plot(dendrogram(x),...)
+        else{plot(makeDendrogram(x,leaves="clusters"),...)}
     })

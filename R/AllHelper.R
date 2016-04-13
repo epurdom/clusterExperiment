@@ -171,6 +171,16 @@ setMethod(
     return(x@dendrogram)
   }
 )
+#' @rdname ClusterExperiment-class
+setReplaceMethod(
+    f = "dendrogram",
+    signature = signature("ClusterExperiment","dendrogram"),
+    definition = function(x,value){ #dendrogram is not S4 class, so can't do in signature, but can check in validObject.
+        x@dendrogram<-value
+        validObject(x)
+        return(x)
+    }
+)
 
 #' @rdname ClusterExperiment-class
 setMethod(
