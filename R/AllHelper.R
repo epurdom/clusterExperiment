@@ -4,14 +4,36 @@ setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
+    origN<-NCOL(x)
     out <- callNextMethod()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j,])
-    out@coClustering <- new("matrix")
-    out@dendrogram <- list()
+    out@coClustering <- new("matrix") ###Need to think about this
+    out@dendrogram<-NULL
+    ##Fix clusterColors slot, in case now lost a level:
+    out@clusterColors<-lapply(1:NCOL(out@clusterMatrix),function(ii){
+        colMat<-out@clusterColors[[ii]]
+        cl<-out@clusterMatrix[,ii]
+        whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
+        if(length(whRm)>0){
+            colMat<-colMat[-whRm,,drop=FALSE]
+        }
+        return(colMat)
+    })
+   # browser()
+    out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
+    #browser()
+    validObject(out)
     return(out)
   }
 )
-
+#' @rdname ClusterExperiment-class
+setMethod(
+    f = "removeUnclustered",
+    signature = "ClusterExperiment",
+    definition = function(x) {
+        return(x[,primaryCluster(x) >= 0])
+    }
+)
 ## show
 #' @rdname ClusterExperiment-class
 setMethod(
@@ -174,8 +196,8 @@ setMethod(
 #' @rdname ClusterExperiment-class
 setReplaceMethod(
     f = "dendrogram",
-    signature = signature("ClusterExperiment","dendrogram"),
-    definition = function(x,value){ #dendrogram is not S4 class, so can't do in signature, but can check in validObject.
+    signature = signature("ClusterExperiment","dendrogramOrNULL"),
+    definition = function(x,value){ 
         x@dendrogram<-value
         validObject(x)
         return(x)
@@ -326,14 +348,7 @@ setMethod(
 
 
 
-#' @rdname ClusterExperiment-class
-setMethod(
-  f = "removeUnclustered",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x[,primaryCluster(x) > 0])
-  }
-)
+
 
 #' @rdname ClusterExperiment-class
 setMethod(

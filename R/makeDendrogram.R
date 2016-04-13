@@ -55,7 +55,13 @@ setMethod(
       cl<-as.numeric(as.character(cl))
     }
     dat<-t(dat) #make like was in old code
-    whRm<- which(cl!=-1)
+    
+    #############
+    whRm<- which(cl>=0) #remove -1, -2
+    if(length(whRm)==0){
+        warning("all samples have clusterIds <0. Will just use all clustersIds")
+        whRm<-1:length(cl)
+    }
     clFactor<-factor(cl[whRm])
     mediods<-do.call("rbind",by(dat[whRm,],clFactor,function(x){apply(x,2,median)}))
     rownames(mediods)<-levels(clFactor)

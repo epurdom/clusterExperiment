@@ -1,5 +1,5 @@
 setOldClass("dendrogram")
-
+setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -61,7 +61,7 @@ setClass(
                primaryIndex = "numeric",
                clusterInfo = "list",
                clusterType = "character",
-               dendrogram = "dendrogram",
+               dendrogram = "dendrogramOrNULL",
                coClustering = "matrix",
               clusterColors="list",
               orderSamples="numeric"
@@ -113,7 +113,9 @@ setValidity("ClusterExperiment", function(object) {
 #     }
 #   }
   ##Check dendrogram is on samples
-  if(nobs(object@dendrogram)!=NCOL(object)) return("dendrogram must have the same number of leaves as the number of samples")
+  if(!is.null(object@dendrogram)){
+      if(nobs(object@dendrogram)!=NCOL(object)) return("dendrogram must have the same number of leaves as the number of samples")
+  }
 
   if(!all(is.na(object@coClustering)>0) &
        (NROW(object@coClustering) != NCOL(object@coClustering)
@@ -242,9 +244,9 @@ setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","character"),
   definition = function(se, clusters,...){
-    clusters <- as.numeric(factor(clusters))
-    warning("The character vector `clusters` was coerced to integer values (one
-            per cluster)")
+    clusters <- as.numeric(clusters) #if character values of numeric, will keep them.
+    if(any(is.na(clusters))) clusters<-as.numeric(factor(clusters))
+    warning("The vector `clusters` was coerced to integer values (one per cluster)")
     clusterExperiment(se,clusters,...)
     })
 #' @rdname ClusterExperiment-class
@@ -252,8 +254,7 @@ setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","factor"),
   definition = function(se, clusters,...){
-    clusters <- as.numeric(clusters)
-    warning("The factor `clusters` was coerced to numeric.")
+    clusters <- as.character(clusters)
     clusterExperiment(se,clusters,...)
   })
 #' @rdname ClusterExperiment-class
