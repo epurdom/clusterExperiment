@@ -60,6 +60,7 @@
 #' @seealso consensusClustering package
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
+#' ps<-c(5,10,15)
 #' cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
 #'      clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 #' clusterLabels(cl) 

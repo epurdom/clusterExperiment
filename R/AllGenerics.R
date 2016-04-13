@@ -6,6 +6,13 @@ setGeneric(
   }
 )
 
+#' @rdname makeDendrogram
+setGeneric(
+  name = "makeDendrogram",
+  def = function(x,  ...) {
+    standardGeneric("makeDendrogram")
+  }
+)
 
 #' @rdname ClusterExperiment-class
 setGeneric(

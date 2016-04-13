@@ -9,6 +9,7 @@
 #' 
 #' @details The data matrix defined by \code{assay(x)} is transformed based on the transformation function defined in x. If \code{dimReduce="none"} the transformed matrix is returned. 
 #' Otherwise, the user can request dimensionality reduction of the transformed data via \code{dimReduce}. 'PCA' refers to PCA of the transformed data with the top nPCADims kept. 'mostVar' refers to keeping the top most variable features (defined by taking the MAD across all samples), and nVarDims defines how many such features to keep.
+#' @details The pca uses prcomp on t(assay(x)) with center=TRUE and scale=TRUE (i.e. the feature are centered and scaled), so that it is performing PCA on the correlation matrix of the features.
 #' \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a vector of values, in which case a list will be returned with the appropriate datasets as elements of the list.
 #' 
 #' @return If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of length 1, a matrix will be returned of the same dimensions as assay(x). If these terms are vectors, then a list of data matrices will be return, each corresponding to the multiple choices implied by these parameters.
@@ -91,7 +92,7 @@ setMethod(
     if(max(nPCADims)>=NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
     if(min(nPCADims)<1) stop("the number of PCA dimensions must be equal to 1 or greater")
     if(max(nPCADims)>100) warning("the number PCA dimensions to be selected is greater than 100. Are you sure you meant to choose to use PCA dimensionality reduction rather than the top most variable features?")
-    prc<-t(stats::prcomp(t(x))$x)
+    prc<-t(stats::prcomp(t(x),center=TRUE,scale=TRUE)$x)
     if(NCOL(prc)!=NCOL(origX)) stop("error in coding of principle components.")
     if(length(nPCADims)==1 & length(dimReduce)==1){ #just return single matrix
       x<-prc[1:nPCADims,]

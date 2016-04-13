@@ -281,6 +281,7 @@ setMethod(
     #browser()
     if(class(outval)=="ClusterExperiment"){
       ##Check if clusterMany already ran previously
+      ###ToDo: check what happens if the only clusters existing are pipeline clusters
       x<-.updateCurrentPipeline(x,eraseOld)
       retval<-addClusters(outval,x)
       validObject(retval)

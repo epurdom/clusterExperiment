@@ -90,7 +90,7 @@
   ppIndex<-pipelineClusterDetails(x)
   if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
     if(eraseOld){ #removes all of them, not just current
-      newX<-removeClusters(x,ppIndex[,"index"]) ###Getting error: Error: evaluation nested too deeply: infinite recursion / options(expressions=)?
+      newX<-removeClusters(x,ppIndex[,"index"]) 
     }
     else{
       if(0 %in% ppIndex[,"iteration"]){
