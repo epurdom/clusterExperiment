@@ -117,7 +117,7 @@ showBigPalette<-function(wh=NULL){
 #' #compare the palettes on heatmap
 #' data(simData)
 #' data(simData)
-#' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' par(mfrow=c(2,3))
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")

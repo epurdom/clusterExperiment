@@ -16,12 +16,12 @@
 #' @slot clusterMatrix matrix. A matrix giving the integer-valued cluster ids
 #' for each sample. The rows of the matrix correspond to clusterings and columns
 #' to samples. The integer values are assigned in the order that the clusters
-#' were found, if found by setting sequential=TRUE in clusterAll. "-1" indicates
+#' were found, if found by setting sequential=TRUE in clusterSingle. "-1" indicates
 #' the sample was not clustered.
 #' @slot primaryIndex: numeric. An index that specifies the primary set of
 #' labels.
 #' @slot clusterInfo: list. A list with info about the clustering.
-#' If created from \code{\link{clusterAll}}, clusterInfo will include the
+#' If created from \code{\link{clusterSingle}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
 #' \itemize{
@@ -185,7 +185,7 @@ setValidity("ClusterExperiment", function(object) {
 #' @description The constructor \code{clusterExperiment} creates an object of
 #' the class \code{ClusterExperiment}. However, the typical way of creating
 #' these objects is the result of a call to \code{clusterMany} or
-#' \code{clusterAll}.
+#' \code{clusterSingle}.
 #'
 #' @description Note that when subsetting the data, the co-clustering and
 #' dendrogram information are lost.

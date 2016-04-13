@@ -66,7 +66,7 @@ clusterMany(x, ...)
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterAll (so that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle (so that all of the runs are run on the same subsample of the data)}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run, for the purpose of inspection by user (with rownames equal to the names of the resulting column names of clMat object that would be returned if \code{run=TRUE}).}
 
@@ -81,7 +81,7 @@ If \code{run=TRUE} and the input is a list of data sets, a list with the followi
 \itemize{
 \item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
 \item{\code{clusterInfo}}{a list with information regarding clustering result (only relevant entries for those clusterings with sequential=TRUE)}
-\item{\code{paramMatrix}}{a matrix giving the parameters of each clustering, where each column is a possible parameter set by the user and passed to \code{\link{clusterAll}} and and each row of paramMatrix corresponds to a clustering in \code{clMat} }
+\item{\code{paramMatrix}}{a matrix giving the parameters of each clustering, where each column is a possible parameter set by the user and passed to \code{\link{clusterSingle}} and and each row of paramMatrix corresponds to a clustering in \code{clMat} }
 \item{\code{clusterDArgs}}{a list of (possibly modified) arguments to clusterDArgs}
 \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to seqArgs}
 \item{\code{subsampleArgs}}{a list of (possibly modified) arguments to subsampleArgs}

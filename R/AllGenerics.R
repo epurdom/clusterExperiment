@@ -1,8 +1,8 @@
-#' @rdname clusterAll
+#' @rdname clusterSingle
 setGeneric(
-  name = "clusterAll",
+  name = "clusterSingle",
   def = function(x,  ...) {
-    standardGeneric("clusterAll")
+    standardGeneric("clusterSingle")
   }
 )
 

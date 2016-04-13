@@ -39,24 +39,24 @@
 #' data(simData)
 #' \dontrun{
 #' #following code takes some time.
-#' #use clusterAll to do sequential clustering
-#' #(same as example in seqCluster only using clusterAll ...)
+#' #use clusterSingle to do sequential clustering
+#' #(same as example in seqCluster only using clusterSingle ...)
 #' set.seed(44261)
-#' clustSeqHier_v2<-clusterAll(simData,clusterFunction="hierarchical",
+#' clustSeqHier_v2<-clusterSingle(simData,clusterFunction="hierarchical",
 #' sequential=TRUE,subsample=TRUE,
 #'	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
 #'	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
 #'	clusterDArgs=list(minSize=5))
 #' }
-#' #use clusterAll to do just clustering k=3 with no subsampling
-#' clustNothing<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' #use clusterSingle to do just clustering k=3 with no subsampling
+#' clustNothing<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
-#' @aliases clusterAll clusterAll-methods clusterAll,matrix-method
-#' clusterAll,ClusterExperiment-method
-#' @rdname clusterAll
+#' @aliases clusterSingle clusterSingle-methods clusterSingle,matrix-method
+#' clusterSingle,ClusterExperiment-method
+#' @rdname clusterSingle
 setMethod(
-  f = "clusterAll",
+  f = "clusterSingle",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical", "pam","kmeans"),
@@ -70,7 +70,7 @@ setMethod(
     ##########
     dimReduce <- match.arg(dimReduce) #should be only 1
     if(length(ndims)>1) {
-      stop("clusterAll only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
+      stop("clusterSingle only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
     }
     if(!is.na(ndims) & dimReduce=="none") {
       warning("specifying ndims has no effect if dimReduce==`none`")
@@ -181,7 +181,7 @@ setMethod(
     retval <- clusterExperiment(origX, outlist$clustering,
                                 transformation=transFun,
                                 clusterInfo=clInfo,
-                                clusterType="clusterAll")
+                                clusterType="clusterSingle")
     if(subsample) {
       retval@coClustering<-finalClusterList$subsampleCocluster
     }
@@ -190,12 +190,12 @@ setMethod(
   }
 )
 
-#' @rdname clusterAll
+#' @rdname clusterSingle
 setMethod(
-  f = "clusterAll",
+  f = "clusterSingle",
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, ...) {
-    outval <- clusterAll(assay(x), ...)
+    outval <- clusterSingle(assay(x), ...)
     retval <- clusterExperiment(x, primaryCluster(outval),
                                 transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
@@ -205,13 +205,13 @@ setMethod(
 )
 
 
-#' @rdname clusterAll
+#' @rdname clusterSingle
 setMethod(
-  f = "clusterAll",
+  f = "clusterSingle",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, ...) {
 
-    outval <- clusterAll(assay(x),...)
+    outval <- clusterSingle(assay(x),...)
 
     ## do we want to add the clustering or replace it?
     ## for now, replacing it

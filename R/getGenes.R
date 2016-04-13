@@ -52,7 +52,7 @@
 #' @examples
 #' data(simData)
 #' #create a clustering, for 8 clusters (truth was 4)
-#' cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#' cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' #basic F test, return all, even if not significant:
 #' testF<-getBestGenes(cl,simData,type="F",number=nrow(simData),

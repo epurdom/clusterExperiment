@@ -44,7 +44,7 @@
 #' \code{\link{subsampleClustering}}
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}
 #' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterAll
+#' @param random.seed a value to set seed before each run of clusterSingle
 #' (so that all of the runs are run on the same subsample of the data)
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #' of parameters that will be run, for the purpose of inspection by user
@@ -100,7 +100,7 @@
 #' (only relevant entries for those clusterings with sequential=TRUE)}
 #' \item{\code{paramMatrix}}{a matrix giving the parameters of each clustering,
 #' where each column is a possible parameter set by the user and passed to
-#' \code{\link{clusterAll}} and and each row of paramMatrix corresponds to a
+#' \code{\link{clusterSingle}} and and each row of paramMatrix corresponds to a
 #' clustering in \code{clMat} }
 #' \item{\code{clusterDArgs}}{a list of (possibly modified) arguments to
 #' clusterDArgs}
@@ -348,7 +348,7 @@ setMethod(
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }
-      clusterAll(x=dataList[[par[["dataset"]]]], subsample=subsample,
+      clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
                  clusterFunction=clusterMethod, clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,

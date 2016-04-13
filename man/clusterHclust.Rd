@@ -30,7 +30,7 @@ If full=TRUE, then the expanded dendrogram is created by giving all of the sampl
 \examples{
 data(simData)
 #create a clustering, for 8 clusters (truth was 3)
-cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))$cl
 #create dendrogram of clusters:
 hcl<-clusterHclust(dat=simData,cl,full=FALSE)
