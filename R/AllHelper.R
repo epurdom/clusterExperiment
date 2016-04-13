@@ -198,7 +198,7 @@ setMethod(
 setReplaceMethod(
     f = "dendrogram",
     signature = signature("ClusterExperiment","dendrogramOrNULL"),
-    definition = function(x,value){ 
+    definition = function(x,value){
         x@dendrogram<-value
         validObject(x)
         return(x)
@@ -257,7 +257,7 @@ setMethod(
         orderSamples<-orderSamples(x)
             }
     retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
-    retval@coMat<-coMat
+    retval@coClustering<-coMat
     validObject(retval)
     clusterColors(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
