@@ -3,7 +3,7 @@ data(simData)
 if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
 
 test_that("`combineMany` works with matrix and ClusterExperiment objects", {
-            clustNothing <- clusterMany(simData, ks=c(3,4),clusterMethod="pam",
+            clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         isCount=FALSE,verbose=FALSE)
 
@@ -36,13 +36,13 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 })
 
 test_that("`combineMany` works when multiple runs of pipeline", {
-  clustNothing <- clusterMany(simData, ks=c(3,4),clusterMethod="pam",
+  clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
                               subsample=FALSE, sequential=FALSE,
                               isCount=FALSE,verbose=FALSE)
 
   shared1 <- combineMany(clustNothing, "all")
 
-  clustNothing2 <- clusterMany(shared1, ks=c(5,6), clusterMethod="pam",
+  clustNothing2 <- clusterMany(shared1, ks=c(5,6), clusterFunction="pam",
                                subsample=FALSE, sequential=FALSE,
                                isCount=FALSE,verbose=FALSE)
 
