@@ -241,10 +241,10 @@ setGeneric(
     }
 )
 
-#' @rdname findSharedClusters
+#' @rdname combineMany
 setGeneric(
-  name = "findSharedClusters",
+  name = "combineMany",
   def = function(x, whichClusters, ...) {
-    standardGeneric("findSharedClusters")
+    standardGeneric("combineMany")
   }
 )

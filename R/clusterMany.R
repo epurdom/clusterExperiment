@@ -35,7 +35,7 @@
 #' otherwise the identify function x.
 #' @param eraseOld logical. Only relevant if input \code{x} is of class
 #' \code{ClusterExperiment}. If TRUE, will erase existing pipeline results
-#' (clusterMany as well as mergeClusters and findSharedClusters). If FALSE,
+#' (clusterMany as well as mergeClusters and combineMany). If FALSE,
 #' existing pipeline results will have "\code{_i}" added to the clusterType
 #' value, where \code{i} is one more than the largest such existing pipeline
 #' clusterType.

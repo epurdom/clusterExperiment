@@ -40,7 +40,7 @@
 #' @param box logical, whether to draw box around the plot
 #' @param ... for \code{plotClusters} arguments passed to \code{\link{plot}} if \code{add=FALSE}.
 
-#' @details If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, findSharedClusters, clusterMany.
+#' @details If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, combineMany, clusterMany.
 #' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterColors and/or orderSamples slots have been updated (depending on the arguments)
 #' @return If \code{clusters} is a matrix, plotClusters returns (invisibly) the orders and other things that
 #' go into making the matrix. Specifically, a list with the following elements

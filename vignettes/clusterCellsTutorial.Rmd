@@ -127,7 +127,7 @@ The package encodes many common practices that are shared across clustering algo
 
 There are two main user functions for clustering, `clusterAll` and `clusterMany`. `clusterAll` is the wrapper function that calls the underlying clustering functions. `clusterMany` is a convenience function that implements `clusterAll` across combinations of parameter choices. Such parameter choices can be the clustering method, whether to subsample the data, or the specific parameters of the clustering algorithm (e.g. the number of clusters in kmeans).
 
-A common workflow could be to apply `clusterMany` to the data to get a large collection of clusterings, each from clustering based on different parameters. To try to find a clustering presumably robust to the parameter choices, `clusterExperiment` provides a function `findSharedClusters` that tries to find a unifying clustering of the samples. 
+A common workflow could be to apply `clusterMany` to the data to get a large collection of clusterings, each from clustering based on different parameters. To try to find a clustering presumably robust to the parameter choices, `clusterExperiment` provides a function `combineMany` that tries to find a unifying clustering of the samples. 
 
 We find that many methods for choosing the appropriate number of clusters for methods like k-means err on the side of smaller number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data (and many of the default parameters are set for finding many clusters). We provide the function `clusterHclust` to perform hierarchical clustering of the resulting clusters and the function `mergeClusters` to follow that hiearchy and merge the clusters based on the percentage of significantly different genes found in the comparisons of different arms of the hiearchy.
 
@@ -451,7 +451,7 @@ if (!is.null(arguments)){
   if (arguments == "plotClusters"){colargs = c(rep("black", 6), "red", "black")}else{colargs = c(rep("black", 7), "red")}
   }else{colargs = rep("black", 8)}
 par(mar=c(1, 4, 2, 2))
-names = c("clusterMany", "clusterAll", "clusterAll", "...", "clusterAll", "output", "plotClusters", "findSharedClusters")
+names = c("clusterMany", "clusterAll", "clusterAll", "...", "clusterAll", "output", "plotClusters", "combineMany")
 M = matrix(0, nrow=8, ncol=8, byrow=TRUE)
 M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 1] <- M[6, 2] <- M[6, 3] <- M[6, 4] <- M[6, 5] <- M[7, 6] <- M[8, 6] <- ""
 diagram::plotmat(M, pos=c(1, 4, 1, 2), name=names, lwd=1, box.lwd=2, box.cex=0.5, box.size=0.08, box.type=c(rep("square", 5), "diamond", rep("square", 2)), box.prop=0.2, curve=0, main="clusterMany Workflow", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
@@ -462,7 +462,7 @@ par(mar=c(5.1, 4.1, 4.1, 2.1))
 `clusterMany` is a function for running many different combinations of parameters or different datasets. All combinations given by the user are run through `clusterAll` (though the function does some (minimal) checking to remove nonsensical combinations). 
 The calls to `clusterAll` can also be parallelized across multiple cores (by setting the argument `ncores` to be greater than 1).
 
-After `clusterMany` is run, the function `plotClusters` can be used to visualize the many different cluster assignments that resulted, and `findSharedClusters` can be used to determine a consensus clustering across the parameter combinations. Finally, `mergeClusters`, described above, can be used to determine whether some clusters in the consensus clustering should be merged.
+After `clusterMany` is run, the function `plotClusters` can be used to visualize the many different cluster assignments that resulted, and `combineMany` can be used to determine a consensus clustering across the parameter combinations. Finally, `mergeClusters`, described above, can be used to determine whether some clusters in the consensus clustering should be merged.
 
 ```{r, echo=FALSE}
 drawCompareChoices(arguments = "plotClusters")
@@ -503,12 +503,12 @@ Notice that the unassigned ("-1") entries are always color-coded white.
 
 The alignment (and color assignments) created by `plotClusters` are invisibly returned and can be used for other purposes (see help documentation). The alignment of the clusters is highly dependent on the order of the clusters, with the alignment starting with the first cluster in the first column, then the second aligned to the first, and so forth. Different orderings of the clusters can greatly change the visualizations.
 
-To find a consensus cluster across many different clusterings of the same data `findSharedClusters` can be used. The minimal input to `findSharedClusters` is a cluster matrix with samples as rows and different clustering assignments for each column. 
+To find a consensus cluster across many different clusterings of the same data `combineMany` can be used. The minimal input to `combineMany` is a cluster matrix with samples as rows and different clustering assignments for each column. 
 
 As an example, let us find the consensus cluster from the output of `clusterMany`. 
 
 ```{r}
-r <-findSharedClusters(result$clMat)
+r <-combineMany(result$clMat)
 table(r$clustering)
 plotClusters(cbind(FINAL=r$clustering,result$clMat))
 ```
@@ -516,12 +516,12 @@ plotClusters(cbind(FINAL=r$clustering,result$clMat))
 Let's look at the options we chose here. To determine whether samples should be clustered together, the parameter `proportion` is used to set the proportion of co-occurance we want as a cutoff. If we want to be strict, we can determine clusters only if they are always together in any clustering (`proportion=1`, the default). Samples that are unassigned in greater than `propUnassigned` will always be assigned a value of `-1` (i.e. will also be unassigned in the final clustering). And the option `minSize` forces all resulting cluster to have a minimal size equal to `minSize`.
 
 ```{r}
-r <-findSharedClusters(result$clMat, proportion=.7,minSize=10)
+r <-combineMany(result$clMat, proportion=.7,minSize=10)
 table(r$clustering)
 plotClusters(cbind(FINAL=r$clustering,result$clMat))
 ```
 
-We can also visualize the co-occurance matrix along with the final clusters, which is returned with the output of `findSharedClusters` (if `proportion<1`)
+We can also visualize the co-occurance matrix along with the final clusters, which is returned with the output of `combineMany` (if `proportion<1`)
 
 ```{r}
 plotHeatmap(clusterVector=r$clustering,heatData=exp(r$percentageShared),eps=0)

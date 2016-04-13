@@ -72,7 +72,7 @@ clusterMany(x, ...)
 
 \item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example).}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class \code{ClusterExperiment}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and findSharedClusters). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.}
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class \code{ClusterExperiment}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and combineMany). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.}
 }
 \value{
 If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, will return a \code{ClusterExperiment} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex

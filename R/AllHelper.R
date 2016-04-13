@@ -26,7 +26,7 @@ setMethod(
     cat("Total number of clusterings:", NCOL(allClusters(object)),"\n")
     typeTab<-names(table(clusterType(object)))
         cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
-        cat("findSharedClusters run?",if("findSharedClusters" %in% typeTab) "Yes" else "No","\n")
+        cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
         cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
@@ -221,7 +221,7 @@ setMethod(
 
 
 #Update here if change pipeline values. Also defines the order of them.
-.pipelineValues<-c("final","mergeClusters","findSharedClusters","clusterMany")
+.pipelineValues<-c("final","mergeClusters","combineMany","clusterMany")
 #' @rdname pipelineClusters
 setMethod(
   f = "pipelineClusterDetails",

@@ -110,7 +110,7 @@ Align multiple clusters of the same set of samples and provide a color-coded plo
 Make color annotation for input to plotHeatmap from output of plotClusters
 }
 \details{
-If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, findSharedClusters, clusterMany.
+If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, combineMany, clusterMany.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k
