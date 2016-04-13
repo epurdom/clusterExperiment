@@ -232,7 +232,7 @@ setMethod(f = "getBestGenes",
             type <- match.arg(type)
 
             if(type=="Dendro") {
-              stop("`type='Dendro'` not implemented yet for ClusterExperiment.")
+              dendro <- makeDendrogram(x, leaves="clusters")
             }
 
             if(voomCorrection) {
@@ -245,7 +245,7 @@ This makes sense only for counts.")
               dat <- transform(x)
             }
 
-            getBestGenes(dat, primaryCluster(x), type=type, dendro=NULL,
+            getBestGenes(dat, primaryCluster(x), type=type, dendro=dendro,
                          pairMat=pairMat, returnType=returnType,
                          contrastAdj=contrastAdj, voomCorrection=voomCorrection)
 
