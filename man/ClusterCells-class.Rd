@@ -7,8 +7,8 @@
 \alias{addClusters,ClusterExperiment,ClusterExperiment-method}
 \alias{addClusters,ClusterExperiment,matrix-method}
 \alias{addClusters,ClusterExperiment,numeric-method}
-\alias{allClusters}
-\alias{allClusters,ClusterExperiment-method}
+\alias{clusterMatrix}
+\alias{clusterMatrix,ClusterExperiment-method}
 \alias{clusterExperiment}
 \alias{clusterExperiment,SummarizedExperiment,character-method}
 \alias{clusterExperiment,SummarizedExperiment,factor-method}
@@ -83,7 +83,7 @@ transformation(x)
 
 transform(x, nPCADims = NA, nVarDims = NA, dimReduce = "none")
 
-allClusters(x)
+clusterMatrix(x)
 
 removeClusters(x, whichRemove, exactMatch = TRUE)
 
@@ -105,7 +105,7 @@ removeClusters(x, whichRemove, exactMatch = TRUE)
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{allClusters}{ClusterExperiment}(x)
+\S4method{clusterMatrix}{ClusterExperiment}(x)
 
 \S4method{primaryCluster}{ClusterExperiment}(x)
 

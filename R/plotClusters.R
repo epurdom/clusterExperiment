@@ -78,7 +78,7 @@
 #' clusterColors(cl)[1:2]
 #'
 #' #We can also change the order of the clusterings. Notice how this dramatically changes the plot!
-#' clOrder<-c(3:6,1:2,7:ncol(allClusters(cl)))
+#' clOrder<-c(3:6,1:2,7:ncol(clusterMatrix(cl)))
 #' cl<-plotClusters(cl, orderClusters=clOrder,resetColors=TRUE,resetOrder=TRUE,axisLine=-2)
 #'
 #' #We can manually switch the red ("#E31A1C") and green ("#33A02C") in the first cluster:
@@ -94,7 +94,7 @@
 #' par(mfrow=c(1,1))
 
 #' #set some of clusterings arbitrarily to "-1", meaning not clustered (white), and "-2" (another possible designation getting gray, usually for samples not included in original clustering)
-#' clMatNew<-apply(allClusters(cl),2,function(x){
+#' clMatNew<-apply(clusterMatrix(cl),2,function(x){
 #'	wh<-sample(1:nSamples(cl),size=10)
 #'	x[wh]<- -1
 #'	wh<-sample(1:nSamples(cl),size=10)
@@ -141,9 +141,9 @@ setMethod(
             if(length(args)>length(whPlot)) args<-args[-whPlot]
             else args<-NULL
         }
-        outval<-do.call(plotClusters,c(list(clusters=allClusters(clusters),orderClusters=orderClusters,input="clusters",plot=FALSE),args))
+        outval<-do.call(plotClusters,c(list(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",plot=FALSE),args))
         #make new color matrix with existingColors
-        existingClusters<-allClusters(clusters)[,orderClusters]
+        existingClusters<-clusterMatrix(clusters)[,orderClusters]
         existingClusterColors<-clusterColors(clusters)[orderClusters]
         newColorMat<-do.call("cbind",lapply(1:ncol(existingClusters),function(ii){
             colMat<-existingClusterColors[[ii]]
@@ -156,7 +156,7 @@ setMethod(
         if(resetColors) clusterColors(clusters)[orderClusters]<-outval$clusterColors
         
     }
-    else outval<-plotClusters(clusters=allClusters(clusters),orderClusters=orderClusters,input="clusters",...)
+    else outval<-plotClusters(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",...)
     if(resetOrderSamples) orderSamples(clusters)<-outval$orderSamples
     invisible(clusters)   
     

@@ -156,9 +156,9 @@ setGeneric(
 
 #' @rdname ClusterExperiment-class
 setGeneric(
-  name = "allClusters",
+  name = "clusterMatrix",
   def = function(x) {
-    standardGeneric("allClusters")
+    standardGeneric("clusterMatrix")
   }
 )
 

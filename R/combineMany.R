@@ -123,11 +123,11 @@ setMethod(
                         clusterFunction="hierarchical",
                         propUnassigned=.5, minSize=5){
 
-    if(!all(whichClusters %in% 1:NCOL(allClusters(x)))) {
+    if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
     }
 
-    clusterMat <- allClusters(x)[, whichClusters, drop=FALSE]
+    clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, proportion=proportion,
                                   clusterFunction=clusterFunction,

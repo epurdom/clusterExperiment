@@ -31,7 +31,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             clustNothing5<- clusterMany(clustNothing3, ks=c(5:6),clusterMethod="pam",
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
                                            isCount=FALSE,eraseOld=FALSE)
-            expect_equal(NCOL(allClusters(clustNothing5)),5)
+            expect_equal(NCOL(clusterMatrix(clustNothing5)),5)
             ppIndex<-pipelineClusterDetails(clustNothing5)
             expect_equal(as.numeric(table(ppIndex[,"iteration"])),c(2,2))
             #check dim reduce 

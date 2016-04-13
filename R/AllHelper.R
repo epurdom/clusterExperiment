@@ -21,9 +21,9 @@ setMethod(
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
     cat("Table of clusters (of primary clustering):")
-    print(table(allClusters(object)[,primaryClusterIndex(object)]))
+    print(table(clusterMatrix(object)[,primaryClusterIndex(object)]))
     cat("Primary cluster type:", clusterType(object)[primaryClusterIndex(object)],"\n")
-    cat("Total number of clusterings:", NCOL(allClusters(object)),"\n")
+    cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
     typeTab<-names(table(clusterType(object)))
         cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
         cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
@@ -45,7 +45,7 @@ setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
-    if(length(value)!=NCOL(allClusters(object))) stop("value must be a vector of length equal to NCOL(allClusters(object)):",NCOL(allClusters(object)))
+    if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
 #note, don't currently require unique labels. Probably best, since mainly used for plotting
     colnames(object@clusterMatrix) <- value
     validObject(object)
@@ -58,8 +58,8 @@ setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
   definition = function(x, whichClusters){
-    if(!all(whichClusters %in% 1:NCOL(allClusters(x)))) stop("Invalid indices for clusterLabels")
-    labels<-colnames(allClusters(x))[whichClusters]
+    if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) stop("Invalid indices for clusterLabels")
+    labels<-colnames(clusterMatrix(x))[whichClusters]
     if(is.null(labels)) cat("No labels found for clusterings\n")
     return(labels)
   }
@@ -86,7 +86,7 @@ setMethod(
   f = "nClusters",
   signature = "ClusterExperiment",
   definition = function(x){
-    return(NCOL(allClusters(x)))
+    return(NCOL(clusterMatrix(x)))
   }
 )
 #' @rdname ClusterExperiment-class
@@ -107,7 +107,7 @@ setMethod(
 )
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "allClusters",
+  f = "clusterMatrix",
   signature = "ClusterExperiment",
   definition = function(x) {
     return(x@clusterMatrix)
@@ -209,17 +209,17 @@ setMethod(
   signature = signature("ClusterExperiment","numeric"),
   definition = function(x, whichRemove) {
    #browser()
-    if(any(whichRemove>NCOL(allClusters(x)))) stop("invalid indices -- must be between 1 and",NCOL(allClusters(x)))
-    if(length(whichRemove)==NCOL(allClusters(x))){
+    if(any(whichRemove>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
+    if(length(whichRemove)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
     }
-    newClLabels<-allClusters(x)[,-whichRemove,drop=FALSE]
+    newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove]
     newClusterType<-clusterType(x)[-whichRemove]
     newClusterColors<-clusterColors(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),1:NCOL(allClusters(x))[-whichRemove])
+    else pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
     retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
     validObject(retval)
     clusterColors(retval)<-newClusterColors
@@ -238,7 +238,7 @@ setMethod(
   signature = signature("ClusterExperiment"),
   definition = function(x) {
 
-    if(length(clusterType(x))!=NCOL(allClusters(x))) stop("Invalid ClusterExperiment object")
+    if(length(clusterType(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
     #check if old iterations already exist; note assumes won't have previous iteration unless have current one.
     existingOld<-lapply(.pipelineValues,function(ch){
       regex<-paste(ch,"_",sep="")
@@ -282,7 +282,7 @@ setMethod(
       whIteration<-which(ppIndex[,"iteration"]%in%iteration)
       if(length(whIteration)>0){
         index<-ppIndex[whIteration,"index"]
-        return(allClusters(x)[,index,drop=FALSE])
+        return(clusterMatrix(x)[,index,drop=FALSE])
       }
       else return(NULL)
     }

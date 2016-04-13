@@ -21,7 +21,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing3 <- clusterSingle(clustNothing2, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=4),is=FALSE)
-            expect_equal(NCOL(allClusters(clustNothing3)),2)
+            expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
             expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
             
           })

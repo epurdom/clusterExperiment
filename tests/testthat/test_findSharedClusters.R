@@ -9,7 +9,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 
             expect_error(combineMany(clustNothing), "missing")
 
-            shared1 <- combineMany(allClusters(clustNothing))
+            shared1 <- combineMany(clusterMatrix(clustNothing))
             shared2 <- combineMany(clustNothing, "all")
             expect_equal(shared1$clustering, primaryCluster(shared2))
 
@@ -32,7 +32,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 
             expect_true("combineMany" %in% clusterType(shared6))
             expect_true("combineMany" %in% clusterLabels(shared6))
-            expect_true(all(primaryCluster(shared6)==allClusters(shared6)[,"combineMany"]))
+            expect_true(all(primaryCluster(shared6)==clusterMatrix(shared6)[,"combineMany"]))
 })
 
 test_that("`combineMany` works when multiple runs of pipeline", {
@@ -47,11 +47,11 @@ test_that("`combineMany` works when multiple runs of pipeline", {
                                isCount=FALSE,verbose=FALSE)
 
   shared3 <- combineMany(clustNothing2, "all")
-  shared4 <- combineMany(allClusters(clustNothing2))
+  shared4 <- combineMany(clusterMatrix(clustNothing2))
   expect_equal(shared4$clustering, primaryCluster(shared3))
 
   shared5 <- combineMany(clustNothing2, "pipeline")
-  shared6 <- combineMany(allClusters(clustNothing2)[,1:2])
+  shared6 <- combineMany(clusterMatrix(clustNothing2)[,1:2])
   expect_equal(shared6$clustering, primaryCluster(shared5))
 
 

@@ -111,9 +111,9 @@
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
-#' colnames(allClusters(cl))
+#' colnames(clusterMatrix(cl))
 #' #make names shorter for plotting
-#' clMat<-allClusters(cl)
+#' clMat<-clusterMatrix(cl)
 #' colnames(clMat)<-gsub("TRUE","T",colnames(clMat))
 #' colnames(clMat)<-gsub("FALSE","F",colnames(clMat))
 #' colnames(clMat)<-gsub("k=NA,","",colnames(clMat))

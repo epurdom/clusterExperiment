@@ -73,7 +73,7 @@
       }
       else stop("There are no (current) pipeline clusters in the ClusterExperiment object")
     }
-    if(test=="all") wh<-1:ncol(allClusters(x))
+    if(test=="all") wh<-1:ncol(clusterMatrix(x))
   }
   else{
     if(!any(whClusters %in% clusterType(x))) stop("none of orderClusters match a clusterType of x")

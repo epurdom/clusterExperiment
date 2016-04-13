@@ -130,7 +130,7 @@ out$groupToColorLegend[1:2]
 head(out$color[out$orderSamples,1:2])
 
 #We can also change the order of the clusterings. Notice how this dramatically changes the plot!
-plotClusters(cl, orderClusters=c(3:6,1:2,7:ncol(allClusters(cl))),axisLine=-2)
+plotClusters(cl, orderClusters=c(3:6,1:2,7:ncol(clusterMatrix(cl))),axisLine=-2)
 
 #notice that the blue and orange are really arbitrarily different 
 #colors because not next to each other in row.
@@ -144,7 +144,7 @@ newColorMat[newColorMat=="#1F78B4"]<-"#FF7F00"
 plotClusters(newColorMat[out$orderSamples,],input="colors")
 
 #set some of clusterings arbitrarily to "-1", meaning not clustered (white), and "-2" (another possible designation getting gray, usually for samples not included in original clustering)
-clMatNew<-apply(allClusters(cl),2,function(x){
+clMatNew<-apply(clusterMatrix(cl),2,function(x){
 wh<-sample(1:nSamples(cl),size=10)
 x[wh]<- -1
 wh<-sample(1:nSamples(cl),size=10)
