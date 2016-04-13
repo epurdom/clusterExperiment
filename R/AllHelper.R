@@ -26,7 +26,8 @@ setMethod(
     return(out)
   }
 )
-#' @rdname ClusterExperiment-class
+#' @details removeUnclustered removes all samples that are unclustered (i.e. -1 or -2 assignment) in the primaryCluster of x (so they may be unclustered in other clusters found in clusterMatrix(x))
+#' @rdname addClusters
 setMethod(
     f = "removeUnclustered",
     signature = "ClusterExperiment",
@@ -213,7 +214,7 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname addClusters
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
@@ -225,7 +226,10 @@ setMethod(
     removeClusters(x,wh)
   }
 )
-#' @rdname ClusterExperiment-class
+#' @param exactMatch logical. Whether the whichRemove must exactly match a value of clusterType(x). Only relevant if whichRemove is character.
+#' @param whichRemove which clusters to remove. Can be numeric or character. If numeric, must give indices of clusterMatrix(x) to remove. If character, should match a clusterType of x
+#' @details removeClusters removes the clusters given by whichRemove. If all clusters are implied, then returns a SummarizedExperiment Object. If the primaryCluster is one of the clusters removed, the primaryClusterIndex is set to 1 and the dendrogram and cooccurance matrix are discarded and orderSamples is set to 1:NCOL(x).
+#' @rdname addClusters
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","numeric"),
@@ -240,12 +244,25 @@ setMethod(
     newClusterInfo<-clusterInfo(x)[-whichRemove]
     newClusterType<-clusterType(x)[-whichRemove]
     newClusterColors<-clusterColors(x)[-whichRemove]
-    if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
+    if(primaryClusterIndex(x) %in% whichRemove){
+        pIndex<-1
+        dend<-NULL
+        coMat<-new("matrix")
+        orderSamples<-1:NCOL(x)
+    }
+    else{
+        pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
+        dend<-dendrogram(x)
+        coMat<-x@coClustering
+        orderSamples<-orderSamples(x)
+            }
     retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
+    retval@coMat<-coMat
     validObject(retval)
     clusterColors(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
+    dendrogram(retval)<-dend
+    orderSamples(retval)<-orderSamples
     return(retval)
   }
 )
@@ -312,7 +329,10 @@ setMethod(
 }
 )
 
-#' @rdname ClusterExperiment-class
+#' @param x a ClusterExperiment Object
+#' @param y additional clusters to add to x. Can be ClusterExperiment Object or a matrix/vector of clusters
+#' @details addClusters adds y to x, and is thus not symmetric in the two arguments. In particular, the primaryCluster and all of its supporting information (dendrogram, coClustering, and orderSamples) are all kept from the x object, even if y is a ClusterExperiment.
+#' @rdname addClusters
 setMethod(
     f = "addClusters",
     signature = signature("ClusterExperiment", "ClusterExperiment"),
@@ -328,7 +348,7 @@ setMethod(
         return(x)
     }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname addClusters
 setMethod(
     f = "addClusters",
     signature = signature("ClusterExperiment", "matrix"),
@@ -337,7 +357,7 @@ setMethod(
         addClusters(x,ccObj)
     }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname addClusters
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "numeric"),
