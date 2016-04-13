@@ -6,7 +6,7 @@ setMethod(
   definition = function(x, i, j, ..., drop=TRUE) {
     origN<-NCOL(x)
     out <- callNextMethod()
-    out@clusterMatrix <- as.matrix(x@clusterMatrix[j,])
+    out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- new("matrix") ###Need to think about this
     out@dendrogram<-NULL
     ##Fix clusterColors slot, in case now lost a level:

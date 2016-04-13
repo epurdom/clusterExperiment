@@ -134,7 +134,7 @@ setGeneric(
 #' @rdname plotHeatmap
 setGeneric(
   name="plotHeatmap",
-  def=function(annotData,...)
+  def=function(data,...)
   {
     standardGeneric("plotHeatmap")
   }

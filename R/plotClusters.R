@@ -321,7 +321,9 @@ setMethod(
 	clusterColors<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
-		(unique(mat))
+		mat<-(unique(mat))
+		mat<-mat[order(mat[,"clusterIds"]),]
+        return(mat)
 	})
 	names(clusterColors)<-rownames(clusters)
 	invisible(list(orderSamples=index,colors=t(colorM),aligned=t(alignCl),clusterColors=clusterColors))

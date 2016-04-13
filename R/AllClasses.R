@@ -244,8 +244,7 @@ setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","character"),
   definition = function(se, clusters,...){
-    clusters <- as.numeric(clusters) #if character values of numeric, will keep them.
-    if(any(is.na(clusters))) clusters<-as.numeric(factor(clusters))
+    clusters <- .convertToNum(clusters)
     warning("The vector `clusters` was coerced to integer values (one per cluster)")
     clusterExperiment(se,clusters,...)
     })

@@ -20,4 +20,7 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test assignment
     dendrogram(cc2)<-makeDendrogram(cc2)
     expect_error(dendrogram(cc2)<-makeDendrogram(cc2,leaves="clusters"))
-    })
+    
+    plotDendrogram(cc2)
+    plotDendrogram(cc2,leaves="clusters")
+})

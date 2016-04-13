@@ -118,9 +118,11 @@ setMethod(
 setMethod(
     f = "plotDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x,leaves=c("samples","clusters"),...)
+    definition = function(x,leaves=c("samples","clusters"),
+                          main,...)
     {
         leaves<-match.arg(leaves)
-        if(leaves=="samples") plot(dendrogram(x),...)
-        else{plot(makeDendrogram(x,leaves="clusters"),...)}
+        if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
+        dend<- switch(leaves,"samples"=dendrogram(x),"clusters"=makeDendrogram(x,leaves="clusters"))
+        plot(dend,main=main,...)
     })

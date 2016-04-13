@@ -1,5 +1,21 @@
+.convertToNum<-function(x){
+    if(is.factor(x)){
+        x<-as.character(x)
+    }
+    if(is.character(x)){
+        op <- options(warn=2)
+        #if character values convert to numeric, will use that, otherwise convert to factor first
+        test <- try(as.numeric(x) ,silent=TRUE)
+        if(inherits(test,"try-error")) x<-as.numeric(factor(x))
+        else x<-test
+        options(op)
+        return(x)
+    }
+    else return(x)
+}
 ##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
 .makeIntegerClusters<-function(clMat){
+    if(!is.matrix(clMat)) stop("must give matrix input")
     if(!is.null(dim(clMat)) && ncol(clMat)>1){
         return(apply(clMat,2,function(x){ #make it numbers from 1:length(x), except for -1,-2
             vals<-unique(x[!x<0])

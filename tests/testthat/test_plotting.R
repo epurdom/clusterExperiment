@@ -2,7 +2,7 @@ ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
                      clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),type="User")
-clMatNew<-apply(allClusters(cl),2,function(x){
+clMatNew<-apply(clusterMatrix(cl),2,function(x){
 	wh<-sample(1:nSamples(cl),size=10)
 	x[wh]<- -1
 	wh<-sample(1:nSamples(cl),size=10)
@@ -11,7 +11,7 @@ clMatNew<-apply(allClusters(cl),2,function(x){
 	})
 	#make a new object with -1 values
 cl3<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
-
+clusterLabels(cl3)
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test matrix version
     x<-plotClusters(clusters=allClusters(cl))
@@ -41,13 +41,37 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
   plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
   plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
 })
-#' )
-#' colnames(cl$clMat) 
-#' #make names shorter for plotting
-#' colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
-#' colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
-#' colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
-#' par(mar=c(2,10,1,1))
-#' out<-plotClusters(cl$clMat,axisLine=-2)
-#' out$groupToColorLegend[1:2]
-#' head(out$color[out$index,1:2])
+
+smData<-simData[1:30,1:50]
+smCount<-simCount[1:30,1:50]
+
+test_that("`plotHeatmap` works with matrix objects", {
+    x1<-plotHeatmap(data=smData)
+    x2<-plotHeatmap(data=smCount,clusterSamplesData=smData,clusterFeaturesData=smData)
+    expect_equal(x1$aheatmapOut,x2$aheatmapOut)
+    
+    #check internal alignment of sampleData (alignSampleData=TRUE) is working:
+    sampleData<-clusterMatrix(cl3)[sample(size=50,1:nrow(clusterMatrix(cl3))),]
+    alList<-plotClusters(sampleData)
+    alCol<-alList$clusterColors
+    x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterColors=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
+    x2<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
+#   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
+#    expect_equal(lapply(x1$clusterColors,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterColors,function(x){x[,c("clusterIds","color")]}))
+})
+
+test_that("`plotHeatmap` works with CE objects", {
+    x1<-plotHeatmap(data=smData)
+    x2<-plotHeatmap(data=smCount,clusterSamplesData=smData,clusterFeaturesData=smData)
+    expect_equal(x1$aheatmapOut,x2$aheatmapOut)
+    
+    #check internal alignment of sampleData (alignSampleData=TRUE) is working:
+    sampleData<-clusterMatrix(cl3)[sample(size=50,1:nrow(clusterMatrix(cl3))),]
+    alList<-plotClusters(sampleData)
+    alCol<-alList$clusterColors
+    x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterColors=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
+    x2<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
+    #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
+    #    expect_equal(lapply(x1$clusterColors,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterColors,function(x){x[,c("clusterIds","color")]}))
+})
+
