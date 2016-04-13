@@ -18,7 +18,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             
             #test running on clusterExperiment Object -- should add the new clustering
             #not yet implemented
-            test <- clusterAll(se, clusterFunction="pam",
+            test <- clusterSingle(se, clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         clusterDArgs=list(k=4),isCount=FALSE)
             clustNothing3<- clusterMany(test, ks=c(3,4),clusterMethod="pam",

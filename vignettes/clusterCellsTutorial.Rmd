@@ -37,7 +37,7 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 	#x,y,box.size,box.prop,box.type
 	makeDf<-function(x,y,box.size,box.prop,box.type){data.frame(x=x,y=y,box.size=box.size,box.prop=box.prop,box.type=box.type,stringsAsFactors =FALSE)}
 	posMatrix<-makeDf(x=0.5,y=0.95,box.size=0.06,box.prop=0.4,box.type="diamond")
-	names<-c("clusterAll")
+	names<-c("clusterSingle")
 	
 	values<-"ellipse"
 	options<-"rect"
@@ -95,10 +95,10 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 	rownames(M)<-names
 	colnames(M)<-names
 	
-	M["clusterAll",Layer1Names]<-""
+	M["clusterSingle",Layer1Names]<-""
 	if(plotOptions) lapply(Layer1Names,function(x){M[x,Layer1Options[[x]] ]<<-""})
 		# if(2 %in% LayersToPlot){
-	# 	M["clusterAll",Layer2Names]<-""
+	# 	M["clusterSingle",Layer2Names]<-""
 	# }
 	# lapply(names(Layer2Names),function(x){
 # 		opts<-Layer1Options[[x]]
@@ -125,7 +125,7 @@ The goal of this package is to allow the user to try many different clustering a
 
 The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouete width, sequential clustering procedures, and so forth. It allows the user to specify the underlying clustering algorithm, as well as its parameters. 
 
-There are two main user functions for clustering, `clusterAll` and `clusterMany`. `clusterAll` is the wrapper function that calls the underlying clustering functions. `clusterMany` is a convenience function that implements `clusterAll` across combinations of parameter choices. Such parameter choices can be the clustering method, whether to subsample the data, or the specific parameters of the clustering algorithm (e.g. the number of clusters in kmeans).
+There are two main user functions for clustering, `clusterSingle` and `clusterMany`. `clusterSingle` is the wrapper function that calls the underlying clustering functions. `clusterMany` is a convenience function that implements `clusterSingle` across combinations of parameter choices. Such parameter choices can be the clustering method, whether to subsample the data, or the specific parameters of the clustering algorithm (e.g. the number of clusters in kmeans).
 
 A common workflow could be to apply `clusterMany` to the data to get a large collection of clusterings, each from clustering based on different parameters. To try to find a clustering presumably robust to the parameter choices, `clusterExperiment` provides a function `combineMany` that tries to find a unifying clustering of the samples. 
 
@@ -195,19 +195,19 @@ legend("topleft", c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4", "Cluster
 ```
 
 
-# Clustering with `clusterAll`
+# Clustering with `clusterSingle`
 
-Let us start with a walkthrough of `clusterAll`.  `clusterAll` is the primary function for performing the primary clustering tasks. Each of these tasks has an underlying (user-accessible) function and `clusterAll` is a wrapper around these tasks:
+Let us start with a walkthrough of `clusterSingle`.  `clusterSingle` is the primary function for performing the primary clustering tasks. Each of these tasks has an underlying (user-accessible) function and `clusterSingle` is a wrapper around these tasks:
 
 * clustering of a distance matrix (`clusterD`)
 * subsampling the samples, clustering the subsamples, and forming a co-occurance matrix (`subsampleClustering`)
 * sequentially removing the best cluster, and reclustering the remaining clusters (`seqCluster`)
 
-The arguments of `clusterAll` indicate which of these tasks should be performed and allow the user to pass options for each of these tasks (that are passed to the downstream functions). The options are documented in the more detailed documentation vignette, but here we run through some common examples. 
+The arguments of `clusterSingle` indicate which of these tasks should be performed and allow the user to pass options for each of these tasks (that are passed to the downstream functions). The options are documented in the more detailed documentation vignette, but here we run through some common examples. 
 
-Here are the argument calls for `clusterAll`:
-```{r clusterAllArgs, eval=FALSE}
-clusterAll(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+Here are the argument calls for `clusterSingle`:
+```{r clusterSingleArgs, eval=FALSE}
+clusterSingle(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 ```
 
 The primary arguments `clusterFunction`,`subsample`, and `sequential` govern each of these tasks:
@@ -222,7 +222,7 @@ The remaining  arguments (`clusterDArgs`, `subsampleArgs`, and `seqArgs`) are fo
 
 ## Example: PAM Clustering
 
-Let us use the function `clusterAll` to perform simple Partition Around Medoids (PAM) clustering on our expression data set with `k=5`. In this expression matrix, rows are samples and columns are features. 
+Let us use the function `clusterSingle` to perform simple Partition Around Medoids (PAM) clustering on our expression data set with `k=5`. In this expression matrix, rows are samples and columns are features. 
 
 To do standard pam clustering, we set `clusterFunction="pam"`. The remaining tasks (subsampling and sequential) will not be performed, so we set `subsample=FALSE` and `sequential=FALSE`, which we can visualize as:
 
@@ -232,12 +232,12 @@ drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"))
 
 However, notice that doing this will return an error:
 ```{r clusterPamError,error=TRUE}
-simpleCluster = clusterAll(expressions, subsample=FALSE, sequential=FALSE, clusterFunction="pam")
+simpleCluster = clusterSingle(expressions, subsample=FALSE, sequential=FALSE, clusterFunction="pam")
 ```
 
 This is because even to perform simple PAM, the PAM algorithm needs additional parameters to be set, namely 'k', the number of groups. 
 
-However, there is no argument in `clusterAll` for this. Because it is specific to a particular choice of clustering function, we don't want to clutter up `clusterAll` with all the possible options that might be needed downstream for a particularly task. Instead, `clusterAll` lets you pass such arguments to the function that actually does the task of clustering a distance matrix, `clusterD` via the `clusterDArgs` option. So the user doesn't need to call `clusterD` explicitly, but often will need to pass an argument to `clusterD`.  
+However, there is no argument in `clusterSingle` for this. Because it is specific to a particular choice of clustering function, we don't want to clutter up `clusterSingle` with all the possible options that might be needed downstream for a particularly task. Instead, `clusterSingle` lets you pass such arguments to the function that actually does the task of clustering a distance matrix, `clusterD` via the `clusterDArgs` option. So the user doesn't need to call `clusterD` explicitly, but often will need to pass an argument to `clusterD`.  
 
 In this case we need to pass the argument 'k'. Specifically, we need to create a list with an element of name "k" that takes on the value, say 5, for our k.
 
@@ -245,12 +245,12 @@ In this case we need to pass the argument 'k'. Specifically, we need to create a
 drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("clusterDArgs"="k"),plotOptions=TRUE)
 ```
 
-```{r clusterAllPam, warning=FALSE, message=FALSE}
+```{r clusterSinglePam, warning=FALSE, message=FALSE}
 library(clusterExperiment)
 library(cluster)
 #load("data/expressions.Rda")
 expression = expressions[, 1:3]
-simpleCluster = clusterAll(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list('k'=5))
+simpleCluster = clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list('k'=5))
 table(simpleCluster$clustering)
 ```
 
@@ -281,29 +281,29 @@ drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer
 ```
 
 ```{r clusterD}
-Cluster<-clusterAll(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list(findBestK=TRUE, removeSil=TRUE, kRange=2:10))
+Cluster<-clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list(findBestK=TRUE, removeSil=TRUE, kRange=2:10))
 
 table(true=expressions$cluster, PAM=Cluster$clustering)
 ```
 
 Note that, even in this toy example, it is not easy to choose the correct number of clusters, and a simple procedure based on comparing average silhouette width may not always lead to good results.
 
-**Note:** at the current time, if we are not going to do the subsample task (`subsample=FALSE`), then `clusterFunction` *must* be `pam` because the other clustering options for `clusterFunction` assume a 0-1 distance matrix based on subsampling. If there is no subsampling, `clusterAll` makes the distance matrix by default with `dist(x)` and therefore must be used with `pam`, as this is the only implemented method for distance matrices.
+**Note:** at the current time, if we are not going to do the subsample task (`subsample=FALSE`), then `clusterFunction` *must* be `pam` because the other clustering options for `clusterFunction` assume a 0-1 distance matrix based on subsampling. If there is no subsampling, `clusterSingle` makes the distance matrix by default with `dist(x)` and therefore must be used with `pam`, as this is the only implemented method for distance matrices.
 
 ## Subsampling
 
-We can add the additional task to our clustering pipeline to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterAll` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
+We can add the additional task to our clustering pipeline to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterSingle` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
 
-Then, `clusterAll` will cluster this co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in clustering the subsampled data, but doesn't have to be. Indeed, several of the cluster algorithm options (`tight` and `hierarchical`) are designed to cluster 0-1 co-occurance matrices from subsampling. 
+Then, `clusterSingle` will cluster this co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in clustering the subsampled data, but doesn't have to be. Indeed, several of the cluster algorithm options (`tight` and `hierarchical`) are designed to cluster 0-1 co-occurance matrices from subsampling. 
 
 In this demonstration, let us cluster the subsamples using `kmeans` with `k=5`, then cluster the co-occurance matrix using the tight clustering algorithm. Now we have options we want to set for the subsampling portion of the task. 
 
 ```{r visualizeSubsample, echo=FALSE}
 drawClusterAll(highlight = c("tight", "subsample.TRUE", "sequential.FALSE"),Layer2Options=list("subsampleArgs"=c("k","clusterFunction")),plotOptions=TRUE)
 ```
-```{r clusterAllSubsample}
+```{r clusterSingleSubsample}
 set.seed(212421)
-Cluster<-clusterAll(expression, subsample=TRUE, sequential=FALSE, clusterFunction="tight", subsampleArgs=list("k"=5, clusterFunction="kmeans"))
+Cluster<-clusterSingle(expression, subsample=TRUE, sequential=FALSE, clusterFunction="tight", subsampleArgs=list("k"=5, clusterFunction="kmeans"))
 
 table(true=expressions$cluster, subsample=Cluster$clustering)
 ```
@@ -324,11 +324,11 @@ This time we will use the hierarchical method for clustering the 0-1 co-occuranc
 drawClusterAll(highlight = c("hierarchical", "subsample.TRUE", "sequential.TRUE"),Layer2Options=list("subsampleArgs"=c("clusterFunction"),seqArgs=c("k0","verbose")),plotOptions=TRUE)
 ```
 
-```{r clusterAllSeq}
-Cluster<-clusterAll(expression, subsample=TRUE, sequential=TRUE, clusterFunction="hierarchical", seqArgs=list(k0=5, verbose = FALSE), subsampleArgs = list(clusterFunction="kmeans"))
+```{r clusterSingleSeq}
+Cluster<-clusterSingle(expression, subsample=TRUE, sequential=TRUE, clusterFunction="hierarchical", seqArgs=list(k0=5, verbose = FALSE), subsampleArgs = list(clusterFunction="kmeans"))
 ```
 
-Running `clusterAll` with `sequential=TRUE` will return a list of the three elements `clustering`, `clusterInfo`, and `whyStop`. `clusterInfo` is a matrix of information regarding the algorithm behavior for each cluster (the starting and stopping k set for subsampling clustering for each cluster, and the number of iterations for each cluster). `whyStop` is a character string explaining what triggered the algorithm to stop.
+Running `clusterSingle` with `sequential=TRUE` will return a list of the three elements `clustering`, `clusterInfo`, and `whyStop`. `clusterInfo` is a matrix of information regarding the algorithm behavior for each cluster (the starting and stopping k set for subsampling clustering for each cluster, and the number of iterations for each cluster). `whyStop` is a character string explaining what triggered the algorithm to stop.
 
 ```{r seqOut}
 table(Cluster$clustering)
@@ -352,7 +352,7 @@ In this demonstration, clustering will first be performed with basic PAM with k=
 
 ```{r getBestGenes}
 data(simData)
-cl = clusterAll(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
 pairsAll<-getBestGenes(cl$clustering,simData,type="Pairs")
 
 head(pairsAll)
@@ -364,7 +364,7 @@ The column `Contrast` in the output signifies the pairwise difference (or contra
 
 ```{r getBestGenesAllSig}
 data(simData)
-cl = clusterAll(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
 pairsAll2<-getBestGenes(cl$clustering,simData,type="Pairs",p.value=0.05,number=ncol(simData))
 table(pairsAll2$Contrast)
 ```
@@ -451,7 +451,7 @@ if (!is.null(arguments)){
   if (arguments == "plotClusters"){colargs = c(rep("black", 6), "red", "black")}else{colargs = c(rep("black", 7), "red")}
   }else{colargs = rep("black", 8)}
 par(mar=c(1, 4, 2, 2))
-names = c("clusterMany", "clusterAll", "clusterAll", "...", "clusterAll", "output", "plotClusters", "combineMany")
+names = c("clusterMany", "clusterSingle", "clusterSingle", "...", "clusterSingle", "output", "plotClusters", "combineMany")
 M = matrix(0, nrow=8, ncol=8, byrow=TRUE)
 M[2, 1] <- M[3, 1] <- M[4, 1] <- M[5, 1] <- M[6, 2] <- M[6, 3] <- M[6, 4] <- M[6, 5] <- M[7, 6] <- M[8, 6] <- ""
 diagram::plotmat(M, pos=c(1, 4, 1, 2), name=names, lwd=1, box.lwd=2, box.cex=0.5, box.size=0.08, box.type=c(rep("square", 5), "diamond", rep("square", 2)), box.prop=0.2, curve=0, main="clusterMany Workflow", arr.type="triangle", arr.width=0, arr.length=0, box.lcol=colargs)
@@ -459,8 +459,8 @@ par(mar=c(5.1, 4.1, 4.1, 2.1))
 }
 ```
 
-`clusterMany` is a function for running many different combinations of parameters or different datasets. All combinations given by the user are run through `clusterAll` (though the function does some (minimal) checking to remove nonsensical combinations). 
-The calls to `clusterAll` can also be parallelized across multiple cores (by setting the argument `ncores` to be greater than 1).
+`clusterMany` is a function for running many different combinations of parameters or different datasets. All combinations given by the user are run through `clusterSingle` (though the function does some (minimal) checking to remove nonsensical combinations). 
+The calls to `clusterSingle` can also be parallelized across multiple cores (by setting the argument `ncores` to be greater than 1).
 
 After `clusterMany` is run, the function `plotClusters` can be used to visualize the many different cluster assignments that resulted, and `combineMany` can be used to determine a consensus clustering across the parameter combinations. Finally, `mergeClusters`, described above, can be used to determine whether some clusters in the consensus clustering should be merged.
 
@@ -471,7 +471,7 @@ drawCompareChoices(arguments = "plotClusters")
 ## Compare Choices
 In this example, the combination of parameters we are testing are: (i) the range of k values for clustering; (ii) whether `removeSil` is TRUE or FALSE; and (iii) whether `pam` or `kmeans` is used.
 
-Before running the clustering on these combinations, it is a good idea to first inspect what parameter combinations will be run by calling `clusterMany` and setting `run=FALSE`. The resulting output is a matrix where each column corresponds to a parameter setting and each row is a combination of parameters that will be sent to `clusterAll`.
+Before running the clustering on these combinations, it is a good idea to first inspect what parameter combinations will be run by calling `clusterMany` and setting `run=FALSE`. The resulting output is a matrix where each column corresponds to a parameter setting and each row is a combination of parameters that will be sent to `clusterSingle`.
 
 ```{r}
 parameters = clusterMany(expressions, ks=c(3:7), clusterMethod=c("pam", "kmeans"), run=FALSE)

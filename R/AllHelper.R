@@ -388,7 +388,7 @@ setReplaceMethod(
 #       }))
 #
 #     }
-#     else if(type=="clusterAll"){
+#     else if(type=="clusterSingle"){
 #
 #     }
 #     else{

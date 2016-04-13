@@ -26,7 +26,7 @@
 #' @examples
 #' data(simData)
 #'  #create a clustering, for 8 clusters (truth was 3)
-#'  cl<-clusterAll(simData,clusterFunction="pam",subsample=FALSE,
+#'  cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 #'  sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' #merge clusters with plotting. Note argument 'use.edge.length' can improve readability
 #' mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
