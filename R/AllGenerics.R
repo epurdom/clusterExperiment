@@ -177,6 +177,13 @@ setGeneric(
 )
 
 setGeneric(
+  name = "coClustering<-",
+  def = function(object, value) {
+    standardGeneric("coClustering<-")
+  }
+)
+
+setGeneric(
   name = "dendrogram",
   def = function(x) {
     standardGeneric("dendrogram")
@@ -225,4 +232,12 @@ setGeneric(
     def = function(x) {
         standardGeneric("convertClusterColors")
     }
+)
+
+#' @rdname findSharedClusters
+setGeneric(
+  name = "findSharedClusters",
+  def = function(x, whichClusters, ...) {
+    standardGeneric("findSharedClusters")
+  }
 )
