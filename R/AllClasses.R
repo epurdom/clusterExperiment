@@ -123,6 +123,7 @@ setValidity("ClusterExperiment", function(object) {
     return("`coClustering` must be a sample by sample matrix.")
   }
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
+      #check primary index
       if(length(object@primaryIndex) != 1) {
         return("If more than one set of cluster labels, a primary cluster must
                be specified.")
@@ -131,10 +132,20 @@ setValidity("ClusterExperiment", function(object) {
          object@primaryIndex < 1) {
         return("`primaryIndex` out of bounds.")
       }
+      #check clusterType
       if(NCOL(object@clusterMatrix) != length(object@clusterType)) {
         return("`clusterType` must be the same length as NCOL of
                `clusterMatrix`.")
       }
+      #check internally stored as integers
+      testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
+          whCl<-which(!x %in% c(-1,-2))
+          uniqVals<-unique(x[whCl])
+          return(all(sort(uniqVals)==1:length(uniqVals)))
+      })
+      #browser()
+      if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+      
     ####
     #test that colnames of clusterMatrix appropriately aligns with everything else
     ####
@@ -305,6 +316,7 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
+   # browser()
     out <- new("ClusterExperiment",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),

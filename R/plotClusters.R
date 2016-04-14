@@ -131,16 +131,16 @@ setMethod(
   signature = signature(clusters = "ClusterExperiment",orderClusters="numeric"),
   definition = function(clusters, orderClusters,existingColors=c("ignore","all"),resetColors=FALSE,resetOrderSamples=FALSE,...)
   {
-      #ToDo: implement a 'firstOnly' option that would only make use of the colors of the first row. Will require monkeying around with the internal plotting functions.
     existingColors<-match.arg(existingColors)
     if(existingColors!="ignore") currPlot<-FALSE else currPlot<-TRUE
-    if(!currPlot){
+    if(!currPlot){ #using existing colors:
         args<-list(...)
         if("plot" %in% names(args) ){
             whPlot<-which(names(args)=="plot")
             if(length(args)>length(whPlot)) args<-args[-whPlot]
             else args<-NULL
         }
+        #align the samples, but don't plot them
         outval<-do.call(plotClusters,c(list(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",plot=FALSE),args))
         #make new color matrix with existingColors
         existingClusters<-clusterMatrix(clusters)[,orderClusters]
@@ -152,11 +152,37 @@ setMethod(
             colVect<-colMat[m,"color"]
         }))
         do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=TRUE),args))
-        
-        if(resetColors) clusterLegend(clusters)[orderClusters]<-outval$clusterLegend
+        #need to add reset options here to capture the aligned clusterIds, just not the colors
+        browser()
         
     }
-    else outval<-plotClusters(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",...)
+    else{
+        outval<-plotClusters(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",...)
+        
+    }
+    if(resetColors){
+        browser()
+        oldClMat<-clusterMatrix(clusters)
+        #make both colors and the clusterIds switch to aligned values (but keep name the same!)
+        newClLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
+            colMat<-out@clusterLegend[[ii]]
+            newCl<-newMat[,ii]
+            cl<-out@clusterMatrix[,ii]
+            #remove (possible) levels lost
+            whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
+            if(length(whRm)>0){
+                colMat<-colMat[-whRm,,drop=FALSE]
+            }
+            #convert
+            oldNew<-unique(cbind(old=cl,new=newCl))
+            if(nrow(oldNew)!=nrow(colMat)) stop("error in converting colorLegend")
+            m<-match(colMat[,"clusterIds"],oldNew[,"old"])
+            colMat[,"clusterIds"]<-oldNew[m,"new"]
+            return(colMat)
+        })
+        
+        clusterLegend(clusters)[orderClusters]<-outval$clusterLegend
+    }
     if(resetOrderSamples) orderSamples(clusters)<-outval$orderSamples
     invisible(clusters)   
     
@@ -251,6 +277,8 @@ setMethod(
 		else{
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=plot),plotTrackArgs,clusterPlotArgs ,list(...)))
 		}	
+		#clusterLegend is in order of orderClusters
+        out$clusterLegend<-out$clusterLegend[order(orderClusters)]
 		invisible(out)
 	}
 	else{

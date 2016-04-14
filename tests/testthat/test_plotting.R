@@ -1,45 +1,51 @@
 ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
-                     clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+                  clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),type="User")
 clMatNew<-apply(clusterMatrix(cl),2,function(x){
-	wh<-sample(1:nSamples(cl),size=10)
-	x[wh]<- -1
-	wh<-sample(1:nSamples(cl),size=10)
-	x[wh]<- -2
-	return(x)
-	})
-	#make a new object with -1 values
+    wh<-sample(1:nSamples(cl),size=10)
+    x[wh]<- -1
+    wh<-sample(1:nSamples(cl),size=10)
+    x[wh]<- -2
+    return(x)
+})
+#make a new object with -1 values
 cl3<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
-clusterLabels(cl3)
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test matrix version
-    x<-plotClusters(clusters=allClusters(cl))
-    expect_equal(dim(allClusters(cl)),dim(x$colors))
-    expect_equal(dim(allClusters(cl)),dim(x$aligned))
-    expect_equal(length(x$clusterLegend),ncol(allClusters(cl)))
+    x<-plotClusters(clusters=clusterMatrix(cl))
+    expect_equal(dim(clusterMatrix(cl)),dim(x$colors))
+    expect_equal(dim(clusterMatrix(cl)),dim(x$aligned))
+    expect_equal(length(x$clusterLegend),ncol(clusterMatrix(cl)))
     xx<-plotClusters(cl2,orderClusters="clusterMany")
-    expect_equal(plotClusters(clusters=cl2,orderClusters="pipeline"),xx)
+    dendrogram(xx)<-NULL
+    xx2<-plotClusters(clusters=cl2,orderClusters="pipeline")
+    dendrogram(xx2)<-NULL
+    expect_equal(xx2,xx)
     
     #test CE version
     x<-plotClusters(cl)
     expect_is(x,"ClusterExperiment")
+    dendrogram(cl)<-NULL
+    dendrogram(x)<-NULL
     expect_equal( x,cl)
     plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
     x2<-plotClusters(cl,existingColors="all")
+    dendrogram(x2)<-NULL
     expect_false(isTRUE(all.equal(x1,x2)))
     #test -1
     plotClusters(cl3) 
     x1<-plotClusters(clusters=cl2,orderClusters="pipeline")
-
-  
-  wh<-c(3,4,NCOL(allClusters(cl)))
-  x2<-plotClusters(cl,orderClusters=wh)
-  x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)])
-  expect_false(isTRUE(all.equal(x3,x4)))
-  x5<-plotClusters(cl,orderClusters=2)
-  plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
-  plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
+    
+    
+    wh<-c(3,4,NCOL(clusterMatrix(cl)))
+    x3<-plotClusters(cl,orderClusters=wh,axisLine=-2,resetColors=TRUE)
+    x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
+    dendrogram(x4)<-dendrogram(x3)<-NULL
+    expect_false(isTRUE(all.equal(x3,x4)))
+    x5<-plotClusters(cl,orderClusters=2)
+    plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
+    plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
 })
 
 smData<-simData[1:30,1:50]

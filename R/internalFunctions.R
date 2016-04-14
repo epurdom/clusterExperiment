@@ -22,16 +22,11 @@
 .makeIntegerClusters<-function(clMat){
     if(!is.matrix(clMat)) stop("must give matrix input")
     fun<-function(x){ #make it numbers from 1:length(x), except for -1,-2
-      #id special values
-      if(is.character(x)){
-        wh1<-(x =="-1")
-        wh2<-x == "-2"
-      }
-      else {
-        wh1<-(x ==-1)
-        wh2<-x == -2
-      }
-      wh<-c(wh1,wh2)
+      #id special values of -1,-2
+        isChar<-as.character(is.character(x))
+        wh1<-switch(isChar,"TRUE"=x =="-1","FALSE"=x ==-1)
+        wh2<-switch(isChar,"TRUE"=x =="-2","FALSE"=x ==-2)
+      wh<-wh1 | wh2
       vals<-unique(x[!wh])
       y<-match(x,vals)
       y[wh1]<- -1

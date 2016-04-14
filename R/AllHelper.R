@@ -9,19 +9,32 @@ setMethod(
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- new("matrix") ###Need to think about this
     out@dendrogram<-NULL
-    ##Fix clusterLegend slot, in case now lost a level:
-    out@clusterLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
+    
+   # browser()
+    out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
+    
+    #need to convert to consecutive integer valued clusters:
+    newMat<-.makeIntegerClusters(out@clusterMatrix)
+    colnames(newMat)<-colnames(out@clusterMatrix)
+    ##Fix clusterLegend slot, in case now lost a level and to match new integer values
+    newClLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
         colMat<-out@clusterLegend[[ii]]
+        newCl<-newMat[,ii]
         cl<-out@clusterMatrix[,ii]
+        #remove (possible) levels lost
         whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
         if(length(whRm)>0){
             colMat<-colMat[-whRm,,drop=FALSE]
         }
+        #convert
+        oldNew<-unique(cbind(old=cl,new=newCl))
+        if(nrow(oldNew)!=nrow(colMat)) stop("error in converting colorLegend")
+        m<-match(colMat[,"clusterIds"],oldNew[,"old"])
+        colMat[,"clusterIds"]<-oldNew[m,"new"]
         return(colMat)
     })
-   # browser()
-    out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
-    #browser()
+    out@clusterMatrix<-newMat
+    out@clusterLegend<-newClLegend
     validObject(out)
     return(out)
   }

@@ -1,5 +1,4 @@
 library(clusterExperiment)
-
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
 labels <- as.character(gl(5, 2))
@@ -9,9 +8,8 @@ chLabels<-rep(LETTERS[1:5],each=2)
 chLabels[c(2:3)]<- c("-1","-2") #make sure some not assigned
 labMat<-cbind(as.numeric(as.character(labels)),as.numeric(as.character(labels)))
 se <- SummarizedExperiment(mat)
-
 cc <- clusterExperiment(mat, as.numeric(as.character(labels))+2, transformation = function(x){x})
-cc2 <- clusterExperiment(se, as.numeric(as.character(labels)), transformation = function(x){x})
+
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
