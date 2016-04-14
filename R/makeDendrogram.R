@@ -48,8 +48,7 @@ setMethod(
   signature = "matrix",
   definition = function(x,cluster,
                    leaves=c("samples","clusters"),
-                   unassignedSamples=c("outgroup","cluster","remove"),
-                   labels=FALSE, ...){
+                   unassignedSamples=c("outgroup","cluster","remove"), ...){
     leaves<-match.arg(leaves)
     unassigned<-match.arg(unassignedSamples)
     dat<-x
@@ -119,7 +118,7 @@ setMethod(
 
 })
 
-#' @rdname plotDendrogram
+#' @rdname makeDendrogram
 #' @inheritParams makeDendrogram
 setMethod(
     f = "plotDendrogram",

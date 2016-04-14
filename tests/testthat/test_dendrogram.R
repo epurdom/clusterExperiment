@@ -22,5 +22,6 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     expect_error(dendrogram(cc2)<-makeDendrogram(cc2,leaves="clusters"))
     
     plotDendrogram(cc2)
-    plotDendrogram(cc2,leaves="clusters")
+    makeDendrogram(cc2,leaves="clusters",labels=FALSE)
+    makeDendrogram(cc2,leaves="clusters",labels=TRUE)
 })
