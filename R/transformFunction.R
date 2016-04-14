@@ -89,7 +89,7 @@ setMethod(
   whFeatures<-NULL
   #for each dim reduction method requested
   if("PCA" %in% dimReduce & !all(is.na(nPCADims))){ #do PCA dim reduction
-    if(max(nPCADims)>=NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
+    if(max(nPCADims)>NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
     if(min(nPCADims)<1) stop("the number of PCA dimensions must be equal to 1 or greater")
     if(max(nPCADims)>100) warning("the number PCA dimensions to be selected is greater than 100. Are you sure you meant to choose to use PCA dimensionality reduction rather than the top most variable features?")
     prc<-t(stats::prcomp(t(x),center=TRUE,scale=TRUE)$x)
@@ -105,7 +105,7 @@ setMethod(
     }
   }
   if("mostVar" %in% dimReduce & all(!is.na(nVarDims))){ #do PCA dim reduction
-    if(max(nVarDims)>=NROW(x)) stop("the number of most variable features must be strictly less than the number of rows of input data matrix")
+    if(max(nVarDims)>NROW(x)) stop("the number of most variable features must be strictly less than the number of rows of input data matrix")
     if(min(nVarDims)<1) stop("the number of most variable features must be equal to 1 or greater")
     if(min(nVarDims)<50 & NROW(x)>1000) warning("the number of most variable features to be selected is less than 50. Are you sure you meant to choose to use the top most variable features rather than PCA dimensionality reduction?")
     varX<-apply(x,1,mad)

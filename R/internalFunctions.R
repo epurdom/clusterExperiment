@@ -77,8 +77,8 @@
 }
 
 ##Universal way to change character indication of clusterType into indices.
-.TypeIntoIndices<-function(x,whClusters=c("pipeline","all")){
-  test<-try(match.arg(whClusters),silent=TRUE)
+.TypeIntoIndices<-function(x,whClusters){
+  test<-try(match.arg(whClusters[1],c("pipeline","all","none","primary")),silent=TRUE)
   if(!inherits(test,"try-error")){
     if(test=="pipeline"){
       ppIndex<-pipelineClusterDetails(x)
@@ -87,9 +87,11 @@
           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
         }))
       }
-      else stop("There are no (current) pipeline clusters in the ClusterExperiment object")
+      else wh<-vector("integer",length=0)
     }
     if(test=="all") wh<-1:ncol(clusterMatrix(x))
+    if(test=="none") wh<-vector("integer",length=0)
+    if(test=="primary") wh<-primaryClusterIndex(x)
   }
   else{
     if(!any(whClusters %in% clusterType(x))) stop("none of orderClusters match a clusterType of x")
