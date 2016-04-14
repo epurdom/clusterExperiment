@@ -16,20 +16,20 @@ convertClusterColors<-function(clusterColors,output=c("aheatmapFormat","matrix")
         #         #convert clusterings into a color matrix based on clusterColors
         #         if(is.null(clusterings)) stop("clusterings must be a matrix")
     }
-    return(outval)    
-    
+    return(outval)
+
 }
 #' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
 #' @rdname plottingFunctions
 setBreaks<-function(breaks,data){
-    if(length(breaks)>0 && !is.na(breaks)){ 
+    if(length(breaks)>0 && !is.na(breaks)){
         #get arround bug in aheatmap
         #if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
         #TO DO: might not need any more with updated aheatmap.
         if(length(breaks)==1){
             if(breaks<=1){
                 ncols<-51
-                if(breaks<1) breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))				
+                if(breaks<1) breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))
                 else breaks<-seq(min(data),max(data),length=ncols+1)
             }
             else{
@@ -41,11 +41,11 @@ setBreaks<-function(breaks,data){
         }
     }
     return(breaks)
-    
+
 }
 
 
-.thisPal = c(			
+.thisPal = c(
 	"#A6CEE3",#light blue
 	"#1F78B4",#dark blue
 	"#B2DF8A",#light green
@@ -82,11 +82,14 @@ setBreaks<-function(breaks,data){
 .thisPal<-.thisPal[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
 .thisPal<-.thisPal[-34] #very similar to 2
 .thisPal<-.thisPal[-31] #very similar to 7
-#' Large palette of colors 
+
+#' @title Large palette of colors
 #' @name plottingFunctions
 #' @aliases bigPalette showBigPalette
-#' @details \code{bigPalette} is a long palette of colors (length 62) used by \code{\link{plotClusters}} and
-#' accompanying functions. \code{showThisPal} creates plot that gives index of each color in bigPalette.
+#' @details \code{bigPalette} is a long palette of colors (length 62) used by
+#' \code{\link{plotClusters}} and accompanying functions. \code{showBigPalette}
+#' creates plot that gives index of each color in bigPalette.
+#' @rdname bigPalette
 bigPalette<-.thisPal
 
 #' @rdname bigPalette
@@ -105,7 +108,7 @@ showBigPalette<-function(wh=NULL){
 }
 
 
-#' Set of colors useful for heatmap gradients 
+#' Set of colors useful for heatmap gradients
 #' @rdname plottingFunctions
 #' @aliases showHeatmapPalettes seqPal1 seqPal2 seqPal3 seqPal4 seqPal5
 #' @details seqPal1-seqPal4 are palettes for the heatmap. showHeatmapPalettes() will show you
@@ -125,7 +128,7 @@ showBigPalette<-function(wh=NULL){
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
-#' 
+#'
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)
 	maxLength<-max(sapply(palettesAll,length))
