@@ -5,6 +5,8 @@ mat[1,1]<- -1 #force a negative value
 labels <- as.character(gl(5, 2))
 labels[c(1:2)]<- c("-1","-2") #make sure some not assigned
 labels<-factor(labels)
+chLabels<-rep(LETTERS[1:5],each=2)
+chLabels[c(2:3)]<- c("-1","-2") #make sure some not assigned
 labMat<-cbind(as.numeric(as.character(labels)),as.numeric(as.character(labels)))
 se <- SummarizedExperiment(mat)
 
@@ -16,11 +18,17 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_error(clusterExperiment(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
             expect_error(clusterExperiment(mat, as.numeric(labels)), "missing")
             expect_error(clusterExperiment(mat, labels[1:2], function(x){x}),
-                         "must be a vector of length equal")
+                         "must be a matrix of rows equal")
             expect_error(clusterExperiment(as.data.frame(mat), labels, function(x){x}),
                          "unable to find an inherited method for function")
-            expect_warning(clusterExperiment(mat, as.character(labels), function(x){x}),"was coerced to integer values")
-            expect_warning(clusterExperiment(mat, labels, function(x){x}), "was coerced to integer values")
+            #test character input
+            ccChar<-clusterExperiment(mat, chLabels, function(x){x})
+            expect_is(primaryCluster(ccChar),"numeric")
+            expect_is(primaryClusterNamed(ccChar),"character")
+            expect_equal(sort(unique(primaryClusterNamed(ccChar))),sort(unique(chLabels)))
+            
+            #test factor input
+            clusterExperiment(mat, labels, function(x){x})
 
             expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")
@@ -30,9 +38,7 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_equal(nClusters(cc),1)
 
             clusterExperiment(se,labMat,transformation=function(x){x})
-            expect_warning(clusterExperiment(se,labels,transformation=function(x){x}))
-            expect_warning(clusterExperiment(se,as.character(labels),transformation=function(x){x}))
-            
+
                       })
 
 test_that("adding clusters, setting primary labels and remove unclustered cells
@@ -54,11 +60,13 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterType(c3)), 2)
             expect_equal(length(clusterInfo(c3)), 2)
             expect_equal(primaryCluster(c3), primaryCluster(cc))
- 
-            expect_null(clusterLabels(c3))
-            clusterLabels(c3)<-c("User","User")
+            
+            expect_error(clusterLabels(c3)<-c("User","User"))
+            clusterLabels(c3)<-c("User1","User2")
+            clusterLabels(c3)[1]<-"User4"
+            expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
             expect_equal(length(clusterLabels(c3)),2)
-            expect_error(clusterLabels(c3,"pipeline"))
+            expect_equal(length(clusterLabels(c3,"pipeline")),0) #nothing get back
             
               #check adding matrix of clusters
             c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type="New")

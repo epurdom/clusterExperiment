@@ -119,9 +119,7 @@ setMethod(
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
-  definition = function(x, whichClusters, proportion=1,
-                        clusterFunction="hierarchical",
-                        propUnassigned=.5, minSize=5){
+  definition = function(x, whichClusters, ...){
 
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
@@ -129,10 +127,7 @@ setMethod(
 
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
-    outlist <- combineMany(clusterMat, proportion=proportion,
-                                  clusterFunction=clusterFunction,
-                                  propUnassigned=propUnassigned,
-                                  minSize=minSize)
+    outlist <- combineMany(clusterMat, ...)
 
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
@@ -141,7 +136,9 @@ setMethod(
     #add "c" to name of cluster
     clusterLegendNew<-lapply(clusterLegend(newObj),function(mat){
       mat[,"name"]<-paste("c",mat[,"name"],sep="")
+      return(mat)
     })
+    names(clusterLegendNew)<-names(clusterLegend(newObj))
     clusterLegend(newObj)<-clusterLegendNew    
     if(!is.null(outlist$percentageShared)) {
       coClustering(newObj) <- outlist$percentageShared
@@ -155,16 +152,26 @@ setMethod(
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "character"),
-  definition = function(x, whichClusters, proportion=1,
-                        clusterFunction="hierarchical",
-                        propUnassigned=.5, plot=FALSE, minSize=5){
+  definition = function(x, whichClusters, ...){
 
     wh <- .TypeIntoIndices(x, whClusters=whichClusters)
 
-    combineMany(x, wh, proportion=proportion,
-                       clusterFunction=clusterFunction,
-                       propUnassigned=propUnassigned,
-                       minSize=minSize)
+    combineMany(x, wh, ...)
+  }
+)
+#' @rdname combineMany
+setMethod(
+  f = "combineMany",
+  signature = signature(x = "ClusterExperiment", whichClusters = "missing"),
+  definition = function(x, whichClusters, ...){
+    wh<-.TypeIntoIndices(x,"clusterMany")
+    if(length(wh)>0){
+      warning("no clusters specified to combine, using results from clusterMany")
+      combineMany(x, wh = "clusterMany",...)
+    }
+    else{
+      stop("no clusters specified to combine, please specify.")
+    }
   }
 )
 

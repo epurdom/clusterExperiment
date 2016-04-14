@@ -16,20 +16,29 @@
 ##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
 .makeIntegerClusters<-function(clMat){
     if(!is.matrix(clMat)) stop("must give matrix input")
+    fun<-function(x){ #make it numbers from 1:length(x), except for -1,-2
+      #id special values
+      if(is.character(x)){
+        wh1<-(x =="-1")
+        wh2<-x == "-2"
+      }
+      else {
+        wh1<-(x ==-1)
+        wh2<-x == -2
+      }
+      wh<-c(wh1,wh2)
+      vals<-unique(x[!wh])
+      y<-match(x,vals)
+      y[wh1]<- -1
+      y[wh2]<- -2
+      return(y)
+    }
     if(!is.null(dim(clMat)) && ncol(clMat)>1){
-        return(apply(clMat,2,function(x){ #make it numbers from 1:length(x), except for -1,-2
-            vals<-unique(x[!x<0])
-            y<-match(x,vals)
-            y[x%in%c(-1,-2)]<-x[x<0]
-            return(y)
-        })  )
+        return(apply(clMat,2,fun)  )
     } 
     else{
         if(is.matrix(clMat)) clMat<-clMat[,1]
-        vals<-unique(clMat[clMat>=0])
-        y<-match(clMat,vals)
-        y[clMat%in%c(-1,-2)]<-clMat[clMat<0]
-        return(matrix(y,ncol=1))
+        return(matrix(fun(clMat),ncol=1))
     }
 }
 ##Universal way to convert matrix of clusters into colors
@@ -67,13 +76,13 @@
 #         mIds<-match(uniqueIds,ids)
 #         uniqueCols<-col[mIds]
 #         mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
-        mat<-unique(cbind("clusterIds"=origClMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
+        mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
         rownames(mat)<-mat[,"clusterIds"]
         return(mat)
     })
     names(colorList)<-cNames
     colnames(colorMat)<-cNames
-    return(list(colorList=colorList,convertedToColor=colorMat))
+    return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
 ##Universal way to change character indication of clusterType into indices.
@@ -94,9 +103,14 @@
     if(test=="primary") wh<-primaryClusterIndex(x)
   }
   else{
-    if(!any(whClusters %in% clusterType(x))) stop("none of orderClusters match a clusterType of x")
-    if(!all(whClusters %in% clusterType(x))) warning("not all of orderClusters match a clusterType of x")
-    wh<-which(clusterType(x) %in% whClusters)
+    if(!any(whClusters %in% clusterType(x))){
+      #warning("none of indicated clusters match a clusterType")
+      wh<-vector("integer",length=0)
+    }
+    else{
+      #if(!all(whClusters %in% clusterType(x))) warning("not all indicated clusters match a clusterType")
+      wh<-which(clusterType(x) %in% whClusters)
+    }
   }
   return(wh)
 }

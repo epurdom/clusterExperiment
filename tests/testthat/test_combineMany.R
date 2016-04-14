@@ -6,8 +6,13 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         isCount=FALSE,verbose=FALSE)
-
-            expect_error(combineMany(clustNothing), "missing")
+            x1<-combineMany(clustNothing,whichClusters = "clusterMany")
+            expect_warning(x2<-combineMany(clustNothing),"no clusters specified")
+#get rid of dendrogram so comparison won't take too long.
+            dendrogram(x1)<-NULL
+            dendrogram(x2)<-NULL
+            expect_equal(x1,x2)
+            expect_error(combineMany(clusterSingle(simData,subsample=FALSE,clusterFunction="pam",clusterDArgs=list(k=3))), "no clusters specified")
 
             shared1 <- combineMany(clusterMatrix(clustNothing))
             shared2 <- combineMany(clustNothing, "all")

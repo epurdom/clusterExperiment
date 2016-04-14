@@ -135,7 +135,11 @@ setValidity("ClusterExperiment", function(object) {
         return("`clusterType` must be the same length as NCOL of
                `clusterMatrix`.")
       }
-    
+    ####
+    #test that colnames of clusterMatrix appropriately aligns with everything else
+    ####
+    if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
+    if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
     ####
       #test that @clusterLegend is proper form
     ####
@@ -242,16 +246,14 @@ setMethod(
       stop("`clusters` must be a vector of length equal to the number of
            samples.")
     }
-  clusterExperiment(se,matrix(data=clusters, ncol=1),...)
+  clusterExperiment(se,matrix(clusters, ncol=1),...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","character"),
   definition = function(se, clusters,...){
-    clusters <- .convertToNum(clusters)
-    warning("The vector `clusters` was coerced to integer values (one per cluster)")
-    clusterExperiment(se,clusters,...)
+    clusterExperiment(se,matrix(clusters,ncol=1),...)
     })
 #' @rdname ClusterExperiment-class
 setMethod(
@@ -281,22 +283,35 @@ setMethod(
       stop("clusterType must be of length equal to number of clusters in
            `clusters`")
     }
+    #fix up names of clusters and match
+    #browser()
+    if(is.null(colnames(clusters))){
+      colnames(clusters)<-paste("cluster",1:NCOL(clusters),sep="")
+    }
+    if(any(duplicated(colnames(clusters)))){#probably not possible
+      colnames(clusters)<-make.names(colnames(clusters),unique=TRUE)
+    }
     if(length(clusterType) == 1) {
         clusterType <- rep(clusterType, length=NCOL(clusters))
     }
     if(is.null(clusterInfo)) {
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
+    #make clusters consecutive integer valued:    
+    tmp<-.makeColors(clusters, colors=bigPalette)
+    clusterLegend<-tmp$colorList
+    clustersNum<-tmp$numClusters
+    colnames(clustersNum)<-colnames(clusters)
     out <- new("ClusterExperiment",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),
                colData = colData(se),
                transformation=transformation,
-               clusterMatrix = clusters,
+               clusterMatrix = clustersNum,
                primaryIndex = 1,
                clusterType = clusterType,
                clusterInfo=clusterInfo,
-               clusterLegend=.makeColors(clusters, colors=bigPalette)$colorList,
+               clusterLegend=clusterLegend,
                orderSamples=1:ncol(se),
                dendrogram=makeDendrogram(Assays(assays(se))[[1]],clusters[,1],leaves="samples",unassigned="outgroup")
     )

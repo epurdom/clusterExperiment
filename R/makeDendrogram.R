@@ -34,7 +34,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x,...)
   {
-    makeDendrogram(x=assay(x),cl=primaryCluster(x),...)
+    makeDendrogram(x=assay(x),cl=primaryClusterNamed(x),...)
   })
 
 #' @rdname makeDendrogram

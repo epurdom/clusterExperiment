@@ -261,6 +261,20 @@ setGeneric(
   }
 )
 
+#' @rdname clusterMatrixNamed
+setGeneric(
+  name = "clusterMatrixNamed",
+  def = function(x,  ...) {
+    standardGeneric("clusterMatrixNamed")
+  }
+)
+#' @rdname primaryClusterNamed
+setGeneric(
+  name = "primaryClusterNamed",
+  def = function(x,  ...) {
+    standardGeneric("primaryClusterNamed")
+  }
+)
 #' @rdname getBestGenes
 setGeneric(
   name = "getBestGenes",

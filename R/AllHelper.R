@@ -45,16 +45,42 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
+     cat("Primary cluster type:", clusterType(object)[primaryClusterIndex(object)],"\n")
+    cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")
     cat("Table of clusters (of primary clustering):")
-    print(table(clusterMatrix(object)[,primaryClusterIndex(object)]))
-    cat("Primary cluster type:", clusterType(object)[primaryClusterIndex(object)],"\n")
+    print(table(primaryClusterNamed(object)))
     cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
     typeTab<-names(table(clusterType(object)))
-        cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
-        cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
-        cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
+    cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
+    cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
+    cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
+
+#' @rdname ClusterExperiment-class
+setMethod(
+  f = "clusterMatrixNamed",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    clMat<-clusterMatrix(x)
+    out<-do.call("cbind",lapply(1:ncol(clMat),function(ii){
+      cl<-clMat[,ii]
+      leg<-clusterLegend(x)[[ii]]
+      leg[,"name"][match(cl,leg[,"clusterIds"])]
+    }))
+    colnames(out)<-colnames(clMat)
+    rownames(out)<-NULL
+    return(out)
+  }
+)
+
+#' @rdname ClusterExperiment-class
+setMethod(
+  f = "primaryClusterNamed",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    clusterMatrixNamed(x)[,primaryClusterIndex(x)]
+  })
 
 #' @rdname ClusterExperiment-class
 setMethod(
@@ -71,7 +97,7 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
-#note, don't currently require unique labels. Probably best, since mainly used for plotting
+    if(any(duplicated(value))) stop("cannot have duplicated clusterLabels")
     colnames(object@clusterMatrix) <- value
     validObject(object)
     return(object)
@@ -79,6 +105,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @param whichClusters either numeric, in which case gives the indices of the clusters, or character, in which case it matches to clusterType(x) to find the indices of the clusters
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
@@ -212,7 +239,9 @@ setMethod(
   f = "clusterType",
   signature = "ClusterExperiment",
   definition = function(x) {
-    return(x@clusterType)
+    out<-x@clusterType
+    names(out)<-clusterLabels(x)
+    return(out)
   }
 )
 
@@ -355,19 +384,22 @@ setMethod(
 #' the x object, even if y is a ClusterExperiment.
 #' @rdname addClusters
 setMethod(
-    f = "addClusters",
-    signature = signature("ClusterExperiment", "ClusterExperiment"),
-    definition = function(x, y) {
-        if(!all(assay(y) == assay(x))) {
-            stop("Cannot merge clusters from different data.")
-        }
-        x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
-        x@clusterType <- c(x@clusterType, y@clusterType)
-        x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
-        x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
-        validObject(x)
-        return(x)
+  f = "addClusters",
+  signature = signature("ClusterExperiment", "ClusterExperiment"),
+  definition = function(x, y) {
+    if(!all(assay(y) == assay(x))) {
+      stop("Cannot merge clusters from different data.")
     }
+    x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
+    x@clusterType <- c(x@clusterType, y@clusterType)
+    x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
+    x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
+    if(any(duplicated(colnames(x@clusterMatrix)))){
+      colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
+    }
+    validObject(x)
+    return(x)
+  }
 )
 #' @rdname addClusters
 #' @title Function to add clusters to an existing ClusterExperiment object
@@ -399,7 +431,9 @@ setMethod(
   f = "clusterInfo",
   signature = "ClusterExperiment",
   definition = function(x) {
-    return(x@clusterInfo)
+    out<-x@clusterInfo
+    names(out)<-clusterLabels(x)
+    return(out)
   }
 )
 
@@ -408,7 +442,9 @@ setMethod(
     f = "clusterLegend",
     signature = "ClusterExperiment",
     definition = function(x) {
-        return(x@clusterLegend)
+      out<-x@clusterLegend
+      names(out)<-clusterLabels(x)
+      return(out)
     }
 )
 #' @rdname ClusterExperiment-class
@@ -416,7 +452,7 @@ setReplaceMethod(
     f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
-        object@clusterLegend<-value
+        object@clusterLegend<-unname(value)
         validObject(object)
         return(object)
     }
