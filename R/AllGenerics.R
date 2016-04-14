@@ -260,3 +260,11 @@ setGeneric(
     standardGeneric("combineMany")
   }
 )
+
+#' @rdname getBestGenes
+setGeneric(
+  name = "getBestGenes",
+  def = function(x, ...) {
+    standardGeneric("getBestGenes")
+  }
+)
