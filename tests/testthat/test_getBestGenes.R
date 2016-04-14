@@ -7,11 +7,17 @@ test_that("`getBestGenes` works with matrix and ClusterExperiment objects", {
   cl <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
                               subsample=FALSE, sequential=FALSE,
                               isCount=FALSE,verbose=FALSE)
+  ## add some unclustered
+  clusters <- primaryCluster(cl)
+  clusters[1:5] <- -1
+  cl <- addClusters(cl, clusters)
+  primaryClusterIndex(cl) <- 3
+  table(primaryCluster(cl))
 
   top1 <- getBestGenes(simData, primaryCluster(cl), type="F",
                        returnType="Table", voomCorrection=FALSE)
   idx <- top1$IndexInOriginal
-  expect_equal(rowMeans(simData[idx,]), top1$AveExpr)
+  expect_equal(rowMeans(simData[idx,clusters>0]), top1$AveExpr)
 
   ## check defaults
   topC0 <- getBestGenes(cl)
@@ -23,7 +29,7 @@ test_that("`getBestGenes` works with matrix and ClusterExperiment objects", {
   top2 <- getBestGenes(simData, primaryCluster(cl), type="Pairs",
                        returnType="Table", voomCorrection=FALSE)
   idx <- top2$IndexInOriginal
-  expect_equal(rowMeans(simData[idx,]), top2$AveExpr)
+  expect_equal(rowMeans(simData[idx,clusters>0]), top2$AveExpr)
 
   topC2 <- getBestGenes(cl, type="Pairs", returnType="Table",
                         voomCorrection=FALSE)
@@ -32,7 +38,7 @@ test_that("`getBestGenes` works with matrix and ClusterExperiment objects", {
   top3 <- getBestGenes(simData, primaryCluster(cl), type="OneAgainstAll",
                        returnType="Table", voomCorrection=FALSE)
   idx <- top3$IndexInOriginal
-  expect_equal(rowMeans(simData[idx,]), top3$AveExpr)
+  expect_equal(rowMeans(simData[idx,clusters>0]), top3$AveExpr)
 
   topC3 <- getBestGenes(cl, type="OneAgainstAll", returnType="Table",
                         voomCorrection=FALSE)
@@ -44,17 +50,17 @@ test_that("`getBestGenes` works with matrix and ClusterExperiment objects", {
   voom1 <- getBestGenes(simCount, primaryCluster(cl), type="F",
                        returnType="Table", voomCorrection=TRUE)
   idx <- voom1$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,]), voom1$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,clusters>0]), voom1$AveExpr)
 
   voom2 <- getBestGenes(simCount, primaryCluster(cl), type="Pairs",
                        returnType="Table", voomCorrection=TRUE)
   idx <- voom2$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,]), voom2$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,clusters>0]), voom2$AveExpr)
 
   voom3 <- getBestGenes(simCount, primaryCluster(cl), type="OneAgainstAll",
                        returnType="Table", voomCorrection=TRUE)
   idx <- voom3$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,]), voom3$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,clusters>0]), voom3$AveExpr)
 
   ## test index output
   idx1 <- getBestGenes(simData, primaryCluster(cl), type="F",
