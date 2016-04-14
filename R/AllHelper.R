@@ -9,9 +9,9 @@ setMethod(
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- new("matrix") ###Need to think about this
     out@dendrogram<-NULL
-    ##Fix clusterColors slot, in case now lost a level:
-    out@clusterColors<-lapply(1:NCOL(out@clusterMatrix),function(ii){
-        colMat<-out@clusterColors[[ii]]
+    ##Fix clusterLegend slot, in case now lost a level:
+    out@clusterLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
+        colMat<-out@clusterLegend[[ii]]
         cl<-out@clusterMatrix[,ii]
         whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
         if(length(whRm)>0){
@@ -252,7 +252,7 @@ setMethod(
     newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove]
     newClusterType<-clusterType(x)[-whichRemove]
-    newClusterColors<-clusterColors(x)[-whichRemove]
+    newClusterColors<-clusterLegend(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove){
         pIndex<-1
         dend<-NULL
@@ -268,7 +268,7 @@ setMethod(
     retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
     retval@coClustering<-coMat
     validObject(retval)
-    clusterColors(retval)<-newClusterColors
+    clusterLegend(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
     dendrogram(retval)<-dend
     orderSamples(retval)<-orderSamples
@@ -364,7 +364,7 @@ setMethod(
         x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
         x@clusterType <- c(x@clusterType, y@clusterType)
         x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
-        x@clusterColors<-c(x@clusterColors,y@clusterColors)
+        x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
         validObject(x)
         return(x)
     }
@@ -402,22 +402,21 @@ setMethod(
     return(x@clusterInfo)
   }
 )
-#need to implement replacement functions for these clusterInfo, clusterType, clusterColors
 
 #' @rdname ClusterExperiment-class
 setMethod(
-    f = "clusterColors",
+    f = "clusterLegend",
     signature = "ClusterExperiment",
     definition = function(x) {
-        return(x@clusterColors)
+        return(x@clusterLegend)
     }
 )
 #' @rdname ClusterExperiment-class
 setReplaceMethod(
-    f = "clusterColors",
+    f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
-        object@clusterColors<-value
+        object@clusterLegend<-value
         validObject(object)
         return(object)
     }

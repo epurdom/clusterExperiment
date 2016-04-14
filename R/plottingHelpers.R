@@ -1,11 +1,11 @@
 #' @param output character value, indicating desired type of conversion. Currently only 'aheatmapFormat' is implemented.
 #' @param clusterings optional matrix of clusterings to be converted to color matrix (if output = "matrix")
 #' @rdname plottingFunctions
-convertClusterColors<-function(clusterColors,output=c("aheatmapFormat","matrix"),clusterings=NULL){
+convertClusterColors<-function(clusterLegend,output=c("aheatmapFormat","matrix"),clusterings=NULL){
     output<-match.arg(output)
     if(output=="aheatmapFormat"){
         #make in format of vector of colors with names of vector equal to the factor
-        outval<-lapply(clusterColors,function(x){
+        outval<-lapply(clusterLegend,function(x){
             z<-as.character(x[,"color"])
             names(z)<-as.character(as.numeric(x[,"clusterIds"]))
             return(z)
@@ -13,7 +13,7 @@ convertClusterColors<-function(clusterColors,output=c("aheatmapFormat","matrix")
     }
     if(output=="matrix"){
         return("matrix format is not yet implemented")
-        #         #convert clusterings into a color matrix based on clusterColors
+        #         #convert clusterings into a color matrix based on clusterLegend
         #         if(is.null(clusterings)) stop("clusterings must be a matrix")
     }
     return(outval)

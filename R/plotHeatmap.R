@@ -27,7 +27,7 @@
 #' \itemize{
 #' \item{\code{breaks}}{The breaks used for aheatmap, after adjusting for quantile}
 #' \item{\code{annCol}}{the annotation data.frame given to aheatmap}
-#' \item{\code{clusterColors}}{the annotation colors given to aheatmap}
+#' \item{\code{clusterLegend}}{the annotation colors given to aheatmap}
 #' }
 #' @author Elizabeth Purdom
 #' @examples
@@ -45,13 +45,13 @@
 #' #assign cluster colors
 #' colors<-bigPalette[20:23]
 #' names(colors)<-1:3
-#' plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData,clusterColors=list(colors))
+#' plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData,clusterLegend=list(colors))
 #' 
 #' #show two different clusters
 #' anno<-data.frame(cluster1=cl,cluster2=cl2)
 #' out<-plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData,annCol=anno)
 #' #return the values to see format for giving colors to the annotations
-#' out$clusterColors
+#' out$clusterLegend
 #' 
 #' #assign colors to the clusters based on plotClusters algorithm
 #' plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData,annCol=anno,
@@ -61,7 +61,7 @@
 #' annoColors<-list(cluster1=c("black","red","green"),
 #' cluster2=c("blue","purple","yellow"))
 #' plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData,annCol=anno,
-#' clusterColors=annoColors)
+#' clusterLegend=annoColors)
 #'
 #' #give a continuous valued -- need to indicate columns
 #' anno2<-cbind(anno,Cont=c(rnorm(100,0),rnorm(100,2),rnorm(100,3)))
@@ -228,7 +228,7 @@ setMethod(
     }
     
     ######
-    ####Deal with clusterColors etc.
+    ####Deal with clusterLegend etc.
     ######
     
     plotHeatmap(data=visualizeData,clusterSamplesData=clusterSamplesData,sampleData=sampleData,clusterSamples=clusterSamples,...)
@@ -250,12 +250,12 @@ setMethod(
 #' @param showSampleNames Logical as to whether show cell names
 #' @param showFeatureNames Logical as to whether show cell names
 #' @param colorScale palette of colors for the color scale of heatmap
-#' @param clusterColors Assignment of colors to the clusters. If NULL, sampleData columns
-#' will be assigned colors internally. clusterColors should be list of length equal to
+#' @param clusterLegend Assignment of colors to the clusters. If NULL, sampleData columns
+#' will be assigned colors internally. clusterLegend should be list of length equal to
 #' ncol(sampleData) with names equal to the colnames of sampleData. Each element of the
 #' list should be a either the format requested by aheatmap (a vector of colors with names corresponding to the levels of
 #' the column of sampleData), or should be format of ClusterExperiment. 
-#' @param alignSampleData Logical as to whether should align the colors of the sampleData (only if clusterColors not given and sampleData is not NULL)
+#' @param alignSampleData Logical as to whether should align the colors of the sampleData (only if clusterLegend not given and sampleData is not NULL)
 #' @param breaks Either a vector of breaks (should be equal to length 52), or a
 #' number between 0 and 1, indicating that the breaks should be equally spaced
 #' (based on the range in the data) upto the `breaks' quantile, see \code{\link{setBreaks}}
@@ -273,7 +273,7 @@ setMethod(
                           clusterSamples=TRUE,showSampleNames=FALSE, 
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
-                          clusterColors=NULL,alignSampleData=FALSE,
+                          clusterLegend=NULL,alignSampleData=FALSE,
                           unassignedColor="white",missingColor="grey", breaks=NA,...
     ){	
         
@@ -331,7 +331,7 @@ setMethod(
             if(!is.null(whSampleDataCont)) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
             annCol<-tmpDf
             
-            if(is.null(clusterColors)){ #assign default colors
+            if(is.null(clusterLegend)){ #assign default colors
                 if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ #if not all continuous
                     #Pull out the factors to assign clusters
                     if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
@@ -341,12 +341,12 @@ setMethod(
                         tmpDfNum<-do.call("cbind",lapply(1:ncol(tmpDf),function(ii){.convertToNum(tmpDf[,ii])}))
                         colnames(tmpDfNum)<-colnames(tmpDf)
                         alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor) 
-                        clusterColors<-alignObj$clusterColors
+                        clusterLegend<-alignObj$clusterLegend
                        
                     }
                     else{#give each distinct colors, compared to row before
                         maxPerAnn<-sapply(tmpDf,function(x){max(as.numeric(x))})
-                        clusterColors<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
+                        clusterLegend<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
                             cols<-.thisPal[1:nlevels(fac)+add]
                             cols<-cbind("clusterIds"=levels(fac),"color"=cols)
                             cols[cols[,"clusterIds"]=="-1","color"]<-unassignedColor 
@@ -358,8 +358,8 @@ setMethod(
                     
                 }
             }
-            if(!any(sapply(clusterColors,function(x){is.null(dim(x))}))) annColors<-convertClusterColors(clusterColors,output=c("aheatmapFormat"))
-            else annColors<-clusterColors #in case give in format wanted by aheatmap to begin with
+            if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-convertClusterColors(clusterLegend,output=c("aheatmapFormat"))
+            else annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
         }
         else{
             annCol<-NA
@@ -398,6 +398,6 @@ setMethod(
             grid::upViewport() #close it
         }
         
-        invisible(list(aheatmapOut=out,sampleData=annCol,clusterColors=clusterColors,breaks=breaks))
+        invisible(list(aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
     }
 )

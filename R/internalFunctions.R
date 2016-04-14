@@ -67,7 +67,7 @@
 #         mIds<-match(uniqueIds,ids)
 #         uniqueCols<-col[mIds]
 #         mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
-        mat<-unique(cbind("clusterIds"=origClMat[,ii],"color"=colorMat[,ii]))
+        mat<-unique(cbind("clusterIds"=origClMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
         rownames(mat)<-mat[,"clusterIds"]
         return(mat)
     })

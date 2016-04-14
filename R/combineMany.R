@@ -138,7 +138,11 @@ setMethod(
                                 transformation=transformation(x),
                                 clusterType="combineMany")
     clusterLabels(newObj) <- "combineMany"
-
+    #add "c" to name of cluster
+    clusterLegendNew<-lapply(clusterLegend(newObj),function(mat){
+      mat[,"name"]<-paste("c",mat[,"name"],sep="")
+    })
+    clusterLegend(newObj)<-clusterLegendNew    
     if(!is.null(outlist$percentageShared)) {
       coClustering(newObj) <- outlist$percentageShared
     }

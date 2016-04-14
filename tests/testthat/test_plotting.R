@@ -17,7 +17,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     x<-plotClusters(clusters=allClusters(cl))
     expect_equal(dim(allClusters(cl)),dim(x$colors))
     expect_equal(dim(allClusters(cl)),dim(x$aligned))
-    expect_equal(length(x$clusterColors),ncol(allClusters(cl)))
+    expect_equal(length(x$clusterLegend),ncol(allClusters(cl)))
     xx<-plotClusters(cl2,orderClusters="clusterMany")
     expect_equal(plotClusters(clusters=cl2,orderClusters="pipeline"),xx)
     
@@ -53,11 +53,11 @@ test_that("`plotHeatmap` works with matrix objects", {
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
     sampleData<-clusterMatrix(cl3)[sample(size=50,1:nrow(clusterMatrix(cl3))),]
     alList<-plotClusters(sampleData)
-    alCol<-alList$clusterColors
-    x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterColors=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
+    alCol<-alList$clusterLegend
+    x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
     x2<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
 #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
-#    expect_equal(lapply(x1$clusterColors,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterColors,function(x){x[,c("clusterIds","color")]}))
+#    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 })
 
 test_that("`plotHeatmap` works with CE objects", {

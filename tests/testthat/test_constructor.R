@@ -103,13 +103,13 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(10,2))
             expect_null(pipelineClusters(cc,iteration=NA))
             
-            x<-clusterColors(cc)
-            clusterColors(cc)<-x
-            clusterColors(c4)[1]<-x
-            clusterColors(c4)[[1]]<-x[[1]]
+            x<-clusterLegend(cc)
+            clusterLegend(cc)<-x
+            clusterLegend(c4)[1]<-x
+            clusterLegend(c4)[[1]]<-x[[1]]
             
-            expect_error(clusterColors(c4)[2]<-x,"must be matrix with")
-            expect_error(clusterColors(c4)[[2]]<-x[[1]],"must be matrix with")
+            expect_error(clusterLegend(c4)[2]<-x,"must be matrix with")
+            expect_error(clusterLegend(c4)[[2]]<-x[[1]],"must be matrix with")
         })
 test_that("accessing transformed data works as promised", 
           {

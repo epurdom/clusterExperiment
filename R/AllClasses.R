@@ -41,7 +41,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
 #' with number of rows/columns equal to the number of samples.
-#' @slot clusterColors a list, one per cluster in \code{clusterMatrix}. Each
+#' @slot clusterLegend a list, one per cluster in \code{clusterMatrix}. Each
 #' element of the list is a matrix with nrows equal to the number of different
 #' clusters in the clustering, and consisting of at least two columns with the
 #' following column names: "clusterId" and "color".
@@ -63,7 +63,7 @@ setClass(
                clusterType = "character",
                dendrogram = "dendrogramOrNULL",
                coClustering = "matrix",
-              clusterColors="list",
+              clusterLegend="list",
               orderSamples="numeric"
     )
 )
@@ -135,46 +135,51 @@ setValidity("ClusterExperiment", function(object) {
         return("`clusterType` must be the same length as NCOL of
                `clusterMatrix`.")
       }
-      #test that @clusterColors is proper form
-      if(length(object@clusterColors) != NCOL(object@clusterMatrix)) {
-        return("`clusterColors` must be list of same length as NCOL of
+    
+    ####
+      #test that @clusterLegend is proper form
+    ####
+      if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
+        return("`clusterLegend` must be list of same length as NCOL of
                `clusterMatrix`")
       }
-      testIsMatrix <- sapply(object@clusterColors,
+      testIsMatrix <- sapply(object@clusterLegend,
                              function(x) {!is.null(dim(x))})
       if(!all(testIsMatrix)) {
-        return("Each element of `clusterColors` list must be a matrix")
+        return("Each element of `clusterLegend` list must be a matrix")
       }
-      testColorRows <- sapply(object@clusterColors, function(x){nrow(x)})
+      testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
       testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
         length(unique(x))})
       if(!all(testColorRows == testClusterMat)) {
-        return("each element of `clusterColors` must be matrix with number of
+        return("each element of `clusterLegend` must be matrix with number of
                rows equal to the number of clusters (including -1 or -2 values)
                in `clusterMatrix`")
       }
-      testColorCols1 <- sapply(object@clusterColors, function(x) {
+      testColorCols1 <- sapply(object@clusterLegend, function(x) {
         "color" %in% colnames(x)})
-      testColorCols2 <- sapply(object@clusterColors, function(x) {
+      testColorCols2 <- sapply(object@clusterLegend, function(x) {
         "clusterIds" %in% colnames(x)})
-    if(!all(testColorCols1) || !all(testColorCols2)) {
-      return("each element of `clusterColors` must be matrix with at least 2
-             columns, and at least 2 columns have names `clusterIds` and
-             `color`")
+      testColorCols3 <- sapply(object@clusterLegend, function(x) {
+        "name" %in% colnames(x)})
+      if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
+      return("each element of `clusterLegend` must be matrix with at least 3
+             columns, and at least 3 columns have names `clusterIds`,
+             `color` and `name`")
     }
-    testColorCols1 <- sapply(object@clusterColors, function(x){is.character(x)})
+    testColorCols1 <- sapply(object@clusterLegend, function(x){is.character(x)})
     if(!all(testColorCols1)) {
-      return("each element of `clusterColors` must be matrix of character
+      return("each element of `clusterLegend` must be matrix of character
              values")
     }
-    testColorCols1 <- sapply(1:length(object@clusterColors), function(ii){
-        col<-object@clusterColors[[ii]]
+    testColorCols1 <- sapply(1:length(object@clusterLegend), function(ii){
+        col<-object@clusterLegend[[ii]]
         x<-object@clusterMatrix[,ii]
         y<-as.numeric(col[,"clusterIds"])
         all(y %in% x)
     })
     if(!all(testColorCols1)) {
-      return("each element of `clusterColors` must be matrix with column
+      return("each element of `clusterLegend` must be matrix with column
              `clusterIds` matching the corresponding integer valued
              clusterMatrix values")
     }
@@ -291,7 +296,7 @@ setMethod(
                primaryIndex = 1,
                clusterType = clusterType,
                clusterInfo=clusterInfo,
-               clusterColors=.makeColors(clusters, colors=bigPalette)$colorList,
+               clusterLegend=.makeColors(clusters, colors=bigPalette)$colorList,
                orderSamples=1:ncol(se),
                dendrogram=makeDendrogram(Assays(assays(se))[[1]],clusters[,1],leaves="samples",unassigned="outgroup")
     )

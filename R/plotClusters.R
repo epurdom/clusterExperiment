@@ -41,7 +41,7 @@
 #' @param ... for \code{plotClusters} arguments passed to \code{\link{plot}} if \code{add=FALSE}.
 
 #' @details If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, combineMany, clusterMany.
-#' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterColors and/or orderSamples slots have been updated (depending on the arguments)
+#' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterLegend and/or orderSamples slots have been updated (depending on the arguments)
 #' @return If \code{clusters} is a matrix, plotClusters returns (invisibly) the orders and other things that
 #' go into making the matrix. Specifically, a list with the following elements
 #' \itemize{
@@ -52,7 +52,7 @@
 #'
 #' \item{\code{aligned}}{ matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
 #'
-#' \item{\code{clusterColors}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
+#' \item{\code{clusterLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson
@@ -75,7 +75,7 @@
 #' #this will make the choices of plotClusters 
 #' cl<-plotClusters(cl,axisLine=-1,resetOrderSamples=TRUE,resetColors=TRUE)
 #' #see the new cluster colors
-#' clusterColors(cl)[1:2]
+#' clusterLegend(cl)[1:2]
 #'
 #' #We can also change the order of the clusterings. Notice how this dramatically changes the plot!
 #' clOrder<-c(3:6,1:2,7:ncol(clusterMatrix(cl)))
@@ -84,9 +84,9 @@
 #' #We can manually switch the red ("#E31A1C") and green ("#33A02C") in the first cluster:
 #' #change "#1F78B4" to "#FF7F00"
 #' showBigPalette(wh=1:5) #see what the default colors are and their names
-#' newColorMat<-clusterColors(cl)[[clOrder[1]]]
+#' newColorMat<-clusterLegend(cl)[[clOrder[1]]]
 #' newColorMat[2:3,"color"]<-c("#E31A1C","#33A02C")
-#' clusterColors(cl)[[clOrder[1]]]<-newColorMat
+#' clusterLegend(cl)[[clOrder[1]]]<-newColorMat
 #' #replot by setting 'input="colors"'
 #' par(mfrow=c(1,2))
 #' plotClusters(cl,orderClusters=clOrder,orderSamples=orderSamples(cl),existingColors="all")
@@ -124,7 +124,7 @@ setMethod(
 #' ClusterExperiment object. 'ignore' will ignore them and assign new colors. 
 #' 'firstOnly' will use the existing colors of only the 1st clustering,
 #' and then give new colors for the remaining (not implemented yet). 'all' will use all of the existing colors
-#' @param resetColors logical. Whether to reset the clusterColors in the ClusterExperiment object
+#' @param resetColors logical. Whether to reset the clusterLegend in the ClusterExperiment object
 #' @param resetOrderSamples logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.
 setMethod(
   f = "plotClusters",
@@ -144,7 +144,7 @@ setMethod(
         outval<-do.call(plotClusters,c(list(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",plot=FALSE),args))
         #make new color matrix with existingColors
         existingClusters<-clusterMatrix(clusters)[,orderClusters]
-        existingClusterColors<-clusterColors(clusters)[orderClusters]
+        existingClusterColors<-clusterLegend(clusters)[orderClusters]
         newColorMat<-do.call("cbind",lapply(1:ncol(existingClusters),function(ii){
             colMat<-existingClusterColors[[ii]]
             cl<-existingClusters[,ii]
@@ -153,7 +153,7 @@ setMethod(
         }))
         do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=TRUE),args))
         
-        if(resetColors) clusterColors(clusters)[orderClusters]<-outval$clusterColors
+        if(resetColors) clusterLegend(clusters)[orderClusters]<-outval$clusterLegend
         
     }
     else outval<-plotClusters(clusters=clusterMatrix(clusters),orderClusters=orderClusters,input="clusters",...)
@@ -230,14 +230,14 @@ setMethod(
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
-				leg<-out$clusterColors[[i]]
+				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
 				if(any(wh<-leg[,"clusterIds"]== -2))
 				leg[wh,"color"]<-missingColor
 				return(leg)
 			})
-			names(newColorLeg)<-names(out$clusterColors)
+			names(newColorLeg)<-names(out$clusterLegend)
 			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
 				out$colors[clusters[i,]=="-1",i]<-unassignedColor
 				out$colors[clusters[i,]=="-2",i]<-missingColor
@@ -246,7 +246,7 @@ setMethod(
 			if(plot) do.call(".clusterTrackingPlot",c(list(colorMat=xColors[out$orderSamples,]),clusterPlotArgs,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
-			out$clusterColors<-newColorLeg
+			out$clusterLegend<-newColorLeg
 		}
 		else{
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=plot),plotTrackArgs,clusterPlotArgs ,list(...)))
@@ -318,15 +318,15 @@ setMethod(
 	#browser()
 	
 	if(plot) .clusterTrackingPlot(t(colorM[,index,drop=FALSE]),...)
-	clusterColors<-lapply(1:nrow(clusters),function(ii){
+	clusterLegend<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
 		mat<-(unique(mat))
 		mat<-mat[order(mat[,"clusterIds"]),]
         return(mat)
 	})
-	names(clusterColors)<-rownames(clusters)
-	invisible(list(orderSamples=index,colors=t(colorM),aligned=t(alignCl),clusterColors=clusterColors))
+	names(clusterLegend)<-rownames(clusters)
+	invisible(list(orderSamples=index,colors=t(colorM),aligned=t(alignCl),clusterLegend=clusterLegend))
 
 }
 

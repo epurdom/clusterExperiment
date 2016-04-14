@@ -16,16 +16,16 @@ setGeneric(
 
 #' @rdname ClusterExperiment-class
 setGeneric(
-    name = "clusterColors",
+    name = "clusterLegend",
     def = function(x) {
-        standardGeneric("clusterColors")
+        standardGeneric("clusterLegend")
     }
 )
 #' @rdname ClusterExperiment-class
 setGeneric(
-    name = "clusterColors<-",
+    name = "clusterLegend<-",
     def = function(object, value) {
-        standardGeneric("clusterColors<-")
+        standardGeneric("clusterLegend<-")
     }
 )
 #' @rdname ClusterExperiment-class
