@@ -282,3 +282,10 @@ setGeneric(
     standardGeneric("getBestGenes")
   }
 )
+#' @rdname mergeClusters
+setGeneric(
+  name = "mergeClusters",
+  def = function(x, ...) {
+    standardGeneric("mergeClusters")
+  }
+)

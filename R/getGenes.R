@@ -232,7 +232,7 @@ setMethod(f = "getBestGenes",
             type <- match.arg(type)
 
             if(type=="Dendro") {
-              dendro <- makeDendrogram(x, leaves="clusters")
+              dendro <- makeDendrogram(x, leaves="clusters", labels=FALSE)
             }
 
             if(voomCorrection) {
