@@ -200,6 +200,7 @@ setMethod(
                                 transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
     retval@clusterType <- clusterType(outval) #shouldn't this add to the end
+    retval<-.unnameClusterSlots(retval)
     return(retval)
   }
 )

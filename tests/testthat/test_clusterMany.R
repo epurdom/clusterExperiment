@@ -8,12 +8,15 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
                                        isCount=FALSE,verbose=FALSE)
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
+            dendrogram(clustNothing)<-NULL
             clusterLabels(clustNothing,whichClusters="pipeline")
 
             se <- SummarizedExperiment(simData)
             clustNothing2 <- clusterMany(se, ks=c(3,4),clusterFunction="pam",
                                             subsample=FALSE, sequential=FALSE,
                                             isCount=FALSE,verbose=FALSE)
+            dendrogram(clustNothing2)<-NULL
+            
             expect_equal(clustNothing, clustNothing2)
 
             #test running on clusterExperiment Object -- should add the new clustering
@@ -27,6 +30,8 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             clustNothing4<- clusterMany(clustNothing3, ks=c(3:4),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
                                            isCount=FALSE,eraseOld=TRUE)
+            dendrogram(clustNothing3)<-NULL
+            dendrogram(clustNothing4)<-NULL
             expect_equal(clustNothing3,clustNothing4)
             clustNothing5<- clusterMany(clustNothing3, ks=c(5:6),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
@@ -45,6 +50,8 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             cc2 <- clusterMany(simData, ks=c(3,4),nVarDim=c(15,20),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
+            dendrogram(cc)<-NULL
+            dendrogram(cc2)<-NULL
             expect_equal(cc,cc2)
 
           })

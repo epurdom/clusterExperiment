@@ -397,6 +397,7 @@ setMethod(
     if(any(duplicated(colnames(x@clusterMatrix)))){
       colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
     }
+    x<-.unnameClusterSlots(x)
     validObject(x)
     return(x)
   }

@@ -140,7 +140,10 @@ setValidity("ClusterExperiment", function(object) {
     ####
     if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
     if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
-    ####
+    if(!is.null(names(object@clusterType))) return("clusterType should not have names")
+      if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
+      if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
+      ####
       #test that @clusterLegend is proper form
     ####
       if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
@@ -309,12 +312,13 @@ setMethod(
                transformation=transformation,
                clusterMatrix = clustersNum,
                primaryIndex = 1,
-               clusterType = clusterType,
-               clusterInfo=clusterInfo,
-               clusterLegend=clusterLegend,
+               clusterType = unname(clusterType),
+               clusterInfo=unname(clusterInfo),
+               clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
                dendrogram=makeDendrogram(Assays(assays(se))[[1]],clusters[,1],leaves="samples",unassigned="outgroup")
     )
+
     validObject(out)
     return(out)
   })

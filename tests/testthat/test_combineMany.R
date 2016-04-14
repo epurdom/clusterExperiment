@@ -19,9 +19,12 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             expect_equal(shared1$clustering, primaryCluster(shared2))
 
             shared3 <- combineMany(clustNothing, "pipeline")
+            dendrogram(shared2)<-NULL
+            dendrogram(shared3)<-NULL
             expect_equal(shared2, shared3)
 
             shared4 <- combineMany(clustNothing, 1:nClusters(clustNothing))
+            dendrogram(shared4)<-NULL
             expect_equal(shared3, shared4)
 
             shared5 <- combineMany(clustNothing, "pipeline",

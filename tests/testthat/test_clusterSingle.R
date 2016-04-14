@@ -7,6 +7,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing <- clusterSingle(simData, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
+            clustNothing@dendrogram<-NULL
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
             
@@ -15,12 +16,14 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing2 <- clusterSingle(se, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
+            clustNothing2@dendrogram<-NULL
             expect_equal(clustNothing, clustNothing2)
 
             #test running on clusterExperiment Object -- should add the new clustering
             clustNothing3 <- clusterSingle(clustNothing2, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=4),is=FALSE)
+            clustNothing3@dendrogram<-NULL
             expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
             expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
             

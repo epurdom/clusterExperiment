@@ -78,7 +78,12 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             ccR<-cc
             dendrogram(ccR)<-NULL
             expect_equal(ccR, removeUnclustered(cc))
-
+#Need to fix:
+#             Error: Test failed: 'adding clusters, setting primary labels and remove unclustered cells
+#           work as promised'
+#             Not expected: ccR not equal to removeUnclustered(cc)
+#             Attributes: < Component “clusterLegend”: names for target but not for current >.
+#             
             c2 <- removeUnclustered(c1)
             expect_equal(NCOL(c2), 5)
             

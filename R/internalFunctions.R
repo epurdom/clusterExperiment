@@ -1,3 +1,8 @@
+.unnameClusterSlots<-function(ce){
+    names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterType)<-NULL
+    return(ce)
+}
+
 .convertToNum<-function(x){
     if(is.factor(x)){
         x<-as.character(x)
@@ -137,6 +142,7 @@
     
   }
   else newX<-x
+  newX<-.unnameClusterSlots(newX)
   validObject(newX)
   return(newX)
 }
