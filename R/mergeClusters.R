@@ -207,7 +207,14 @@ setMethod(f = "mergeClusters",
                            dendro=x@dendro_clusters,
                            countData=FALSE, ...)
 
-  newObj <- clusterExperiment(x, outlist$clustering,
+  #add "m" to name of cluster
+  idx <- which(outlist$clustering>0)
+  cl <- as.numeric(as.factor(outlist$clustering[idx]))
+  cl <- paste("m", cl, sep="")
+  cl_labels <- as.character(outlist$clustering)
+  cl_labels[idx] <- cl
+
+  newObj <- clusterExperiment(x, cl_labels,
                               transformation=transformation(x),
                               clusterType="mergeClusters")
   clusterLabels(newObj) <- "mergeClusters"
