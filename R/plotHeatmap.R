@@ -209,6 +209,7 @@ setMethod(
         clusterData<-NULL
     }
     clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
+    if(length(clLegend)==0) clLegend<-NULL
     #check user didn't give something different for colors
     userAlign<-"alignSampleData" %in% names(list(...))
     userLegend<-"clusterLegend" %in% names(list(...))
@@ -240,7 +241,7 @@ setMethod(
         }
         if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
     }
-   # browser()
+  # browser()
     plotHeatmap(data=visualizeData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=visualizeData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
@@ -349,31 +350,36 @@ setMethod(
             names(tmpDf)<-colnames(sampleData)
             if(!is.null(whSampleDataCont)) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
             annCol<-tmpDf
-            
+           # browser()
             if(is.null(clusterLegend)){ #assign default colors
                 if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ #if not all continuous
                     #Pull out the factors to assign clusters
                     if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
+                    tmpDfNum<-do.call("cbind",lapply(1:ncol(tmpDf),function(ii){.convertToNum(tmpDf[,ii])}))
+                    colnames(tmpDfNum)<-colnames(tmpDf)
                     if(alignSampleData){
-                        #note: data.matrix on factor values will get rid of "-1", "-2"
                         #align the clusters and give them colors
-                        tmpDfNum<-do.call("cbind",lapply(1:ncol(tmpDf),function(ii){.convertToNum(tmpDf[,ii])}))
-                        colnames(tmpDfNum)<-colnames(tmpDf)
                         alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor) 
                         clusterLegend<-alignObj$clusterLegend
                        
                     }
                     else{#give each distinct colors, compared to row before
-                        maxPerAnn<-sapply(tmpDf,function(x){max(as.numeric(x))})
-                        clusterLegend<-mapply(tmpDf,c(0,head(cumsum(maxPerAnn),-1)),FUN=function(fac,add){
-                            cols<-.thisPal[1:nlevels(fac)+add]
-                            cols<-cbind("clusterIds"=levels(fac),"color"=cols)
-                            cols[cols[,"clusterIds"]=="-1","color"]<-unassignedColor 
-                            cols[cols[,"clusterIds"]=="-2","color"]<-missingColor 
-                            cols<-cols[order(cols[,"clusterIds"]),]
+                        maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
+                        maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1))
+                        pal<-rep(bigPalette,length=sum(maxPerAnn)) #make sure don't run out of colors
+                        clusterLegend<-lapply(1:ncol(tmpDfNum),FUN=function(ii){
+                            facInt<-tmpDfNum[,ii]
+                            facOrig<-tmpDf[,ii]
+                            add<-maxPreviousColor[[ii]]
+                            colors<-pal[1:max(facInt)+add] 
+                            cols<-cbind("clusterIds"=levels(factor(facInt[facInt>0])),"color"=colors,"name"=levels(facOrig[facInt>0]))
+                            if(any(facInt== -1)) cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
+                            if(any(facInt== -2)) cols<-rbind(cols,c("clusterIds"="-2","color"=unassignedColor,"name"="-2") )
+                            cols<-cols[order(cols[,"name"]),]
                             return(cols)
-                        },SIMPLIFY=FALSE)
+                        })
                     }
+                    names(clusterLegend)<-colnames(tmpDf)
                     
                 }
             }

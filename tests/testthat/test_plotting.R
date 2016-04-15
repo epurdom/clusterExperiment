@@ -121,6 +121,8 @@ test_that("`plotHeatmap` works with CE objects", {
     plotHeatmap(smCl,sampleData="all")
     plotHeatmap(smCl,sampleData="A")
     plotHeatmap(smCl,sampleData=2:3)
-    
+    plotHeatmap(smCl,sampleData="all",whichClusters="none")
+    ###stopped here: error because need to change output of plotCluster to provide names to clusterIds in colorLegend.
+    plotHeatmap(smCl,sampleData="all",whichClusters="all",alignSampleData=TRUE)
 })
 
