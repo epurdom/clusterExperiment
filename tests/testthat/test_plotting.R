@@ -29,11 +29,22 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     xx2<-plotClusters(clusters=cl2,orderClusters="pipeline") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
     
+    #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
     par(mfrow=c(1,2)) #so can visually check if desired.
-    xx3<-plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
-    x2<-plotClusters(cl,existingColors="all")
-    expect_false(isTRUE(all.equal(x2,xx3)))
+    xx3<-plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE) 
+    expect_false(isTRUE(all.equal(x2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
+    nm<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"name"]})))
+    col<-(unlist(lapply(clusterLegend(xx3),function(x){x[,"color"]})))
+    expect_equal(match(col,bigPalette),nm)
+    nmOld<-as.numeric(unlist(lapply(clusterLegend(cl),function(x){x[,"name"]})))
+    expect_false(isTRUE(all.equal(nm,nmOld)))
+    idOld<-as.numeric(unlist(lapply(clusterLegend(cl),function(x){x[,"clusterIds"]})))
+    idNew<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"clusterIds"]})))
+    expect_equal(idOld,idNew)
 
+    #check existing colors
+    x2<-plotClusters(cl,existingColors="all")
+    
     #test -1
     plotClusters(cl3) 
     

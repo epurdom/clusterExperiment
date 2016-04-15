@@ -124,13 +124,14 @@ setMethod(
 #' ClusterExperiment object. 'ignore' will ignore them and assign new colors. 
 #' 'firstOnly' will use the existing colors of only the 1st clustering,
 #' and then give new colors for the remaining (not implemented yet). 'all' will use all of the existing colors
-#' @param resetColors logical. Whether to reset the clusterLegend in the ClusterExperiment object
+#' @param resetNames logical. Whether to reset the names of the clusters in clusterLegend to be the aligned integer-valued ids from plotClusters. 
+#' @param resetColors logical. Whether to reset the colors in clusterLegend in the ClusterExperiment returned to be the colors from the plotClusters
 #' @param resetOrderSamples logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.
 setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",orderClusters="numeric"),
   definition = function(clusters, orderClusters,existingColors=c("ignore","all"),
-                        resetColors=FALSE,resetOrderSamples=FALSE,sampleData=NULL,...)
+                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,sampleData=NULL,...)
   {
     existingColors<-match.arg(existingColors)
     sampleData<-.pullSampleData(clusters,sampleData)
@@ -160,27 +161,33 @@ setMethod(
         outval<-plotClusters(clusters=clusterMatrix(clusters)[,orderClusters,drop=FALSE],input="clusters",sampleData=sampleData,...)
         
     }
-    if(resetColors){ 
+    if(resetColors | resetNames){ 
       ## recall, everything from outval is in the order of orderClusters!
       ## also includes values from sampleData, which are always at the bottom, so don't affect anything.
         oldClMat<-clusterMatrix(clusters)[,orderClusters]
+        newClMat<-outval$alignedClusterIds
         #make both colors switch to aligned values (but keep name the same!)
-        #can't convert the cluster ids because then wouldn't be consecutive numbers...
+        #can't convert the cluster ids because then wouldn't be consecutive numbers... but can give them names that match.
         newClLegend<-lapply(1:NCOL(oldClMat),function(ii){
-          oldColMat<-clusterLegend(clusters)[orderClusters][[ii]]
-          newColMat<-outval$clusterLegend[[ii]]
-          #  if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
-          #  newCl<-newClMat[,ii]
-          #  oldCl<-oldClMat[,ii]
-#             #convert from old to new ids
-#             oldNew<-unique(cbind(old=oldCl,new=newCl))
-#             if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend")
-#             #update clusterIds -- can't do
-#             m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
-#             oldColMat[,"clusterIds"]<-oldNew[m,"new"]
+            oldColMat<-clusterLegend(clusters)[orderClusters][[ii]]
+            newColMat<-outval$clusterLegend[[ii]]
+            if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
             #update colors
-            m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
-            oldColMat[,"color"]<-newColMat[m,"color"]
+            if(resetColors){
+                m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
+                oldColMat[,"color"]<-newColMat[m,"color"]
+            }
+            #convert from old to new ids
+            if(resetNames){
+              
+                newCl<-newClMat[,ii]
+                oldCl<-oldClMat[,ii]
+                oldNew<-unique(cbind(old=oldCl,new=newCl))
+                if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend from plotClusters output")
+                #update clusterIds -- can't do
+                m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
+                oldColMat[,"name"]<-oldNew[m,"new"]
+            }
             return(oldColMat)
         })
         clusterLegend(clusters)[orderClusters]<-newClLegend
@@ -321,14 +328,24 @@ setMethod(
 			else pastColorVector<-colorM[1,]
 	}	
 	dimnames(colorM)<-dimnames(clusters)
-	
+
+	###########	
 	#give integer values to alignCl
+	###########	
 	allColors<-unique(as.vector(colorM))
+	#make in order of input colPalette so that first row is names like 1,2,3 etc...
+	tmp<-colPalette[colPalette %in% allColors]
+	ord<-match(tmp,allColors)
+	if(length(ord)!=length(allColors)) stop("coding error in the bowels of plotClusters. Contact mantainers.")
+	allColors<-allColors[ord]
+	#give numbers
 	if(nrow(colorM)>1) alignCl<-apply(colorM,2,function(x){match(x,allColors)})
 	else alignCl<-matrix(match(colorM[1,],allColors),nrow=1)
 	dimnames(alignCl)<-dimnames(clusters)
-	
-    ###Order the samples
+
+	###########	
+	###Order the samples
+	###########	
 	if(is.null(index)){
 		tmp<-lapply(1:nrow(alignCl),function(i){unlist(alignCl[i,])})
 		index<-do.call("order",tmp)
@@ -336,6 +353,10 @@ setMethod(
 	#browser()
 	
 	if(plot) .clusterTrackingPlot(t(colorM[,index,drop=FALSE]),...)
+	
+	###########	
+    # Make color legend
+	###########	
 	clusterLegend<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		rownames(mat)<-NULL
