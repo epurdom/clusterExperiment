@@ -24,13 +24,13 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_is(primaryCluster(ccChar),"numeric")
             expect_is(primaryClusterNamed(ccChar),"character")
             expect_equal(sort(unique(primaryClusterNamed(ccChar))),sort(unique(chLabels)))
-            
+
             #test factor input
             clusterExperiment(mat, labels, function(x){x})
 
             expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")
-            
+
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
             expect_equal(nClusters(cc),1)
@@ -58,71 +58,70 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterType(c3)), 2)
             expect_equal(length(clusterInfo(c3)), 2)
             expect_equal(primaryCluster(c3), primaryCluster(cc))
-            
+
             expect_error(clusterLabels(c3)<-c("User","User"))
             clusterLabels(c3)<-c("User1","User2")
             clusterLabels(c3)[1]<-"User4"
             expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
             expect_equal(length(clusterLabels(c3)),2)
             expect_equal(length(clusterLabels(c3,"pipeline")),0) #nothing get back
-            
+
               #check adding matrix of clusters
             c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type="New")
             expect_equal(NCOL(clusterMatrix(c4)), 3)
             expect_equal(length(clusterType(c4)), 3)
             expect_equal(length(clusterInfo(c4)), 3)
             expect_equal(primaryCluster(c4), primaryCluster(cc))
-            
+
             ccR<-cc
-            dendrogram(ccR)<-NULL
             expect_equal(ccR, removeUnclustered(cc))
 #Need to fix:
 #             Error: Test failed: 'adding clusters, setting primary labels and remove unclustered cells
 #           work as promised'
 #             Not expected: ccR not equal to removeUnclustered(cc)
 #             Attributes: < Component “clusterLegend”: names for target but not for current >.
-#             
+#
             c2 <- removeUnclustered(c1)
             expect_equal(NCOL(c2), 5)
-            
+
             #check removing index of clusters
             c5<-removeClusters(c4,1)
             expect_equal(NCOL(clusterMatrix(c5)), 2)
             expect_equal(length(clusterType(c5)), 2)
             expect_equal(length(clusterInfo(c5)), 2)
             expect_equal(primaryCluster(c4), primaryCluster(removeClusters(c4,2)))
-            
+
             c6<-removeClusters(c4,c(1,3))
             expect_equal(NCOL(clusterMatrix(c6)), 1)
             expect_equal(length(clusterType(c6)), 1)
             expect_equal(length(clusterInfo(c6)), 1)
-            
+
             expect_error(removeClusters(c4,c(1,4)))
             c7<-removeClusters(c4,"User")
             expect_equal(NCOL(clusterMatrix(c7)), 2)
             expect_equal(length(clusterType(c7)), 2)
             expect_equal(length(clusterInfo(c7)), 2)
-            
+
             ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,2))
-            
+
             ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5)),type=c("clusterMany"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,1))
-            
+
             ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters_1"))
             expect_equal(dim(pipelineClusters(ppC)),c(10,1))
             expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(10,2))
             expect_null(pipelineClusters(cc,iteration=NA))
-            
+
             x<-clusterLegend(cc)
             clusterLegend(cc)<-x
             clusterLegend(c4)[1]<-x
             clusterLegend(c4)[[1]]<-x[[1]]
-            
+
             expect_error(clusterLegend(c4)[2]<-x,"must be matrix with")
             expect_error(clusterLegend(c4)[[2]]<-x[[1]],"must be matrix with")
         })
-test_that("accessing transformed data works as promised", 
+test_that("accessing transformed data works as promised",
           {
 #check all of the option handling on the dimensionality reduction arguments
   expect_equal(dim(transform(cc)), dim(assay(cc)))
@@ -140,6 +139,6 @@ test_that("accessing transformed data works as promised",
   expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=NA,nVarDims=NA)),dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce=c("PCA"),nPCADims=NA,nVarDims=3)),dim(assay(cc)))
   expect_equal(length(transform(cc,dimReduce=c("PCA"),nPCADims=c(NA,3),nVarDims=4)),2)
-  
-  
+
+
             })

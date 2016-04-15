@@ -8,11 +8,12 @@ setMethod(
     out <- callNextMethod()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- new("matrix") ###Need to think about this
-    out@dendrogram<-NULL
-    
+    out@dendro_samples <- NULL
+    out@dendro_clusters <- NULL
+
    # browser()
     out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
-    
+
     #need to convert to consecutive integer valued clusters:
     newMat<-.makeIntegerClusters(out@clusterMatrix)
     colnames(newMat)<-colnames(out@clusterMatrix)
@@ -230,25 +231,6 @@ setReplaceMethod(
 
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "dendrogram",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x@dendrogram)
-  }
-)
-#' @rdname ClusterExperiment-class
-setReplaceMethod(
-    f = "dendrogram",
-    signature = signature("ClusterExperiment","dendrogramOrNULL"),
-    definition = function(x,value){
-        x@dendrogram<-value
-        validObject(x)
-        return(x)
-    }
-)
-
-#' @rdname ClusterExperiment-class
-setMethod(
   f = "clusterType",
   signature = "ClusterExperiment",
   definition = function(x) {
@@ -297,13 +279,15 @@ setMethod(
     newClusterColors<-clusterLegend(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove){
         pIndex<-1
-        dend<-NULL
+        dend_samples<-NULL
+        dend_cl <- NULL
         coMat<-new("matrix")
         orderSamples<-1:NCOL(x)
     }
     else{
         pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
-        dend<-dendrogram(x)
+        dend_samples <- x@dendro_samples
+        dend_cl <- x@dendro_clusters
         coMat<-x@coClustering
         orderSamples<-orderSamples(x)
             }
@@ -312,7 +296,8 @@ setMethod(
     validObject(retval)
     clusterLegend(retval)<-newClusterColors
     primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
-    dendrogram(retval)<-dend
+    retval@dendro_samples <- dend_samples
+    retval@dendro_clusters <- dend_cl
     orderSamples(retval)<-orderSamples
     return(retval)
   }

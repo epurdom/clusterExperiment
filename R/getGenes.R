@@ -232,7 +232,11 @@ setMethod(f = "getBestGenes",
             type <- match.arg(type)
 
             if(type=="Dendro") {
-              dendro <- makeDendrogram(x, leaves="clusters", labels=FALSE)
+              if(is.null(x@dendro_clusters)) {
+                stop("If `type='Dendro'`, `makeDendrogram` must be run before `getBestGenes`")
+              } else {
+              dendro <- x@dendro_clusters
+              }
             }
 
             if(voomCorrection) {

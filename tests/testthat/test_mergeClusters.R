@@ -8,11 +8,12 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               isCount=FALSE,verbose=FALSE)
   clustCombined <- combineMany(clustNothing, whichClusters = "clusterMany")
 
-  dendro <- makeDendrogram(clustCombined, leaves="clusters", labels=FALSE)
+  clustWithDendro <- makeDendrogram(clustCombined)
   mergedList <- mergeClusters(x=transform(clustCombined), countData=FALSE,
-                              cl=primaryCluster(clustCombined), dendro=dendro,
+                              cl=primaryCluster(clustCombined),
+                              dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotType="mergeMethod")
 
-  clustMerged <- mergeClusters(clustCombined, mergeMethod="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
   clustMerged
   })

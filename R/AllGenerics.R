@@ -198,18 +198,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "dendrogram",
-  def = function(x) {
-    standardGeneric("dendrogram")
-  }
-)
-setGeneric(
-    name = "dendrogram<-",
-    def = function(x,value) {
-        standardGeneric("dendrogram<-")
-    }
-)
-setGeneric(
   name = "clusterType",
   def = function(x) {
     standardGeneric("clusterType")

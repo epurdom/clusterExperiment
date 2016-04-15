@@ -79,11 +79,13 @@ test_that("`getBestGenes` works with matrix and ClusterExperiment objects", {
   expect_error(getBestGenes(simData, primaryCluster(cl), type="Dendro"),
                "must provide dendro")
 
+  dendro <- makeDendrogram(simData, primaryCluster(cl))
   expect_error(getBestGenes(simData, primaryCluster(cl), type="Dendro",
-                            dendro=dendrogram(cl)), "dendro don't match")
+                            dendro=dendro$samples), "dendro don't match")
 
   dend1 <- getBestGenes(simData, primaryCluster(cl), type="Dendro",
-                        dendro = makeDendrogram(cl, leaves="clusters"))
+                        dendro = dendro$clusters)
+  cl <- makeDendrogram(cl)
   dendC1 <- getBestGenes(cl, type="Dendro")
   expect_equal(dend1, dendC1)
 }

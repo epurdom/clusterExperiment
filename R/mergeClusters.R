@@ -198,24 +198,23 @@ setMethod(f = "mergeClusters",
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x,
-                                mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
-                                cutoff=0.1, plotType=c("none", "all", "mergeMethod"),
-                                ...) {
+          definition = function(x, ...) {
 
-
-  dendro <- makeDendrogram(x, leaves="clusters", labels=FALSE)
-
-  outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x), dendro=dendro,
-                           mergeMethod=mergeMethod, cutoff=cutoff,
-                           plotType=plotType, countData=FALSE, ...)
+  if(is.null(x@dendro_clusters)) {
+    stop("`makeDendrogram` needs to be called before `mergeClusters`")
+  }
+  outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
+                           dendro=x@dendro_clusters,
+                           countData=FALSE, ...)
 
   newObj <- clusterExperiment(x, outlist$clustering,
                               transformation=transformation(x),
                               clusterType="mergeClusters")
   clusterLabels(newObj) <- "mergeClusters"
 
-  return(addClusters(newObj, x))
+  retval <- addClusters(newObj, x)
+  retval@dendro_samples <- x@dendro_samples
+  return(retval)
 }
 )
 

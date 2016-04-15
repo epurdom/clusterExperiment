@@ -35,8 +35,12 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' }
 #' @slot clusterType character vector with the origin of each column of
 #' clusterMatrix.
-#' @slot dendrogram dendrogram. A dendrogram containing the cluster
-#' relationship.
+#' @slot dendro_samples dendrogram. A dendrogram containing the cluster
+#' relationship (leaves are samples; see \code{\link{makeDendrogram}} for
+#' details).
+#' @slot dendro_clusters dendrogram. A dendrogram containing the cluster
+#' relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
+#' details).
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
@@ -49,7 +53,10 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' samples to be used for plotting of samples. Usually set internally by other
 #' functions.
 #' @name ClusterExperiment-class
+#' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
+#' @import Biobase
+#' @import SummarizedExperiment
 #' @exportClass
 #'
 setClass(
@@ -57,14 +64,15 @@ setClass(
   contains = "SummarizedExperiment",
   slots = list(
     transformation="function",
-              clusterMatrix = "matrix",
-               primaryIndex = "numeric",
-               clusterInfo = "list",
-               clusterType = "character",
-               dendrogram = "dendrogramOrNULL",
-               coClustering = "matrix",
-              clusterLegend="list",
-              orderSamples="numeric"
+    clusterMatrix = "matrix",
+    primaryIndex = "numeric",
+    clusterInfo = "list",
+    clusterType = "character",
+    dendro_samples = "dendrogramOrNULL",
+    dendro_clusters = "dendrogramOrNULL",
+    coClustering = "matrix",
+    clusterLegend="list",
+    orderSamples="numeric"
     )
 )
 
@@ -112,9 +120,16 @@ setValidity("ClusterExperiment", function(object) {
 #       return("`dendrogram` must be of class dendrogram.")
 #     }
 #   }
-  ##Check dendrogram is on samples
-  if(!is.null(object@dendrogram)){
-      if(nobs(object@dendrogram)!=NCOL(object)) return("dendrogram must have the same number of leaves as the number of samples")
+  ##Check dendrograms
+  if(!is.null(object@dendro_samples)){
+      if(nobs(object@dendro_samples) != NCOL(object)) {
+        return("dendro_samples must have the same number of leaves as the number of samples")
+      }
+  }
+  if(!is.null(object@dendro_clusters)){
+    if(nobs(object@dendro_clusters) != max(primaryCluster(object))) {
+      return("dendro_clusters must have the same number of leaves as the number of clusters")
+    }
   }
 
   if(!all(is.na(object@coClustering)>0) &
@@ -145,7 +160,7 @@ setValidity("ClusterExperiment", function(object) {
       })
       #browser()
       if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
-      
+
     ####
     #test that colnames of clusterMatrix appropriately aligns with everything else
     ####
@@ -281,7 +296,7 @@ setMethod(
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, transformation,clusterType="User",
+  definition = function(se, clusters, transformation, clusterType="User",
                         clusterInfo=NULL){
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
@@ -311,7 +326,7 @@ setMethod(
     if(is.null(clusterInfo)) {
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
-    #make clusters consecutive integer valued:    
+    #make clusters consecutive integer valued:
     tmp<-.makeColors(clusters, colors=bigPalette)
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
@@ -328,7 +343,8 @@ setMethod(
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
-               dendrogram=makeDendrogram(Assays(assays(se))[[1]],clusters[,1],leaves="samples",unassigned="outgroup")
+               dendro_samples=NULL,
+               dendro_clusters=NULL
     )
 
     validObject(out)
