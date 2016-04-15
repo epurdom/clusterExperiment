@@ -99,6 +99,7 @@ setMethod(
 #sampleData user gives either colnames(colData) or index of sample features; change sampleData to sampleData
 #get rid of sampleData!
 #whFeatures can be indices too, add gene names; also add lists of indices or lists of genes for having blanks between them.
+#' @param sampleData If input is either a ClusterExperiment or SummarizedExperiment object, then \code{sampleData} must index the sampleData stored as a DataFrame in \code{colData} slot of the object. Whether the data is continuous or not will be determined by the properties of \code{colData}
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
@@ -107,7 +108,7 @@ setMethod(
                         orderSamples=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"), #can be indices too
                         whichFeatures=c("mostVar","all","PCA"), nFeatures=NULL, 
                         whichClusters= c("primary","pipeline","all","none"),
-                        whichSampleData=NULL,
+                        sampleData=NULL,
                         colorScale=if(centerAndScaleFeatures) seqPal3 else seqPal5,
                        ...
   ){	
@@ -165,7 +166,6 @@ setMethod(
     ######
     orderSamples<-.convertTry(orderSamples,try(match.arg(orderSamples)))
     clusterSamples<-TRUE
-    
     if(is.numeric(orderSamples)){
         visualizeData<-visualizeData[,orderSamples(data)]
         clusterSamplesData<-visualizeData
@@ -183,11 +183,11 @@ setMethod(
             clusterSamples<-FALSE
         }
         if(orderSamples=="dendrogramValue"){
-            if(is.null(dendrogram(data))==0){
-              clusterSamplesData<-makeDendrogram(data)
+            if(is.null(data@dendro_samples)){
+              clusterSamplesData<-makeDendrogram(data)@dendro_samples
             }
             else{
-                clusterSamplesData<-dendrogram(data)
+                clusterSamplesData<-data@dendro_samples
             }
         }
         if(orderSamples=="hclust"){
@@ -199,44 +199,60 @@ setMethod(
     else stop("orderSamples must be either character, or vector of indices of samples")
     
     ######
-    #Make sampleData based on clusterings and metaData
+    #Make sampleData based on clusterings and columns of colData
     ######
-    #browser()
-    
+    #Get clusterings 
     whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
     if(length(whCl)>0) clusterData<-clusterMatrix(data)[,whCl,drop=FALSE]
-    else clusterData<-NULL
-        
-    if(!is.null(whichSampleData)){
-        sData<-colData(data)
-        if(NCOL(sData)==0) stop("no colData for object data, so cannot give whichSampleData values")
-        if(is.character(whichSamples)){
-            if(!all(whichSampleData %in% colnames(sData))) stop("Invalid names for whichSampleData (do not all match colData of data)")
-        }
-        else{
-            if(!all(whichSampleData %in% 1:NCOL(sData))) stop("Invalid indices for whichSampleData")
-        }
-        sData<-sData[,whichSampleData]
-       
+    else{
+        if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
+        clusterData<-NULL
     }
-    else sData<-NULL
-    if(!is.null(clusterData) & !is.null(sData)) sampleData<-data.frame(clusterData,sData,stringsAsFactors=FALSE)
+    clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
+    #check user didn't give something different for colors
+    userAlign<-"alignSampleData" %in% names(list(...))
+    userLegend<-"clusterLegend" %in% names(list(...))
+    if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
+        if(userLegend) clLegend<-list(...)[["clusterLegend"]]
+        else{
+            if(userAlign){
+                al<-list(...)[["alignSampleData"]]
+                if(al) clLegend<-NULL
+            }
+        }
+    }
+
+    #get colData values
+    sData<-.pullSampleData(data,sampleData)
+    #identify which numeric
+    if(!is.null(sData)) whCont<-which(sapply(1:ncol(sData),function(ii){is.numeric(sData[,ii])}))
+    whSampleDataCont<-NULL
+    
+    if(!is.null(clusterData) & !is.null(sData)){
+        sampleData<-data.frame(clusterData,sData,stringsAsFactors=FALSE,check.names=FALSE)
+        if(length(whCont)>0)  whSampleDataCont<-whCont+ncol(clusterData)
+    }
     else{
         if(!is.null(clusterData)) sampleData<-clusterData
-        if(!is.null(sData)) sampleData<-sData
+        if(!is.null(sData)){
+            sampleData<-sData
+            if(length(whCont)>0) whSampleDataCont<-whCont
+        }
         if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
     }
-    
-    ######
-    ####Deal with clusterLegend etc.
-    ######
-    
-    plotHeatmap(data=visualizeData,clusterSamplesData=clusterSamplesData,sampleData=sampleData,clusterSamples=clusterSamples,...)
+   # browser()
+    plotHeatmap(data=visualizeData,
+                clusterSamplesData=clusterSamplesData,
+                clusterFeaturesData=visualizeData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
+                sampleData=sampleData,whSampleDataCont=whSampleDataCont,
+                clusterSamples=clusterSamples,
+                clusterLegend=clLegend,...)
+
     
   })
 
 #' @param data data to use to determine the heatmap
-#' @param sampleData A matrix of additional data on the samples to show above heatmap. Unless indicated by \code{whSampleDataCont}, \code{sampleData} will be converted into factors, even if numeric.  ``-1'' indicates the sample was not assigned to a cluster and
+#' @param sampleData If input is matrix, \code{sampleData} is a matrix of additional data on the samples to show above heatmap. Unless indicated by \code{whSampleDataCont}, \code{sampleData} will be converted into factors, even if numeric.  ``-1'' indicates the sample was not assigned to a cluster and
 #' gets color `unassignedColor' and '-2' gets the color 'missingColor'
 #' @param whSampleDataCont Which of the sampleData columns are continuous and should not be converted to counts. NULL indicates no additional sampleData.
 #' @param clusterSamplesData Either a matrix that will be used to in hclust to define the hiearchical clustering of
@@ -284,12 +300,14 @@ setMethod(
         heatData<-data.matrix(data) 
         
         ###Create the clustering dendrogram:
+        
         if(clusterSamples){
             if(inherits(clusterSamplesData, "dendrogram")){
                 if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
                 dendroSamples<-clusterSamplesData	
             } 
             else{
+                if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
                 clusterSamplesData<-data.matrix(clusterSamplesData)
                 #check valid
                 if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
@@ -305,6 +323,7 @@ setMethod(
                 dendroFeatures<-clusterFeaturesData	
             } 
             else{
+                if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
                 clusterFeaturesData<-data.matrix(clusterFeaturesData)
                 #check valid
                 if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
@@ -379,7 +398,7 @@ setMethod(
         #############
         # add labels to clusters at top of heatmap
         #############
-        #	browser()
+
         if(!any(is.na(annCol))){
             newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
             newNameList<-strsplit(newName,"\\.")[[1]]

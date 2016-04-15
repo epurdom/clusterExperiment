@@ -1,7 +1,7 @@
 ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
                   clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
-cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),type="User")
+cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),clusterType="User")
 clMatNew<-apply(clusterMatrix(cl),2,function(x){
     wh<-sample(1:nSamples(cl),size=10)
     x[wh]<- -1
@@ -89,17 +89,19 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 
 })
 
-
-smData<-simData[1:30,1:50]
-smCount<-simCount[1:30,1:50]
-
+whSamp<-unlist(tapply(1:nSamples(cl3),primaryCluster(cl3),function(x){sample(x,size=3)}))
+smData<-simData[1:10,whSamp]
+smCount<-simCount[1:10,whSamp]
+smCl<-cl3[1:10,whSamp]
+smSData<-sData[whSamp,]
+clusterLabels(smCl)<-paste("Cluster",1:nClusters(smCl))
 test_that("`plotHeatmap` works with matrix objects", {
     x1<-plotHeatmap(data=smData)
     x2<-plotHeatmap(data=smCount,clusterSamplesData=smData,clusterFeaturesData=smData)
     expect_equal(x1$aheatmapOut,x2$aheatmapOut)
     
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
-    sampleData<-clusterMatrix(cl3)[sample(size=50,1:nrow(clusterMatrix(cl3))),]
+    sampleData<-clusterMatrix(smCl)
     alList<-plotClusters(sampleData)
     alCol<-alList$clusterLegend
     x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
@@ -109,7 +111,16 @@ test_that("`plotHeatmap` works with matrix objects", {
 })
 
 test_that("`plotHeatmap` works with CE objects", {
-    x1<-plotHeatmap(cl3[1:30,1:50])
-
+    plotHeatmap(smCl)
+    plotHeatmap(smCl,whichClusters="none")
+    expect_warning(plotHeatmap(smCl,whichClusters="pipeline") ,"whichClusters value does not match any clusters") #there are no pipeline for this one
+    clusterType(smCl)[2:3]<-"clusterMany"
+    plotHeatmap(smCl,whichClusters="pipeline") 
+    expect_error(plotHeatmap(smCl,sampleData="A"))
+    colData(smCl)<-DataFrame(smSData)
+    plotHeatmap(smCl,sampleData="all")
+    plotHeatmap(smCl,sampleData="A")
+    plotHeatmap(smCl,sampleData=2:3)
+    
 })
 

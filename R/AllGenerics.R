@@ -149,7 +149,7 @@ setGeneric(
 #' @rdname ClusterExperiment-class
   setGeneric(
   name = "transform",
-  def = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
+  def = function(x,...) {
     standardGeneric("transform")
   }
 )
@@ -203,7 +203,12 @@ setGeneric(
     standardGeneric("clusterType")
   }
 )
-
+setGeneric(
+    name = "clusterType<-",
+    def = function(object,value) {
+        standardGeneric("clusterType<-")
+    }
+)
 setGeneric(
   name = "addClusters",
   def = function(x, y,...) {
