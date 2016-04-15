@@ -70,6 +70,7 @@
 #' @export
 #' @importFrom phylobase labels descendant ancestors getNode
 #' @importClassesFrom ape phylo
+#' @importClassesFrom phylobase phylo4
 #' @importFrom ape plot.phylo
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
