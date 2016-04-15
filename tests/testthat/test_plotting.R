@@ -17,36 +17,77 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal(dim(clusterMatrix(cl)),dim(x$colors))
     expect_equal(dim(clusterMatrix(cl)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(cl)))
-    xx<-plotClusters(cl2,orderClusters="clusterMany")
-    dendrogram(xx)<-NULL
-    xx2<-plotClusters(clusters=cl2,orderClusters="pipeline")
-    dendrogram(xx2)<-NULL
-    expect_equal(xx2,xx)
-    
+    expect_error(plotClusters(clusters=clusterMatrix(cl),orderClusters="garbage"),"unable to find an inherited method")
+    expect_error(plotClusters(clusters=clusterMatrix(cl),orderClusters=c(1,3,4)),"unable to find an inherited method")
+
     #test CE version
     x<-plotClusters(cl)
     expect_is(x,"ClusterExperiment")
     dendrogram(cl)<-NULL
     dendrogram(x)<-NULL
     expect_equal( x,cl)
-    plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
+    
+    xx<-plotClusters(cl2,orderClusters="clusterMany")
+    dendrogram(xx)<-NULL
+    xx2<-plotClusters(clusters=cl2,orderClusters="pipeline") #only clusterMany values so should be the same
+    dendrogram(xx2)<-NULL
+    expect_equal(xx2,xx)
+    
+    par(mfrow=c(1,2)) #so can visually check if desired.
+    xx3<-plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
     x2<-plotClusters(cl,existingColors="all")
-    dendrogram(x2)<-NULL
-    expect_false(isTRUE(all.equal(x1,x2)))
+    dendrogram(x2)<-dendrogram(xx3)<-NULL
+    expect_false(isTRUE(all.equal(x2,xx3)))
+
     #test -1
     plotClusters(cl3) 
-    x1<-plotClusters(clusters=cl2,orderClusters="pipeline")
     
+    #CE object with mixture of pipeline and other types
+    x1<-plotClusters(clusters=cl2,orderClusters="pipeline",resetColors=TRUE)
+    x2<-plotClusters(clusters=cl,resetColors=TRUE)
+    whP<-.TypeIntoIndices(cl2,"pipeline")
+    expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
     
+    #test specifying indices
     wh<-c(3,4,NCOL(clusterMatrix(cl)))
     x3<-plotClusters(cl,orderClusters=wh,axisLine=-2,resetColors=TRUE)
     x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
     dendrogram(x4)<-dendrogram(x3)<-NULL
     expect_false(isTRUE(all.equal(x3,x4)))
-    x5<-plotClusters(cl,orderClusters=2)
-    plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
-    plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
+    
+    #test if only a single cluster
+    plotClusters(cl,orderClusters=2)
+    x5<-plotClusters(cl,orderClusters=2,resetColors=TRUE)
+    expect_equal(x5,cl)
+    
 })
+
+sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
+sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
+colnames(sData)<-c("A","B","C")
+#test adding metaData
+plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
+plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
+
+test_that("`plotClusters` rerun above tests with sampleData included", {
+  #test matrix version
+  x<-plotClusters(clusters=clusterMatrix(cl),sampleData=sData)
+  expect_equal(ncol(clusterMatrix(cl))+ncol(sData),ncol(x$colors))
+  expect_equal(ncol(clusterMatrix(cl))+ncol(sData),ncol(x$aligned))
+  expect_equal(length(x$clusterLegend),ncol(clusterMatrix(cl))+ncol(sData))
+
+  #test CE version
+  expect_error(plotClusters(cl,sampleData=sData),"no colData for object data")
+  colData(cl)<-DataFrame(sData)
+  expect_error(plotClusters(cl,sampleData=sData),"invalid values for pulling sampleData")
+  plotClusters(cl,sampleData="all")
+  x2<-plotClusters(cl,sampleData="all",resetColors=TRUE)
+  x1<-plotClusters(cl,resetColors=TRUE)
+  dendrogram(x2)<-dendrogram(x1)<-NULL
+  expect_equal(x1,x2)
+
+})
+
 
 smData<-simData[1:30,1:50]
 smCount<-simCount[1:30,1:50]
