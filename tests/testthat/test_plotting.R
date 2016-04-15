@@ -23,20 +23,15 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test CE version
     x<-plotClusters(cl)
     expect_is(x,"ClusterExperiment")
-    dendrogram(cl)<-NULL
-    dendrogram(x)<-NULL
     expect_equal( x,cl)
     
     xx<-plotClusters(cl2,orderClusters="clusterMany")
-    dendrogram(xx)<-NULL
     xx2<-plotClusters(clusters=cl2,orderClusters="pipeline") #only clusterMany values so should be the same
-    dendrogram(xx2)<-NULL
     expect_equal(xx2,xx)
     
     par(mfrow=c(1,2)) #so can visually check if desired.
     xx3<-plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE) 
     x2<-plotClusters(cl,existingColors="all")
-    dendrogram(x2)<-dendrogram(xx3)<-NULL
     expect_false(isTRUE(all.equal(x2,xx3)))
 
     #test -1
@@ -52,7 +47,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     wh<-c(3,4,NCOL(clusterMatrix(cl)))
     x3<-plotClusters(cl,orderClusters=wh,axisLine=-2,resetColors=TRUE)
     x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
-    dendrogram(x4)<-dendrogram(x3)<-NULL
     expect_false(isTRUE(all.equal(x3,x4)))
     
     #test if only a single cluster
@@ -65,9 +59,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
 sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
 colnames(sData)<-c("A","B","C")
-#test adding metaData
-plotClusters(cl,metaData=sample(2:5,size=NCOL(simData),replace=TRUE))
-plotClusters(cl,metaData=cbind(sample(2:5,size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE)))
 
 test_that("`plotClusters` rerun above tests with sampleData included", {
   #test matrix version
@@ -83,7 +74,6 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   plotClusters(cl,sampleData="all")
   x2<-plotClusters(cl,sampleData="all",resetColors=TRUE)
   x1<-plotClusters(cl,resetColors=TRUE)
-  dendrogram(x2)<-dendrogram(x1)<-NULL
   expect_equal(x1,x2)
 
 })
