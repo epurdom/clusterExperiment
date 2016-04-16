@@ -1,7 +1,7 @@
 ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
                   clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
-cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),type="User")
+cl2<-addClusters(cl,sample(2:5,size=NCOL(simData),replace=TRUE),clusterType="User")
 clMatNew<-apply(clusterMatrix(cl),2,function(x){
     wh<-sample(1:nSamples(cl),size=10)
     x[wh]<- -1
@@ -11,6 +11,21 @@ clMatNew<-apply(clusterMatrix(cl),2,function(x){
 })
 #make a new object with -1 values
 cl3<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
+
+sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
+sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
+colnames(sData)<-c("A","B","C")
+
+whSamp<-unlist(tapply(1:nSamples(cl3),primaryCluster(cl3),function(x){sample(x,size=3)}))
+smData<-simData[1:10,whSamp]
+smCount<-simCount[1:10,whSamp]
+smCl<-cl3[1:10,whSamp]
+smSData<-sData[whSamp,]
+clusterLabels(smCl)<-paste("Cluster",1:nClusters(smCl))
+smCl2<-clusterExperiment(simCount[1:10,whSamp],clMatNew[whSamp,],transformation=function(x){log(x+1)})
+colData(smCl2)<-DataFrame(smSData)
+clusterLabels(smCl2)<-paste("Cluster",1:nClusters(smCl2))
+
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test matrix version
     x<-plotClusters(clusters=clusterMatrix(cl))
@@ -67,9 +82,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     
 })
 
-sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
-sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
-colnames(sData)<-c("A","B","C")
 
 test_that("`plotClusters` rerun above tests with sampleData included", {
   #test matrix version
@@ -89,17 +101,13 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 
 })
 
-
-smData<-simData[1:30,1:50]
-smCount<-simCount[1:30,1:50]
-
 test_that("`plotHeatmap` works with matrix objects", {
     x1<-plotHeatmap(data=smData)
     x2<-plotHeatmap(data=smCount,clusterSamplesData=smData,clusterFeaturesData=smData)
     expect_equal(x1$aheatmapOut,x2$aheatmapOut)
     
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
-    sampleData<-clusterMatrix(cl3)[sample(size=50,1:nrow(clusterMatrix(cl3))),]
+    sampleData<-clusterMatrix(smCl)
     alList<-plotClusters(sampleData)
     alCol<-alList$clusterLegend
     x1<-plotHeatmap(data=smData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
@@ -108,8 +116,56 @@ test_that("`plotHeatmap` works with matrix objects", {
 #    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 })
 
-test_that("`plotHeatmap` works with CE objects", {
-    x1<-plotHeatmap(cl3[1:30,1:50])
+test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
+    plotHeatmap(smCl)
+    plotHeatmap(smCl,whichClusters="none")
+    expect_warning(plotHeatmap(smCl,whichClusters="pipeline") ,"whichClusters value does not match any clusters") #there are no pipeline for this one
+    clusterType(smCl)[2:3]<-"clusterMany"
+    plotHeatmap(smCl,whichClusters="pipeline") 
+    plotHeatmap(smCl,whichClusters="all",alignSampleData=TRUE)
+    expect_error(plotHeatmap(smCl,whichClusters=1:15),"Indices in whichClusters invalid")
+    
+    #test sampleData
+    expect_error(plotHeatmap(smCl,sampleData="A"))
+    colData(smCl)<-DataFrame(smSData)
+    plotHeatmap(smCl,sampleData="all")
+    plotHeatmap(smCl,sampleData="A")
+    plotHeatmap(smCl,sampleData=2:3)
+    plotHeatmap(smCl,sampleData="all",whichClusters="none")
 
+    #SummarizedExperiment
+    se<-SummarizedExperiment(smData)
+    plotHeatmap(se)
+    
 })
 
+test_that("`plotHeatmap` visualization choices/feature choices all work", {
+  plotHeatmap(smCl2,visualize="original")
+  plotHeatmap(smCl2,visualize="transformed")
+  plotHeatmap(smCl2,visualize="centeredAndScaled")
+  #even if visualize="orginal, still clsuter on transformed. Should make unit test out of below that get same:
+  plotHeatmap(smCl2,visualize="original",orderSamples="hclust")
+  orderSamples(smCl2)<-sample(1:nSamples(smCl2))
+  plotHeatmap(smCl2,visualize="original",orderSamples="orderSamplesValue")
+  plotHeatmap(smCl2,visualize="original",orderSamples="primaryCluster")
+  plotHeatmap(smCl2,visualize="original",orderSamples=c(3,4,5))
+  
+  plotHeatmap(smCl2,visualize="transform",whichFeatures="all")
+  plotHeatmap(smCl2,visualize="transform",whichFeatures="mostVar",nFeatures=3)
+  plotHeatmap(smCl2,visualize="transform",whichFeatures=3:5,nFeatures=3)
+  expect_error(plotHeatmap(smCl2,visualize="transform",whichFeatures=paste("Gene",3:5),nFeatures=3))
+  row.names(smCl2)<-paste("Gene",1:NROW(smCl2))
+  plotHeatmap(smCl2,visualize="transform",whichFeatures=paste("Gene",3:5),nFeatures=3)
+  #pca plots: the following should be equal:
+  plotHeatmap(smCl2,visualize="original",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
+  plotHeatmap(smCl2,visualize="transform",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
+  
+  
+})
+
+test_that("`plotCoClustering` works", {
+  expect_error(plotCoClustering(smCl2),"coClustering slot is empty")
+  smCl2<-combineMany(smCl2,whichClusters=1:4,proportion=.9)
+  plotCoClustering(smCl2,orderSamples="hclust")
+  #need isSymmetric option for plotHeatmap...
+  })

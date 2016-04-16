@@ -44,9 +44,10 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(NCOL(clusterMatrix(cc)), 1)
             expect_is(transformation(cc),"function")
 
-            c1 <- addClusters(cc, rep(c(-1, 1), each=5))
+            c1 <- addClusters(cc, rep(c(-1, 1), each=5),clusterType="newUser")
+
             expect_equal(NCOL(clusterMatrix(c1)), 2)
-            expect_equal(length(clusterType(c1)), 2)
+            expect_equal(clusterType(c1), c(clusterType(cc),"newUser"))
             expect_equal(length(clusterInfo(c1)), 2)
             expect_equal(primaryCluster(c1), primaryCluster(cc))
             primaryClusterIndex(c1) <- 2

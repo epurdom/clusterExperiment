@@ -6,6 +6,14 @@ setGeneric(
   }
 )
 
+#' @rdname plotHeatmap
+setGeneric(
+  name = "plotCoClustering",
+  def = function(data,  ...) {
+    standardGeneric("plotCoClustering")
+  }
+)
+
 #' @rdname makeDendrogram
 setGeneric(
   name = "makeDendrogram",
@@ -149,7 +157,7 @@ setGeneric(
 #' @rdname ClusterExperiment-class
   setGeneric(
   name = "transform",
-  def = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none") {
+  def = function(x,...) {
     standardGeneric("transform")
   }
 )
@@ -203,7 +211,12 @@ setGeneric(
     standardGeneric("clusterType")
   }
 )
-
+setGeneric(
+    name = "clusterType<-",
+    def = function(object,value) {
+        standardGeneric("clusterType<-")
+    }
+)
 setGeneric(
   name = "addClusters",
   def = function(x, y,...) {
@@ -263,11 +276,11 @@ setGeneric(
     standardGeneric("primaryClusterNamed")
   }
 )
-#' @rdname getBestGenes
+#' @rdname getBestFeatures
 setGeneric(
-  name = "getBestGenes",
+  name = "getBestFeatures",
   def = function(x, ...) {
-    standardGeneric("getBestGenes")
+    standardGeneric("getBestFeatures")
   }
 )
 #' @rdname mergeClusters

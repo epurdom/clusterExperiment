@@ -136,9 +136,9 @@ We find that many methods for choosing the appropriate number of clusters for me
 
 A common practice after determining clusters is to perform differential gene expression analysis in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are not valid, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters and to perform differential expression analysis.
 
-Since this is a common task, we provide the function `getBestGenes` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestGenes` function. The `getBestGenes` function uses the DE analysis provided by the `limma` package. 
+Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. The `getBestFeatures` function uses the DE analysis provided by the `limma` package. 
 
-In addition, the `getBestGenes` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. Unlike edgeR or DESeq, the voom correction does not require a count matrix, and therefore can be used on FPKM or TPM entries, as well as normalized data. 
+In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. Unlike edgeR or DESeq, the voom correction does not require a count matrix, and therefore can be used on FPKM or TPM entries, as well as normalized data. 
 
 ## Visualization
 
@@ -344,34 +344,34 @@ _DR: don't we have a min size parameter to remove clusters with too few observat
 
 # Finding Marker Genes
 
-The function `getBestGenes` calls `limma` on input data to determine the gene features most associated with the found clusters. The minimal required input is the expression data and a vector of the (numeric) cluster labels. The method ignores samples in clusters marked by "-1" ("-1" always signifies samples not clustered). By default,  `getBestGenes` finds significant genes based on a F-test between the clusters, but the option `type` can provide other measures and is the most common one to be changed by the user. 
+The function `getBestFeatures` calls `limma` on input data to determine the gene features most associated with the found clusters. The minimal required input is the expression data and a vector of the (numeric) cluster labels. The method ignores samples in clusters marked by "-1" ("-1" always signifies samples not clustered). By default,  `getBestFeatures` finds significant genes based on a F-test between the clusters, but the option `type` can provide other measures and is the most common one to be changed by the user. 
 
 In this demonstration, clustering will first be performed with basic PAM with k=4 and removing negative silhouette widths. We use the simulated data found in  the package `simData`.
 
-`getBestGenes` will be called to determine the top features associated with every pairwise comparison between the clusters. By default, `topTable` in `limma` only returns the top 10, which in this context means 10 per each of the pairwise comparisons.
+`getBestFeatures` will be called to determine the top features associated with every pairwise comparison between the clusters. By default, `topTable` in `limma` only returns the top 10, which in this context means 10 per each of the pairwise comparisons.
 
-```{r getBestGenes}
+```{r getBestFeatures}
 data(simData)
 cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
-pairsAll<-getBestGenes(cl$clustering,simData,type="Pairs")
+pairsAll<-getBestFeatures(cl$clustering,simData,type="Pairs")
 
 head(pairsAll)
 ```
 
 The column `Contrast` in the output signifies the pairwise difference (or contrast) for which the information on the row comes from. `IndexInOriginal` matches the gene to its index in the original dataset. The other columns are provided by `topTable` in `limma` (see documentation therein).
 
-`getBestGenes` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned for each contrast. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05.
+`getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned for each contrast. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05.
 
-```{r getBestGenesAllSig}
+```{r getBestFeaturesAllSig}
 data(simData)
 cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
-pairsAll2<-getBestGenes(cl$clustering,simData,type="Pairs",p.value=0.05,number=ncol(simData))
+pairsAll2<-getBestFeatures(cl$clustering,simData,type="Pairs",p.value=0.05,number=ncol(simData))
 table(pairsAll2$Contrast)
 ```
 
 Notice that the same genes can be replicated across different contrasts:
 
-```{r getBestGenesNumber}
+```{r getBestFeaturesNumber}
 nrow(pairsAll2)
 length(unique(pairsAll2$Gene))
 ```
@@ -380,7 +380,7 @@ Note that by using contrasts, we are making use of all of the data, not just the
 
 ## Heatmaps of Marker Genes
 
-One way to visualize samples with only the features found by `getBestGenes` is to use the `plotHeatmap` function. The `plotHeatmap` function minimally requires two arguments - a vector of cluster assignments and the data matrix. `plotHeatmap` uses the heatmap function `aheatmap` in the package `NMF`, but provides an interface that is useful for the standard plots desired for evaluating the clustering output. In particular, it is designed to draw the cluster assignments of the samples on the top, where different colors denote different cluster assignments; lack of assignment, denoted by "-1", are automatically colored white.  In the code example below, `clusterData` is set to the data matrix to define the color scale. Currently, `plotHeatmap` internally transforms the input data (i.e. argument `heatData`) to the log scale; this will be fixed to be an option in future versions, but currently, passing of already logged data is not supported and log-scale data should be exponentiated for use with `plotHeatmap`.
+One way to visualize samples with only the features found by `getBestFeatures` is to use the `plotHeatmap` function. The `plotHeatmap` function minimally requires two arguments - a vector of cluster assignments and the data matrix. `plotHeatmap` uses the heatmap function `aheatmap` in the package `NMF`, but provides an interface that is useful for the standard plots desired for evaluating the clustering output. In particular, it is designed to draw the cluster assignments of the samples on the top, where different colors denote different cluster assignments; lack of assignment, denoted by "-1", are automatically colored white.  In the code example below, `clusterData` is set to the data matrix to define the color scale. Currently, `plotHeatmap` internally transforms the input data (i.e. argument `heatData`) to the log scale; this will be fixed to be an option in future versions, but currently, passing of already logged data is not supported and log-scale data should be exponentiated for use with `plotHeatmap`.
 
 ```{r plotHeatmap}
 dataMatrix = simData[, unique(pairsAll2$IndexInOriginal)]
@@ -424,10 +424,10 @@ plotHeatmap(cl$clustering[whRm],heatData=exp(dataMatrix)[whRm,],eps=0,clusterDat
 
 ### Hierarchical Contrasts and Merging clusters
 
-We can also perform tests based on this hierarchy of clusters. Specifically, we can test for each node of the hierarchy, whether the mean of the set of clusters to the right split of the node is equal to the mean on the left split. We do this by creating a contrast of the corresponding means and testing it for each gene via `getBestGenes`, where the type is set to `"Dendro"` and we provide the dendrogram created by `clusterHclust` (but setting `full=FALSE` so that individual samples are not in the dendrogram).
+We can also perform tests based on this hierarchy of clusters. Specifically, we can test for each node of the hierarchy, whether the mean of the set of clusters to the right split of the node is equal to the mean on the left split. We do this by creating a contrast of the corresponding means and testing it for each gene via `getBestFeatures`, where the type is set to `"Dendro"` and we provide the dendrogram created by `clusterHclust` (but setting `full=FALSE` so that individual samples are not in the dendrogram).
 
 ```{r}
-dendroGenes<-getBestGenes(cl$clustering,simData,type="Dendro",p.value=0.05,number=ncol(simData),dendro=clDendro)
+dendroGenes<-getBestFeatures(cl$clustering,simData,type="Dendro",p.value=0.05,number=ncol(simData),dendro=clDendro)
 head(dendroGenes)
 ```
 

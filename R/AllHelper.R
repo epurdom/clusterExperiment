@@ -389,6 +389,7 @@ setMethod(
       stop("Cannot merge clusters from different data.")
     }
     x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
+    #browser()
     x@clusterType <- c(x@clusterType, y@clusterType)
     x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
     x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
@@ -407,8 +408,8 @@ setMethod(
 setMethod(
     f = "addClusters",
     signature = signature("ClusterExperiment", "matrix"),
-    definition = function(x, y, type="User") {
-        ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterType=type)
+    definition = function(x, y, clusterType="User") {
+        ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterType=clusterType)
         addClusters(x,ccObj)
     }
 )
@@ -471,6 +472,18 @@ setReplaceMethod(
     signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
         object@orderSamples<-value
+        validObject(object)
+        return(object)
+    }
+)
+
+#' @rdname ClusterExperiment-class
+setReplaceMethod(
+    f = "clusterType",
+    signature = signature(object="ClusterExperiment", value="character"),
+    definition = function(object,value) {
+        object@clusterType<-value
+        object<-.unnameClusterSlots(object)
         validObject(object)
         return(object)
     }

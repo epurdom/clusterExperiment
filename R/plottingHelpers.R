@@ -6,8 +6,9 @@ convertClusterColors<-function(clusterLegend,output=c("aheatmapFormat","matrix")
     if(output=="aheatmapFormat"){
         #make in format of vector of colors with names of vector equal to the factor
         outval<-lapply(clusterLegend,function(x){
-            z<-as.character(x[,"color"])
-            names(z)<-as.character(as.numeric(x[,"clusterIds"]))
+            z<-x[,"color"]
+            names(z)<-x[,"name"]
+            z<-z[order(names(z))]
             return(z)
         })
     }
