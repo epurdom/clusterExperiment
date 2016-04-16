@@ -6,7 +6,7 @@ setMethod(
     if(nrow(data@coClustering)==0) stop("coClustering slot is empty")
     fakeCE<-clusterExperiment(data@coClustering,
                               clusterMatrix(data),
-                              transformation=transformation(data),
+                              transformation=function(x){x},
                               clusterInfo=clusterInfo(data),
                               clusterType=clusterType(data)
                               )
@@ -16,5 +16,5 @@ setMethod(
     fakeCE@dendro_samples<-data@dendro_samples
     fakeCE@primaryIndex<-data@primaryIndex
     validObject(fakeCE) #just in case screwed something up
-    plotHeatmap(fakeCE,...)
+    plotHeatmap(fakeCE,isSymmetric=TRUE,whichFeatures="all",...)
   })

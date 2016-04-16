@@ -160,12 +160,29 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
   plotHeatmap(smCl2,visualize="original",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
   plotHeatmap(smCl2,visualize="transform",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
   
+  plotHeatmap(smCl2,visualize="transform",orderSamples="dendrogramValue")
   
 })
 
+test_that("`makeBlankData` works", {
+  ##call directly
+  gps<-list(c(3,6,7),c(2,1))
+  xx<-makeBlankData(assay(smCl2),groupsOfFeatures=gps)
+  expect_equal(nrow(xx$dataWBlanks),length(xx$rowNamesWBlanks))
+  whBlankNames<-which(xx$rowNamesWBlanks=="")
+  expect_equal(xx$rowNamesWBlanks[-whBlankNames],as.character(unlist(gps)) )
+  whBlankRows<-as.numeric(which(apply(xx$dataWBlanks,1,function(x){all(is.na(x))})))
+  expect_equal(whBlankRows,whBlankNames)
+  expect_equal(whBlankRows,4)
+  
+  ##call within plotHeatmap
+  plotHeatmap(smCl2,whichFeatures=gps)
+})
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smCl2),"coClustering slot is empty")
-  smCl2<-combineMany(smCl2,whichClusters=1:4,proportion=.9)
+  smCl2<-combineMany(smCl2,whichClusters=1:4,proportion=.9) #gives all -1, but creates coClustering
   plotCoClustering(smCl2,orderSamples="hclust")
-  #need isSymmetric option for plotHeatmap...
-  })
+  expect_error(plotCoClustering(smCl2,orderSamples="dendrogramValue"),"all samples have clusterIds<0")
+  primaryClusterIndex(smCl2)<-3
+  plotCoClustering(smCl2,orderSamples="dendrogramValue")
+})
