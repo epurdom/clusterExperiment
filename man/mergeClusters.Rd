@@ -21,7 +21,7 @@ mergeClusters(dat, cl, dendro = NULL, mergeMethod = c("none", "adjP",
 
 \item{plotType}{what type of plotting of dendrogram. If 'all', then all the estimates of proportion non-null will be plotted; if 'mergeMethod', then only the value used in the merging is plotted for each node.}
 
-\item{countData}{logical as to whether input data is a count matrix (in which case log(count+1) will be used for \code{\link{clusterHclust}} and voom correction will be used in \code{\link{getBestGenes}}).}
+\item{countData}{logical as to whether input data is a count matrix (in which case log(count+1) will be used for \code{\link{clusterHclust}} and voom correction will be used in \code{\link{getBestFeatures}}).}
 
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.}
 }

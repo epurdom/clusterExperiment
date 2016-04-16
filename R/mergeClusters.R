@@ -24,7 +24,7 @@
 #' the value used in the merging is plotted for each node.
 #' @param countData logical as to whether input data is a count matrix
 #' (in which case log(count+1) will be used for \code{\link{makeDendrogram}}
-#' and voom correction will be used in \code{\link{getBestGenes}}). Ignored if
+#' and voom correction will be used in \code{\link{getBestFeatures}}). Ignored if
 #' input is \code{\link{ClusterExperiment}}.
 #' @param ... arguments passed to the \code{\link{plot.phylo}} function of
 #' \code{ade4} that plots the dendrogram.
@@ -107,7 +107,7 @@ setMethod(f = "mergeClusters",
   }
 
   #get test-statistics for the contrasts corresponding to each node (and return all)
-  sigTable <- getBestGenes(x, cl, type=c("Dendro"), dendro=dendro,
+  sigTable <- getBestFeatures(x, cl, type=c("Dendro"), dendro=dendro,
                            returnType=c("Table"), contrastAdj=c("All"),
                            number=nrow(x), p.value=1, voomCorrection=countData)
 

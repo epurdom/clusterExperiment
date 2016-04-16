@@ -276,11 +276,11 @@ setGeneric(
     standardGeneric("primaryClusterNamed")
   }
 )
-#' @rdname getBestGenes
+#' @rdname getBestFeatures
 setGeneric(
-  name = "getBestGenes",
+  name = "getBestFeatures",
   def = function(x, ...) {
-    standardGeneric("getBestGenes")
+    standardGeneric("getBestFeatures")
   }
 )
 #' @rdname mergeClusters

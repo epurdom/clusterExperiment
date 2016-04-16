@@ -166,6 +166,6 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smCl2),"coClustering slot is empty")
   smCl2<-combineMany(smCl2,whichClusters=1:4,proportion=.9)
-  plotCoClustering(smCl2,orderSamples="primaryCluster")
+  plotCoClustering(smCl2,orderSamples="hclust")
   #need isSymmetric option for plotHeatmap...
   })

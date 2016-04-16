@@ -31,7 +31,7 @@
 #' @param ... options to pass to \code{\link{topTable}} or
 #' \code{\link{topTableF}} (see \code{\link{limma}} package)
 #'
-#' @details getBestGenes returns best genes corresponding to a cluster
+#' @details getBestFeatures returns best genes corresponding to a cluster
 #' assignment. It uses limma to fit the models, and limma's functions
 #' \code{\link{topTable}} or \code{\link{topTableF}} to find the best genes. See
 #' the options of these functions to put better control on what gets returned
@@ -57,7 +57,7 @@
 #' @details  Note that the default option for \code{\link{topTable}} is to not
 #' filter based on adjusted p-values (\code{p.value=1}) and return only the top
 #' 10 most significant (\code{number=10}) -- these are options the user can
-#' change (these arguments are passed via the \code{...} in getBestGenes).
+#' change (these arguments are passed via the \code{...} in getBestFeatures).
 #' In particular, it only makes sense to set \code{requireF=TRUE} if
 #' \code{p.value} is meaningful (e.g. 0.1 or 0.05); the default value of
 #' \code{p.value=1} will not result in any effect on the adjusted p-value
@@ -86,14 +86,14 @@
 #' cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))$cl
 #' #basic F test, return all, even if not significant:
-#' testF<-getBestGenes(cl,simData,type="F",number=nrow(simData),
+#' testF<-getBestFeatures(cl,simData,type="F",number=nrow(simData),
 #' voomCorrection=FALSE)
 #' #Do all pairwise, only return significant, try different adjustments:
-#' pairsPerC<-getBestGenes(cl,simData,type="Pairs",contrastAdj="PerContrast",
+#' pairsPerC<-getBestFeatures(cl,simData,type="Pairs",contrastAdj="PerContrast",
 #' p.value=0.05,voomCorrection=FALSE)
-#' pairsAfterF<-getBestGenes(cl,simData,type="Pairs",contrastAdj="AfterF",
+#' pairsAfterF<-getBestFeatures(cl,simData,type="Pairs",contrastAdj="AfterF",
 #' p.value=0.05,voomCorrection=FALSE)
-#' pairsAll<-getBestGenes(cl,simData,type="Pairs",contrastAdj="All",
+#' pairsAll<-getBestFeatures(cl,simData,type="Pairs",contrastAdj="All",
 #' p.value=0.05,voomCorrection=FALSE)
 #'#not useful for this silly example, but could look at overlap with Venn
 #' allGenes<-paste("Row",1:nrow(simData),sep="")
@@ -103,22 +103,22 @@
 #'	vennDiagram(vennC,main="FDR Overlap")
 #' }
 #' #Do one cluster against all others
-#' oneAll<-getBestGenes(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05)
+#' oneAll<-getBestFeatures(cl,simData,type="OneAgainstAll",contrastAdj="All",p.value=0.05)
 #' #Do dendrogram testing
 #' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
-#' allDendro<-getBestGenes(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
+#' allDendro<-getBestFeatures(cl=cl,dat=simData,type="Dendro",dendro=hcl,returnType=c("Table"),
 #' contrastAdj=c("All"),number=ncol(simData),p.value=0.05)
 #'
 #' # do DE on counts using voom
 #' # compare results to if used simData instead (not on count scale).
 #' # Again, not relevant for this silly example, but basic principle useful
-#' testFVoom<-getBestGenes(cl,simCount,type="F",number=nrow(simData),voomCorrection=TRUE)
+#' testFVoom<-getBestFeatures(cl,simCount,type="F",number=nrow(simData),voomCorrection=TRUE)
 #' plot(testF$P.Value[order(testF$Index)],testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 #'
 #' @export
 #' @import limma
-#' @rdname getBestGenes
-setMethod(f = "getBestGenes",
+#' @rdname getBestFeatures
+setMethod(f = "getBestFeatures",
           signature = signature(x = "matrix"),
           definition = function(x, cl,
                                 type=c("F", "Dendro", "Pairs", "OneAgainstAll"),
@@ -219,8 +219,8 @@ setMethod(f = "getBestGenes",
           }
 )
 
-#' @rdname getBestGenes
-setMethod(f = "getBestGenes",
+#' @rdname getBestFeatures
+setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x,
                                 type=c("F", "Dendro", "Pairs", "OneAgainstAll"),
@@ -233,7 +233,7 @@ setMethod(f = "getBestGenes",
 
             if(type=="Dendro") {
               if(is.null(x@dendro_clusters)) {
-                stop("If `type='Dendro'`, `makeDendrogram` must be run before `getBestGenes`")
+                stop("If `type='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
               } else {
               dendro <- x@dendro_clusters
               }
@@ -249,7 +249,7 @@ This makes sense only for counts.")
               dat <- transform(x)
             }
 
-            getBestGenes(dat, primaryCluster(x), type=type, dendro=dendro,
+            getBestFeatures(dat, primaryCluster(x), type=type, dendro=dendro,
                          pairMat=pairMat, returnType=returnType,
                          contrastAdj=contrastAdj, voomCorrection=voomCorrection)
 
