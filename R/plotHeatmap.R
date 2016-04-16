@@ -86,19 +86,14 @@
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),
-    definition = function(data, 
-                          visualize=c("original","transformed","centeredAndScaled"),
-                          orderSamples=c("hclust"), #can be indices too
-                          whichFeatures=c("mostVar","all","PCA"), #can be indices too
-                          nFeatures=NULL, sampleData=NULL, whSampleDataCont=NULL,
-                          colorScale=if(centerAndScaleFeatures) seqPal3 else seqPal5,
-                          isCount=FALSE,transData=NULL
+    definition = function(data, isCount=FALSE,transFun=NULL,...
     ){	
+      transformation<-.transData(assay(data),isCount=isCount,transFun=transFun,dimReduce="none")$transFun
+      fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
+      fakeCE<-clusterExperiment(data,fakeCL,transformation=transformation)
+      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data of class Summarized Experiment")
+      plotHeatmap(fakeCE,whichClusters="none",...)
 })
-#colData of SE is data.frame, each row a sample, columns features.
-#sampleData user gives either colnames(colData) or index of sample features; change sampleData to sampleData
-#get rid of sampleData!
-#whFeatures can be indices too, add gene names; also add lists of indices or lists of genes for having blanks between them.
 #' @param sampleData If input is either a ClusterExperiment or SummarizedExperiment object, then \code{sampleData} must index the sampleData stored as a DataFrame in \code{colData} slot of the object. Whether the data is continuous or not will be determined by the properties of \code{colData}
 setMethod(
   f = "plotHeatmap",
@@ -119,8 +114,8 @@ setMethod(
     ####
     ##Transform data and determine which features to use
     ####
-    whichFeatures<-.convertTry(whichFeatures,try(match.arg(whichFeatures)))
-    if(whichFeatures %in% c("mostVar","all","PCA")){ #
+    whichFeatures<-.convertTry(whichFeatures,try(match.arg(whichFeatures),silent=TRUE))
+    if(all(whichFeatures %in% c("mostVar","all","PCA"))){ #
         dimReduce=switch(whichFeatures,
                          "mostVar"="mostVar",
                         "PCA"="PCA",
@@ -152,7 +147,7 @@ setMethod(
     #########
     ##Assign visualization data and clusterFeaturesData
     #########
-    if(whichFeatures=="PCA") visualizeData<-transObj$x
+    if(all(whichFeatures=="PCA")) visualizeData<-transObj$x
     else{
       visualizeData<-switch(visualize,
                             "original"=assay(data[wh,]),
@@ -160,26 +155,81 @@ setMethod(
                             "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
                             )
     }
+
+    ######
+    #Make sampleData based on clusterings and columns of colData
+    ######
+    #Get clusterings 
+    if(is.character(whichClusters)) whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
+    else whCl<-whichClusters
+    if(length(whCl)>0){
+      if(!is.numeric(whCl)) stop("invalid whichClusters choices")
+      if(!all(whCl %in% 1:nClusters(data))) stop("Indices in whichClusters invalid: not in 1 to nClusters(data)")
+      clusterData<-clusterMatrix(data)[,whCl,drop=FALSE]
+    }
+    else{
+      if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
+      clusterData<-NULL
+    }
+    clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
+    if(length(clLegend)==0) clLegend<-NULL
+    #check user didn't give something different for colors
+    userAlign<-"alignSampleData" %in% names(list(...))
+    userLegend<-"clusterLegend" %in% names(list(...))
+    if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
+      if(userLegend) clLegend<-list(...)[["clusterLegend"]]
+      else{
+        if(userAlign){
+          al<-list(...)[["alignSampleData"]]
+          if(al) clLegend<-NULL
+        }
+      }
+    }
+    
+    #get colData values
+    sData<-.pullSampleData(data,sampleData)
+    #identify which numeric
+    if(!is.null(sData)) whCont<-which(sapply(1:ncol(sData),function(ii){is.numeric(sData[,ii])}))
+    whSampleDataCont<-NULL
+    
+    if(!is.null(clusterData) & !is.null(sData)){
+      sampleData<-data.frame(clusterData,sData,stringsAsFactors=FALSE,check.names=FALSE)
+      if(length(whCont)>0)  whSampleDataCont<-whCont+ncol(clusterData)
+    }
+    else{
+      if(!is.null(clusterData)) sampleData<-clusterData
+      if(!is.null(sData)){
+        sampleData<-sData
+        if(length(whCont)>0) whSampleDataCont<-whCont
+      }
+      if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
+    }
     
     ######
     #Create clusterSamplesData  
     ######
-    orderSamples<-.convertTry(orderSamples,try(match.arg(orderSamples)))
+    orderSamples<-.convertTry(orderSamples,try(match.arg(orderSamples),silent=TRUE))
     clusterSamples<-TRUE
     if(is.numeric(orderSamples)){
-        visualizeData<-visualizeData[,orderSamples(data)]
+        visualizeData<-visualizeData[,orderSamples]
         clusterSamplesData<-visualizeData
+        if(!is.null(sampleData)) sampleData<-sampleData[orderSamples,,drop=FALSE]
         clusterSamples<-FALSE
     }
     else if(is.character(orderSamples)){
         if(orderSamples=="orderSamplesValue"){
-            visualizeData<-visualizeData[,orderSamples(data)]
+          visualizeData<-visualizeData[,orderSamples(data)]
             clusterSamplesData<-visualizeData
+            #browser()
+            if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
             clusterSamples<-FALSE
+            
         }
         if(orderSamples=="primaryCluster"){
             visualizeData<-visualizeData[,order(primaryCluster(data))]
             clusterSamplesData<-visualizeData
+            if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
+            
             clusterSamples<-FALSE
         }
         if(orderSamples=="dendrogramValue"){
@@ -198,49 +248,6 @@ setMethod(
     }
     else stop("orderSamples must be either character, or vector of indices of samples")
     
-    ######
-    #Make sampleData based on clusterings and columns of colData
-    ######
-    #Get clusterings 
-    whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
-    if(length(whCl)>0) clusterData<-clusterMatrix(data)[,whCl,drop=FALSE]
-    else{
-        if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
-        clusterData<-NULL
-    }
-    clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
-    if(length(clLegend)==0) clLegend<-NULL
-    #check user didn't give something different for colors
-    userAlign<-"alignSampleData" %in% names(list(...))
-    userLegend<-"clusterLegend" %in% names(list(...))
-    if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
-        if(userLegend) clLegend<-list(...)[["clusterLegend"]]
-        else{
-            if(userAlign){
-                al<-list(...)[["alignSampleData"]]
-                if(al) clLegend<-NULL
-            }
-        }
-    }
-
-    #get colData values
-    sData<-.pullSampleData(data,sampleData)
-    #identify which numeric
-    if(!is.null(sData)) whCont<-which(sapply(1:ncol(sData),function(ii){is.numeric(sData[,ii])}))
-    whSampleDataCont<-NULL
-    
-    if(!is.null(clusterData) & !is.null(sData)){
-        sampleData<-data.frame(clusterData,sData,stringsAsFactors=FALSE,check.names=FALSE)
-        if(length(whCont)>0)  whSampleDataCont<-whCont+ncol(clusterData)
-    }
-    else{
-        if(!is.null(clusterData)) sampleData<-clusterData
-        if(!is.null(sData)){
-            sampleData<-sData
-            if(length(whCont)>0) whSampleDataCont<-whCont
-        }
-        if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
-    }
   # browser()
     plotHeatmap(data=visualizeData,
                 clusterSamplesData=clusterSamplesData,
@@ -360,8 +367,15 @@ setMethod(
                     if(alignSampleData){
                         #align the clusters and give them colors
                         alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor) 
-                        clusterLegend<-alignObj$clusterLegend
-                       
+                        clusterLegend<-lapply(1:ncol(tmpDfNum),function(ii){
+                          xNum<-tmpDfNum[,ii]
+                          xOrig<-tmpDf[,ii]
+                          colMat<-alignObj$clusterLegend[[ii]]
+                          m<-match(colMat[,"clusterIds"],as.character(xNum))
+                          colMat<-cbind(colMat,"name"=as.character(xOrig)[m])
+                          return(colMat)
+                        })
+                       #browser()
                     }
                     else{#give each distinct colors, compared to row before
                         maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)

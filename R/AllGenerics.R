@@ -6,6 +6,14 @@ setGeneric(
   }
 )
 
+#' @rdname plotHeatmap
+setGeneric(
+  name = "plotCoClustering",
+  def = function(data,  ...) {
+    standardGeneric("plotCoClustering")
+  }
+)
+
 #' @rdname makeDendrogram
 setGeneric(
   name = "makeDendrogram",
