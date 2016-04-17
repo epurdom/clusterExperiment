@@ -97,7 +97,7 @@ setValidity("ClusterExperiment", function(object) {
   if(any(is.na(tX))) {
     return("NA values after transforming data matrix are not allowed.")
   }
-
+  
   if(!all(is.na((object@clusterMatrix))) &
      !(NROW(object@clusterMatrix) == NCOL(object))) {
     return("If present, `clusterMatrix` must have as many row as cells.")
@@ -105,111 +105,114 @@ setValidity("ClusterExperiment", function(object) {
   if(!is.numeric(object@clusterMatrix)) {
     return("`clusterMatrix` must be a numeric matrix.")
   }
-
+  
   if(NCOL(object@clusterMatrix)!= length(object@clusterType)) {
     return("length of clusterType must be same as NCOL of the clusterMatrix")
   }
-
+  
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
-
-# now have assigned class to slot and constructor creates one automatically
-#   if(length(object@dendrogram) > 0) {
-#     if(class(object@dendrogram) != "dendrogram") {
-#       return("`dendrogram` must be of class dendrogram.")
-#     }
-#   }
+  
+  # now have assigned class to slot and constructor creates one automatically
+  #   if(length(object@dendrogram) > 0) {
+  #     if(class(object@dendrogram) != "dendrogram") {
+  #       return("`dendrogram` must be of class dendrogram.")
+  #     }
+  #   }
   ##Check dendrograms
   if(!is.null(object@dendro_samples)){
-      if(nobs(object@dendro_samples) != NCOL(object)) {
-        return("dendro_samples must have the same number of leaves as the number of samples")
-      }
+    if(nobs(object@dendro_samples) != NCOL(object)) {
+      return("dendro_samples must have the same number of leaves as the number of samples")
+    }
   }
   if(!is.null(object@dendro_clusters)){
     if(nobs(object@dendro_clusters) != max(primaryCluster(object))) {
       return("dendro_clusters must have the same number of leaves as the number of clusters")
     }
   }
-
+  
   if(!all(is.na(object@coClustering)>0) &
-       (NROW(object@coClustering) != NCOL(object@coClustering)
-       | NCOL(object@coClustering) != NCOL(object))) {
+     (NROW(object@coClustering) != NCOL(object@coClustering)
+      | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
   }
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-      #check primary index
-      if(length(object@primaryIndex) != 1) {
-        return("If more than one set of cluster labels, a primary cluster must
+    #check primary index
+    if(length(object@primaryIndex) != 1) {
+      return("If more than one set of cluster labels, a primary cluster must
                be specified.")
-      }
-      if(object@primaryIndex > NCOL(object@clusterMatrix) |
-         object@primaryIndex < 1) {
-        return("`primaryIndex` out of bounds.")
-      }
-      #check clusterType
-      if(NCOL(object@clusterMatrix) != length(object@clusterType)) {
-        return("`clusterType` must be the same length as NCOL of
+    }
+    if(object@primaryIndex > NCOL(object@clusterMatrix) |
+       object@primaryIndex < 1) {
+      return("`primaryIndex` out of bounds.")
+    }
+    #check clusterType
+    if(NCOL(object@clusterMatrix) != length(object@clusterType)) {
+      return("`clusterType` must be the same length as NCOL of
                `clusterMatrix`.")
-      }
-      #check internally stored as integers
-      testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
-          whCl<-which(!x %in% c(-1,-2))
-          uniqVals<-unique(x[whCl])
-          return(all(sort(uniqVals)==1:length(uniqVals)))
-      })
-      #browser()
-      if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
-
+    }
+    #check internally stored as integers
+    testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
+      whCl<-which(!x %in% c(-1,-2))
+      uniqVals<-unique(x[whCl])
+      return(all(sort(uniqVals)==1:length(uniqVals)))
+    })
+    #browser()
+    if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+    
     ####
     #test that colnames of clusterMatrix appropriately aligns with everything else
     ####
     if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
     if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
     if(!is.null(names(object@clusterType))) return("clusterType should not have names")
-      if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
-      if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
-      ####
-      #test that @clusterLegend is proper form
+    if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
+    if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
     ####
-      if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
-        return("`clusterLegend` must be list of same length as NCOL of
+    #test that @clusterLegend is proper form
+    ####
+    if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
+      return("`clusterLegend` must be list of same length as NCOL of
                `clusterMatrix`")
-      }
-      testIsMatrix <- sapply(object@clusterLegend,
-                             function(x) {!is.null(dim(x))})
-      if(!all(testIsMatrix)) {
-        return("Each element of `clusterLegend` list must be a matrix")
-      }
-      testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
-      testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
-        length(unique(x))})
-      if(!all(testColorRows == testClusterMat)) {
-        return("each element of `clusterLegend` must be matrix with number of
+    }
+    testIsMatrix <- sapply(object@clusterLegend,
+                           function(x) {!is.null(dim(x))})
+    if(!all(testIsMatrix)) {
+      return("Each element of `clusterLegend` list must be a matrix")
+    }
+    testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
+    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
+      length(unique(x))})
+    if(!all(testColorRows == testClusterMat)) {
+      return("each element of `clusterLegend` must be matrix with number of
                rows equal to the number of clusters (including -1 or -2 values)
                in `clusterMatrix`")
-      }
-      testColorCols1 <- sapply(object@clusterLegend, function(x) {
-        "color" %in% colnames(x)})
-      testColorCols2 <- sapply(object@clusterLegend, function(x) {
-        "clusterIds" %in% colnames(x)})
-      testColorCols3 <- sapply(object@clusterLegend, function(x) {
-        "name" %in% colnames(x)})
-      if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
+    }
+    testColorCols1 <- sapply(object@clusterLegend, function(x) {
+      "color" %in% colnames(x)})
+    testColorCols2 <- sapply(object@clusterLegend, function(x) {
+      "clusterIds" %in% colnames(x)})
+    testColorCols3 <- sapply(object@clusterLegend, function(x) {
+      "name" %in% colnames(x)})
+    if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
       return("each element of `clusterLegend` must be matrix with at least 3
              columns, and at least 3 columns have names `clusterIds`,
              `color` and `name`")
     }
+#     testUniqueName <- sapply(object@clusterLegend, function(x) {
+#       any(duplicated(x[,"name"]))})
+#     if(any(testUniqueName)) return("the column")
     testColorCols1 <- sapply(object@clusterLegend, function(x){is.character(x)})
     if(!all(testColorCols1)) {
       return("each element of `clusterLegend` must be matrix of character
              values")
     }
     testColorCols1 <- sapply(1:length(object@clusterLegend), function(ii){
-        col<-object@clusterLegend[[ii]]
-        x<-object@clusterMatrix[,ii]
-        y<-as.numeric(col[,"clusterIds"])
-        all(y %in% x)
+      col<-object@clusterLegend[[ii]]
+      x<-object@clusterMatrix[,ii]
+      y<-as.numeric(col[,"clusterIds"])
+      all(y %in% x)
     })
     if(!all(testColorCols1)) {
       return("each element of `clusterLegend` must be matrix with column

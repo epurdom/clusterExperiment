@@ -57,12 +57,29 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, ...)
+  definition = function(x, dimReduce=c("none", "PCA", "mostVar"),
+                        ndims=NA,...)
   {
-    outlist <- makeDendrogram(x=assay(x), cluster=primaryCluster(x),
-                              isCount=FALSE, transFun=transformation(x),
-                              ...)
-
+    ########
+    ##Transform the data
+    ########
+    dimReduce <- match.arg(dimReduce)
+    if(length(ndims) > 1) {
+      stop("makeDendrogram only handles one choice of dimensions.")
+    }
+    if(!is.na(ndims) & dimReduce=="none") {
+      warning("specifying ndims has no effect if dimReduce==`none`")
+    }
+    origX <- assay(x)
+    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
+                           dimReduce=dimReduce, transFun=transformation(x))
+    dat <- transObj$x
+    if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
+      stop("Error in the internal transformation of x")
+    }
+    outlist <- makeDendrogram(x=dat, cluster=primaryCluster(x), ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     validObject(x)
@@ -75,51 +92,26 @@ setMethod(
   signature = "matrix",
   definition = function(x, cluster,
                         unassignedSamples=c("outgroup", "cluster", "remove"),
-                        isCount=FALSE, transFun=NULL,
-                        dimReduce=c("none", "PCA", "mostVar"),
-                        ndims=NA, ...) {
-
+                        ...) {
+   # browser()
     unassigned <- match.arg(unassignedSamples)
-    dimReduce <- match.arg(dimReduce)
-
-    if(length(ndims) > 1) {
-      stop("makeDendrogram only handles one choice of dimensions.")
-    }
-    if(!is.na(ndims) & dimReduce=="none") {
-      warning("specifying ndims has no effect if dimReduce==`none`")
-    }
-
-    origX <- x
-
-    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
-    transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transFun,
-                           isCount=isCount)
-    dat <- transObj$x
-    if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
-      stop("Error in the internal transformation of x")
-    }
-
     cl <- cluster
-    if(ncol(dat) != length(cl)) {
+    if(ncol(x) != length(cl)) {
       stop("cluster must be the same length as the number of samples")
     }
-    if(is.null(colnames(dat))) {
-      colnames(dat) <- as.character(1:ncol(dat))
+    if(is.null(colnames(x))) {
+      colnames(x) <- as.character(1:ncol(x))
     }
     if(is.factor(cl)) {
       warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
       cl<-as.numeric(as.character(cl))
     }
-    dat <- t(dat) #make like was in old code
+    dat <- t(x) #make like was in old code
 
     #############
     whRm <- which(cl >= 0) #remove -1, -2
-    if(length(whRm) == 0){
-        warning("all samples have clusterIds<0. Will just use all clustersIds")
-        whRm <- 1:length(cl)
-    }
+    if(length(whRm) == 0) stop("all samples have clusterIds<0")
+    if(length(unique(cl))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
     clFactor <- factor(cl[whRm])
     mediods <- do.call("rbind", by(dat[whRm,], clFactor,
                                    function(x){apply(x, 2, median)}))
@@ -140,11 +132,11 @@ setMethod(
         if(unassigned=="outgroup"){
           #hard to use merge and then get the indices to go back to the same ones
           #cheat and add large amount to the unassigned so that they don't cluster to
-          outlierDat <- dat[-whRm,]
-          maxAss <- max(dat[whRm,])
+          outlierDat <- dat[-whRm,,drop=FALSE]
+          maxAss <- max(dat[whRm,,drop=FALSE])
           outlierDat <- outlierDat + maxAss + 10e6
           fakeData <- rbind(fakeData, outlierDat)
-          fakeData <- fakeData[rownames(dat),]
+          fakeData <- fakeData[rownames(dat),,drop=FALSE]
           # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
           # unassD<-as.dendrogram(stats::hclust(dist(dat[-whRm,])))
           # return(merge(fullD,unassD))
@@ -152,8 +144,8 @@ setMethod(
 
         if(unassigned=="cluster"){
           #add remaining to fake data and let them cluster
-          fakeData <- rbind(fakeData,dat[-whRm,])
-          fakeData <- fakeData[rownames(dat),]
+          fakeData <- rbind(fakeData,dat[-whRm,,drop=FALSE])
+          fakeData <- fakeData[rownames(dat),,drop=FALSE]
           return(as.dendrogram(stats::hclust(dist(fakeData))))
         }
       }

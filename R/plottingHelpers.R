@@ -1,25 +1,63 @@
-#' @param output character value, indicating desired type of conversion. Currently only 'aheatmapFormat' is implemented.
-#' @param clusterings optional matrix of clusterings to be converted to color matrix (if output = "matrix")
+#' Convert clusterLegend into useful formats
+#' 
+#' Function for converting the information stored in the clusterLegend slot into other useful formats
+#' @param object a ClusterExperiment object
+#' @param output character value, indicating desired type of conversion. 
 #' @rdname plottingFunctions
-convertClusterColors<-function(clusterLegend,output=c("aheatmapFormat","matrix"),clusterings=NULL){
+#' @details convertClusterLegend pulls out information stored in the clusterLegend slot of the object and returns it in useful format.
+#' @return If "output=plotAndLegend" will return a list that provides the necessary information to color samples according to cluster and create a legend for it:
+#'  \itemize{
+#'  \item{"colorVector"}{A vector the same length as the number of samples, assigning a color to each cluster of the primaryCluster of the object}
+#'  \item{"legendNames"}{A vector the length of the number of clusters of primaryCluster of the object giving the name of the cluster.}
+#'  \item{"legendColors"}{A vector the length of the number of clusters of primaryCluster of the object giving the color of the cluster.}
+#' }
+#'  @return If "output=aheatmap" a conversion of the clusterLegend to be in the format requested by aheatmap. The column 'name' is used for the names and the column 'color' for the color of the clusters. 
+#'  @return If "output=matrixNames" or "matrixColors" a matrix the same dimension of clusterMatrix(object), but with the cluster color or cluster name instead of the clusterIds, respectively.
+setMethod(
+  f = "convertClusterLegend",
+  signature = c("ClusterExperiment"),
+  definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors")){
     output<-match.arg(output)
     if(output=="aheatmapFormat"){
-        #make in format of vector of colors with names of vector equal to the factor
-        outval<-lapply(clusterLegend,function(x){
-            z<-x[,"color"]
-            names(z)<-x[,"name"]
-            z<-z[order(names(z))]
-            return(z)
-        })
+      outval<-.convertToAheatmap(clusterLegend(object))
     }
-    if(output=="matrix"){
-        return("matrix format is not yet implemented")
-        #         #convert clusterings into a color matrix based on clusterLegend
-        #         if(is.null(clusterings)) stop("clusterings must be a matrix")
+    if(output%in% c("matrixNames","matrixColors")){
+      outval<-do.call("cbind",lapply(1:nClusters(object),function(ii){
+        cl<-clusterMatrix(object)[,ii]
+        colMat<-clusterLegend(object)[[ii]]
+        m<-match(cl,colMat[,"clusterIds"])
+        colReturn<-if(output=="matrixNames") "name" else "color"
+        return(colMat[m,colReturn])
+      }))
+      
+    }
+    if(output=="plotAndLegend"){
+      cl<-primaryCluster(object)
+      colMat<-clusterLegend(object)[[primaryClusterIndex(object)]]
+      clColor<-colMat[match(cl,colMat[,"clusterIds"]),"color"]
+      legend<-colMat[,"name"]
+      color<-colMat[,"color"]
+      outval<-list(colorVector=clColor,legendNames=legend,legendColors=color)
+      
     }
     return(outval)
+    
+  }
+)
 
-}
+.convertToAheatmap<-function(clusterLegend){
+    outval<-lapply(clusterLegend,function(x){
+      z<-x[,"color"]
+      names(z)<-x[,"name"]
+      z<-z[order(names(z))]
+      return(z)
+    })
+    return(outval)
+    
+  }
+    
+    
+    
 #' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
 #' @rdname plottingFunctions
 setBreaks<-function(breaks,data){

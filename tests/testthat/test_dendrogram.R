@@ -8,20 +8,11 @@ se <- SummarizedExperiment(mat)
 cc2 <- clusterExperiment(se, labMat, transformation = function(x){x})
 test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test matrix version
-    makeDendrogram(mat,primaryCluster(cc2),leaves="samples")
+    makeDendrogram(mat,primaryCluster(cc2))
     #test CE version
     makeDendrogram(cc2)
     #test CE version
-    makeDendrogram(cc2,leaves="clusters")
-    #test CE version
-    makeDendrogram(cc2,leaves="samples",unassigned="cluster")
+    makeDendrogram(cc2,unassigned="cluster")
     #test CE version
     expect_equal(nobs(makeDendrogram(cc2,leaves="samples",unassigned="remove")),length(labels)-2)
-    #test assignment
-    dendrogram(cc2)<-makeDendrogram(cc2)
-    expect_error(dendrogram(cc2)<-makeDendrogram(cc2,leaves="clusters"))
-    
-    plotDendrogram(cc2)
-    makeDendrogram(cc2,leaves="clusters",labels=FALSE)
-    makeDendrogram(cc2,leaves="clusters",labels=TRUE)
 })
