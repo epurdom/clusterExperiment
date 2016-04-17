@@ -425,7 +425,7 @@ setMethod(
             
           }
         }
-        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-convertClusterColors(clusterLegend,output=c("aheatmapFormat"))
+        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-.convertToAheatmap(clusterLegend,output=c("aheatmapFormat"))
         else annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
       }
       else{

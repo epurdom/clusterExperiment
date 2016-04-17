@@ -13,6 +13,13 @@ setGeneric(
     standardGeneric("plotCoClustering")
   }
 )
+#' @rdname plotFunctions
+setGeneric(
+  name = "convertClusterLegend",
+  def = function(object,  ...) {
+    standardGeneric("convertClusterLegend")
+  }
+)
 
 #' @rdname makeDendrogram
 setGeneric(

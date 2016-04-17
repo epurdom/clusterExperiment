@@ -186,3 +186,10 @@ test_that("`plotCoClustering` works", {
   primaryClusterIndex(smCl2)<-3
   plotCoClustering(smCl2,orderSamples="dendrogramValue")
 })
+
+test_that("plotting helpers", {
+  convertClusterLegend(smCl2,output="aheatmap")
+  convertClusterLegend(smCl2,output="plotAndLegend")
+  convertClusterLegend(smCl2,output="matrixNames")
+  convertClusterLegend(smCl2,output="matrixColors")
+})
