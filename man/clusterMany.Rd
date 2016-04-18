@@ -14,105 +14,177 @@ clusterMany(x, ...)
 \S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
   nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{list}(x, ks, clusterMethod, alphas = 0.1,
+\S4method{clusterMany}{list}(x, ks, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, verbose = FALSE,
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
   random.seed = NULL, run = TRUE, paramMatrix = NULL, ...)
 
-\S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none", nVarDims = NA,
-  nPCADims = NA, eraseOld = FALSE, ...)
+\S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
+  nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
 }
 \arguments{
-\item{x}{the data on which to run the clustering. Can be: data.frame/matrix (with samples in rows), a list of datasets overwhich the clusterings should be run, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+\item{x}{the data on which to run the clustering. Can be: data.frame/matrix
+(with samples in rows), a list of datasets overwhich the clusterings should
+be run, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment}
+object.}
 
 \item{...}{arguments to be passed on to mclapply (if ncores>1)}
 
-\item{dimReduce}{character vector of dimensionality reduction methods to try, that should be some combination of 'PCA', 'mostVar' and 'none'}
+\item{dimReduce}{character A character identifying what type of
+dimensionality reduction to perform before clustering}
 
-\item{nVarDims}{vector of the number of the most variable features to keep (when "mostVar" is identified in \code{dimReduce}). If NA is included, then the full dataset will also be included.}
+\item{nVarDims}{vector of the number of the most variable features to keep
+(when "mostVar" is identified in \code{dimReduce}). If NA is included, then
+the full dataset will also be included.}
 
-\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified in \code{dimReduce}). If NA is included, then the full dataset will also be included.}
+\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified
+in \code{dimReduce}). If NA is included, then the full dataset will also be
+included.}
 
-\item{transFun}{function to use to transform the data}
+\item{transFun}{function A function to use to transform the input data matrix
+before clustering.}
 
-\item{isCount}{logical. If transFun is missing, will be used to determine the transformation. log(x+1) will be the transformation for isCount=TRUE and otherwise the identify function x.}
+\item{isCount}{logical. Whether the data are in counts, in which case the
+default \code{transFun} argument is set as log(x+1). This is simply a
+convenience to the user, and can be overridden by giving an explicit function
+to \code{transFun}.}
 
-\item{ks}{the range of k values (see details for meaning for different choices).}
+\item{ks}{the range of k values (see details for meaning for different
+choices).}
 
-\item{clusterMethod}{method used in clustering of subsampled data passed to argument 'cluserFunction' of \code{\link{clusterD}}. Note that unlike other functions of this package, this must be a character vector of pre-defined clustering techniques provided by the package, and can not be user-defined.}
+\item{clusterFunction}{method used in clustering of passed to clusterAll. 
+Note that unlike \code{clusterSingle}, this must be a character vector of pre-defined
+clustering techniques provided by the package, and can not be a user-defined function.}
 
-\item{alphas}{values of alpha to be tried. Only used for subsampleClusterMethod either 'tight' or 'hierarchical'.}
+\item{alphas}{values of alpha to be tried. Only used for
+subsampleclusterFunction either 'tight' or 'hierarchical'.}
 
-\item{findBestK}{values of findBestK to be tried (logical) (only for 'pam').}
+\item{findBestK}{logical, whether should find best K based on average silhouette width}
 
-\item{sequential}{values of sequential to be tried (logical) (only for 'pam')}
+\item{sequential}{logical whether to use the sequential strategy.}
 
-\item{removeSil}{values of removeSil to be tried (logical) (only for 'pam')}
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff}
 
-\item{subsample}{values of subsample to be tried (logical).}
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
+iteration; otherwise the distance matrix is dist(x).}
 
-\item{silCutoff}{values of silCutoff to be tried (only for 'pam')}
+\item{silCutoff}{Requirement on minimum silhouette width to be included in cluster (only if removeSil=TRUE)}
 
-\item{clusterDArgs}{list of arguments to be passed to \code{\link{clusterD}}}
+\item{clusterDArgs}{list of additional arguments to be passed to
+\code{\link{clusterD}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to \code{\link{subsampleClustering}}}
+\item{subsampleArgs}{list of arguments to be passed to
+\code{\link{subsampleClustering}}.}
 
-\item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}}
+\item{seqArgs}{list of additional arguments to be passed to
+\code{\link{seqCluster}}.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle
+(so that all of the runs are run on the same subsample of the data)}
 
-\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix of parameters that will be run, for the purpose of inspection by user (with rownames equal to the names of the resulting column names of clMat object that would be returned if \code{run=TRUE}).}
+\item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
+of parameters that will be run, for the purpose of inspection by user
+(with rownames equal to the names of the resulting column names of clMat
+object that would be returned if \code{run=TRUE}).}
 
-\item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass creating the matrix of possible parameters, and will use the given matrix. There are basically no checks as to whether this matrix is in the right format, and is only intended to be used to feed the results of setting \code{run=FALSE} back into the algorithm (see example).}
+\item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass
+creating the matrix of possible parameters, and will use the given matrix.
+There are basically no checks as to whether this matrix is in the right
+format, and is only intended to be used to feed the results of setting
+\code{run=FALSE} back into the algorithm (see example).}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class \code{ClusterExperiment}. If TRUE, will erase existing pipeline results (clusterMany as well as mergeClusters and combineMany). If FALSE, existing pipeline results will have "\code{_i}" added to the clusterType value, where \code{i} is one more than the largest such existing pipeline clusterType.}
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing pipeline results
+(clusterMany as well as mergeClusters and combineMany). If FALSE,
+existing pipeline results will have "\code{_i}" added to the clusterType
+value, where \code{i} is one more than the largest such existing pipeline
+clusterType.}
 }
 \value{
-If \code{run=TRUE} and the input either a matrix, a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, will return a \code{ClusterExperiment} Object, where the results are stored as clusterings with clusterType \code{clusterMany}. Depending on \code{eraseOld} argument above, this will either delete existing such objects, or change the clusterType of existing objects. See argument \code{eraseOld} above. Arbitrarily the first clustering is set as the primaryClusteringIndex
+If \code{run=TRUE} and the input either a matrix, a
+\code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
+will return a \code{ClusterExperiment} Object, where the results are stored
+as clusterings with clusterType \code{clusterMany}. Depending on
+\code{eraseOld} argument above, this will either delete existing such
+objects, or change the clusterType of existing objects. See argument
+\code{eraseOld} above. Arbitrarily the first clustering is set as the
+primaryClusteringIndex.
 
-If \code{run=TRUE} and the input is a list of data sets, a list with the following objects:
+If \code{run=TRUE} and the input is a list of data sets, a list with
+the following objects:
 \itemize{
-\item{\code{clMat}}{a matrix of with each row corresponding to a clustering and each column a sample.}
-\item{\code{clusterInfo}}{a list with information regarding clustering result (only relevant entries for those clusterings with sequential=TRUE)}
-\item{\code{paramMatrix}}{a matrix giving the parameters of each clustering, where each column is a possible parameter set by the user and passed to \code{\link{clusterSingle}} and and each row of paramMatrix corresponds to a clustering in \code{clMat} }
-\item{\code{clusterDArgs}}{a list of (possibly modified) arguments to clusterDArgs}
-\item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to seqArgs}
-\item{\code{subsampleArgs}}{a list of (possibly modified) arguments to subsampleArgs}
+\item{\code{clMat}}{a matrix of with each row corresponding to a clustering
+and each column a sample.}
+\item{\code{clusterInfo}}{a list with information regarding clustering result
+(only relevant entries for those clusterings with sequential=TRUE)}
+\item{\code{paramMatrix}}{a matrix giving the parameters of each clustering,
+where each column is a possible parameter set by the user and passed to
+\code{\link{clusterSingle}} and and each row of paramMatrix corresponds to a
+clustering in \code{clMat} }
+\item{\code{clusterDArgs}}{a list of (possibly modified) arguments to
+clusterDArgs}
+\item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
+seqArgs}
+\item{\code{subsampleArgs}}{a list of (possibly modified) arguments to
+subsampleArgs}
 }
 
-If \code{run=FALSE} a list similar to that described above, but without the clustering results.
+If \code{run=FALSE} a list similar to that described above, but
+without the clustering results.
 }
 \description{
-Given a range of k's, this funciton will return a matrix with the clustering of the samples
-across the range, which can be passed to \code{plotClusters} for visualization.
+Given a range of k's, this funciton will return a matrix with the clustering
+of the samples across the range, which can be passed to \code{plotClusters}
+for visualization.
 }
 \details{
-While the function allows for multiple values of clusterMethod, the code does not reuse the same subsampling matrix and try different clusterMethods on it. If sequential=TRUE, different subsampleClusterMethods will create different sets of data to subsample so it is not possible; if sequential=FALSE, we have not implemented functionality for this reuse. Setting the \code{random.seed} value, however, should mean that the subsampled matrix is the same for each, but there is no gain in computational complexity (i.e. each subsampled co-occurence matrix is recalculated for each set of parameters).
+While the function allows for multiple values of clusterFunction, the
+code does not reuse the same subsampling matrix and try different
+clusterFunctions on it. If sequential=TRUE, different subsampleclusterFunctions
+will create different sets of data to subsample so it is not possible; if
+sequential=FALSE, we have not implemented functionality for this reuse.
+Setting the \code{random.seed} value, however, should mean that the
+subsampled matrix is the same for each, but there is no gain in computational
+complexity (i.e. each subsampled co-occurence matrix is recalculated for each
+set of parameters).
 
-Note that the behavior of clusterMany for dimensionality reduction is slightly different if the input is a list of datasets rather than a matrix. If the input is a single matrix, a single dimensionality step is performed, while if the input is a list of datasets, the dimensionality reduction step is performed for every combination (i.e. the program is not smart in realizing it is the same set of data across different dimensions and so only one dimensionality reduction is needed).
+Note that the behavior of clusterMany for dimensionality reduction
+is slightly different if the input is a list of datasets rather than a
+matrix. If the input is a single matrix, a single dimensionality step is
+performed, while if the input is a list of datasets, the dimensionality
+reduction step is performed for every combination (i.e. the program is not
+smart in realizing it is the same set of data across different dimensions
+and so only one dimensionality reduction is needed).
 
-The argument 'ks' is interpreted differently for different choices of the other parameters. When/if sequential=TRUE, ks defines the argument k0 of \code{\link{seqCluster}}. When/if clusterMethod="pam" and "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}} unless kRange is specified by the user via the clusterDArgs; note this means that the default option of setting kRange that depends on the input k (see \code{\link{clusterD}}) is not available in clusterMany.
+The argument 'ks' is interpreted differently for different choices
+of the other parameters. When/if sequential=TRUE, ks defines the argument k0
+of \code{\link{seqCluster}}. When/if clusterFunction="pam" and
+"findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}}
+unless kRange is specified by the user via the clusterDArgs; note this means
+that the default option of setting kRange that depends on the input k (see
+\code{\link{clusterD}}) is not available in clusterMany.
 }
 \examples{
 data(simData)
 #Example: clustering using pam with different dimensions of pca and different k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
 checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-clusterMethod="pam",
+clusterFunction="pam",
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(checkParams$paramMatrix)
 #Now actually run it
 cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
+clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
-colnames(clusterMatrix(cl)) 
+colnames(clusterMatrix(cl))
 #make names shorter for plotting
 clMat<-clusterMatrix(cl)
 colnames(clMat)<-gsub("TRUE","T",colnames(clMat))
@@ -132,9 +204,9 @@ seqArgs=checkParam$seqArgs,clusterDArgs=checkParam$clusterDArgs)
 
 \dontrun{
 #following code takes around 1+ minutes to run because of the subsampling that is redone each time:
-system.time(clusterTrack<-clusterMany(simData, ks=2:15, 
+system.time(clusterTrack<-clusterMany(simData, ks=2:15,
 alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE),sequential=c(FALSE),
-subsample=c(FALSE),removeSil=c(TRUE), clusterMethod="pam", 
+subsample=c(FALSE),removeSil=c(TRUE), clusterFunction="pam",
 clusterDArgs = list(minSize = 5,kRange=2:15),ncores=1,random.seed=48120))
 }
 

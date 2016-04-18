@@ -3,9 +3,8 @@
 #' Function for converting the information stored in the clusterLegend slot into other useful formats
 #' @param object a ClusterExperiment object
 #' @param output character value, indicating desired type of conversion. 
-#' @rdname plottingFunctions
 #' @details convertClusterLegend pulls out information stored in the clusterLegend slot of the object and returns it in useful format.
-#' @return If "output=plotAndLegend" will return a list that provides the necessary information to color samples according to cluster and create a legend for it:
+#' @return If "output=plotAndLegend", \code{convertClusterLegend} will return a list that provides the necessary information to color samples according to cluster and create a legend for it:
 #'  \itemize{
 #'  \item{"colorVector"}{A vector the same length as the number of samples, assigning a color to each cluster of the primaryCluster of the object}
 #'  \item{"legendNames"}{A vector the length of the number of clusters of primaryCluster of the object giving the name of the cluster.}
@@ -60,6 +59,10 @@ setMethod(
     
 #' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
 #' @rdname plottingFunctions
+#' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced between the boundaries of the data. If breaks is between 0 and 1, then the evenly spaced breaks are between these quantiles of the data.
+#' @examples 
+#' data(simData)
+#' setBreaks(.9,simData)
 setBreaks<-function(breaks,data){
     if(length(breaks)>0 && !is.na(breaks)){
         #get arround bug in aheatmap
@@ -122,16 +125,18 @@ setBreaks<-function(breaks,data){
 .thisPal<-.thisPal[-34] #very similar to 2
 .thisPal<-.thisPal[-31] #very similar to 7
 
-#' @title Large palette of colors
+#' @rdname plottingFunctions
+bigPalette<-.thisPal
+
+#' @title Various functions useful for plotting
+#' @description Most of these functions are called internally by plotting functions, but are exported in case the user finds them useful.
 #' @name plottingFunctions
 #' @aliases bigPalette showBigPalette
 #' @details \code{bigPalette} is a long palette of colors (length 62) used by
 #' \code{\link{plotClusters}} and accompanying functions. \code{showBigPalette}
 #' creates plot that gives index of each color in bigPalette.
-#' @rdname bigPalette
-bigPalette<-.thisPal
-
-#' @rdname bigPalette
+#' @rdname plottingFunctions
+#' @details \code{showBigPalette} will plot the \code{bigPalette} functions with their labels and index
 showBigPalette<-function(wh=NULL){
   oldMar<-par("mar")
   if(is.null(wh)){
@@ -145,14 +150,12 @@ showBigPalette<-function(wh=NULL){
 	text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
 	par(mar=oldMar)
 }
+#' @examples 
+#' showPalette()
 
 
-#' Set of colors useful for heatmap gradients
 #' @rdname plottingFunctions
-#' @aliases showHeatmapPalettes seqPal1 seqPal2 seqPal3 seqPal4 seqPal5
-#' @details seqPal1-seqPal4 are palettes for the heatmap. showHeatmapPalettes() will show you
-#' these palettes.
-#'
+#' @details \code{seqPal1}-\code{seqPal4} are palettes for the heatmap. \code{showHeatmapPalettes} will show you these palettes.
 #' @examples
 #' #show the palette colors
 #' showHeatmapPalettes()
@@ -167,7 +170,6 @@ showBigPalette<-function(wh=NULL){
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
 #' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
-#'
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)
 	maxLength<-max(sapply(palettesAll,length))

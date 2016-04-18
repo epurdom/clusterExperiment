@@ -1,6 +1,6 @@
-#' Functions for Visualizing assigments of samples to clusters across multiple clusterings
+#' Visualize cluster assignments across multiple clusterings
 #' 
-#' Align multiple clusters of the same set of samples and provide a color-coded plot of their shared cluster assignments
+#' Align multiple clusterings of the same set of samples and provide a color-coded plot of their shared cluster assignments
 #' 
 #' @name plotClusters
 #' @aliases plotClusters 
@@ -11,7 +11,7 @@
 #' and their order influences the plot greatly.
 #' @param orderClusters If numeric, a predefined order for the clusterings in the plot. If x is a ClusterExperiment object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.
 #' @param orderSamples A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})
-#' @param sampleData Additional cluster/sampleData on the samples to be plotted with the clusterings in clusters. Values in sampleData will be added to the end (bottom) of the plot.
+#' @param sampleData If \code{clusters} is a matrix, \code{sampleData} gives a matrix of additional cluster/sampleData on the samples to be plotted with the clusterings given in clusters. Values in sampleData will be added to the end (bottom) of the plot. If \code{clusters} is a \code{ClusterExperiment} object, \code{sampleData} must be either an index or a character vector that references a column or column name, respectively, of the colData slot of the \code{ClusterExperiment} object.
 #' @param reuseColors Logical. Whether each row should consist of the same set
 #' of colors. By default (FALSE) each cluster that the algorithm doesn't
 #' identify to the previous rows clusters gets a new color
@@ -38,10 +38,11 @@
 #' @param xlab character string for the label of x-axis 
 #' @param axisLine the number of lines in the axis labels on y-axis should be (passed to line=... in the axis call)
 #' @param box logical, whether to draw box around the plot
-#' @param ... for \code{plotClusters} arguments passed to \code{\link{plot}} if \code{add=FALSE}.
+#' @param ... for \code{plotClusters} arguments passed to either to the method of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}} (if \code{add=FALSE}).
 
+#' @details All arguments of the matrix version can be passed to the \code{ClusterExperiment} version. As noted above, however, some arguments have different interpretations.
 #' @details If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, combineMany, clusterMany.
-#' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterLegend and/or orderSamples slots have been updated (depending on the arguments)
+#' @return If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterLegend and/or orderSamples slots have been updated (depending on the arguments).
 #' @return If \code{clusters} is a matrix, plotClusters returns (invisibly) the orders and other things that
 #' go into making the matrix. Specifically, a list with the following elements
 #' \itemize{
@@ -50,7 +51,7 @@
 #'
 #' \item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix \code{colors[index,]} is the matrix that can be given back to plotClusters to recreate the plot (see examples)}
 #'
-#' \item{\code{}}{ matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
+#' \item{\code{alignedClusterIds}}{a matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
 #'
 #' \item{\code{clusterLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
 #' }
@@ -106,8 +107,6 @@
 #' plotClusters(cl2)
 
 #' @rdname plotClusters
-#To Do: connect meta data from SummarizedExperiment?
-#To Do: if pipeline, put them in logical order -- which is?
 setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",orderClusters="character"),

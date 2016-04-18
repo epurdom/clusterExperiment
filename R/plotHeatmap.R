@@ -1,46 +1,44 @@
 
-#' Heatmap with two different sources for hierarchical clustering and color scale.
+#' Heatmap for showing clustering results and more
 #' 
 #' Make heatmap with color scale from one matrix and hiearchical clustering
-#' from another. Also color palettes to go with heatmap
+#' of samples/features from another. Also built in functionality for showing the
+#' clusterings with the heatmap. Builds on \code{\link{aheatmap}} function of \code{NMF} package
 #' 
 #' 
-#' Note that plotHeatmap calles aheatmap under the hood. This allows you to
-#' plot multiple heatmaps via par(mfrow=c(2,2)), etc. However, the dendrograms
-#' do not resize if you change the size of your plot window in an interactive
-#' session of R (this might be a problem for RStudio if you want to pop it out
-#' into a large window...).
 #' 
 #' @name plotHeatmap
 #' @aliases plotHeatmap
 #' @docType methods
-#' @details The plotHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{plotHeatmap} is to 1) allow for two different matrix inputs, one to visualize and one to cluster. 
-#' 2) to assign colors to the clusters like in \code{\link{plotClusters}} that lines them up based on their similarity. 
-#' The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.  
-#'
+#' @details The plotHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{plotHeatmap} is to 1) allow for different matrix inputs, separating out the color scale visualization and the clustering of the samples/features. 2) to visualize the clusters and meta data with the heatmap. The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.  
 #' @details If \code{annCol} contains a column of continuous data, whSampleDataCont should give the index of the column(s); otherwise the annotation data for those columns will be forced into a non-sensical factor (with nlevels equal the the number of samples). 
+#' @details Note that plotHeatmap calles aheatmap under the hood. This allows you to
+#' plot multiple heatmaps via par(mfrow=c(2,2)), etc. However, the dendrograms
+#' do not resize if you change the size of your plot window in an interactive
+#' session of R (this might be a problem for RStudio if you want to pop it out
+#' into a large window...).
 #'
-#' @details If breaks is a numeric value between 0 and 1, then \code{breaks} is assumed to indicate the upper quantile (on the log scale) at which the heatmap color scale should stop. For example, if breaks=0.9, then the breaks will evenly spaced up until the 0.9 upper quantile of the log of the \code{heatData}, and then all values after the 0.9 quantile will be absorbed by the upper-most color bin. This can help to reduce the visual impact of a few highly expressed genes (variables). 
+#' @details If \code{breaks} is a numeric value between 0 and 1, then \code{breaks} is assumed to indicate the upper quantile (on the log scale) at which the heatmap color scale should stop. For example, if breaks=0.9, then the breaks will evenly spaced up until the 0.9 upper quantile of the log of the \code{heatData}, and then all values after the 0.9 quantile will be absorbed by the upper-most color bin. This can help to reduce the visual impact of a few highly expressed genes (variables). 
 #'
 #' @details If both \code{sampleData} and \code{clusterings} are provided, \code{clusterings} will be shown closest to data (i.e. on bottom) and \code{sampleData} on top. A user that wishes greater control should simply combine the two independently and give the combined matrix in sampleData.
-#' @return Returns (invisibly) a list with elements that are passed to aheatmap.
+#' @return If \code{data} is a matrix, returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{breaks}}{The breaks used for aheatmap, after adjusting for quantile}
 #' \item{\code{annCol}}{the annotation data.frame given to aheatmap}
 #' \item{\code{clusterLegend}}{the annotation colors given to aheatmap}
 #' }
+#' aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
 #' @author Elizabeth Purdom
 #' @examples
-#' 
-#' data(simData)
 #' data(simData)
 #' cl<-rep(1:3,each=100)
 #' cl2<-cl
 #' changeAssign<-sample(1:length(cl),80)
 #' cl2[changeAssign]<-sample(cl[changeAssign])
+#' ce<-clusterExperiment(simCount,cl2,transformation=function(x){log(x+1)})
 #' 
 #' #simple, minimal, example. Show counts, but cluster on underlying means
-#' plotHeatmap(cl,heatData=simCount,clusterSamplesData=simData)
+#' plotHeatmap(ce)
 #' 
 #' #assign cluster colors
 #' colors<-bigPalette[20:23]
@@ -83,6 +81,7 @@
 #' 
 #' 
 #' 
+#' @inheritParams clusterSingle
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),
@@ -95,6 +94,15 @@ setMethod(
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 #' @param sampleData If input is either a ClusterExperiment or SummarizedExperiment object, then \code{sampleData} must index the sampleData stored as a DataFrame in \code{colData} slot of the object. Whether the data is continuous or not will be determined by the properties of \code{colData}
+#' @rdname plotHeatmap
+#' @param visualize character, indicating what form of the data should be used for visualizing the data (i.e. for making the color-scale)
+#' @param orderSamples character or integers. Indicates how the samples should be clustered (or gives indices of the order for the samples). See details.
+#' @details If \code{data} is a \code{ClusterExperiment} object, \code{visualize} indicates what kind of transformation should be done to \code{assay(data)} for calculating the color scale. 
+#' @details If \code{data} is a \code{ClusterExperiment} object, \code{orderSamples} can be used to indicate the type of clustering for the samples. If equal to `dendrogramValue` the dendrogram stored in \code{data} will be used; if missing, a new one will be created based on the \code{primaryCluster} of data.
+#' If equal to "hclust", then standard hierachical clustering of the transformed data will be used. If 'orderSamplesValue' no clustering of the samples will be done, and instead the samples will be ordered as in the slot \code{orderSamples} of \code{data}.
+#' If equal to 'primaryCluster', again no clustering will be done, and instead the samples will be ordered based on grouping the samples to match the primaryCluster of \code{data}.
+#' If not one of these values, \code{orderSamples} can be a character vector matching the clusterLabels (colnames of clusterMatrix). }
+#' @details If \code{data} is a \code{ClusterExperiment} object,
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),

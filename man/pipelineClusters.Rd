@@ -2,9 +2,41 @@
 % Please edit documentation in R/AllHelper.R
 \docType{methods}
 \name{pipelineClusterDetails,ClusterExperiment-method}
+\alias{(and}
+\alias{The}
+\alias{\code{\link{clusterMany}},}
+\alias{\code{\link{combineMany}},}
+\alias{\code{\link{mergeClusters}}.}
+\alias{a}
+\alias{and}
+\alias{be}
+\alias{can}
+\alias{clusterings}
+\alias{different}
+\alias{documented}
+\alias{from}
+\alias{functions}
+\alias{here.}
+\alias{in}
+\alias{is}
+\alias{made}
+\alias{main}
+\alias{not}
+\alias{obtained}
+\alias{of}
+\alias{package}
+\alias{pipeline}
+\alias{pipelineClusterDetails}
 \alias{pipelineClusterDetails,ClusterExperiment-method}
+\alias{pipelineClusterTable}
 \alias{pipelineClusterTable,ClusterExperiment-method}
-\alias{pipelineClusters,ClusterExperiment-method}
+\alias{pipelineClusters}
+\alias{the}
+\alias{these}
+\alias{those}
+\alias{way)}
+\alias{with}
+\title{Methods for pipeline clusters}
 \usage{
 \S4method{pipelineClusterDetails}{ClusterExperiment}(x)
 

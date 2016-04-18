@@ -4,17 +4,14 @@
 \name{ClusterExperiment-class}
 \alias{ClusterExperiment}
 \alias{ClusterExperiment-class}
-\alias{addClusters,ClusterExperiment,ClusterExperiment-method}
-\alias{addClusters,ClusterExperiment,matrix-method}
-\alias{addClusters,ClusterExperiment,numeric-method}
-\alias{clusterMatrix}
-\alias{clusterMatrix,ClusterExperiment-method}
+\alias{[,ClusterExperiment,ANY,ANY,ANY-method}
 \alias{clusterExperiment}
 \alias{clusterExperiment,SummarizedExperiment,character-method}
 \alias{clusterExperiment,SummarizedExperiment,factor-method}
 \alias{clusterExperiment,SummarizedExperiment,matrix-method}
 \alias{clusterExperiment,SummarizedExperiment,numeric-method}
 \alias{clusterExperiment,matrix,ANY-method}
+\alias{clusterInfo}
 \alias{clusterInfo,ClusterExperiment-method}
 \alias{clusterLabels}
 \alias{clusterLabels,ClusterExperiment,character-method}
@@ -22,15 +19,28 @@
 \alias{clusterLabels,ClusterExperiment,numeric-method}
 \alias{clusterLabels<-}
 \alias{clusterLabels<-,ClusterExperiment,character-method}
+\alias{clusterLegend}
+\alias{clusterLegend,ClusterExperiment-method}
+\alias{clusterLegend<-}
+\alias{clusterLegend<-,ClusterExperiment,list-method}
+\alias{clusterMatrix}
+\alias{clusterMatrix,ClusterExperiment-method}
+\alias{clusterMatrixNamed,ClusterExperiment-method}
 \alias{clusterType,ClusterExperiment-method}
+\alias{clusterType<-,ClusterExperiment,character-method}
 \alias{coClustering,ClusterExperiment-method}
-\alias{dendrogram,ClusterExperiment-method}
+\alias{coClustering<-,ClusterExperiment,matrix-method}
+\alias{convertClusterColors}
 \alias{nClusters}
 \alias{nClusters,ClusterExperiment-method}
 \alias{nFeatures}
 \alias{nFeatures,ClusterExperiment-method}
 \alias{nSamples}
 \alias{nSamples,ClusterExperiment-method}
+\alias{orderSamples}
+\alias{orderSamples,ClusterExperiment-method}
+\alias{orderSamples<-}
+\alias{orderSamples<-,ClusterExperiment,numeric-method}
 \alias{paramValues}
 \alias{pipelineClusterDetails}
 \alias{pipelineClusterTable}
@@ -38,10 +48,9 @@
 \alias{primaryCluster,ClusterExperiment-method}
 \alias{primaryClusterIndex,ClusterExperiment-method}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
+\alias{primaryClusterNamed,ClusterExperiment-method}
 \alias{removeClusters}
-\alias{removeClusters,ClusterExperiment,character-method}
-\alias{removeClusters,ClusterExperiment,numeric-method}
-\alias{removeUnclustered,ClusterExperiment-method}
+\alias{removeUnclustered}
 \alias{show,ClusterExperiment-method}
 \alias{transform}
 \alias{transformation}
@@ -61,15 +70,23 @@ clusterExperiment(se, clusters, ...)
 \S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
   transformation, clusterType = "User", clusterInfo = NULL)
 
+clusterLegend(x)
+
+clusterLegend(object) <- value
+
+orderSamples(x)
+
+orderSamples(object) <- value
+
 clusterLabels(x, whichClusters)
+
+clusterLabels(object) <- value
 
 nClusters(x)
 
 nFeatures(x)
 
 nSamples(x)
-
-clusterLabels(object) <- value
 
 pipelineClusters(x, iteration = 0)
 
@@ -81,13 +98,25 @@ paramValues(x, type)
 
 transformation(x)
 
-transform(x, nPCADims = NA, nVarDims = NA, dimReduce = "none")
+transform(x, ...)
 
 clusterMatrix(x)
 
 removeClusters(x, whichRemove, exactMatch = TRUE)
 
+removeUnclustered(x)
+
+clusterInfo(x)
+
+convertClusterColors(x)
+
+\S4method{[}{ClusterExperiment,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+
 \S4method{show}{ClusterExperiment}(object)
+
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x)
+
+\S4method{primaryClusterNamed}{ClusterExperiment}(x)
 
 \S4method{transformation}{ClusterExperiment}(x)
 
@@ -95,7 +124,8 @@ removeClusters(x, whichRemove, exactMatch = TRUE)
 
 \S4method{clusterLabels}{ClusterExperiment,numeric}(x, whichClusters)
 
-\S4method{clusterLabels}{ClusterExperiment,character}(x, whichClusters = "all")
+\S4method{clusterLabels}{ClusterExperiment,character}(x,
+  whichClusters = "all")
 
 \S4method{clusterLabels}{ClusterExperiment,missing}(x, whichClusters)
 
@@ -115,30 +145,31 @@ removeClusters(x, whichRemove, exactMatch = TRUE)
 
 \S4method{coClustering}{ClusterExperiment}(x)
 
-\S4method{dendrogram}{ClusterExperiment}(x)
+\S4method{coClustering}{ClusterExperiment,matrix}(object) <- value
 
 \S4method{clusterType}{ClusterExperiment}(x)
 
-\S4method{removeClusters}{ClusterExperiment,character}(x, whichRemove,
-  exactMatch = TRUE)
-
-\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichRemove)
-
-\S4method{addClusters}{ClusterExperiment,matrix}(x, y, type = "User")
-
-\S4method{addClusters}{ClusterExperiment,numeric}(x, y, type = "User")
-
-\S4method{addClusters}{ClusterExperiment,ClusterExperiment}(x, y)
-
-\S4method{removeUnclustered}{ClusterExperiment}(x)
-
 \S4method{clusterInfo}{ClusterExperiment}(x)
+
+\S4method{clusterLegend}{ClusterExperiment}(x)
+
+\S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
+
+\S4method{orderSamples}{ClusterExperiment}(x)
+
+\S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
+
+\S4method{clusterType}{ClusterExperiment,character}(object) <- value
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the clustered
 data.}
 
-\item{transformation}{function. A function to transform the data before performing steps that assume normal-like (i.e. constant variance), such as the log}
+\item{transformation}{function. A function to transform the data before
+performing steps that assume normal-like (i.e. constant variance), such as
+the log}
+
+\item{whichClusters}{either numeric, in which case gives the indices of the clusters, or character, in which case it matches to clusterType(x) to find the indices of the clusters}
 
 \item{labels}{a vector with cluster labels.}
 }
@@ -146,38 +177,41 @@ data.}
 A \code{ClusterExperiment} object.
 }
 \description{
-\code{ClusterExperiment} is a class that extends \code{SummarizedExperiment} and is
-used to store the single-cell RNA-seq data and clustering information.
+\code{ClusterExperiment} is a class that extends
+\code{SummarizedExperiment} and is used to store the single-cell RNA-seq data
+and clustering information.
 
-In addition to the slots of the \code{SummarizedExperiment} class, the
-\code{ClusterExperiment} object has the following additional slots:
+In addition to the slots of the \code{SummarizedExperiment}
+class, the \code{ClusterExperiment} object has the following additional
+slots:
 
-The constructor \code{clusterExperiment} creates an object of the class
-\code{ClusterExperiment}. However, the typical way of creating these objects is
-the result of a call to \code{clusterMany} or \code{clusterSingle}.
+The constructor \code{clusterExperiment} creates an object of
+the class \code{ClusterExperiment}. However, the typical way of creating
+these objects is the result of a call to \code{clusterMany} or
+\code{clusterSingle}.
 
-Note that when subsetting the data, the co-clustering and dendrogram
-information are lost.
+Note that when subsetting the data, the co-clustering and
+dendrogram information are lost.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{transformation}}{function. Function to transform the data by when methods that assume normal-like data (e.g. log)}
+\item{\code{transformation}}{function. Function to transform the data by when methods
+that assume normal-like data (e.g. log)}
 
-\item{\code{clusterMatrix}}{matrix. A matrix giving the
-integer-valued cluster ids for each sample. The rows of the matrix correspond to clusterings and columns to samples. 
-The integer values are assigned
-in the order that the clusters were found, if found by setting sequential=TRUE in clusterSingle. "-1" indicates
+\item{\code{clusterMatrix}}{matrix. A matrix giving the integer-valued cluster ids
+for each sample. The rows of the matrix correspond to clusterings and columns
+to samples. The integer values are assigned in the order that the clusters
+were found, if found by setting sequential=TRUE in clusterSingle. "-1" indicates
 the sample was not clustered.}
 
 \item{\code{primaryIndex:}}{numeric. An index that specifies the primary set of
 labels.}
 
-\item{\code{clusterInfo:}}{list. A list with info about the clustering. 
+\item{\code{clusterInfo:}}{list. A list with info about the clustering.
 If created from \code{\link{clusterSingle}}, clusterInfo will include the
 parameter used for the call, and the call itself. If \code{sequential = TRUE}
 it will also include the following components.
-
 \itemize{
 \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
 found, a matrix of information regarding the algorithm behavior for each
@@ -187,22 +221,38 @@ iterations for each cluster).}
 found, a character string explaining what triggered the algorithm to stop.}
 }}
 
-\item{\code{clusterType:}}{character vector with the origin of each column of
+\item{\code{clusterType}}{character vector with the origin of each column of
 clusterMatrix.}
 
-\item{\code{dendrogram:}}{dendrogram. A dendrogram containing the cluster
-relationship.}
+\item{\code{dendro_samples}}{dendrogram. A dendrogram containing the cluster
+relationship (leaves are samples; see \code{\link{makeDendrogram}} for
+details).}
 
-\item{\code{coClustering:}}{matrix. A matrix with the cluster co-occurrence
+\item{\code{dendro_clusters}}{dendrogram. A dendrogram containing the cluster
+relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
+details).}
+
+\item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering
-across parameter sets (see \code{clusterMany}). The matrix is a square matrix with number of rows/columns equal to the number of samples.}
+across parameter sets (see \code{clusterMany}). The matrix is a square matrix
+with number of rows/columns equal to the number of samples.}
+
+\item{\code{clusterLegend}}{a list, one per cluster in \code{clusterMatrix}. Each
+element of the list is a matrix with nrows equal to the number of different
+clusters in the clustering, and consisting of at least two columns with the
+following column names: "clusterId" and "color".}
+
+\item{\code{orderSamples}}{a numeric vector (of integers) defining the order of
+samples to be used for plotting of samples. Usually set internally by other
+functions.}
 }}
 \examples{
 
 se <- matrix(data=rnorm(200), ncol=10)
 labels <- gl(5, 2)
 
-cc <- clusterExperiment(se, as.numeric(labels), transformation = function(x){x})
+cc <- clusterExperiment(se, as.numeric(labels),
+                        transformation = function(x){x})
 
 }
 

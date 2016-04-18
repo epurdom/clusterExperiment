@@ -1,4 +1,17 @@
-
+#' @rdname plottingFunctions
+#' @param data matrix of data with samples on columns and features on rows
+#' @param groupsOfFeatures list, with each element of the list containing a vector of numeric indices
+#' @param nBlankLines the number of blank lines to add in the data matrix to separate the groups of indices (will govern the amount of white space if data is then fed to heatmap.)
+#' @details \code{makeBlankData} pulls the data corresponding to the row indices in \code{groupsOfFeatures} adds lines of NA values into data between these groups. When given to heatmap, will create white space between these groups of features.
+#' @return \code{makeBlankData} returns a list with items
+#'  \itemize{
+#'  \item{"dataWBlanks"}{The data with the rows of NAs separating the given indices}
+#'  \item{"rowNamesWBlanks"}{A vector of characters giving the rownames for the data, including blanks for the NA rows. These are not given as rownames to the returned data because they are not unique. However, they can be given to the \code{labRow} argument of \code{\link{aheatmap}} or \code{\link{plotHeatmap}} }
+#' }
+#' @examples 
+#' data(simData)
+#' x<-makeBlankData(simData[,1:10],groupsOfFeatures=list(c(5,2,3),c(20,34,25)))
+#' 
 makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
   if (!is.list(groupsOfFeatures))
     stop("groupsOfFeatures must be a list. Will ignore.")
@@ -33,10 +46,3 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
   return(list(dataWBlanks = newData,rowNamesWBlanks = rnames))
   
 }
-# temp<-makeBlankData(norm[geneord,keep],sep=head(sep,-1),nBlankLines=2)
-# dat<-t(temp$data)
-# rnames<-temp$rownames
-# 
-# out <- dualHeatmap(clusterVec=cl, heatData=t(norm[,keep]), dual=FALSE, clusterSamples=FALSE, clusterVars=FALSE, annCol=data.frame(Cluster=cl), annColors=list(Cluster=colMerged[c(7, 2, 5, 8)]), main="", whVars = geneord, annLegend=FALSE)
-# 
-# dualHeatmap(clusterVec=cl, heatData=dat, dual=FALSE, clusterSamples=FALSE, clusterVars=FALSE, annCol=data.frame(Cluster=cl), annColors=list(Cluster=colMerged[c(7, 2, 5, 8, 6)]), main="Allen Institute L5 markers", labRow=rnames, annLegend=FALSE, breaks=out$breaks)
