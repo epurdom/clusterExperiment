@@ -232,29 +232,26 @@ setMethod(
     #Create clusterSamplesData  
     ######
     clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
-    #browser()
     clusterSamples<-TRUE
-    browser()
+    #browser()
     if(is.numeric(clusterSamplesData)){
-        heatData<-heatData[,clusterSamplesData]
-        clusterSamplesData<-heatData
+        heatData<-heatData[,clusterSamplesData,drop=FALSE]
         if(!is.null(sampleData)) sampleData<-sampleData[clusterSamplesData,,drop=FALSE]
+        clusterSamplesData<-heatData
         clusterSamples<-FALSE
     }
     else if(is.character(clusterSamplesData)){
         if(clusterSamplesData=="orderSamplesValue"){
-          heatData<-heatData[,orderSamples(data)]
-            clusterSamplesData<-heatData
-            #browser()
-            if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
+          heatData<-heatData[,orderSamples(data),drop=FALSE]
+          if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
+          clusterSamplesData<-heatData
             clusterSamples<-FALSE
             
         }
         else if(clusterSamplesData=="primaryCluster"){
             heatData<-heatData[,order(primaryCluster(data))]
-            clusterSamplesData<-heatData
             if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
-            
+            clusterSamplesData<-heatData
             clusterSamples<-FALSE
         }
         else if(clusterSamplesData=="dendrogramValue"){
@@ -267,8 +264,7 @@ setMethod(
         }
         else if(clusterSamplesData=="hclust"){
             #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
-            clusterSamplesData<-heatData
-            if(visualizeData=="original") clusterSamplesData<-transObj$x
+            clusterSamplesData<-if(visualizeData=="original") transObj$x else heatData
         }
     }
     else stop("clusterSamplesData must be either character, or vector of indices of samples")
@@ -394,7 +390,7 @@ setMethod(
       ##Deal with annotation of samples (sampleData) ...
       ##########
       #check sampleData input:
-      browser()
+      #browser()
       if(!is.null(sampleData)){
         if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame") 
         if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")	
