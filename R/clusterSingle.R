@@ -191,6 +191,7 @@ setMethod(
 )
 
 #' @rdname clusterSingle
+#' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "SummarizedExperiment"),
@@ -207,6 +208,7 @@ setMethod(
 
 
 #' @rdname clusterSingle
+#' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "ClusterExperiment"),

@@ -68,9 +68,9 @@
 #' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 #'	annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 #' @export
-#' @importFrom phylobase labels descendant ancestors getNode
-#' @importClassesFrom ape phylo
+#' @importFrom phylobase labels descendants ancestors getNode
 #' @importClassesFrom phylobase phylo4
+#' @importFrom graphics plot
 #' @importFrom ape plot.phylo
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
@@ -199,6 +199,7 @@ setMethod(f = "mergeClusters",
 )
 
 #' @rdname mergeClusters
+#' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, ...) {

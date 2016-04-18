@@ -1,5 +1,6 @@
 ## subsetting
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),
@@ -44,6 +45,7 @@ setMethod(
 #' (i.e. -1 or -2 assignment) in the primaryCluster of x (so they may be
 #' unclustered in other clusters found in clusterMatrix(x))
 #' @rdname addClusters
+#' @export
 setMethod(
     f = "removeUnclustered",
     signature = "ClusterExperiment",
@@ -53,6 +55,7 @@ setMethod(
 )
 ## show
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "show",
   signature = "ClusterExperiment",
@@ -72,6 +75,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterMatrixNamed",
   signature = "ClusterExperiment",
@@ -89,6 +93,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "primaryClusterNamed",
   signature = "ClusterExperiment",
@@ -97,6 +102,7 @@ setMethod(
   })
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "transformation",
   signature = "ClusterExperiment",
@@ -106,6 +112,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
@@ -120,6 +127,7 @@ setReplaceMethod(
 
 #' @rdname ClusterExperiment-class
 #' @param whichClusters either numeric, in which case gives the indices of the clusters, or character, in which case it matches to clusterType(x) to find the indices of the clusters
+#' @export
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
@@ -131,6 +139,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment", whichClusters ="character"),
@@ -140,6 +149,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="missing"),
@@ -148,6 +158,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "nClusters",
   signature = "ClusterExperiment",
@@ -156,6 +167,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "nFeatures",
   signature =  "ClusterExperiment",
@@ -164,6 +176,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "nSamples",
   signature = "ClusterExperiment",
@@ -172,6 +185,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterMatrix",
   signature = "ClusterExperiment",
@@ -181,6 +195,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "primaryCluster",
   signature = "ClusterExperiment",
@@ -190,6 +205,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "primaryClusterIndex",
   signature = "ClusterExperiment",
@@ -199,6 +215,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
   f = "primaryClusterIndex",
   signature = signature("ClusterExperiment", "numeric"),
@@ -210,6 +227,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "coClustering",
   signature = "ClusterExperiment",
@@ -219,6 +237,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="matrix"),
@@ -230,6 +249,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterType",
   signature = "ClusterExperiment",
@@ -241,6 +261,7 @@ setMethod(
 )
 
 #' @rdname addClusters
+#' @export
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
@@ -263,6 +284,7 @@ setMethod(
 #' to 1 and the dendrogram and cooccurance matrix are discarded and orderSamples
 #'is set to 1:NCOL(x).
 #' @rdname addClusters
+#' @export
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","numeric"),
@@ -308,6 +330,7 @@ setMethod(
 #Update here if change pipeline values. Also defines the order of them.
 .pipelineValues<-c("final","mergeClusters","combineMany","clusterMany")
 #' @rdname pipelineClusters
+#' @export
 setMethod(
   f = "pipelineClusterDetails",
   signature = signature("ClusterExperiment"),
@@ -338,6 +361,7 @@ setMethod(
   }
 )
 #' @rdname pipelineClusters
+#' @export
 setMethod(
   f = "pipelineClusterTable",
   signature = signature("ClusterExperiment"),
@@ -355,6 +379,7 @@ setMethod(
 #' \code{\link{combineMany}}, and \code{\link{mergeClusters}}.
 #' The clusterings from these functions (and not those obtained in a different
 #' way) can be obtained with the functions documented here.
+#' @export
 setMethod(
   f = "pipelineClusters",
   signature = signature("ClusterExperiment"),
@@ -381,6 +406,7 @@ setMethod(
 #' information (dendrogram, coClustering, and orderSamples) are all kept from
 #' the x object, even if y is a ClusterExperiment.
 #' @rdname addClusters
+#' @export
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "ClusterExperiment"),
@@ -405,6 +431,7 @@ setMethod(
 #' @title Function to add clusters to an existing ClusterExperiment object
 #' @name addClusters
 #' @aliases addClusters removeClusters
+#' @export
 setMethod(
     f = "addClusters",
     signature = signature("ClusterExperiment", "matrix"),
@@ -414,6 +441,7 @@ setMethod(
     }
 )
 #' @rdname addClusters
+#' @export
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "numeric"),
@@ -422,11 +450,8 @@ setMethod(
   }
 )
 
-
-
-
-
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterInfo",
   signature = "ClusterExperiment",
@@ -438,6 +463,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
     f = "clusterLegend",
     signature = "ClusterExperiment",
@@ -448,6 +474,7 @@ setMethod(
     }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
     f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
@@ -459,6 +486,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
     f = "orderSamples",
     signature = "ClusterExperiment",
@@ -467,6 +495,7 @@ setMethod(
     }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
     f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
@@ -478,6 +507,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-class
+#' @export
 setReplaceMethod(
     f = "clusterType",
     signature = signature(object="ClusterExperiment", value="character"),

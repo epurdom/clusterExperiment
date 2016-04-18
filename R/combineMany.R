@@ -66,6 +66,7 @@
 #' par(oldpar)
 #'
 #' @rdname combineMany
+#' @export
 setMethod(
   f = "combineMany",
   signature = signature(x = "matrix", whichClusters = "missing"),
@@ -116,6 +117,7 @@ setMethod(
 )
 
 #' @rdname combineMany
+#' @export
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
@@ -148,6 +150,7 @@ setMethod(
 )
 
 #' @rdname combineMany
+#' @export
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "character"),
@@ -159,6 +162,7 @@ setMethod(
   }
 )
 #' @rdname combineMany
+#' @export
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "missing"),

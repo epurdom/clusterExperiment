@@ -12,7 +12,7 @@
 #' choices).
 #' @param alphas values of alpha to be tried. Only used for
 #' subsampleclusterFunction either 'tight' or 'hierarchical'.
-#' @param clusterFunction method used in clustering of passed to clusterAll. 
+#' @param clusterFunction method used in clustering of passed to clusterAll.
 #' Note that unlike \code{clusterSingle}, this must be a character vector of pre-defined
 #' clustering techniques provided by the package, and can not be a user-defined function.
 #' @param nVarDims vector of the number of the most variable features to keep
@@ -144,6 +144,8 @@
 # subsample=c(TRUE),removeSil=c(TRUE), clusterFunction=c("pam","tight","hierarchical",
 # clusterDArgs = list(minSize = 5,kRange=2:15),subsampleArgsncores=1,random.seed=48120)
 #' @rdname clusterMany
+#' @importFrom parallel mclapply
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
@@ -185,6 +187,7 @@ setMethod(
 )
 
 #' @rdname clusterMany
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "list"),
@@ -380,6 +383,7 @@ setMethod(
 )
 
 #' @rdname clusterMany
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "ClusterExperiment"),
@@ -403,6 +407,7 @@ setMethod(
 
 
 #' @rdname clusterMany
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "SummarizedExperiment"),
