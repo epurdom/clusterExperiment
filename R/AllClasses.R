@@ -310,7 +310,8 @@ setMethod(
 #' @rdname ClusterExperiment-class
 #' @param clusterType a string describing the nature of the clustering. The
 #' values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-#' reserved for the clustering coming from the package pipeline.
+#' reserved for the clustering coming from the package pipeline and should not
+#' be used when creating a new object with the constructor.
 #' @param clusterInfo a list with information on the clustering (see Slots).
 setMethod(
   f = "clusterExperiment",
@@ -320,10 +321,6 @@ setMethod(
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
-    }
-    if(any(clusterType %in% c("clusterSingle", "clusterMany", "combineMany",
-                              "mergeClusters"))) {
-      stop("The values `clusterSingle`, `clusterMany`, `combineMany`, `mergeClusters` are reserved for the clustering coming from the package pipeline")
     }
     if(length(clusterType)==1) {
       clusterType <- rep(clusterType, length=NCOL(clusters))
