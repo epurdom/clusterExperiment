@@ -140,27 +140,26 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
 })
 
 test_that("`plotHeatmap` visualization choices/feature choices all work", {
-  plotHeatmap(smCl2,visualize="original")
-  plotHeatmap(smCl2,visualize="transformed")
-  plotHeatmap(smCl2,visualize="centeredAndScaled")
-  #even if visualize="orginal, still clsuter on transformed. Should make unit test out of below that get same:
-  plotHeatmap(smCl2,visualize="original",orderSamples="hclust")
+  plotHeatmap(smCl2,visualizeData=smCount)
+  plotHeatmap(smCl2,visualizeData="transformed")
+  plotHeatmap(smCl2,visualizeData="original")
+  plotHeatmap(smCl2,visualizeData="centeredAndScaled")
+  #even if visualizeData="orginal, still clsuter on transformed. Should make unit test out of below that get same:
+  plotHeatmap(smCl2,visualizeData="transformed",clusterSamplesData="hclust")
   orderSamples(smCl2)<-sample(1:nSamples(smCl2))
-  plotHeatmap(smCl2,visualize="original",orderSamples="orderSamplesValue")
-  plotHeatmap(smCl2,visualize="original",orderSamples="primaryCluster")
-  plotHeatmap(smCl2,visualize="original",orderSamples=c(3,4,5))
+  plotHeatmap(smCl2,visualizeData="transformed",clusterSamplesData="orderSamplesValue")
+  plotHeatmap(smCl2,visualizeData="transformed",clusterSamplesData="primaryCluster")
+  plotHeatmap(smCl2,visualizeData="transformed",clusterSamplesData=c(3,4,5))
   
-  plotHeatmap(smCl2,visualize="transform",whichFeatures="all")
-  plotHeatmap(smCl2,visualize="transform",whichFeatures="mostVar",nFeatures=3)
-  plotHeatmap(smCl2,visualize="transform",whichFeatures=3:5,nFeatures=3)
-  expect_error(plotHeatmap(smCl2,visualize="transform",whichFeatures=paste("Gene",3:5),nFeatures=3))
+  plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData="all")
+  plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData="mostVar",nFeatures=3)
+  plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData=3:5,nFeatures=3)
+  expect_error(plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3))
   row.names(smCl2)<-paste("Gene",1:NROW(smCl2))
-  plotHeatmap(smCl2,visualize="transform",whichFeatures=paste("Gene",3:5),nFeatures=3)
-  #pca plots: the following should be equal:
-  plotHeatmap(smCl2,visualize="original",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
-  plotHeatmap(smCl2,visualize="transform",whichFeatures="PCA",nFeatures=10,orderSamples="hclust")
+  plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3)
+   plotHeatmap(smCl2,visualizeData="transform",clusterFeaturesData="PCA",nFeatures=10,clusterSamplesData="hclust")
   
-  plotHeatmap(smCl2,visualize="transform",orderSamples="dendrogramValue")
+  plotHeatmap(smCl2,visualizeData="transform",clusterSamplesData="dendrogramValue")
   
 })
 
@@ -176,15 +175,15 @@ test_that("`makeBlankData` works", {
   expect_equal(whBlankRows,4)
   
   ##call within plotHeatmap
-  plotHeatmap(smCl2,whichFeatures=gps)
+  plotHeatmap(smCl2,clusterFeaturesData=gps)
 })
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smCl2),"coClustering slot is empty")
   smCl2<-combineMany(smCl2,whichClusters=1:4,proportion=.9) #gives all -1, but creates coClustering
-  plotCoClustering(smCl2,orderSamples="hclust")
-  expect_error(plotCoClustering(smCl2,orderSamples="dendrogramValue"),"all samples have clusterIds<0")
+  plotCoClustering(smCl2,clusterSamplesData="hclust")
+  expect_error(plotCoClustering(smCl2,clusterSamplesData="dendrogramValue"),"all samples have clusterIds<0")
   primaryClusterIndex(smCl2)<-3
-  plotCoClustering(smCl2,orderSamples="dendrogramValue")
+  plotCoClustering(smCl2,clusterSamplesData="dendrogramValue")
 })
 
 test_that("plotting helpers", {

@@ -10,7 +10,7 @@
 #' @name plotHeatmap
 #' @aliases plotHeatmap
 #' @docType methods
-#' @details The plotHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{plotHeatmap} is to 1) allow for different matrix inputs, separating out the color scale visualization and the clustering of the samples/features. 2) to visualize the clusters and meta data with the heatmap. The intended purpose is to allow the user to visualize the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.  
+#' @details The plotHeatmap function calles \code{\link{aheatmap}} to draw the heatmap. The main point of \code{plotHeatmap} is to 1) allow for different matrix inputs, separating out the color scale visualization and the clustering of the samples/features. 2) to visualizeData the clusters and meta data with the heatmap. The intended purpose is to allow the user to visualizeData the original count scale of the data (on the log-scale), but create the hierarchical clustering on another, more appropriate dataset for clustering, such as normalized data. Similarly, some of the palettes were developed assuming that the visualization might be on unscaled/uncentered data, rather than the residual from the mean of the gene, and thus palettes need to take on a greater range of relevant values so as to show meaningful comparisons with genes on very different scales.  
 #' @details If \code{annCol} contains a column of continuous data, whSampleDataCont should give the index of the column(s); otherwise the annotation data for those columns will be forced into a non-sensical factor (with nlevels equal the the number of samples). 
 #' @details Note that plotHeatmap calles aheatmap under the hood. This allows you to
 #' plot multiple heatmaps via par(mfrow=c(2,2)), etc. However, the dendrograms
@@ -95,62 +95,64 @@ setMethod(
 })
 #' @param sampleData If input is either a ClusterExperiment or SummarizedExperiment object, then \code{sampleData} must index the sampleData stored as a DataFrame in \code{colData} slot of the object. Whether the data is continuous or not will be determined by the properties of \code{colData}
 #' @rdname plotHeatmap
-#' @param visualize character, indicating what form of the data should be used for visualizing the data (i.e. for making the color-scale)
-#' @param orderSamples character or integers. Indicates how the samples should be clustered (or gives indices of the order for the samples). See details.
-#' @details If \code{data} is a \code{ClusterExperiment} object, \code{visualize} indicates what kind of transformation should be done to \code{assay(data)} for calculating the color scale. 
-#' @details If \code{data} is a \code{ClusterExperiment} object, \code{orderSamples} can be used to indicate the type of clustering for the samples. If equal to `dendrogramValue` the dendrogram stored in \code{data} will be used; if missing, a new one will be created based on the \code{primaryCluster} of data.
+#' @param visualizeData either a character string, indicating what form of the data should be used for visualizing the data (i.e. for making the color-scale), or a data.frame/matrix with same dimensions of assay(data)
+#' @param clusterSamplesData character or integers. Indicates how the samples should be clustered (or gives indices of the order for the samples). See details.
+#' @param whichClusters character string, or vector of characters or integers, indicating what clusters should be visualized with the heatmap.
+#' @param nFeatures integer indicating how many features should be used (if clusterFeaturesData is 'mostVar' or 'PCA')
+#' @details If \code{data} is a \code{ClusterExperiment} object, \code{visualizeData} indicates what kind of transformation should be done to \code{assay(data)} for calculating the color scale. The features will be clustered based on this data as well. A different data.frame or matrix can be given for the visualization. For example, if the ClusterExperiment object contains normalized data, but the user wishes that the color scale be based on the log-counts for easier interpretation, visualizeData could be set to be the log(counts+1). 
+#' @details If \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData} can be used to indicate the type of clustering for the samples. If equal to `dendrogramValue` the dendrogram stored in \code{data} will be used; if missing, a new one will be created based on the \code{primaryCluster} of data.
 #' If equal to "hclust", then standard hierachical clustering of the transformed data will be used. If 'orderSamplesValue' no clustering of the samples will be done, and instead the samples will be ordered as in the slot \code{orderSamples} of \code{data}.
 #' If equal to 'primaryCluster', again no clustering will be done, and instead the samples will be ordered based on grouping the samples to match the primaryCluster of \code{data}.
-#' If not one of these values, \code{orderSamples} can be a character vector matching the clusterLabels (colnames of clusterMatrix). }
-#' @details If \code{data} is a \code{ClusterExperiment} object,
+#' If not one of these values, \code{clusterSamplesData} can be a character vector matching the clusterLabels (colnames of clusterMatrix). 
+#' @details If \code{data} is a \code{ClusterExperiment} object, \code{clusterFeaturesData} is not a dataset, but instead indicates which features should be shown in the heatmap. "mostVar" selects the \code{nFeatures} most variable genes (based on \code{transformation(assay(data))}); "PCA" results in a heatmap of the top \code{nFeatures} PCAs of the \code{transformation(assay(data))}. clusterFeaturesData can also be a vector of characters or integers, indicating the rownames or indices respectively of assay(data) that should be shown.
+#' Finally, in the \code{ClusterExperiment} version of \code{plotHeatmap}, \code{clusterFeaturesData} can be a list of indices or rownames, indicating that the features should be grouped according to the elements of the list, with blank (white) space between them (see \code{\link{makeBlankData}} for more details). In this case, no clustering is done of the features.
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data, 
-                        visualize=c("original","transformed","centeredAndScaled"),
-                        orderSamples=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"), #can be indices too
-                        whichFeatures=c("mostVar","all","PCA"), nFeatures=NULL, 
+                        visualizeData=c("transformed","centeredAndScaled","original"),
+                        clusterSamplesData=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"), 
+                        clusterFeaturesData=c("mostVar","all","PCA"), nFeatures=NULL, 
                         whichClusters= c("primary","pipeline","all","none"),
                         sampleData=NULL,clusterFeatures=TRUE,
                         colorScale=if(centerAndScaleFeatures) seqPal3 else seqPal5,
                        ...
   ){	
-    visualize<-match.arg(visualize)
     
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
 
     ####
     ##Transform data and determine which features to use
     ####
-    whichFeatures<-.convertTry(whichFeatures,try(match.arg(whichFeatures),silent=TRUE))
-    if(is.list(whichFeatures)){
-      groupFeatures<-whichFeatures
-      whichFeatures<-unlist(whichFeatures)
+    clusterFeaturesData<-.convertTry(clusterFeaturesData,try(match.arg(clusterFeaturesData),silent=TRUE))
+    if(is.list(clusterFeaturesData)){
+      groupFeatures<-clusterFeaturesData
+      clusterFeaturesData<-unlist(clusterFeaturesData)
     }
     else groupFeatures<-NULL
-    if(all(whichFeatures %in% c("mostVar","all","PCA"))){ #
-        dimReduce=switch(whichFeatures,
+    if(all(clusterFeaturesData %in% c("mostVar","all","PCA"))){ #
+        dimReduce=switch(clusterFeaturesData,
                          "mostVar"="mostVar",
                         "PCA"="PCA",
                         "all"="none")
-        if(is.null(nFeatures)) nFeatures<-min(switch(whichFeatures,"mostVar"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"mostVar"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
         wh<-1:NROW(data)
     }
     else{
-      if(is.character(whichFeatures)){#gene names
-        if(is.null(rownames(data))) stop("Cannot give feature names in whichFeatures unless assay(data) has rownames")
+      if(is.character(clusterFeaturesData)){#gene names
+        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
         else{
-          wh<-match(whichFeatures,rownames(data))
-          if(all(is.na(wh))) stop("None of the feature names in whichFeatures match rownames(assay(data))")
+          wh<-match(clusterFeaturesData,rownames(data))
+          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
           if(any(is.na(wh))){
-            warning("Not all of the feature names in whichFeatures match rownames(assay(data))")
+            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
             wh<-na.omit(wh)
           }
         }  
       }
       else{
-          if(any(!whichFeatures %in% 1:NROW(data))) stop("invalid indices for whichFeatures")
-          wh<-whichFeatures
+          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+          wh<-clusterFeaturesData
       }
       dimReduce<-"none"
     }
@@ -160,13 +162,21 @@ setMethod(
     #########
     ##Assign visualization data and clusterFeaturesData
     #########
-    if(all(whichFeatures=="PCA")) visualizeData<-transObj$x
+    visualizeData<-.convertTry(visualizeData,try(match.arg(visualizeData),silent=TRUE))
+    
+    if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
     else{
-      visualizeData<-switch(visualize,
-                            "original"=assay(data[wh,]),
+        if(!is.data.frame(visualizeData) && !is.matrix(visualizeData)){
+            heatData<-switch(visualizeData,
+                            "original"=assay(data[wh,]), 
                             "transformed"=transObj$x,
                             "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
                             )
+        }
+        else{
+            if(!all(dim(visualizeData)==dim(assay(data)))) stop("if give separate visualizeData, must be of same dimensions as assay(data)") 
+           heatData<-data.matrix(visualizeData)[wh,] #still use the variables identified above.
+        }
     }
 
     ######
@@ -221,31 +231,33 @@ setMethod(
     ######
     #Create clusterSamplesData  
     ######
-    orderSamples<-.convertTry(orderSamples,try(match.arg(orderSamples),silent=TRUE))
+    clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
+    #browser()
     clusterSamples<-TRUE
-    if(is.numeric(orderSamples)){
-        visualizeData<-visualizeData[,orderSamples]
-        clusterSamplesData<-visualizeData
-        if(!is.null(sampleData)) sampleData<-sampleData[orderSamples,,drop=FALSE]
+    browser()
+    if(is.numeric(clusterSamplesData)){
+        heatData<-heatData[,clusterSamplesData]
+        clusterSamplesData<-heatData
+        if(!is.null(sampleData)) sampleData<-sampleData[clusterSamplesData,,drop=FALSE]
         clusterSamples<-FALSE
     }
-    else if(is.character(orderSamples)){
-        if(orderSamples=="orderSamplesValue"){
-          visualizeData<-visualizeData[,orderSamples(data)]
-            clusterSamplesData<-visualizeData
+    else if(is.character(clusterSamplesData)){
+        if(clusterSamplesData=="orderSamplesValue"){
+          heatData<-heatData[,orderSamples(data)]
+            clusterSamplesData<-heatData
             #browser()
             if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
             clusterSamples<-FALSE
             
         }
-        if(orderSamples=="primaryCluster"){
-            visualizeData<-visualizeData[,order(primaryCluster(data))]
-            clusterSamplesData<-visualizeData
+        else if(clusterSamplesData=="primaryCluster"){
+            heatData<-heatData[,order(primaryCluster(data))]
+            clusterSamplesData<-heatData
             if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
             
             clusterSamples<-FALSE
         }
-        if(orderSamples=="dendrogramValue"){
+        else if(clusterSamplesData=="dendrogramValue"){
             if(is.null(data@dendro_samples)){
               clusterSamplesData<-makeDendrogram(data)@dendro_samples
             }
@@ -253,30 +265,30 @@ setMethod(
                 clusterSamplesData<-data@dendro_samples
             }
         }
-        if(orderSamples=="hclust"){
-            #if hclust, then use the visualize data, unless visualize data is original, in which case use transformed
-            clusterSamplesData<-visualizeData
-            if(visualize=="original") clusterSamplesData<-transObj$x
+        else if(clusterSamplesData=="hclust"){
+            #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
+            clusterSamplesData<-heatData
+            if(visualizeData=="original") clusterSamplesData<-transObj$x
         }
     }
-    else stop("orderSamples must be either character, or vector of indices of samples")
+    else stop("clusterSamplesData must be either character, or vector of indices of samples")
     
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
-      blankData<-makeBlankData(visualizeData,groupFeatures)
-      visualizeData<-data.matrix(blankData$dataWBlanks)
+      blankData<-makeBlankData(heatData,groupFeatures)
+      heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       #browser()
-      clusterFeatures=FALSE
+      clusterFeatures<-FALSE
     }
     else{
-      labRow<-rownames(visualizeData)
+      labRow<-rownames(heatData)
     }
   # browser()
-    plotHeatmap(data=visualizeData,
+    plotHeatmap(data=heatData,
                 clusterSamplesData=clusterSamplesData,
-                clusterFeaturesData=visualizeData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
+                clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
                 sampleData=sampleData,whSampleDataCont=whSampleDataCont,
                 clusterSamples=clusterSamples,labRow=labRow,
                 clusterLegend=clLegend,clusterFeatures=clusterFeatures,...)
@@ -382,6 +394,7 @@ setMethod(
       ##Deal with annotation of samples (sampleData) ...
       ##########
       #check sampleData input:
+      browser()
       if(!is.null(sampleData)){
         if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame") 
         if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")	
@@ -433,7 +446,8 @@ setMethod(
             
           }
         }
-        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-.convertToAheatmap(clusterLegend,output=c("aheatmapFormat"))
+        #browser()
+        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-.convertToAheatmap(clusterLegend)
         else annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
       }
       else{

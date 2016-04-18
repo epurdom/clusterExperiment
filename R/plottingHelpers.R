@@ -48,7 +48,7 @@ setMethod(
 .convertToAheatmap<-function(clusterLegend){
     outval<-lapply(clusterLegend,function(x){
       z<-x[,"color"]
-      names(z)<-x[,"name"]
+      names(z)<-x[,"clusterIds"]
       z<-z[order(names(z))]
       return(z)
     })

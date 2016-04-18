@@ -358,6 +358,7 @@ setMethod(
 	###########	
 	clusterLegend<-lapply(1:nrow(clusters),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
+		mat<-cbind(mat,"name"=mat[,"alignedClusterIds"])
 		rownames(mat)<-NULL
 		mat<-(unique(mat))
 		mat<-mat[order(mat[,"clusterIds"]),]
