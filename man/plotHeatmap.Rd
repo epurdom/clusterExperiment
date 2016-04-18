@@ -47,6 +47,10 @@ to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
+\item{visualize}{character, indicating what form of the data should be used for visualizing the data (i.e. for making the color-scale)}
+
+\item{orderSamples}{character or integers. Indicates how the samples should be clustered (or gives indices of the order for the samples). See details.}
+
 \item{sampleData}{If input is either a ClusterExperiment or SummarizedExperiment object, then \code{sampleData} must index the sampleData stored as a DataFrame in \code{colData} slot of the object. Whether the data is continuous or not will be determined by the properties of \code{colData}}
 
 \item{clusterFeatures}{Logical as to whether to do hiearchical clustering of
@@ -116,6 +120,10 @@ into a large window...).
 If \code{breaks} is a numeric value between 0 and 1, then \code{breaks} is assumed to indicate the upper quantile (on the log scale) at which the heatmap color scale should stop. For example, if breaks=0.9, then the breaks will evenly spaced up until the 0.9 upper quantile of the log of the \code{heatData}, and then all values after the 0.9 quantile will be absorbed by the upper-most color bin. This can help to reduce the visual impact of a few highly expressed genes (variables).
 
 If both \code{sampleData} and \code{clusterings} are provided, \code{clusterings} will be shown closest to data (i.e. on bottom) and \code{sampleData} on top. A user that wishes greater control should simply combine the two independently and give the combined matrix in sampleData.
+
+If \code{data} is a \code{ClusterExperiment} object, \code{visualize} indicates what kind of transformation should be done to \code{assay(data)} for calculating the color scale.
+
+If \code{data} is a \code{ClusterExperiment} object,
 }
 \examples{
 data(simData)

@@ -57,7 +57,7 @@ to \code{transFun}.}
 \item{ks}{the range of k values (see details for meaning for different
 choices).}
 
-\item{clusterFunction}{method used in clustering of passed to clusterAll. 
+\item{clusterFunction}{method used in clustering of passed to clusterAll.
 Note that unlike \code{clusterSingle}, this must be a character vector of pre-defined
 clustering techniques provided by the package, and can not be a user-defined function.}
 

@@ -1,8 +1,8 @@
 #' Convert clusterLegend into useful formats
-#' 
+#'
 #' Function for converting the information stored in the clusterLegend slot into other useful formats
 #' @param object a ClusterExperiment object
-#' @param output character value, indicating desired type of conversion. 
+#' @param output character value, indicating desired type of conversion.
 #' @details convertClusterLegend pulls out information stored in the clusterLegend slot of the object and returns it in useful format.
 #' @return If "output=plotAndLegend", \code{convertClusterLegend} will return a list that provides the necessary information to color samples according to cluster and create a legend for it:
 #'  \itemize{
@@ -10,8 +10,9 @@
 #'  \item{"legendNames"}{A vector the length of the number of clusters of primaryCluster of the object giving the name of the cluster.}
 #'  \item{"legendColors"}{A vector the length of the number of clusters of primaryCluster of the object giving the color of the cluster.}
 #' }
-#'  @return If "output=aheatmap" a conversion of the clusterLegend to be in the format requested by aheatmap. The column 'name' is used for the names and the column 'color' for the color of the clusters. 
+#'  @return If "output=aheatmap" a conversion of the clusterLegend to be in the format requested by aheatmap. The column 'name' is used for the names and the column 'color' for the color of the clusters.
 #'  @return If "output=matrixNames" or "matrixColors" a matrix the same dimension of clusterMatrix(object), but with the cluster color or cluster name instead of the clusterIds, respectively.
+#'  @importFrom RColorBrewer brewer.pal brewer.pal.info
 setMethod(
   f = "convertClusterLegend",
   signature = c("ClusterExperiment"),
@@ -28,7 +29,7 @@ setMethod(
         colReturn<-if(output=="matrixNames") "name" else "color"
         return(colMat[m,colReturn])
       }))
-      
+
     }
     if(output=="plotAndLegend"){
       cl<-primaryCluster(object)
@@ -37,10 +38,10 @@ setMethod(
       legend<-colMat[,"name"]
       color<-colMat[,"color"]
       outval<-list(colorVector=clColor,legendNames=legend,legendColors=color)
-      
+
     }
     return(outval)
-    
+
   }
 )
 
@@ -52,11 +53,11 @@ setMethod(
       return(z)
     })
     return(outval)
-    
+
   }
-    
-    
-    
+
+
+
 #' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
 #' @rdname plottingFunctions
 #' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced between the boundaries of the data. If breaks is between 0 and 1, then the evenly spaced breaks are between these quantiles of the data.

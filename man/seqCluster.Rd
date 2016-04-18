@@ -35,7 +35,7 @@ seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
 \item{clusterDArgs}{list of arguments to be passed to \code{\link{clusterD}}(which can include arguments to be passed to \code{\link{cluster01}} or \code{\link{clusterK}})}
 }
 \value{
-A list with values 
+A list with values
 \itemize{
 
 \item{\code{clustering}}{a vector of length equal to nrows(x) giving the integer-valued cluster ids for each sample. The integer values are assigned in the order that the clusters were found. "-1" indicates the sample was not clustered.}
@@ -71,9 +71,9 @@ However, if clusterFunction="pam" (or is of type 'K') and subsample=TRUE passing
 data(simData)
 set.seed(12908)
 clustSeqHier<-seqCluster(simData,k0=5,subsample=TRUE,
-clusterFunction="hierarchical",beta=0.8, 
+clusterFunction="hierarchical",beta=0.8,
 subsampleArgs=list(resamp.n=100,samp.p=0.7,
-clusterFunction="kmeans",clusterArgs=list(nstart=10)), 
+clusterFunction="kmeans",clusterArgs=list(nstart=10)),
 clusterDArgs=list(minSize=5))
 }
 

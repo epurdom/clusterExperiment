@@ -68,9 +68,9 @@
 #' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
 #'	annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
 #' @export
-#' @importFrom phylobase labels descendant ancestors getNode
-#' @importClassesFrom ape phylo
+#' @importFrom phylobase labels descendants ancestors getNode
 #' @importClassesFrom phylobase phylo4
+#' @importFrom graphics plot
 #' @importFrom ape plot.phylo
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
@@ -89,15 +89,18 @@ setMethod(f = "mergeClusters",
     #check valid
     ncluster <- length(table(cl[cl>0]))
     if(nobs(dendro) != ncluster) {
-      warning("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl). Will recompute dendrogram")
+      warning("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).
+              Will recompute dendrogram")
       dendro<-NULL
     }
   }
 
   if(is.null(dendro)) {
-    dendro <- ifelse(countData,
-                     makeDendrogram(x=log(x+1), cl, leaves="clusters"),
-                     makeDendrogram(x=x, cl, leaves="clusters"))
+    dendro <- if(countData) {
+        makeDendrogram(x=log(x+1), cl)$clusters
+      } else {
+        makeDendrogram(x=x, cl)$clusters
+      }
   }
 
   mergeMethod <- match.arg(mergeMethod)
@@ -196,6 +199,7 @@ setMethod(f = "mergeClusters",
 )
 
 #' @rdname mergeClusters
+#' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, ...) {

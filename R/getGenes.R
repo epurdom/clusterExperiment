@@ -220,6 +220,7 @@ setMethod(f = "getBestFeatures",
 )
 
 #' @rdname getBestFeatures
+#' @export
 setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x,

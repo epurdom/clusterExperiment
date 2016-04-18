@@ -34,8 +34,8 @@ subsampleClustering(x, k, clusterFunction = "pam", clusterArgs = NULL,
 A nxn matrix of co-occurances
 }
 \description{
-Given a nxp data matrix, this funciton will subsample the rows (samples), 
-cluster the subsamples, and return a nxn matrix with the probability of 
+Given a nxp data matrix, this funciton will subsample the rows (samples),
+cluster the subsamples, and return a nxn matrix with the probability of
 co-occurance
 }
 \details{

@@ -1,5 +1,6 @@
 setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
+
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -57,7 +58,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @rdname ClusterExperiment-class
 #' @import Biobase
 #' @import SummarizedExperiment
-#' @exportClass
+#' @export
 #'
 setClass(
   Class = "ClusterExperiment",
@@ -97,7 +98,7 @@ setValidity("ClusterExperiment", function(object) {
   if(any(is.na(tX))) {
     return("NA values after transforming data matrix are not allowed.")
   }
-  
+
   if(!all(is.na((object@clusterMatrix))) &
      !(NROW(object@clusterMatrix) == NCOL(object))) {
     return("If present, `clusterMatrix` must have as many row as cells.")
@@ -105,15 +106,15 @@ setValidity("ClusterExperiment", function(object) {
   if(!is.numeric(object@clusterMatrix)) {
     return("`clusterMatrix` must be a numeric matrix.")
   }
-  
+
   if(NCOL(object@clusterMatrix)!= length(object@clusterType)) {
     return("length of clusterType must be same as NCOL of the clusterMatrix")
   }
-  
+
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
-  
+
   # now have assigned class to slot and constructor creates one automatically
   #   if(length(object@dendrogram) > 0) {
   #     if(class(object@dendrogram) != "dendrogram") {
@@ -131,7 +132,7 @@ setValidity("ClusterExperiment", function(object) {
       return("dendro_clusters must have the same number of leaves as the number of clusters")
     }
   }
-  
+
   if(!all(is.na(object@coClustering)>0) &
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
@@ -160,7 +161,7 @@ setValidity("ClusterExperiment", function(object) {
     })
     #browser()
     if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
-    
+
     ####
     #test that colnames of clusterMatrix appropriately aligns with everything else
     ####
@@ -256,6 +257,7 @@ setValidity("ClusterExperiment", function(object) {
 #'                         transformation = function(x){x})
 #'
 #' @rdname ClusterExperiment-class
+#' @export
 setGeneric(
   name = "clusterExperiment",
   def = function(se,  clusters,...) {
@@ -263,6 +265,7 @@ setGeneric(
   }
 )
 #' @rdname ClusterExperiment-class
+#' @export
 setMethod(
   f = "clusterExperiment",
   signature = signature("matrix","ANY"),

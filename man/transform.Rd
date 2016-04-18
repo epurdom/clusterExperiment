@@ -24,7 +24,7 @@ If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of length 1, a mat
 Provides the transformed data (as defined by the object), as well as dimensionality reduction
 }
 \details{
-The data matrix defined by \code{assay(x)} is transformed based on the transformation function defined in x. If \code{dimReduce="none"} the transformed matrix is returned. 
+The data matrix defined by \code{assay(x)} is transformed based on the transformation function defined in x. If \code{dimReduce="none"} the transformed matrix is returned.
 Otherwise, the user can request dimensionality reduction of the transformed data via \code{dimReduce}. 'PCA' refers to PCA of the transformed data with the top nPCADims kept. 'mostVar' refers to keeping the top most variable features (defined by taking the MAD across all samples), and nVarDims defines how many such features to keep.
 
 The pca uses prcomp on t(assay(x)) with center=TRUE and scale=TRUE (i.e. the feature are centered and scaled), so that it is performing PCA on the correlation matrix of the features.
