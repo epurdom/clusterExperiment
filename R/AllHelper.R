@@ -1,5 +1,10 @@
-## subsetting
-#' @rdname ClusterExperiment-class
+#' Helper methods for the ClusterExperiment class
+#'
+#' This is a collection of helper methods for the ClusterExperiment class.
+#' @name ClusterExperiment-methods
+#' @aliases ClusterExperiment-methods
+#' @details Note that when subsetting the data, the dendrogram information and
+#' the co-clustering matrix are lost.
 #' @export
 setMethod(
   f = "[",
@@ -54,8 +59,9 @@ setMethod(
     }
 )
 ## show
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
+#' @param object a ClusterExperiment object.
 setMethod(
   f = "show",
   signature = "ClusterExperiment",
@@ -74,8 +80,10 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
+#' @param x a ClusterExperiment object.
 setMethod(
   f = "clusterMatrixNamed",
   signature = "ClusterExperiment",
@@ -92,7 +100,9 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{primaryClusterNamed} returns the primary cluster (using cluster
+#' labels).
 #' @export
 setMethod(
   f = "primaryClusterNamed",
@@ -101,7 +111,9 @@ setMethod(
     clusterMatrixNamed(x)[,primaryClusterIndex(x)]
   })
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{transformation} prints the function used to transform the data
+#' prior to clustering.
 #' @export
 setMethod(
   f = "transformation",
@@ -111,8 +123,8 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
 #' @export
+#' @rdname clusterLabels
 setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
@@ -125,9 +137,16 @@ setReplaceMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
-#' @param whichClusters either numeric, in which case gives the indices of the clusters, or character, in which case it matches to clusterType(x) to find the indices of the clusters
+#' Methods to set and return the clustering labels
+#'
+#' These methods will return or set the clustering labels (i.e., the
+#' colnames of the clusterMatrix slot).
+#'
+#' @param `whichClusters` controls which labels to be returned. It is either
+#' numeric, in which case gives the indices of the clusters, or character, in
+#' which case it matches to clusterType(x) to find the indices of the clusters.
 #' @export
+#' @rdname clusterLabels
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
@@ -138,7 +157,8 @@ setMethod(
     return(labels)
   }
 )
-#' @rdname ClusterExperiment-class
+
+#' @rdname clusterLabels
 #' @export
 setMethod(
   f = "clusterLabels",
@@ -148,7 +168,7 @@ setMethod(
     return(clusterLabels(x,wh))
   }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname clusterLabels
 #' @export
 setMethod(
   f = "clusterLabels",
@@ -157,7 +177,9 @@ setMethod(
     return(clusterLabels(x,whichClusters="all"))
   }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{nClusters} returns the number of clusterings (i.e., ncol of
+#' clusterMatrix).
 #' @export
 setMethod(
   f = "nClusters",
@@ -166,7 +188,8 @@ setMethod(
     return(NCOL(clusterMatrix(x)))
   }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{nFeatures} returns the number of features (same as `nrow`).
 #' @export
 setMethod(
   f = "nFeatures",
@@ -175,7 +198,9 @@ setMethod(
     return(NROW(assay(x)))
   }
 )
-#' @rdname ClusterExperiment-class
+
+#' @rdname ClusterExperiment-methods
+#' @details \code{nSamples} returns the number of samples (same as `ncol`).
 #' @export
 setMethod(
   f = "nSamples",
@@ -184,7 +209,9 @@ setMethod(
     return(NCOL(assay(x)))
   }
 )
-#' @rdname ClusterExperiment-class
+
+#' @rdname ClusterExperiment-methods
+#' @details \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 setMethod(
   f = "clusterMatrix",
@@ -194,7 +221,8 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{primaryCluster} returns the primary clustering (as numeric).
 #' @export
 setMethod(
   f = "primaryCluster",
@@ -204,7 +232,9 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{primaryClusterIndex} returns/sets the primary clustering index
+#' (i.e., which column of clusterMatrix corresponds to the primary clustering).
 #' @export
 setMethod(
   f = "primaryClusterIndex",
@@ -214,7 +244,7 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
 setReplaceMethod(
   f = "primaryClusterIndex",
@@ -226,7 +256,8 @@ setReplaceMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{coClustering} returns/sets the co-clustering matrix.
 #' @export
 setMethod(
   f = "coClustering",
@@ -236,7 +267,7 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
 setReplaceMethod(
   f = "coClustering",
@@ -248,7 +279,8 @@ setReplaceMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{clusterType} returns/sets the clusterType slot.
 #' @export
 setMethod(
   f = "clusterType",
@@ -325,8 +357,6 @@ setMethod(
   }
 )
 
-
-
 #Update here if change pipeline values. Also defines the order of them.
 .pipelineValues<-c("final","mergeClusters","combineMany","clusterMany")
 #' @rdname pipelineClusters
@@ -374,8 +404,7 @@ setMethod(
 #' @title Methods for pipeline clusters
 #' @name pipelineClusters
 #' @aliases pipelineClusters pipelineClusterTable pipelineClusterDetails
-#'
-#' The main pipeline of the package is made of \code{\link{clusterMany}},
+#' @description  The main pipeline of the package is made of \code{\link{clusterMany}},
 #' \code{\link{combineMany}}, and \code{\link{mergeClusters}}.
 #' The clusterings from these functions (and not those obtained in a different
 #' way) can be obtained with the functions documented here.
@@ -450,7 +479,8 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{clusterInfo} returns the clusterInfo slot.
 #' @export
 setMethod(
   f = "clusterInfo",
@@ -462,7 +492,8 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{clusterLegend} returns/sets the clusterLegend slot.
 #' @export
 setMethod(
     f = "clusterLegend",
@@ -473,7 +504,7 @@ setMethod(
       return(out)
     }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
 setReplaceMethod(
     f = "clusterLegend",
@@ -485,7 +516,8 @@ setReplaceMethod(
     }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
+#' @details \code{orderSamples} returns/sets the orderSamples slot.
 #' @export
 setMethod(
     f = "orderSamples",
@@ -494,7 +526,7 @@ setMethod(
         return(x@orderSamples)
     }
 )
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
 setReplaceMethod(
     f = "orderSamples",
@@ -506,7 +538,7 @@ setReplaceMethod(
     }
 )
 
-#' @rdname ClusterExperiment-class
+#' @rdname ClusterExperiment-methods
 #' @export
 setReplaceMethod(
     f = "clusterType",

@@ -1,4 +1,3 @@
-#' @rdname clusterSingle
 setGeneric(
   name = "clusterSingle",
   def = function(x,  ...) {
@@ -6,14 +5,13 @@ setGeneric(
   }
 )
 
-#' @rdname plotHeatmap
 setGeneric(
   name = "plotCoClustering",
   def = function(data,  ...) {
     standardGeneric("plotCoClustering")
   }
 )
-#' @rdname plotFunctions
+
 setGeneric(
   name = "convertClusterLegend",
   def = function(object,  ...) {
@@ -21,7 +19,6 @@ setGeneric(
   }
 )
 
-#' @rdname makeDendrogram
 setGeneric(
   name = "makeDendrogram",
   def = function(x,  ...) {
@@ -29,63 +26,62 @@ setGeneric(
   }
 )
 
-#' @rdname ClusterExperiment-class
 setGeneric(
     name = "clusterLegend",
     def = function(x) {
         standardGeneric("clusterLegend")
     }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
     name = "clusterLegend<-",
     def = function(object, value) {
         standardGeneric("clusterLegend<-")
     }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
     name = "orderSamples",
     def = function(x) {
         standardGeneric("orderSamples")
     }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
     name = "orderSamples<-",
     def = function(object, value) {
         standardGeneric("orderSamples<-")
     }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "clusterLabels",
   def = function(x, whichClusters) {
     standardGeneric("clusterLabels")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
     name = "clusterLabels<-",
     def = function(object, value) {
         standardGeneric("clusterLabels<-")
     }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "nClusters",
   def = function(x) {
     standardGeneric("nClusters")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "nFeatures",
   def = function(x) {
     standardGeneric("nFeatures")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "nSamples",
   def = function(x) {
@@ -93,29 +89,27 @@ setGeneric(
   }
 )
 
-
-#' @rdname ClusterExperiment-class
 setGeneric(
   name = "pipelineClusters",
   def = function(x,iteration=0) {
     standardGeneric("pipelineClusters")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "pipelineClusterDetails",
   def = function(x) {
     standardGeneric("pipelineClusterDetails")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "pipelineClusterTable",
   def = function(x) {
     standardGeneric("pipelineClusterTable")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "paramValues",
   def = function(x,type) {
@@ -123,14 +117,13 @@ setGeneric(
   }
 )
 
-#' @rdname clusterMany
 setGeneric(
   name = "clusterMany",
   def = clusterMany <- function(x, ... ) {
     standardGeneric("clusterMany")
   }
 )
-#' @rdname plotDendrogram
+
 setGeneric(
   name="plotDendrogram",
   def=function(x,...)
@@ -138,7 +131,7 @@ setGeneric(
     standardGeneric("plotDendrogram")
   }
 )
-#' @rdname plotClusters
+
 setGeneric(
     name="plotClusters",
     def=function(clusters, orderClusters,...)
@@ -146,7 +139,7 @@ setGeneric(
         standardGeneric("plotClusters")
     }
 )
-#' @rdname plotHeatmap
+
 setGeneric(
   name="plotHeatmap",
   def=function(data,...)
@@ -154,22 +147,21 @@ setGeneric(
     standardGeneric("plotHeatmap")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "transformation",
   def = function(x) {
     standardGeneric("transformation")
   }
 )
-#' @rdname ClusterExperiment-class
-  setGeneric(
+
+setGeneric(
   name = "transform",
   def = function(x,...) {
     standardGeneric("transform")
   }
 )
 
-#' @rdname ClusterExperiment-class
 setGeneric(
   name = "clusterMatrix",
   def = function(x) {
@@ -218,26 +210,28 @@ setGeneric(
     standardGeneric("clusterType")
   }
 )
+
 setGeneric(
     name = "clusterType<-",
     def = function(object,value) {
         standardGeneric("clusterType<-")
     }
 )
+
 setGeneric(
   name = "addClusters",
   def = function(x, y,...) {
     standardGeneric("addClusters")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "removeClusters",
   def = function(x, whichRemove,exactMatch=TRUE) {
     standardGeneric("removeClusters")
   }
 )
-#' @rdname ClusterExperiment-class
+
 setGeneric(
   name = "removeUnclustered",
   def = function(x) {
@@ -245,7 +239,6 @@ setGeneric(
   }
 )
 
-#' @rdname ClusterExperiment-class
 setGeneric(
   name = "clusterInfo",
   def = function(x) {
@@ -253,7 +246,6 @@ setGeneric(
   }
 )
 
-#' @rdname ClusterExperiment-class
 setGeneric(
     name = "convertClusterColors",
     def = function(x) {
@@ -261,7 +253,6 @@ setGeneric(
     }
 )
 
-#' @rdname combineMany
 setGeneric(
   name = "combineMany",
   def = function(x, whichClusters, ...) {
@@ -269,28 +260,27 @@ setGeneric(
   }
 )
 
-#' @rdname clusterMatrixNamed
 setGeneric(
   name = "clusterMatrixNamed",
   def = function(x,  ...) {
     standardGeneric("clusterMatrixNamed")
   }
 )
-#' @rdname primaryClusterNamed
+
 setGeneric(
   name = "primaryClusterNamed",
   def = function(x,  ...) {
     standardGeneric("primaryClusterNamed")
   }
 )
-#' @rdname getBestFeatures
+
 setGeneric(
   name = "getBestFeatures",
   def = function(x, ...) {
     standardGeneric("getBestFeatures")
   }
 )
-#' @rdname mergeClusters
+
 setGeneric(
   name = "mergeClusters",
   def = function(x, ...) {
