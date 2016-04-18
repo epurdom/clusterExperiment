@@ -4,15 +4,22 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
-#' \code{SummarizedExperiment} and is used to store the single-cell RNA-seq data
+#' \code{SummarizedExperiment} and is used to store the data
 #' and clustering information.
 #'
 #' @docType class
 #' @aliases ClusterExperiment ClusterExperiment-class clusterExperiment
 #'
 #' @description In addition to the slots of the \code{SummarizedExperiment}
-#' class, the \code{ClusterExperiment} object has the following additional
-#' slots:
+#' class, the \code{ClusterExperiment} object has the additional slots described
+#' in the Slots section.
+#'
+#' @description There are several methods implemented for this class. The most
+#' important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
+#' ...) have their own help page. Simple helper methods are described in the
+#' Methods section. For a comprehensive list of methods specific to this class
+#' see \code{\link{ClusterExperiment-generics}}.
+#'
 #' @slot transformation function. Function to transform the data by when methods
 #' that assume normal-like data (e.g. log)
 #' @slot clusterMatrix matrix. A matrix giving the integer-valued cluster ids
@@ -20,9 +27,9 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' to samples. The integer values are assigned in the order that the clusters
 #' were found, if found by setting sequential=TRUE in clusterSingle. "-1" indicates
 #' the sample was not clustered.
-#' @slot primaryIndex: numeric. An index that specifies the primary set of
+#' @slot primaryIndex numeric. An index that specifies the primary set of
 #' labels.
-#' @slot clusterInfo: list. A list with info about the clustering.
+#' @slot clusterInfo list. A list with info about the clustering.
 #' If created from \code{\link{clusterSingle}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
@@ -53,6 +60,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @slot orderSamples a numeric vector (of integers) defining the order of
 #' samples to be used for plotting of samples. Usually set internally by other
 #' functions.
+#'
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
@@ -233,18 +241,19 @@ setValidity("ClusterExperiment", function(object) {
 
 #' @description The constructor \code{clusterExperiment} creates an object of
 #' the class \code{ClusterExperiment}. However, the typical way of creating
-#' these objects is the result of a call to \code{clusterMany} or
-#' \code{clusterSingle}.
+#' these objects is the result of a call to \code{\link{clusterMany}} or
+#' \code{\link{clusterSingle}}.
 #'
 #' @description Note that when subsetting the data, the co-clustering and
 #' dendrogram information are lost.
 #'
-#'@param se a matrix or \code{SummarizedExperiment} containing the clustered
-#'data.
-#'@param labels a vector with cluster labels.
+#'@param se a matrix or \code{SummarizedExperiment} containing the data to be
+#'clustered.
+#'@param clusters can be either a numeric or character vector, a factor, or a
+#'numeric matrix, containing the cluster labels.
 #'@param transformation function. A function to transform the data before
-#'performing steps that assume normal-like (i.e. constant variance), such as
-#'the log
+#'performing steps that assume normal-like data (i.e. constant variance), such
+#'as the log.
 #'
 #'@return A \code{ClusterExperiment} object.
 #'
@@ -299,6 +308,11 @@ setMethod(
     clusterExperiment(se,clusters,...)
   })
 #' @rdname ClusterExperiment-class
+#' @param clusterType a string describing the nature of the clustering. The
+#' values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+#' reserved for the clustering coming from the package pipeline and should not
+#' be used when creating a new object with the constructor.
+#' @param clusterInfo a list with information on the clustering (see Slots).
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
