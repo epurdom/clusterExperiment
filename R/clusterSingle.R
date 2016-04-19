@@ -1,13 +1,14 @@
-#' General wrap-around for all clustering methods we're trying.
+#' General wrapper method to cluster the data.
 #'
 #' Given a data matrix, SummarizedExperiment, or ClusterExperiment object,
-#' this function will find clusters.
+#' this function will find clusters, based on a single specification.
 #'
-#' @param x the data on which to run the clustering (genes in rows)
+#' @param x the data on which to run the clustering (genes in rows).
 #' @param subsample logical as to whether to subsample via
 #' \code{\link{subsampleClustering}} to get the distance matrix at each
 #' iteration; otherwise the distance matrix is dist(x).
-#' @param sequential logical whether to use the sequential strategy.
+#' @param sequential logical whether to use the sequential strategy (see
+#' Details).
 #' @param clusterFunction passed to \code{\link{clusterD}} option
 #' 'clusterFunction' to indicate method of clustering, see
 #' \code{\link{clusterD}}.
@@ -182,7 +183,7 @@ setMethod(
                                 transformation=transFun,
                                 clusterInfo=clInfo,
                                 clusterType="clusterSingle")
-    if(subsample) {
+    if(subsample & !sequential) {
       retval@coClustering<-finalClusterList$subsampleCocluster
     }
     validObject(retval)
