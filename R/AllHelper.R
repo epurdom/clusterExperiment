@@ -112,60 +112,6 @@ setMethod(
   }
 )
 
-#' @export
-#' @rdname clusterLabels
-setReplaceMethod(
-  f = "clusterLabels",
-  signature = signature(object="ClusterExperiment", value="character"),
-  definition = function(object, value) {
-    if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
-    if(any(duplicated(value))) stop("cannot have duplicated clusterLabels")
-    colnames(object@clusterMatrix) <- value
-    validObject(object)
-    return(object)
-  }
-)
-
-#' Methods to set and return the clustering labels
-#'
-#' These methods will return or set the clustering labels (i.e., the
-#' colnames of the clusterMatrix slot).
-#'
-#' @param `whichClusters` controls which labels to be returned. It is either
-#' numeric, in which case gives the indices of the clusters, or character, in
-#' which case it matches to clusterType(x) to find the indices of the clusters.
-#' @export
-#' @rdname clusterLabels
-setMethod(
-  f = "clusterLabels",
-  signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(x, whichClusters){
-    if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) stop("Invalid indices for clusterLabels")
-    labels<-colnames(clusterMatrix(x))[whichClusters]
-    if(is.null(labels)) cat("No labels found for clusterings\n")
-    return(labels)
-  }
-)
-
-#' @rdname clusterLabels
-#' @export
-setMethod(
-  f = "clusterLabels",
-  signature = signature(x = "ClusterExperiment", whichClusters ="character"),
-  definition = function(x, whichClusters="all"){
-    wh<-.TypeIntoIndices(x,whClusters=whichClusters)
-    return(clusterLabels(x,wh))
-  }
-)
-#' @rdname clusterLabels
-#' @export
-setMethod(
-  f = "clusterLabels",
-  signature = signature(x = "ClusterExperiment",whichClusters="missing"),
-  definition = function(x, whichClusters){
-    return(clusterLabels(x,whichClusters="all"))
-  }
-)
 #' @rdname ClusterExperiment-methods
 #' @details \code{nClusters} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
@@ -280,7 +226,6 @@ setMethod(
     return(out)
   }
 )
-
 
 #Update here if change pipeline values. Also defines the order of them.
 .pipelineValues<-c("final","mergeClusters","combineMany","clusterMany")
