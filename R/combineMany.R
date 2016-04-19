@@ -49,6 +49,8 @@
 #'  matrix stored in the \code{coClustering} slot.
 #'
 #' @examples
+#' data(simData)
+#'
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)

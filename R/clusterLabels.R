@@ -12,6 +12,18 @@
 #'   clusters.
 #' @export
 #' @rdname clusterLabels
+#' @examples
+#' data(simData)
+#'
+#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
+#' subsample=FALSE)
+#'
+#' clusterLabels(cl)
+#' clusterLabels(cl, whichClusters=1:3)
+#'
+#' clusterType(cl)
+#' clusterLabels(cl, whichClusters="clusterMany")
 setMethod(
   f = "clusterLabels",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),

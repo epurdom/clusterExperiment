@@ -73,6 +73,8 @@ The function tries to find a consensus cluster across many different
   clusterings are assigned a '-1' regardless of their cluster assignment.
 }
 \examples{
+data(simData)
+
 cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 subsample=FALSE)
