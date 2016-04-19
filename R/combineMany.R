@@ -1,68 +1,79 @@
 #' Find sets of samples that stay together across clusterings
+#'
 #' Find sets of samples that stay together across clusterings in order to define
 #' a new clustering vector.
 #'
+#' @name combineMany
+#'
 #' @param x a matrix or \code{\link{clusterExperiment}} object.
 #' @param whichCluster a numeric or character vector that specifies which
-#' clusters to compare (missing if x is a matrix)
+#'   clusters to compare (missing if x is a matrix)
 #' @param clusterFunction the clustering to use (passed to
-#' \code{\link{clusterD}}); currently must be of type '01'.
+#'   \code{\link{clusterD}}); currently must be of type '01'.
 #' @param minSize minimum size required for a set of samples to be considered in
-#' a cluster because of shared clustering, passed to \code{\link{clusterD}}
+#'   a cluster because of shared clustering, passed to \code{\link{clusterD}}
 #' @param proportion The proportion of times that two sets of samples should be
-#' together in order to be grouped into a cluster (if <1, passed to clusterD via
-#' alpha=1-proportion)
+#'   together in order to be grouped into a cluster (if <1, passed to clusterD
+#'   via alpha = 1 - proportion)
 #' @param propUnassigned samples with greater than this proportion of
-#' assignments equal to '-1' are assigned a '-1' cluster value as a last step
-#' (only if proportion < 1)
+#'   assignments equal to '-1' are assigned a '-1' cluster value as a last step
+#'   (only if proportion < 1)
 #'
 #' @details The function tries to find a consensus cluster across many different
-#' clusterings of the same sample. It does so by creating a \code{nSamples} x
-#' \code{nSamples} matrix of the percentage of co-occurance of each sample and
-#' then calling clusterD to cluster the co-occurance matrix. The function
-#' assumes that '-1' labels indicate clusters that are not assigned to a
-#' cluster. Co-occurance with the unassigned cluster is treated differently than
-#' other clusters. The percent co-occurance is taken only with respect to those
-#' clusterings where both samples were assigned. Then samples with more than
-#' \code{propUnassigned} values that are '-1' across all of the clusterings are
-#' assigned a '-1' regardless of their cluster assignment.
+#'   clusterings of the same samples. It does so by creating a \code{nSamples} x
+#'   \code{nSamples} matrix of the percentage of co-occurance of each sample and
+#'   then calling clusterD to cluster the co-occurance matrix. The function
+#'   assumes that '-1' labels indicate clusters that are not assigned to a
+#'   cluster. Co-occurance with the unassigned cluster is treated differently
+#'   than other clusters. The percent co-occurance is taken only with respect to
+#'   those clusterings where both samples were assigned. Then samples with more
+#'   than \code{propUnassigned} values that are '-1' across all of the
+#'   clusterings are assigned a '-1' regardless of their cluster assignment.
 #'
 #' @return If x is a matrix, a list with values
 #' \itemize{
+#'   \item{\code{clustering}}{ vector of cluster assignments, with "-1" implying
+#'   unassigned}
 #'
-#' \item{\code{clustering}}{vector of cluster assignments, with "-1" implying
-#' unassigned}
-#'
-#' \item{\code{percentageShared}}{a nsample x nsample matrix of the percent
-#' co-occurance across clusters used to find the final clusters. Percentage is
-#' out of those not '-1'}
-#' \item{\code{noUnassignedCorrection}{a vector of cluster assignments before
-#' samples were converted to '-1' because had >\code{propUnassigned} '-1' values
-#' (i.e. the direct output of the \code{clusterD} output.)}}
+#'   \item{\code{percentageShared}}{ a nSample x nSample matrix of the percent
+#'   co-occurance across clusters used to find the final clusters. Percentage is
+#'   out of those not '-1'} \item{\code{noUnassignedCorrection}{ a vector of
+#'   cluster assignments before samples were converted to '-1' because had
+#'   >\code{propUnassigned} '-1' values (i.e. the direct output of the
+#'   \code{clusterD} output.)}}
 #' }
 #'
-#'@return If x is a \code{\link{clusterExperiment}}, a
-#'\code{\link{clusterExperiment}} with an added clustering of clusterType equal
-#'to `combineMany` and the \code{percentageShared} matrix stored in the
-#'\code{coClustering} slot.
+#' @return If x is a \code{\link{ClusterExperiment}}, a
+#'  \code{\link{ClusterExperiment}} object, with an added clustering of
+#'  clusterType equal to \code{combineMany} and the \code{percentageShared}
+#'  matrix stored in the \code{coClustering} slot.
 #'
-#' ps<-c(5,10,50) ## redo example!!!
-#' names(ps)<-paste("npc=",ps,sep="")
-#' pcaData<-stats::prcomp(simData, center=TRUE, scale=TRUE)
-#' cl <- clusterMany(lapply(ps,function(p){pcaData$x[,1:p]}),
-#' clusterMethod="pam",ks=2:4,findBestK=c(FALSE),removeSil=TRUE,subsample=FALSE)
+#' @examples
+#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
+#' subsample=FALSE)
+#'
 #' #make names shorter for plotting
-#' colnames(cl$clMat)<-gsub("TRUE","T",colnames(cl$clMat))
-#' colnames(cl$clMat)<-gsub("FALSE","F",colnames(cl$clMat))
-#' colnames(cl$clMat)<-gsub("k=NA,","",colnames(cl$clMat))
-
+#' clMat <- clusterMatrix(cl)
+#' colnames(clMat) <- gsub("TRUE", "T", colnames(clMat))
+#' colnames(clMat) <- gsub("FALSE", "F", colnames(clMat))
+#' colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
+#'
 #' #require 100% agreement -- very strict
-#' clCommon100<-combineMany(cl$clMat,proportion=1,minSize=10)
+#' clCommon100 <- combineMany(clMat, proportion=1, minSize=10)
+#'
 #' #require 70% agreement based on clustering of overlap
-#' clCommon70<-combineMany(cl$clMat,proportion=0.7,plot=TRUE,minSize=10)
-#' oldpar<-par()
-#' par(mar=c(1.1,12.1,1.1,1.1))
-#' plotClusters(cbind("70%Similarity"=clCommon70$clustering,cl$clMat,"100%Similarity"=clCommon100$clustering),axisLine=-2)
+#' clCommon70 <- combineMany(clMat, proportion=0.7, minSize=10)
+#'
+#' oldpar <- par()
+#' par(mar=c(1.1, 12.1, 1.1, 1.1))
+#' plotClusters(cbind("70%Similarity"=clCommon70$clustering, clMat,
+#' "100%Similarity"=clCommon100$clustering), axisLine=-2)
+#'
+#' #method for ClusterExperiment object
+#' clCommon <- combineMany(cl, whichClusters="pipeline", proportion=0.7,
+#' minSize=10)
+#' plotClusters(clCommon)
 #' par(oldpar)
 #'
 #' @rdname combineMany

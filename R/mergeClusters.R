@@ -1,72 +1,77 @@
 #' @title Merge clusters based on dendrogram
 #'
 #' @description Takes an input of hierarchical clusterings of clusters and
-#' returns estimates of number of proportion of non-null and merges those below
-#' a certain cutoff.
+#'   returns estimates of number of proportion of non-null and merges those
+#'   below a certain cutoff.
 #'
+#' @name mergeClusters
 #'
 #' @param x data to perform the test on. It can be a matrix or a
-#' \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments to compare to clRef.
-#' ``-1'' indicates the sample was not assigned to a cluster.
-#' @param dendro If provided, is dendrogram providing hierarchical clustering of
-#' clusters in cl; mainly useful to speed up calculations if
-#' \code{\link{makeDendrogram}} has already been called. The default for matrix
-#' (NULL) is to recalculate it with the given (x, cl) pair.
+#'   \code{\link{ClusterExperiment}}.
+#' @param cl A numeric vector with cluster assignments to compare to. ``-1''
+#'   indicates the sample was not assigned to a cluster.
+#' @param dendro dendrogram providing hierarchical clustering of clusters in cl;
+#'   The default for matrix (NULL) is to recalculate it with the given (x, cl)
+#'   pair. If x is a \code{\link{ClusterExperiment}} object, the dendrogram in
+#'   the slot \code{dendro_clusters} will be used. This means that
+#'   \code{\link{makeDendrogram}} needs to be called before
+#'   \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
-#' used to merge clusters (if 'none', no merging will be done). See details for
-#' description of methods.
+#'   used to merge clusters (if 'none', no merging will be done). See details
+#'   for description of methods.
 #' @param cutoff cutoff for merging clusters based on the proportion of
-#' non-nulls in the comparison of the clusters (i.e. value between 0, 1, where
-#' lower values will make it harder to merge clusters).
+#'   non-nulls in the comparison of the clusters (i.e. value between 0, 1, where
+#'   lower values will make it harder to merge clusters).
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the
-#' estimates of proportion non-null will be plotted; if 'mergeMethod', then only
-#' the value used in the merging is plotted for each node.
-#' @param countData logical as to whether input data is a count matrix
-#' (in which case log(count+1) will be used for \code{\link{makeDendrogram}}
-#' and voom correction will be used in \code{\link{getBestFeatures}}). Ignored if
-#' input is \code{\link{ClusterExperiment}}.
+#'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
+#'   only the value used in the merging is plotted for each node.
+#' @param countData logical as to whether input data is a count matrix (in which
+#'   case \code{log(count + 1)} will be used for \code{\link{makeDendrogram}}
+#'   and voom correction will be used in \code{\link{getBestFeatures}}). Ignored
+#'   if input is \code{\link{ClusterExperiment}}.
 #' @param ... arguments passed to the \code{\link{plot.phylo}} function of
-#' \code{ade4} that plots the dendrogram.
+#'   \code{ade4} that plots the dendrogram.
 #'
 #' @details "JC" refers to the method of Ji and Cai (2007), and implementation
-#' of "JC" method is copied from code available on Jiashin Ji's website,
-#' December 16, 2015
-#' (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
-#' refers to the method of Efron (2004) and is implemented in the package
-#' \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and
-#' Buhlmann (2005) and is implemented in the package \code{\link{howmany}}.
-#' "adjP" refers to the proportion of genes that are found significant based on
-#' a FDR adjusted p-values (method "BH") and a cutoff of 0.05.
+#'   of "JC" method is copied from code available on Jiashin Ji's website,
+#'   December 16, 2015
+#'   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
+#'   refers to the method of Efron (2004) and is implemented in the package
+#'   \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann
+#'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
+#'   refers to the proportion of genes that are found significant based on a FDR
+#'   adjusted p-values (method "BH") and a cutoff of 0.05.
 #'
 #' @details If \code{mergeMethod} is not equal to 'none' then the plotting will
-#' indicate the merged clusters (assuming \code{plotType} is not 'none').
+#'   indicate the merged clusters (assuming \code{plotType} is not 'none').
 #' @return If `x` is a matrix, it returns (invisibly) a list with elements
-#' \itemize{
-#' \item{\code{clustering}}{a vector of length equal to nrows(dat) giving the
-#' integer-valued cluster ids for each sample. "-1" indicates the sample was not
-#' clustered.}
-#' \item{\code{oldClToNew}}{A table of the old cluster labels to the new cluster
-#' labels}
-#' \item{\code{propDE}}{A table of the proportions that are DE on each node}
-#' \item{\code{originalClusterDendro}}{The dendrogram on which the merging was
-#' based (based on the original clustering)}
-#' }
+#'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x)
+#'   giving the integer-valued cluster ids for each sample. "-1" indicates the
+#'   sample was not clustered.} \item{\code{oldClToNew}}{ A table of the old
+#'   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
+#'   the proportions that are DE on each node.}
+#'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
+#'   was based (based on the original clustering).} }
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new
-#' \code{ClusterExperiment} object with an additional clustering based on the
-#' merging. This becomes the new primary clustering.
+#'   \code{ClusterExperiment} object with an additional clustering based on the
+#'   merging. This becomes the new primary clustering.
 #' @examples
 #' data(simData)
-#'  #create a clustering, for 8 clusters (truth was 3)
-#'  cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
-#'  sequential=FALSE, clusterDArgs=list(k=8))$cl
-#' #merge clusters with plotting. Note argument 'use.edge.length' can improve readability
-#' mergeResults<-mergeClusters(simData,cl=cl,plot=TRUE,plotType="all",
-#' mergeMethod="adjP",use.edge.length=FALSE,countData=FALSE)
-#' #compare merged to original on heatmap
-#' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-#' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
-#'	annCol=data.frame(Original=cl,Merged=mergeResults$cl,Truth=trueCluster))
+#'
+#' #create a clustering, for 8 clusters (truth was 3)
+#' cl<-clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))
+#'
+#' #make dendrogram
+#' cl <- makeDendrogram(cl)
+#'
+#' #merge clusters with plotting. Note argument 'use.edge.length' can improve
+#' #readability
+#' merged <- mergeClusters(cl, plot=TRUE, plotType="all",
+#' mergeMethod="adjP", use.edge.length=FALSE)
+#'
+#' #compare merged to original
+#' table(primaryCluster(cl), primaryCluster(merged))
 #' @export
 #' @importFrom phylobase labels descendants ancestors getNode
 #' @importClassesFrom phylobase phylo4

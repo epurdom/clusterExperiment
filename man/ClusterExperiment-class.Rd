@@ -59,7 +59,7 @@ There are several methods implemented for this class. The most
 important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
 ...) have their own help page. Simple helper methods are described in the
 Methods section. For a comprehensive list of methods specific to this class
-see \code{\link{ClusterExperiment-generics}}.
+see the Reference Manual.
 
 The constructor \code{clusterExperiment} creates an object of
 the class \code{ClusterExperiment}. However, the typical way of creating
@@ -127,8 +127,8 @@ functions.}
 se <- matrix(data=rnorm(200), ncol=10)
 labels <- gl(5, 2)
 
-cc <- clusterExperiment(se, as.numeric(labels),
-                        transformation = function(x){x})
+cc <- clusterExperiment(se, as.numeric(labels), transformation =
+function(x){x})
 
 }
 

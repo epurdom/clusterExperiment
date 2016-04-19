@@ -1,60 +1,66 @@
-#' General wrapper method to cluster the data.
+#' General wrapper method to cluster the data
 #'
-#' Given a data matrix, SummarizedExperiment, or ClusterExperiment object,
-#' this function will find clusters, based on a single specification.
+#' Given a data matrix, \code{\link{SummarizedExperiment}}, or
+#' \code{\link{ClusterExperiment}} object, this function will find clusters,
+#' based on a single specification of parameters.
 #'
 #' @param x the data on which to run the clustering (genes in rows).
 #' @param subsample logical as to whether to subsample via
-#' \code{\link{subsampleClustering}} to get the distance matrix at each
-#' iteration; otherwise the distance matrix is dist(x).
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each
+#'   iteration; otherwise the distance matrix is dist(x).
 #' @param sequential logical whether to use the sequential strategy (see
-#' Details).
+#'   Details).
 #' @param clusterFunction passed to \code{\link{clusterD}} option
-#' 'clusterFunction' to indicate method of clustering, see
-#' \code{\link{clusterD}}.
+#'   'clusterFunction' to indicate method of clustering, see
+#'   \code{\link{clusterD}}.
 #' @param clusterDArgs list of additional arguments to be passed to
-#' \code{\link{clusterD}}.
+#'   \code{\link{clusterD}}.
 #' @param subsampleArgs list of arguments to be passed to
-#' \code{\link{subsampleClustering}}.
+#'   \code{\link{subsampleClustering}}.
 #' @param seqArgs list of additional arguments to be passed to
-#' \code{\link{seqCluster}}.
+#'   \code{\link{seqCluster}}.
 #' @param isCount logical. Whether the data are in counts, in which case the
-#' default \code{transFun} argument is set as log(x+1). This is simply a
-#' convenience to the user, and can be overridden by giving an explicit function
-#' to \code{transFun}.
+#'   default \code{transFun} argument is set as log(x+1). This is simply a
+#'   convenience to the user, and can be overridden by giving an explicit
+#'   function to \code{transFun}.
 #' @param transFun function A function to use to transform the input data matrix
-#' before clustering.
+#'   before clustering.
 #' @param dimReduce character A character identifying what type of
-#' dimensionality reduction to perform before clustering
+#'   dimensionality reduction to perform before clustering
 #' @param ndims integer An integer identifying how many dimensions to reduce to
-#' in the reduction specified by \code{dimReduce}
+#'   in the reduction specified by \code{dimReduce}
 #'
 #' @details If sequential=TRUE, the sequential clustering controls the 'k'
-#' argument of the underlying clustering so setting 'k=' in the list given to
-#' clusterDArgs or subsampleArgs will not do anything and will produce a warning
-#' to that effect.
+#'   argument of the underlying clustering so setting 'k=' in the list given to
+#'   clusterDArgs or subsampleArgs will not do anything and will produce a
+#'   warning to that effect.
 #'
 #' @return A \code{\link{ClusterExperiment}} object.
 #'
+#' @seealso \code{\link{clusterMany}} to compare multiple choices of parameters.
+#'
+#' @name clusterSingle
+#'
 #' @examples
 #' data(simData)
+#'
 #' \dontrun{
 #' #following code takes some time.
 #' #use clusterSingle to do sequential clustering
 #' #(same as example in seqCluster only using clusterSingle ...)
 #' set.seed(44261)
-#' clustSeqHier_v2<-clusterSingle(simData,clusterFunction="hierarchical",
-#' sequential=TRUE,subsample=TRUE,
-#'	subsampleArgs=list(resamp.n=100,samp.p=0.7,clusterFunction="kmeans",
-#'	clusterArgs=list(nstart=10)), seqArgs=list(beta=0.8,k0=5),
-#'	clusterDArgs=list(minSize=5))
+#' clustSeqHier_v2 <- clusterSingle(simData, clusterFunction="hierarchical",
+#' sequential=TRUE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
+#' clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+#' seqArgs=list(beta=0.8, k0=5), clusterDArgs=list(minSize=5))
 #' }
+#'
 #' #use clusterSingle to do just clustering k=3 with no subsampling
-#' clustNothing<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=3))
+#' clustNothing <- clusterSingle(simData, clusterFunction="pam",
+#' subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
 #' @aliases clusterSingle clusterSingle-methods clusterSingle,matrix-method
-#' clusterSingle,ClusterExperiment-method
+#'   clusterSingle,ClusterExperiment-method
 #' @rdname clusterSingle
 setMethod(
   f = "clusterSingle",

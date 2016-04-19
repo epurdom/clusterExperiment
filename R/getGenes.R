@@ -2,6 +2,7 @@
 #' @description Calls limma on input data to determine features most associated
 #'   with found clusters (based on an F-statistic, pairwise comparisons, or
 #'   following a tree that clusters the clusters).
+#' @name getBestFeatures
 #' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
 #' @param cl A numeric vector with cluster assignments to compare to clRef.
@@ -86,6 +87,7 @@
 #'
 #' @examples
 #' data(simData)
+#'
 #' #create a clustering, for 8 clusters (truth was 4)
 #' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))
@@ -101,7 +103,8 @@
 #' p.value=0.05, voomCorrection=FALSE)
 #' pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
 #' p.value=0.05, voomCorrection=FALSE)
-#'#not useful for this silly example, but could look at overlap with Venn
+#'
+#' #not useful for this silly example, but could look at overlap with Venn
 #' allGenes <- paste("Row", 1:nrow(simData),sep="")
 #' if(require(limma)){
 #'  vennC <- vennCounts(cbind(PerContrast= allGenes %in% pairsPerC$Feature,

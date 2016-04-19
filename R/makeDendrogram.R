@@ -1,37 +1,32 @@
 #' @title Make hierarchy of set of clusters
 #'
 #' @description Makes a dendrogram of a set of clusters based on hclust on the
-#' mediods of the cluster.
+#' medoids of the cluster.
 #'
+#' @name makeDendrogram
 #'
-#' @param x data to define the mediods from. Matrix and
+#' @param x data to define the medoids from. Matrix and
 #' \code{\link{ClusterExperiment}} supported.
 #' @param cluster A numeric vector with cluster assignments. If x is a
 #' ClusterExperiment object, cluster is automatically the primaryCluster(x).
 #' ``-1'' indicates the sample was not assigned to a cluster.
 #' @param unassigned how to handle unassigned samples("-1") ; only relevant
 #' for sample clustering. See details.
-#' #' @param isCount logical. Whether the data are in counts, in which case the
-#' default \code{transFun} argument is set as log(x+1). This is simply a
-#' convenience to the user, and can be overridden by giving an explicit function
-#' to \code{transFun}.
-#' @param transFun function A function to use to transform the input data matrix
-#' before clustering.
 #' @param dimReduce character A character identifying what type of
-#' dimensionality reduction to perform before clustering
+#' dimensionality reduction to perform before clustering.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
-#' in the reduction specified by \code{dimReduce}
-#' @param ... arguments passed to hclust
+#' in the reduction specified by \code{dimReduce}.
+#' @param ... arguments passed to hclust.
 #' @details The function returns two dendrograms (as a list if x is a matrix) or
 #' in the appropriate slots if x is ClusterExperiment. The cluster dendrogram
-#' is created by applying \code{\link{hclust}} to the mediods of each cluster.
+#' is created by applying \code{\link{hclust}} to the medoids of each cluster.
 #' In the sample dendrogram the clusters are again clustered, but now the
 #' samples are also part of the resulting dendrogram. This is done by giving
-#' each sample the value of the mediod of its cluster.
+#' each sample the value of the medoid of its cluster.
 #'
 #' @details The argument \code{unassignedSamples} governs what is done with
 #' unassigned samples (defined by a -1 cluster value). If unassigned=="cluster",
-#' then the dendrogram is created by hclust of the expanded mediod data plus the
+#' then the dendrogram is created by hclust of the expanded medoid data plus the
 #' original unclustered observations. If \code{unassignedSamples} is "outgroup",
 #' then all unassigned samples are put as an outgroup.
 #'
@@ -42,17 +37,16 @@
 
 #' @examples
 #' data(simData)
-#' #create a clustering, for 8 clusters (truth was 3)
-#' cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))$cl
-#' #create dendrogram of clusters:
-#' hcl<-clusterHclust(dat=simData,cl,full=FALSE)
-#' plot(hcl)
 #'
-#' #create dendrogram for plotting with data in heatmap:
-#' hclData<-clusterHclust(dat=simData,cl,full=TRUE)
-#' plotHeatmap(cl,heatData=simCount,clusterData=hclData,colorScale=seqPal5,
-#'	annCol=data.frame(PAM8=cl,Truth=trueCluster))
+#' #create a clustering, for 8 clusters (truth was 3)
+#' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))
+#'
+#' #create dendrogram of clusters:
+#' hcl <- makeDendrogram(cl)
+#' plotDendrogram(hcl)
+#' plotDendrogram(hcl, leaves="clusters")
+#'
 #' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
@@ -113,16 +107,16 @@ setMethod(
     if(length(whRm) == 0) stop("all samples have clusterIds<0")
     if(length(unique(cl))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
     clFactor <- factor(cl[whRm])
-    mediods <- do.call("rbind", by(dat[whRm,], clFactor,
+    medoids <- do.call("rbind", by(dat[whRm,], clFactor,
                                    function(x){apply(x, 2, median)}))
-    rownames(mediods) <- levels(clFactor)
+    rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
 
     ## leaves = samples
-    #make fake data with just mediods as value per sample:
+    #make fake data with just medoids as value per sample:
     fakeData <- do.call("rbind", lapply(levels(clFactor), function(x){
       ind <- which(clFactor == x) #indices of those in this cluster
-      med <- mediods[x,]
+      med <- medoids[x,]
       mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
       rownames(mat) <- rownames(dat[whRm,])[ind]
       return(mat)
@@ -158,16 +152,18 @@ setMethod(
       }
 
       return(list(samples=fullD,
-                  clusters=as.dendrogram(stats::hclust(dist(mediods)^2,
+                  clusters=as.dendrogram(stats::hclust(dist(medoids)^2,
                                                 members=nPerCluster,...))))
 })
 
 #' @rdname makeDendrogram
-#' @inheritParams makeDendrogram
+#' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
+#'   it has one per cluster.
+#' @param main passed to the \code{plot} function.
 setMethod(
     f = "plotDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x,leaves=c("samples","clusters"),
+    definition = function(x,leaves=c("samples", "clusters"),
                           main,...)
     {
         leaves<-match.arg(leaves)

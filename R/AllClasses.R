@@ -18,7 +18,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
 #' ...) have their own help page. Simple helper methods are described in the
 #' Methods section. For a comprehensive list of methods specific to this class
-#' see \code{\link{ClusterExperiment-generics}}.
+#' see the Reference Manual.
 #'
 #' @slot transformation function. Function to transform the data by when methods
 #' that assume normal-like data (e.g. log)
@@ -262,8 +262,8 @@ setValidity("ClusterExperiment", function(object) {
 #'se <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterExperiment(se, as.numeric(labels),
-#'                         transformation = function(x){x})
+#'cc <- clusterExperiment(se, as.numeric(labels), transformation =
+#'function(x){x})
 #'
 #' @rdname ClusterExperiment-class
 #' @export

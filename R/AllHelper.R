@@ -46,18 +46,7 @@ setMethod(
     return(out)
   }
 )
-#' @details removeUnclustered removes all samples that are unclustered
-#' (i.e. -1 or -2 assignment) in the primaryCluster of x (so they may be
-#' unclustered in other clusters found in clusterMatrix(x))
-#' @rdname addClusters
-#' @export
-setMethod(
-    f = "removeUnclustered",
-    signature = "ClusterExperiment",
-    definition = function(x) {
-        return(x[,primaryCluster(x) >= 0])
-    }
-)
+
 ## show
 #' @rdname ClusterExperiment-methods
 #' @export
@@ -292,70 +281,6 @@ setMethod(
   }
 )
 
-#' @rdname addClusters
-#' @export
-setMethod(
-  f = "removeClusters",
-  signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichRemove,exactMatch=TRUE) {
-    if(exactMatch) wh<-which(clusterType(x) %in% whichRemove)
-    else{
-      sapply(whichRemove,grep, clusterType(x))
-    }
-    removeClusters(x,wh)
-  }
-)
-#' @param exactMatch logical. Whether the whichRemove must exactly match a value
-#' of clusterType(x). Only relevant if whichRemove is character.
-#' @param whichRemove which clusters to remove. Can be numeric or character. If
-#' numeric, must give indices of clusterMatrix(x) to remove. If character,
-#' should match a clusterType of x
-#' @details removeClusters removes the clusters given by whichRemove. If all
-#' clusters are implied, then returns a SummarizedExperiment Object. If the
-#' primaryCluster is one of the clusters removed, the primaryClusterIndex is set
-#' to 1 and the dendrogram and cooccurance matrix are discarded and orderSamples
-#'is set to 1:NCOL(x).
-#' @rdname addClusters
-#' @export
-setMethod(
-  f = "removeClusters",
-  signature = signature("ClusterExperiment","numeric"),
-  definition = function(x, whichRemove) {
-   #browser()
-    if(any(whichRemove>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
-    if(length(whichRemove)==NCOL(clusterMatrix(x))){
-      warning("All clusters have been removed. Will return just a Summarized Experiment Object")
-      #make it Summarized Experiment
-    }
-    newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
-    newClusterInfo<-clusterInfo(x)[-whichRemove]
-    newClusterType<-clusterType(x)[-whichRemove]
-    newClusterColors<-clusterLegend(x)[-whichRemove]
-    if(primaryClusterIndex(x) %in% whichRemove){
-        pIndex<-1
-        dend_samples<-NULL
-        dend_cl <- NULL
-        coMat<-new("matrix")
-        orderSamples<-1:NCOL(x)
-    }
-    else{
-        pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
-        dend_samples <- x@dendro_samples
-        dend_cl <- x@dendro_clusters
-        coMat<-x@coClustering
-        orderSamples<-orderSamples(x)
-            }
-    retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
-    retval@coClustering<-coMat
-    validObject(retval)
-    clusterLegend(retval)<-newClusterColors
-    primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
-    retval@dendro_samples <- dend_samples
-    retval@dendro_clusters <- dend_cl
-    orderSamples(retval)<-orderSamples
-    return(retval)
-  }
-)
 
 #Update here if change pipeline values. Also defines the order of them.
 .pipelineValues<-c("final","mergeClusters","combineMany","clusterMany")
@@ -427,57 +352,6 @@ setMethod(
 }
 )
 
-#' @param x a ClusterExperiment Object
-#' @param y additional clusters to add to x. Can be ClusterExperiment Object or
-#' a matrix/vector of clusters
-#' @details addClusters adds y to x, and is thus not symmetric in the two
-#' arguments. In particular, the primaryCluster and all of its supporting
-#' information (dendrogram, coClustering, and orderSamples) are all kept from
-#' the x object, even if y is a ClusterExperiment.
-#' @rdname addClusters
-#' @export
-setMethod(
-  f = "addClusters",
-  signature = signature("ClusterExperiment", "ClusterExperiment"),
-  definition = function(x, y) {
-    if(!all(assay(y) == assay(x))) {
-      stop("Cannot merge clusters from different data.")
-    }
-    x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
-    #browser()
-    x@clusterType <- c(x@clusterType, y@clusterType)
-    x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
-    x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
-    if(any(duplicated(colnames(x@clusterMatrix)))){
-      colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
-    }
-    x<-.unnameClusterSlots(x)
-    validObject(x)
-    return(x)
-  }
-)
-#' @rdname addClusters
-#' @title Function to add clusters to an existing ClusterExperiment object
-#' @name addClusters
-#' @aliases addClusters removeClusters
-#' @export
-setMethod(
-    f = "addClusters",
-    signature = signature("ClusterExperiment", "matrix"),
-    definition = function(x, y, clusterType="User") {
-        ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterType=clusterType)
-        addClusters(x,ccObj)
-    }
-)
-#' @rdname addClusters
-#' @export
-setMethod(
-  f = "addClusters",
-  signature = signature("ClusterExperiment", "numeric"),
-  definition = function(x, y, ...) {
-    addClusters(x,matrix(y,ncol=1),...)
-  }
-)
 
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterInfo} returns the clusterInfo slot.
