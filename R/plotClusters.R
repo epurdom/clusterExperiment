@@ -11,7 +11,7 @@
 #'   matrix, the function will plot the clusterings in order of this matrix, and
 #'   their order influences the plot greatly.
 #' @param whichClusters If numeric, a predefined order for the clusterings in
-#'   the plot. If x is a \code{\link{ClusterExperiment} object,
+#'   the plot. If x is a \code{\link{ClusterExperiment}} object,
 #'   \code{whichClusters} can be a character value identifying the
 #'   \code{clusterTypes} to be used; alternatively \code{\link{whichClusters}}
 #'   can be either 'all' or 'pipeline' to indicate choosing all clusters or

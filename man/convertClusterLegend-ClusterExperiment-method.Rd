@@ -24,6 +24,7 @@ If "output=plotAndLegend", \code{convertClusterLegend} will return a list that p
  @return If "output=aheatmap" a conversion of the clusterLegend to be in the format requested by aheatmap. The column 'name' is used for the names and the column 'color' for the color of the clusters.
  @return If "output=matrixNames" or "matrixColors" a matrix the same dimension of clusterMatrix(object), but with the cluster color or cluster name instead of the clusterIds, respectively.
  @importFrom RColorBrewer brewer.pal brewer.pal.info
+ @export
 }
 \description{
 Function for converting the information stored in the clusterLegend slot into other useful formats
