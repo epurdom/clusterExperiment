@@ -34,6 +34,14 @@
 
 \item{...}{passed to aheatmap}
 
+\item{isCount}{logical. Whether the data are in counts, in which case the
+default \code{transFun} argument is set as log(x+1). This is simply a
+convenience to the user, and can be overridden by giving an explicit
+function to \code{transFun}.}
+
+\item{transFun}{function A function to use to transform the input data matrix
+before clustering.}
+
 \item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that will be used to in hclust to define the hiearchical clustering of
 samples (e.g. normalized data) or a pre-existing dendrogram that clusters the samples.
 If \code{data} is a ClusterExperiment object, the input should be either character or integers. Indicates how (and whether) the samples should be clustered (or gives indices of the order for the samples). See details.}

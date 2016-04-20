@@ -134,7 +134,7 @@ setGeneric(
 
 setGeneric(
     name="plotClusters",
-    def=function(clusters, orderClusters,...)
+    def=function(clusters, whichClusters,...)
     {
         standardGeneric("plotClusters")
     }

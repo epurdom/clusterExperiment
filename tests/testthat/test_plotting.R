@@ -32,16 +32,16 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal(dim(clusterMatrix(cl)),dim(x$colors))
     expect_equal(dim(clusterMatrix(cl)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(cl)))
-    expect_error(plotClusters(clusters=clusterMatrix(cl),orderClusters="garbage"),"unable to find an inherited method")
-    expect_error(plotClusters(clusters=clusterMatrix(cl),orderClusters=c(1,3,4)),"unable to find an inherited method")
+    expect_error(plotClusters(clusters=clusterMatrix(cl),whichClusters="garbage"),"unable to find an inherited method")
+    expect_error(plotClusters(clusters=clusterMatrix(cl),whichClusters=c(1,3,4)),"unable to find an inherited method")
 
     #test CE version
     x<-plotClusters(cl)
     expect_is(x,"ClusterExperiment")
     expect_equal( x,cl)
     
-    xx<-plotClusters(cl2,orderClusters="clusterMany")
-    xx2<-plotClusters(clusters=cl2,orderClusters="pipeline") #only clusterMany values so should be the same
+    xx<-plotClusters(cl2,whichClusters="clusterMany")
+    xx2<-plotClusters(clusters=cl2,whichClusters="pipeline") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
     
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
@@ -64,20 +64,20 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     plotClusters(cl3) 
     
     #CE object with mixture of pipeline and other types
-    x1<-plotClusters(clusters=cl2,orderClusters="pipeline",resetColors=TRUE)
+    x1<-plotClusters(clusters=cl2,whichClusters="pipeline",resetColors=TRUE)
     x2<-plotClusters(clusters=cl,resetColors=TRUE)
     whP<-.TypeIntoIndices(cl2,"pipeline")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
     
     #test specifying indices
     wh<-c(3,4,NCOL(clusterMatrix(cl)))
-    x3<-plotClusters(cl,orderClusters=wh,axisLine=-2,resetColors=TRUE)
-    x4<-plotClusters(cl,orderClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
+    x3<-plotClusters(cl,whichClusters=wh,axisLine=-2,resetColors=TRUE)
+    x4<-plotClusters(cl,whichClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
     expect_false(isTRUE(all.equal(x3,x4)))
     
     #test if only a single cluster
-    plotClusters(cl,orderClusters=2)
-    x5<-plotClusters(cl,orderClusters=2,resetColors=TRUE)
+    plotClusters(cl,whichClusters=2)
+    x5<-plotClusters(cl,whichClusters=2,resetColors=TRUE)
     expect_equal(x5,cl)
     
 })
