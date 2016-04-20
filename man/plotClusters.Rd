@@ -26,147 +26,221 @@
   tick = FALSE, ylab = "", xlab = "", axisLine = 0, box = FALSE, ...)
 }
 \arguments{
-\item{clusters}{A matrix of with each column corresponding to a clustering and
-each row a sample. The plotting will plot them in order of this matrix,
-and their order influences the plot greatly.}
+\item{clusters}{A matrix of with each column corresponding to a clustering 
+and each row a sample or a \code{\link{ClusterExperiment}} object. If a 
+matrix, the function will plot the clusterings in order of this matrix, and
+their order influences the plot greatly.}
 
-\item{orderClusters}{If numeric, a predefined order for the clusterings in the plot. If x is a ClusterExperiment object, orderClusters can be a character value identifying the clusterTypes to be used; alternatively orderClusters can be either 'all' or 'pipeline' to indicate choosing all clusters or choosing all pipelineClusters.}
-
-\item{...}{for \code{plotClusters} arguments passed to either to the method of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}} (if \code{add=FALSE}).}
+\item{...}{for \code{plotClusters} arguments passed either to the method
+of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
+(if \code{add=FALSE}).}
 
 \item{existingColors}{how to make use of the exiting colors in the 
-ClusterExperiment object. 'ignore' will ignore them and assign new colors. 
-'firstOnly' will use the existing colors of only the 1st clustering,
-and then give new colors for the remaining (not implemented yet). 'all' will use all of the existing colors}
+\code{ClusterExperiment} object. 'ignore' will ignore them and assign new
+colors. 'firstOnly' will use the existing colors of only the 1st
+clustering, and then give new colors for the remaining (not implemented
+yet). 'all' will use all of the existing colors.}
 
-\item{resetNames}{logical. Whether to reset the names of the clusters in clusterLegend to be the aligned integer-valued ids from plotClusters.}
+\item{resetNames}{logical. Whether to reset the names of the clusters in 
+\code{clusterLegend} to be the aligned integer-valued ids from
+\code{plotClusters}.}
 
-\item{resetColors}{logical. Whether to reset the colors in clusterLegend in the ClusterExperiment returned to be the colors from the plotClusters}
+\item{resetColors}{logical. Whether to reset the colors in 
+\code{clusterLegend} in the \code{ClusterExperiment} returned to be the
+colors from the \code{plotClusters}.}
 
-\item{resetOrderSamples}{logical. Whether to replace the existing orderSamples slot in the ClusterExperiment object with the new order found.}
+\item{resetOrderSamples}{logical. Whether to replace the existing 
+\code{orderSamples} slot in the \code{ClusterExperiment} object with the
+new order found.}
 
-\item{sampleData}{If \code{clusters} is a matrix, \code{sampleData} gives a matrix of additional cluster/sampleData on the samples to be plotted with the clusterings given in clusters. Values in sampleData will be added to the end (bottom) of the plot. If \code{clusters} is a \code{ClusterExperiment} object, \code{sampleData} must be either an index or a character vector that references a column or column name, respectively, of the colData slot of the \code{ClusterExperiment} object.}
+\item{sampleData}{If \code{clusters} is a matrix, \code{sampleData} gives a 
+matrix of additional cluster/sampleData on the samples to be plotted with 
+the clusterings given in clusters. Values in \code{sampleData} will be
+added to the end (bottom) of the plot. If \code{clusters} is a 
+\code{ClusterExperiment} object, \code{sampleData} must be either an index 
+or a character vector that references a column or column name, 
+respectively, of the \code{colData} slot of the \code{ClusterExperiment}
+object.}
 
-\item{orderSamples}{A predefined order in which the samples will be plotted. Otherwise the order will be found internally by aligning the clusters (assuming \code{input="clusters"})}
+\item{orderSamples}{A predefined order in which the samples will be plotted.
+Otherwise the order will be found internally by aligning the clusters
+(assuming \code{input="clusters"})}
 
-\item{reuseColors}{Logical. Whether each row should consist of the same set
-of colors. By default (FALSE) each cluster that the algorithm doesn't
-identify to the previous rows clusters gets a new color}
+\item{reuseColors}{Logical. Whether each row should consist of the same set 
+of colors. By default (FALSE) each cluster that the algorithm doesn't 
+identify to the previous rows clusters gets a new color.}
 
-\item{matchToTop}{Logical as to whether all clusters should be aligned to
-the first row. By default (FALSE) each cluster is aligned to the ordered
+\item{matchToTop}{Logical as to whether all clusters should be aligned to the
+first row. By default (FALSE) each cluster is aligned to the ordered 
 clusters of the row above it.}
 
 \item{plot}{Logical as to whether a plot should be produced.}
 
-\item{unassignedColor}{If ``-1'' in clusters, will be given this color (meant for samples not assigned to cluster).}
+\item{unassignedColor}{If ``-1'' in \code{clusters}, will be given this color
+(meant for samples not assigned to cluster).}
 
-\item{missingColor}{If ``-2'' in clusters, will be given this color (meant for samples that were missing from the clustering, mainly when comparing clusterings run on different sets of samples)}
+\item{missingColor}{If ``-2'' in clusters, will be given this color (meant
+for samples that were missing from the clustering, mainly when comparing
+clusterings run on different sets of samples)}
 
-\item{minRequireColor}{In aligning colors between rows of clusters, require
-this percent overlap}
+\item{minRequireColor}{In aligning colors between rows of clusters, require 
+this percent overlap.}
 
-\item{startNewColors}{logical, indicating whether in aligning colors between rows of clusters, 
-should the colors restart at beginning of colPalette as long as colors are not in immediately proceeding row
-(some of the colors at the end of bigPalette are a bit wonky, and so if you
-have a large clusters matrix, this can be useful)}
+\item{startNewColors}{logical, indicating whether in aligning colors between
+rows of clusters, should the colors restart at beginning of colPalette as
+long as colors are not in immediately proceeding row (some of the colors at
+the end of bigPalette are a bit wonky, and so if you have a large clusters
+matrix, this can be useful).}
 
-\item{colPalette}{a vector of colors used for the different clusters. Must be as long as the maximum number of clusters found in any single clustering/column given in \code{clusters} or will otherwise return an error.}
+\item{colPalette}{a vector of colors used for the different clusters. Must be
+as long as the maximum number of clusters found in any single
+clustering/column given in \code{clusters} or will otherwise return an
+error.}
 
-\item{input}{indicate whether the input matrix is matrix of integer assigned clusters, or contains the colors. If \code{input="colors"}, then the object \code{clusters} is a matrix of colors and there is no alignment (this option allows the user to manually adjust the colors and replot, for example)}
+\item{input}{indicate whether the input matrix is matrix of integer assigned
+clusters, or contains the colors. If \code{input="colors"}, then the object
+\code{clusters} is a matrix of colors and there is no alignment (this
+option allows the user to manually adjust the colors and replot, for
+example).}
 
-\item{clNames}{names to go with the columns (clusterings) in matrix colorMat}
+\item{clNames}{names to go with the columns (clusterings) in matrix
+\code{colorMat}.}
 
-\item{add}{whether to add to existing plot}
+\item{add}{whether to add to existing plot.}
 
-\item{xCoord}{values on x-axis at which to plot the rows (samples)}
+\item{xCoord}{values on x-axis at which to plot the rows (samples).}
 
-\item{ylim}{vector of limits of y-axis}
+\item{ylim}{vector of limits of y-axis.}
 
 \item{tick}{logical, whether to draw ticks on x-axis for each sample.}
 
-\item{ylab}{character string for the label of y-axis}
+\item{ylab}{character string for the label of y-axis.}
 
-\item{xlab}{character string for the label of x-axis}
+\item{xlab}{character string for the label of x-axis.}
 
-\item{axisLine}{the number of lines in the axis labels on y-axis should be (passed to line=... in the axis call)}
+\item{axisLine}{the number of lines in the axis labels on y-axis should be
+(passed to \code{line = ...} in the axis call).}
 
-\item{box}{logical, whether to draw box around the plot}
+\item{box}{logical, whether to draw box around the plot.}
 }
 \value{
-If \code{clusters} is a ClusterExperiment Object, then \code{plotClusters} returns an updated ClusterExperiment object, where the clusterLegend and/or orderSamples slots have been updated (depending on the arguments).
+If \code{clusters} is a \code{\link{ClusterExperiment}} Object, then 
+  \code{plotClusters} returns an updated \code{ClusterExperiment} object, 
+  where the \code{clusterLegend} and/or \code{orderSamples} slots have been
+  updated (depending on the arguments).
 
-If \code{clusters} is a matrix, plotClusters returns (invisibly) the orders and other things that
-go into making the matrix. Specifically, a list with the following elements
+If \code{clusters} is a matrix, \code{plotClusters} returns
+  (invisibly) the orders and other things that go into making the matrix.
+  Specifically, a list with the following elements.
 \itemize{
 
-\item{\code{index}}{ a vector of length equal to ncols(clusters) giving the order of the columns to use to get the original clusters matrix into the order made by plotClusters}
+\item{\code{index}}{ a vector of length equal to \code{ncols(clusters)}
+giving the order of the columns to use to get the original clusters matrix
+into the order made by \code{plotClusters}.}
 
-\item{\code{colors}}{ matrix of color assignments for each element of original clusters matrix. Matrix is in the same order as original clusters matrix. The matrix \code{colors[index,]} is the matrix that can be given back to plotClusters to recreate the plot (see examples)}
+\item{\code{colors}}{ matrix of color assignments for each element of
+original clusters matrix. Matrix is in the same order as original clusters
+matrix. The matrix \code{colors[index,]} is the matrix that can be given back
+to \code{plotClusters} to recreate the plot (see examples).}
 
-\item{\code{alignedClusterIds}}{a matrix of integer valued cluster assignments that match the colors. This is useful if you want to have cluster identification numbers that are better aligned than that given in the original clusters. Again, the matrix is in same order as original input matrix}
+\item{\code{alignedClusterIds}}{ a matrix of integer valued cluster
+assignments that match the colors. This is useful if you want to have cluster
+identification numbers that are better aligned than that given in the
+original clusters. Again, the matrix is in same order as original input
+matrix.}
 
-\item{\code{clusterLegend}}{ list of length equal to the number of columns of input matrix. The elements of the list are matrices, each with three columns named "Original","Aligned", and "Color" giving, respectively, the correspondence between the original cluster ids in \code{clusters}, the aligned cluster ids in \code{aligned}, and the color. }
+\item{\code{clusterLegend}}{ list of length equal to the number of columns of
+input matrix. The elements of the list are matrices, each with three columns
+named "Original","Aligned", and "Color" giving, respectively, the
+correspondence between the original cluster ids in \code{clusters}, the
+aligned cluster ids in \code{aligned}, and the color.}
 }
 }
 \description{
-Align multiple clusterings of the same set of samples and provide a color-coded plot of their shared cluster assignments
+Align multiple clusterings of the same set of samples and provide a
+color-coded plot of their shared cluster assignments
 }
 \details{
-All arguments of the matrix version can be passed to the \code{ClusterExperiment} version. As noted above, however, some arguments have different interpretations.
+All arguments of the matrix version can be passed to the
+  \code{ClusterExperiment} version. As noted above, however, some arguments
+  have different interpretations.
 
-If orderClusters="pipeline", then the pipeline clusterings will be plotted in the following order: final, mergeClusters, combineMany, clusterMany.
+If \code{orderClusters = "pipeline"}, then the pipeline clusterings
+  will be plotted in the following order: final, mergeClusters, combineMany, 
+  clusterMany.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k
-ps<-c(5,10,15)
-cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
-     clusterMethod="pam",ks=2:4,findBestK=c(TRUE,FALSE))
-clusterLabels(cl) 
+data(simData)
+
+cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+removeSil=c(TRUE,FALSE))
+
+clusterLabels(cl)
+
 #make names shorter for better plotting
-x<-clusterLabels(cl)
-x<-gsub("TRUE","T",x)
-x<-gsub("FALSE","F",x)
-x<-gsub("k=NA,","",x)
-x<-gsub("Features","",x)
-clusterLabels(cl)<-x
+x <- clusterLabels(cl)
+x <- gsub("TRUE", "T", x)
+x <- gsub("FALSE", "F", x)
+x <- gsub("k=NA,", "", x)
+x <- gsub("Features", "", x)
+clusterLabels(cl) <- x
+
 par(mar=c(2,10,1,1))
 #this will make the choices of plotClusters 
-cl<-plotClusters(cl,axisLine=-1,resetOrderSamples=TRUE,resetColors=TRUE)
+cl <- plotClusters(cl, axisLine=-1, resetOrderSamples=TRUE, resetColors=TRUE)
+
 #see the new cluster colors
 clusterLegend(cl)[1:2]
 
-#We can also change the order of the clusterings. Notice how this dramatically changes the plot!
-clOrder<-c(3:6,1:2,7:ncol(clusterMatrix(cl)))
-cl<-plotClusters(cl, orderClusters=clOrder,resetColors=TRUE,resetOrder=TRUE,axisLine=-2)
+#We can also change the order of the clusterings. Notice how this
+#dramatically changes the plot!
+clOrder <- c(3:6, 1:2, 7:ncol(clusterMatrix(cl)))
+cl <- plotClusters(cl, orderClusters=clOrder, resetColors=TRUE,
+resetOrder=TRUE, axisLine=-2)
 
-#We can manually switch the red ("#E31A1C") and green ("#33A02C") in the first cluster:
-#change "#1F78B4" to "#FF7F00"
-showBigPalette(wh=1:5) #see what the default colors are and their names
-newColorMat<-clusterLegend(cl)[[clOrder[1]]]
-newColorMat[2:3,"color"]<-c("#E31A1C","#33A02C")
+#We can manually switch the red ("#E31A1C") and green ("#33A02C") in the
+#first cluster:
+
+#see what the default colors are and their names
+showBigPalette(wh=1:5)
+
+#change "#E31A1C" to "#33A02C"
+newColorMat <- clusterLegend(cl)[[clOrder[1]]]
+newColorMat[2:3, "color"] <- c("#33A02C", "#E31A1C")
 clusterLegend(cl)[[clOrder[1]]]<-newColorMat
+
 #replot by setting 'input="colors"'
 par(mfrow=c(1,2))
-plotClusters(cl,orderClusters=clOrder,orderSamples=orderSamples(cl),existingColors="all")
-plotClusters(cl, orderClusters=clOrder,resetColors=TRUE,resetOrder=TRUE,axisLine=-2)
+plotClusters(cl, orderClusters=clOrder, orderSamples=orderSamples(cl),
+existingColors="all")
+plotClusters(cl, orderClusters=clOrder, resetColors=TRUE, resetOrder=TRUE,
+axisLine=-2, clNames="")
 par(mfrow=c(1,1))
-#set some of clusterings arbitrarily to "-1", meaning not clustered (white), and "-2" (another possible designation getting gray, usually for samples not included in original clustering)
-clMatNew<-apply(clusterMatrix(cl),2,function(x){
-wh<-sample(1:nSamples(cl),size=10)
+
+#set some of clusterings arbitrarily to "-1", meaning not clustered (white),
+#and "-2" (another possible designation getting gray, usually for samples not
+#included in original clustering)
+clMatNew <- apply(clusterMatrix(cl), 2, function(x) {
+wh <- sample(1:nSamples(cl), size=10)
 x[wh]<- -1
-wh<-sample(1:nSamples(cl),size=10)
+wh <- sample(1:nSamples(cl), size=10)
 x[wh]<- -2
 return(x)
 })
+
 #make a new object
-cl2<-clusterExperiment(assay(cl),clMatNew,transformation=transformation(cl))
+cl2 <- clusterExperiment(assay(cl), clMatNew,
+transformation=transformation(cl))
 plotClusters(cl2)
 }
 \author{
-Elizabeth Purdom and Marla Johnson
+Elizabeth Purdom and Marla Johnson (based on the tracking plot in
+  \link[ConsensusClusPlus]{ConsensusClusterPlus} by Matt Wilkerson and Peter
+  Waltman).
 }
 \seealso{
-consensusClustering package
+The \link[ConsensusClusPlus]{ConsensusClusterPlus} package.
 }
 
