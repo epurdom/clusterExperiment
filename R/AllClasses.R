@@ -89,8 +89,9 @@ setClass(
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
 
 setValidity("ClusterExperiment", function(object) {
-  if(length(assays(object)) != 1) {
-    return("There must be one assay slot.")
+  #browser()
+  if(length(assays(object)) < 1) {
+    return("There must be at least one assay slot.")
   }
   if(!is.numeric(assay(object))) {
     return("The data must be numeric.")
@@ -351,7 +352,7 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
-   # browser()
+    
     out <- new("ClusterExperiment",
                assays = Assays(assays(se)),
                elementMetadata = mcols(se),
@@ -366,7 +367,6 @@ setMethod(
                dendro_samples=NULL,
                dendro_clusters=NULL
     )
-
     validObject(out)
     return(out)
   })

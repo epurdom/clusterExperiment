@@ -2,16 +2,16 @@
 title: "clusterExperiment Tutorial"
 author: "Calvin Chi and Elizabeth Purdom"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  BiocStyle::html_document
+    toc: true
 vignette: >
-  %\VignetteIndexEntry{Function Documentation}
+  %\VignetteIndexEntry{Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
 ---
 ```{r GlobalOptions, results="hide", include=FALSE}
-#knitr::opts_chunk$set sets the global options. cache, cache.path options, fig.path make knit run faster once it has already been run.  
-#Sys.setenv(RSTUDIO_PANDOC="/Applications/RStudio.app/Contents/MacOS/pandoc")
 #rmarkdown::render("clusterExperimentTutorial.Rmd")
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "R_cache/", fig.path="R_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
