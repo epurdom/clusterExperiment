@@ -12,7 +12,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing2 <- clusterSingle(se, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
-            expect_equal(clustNothing, clustNothing2)
+            expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing))
 
             #test running on clusterExperiment Object -- should add the new clustering
             clustNothing3 <- clusterSingle(clustNothing2, clusterFunction="pam",
