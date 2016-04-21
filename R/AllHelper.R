@@ -12,6 +12,7 @@ setMethod(
   definition = function(x, i, j, ..., drop=TRUE) {
     origN<-NCOL(x)
     out <- callNextMethod()
+    #browser()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- new("matrix") ###Need to think about this
     out@dendro_samples <- NULL

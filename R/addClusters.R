@@ -123,7 +123,7 @@ setMethod(
       coMat<-x@coClustering
       orderSamples<-orderSamples(x)
     }
-    retval<-clusterExperiment(assay(x),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
+    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
     retval@coClustering<-coMat
     validObject(retval)
     clusterLegend(retval)<-newClusterColors

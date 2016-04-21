@@ -1,24 +1,5 @@
 library(clusterExperiment)
-mat <- matrix(data=rnorm(200), ncol=10)
-mat[1,1]<- -1 #force a negative value
-colnames(mat)<-paste("Sample",1:ncol(mat))
-rownames(mat)<-paste("Gene",1:nrow(mat))
-labels <- as.character(gl(5, 2))
-labels[c(1:2)]<- c("-1","-2") #make sure some not assigned
-labels<-factor(labels)
-chLabels<-rep(LETTERS[1:5],each=2)
-chLabels[c(2:3)]<- c("-1","-2") #make sure some not assigned
-labMat<-cbind(as.numeric(as.character(labels)),as.numeric(as.character(labels)))
-sData<-data.frame(sample(letters[2:5],size=NCOL(mat),replace=TRUE),sample(2:5,size=NCOL(mat),replace=TRUE))
-sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(mat),replace=TRUE),stringsAsFactors=FALSE)
-gData<-data.frame(sample(letters[2:5],size=NROW(mat),replace=TRUE),sample(2:5,size=NROW(mat),replace=TRUE))
-gData<-data.frame(sData,sample(LETTERS[2:5],size=NROW(mat),replace=TRUE),stringsAsFactors=FALSE)
-colnames(sData)<-c("A","B","C")
-colnames(gData)<-c("a","b","c")
-mData<-list(first=c(1,2,3),second=c("Information"))
-se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
-cc <- clusterExperiment(mat, as.numeric(as.character(labels))+2, transformation = function(x){x})
-
+source("test_objects.R")
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
@@ -43,97 +24,189 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
             expect_equal(nClusters(cc),1)
-
-            ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
+            expect_equal(NCOL(clusterMatrix(ccSE)), NCOL(labMat))
+            
             expect_equal(colData(ccSE),colData(se)) 
             expect_equal(rownames(ccSE),rownames(se)) 
             expect_equal(colnames(ccSE),colnames(se)) 
             expect_equal(metadata(ccSE),metadata(se)) 
             expect_equal(rowData(ccSE),rowData(se)) 
+            
+            show(ccSE)
  })
 
 test_that("adding clusters, setting primary labels and remove unclustered cells
           work as promised", {
-            expect_equal(NCOL(clusterMatrix(cc)), 1)
-            expect_is(transformation(cc),"function")
+            
+            expect_is(transformation(ccSE),"function")
 
-            c1 <- addClusters(cc, rep(c(-1, 1), each=5),clusterType="newUser")
-
-            expect_equal(NCOL(clusterMatrix(c1)), 2)
-            expect_equal(clusterType(c1), c(clusterType(cc),"newUser"))
-            expect_equal(length(clusterInfo(c1)), 2)
-            expect_equal(primaryCluster(c1), primaryCluster(cc))
+            ##########
+            #subsetting 
+            #right now just checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)
+            #therefore currently just really checks no errors. 
+            x1<-ccSE[,5:8]
+            ###Check retain SE info
+            expect_equal(colData(x1),colData(se[,5:8]) )
+            expect_equal(rownames(x1),rownames(se[,5:8])) 
+            expect_equal(colnames(x1),colnames(se[,5:8])) 
+            expect_equal(metadata(x1),metadata(se[,5:8])) 
+            expect_equal(rowData(x1),rowData(se[,5:8])) 
+            
+            x2<-ccSE[1:2,]
+            ###Check retain SE info
+            expect_equal(colData(x2),colData(se[1:2,]) )
+            expect_equal(rownames(x2),rownames(se[1:2,])) 
+            expect_equal(colnames(x2),colnames(se[1:2,])) 
+            expect_equal(metadata(x2),metadata(se[1:2,])) 
+            expect_equal(rowData(x2),rowData(se[1:2,])) 
+            
+            x3<-ccSE[,3]
+            ###Check retain SE info
+            expect_equal(colData(x3),colData(se[,3]) )
+            expect_equal(rownames(x3),rownames(se[,3])) 
+            expect_equal(colnames(x3),colnames(se[,3])) 
+            expect_equal(metadata(x3),metadata(se[,3])) 
+            expect_equal(rowData(x3),rowData(se[,3])) 
+            
+            x4<-ccSE[3,]
+            ###Check retain SE info
+            expect_equal(colData(x4),colData(se[3,]) )
+            expect_equal(rownames(x4),rownames(se[3,])) 
+            expect_equal(colnames(x4),colnames(se[3,])) 
+            expect_equal(metadata(x4),metadata(se[3,])) 
+            expect_equal(rowData(x4),rowData(se[3,])) 
+            
+            ##########
+            #addClusters
+            c1 <- addClusters(ccSE, rep(c(-1, 1, 2), each=5),clusterType="newUser")
+            ###Check retain SE info
+            expect_equal(colData(c1),colData(se)) 
+            expect_equal(rownames(c1),rownames(se)) 
+            expect_equal(colnames(c1),colnames(se)) 
+            expect_equal(metadata(c1),metadata(se)) 
+            expect_equal(rowData(c1),rowData(se)) 
+            #Other checks
+            expect_equal(NCOL(clusterMatrix(c1)), nClusters(ccSE)+1)
+            expect_equal(unname(clusterType(c1)), unname(c(clusterType(ccSE),"newUser")))
+            expect_equal(length(clusterInfo(c1)), nClusters(ccSE)+1)
+            expect_equal(primaryCluster(c1), primaryCluster(ccSE))
             primaryClusterIndex(c1) <- 2
-            expect_false(all(primaryCluster(c1)==primaryCluster(cc)))
+            expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
 
-              #check adding a clusterExperimentObject
-            c3<-addClusters(cc,cc)
-            expect_equal(NCOL(clusterMatrix(c3)), 2)
-            expect_equal(length(clusterType(c3)), 2)
-            expect_equal(length(clusterInfo(c3)), 2)
-            expect_equal(primaryCluster(c3), primaryCluster(cc))
-
-            expect_error(clusterLabels(c3)<-c("User","User"))
-            clusterLabels(c3)<-c("User1","User2")
+            ####check adding a clusterExperiment to existing CE
+            expect_error(addClusters(ccSE,ceSim),"non-conformable arrays") #dims of assays don't match
+            expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
+            c3<-addClusters(ccSE,ccSE)
+            expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
+            expect_equal(length(clusterType(c3)), nClusters(ccSE)*2)
+            expect_equal(length(clusterInfo(c3)), nClusters(ccSE)*2)
+            expect_equal(primaryCluster(c3), primaryCluster(ccSE))
+            ###Check retain SE info
+            expect_equal(colData(c3),colData(se)) 
+            expect_equal(rownames(c3),rownames(se)) 
+            expect_equal(colnames(c3),colnames(se)) 
+            expect_equal(metadata(c3),metadata(se)) 
+            expect_equal(rowData(c3),rowData(se)) 
+            #Other checks after adding CE object  
+            expect_error(clusterLabels(c3)[1:2]<-c("User","User"),"cannot have duplicated clusterLabels")
+            clusterLabels(c3)[1:2]<-c("User1","User2")
             clusterLabels(c3)[1]<-"User4"
             expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
-            expect_equal(length(clusterLabels(c3)),2)
+            expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
             expect_equal(length(clusterLabels(c3,"pipeline")),0) #nothing get back
+            
+            ###check adding matrix of clusters
+            c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterType="New")
+            newLeng<-nClusters(ccSE)+nClusters(smSimCE)
+            expect_equal(NCOL(clusterMatrix(c4)), newLeng)
+            expect_equal(length(clusterType(c4)), newLeng)
+            expect_equal(length(clusterInfo(c4)), newLeng)
+            expect_equal(primaryCluster(c4), primaryCluster(ccSE))
+            ###Check retain SE info
+            expect_equal(colData(c4),colData(se)) 
+            expect_equal(rownames(c4),rownames(se)) 
+            expect_equal(colnames(c4),colnames(se)) 
+            expect_equal(metadata(c4),metadata(se)) 
+            expect_equal(rowData(c4),rowData(se)) 
+    
+            
+            ##########
+            #check removing unclustered
+            
+            #no -1 in primary cluster
+            matTemp<-abs(labMat)
+            ccTemp<-clusterExperiment(mat,matTemp,transformation=function(x){x})
+            expect_equal(ccTemp, removeUnclustered(ccTemp)) 
+            
+            #-1 in primary cluster
+            whUn<-which(primaryCluster(ccSE) <0)
+            ccR<-removeUnclustered(ccSE)
+            expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
+            ###Check retain SE info -- need to fix this for the removeUnclustered
+            expect_equal(colData(ccR),colData(se[,-whUn]) )
+            expect_equal(rownames(ccR),rownames(se)) 
+            expect_equal(colnames(ccR),colnames(se[,-whUn])) 
+            expect_equal(metadata(ccR),metadata(se)) 
+            expect_equal(rowData(ccR),rowData(se)) 
 
-              #check adding matrix of clusters
-            c4<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type="New")
-            expect_equal(NCOL(clusterMatrix(c4)), 3)
-            expect_equal(length(clusterType(c4)), 3)
-            expect_equal(length(clusterInfo(c4)), 3)
-            expect_equal(primaryCluster(c4), primaryCluster(cc))
-
-            ccR<-cc
-            expect_equal(ccR, removeUnclustered(cc))
-#Need to fix:
-#             Error: Test failed: 'adding clusters, setting primary labels and remove unclustered cells
-#           work as promised'
-#             Not expected: ccR not equal to removeUnclustered(cc)
-#             Attributes: < Component “clusterLegend”: names for target but not for current >.
-#
-            c2 <- removeUnclustered(c1)
-            expect_equal(NCOL(c2), 5)
-
-            #check removing index of clusters
+            ##########
+            #check removeClusters
+            
+            #single cluster
             c5<-removeClusters(c4,1)
-            expect_equal(NCOL(clusterMatrix(c5)), 2)
-            expect_equal(length(clusterType(c5)), 2)
-            expect_equal(length(clusterInfo(c5)), 2)
+            expect_equal(NCOL(clusterMatrix(c5)), nClusters(c4)-1)
+            expect_equal(length(clusterType(c5)), nClusters(c4)-1)
+            expect_equal(length(clusterInfo(c5)), nClusters(c4)-1)
             expect_equal(primaryCluster(c4), primaryCluster(removeClusters(c4,2)))
-
+            ###Check retain SE info 
+            expect_equal(colData(c5),colData(se)) 
+            expect_equal(rownames(c5),rownames(se)) 
+            expect_equal(colnames(c5),colnames(se)) 
+            expect_equal(metadata(c5),metadata(se)) 
+            expect_equal(rowData(c5),rowData(se)) 
+            
+            #vector clusters
             c6<-removeClusters(c4,c(1,3))
-            expect_equal(NCOL(clusterMatrix(c6)), 1)
-            expect_equal(length(clusterType(c6)), 1)
-            expect_equal(length(clusterInfo(c6)), 1)
+            expect_equal(NCOL(clusterMatrix(c6)), nClusters(c4)-2)
+            expect_equal(length(clusterType(c6)), nClusters(c4)-2)
+            expect_equal(length(clusterInfo(c6)), nClusters(c4)-2)
+            ###Check retain SE info 
+            expect_equal(colData(c6),colData(se)) 
+            expect_equal(rownames(c6),rownames(se)) 
+            expect_equal(colnames(c6),colnames(se)) 
+            expect_equal(metadata(c6),metadata(se)) 
+            expect_equal(rowData(c6),rowData(se)) 
+            
+            expect_error(removeClusters(c4,c(1,nClusters(c4)+1)),"invalid indices")
+            
+            c7<-removeClusters(c4,"User") #two have "user" label
+            expect_equal(NCOL(clusterMatrix(c7)), nClusters(c4)-2)
+            expect_equal(length(clusterType(c7)), nClusters(c4)-2)
+            expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
 
-            expect_error(removeClusters(c4,c(1,4)))
-            c7<-removeClusters(c4,"User")
-            expect_equal(NCOL(clusterMatrix(c7)), 2)
-            expect_equal(length(clusterType(c7)), 2)
-            expect_equal(length(clusterInfo(c7)), 2)
+            ##########
+            #check pipeline stuff
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterType=c("clusterMany","mergeClusters"))
+            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),2))
 
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters"))
-            expect_equal(dim(pipelineClusters(ppC)),c(10,2))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5)),clusterType=c("clusterMany"))
+            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),1))
 
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5)),type=c("clusterMany"))
-            expect_equal(dim(pipelineClusters(ppC)),c(10,1))
-
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1), each=5),rep(c(2, 1), each=5)),type=c("clusterMany","mergeClusters_1"))
-            expect_equal(dim(pipelineClusters(ppC)),c(10,1))
-            expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(10,2))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterType=c("clusterMany","mergeClusters_1"))
+            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),1))
+            expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(nSamples(cc),2))
             expect_null(pipelineClusters(cc,iteration=NA))
 
+            ##########
+            #clusterLegend
             x<-clusterLegend(cc)
             clusterLegend(cc)<-x
-            clusterLegend(c4)[1]<-x
+            clusterLegend(c4)[1:2]<-x[1:2]
             clusterLegend(c4)[[1]]<-x[[1]]
 
-            expect_error(clusterLegend(c4)[2]<-x,"must be matrix with")
-            expect_error(clusterLegend(c4)[[2]]<-x[[1]],"must be matrix with")
+            expect_error(clusterLegend(c4)[3]<-x[1],"each element of `clusterLegend` must be matrix with")
+            expect_error(clusterLegend(c4)[[3]]<-x[[1]],"must be matrix with")
+            
         })
 test_that("accessing transformed data works as promised",
           {

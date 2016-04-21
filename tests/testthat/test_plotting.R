@@ -1,3 +1,4 @@
+source(test_objects.R)
 ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
                   clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))

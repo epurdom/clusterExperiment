@@ -1,6 +1,4 @@
 library(clusterExperiment)
-data(simData)
-if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version.
 
 test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
           SummarizedExperiments", {
@@ -11,7 +9,6 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             expect_is(clustNothing, "SummarizedExperiment")
 
 
-            se <- SummarizedExperiment(simData)
             clustNothing2 <- clusterSingle(se, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)

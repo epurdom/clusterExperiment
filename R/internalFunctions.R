@@ -55,8 +55,11 @@
       y[wh2]<- -2
       return(y)
     }
+    #browser()
     if(!is.null(dim(clMat)) && ncol(clMat)>1){
-        return(apply(clMat,2,fun)  )
+        x<-apply(clMat,2,fun)
+        if(is.null(dim(x))) x<-matrix(x,nrow=1) #in case clMat was matrix with 1 row
+        return(x  )
     } 
     else{
         if(is.matrix(clMat)) clMat<-clMat[,1]
