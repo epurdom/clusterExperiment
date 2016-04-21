@@ -18,11 +18,11 @@
 \usage{
 makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
+showBigPalette(wh = NULL)
+
 setBreaks(breaks, data)
 
 bigPalette
-
-showBigPalette(wh = NULL)
 
 showHeatmapPalettes()
 
@@ -37,44 +37,79 @@ seqPal4
 seqPal1
 }
 \arguments{
-\item{data}{matrix of data with samples on columns and features on rows}
+\item{data}{matrix with samples on columns and features on rows.}
 
-\item{groupsOfFeatures}{list, with each element of the list containing a vector of numeric indices}
+\item{groupsOfFeatures}{list, with each element of the list containing a
+vector of numeric indices.}
 
-\item{nBlankLines}{the number of blank lines to add in the data matrix to separate the groups of indices (will govern the amount of white space if data is then fed to heatmap.)}
+\item{nBlankLines}{the number of blank lines to add in the data matrix to
+separate the groups of indices (will govern the amount of white space if
+data is then fed to heatmap.)}
 
-\item{breaks}{either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated}
+\item{breaks}{either vector of breaks, or number of breaks (integer) or a
+number between 0 and 1 indicating a quantile, between which evenly spaced
+breaks should be calculated.}
 }
 \value{
 \code{makeBlankData} returns a list with items
  \itemize{
- \item{"dataWBlanks"}{The data with the rows of NAs separating the given indices}
- \item{"rowNamesWBlanks"}{A vector of characters giving the rownames for the data, including blanks for the NA rows. These are not given as rownames to the returned data because they are not unique. However, they can be given to the \code{labRow} argument of \code{\link{aheatmap}} or \code{\link{plotHeatmap}} }
+ \item{"dataWBlanks"}{ The data with the rows of NAs separating the given
+ indices.}
+ \item{"rowNamesWBlanks"}{ A vector of characters giving the rownames for the
+ data, including blanks for the NA rows. These are not given as rownames to
+ the returned data because they are not unique. However, they can be given to
+ the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
+ \code{\link{plotHeatmap}}.}
 }
 }
 \description{
-Most of these functions are called internally by plotting functions, but are exported in case the user finds them useful.
+Most of these functions are called internally by plotting
+  functions, but are exported in case the user finds them useful.
 }
 \details{
-\code{makeBlankData} pulls the data corresponding to the row indices in \code{groupsOfFeatures} adds lines of NA values into data between these groups. When given to heatmap, will create white space between these groups of features.
-
-\code{setBreaks} gives a set of breaks (of length 52) equally spaced between the boundaries of the data. If breaks is between 0 and 1, then the evenly spaced breaks are between these quantiles of the data.
+\code{makeBlankData} pulls the data corresponding to the row indices
+  in \code{groupsOfFeatures} adds lines of NA values into data between these
+  groups. When given to heatmap, will create white space between these groups
+  of features.
 
 \code{bigPalette} is a long palette of colors (length 62) used by
-\code{\link{plotClusters}} and accompanying functions. \code{showBigPalette}
-creates plot that gives index of each color in bigPalette.
+  \code{\link{plotClusters}} and accompanying functions.
+  \code{showBigPalette} creates plot that gives index of each color in
+  bigPalette.
 
-\code{showBigPalette} will plot the \code{bigPalette} functions with their labels and index
+\code{showBigPalette} will plot the \code{bigPalette} functions with
+  their labels and index.
 
-\code{seqPal1}-\code{seqPal4} are palettes for the heatmap. \code{showHeatmapPalettes} will show you these palettes.
+\code{setBreaks} gives a set of breaks (of length 52) equally spaced
+  between the boundaries of the data. If breaks is between 0 and 1, then the
+  evenly spaced breaks are between these quantiles of the data.
+
+\code{seqPal1}-\code{seqPal4} are palettes for the heatmap.
+  \code{showHeatmapPalettes} will show you these palettes.
 }
 \examples{
 data(simData)
-x<-makeBlankData(simData[,1:10],groupsOfFeatures=list(c(5,2,3),c(20,34,25)))
 
-data(simData)
+x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
+34, 25)))
+showBigPalette()
 setBreaks(.9,simData)
-showPalette()
+
+#show the palette colors
+showHeatmapPalettes()
+
+#compare the palettes on heatmap
+cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(k=8))
+
+par(mfrow=c(2,3))
+plotHeatmap(cl, colorScale=seqPal1, main="seqPal1")
+plotHeatmap(cl, colorScale=seqPal2, main="seqPal2")
+plotHeatmap(cl, colorScale=seqPal3, main="seqPal3")
+plotHeatmap(cl, colorScale=seqPal4, main="seqPal4")
+plotHeatmap(cl, colorScale=seqPal5, main="seqPal5")
+par(mfrow=c(2,3))
+
 }
 \keyword{datasets}
 

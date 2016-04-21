@@ -73,13 +73,51 @@ setMethod(
 
   }
 
-
-
-#' @param breaks either vector of breaks, or number of breaks (integer) or a number between 0 and 1 indicating a quantile, between which evenly spaced breaks should be calculated
-#' @rdname plottingFunctions
-#' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced between the boundaries of the data. If breaks is between 0 and 1, then the evenly spaced breaks are between these quantiles of the data.
+#' @title Various functions useful for plotting
+#'
+#' @description Most of these functions are called internally by plotting
+#'   functions, but are exported in case the user finds them useful.
+#'
+#' @name plottingFunctions
+#'
+#' @aliases bigPalette showBigPalette
+#'
+#' @details \code{bigPalette} is a long palette of colors (length 62) used by
+#'   \code{\link{plotClusters}} and accompanying functions.
+#'   \code{showBigPalette} creates plot that gives index of each color in
+#'   bigPalette.
+#'
+#' @details \code{showBigPalette} will plot the \code{bigPalette} functions with
+#'   their labels and index.
+#'
 #' @examples
-#' data(simData)
+#' showBigPalette()
+showBigPalette<-function(wh=NULL){
+  oldMar<-par("mar")
+  if(is.null(wh)){
+    col<-.thisPal
+    wh<-1:length(col)
+  }
+  else{ col<-.thisPal[wh]}
+  par(mar=c(2.1,2.1,2.1,2.1))
+  plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+  text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
+  text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
+  par(mar=oldMar)
+}
+
+
+#' @param breaks either vector of breaks, or number of breaks (integer) or a
+#'   number between 0 and 1 indicating a quantile, between which evenly spaced
+#'   breaks should be calculated.
+#'
+#' @rdname plottingFunctions
+#'
+#' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced
+#'   between the boundaries of the data. If breaks is between 0 and 1, then the
+#'   evenly spaced breaks are between these quantiles of the data.
+#'
+#' @examples
 #' setBreaks(.9,simData)
 setBreaks<-function(breaks,data){
     if(length(breaks)>0 && !is.na(breaks)){
@@ -146,48 +184,27 @@ setBreaks<-function(breaks,data){
 #' @rdname plottingFunctions
 bigPalette<-.thisPal
 
-#' @title Various functions useful for plotting
-#' @description Most of these functions are called internally by plotting functions, but are exported in case the user finds them useful.
-#' @name plottingFunctions
-#' @aliases bigPalette showBigPalette
-#' @details \code{bigPalette} is a long palette of colors (length 62) used by
-#' \code{\link{plotClusters}} and accompanying functions. \code{showBigPalette}
-#' creates plot that gives index of each color in bigPalette.
 #' @rdname plottingFunctions
-#' @details \code{showBigPalette} will plot the \code{bigPalette} functions with their labels and index
-showBigPalette<-function(wh=NULL){
-  oldMar<-par("mar")
-  if(is.null(wh)){
-    col<-.thisPal
-    wh<-1:length(col)
-  }
-  else{ col<-.thisPal[wh]}
-  par(mar=c(2.1,2.1,2.1,2.1))
-	plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-	text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
-	text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
-	par(mar=oldMar)
-}
+#'
+#' @details \code{seqPal1}-\code{seqPal4} are palettes for the heatmap.
+#'   \code{showHeatmapPalettes} will show you these palettes.
 #' @examples
-#' showPalette()
-
-
-#' @rdname plottingFunctions
-#' @details \code{seqPal1}-\code{seqPal4} are palettes for the heatmap. \code{showHeatmapPalettes} will show you these palettes.
-#' @examples
+#'
 #' #show the palette colors
 #' showHeatmapPalettes()
+#'
 #' #compare the palettes on heatmap
-#' data(simData)
-#' data(simData)
-#' cl<-clusterSingle(simData,clusterFunction="pam",subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))$cl
+#' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(k=8))
+#'
 #' par(mfrow=c(2,3))
-#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal1,main="seqPal1")
-#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal2,main="seqPal2")
-#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal3,main="seqPal3")
-#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal4,main="seqPal4")
-#' plotHeatmap(cl,heatData=simCount,clusterData=simData,colorScale=seqPal5,main="seqPal5")
+#' plotHeatmap(cl, colorScale=seqPal1, main="seqPal1")
+#' plotHeatmap(cl, colorScale=seqPal2, main="seqPal2")
+#' plotHeatmap(cl, colorScale=seqPal3, main="seqPal3")
+#' plotHeatmap(cl, colorScale=seqPal4, main="seqPal4")
+#' plotHeatmap(cl, colorScale=seqPal5, main="seqPal5")
+#' par(mfrow=c(2,3))
+#'
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)
 	maxLength<-max(sapply(palettesAll,length))

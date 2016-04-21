@@ -27,13 +27,13 @@ If \code{output="plotAndLegend"}, \code{"convertClusterLegend"} will
  primaryCluster of the object giving the color of the cluster.}
 }
 
-If \code{output="aheatmap"} a conversion of the clusterLegend to be in
-   the format requested by \code{\link[NMF]{aheatmap}}. The column 'name' is
-   used for the names and the column 'color' for the color of the clusters.
+If \code{output="aheatmap"} a conversion of the clusterLegend to be
+  in the format requested by \code{\link[NMF]{aheatmap}}. The column 'name'
+  is used for the names and the column 'color' for the color of the clusters.
 
 If \code{output="matrixNames"} or \code{"matrixColors"} a matrix the
-   same dimension of \code{clusterMatrix(object)}, but with the cluster color
-   or cluster name instead of the clusterIds, respectively.
+  same dimension of \code{clusterMatrix(object)}, but with the cluster color
+  or cluster name instead of the clusterIds, respectively.
 }
 \description{
 Function for converting the information stored in the clusterLegend slot into
