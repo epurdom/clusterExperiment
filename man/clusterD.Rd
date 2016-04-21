@@ -203,7 +203,7 @@ minSize=5, removeSil=TRUE)
 clustSubPam_test <- clusterD(subD, clusterFunction="pam", alpha=0.1,
 minSize=5, removeSil=TRUE, findBestK=TRUE)
 #passing arguments appropriate for 'tight' to hier and vice-versa gives
-warning:
+#warning:
 clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
 clusterArgs=list(evalClusterMethod="average"))
 clustSubHier_test <- clusterD(subD, clusterFunction="hier", alpha=0.1,
