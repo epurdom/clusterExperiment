@@ -161,7 +161,7 @@
 #' plotClusters(cl, whichClusters=clOrder, orderSamples=orderSamples(cl),
 #' existingColors="all")
 #' plotClusters(cl, whichClusters=clOrder, resetColors=TRUE, resetOrder=TRUE,
-#' axisLine=-2, clNames="")
+#' axisLine=-2)
 #' par(mfrow=c(1,1))
 #'
 #' #set some of clusterings arbitrarily to "-1", meaning not clustered (white),
