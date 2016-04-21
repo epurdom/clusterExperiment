@@ -16,6 +16,7 @@ Depends:
     Biobase,
     SummarizedExperiment
 Imports:
+    methods,
     BiocGenerics,
     NMF,
     RColorBrewer,
