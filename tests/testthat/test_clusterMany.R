@@ -25,7 +25,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             expect_equal(metadata(clustNothing2),metadata(se)) 
             expect_equal(rowData(clustNothing2),rowData(se)) 
             
-            expect_equal(clustNothing, clustNothing2)
+            expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing))
 
             #test running on clusterExperiment Object -- should add the new clustering
             #not yet implemented
