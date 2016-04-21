@@ -1,4 +1,6 @@
 #' @rdname plotHeatmap
+#' @name plotHeatmap
+#' @aliases plotHeatmap plotCoClustering
 setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
