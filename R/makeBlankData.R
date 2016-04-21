@@ -22,6 +22,9 @@
 #'  the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
 #'  \code{\link{plotHeatmap}}.}
 #' }
+#'
+#' @export
+#'
 #' @examples
 #' data(simData)
 #'

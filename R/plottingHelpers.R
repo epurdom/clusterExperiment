@@ -90,6 +90,8 @@ setMethod(
 #' @details \code{showBigPalette} will plot the \code{bigPalette} functions with
 #'   their labels and index.
 #'
+#' @export
+#'
 #' @examples
 #' showBigPalette()
 showBigPalette<-function(wh=NULL){
@@ -116,6 +118,8 @@ showBigPalette<-function(wh=NULL){
 #' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced
 #'   between the boundaries of the data. If breaks is between 0 and 1, then the
 #'   evenly spaced breaks are between these quantiles of the data.
+#'
+#' @export
 #'
 #' @examples
 #' setBreaks(.9,simData)
@@ -182,12 +186,16 @@ setBreaks<-function(breaks,data){
 .thisPal<-.thisPal[-31] #very similar to 7
 
 #' @rdname plottingFunctions
+#' @export
 bigPalette<-.thisPal
 
 #' @rdname plottingFunctions
 #'
 #' @details \code{seqPal1}-\code{seqPal4} are palettes for the heatmap.
 #'   \code{showHeatmapPalettes} will show you these palettes.
+#'
+#' @export
+#'
 #' @examples
 #'
 #' #show the palette colors
@@ -221,14 +229,19 @@ showHeatmapPalettes<-function(){
 }
 
 #' @rdname plottingFunctions
+#' @export
 seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
 #' @rdname plottingFunctions
+#' @export
 seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
 seqPal2<-(c("yellow","gold2",seqPal2))
 seqPal2<-rev(seqPal2)
 #' @rdname plottingFunctions
+#' @export
 seqPal3<-rev(brewer.pal(11, "RdBu"))
 #' @rdname plottingFunctions
+#' @export
 seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
 #' @rdname plottingFunctions
+#' @export
 seqPal1<-rev(brewer.pal(11, "Spectral"))

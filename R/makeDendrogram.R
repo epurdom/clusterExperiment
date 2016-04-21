@@ -34,7 +34,9 @@
 #' @return If x is a matrix, a list with two dendrograms, one in which the
 #' leaves are clusters and one in which the leaves are samples. If x is a
 #' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
-
+#'
+#' @export
+#'
 #' @examples
 #' data(simData)
 #'
@@ -81,6 +83,7 @@ setMethod(
   })
 
 #' @rdname makeDendrogram
+#' @export
 setMethod(
   f = "makeDendrogram",
   signature = "matrix",
@@ -157,6 +160,7 @@ setMethod(
 })
 
 #' @rdname makeDendrogram
+#' @export
 #' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
 #'   it has one per cluster.
 #' @param main passed to the \code{plot} function.

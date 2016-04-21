@@ -159,6 +159,8 @@
 #' }
 #' @author Elizabeth Purdom
 #'
+#' @export
+#'
 #' @examples
 #' data(simData)
 #'
