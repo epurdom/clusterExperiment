@@ -405,7 +405,8 @@ setMethod(
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
                 sampleData=sampleData,whSampleDataCont=whSampleDataCont,
                 clusterSamples=clusterSamples,labRow=labRow,
-                clusterLegend=clLegend,clusterFeatures=clusterFeatures,...)
+                clusterLegend=clLegend,clusterFeatures=clusterFeatures,
+                colorScale=colorScale,...)
 
 
   })
