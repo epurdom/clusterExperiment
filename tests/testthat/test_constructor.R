@@ -1,13 +1,22 @@
 library(clusterExperiment)
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
+colnames(mat)<-paste("Sample",1:ncol(mat))
+rownames(mat)<-paste("Gene",1:nrow(mat))
 labels <- as.character(gl(5, 2))
 labels[c(1:2)]<- c("-1","-2") #make sure some not assigned
 labels<-factor(labels)
 chLabels<-rep(LETTERS[1:5],each=2)
 chLabels[c(2:3)]<- c("-1","-2") #make sure some not assigned
 labMat<-cbind(as.numeric(as.character(labels)),as.numeric(as.character(labels)))
-se <- SummarizedExperiment(mat)
+sData<-data.frame(sample(letters[2:5],size=NCOL(mat),replace=TRUE),sample(2:5,size=NCOL(mat),replace=TRUE))
+sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(mat),replace=TRUE),stringsAsFactors=FALSE)
+gData<-data.frame(sample(letters[2:5],size=NROW(mat),replace=TRUE),sample(2:5,size=NROW(mat),replace=TRUE))
+gData<-data.frame(sData,sample(LETTERS[2:5],size=NROW(mat),replace=TRUE),stringsAsFactors=FALSE)
+colnames(sData)<-c("A","B","C")
+colnames(gData)<-c("a","b","c")
+mData<-list(first=c(1,2,3),second=c("Information"))
+se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
 cc <- clusterExperiment(mat, as.numeric(as.character(labels))+2, transformation = function(x){x})
 
 test_that("`clusterExperiment` constructor works with matrix and
@@ -35,9 +44,13 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_equal(nFeatures(cc),nrow(mat))
             expect_equal(nClusters(cc),1)
 
-            clusterExperiment(se,labMat,transformation=function(x){x})
-
-                      })
+            ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
+            expect_equal(colData(ccSE),colData(se)) 
+            expect_equal(rownames(ccSE),rownames(se)) 
+            expect_equal(colnames(ccSE),colnames(se)) 
+            expect_equal(metadata(ccSE),metadata(se)) 
+            expect_equal(rowData(ccSE),rowData(se)) 
+ })
 
 test_that("adding clusters, setting primary labels and remove unclustered cells
           work as promised", {

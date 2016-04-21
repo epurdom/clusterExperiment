@@ -136,7 +136,7 @@ setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data, 
-                        clusterSamplesData=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"), 
+                        clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"), 
                         clusterFeaturesData=c("mostVar","all","PCA"), nFeatures=NULL, 
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","pipeline","all","none"),

@@ -1,6 +1,10 @@
 library(clusterExperiment)
 data(simData)
 if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
+sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
+sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
+colnames(sData)<-c("A","B","C")
+
 test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {
             clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
@@ -10,11 +14,17 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             expect_is(clustNothing, "SummarizedExperiment")
             clusterLabels(clustNothing,whichClusters="pipeline")
 
-            se <- SummarizedExperiment(simData)
+            ##Make this better here:
+            se <- SummarizedExperiment(simData,colData=sData)
             clustNothing2 <- clusterMany(se, ks=c(3,4),clusterFunction="pam",
                                             subsample=FALSE, sequential=FALSE,
                                             isCount=FALSE,verbose=FALSE)
-
+            expect_equal(colData(clustNothing2),colData(se)) 
+            expect_equal(rownames(clustNothing2),rownames(se)) 
+            expect_equal(colnames(clustNothing2),colnames(se)) 
+            expect_equal(metadata(clustNothing2),metadata(se)) 
+            expect_equal(rowData(clustNothing2),rowData(se)) 
+            
             expect_equal(clustNothing, clustNothing2)
 
             #test running on clusterExperiment Object -- should add the new clustering

@@ -394,6 +394,8 @@ setMethod(
       x<-.updateCurrentPipeline(x,eraseOld)
       retval<-addClusters(outval,x)
       validObject(retval)
+      
+      
       return(retval)
     } else {
       return(outval)
@@ -414,7 +416,16 @@ setMethod(
                           nPCADims=nPCADims, transFun=transFun, isCount=isCount,
                           ...)
     if(class(outval)=="ClusterExperiment") {
-        return(outval)
+        retval<-clusterExperiment(x,
+                      clusters=clusterMatrix(outval), 
+                      transformation=transformation(outval), 
+                      clusterType=clusterType(outval),
+                                     clusterInfo=clusterInfo(outval))
+        clusterLegend(retval)<-clusterLegend(outval)
+        orderSamples(retval)<-orderSamples(outval)
+        coClustering(retval)<-coClustering(retval)
+        
+        return(retval)
     }  #need to redo it to make sure get any other part of summarized experiment
     else {
       return(outval)

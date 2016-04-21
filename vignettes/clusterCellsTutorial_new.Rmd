@@ -237,9 +237,38 @@ plotClusters(ce,main="Clusters from clusterMany",axisLine=-1)
 ```
 
 We can get very different plots depending on how we order the clusterings:
+
 ```{r plotClusterEx1_newOrder}
 plotClusters(ce,whichClusters=c(10:18,1:9),
                main="Clusters from clusterMany",axisLine=-1)
+```
+
+#### Heatmap with the clusters
+There is also a default heatmap command for a ClusterExperiment object. By default it clusters on the most variable features (after transforming the data) and shows the primaryCluster alongside the data. I'll set the primaryClusterIndex so that it shows with K=5, with no removal of 
+
+```{r plotHeatmap_Ex1}
+primaryClusterIndex(ce)<-13
+plotHeatmap(ce,main="Heatmap with clusterMany")
+```
+
+We can show all of the clusterings (notice I can pass the option 'annLegend' to the underlying `aheatmap` command):
+
+```{r plotHeatmap_Ex1.1}
+plotHeatmap(ce,whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
+```
+
+I can also request a subset of the clusters by giving specific indices to `whichClusters`.
+
+I can choose to instead not cluster the samples, and order them by cluster:
+
+```{r plotHeatmap_Ex1.2}
+plotHeatmap(ce,clusterSamplesData="primaryCluster",whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
+```
+
+Alternatively, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I can do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done); otherwise `plotHeatmap` will call it by default (`plotHeatmap` checks that there is no dendrogram stored in the ClusterExperiment object)
+
+```{r plotHeatmap_Ex1.2}
+plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluster",main="Heatmap with clusterMany",sampleData=annLegend=FALSE)
 ```
 
 

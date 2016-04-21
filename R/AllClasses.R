@@ -352,11 +352,9 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
-    
+    #can just give se in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
-               assays = Assays(assays(se)),
-               elementMetadata = mcols(se),
-               colData = colData(se),
+               se,
                transformation=transformation,
                clusterMatrix = clustersNum,
                primaryIndex = 1,
@@ -370,3 +368,19 @@ setMethod(
     validObject(out)
     return(out)
   })
+
+#old code:
+#     out <- new("ClusterExperiment",
+#                assays = Assays(assays(se)), #losing rownames here...
+#                elementMetadata = mcols(se),
+#                colData = colData(se),
+#                transformation=transformation,
+#                clusterMatrix = clustersNum,
+#                primaryIndex = 1,
+#                clusterType = unname(clusterType),
+#                clusterInfo=unname(clusterInfo),
+#                clusterLegend=unname(clusterLegend),
+#                orderSamples=1:ncol(se),
+#                dendro_samples=NULL,
+#                dendro_clusters=NULL
+#     )
