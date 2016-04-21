@@ -1,7 +1,6 @@
-# clusterExperiment:  Compare clusterings for single-cell sequencing
+# R package: clusterExperiment
 
-R package that provides functions for running and comparing many
-different clusterings of single-cell sequencing data.
+Functions for running and comparing many different clusterings of single-cell sequencing data.
 
 ## Installation
 
