@@ -1,12 +1,12 @@
 #' @rdname plottingFunctions
-#'
+#' @name plottingFunctions
+#' @aliases makeBlankData
 #' @param data matrix with samples on columns and features on rows.
 #' @param groupsOfFeatures list, with each element of the list containing a
 #'   vector of numeric indices.
 #' @param nBlankLines the number of blank lines to add in the data matrix to
 #'   separate the groups of indices (will govern the amount of white space if
 #'   data is then fed to heatmap.)
-#'
 #' @details \code{makeBlankData} pulls the data corresponding to the row indices
 #'   in \code{groupsOfFeatures} adds lines of NA values into data between these
 #'   groups. When given to heatmap, will create white space between these groups

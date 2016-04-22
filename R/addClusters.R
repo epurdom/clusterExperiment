@@ -6,7 +6,7 @@
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
-#'
+#' @inheritParams clusterExperiment
 #' @details addClusters adds y to x, and is thus not symmetric in the two
 #'   arguments. In particular, the \code{primaryCluster} and all of its
 #'   supporting information (dendrogram, coClustering, and orderSamples) are all
@@ -58,6 +58,7 @@ setMethod(
 
 #' @rdname addClusters
 #' @export
+#' @param ... Passed to signature \code{ClusterExperiment,matrix}.
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "numeric"),

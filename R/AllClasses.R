@@ -256,6 +256,9 @@ setValidity("ClusterExperiment", function(object) {
 #'@param transformation function. A function to transform the data before
 #'performing steps that assume normal-like data (i.e. constant variance), such
 #'as the log.
+#'@param ... The arguments \code{transformation}, \code{clusterType} and
+#'  \code{clusterInfo} to be passed to the constructor for signature
+#'  \code{SummarizedExperiment,matrix}.
 #'
 #'@return A \code{ClusterExperiment} object.
 #'

@@ -32,6 +32,10 @@ clustered.}
 \item{clusters}{can be either a numeric or character vector, a factor, or a
 numeric matrix, containing the cluster labels.}
 
+\item{...}{The arguments \code{transformation}, \code{clusterType} and
+\code{clusterInfo} to be passed to the constructor for signature
+\code{SummarizedExperiment,matrix}.}
+
 \item{transformation}{function. A function to transform the data before
 performing steps that assume normal-like data (i.e. constant variance), such
 as the log.}

@@ -38,12 +38,19 @@ removeUnclustered(x)
 \item{y}{additional clusters to add to x. Can be a ClusterExperiment object
 or a matrix/vector of clusters.}
 
+\item{...}{Passed to signature \code{ClusterExperiment,matrix}.}
+
 \item{whichRemove}{which clusters to remove. Can be numeric or character. If
 numeric, must give indices of \code{clusterMatrix(x)} to remove. If
 character, should match a \code{clusterType} of x.}
 
 \item{exactMatch}{logical. Whether \code{whichRemove} must exactly match a
 value of \code{clusterType(x)}. Only relevant if whichRemove is character.}
+
+\item{clusterType}{a string describing the nature of the clustering. The
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+reserved for the clustering coming from the package pipeline and should not
+be used when creating a new object with the constructor.}
 }
 \description{
 These functions are used to add or remove clusters to a

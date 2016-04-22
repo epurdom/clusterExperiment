@@ -87,6 +87,8 @@ setMethod(
 #'   \code{showBigPalette} creates plot that gives index of each color in
 #'   bigPalette.
 #'
+#' @param wh numeric. Which colors to plot. Must be a numeric vector with values
+#'   between 1 and 62.
 #' @details \code{showBigPalette} will plot the \code{bigPalette} functions with
 #'   their labels and index.
 #'

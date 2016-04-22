@@ -6,6 +6,12 @@
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
+#' @param ...,i,j Forwarded to the
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.
+#' @param value The value to be substituted in the corresponding slot. See the
+#'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
+#'   objects may be passed to these functions.
+#'
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),

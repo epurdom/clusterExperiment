@@ -31,6 +31,8 @@ setGeneric(
 )
 
 #' @rdname ClusterExperiment-methods
+#' @name ClusterExperiment-methods
+#' @aliases clusterLegend
 setGeneric(
     name = "clusterLegend",
     def = function(x) {
@@ -298,7 +300,7 @@ setGeneric(
 #' @rdname ClusterExperiment-methods
 setGeneric(
   name = "clusterMatrixNamed",
-  def = function(x,  ...) {
+  def = function(x) {
     standardGeneric("clusterMatrixNamed")
   }
 )
@@ -306,7 +308,7 @@ setGeneric(
 #' @rdname ClusterExperiment-methods
 setGeneric(
   name = "primaryClusterNamed",
-  def = function(x,  ...) {
+  def = function(x) {
     standardGeneric("primaryClusterNamed")
   }
 )
