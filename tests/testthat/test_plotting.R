@@ -1,4 +1,3 @@
-source(test_objects.R)
 ps<-c(5,10,50)
 cl <- clusterMany(simData,dimReduce="PCA",nPCADims=ps,
                   clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
@@ -48,7 +47,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
     par(mfrow=c(1,2)) #so can visually check if desired.
     xx3<-plotClusters(cl,resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE) 
-    expect_false(isTRUE(all.equal(x2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
+    expect_false(isTRUE(all.equal(xx2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
     nm<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"name"]})))
     col<-(unlist(lapply(clusterLegend(xx3),function(x){x[,"color"]})))
     expect_equal(match(col,bigPalette),nm)

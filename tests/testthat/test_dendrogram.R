@@ -14,5 +14,5 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test CE version
     makeDendrogram(cc2,unassigned="cluster")
     #test CE version
-    expect_equal(nobs(makeDendrogram(cc2,leaves="samples",unassigned="remove")),length(labels)-2)
+    expect_equal(nobs(makeDendrogram(cc2 ,unassigned="remove")$samples),length(labels)-2)
 })

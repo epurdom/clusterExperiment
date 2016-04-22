@@ -1,5 +1,5 @@
 library(clusterExperiment)
-source("test_objects.R")
+
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
@@ -23,7 +23,7 @@ test_that("`clusterExperiment` constructor works with matrix and
 
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
-            expect_equal(nClusters(cc),1)
+            expect_equal(nClusters(cc),2)
             expect_equal(NCOL(clusterMatrix(ccSE)), NCOL(labMat))
             
             expect_equal(colData(ccSE),colData(se)) 
@@ -90,7 +90,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(unname(clusterType(c1)), unname(c(clusterType(ccSE),"newUser")))
             expect_equal(length(clusterInfo(c1)), nClusters(ccSE)+1)
             expect_equal(primaryCluster(c1), primaryCluster(ccSE))
-            primaryClusterIndex(c1) <- 2
+            primaryClusterIndex(c1) <- 3
             expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
 
             ####check adding a clusterExperiment to existing CE
