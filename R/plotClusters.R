@@ -13,7 +13,7 @@
 #' @param whichClusters If numeric, a predefined order for the clusterings in
 #'   the plot. If x is a \code{\link{ClusterExperiment}} object,
 #'   \code{whichClusters} can be a character value identifying the
-#'   \code{clusterTypes} to be used; alternatively \code{\link{whichClusters}}
+#'   \code{clusterTypes} to be used; alternatively \code{whichClusters}
 #'   can be either 'all' or 'pipeline' to indicate choosing all clusters or
 #'   choosing all \code{\link{pipelineClusters}}.
 #' @param orderSamples A predefined order in which the samples will be plotted.
@@ -107,10 +107,10 @@
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson (based on the tracking plot in
-#'   \link[ConsensusClusPlus]{ConsensusClusterPlus} by Matt Wilkerson and Peter
+#'   \link[ConsensusClusterPlus]{ConsensusClusterPlus} by Matt Wilkerson and Peter
 #'   Waltman).
 #'
-#' @seealso The \link[ConsensusClusPlus]{ConsensusClusterPlus} package.
+#' @seealso The \link[ConsensusClusterPlus]{ConsensusClusterPlus} package.
 #'
 #' @export
 #'
