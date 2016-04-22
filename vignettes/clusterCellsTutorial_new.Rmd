@@ -122,6 +122,11 @@ The goal of this package is to encourage the user to try many different clusteri
 
 We also provide a class `clusterExperiment` that inherits from `SummarizedExperiment` class to store the many clusterings and related information.  
 
+The results from our methods will make an object `ClusterExperiment` that expands the `SummarizedExperiment` object, meaning the commands for accessing the data of a `SummarizedExperiment` will carry over to the `ClusterExperiment`.
+
+All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We focus in this tutorial on using `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object. 
+
+
 ## Basic overview of the clustering workflow
 
 The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouete width, sequential clustering procedures, and so forth. We describe here the basic expected usage of the package. The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. 
@@ -135,6 +140,7 @@ The basic clustering workflow is
 
 The basic premise of our pipeline is to find small, robust clusters of samples, and then unifying them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
+There is special functionality to assist in quickly visualizing and managing the results of this workflow.
 
 ## Finding related genes
 
@@ -147,6 +153,14 @@ Since this is a common task, we provide the function `getBestFeatures` to perfor
 We provide a visualization to compare many clusterings of the same data in the function `plotClusters`.  We also provide some functions that are wrappers for common visualization tasks in clustering gene expression data. We provide an heatmap function, `plotHeatmap` that is an interface to the `aheatmap` function in `NMF` package. See below for detail on the `plotHeatmap` function.
 
 # Quickstart
+
+We will go quickly through the standard steps of clustering using the  `clusterExperiment` package, before turning to more details. The standard workflow is the following:
+
+* `clusterMany` -- run desired clusterings
+* `combineMany` -- get a unified clustering
+* `makeDendrogram` -- get a hierarchical relationship between the clusters
+* `mergeClusters` -- merge together clusters with little DE between their genes.
+
 
 ## Data example
 
@@ -165,10 +179,6 @@ colData(fluidigm)
 NCOL(fluidigm) #number of samples
 ```
 
-The results from clusterExperiment will make an object `ClusterExperiment` that expands the `SummarizedExperiment` object, meaning the commands for accessing the data of a `SummarizedExperiment` will carry over to the `ClusterExperiment`.
-
-All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We focus in this tutorial on using `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object, 
-
 
 While there are `{r NCOL(fluidigm)}` samples, there are only 65 cells, because each cell is sequenced twice as different sequencing depth. We will limit to those with high sequencing depth. We will also do some minimal filtering of the genes, removing genes without at least 100 reads across all 65 cells.
 
@@ -177,40 +187,16 @@ se<-fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
 whZero<-which(rowSums(assay(se))==100)
 whLow<-which(rowSums(assay(se))<100)
 se<-se[-whLow,]
+dim(se)
 ```
 
 This removed `r length(whZero)` genes out of `r NROW(fluidigm)` (`r length(whZero)` of which had zero in all samples). We now have `r NROW(se)` genes (or features) remaining.
 
 
-## Standard workflow
-
-The standard pipeline we propose consists of the following steps:
-
-* `clusterMany` -- run desired clusterings
-* `combineMany` -- get a unified clustering
-* `makeDendrogram` -- get a hierarchical relationship between the clusters
-* `mergeClusters` -- merge together clusters with little DE between their genes.
-
-There is special functionality to assist in quickly visualizing and managing the results of this workflow.
 
 ## Step 1: Clustering with `clusterMany`
-Here is a simple example where we want to basic PAM clustering for different k (we choose this for simplicity, but will discuss better, more computationally expensive, clustering options below). We also can compare if we decide to treat samples with negative silhouette values as unassigned or not. `compareMany` computes all of these clusterings based on one command. Each combination of the arguments that is given will result in another clustering. So, by putting both TRUE and FALSE for removeSil, it that all combations of 'k' and 'removeSil' will be tried. We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$). 
 
-We will also compare different dimensionality reductions: the top 5,15, and 50 principal components of the data as well as the top 100, 500, and 1000 most variable genes. 
-
-
-**Tip** A good first check before running `clusterMany` is to determine how many such clusterings you are asking for, by setting `run=FALSE`. `clusterMany` has some limited internal checks to not do unnecessary duplicates (e.g. `removeSil` only works with some clusterFunctions so `clusterMany` would detect that), but generally takes all combinations. This can take a while for more complicated clustering techniques, so it is a good idea to check what you are getting into. 
-
-```{r clusterManyCheckParam}
-checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,removeSil=c(TRUE,FALSE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
-dim(checkParam$paramMatrix) #number of rows is the number of clusterings
-```
-
-Each row of this matrix is a requested clustering (the columns indicate the value of a possible parameter). Our selections indicate `r nrow(checkParam$paramMatrix)` different clusterings. 
-
-The output can also be fed back into clusterMany [**Check this**], which allows the user to modify the input (though do so carefully, there are not robust checks as to whether the input is of the right form). The best reason for modifying this would be to remove some of the clusterings. For example, if you only want to do some of the combinations, you could remove the unwanted ones by removing those rows of the `paramMatrix`.
-
-In the interest of time, we will scale back the number of clusterings by picking letting `clusterMany` find the best $K$ via total silhouette distance. 
+`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. We set `dimReduce` Other possible features we keep fixed: we use 'pam', and let the algorithm pick the best $k$ ( from 2:10) via silhouette distance, and then unassign samples from clusters if they have negative silhouette scores. by picking letting `clusterMany` find the best $K$ via total silhouette distance. 
 
 ```{r clusterManyCheckParam2}
 checkParam<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
@@ -228,44 +214,7 @@ ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 Note that we also provide additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call
 
 
-### ClusteringExperiment Object
-The `ce` object that we created from calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SummarizedExperiment`, which means the data and `colData` and other information orginally in the `fluidigm` object is retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the `SummarizedExperiment` object, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
 
-Typing the name at the control prompt results in a quick summary of the object. 
-
-```{r show}
-ce
-```
-
-This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard pipeline you have completed. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusters that has been choosen to be the "primary" cluster, meaning that by default various functions will turn to this clustering as the desired cluster to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, but the user can select a different one.
-
-There are also additional commands to access the clusterings (type `help("ClusterExperiment-methods")` for more:
-
-```{r CEHelperCommands}
-nClusters(ce)
-head(clusterMatrix(ce))
-clusterLabels(ce)
-clusterType(ce)
-primaryCluster(ce)
-```
-
-Notice that the cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'.
-
-`clusterLabels(ce)` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, but clusterings might also have no specific label if the user created them. `clusterType` on the otherhand indicates what call made the clustering. Right now, all our clusterings are created by `clusterMany`, so all clusterings have the same type. But as we operate further in the workflow, we will have additional types of clusterings created. 
-
-The information that was in the original `fluidigm` object has also been preserved, like `colData` that contains information on each sample.
-
-```{r SECommandsOnCE}
-colData(ce)[,1:5]
-```
-
-Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column or clustering of `clusterMatrix`. 
-
-```{r CEClusterLengend}
-clusterLegend(ce)
-```
-
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values, but we will see as we go through the pipeline how the user might want to manipulate these for better plotting results. 
 
 We would like to visualize this clustering using the `plotClusters` command.
 
@@ -324,7 +273,45 @@ Finally, we can do a heatmap visualizing our final clustering (see Section XXX f
 plotHeatmap(ce,clusterSamplesData="dendrogramValue")
 ```
 
+# ClusterExperiment Object
+### ClusteringExperiment Object
+The `ce` object that we created from calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SummarizedExperiment`, which means the data and `colData` and other information orginally in the `fluidigm` object is retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the `SummarizedExperiment` object, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
 
+Typing the name at the control prompt results in a quick summary of the object. 
+
+```{r show}
+ce
+```
+
+This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard pipeline you have completed. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusters that has been choosen to be the "primary" cluster, meaning that by default various functions will turn to this clustering as the desired cluster to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, but the user can select a different one.
+
+There are also additional commands to access the clusterings (type `help("ClusterExperiment-methods")` for more:
+
+```{r CEHelperCommands}
+nClusters(ce)
+head(clusterMatrix(ce))
+clusterLabels(ce)
+clusterType(ce)
+primaryCluster(ce)
+```
+
+Notice that the cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'.
+
+`clusterLabels(ce)` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, but clusterings might also have no specific label if the user created them. `clusterType` on the otherhand indicates what call made the clustering. Right now, all our clusterings are created by `clusterMany`, so all clusterings have the same type. But as we operate further in the workflow, we will have additional types of clusterings created. 
+
+The information that was in the original `fluidigm` object has also been preserved, like `colData` that contains information on each sample.
+
+```{r SECommandsOnCE}
+colData(ce)[,1:5]
+```
+
+Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column or clustering of `clusterMatrix`. 
+
+```{r CEClusterLengend}
+clusterLegend(ce)
+```
+
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values, but we will see as we go through the pipeline how the user might want to manipulate these for better plotting results. 
 
 
 # Visualizing the data
@@ -419,9 +406,25 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluste
 
 Like `plotClusters`, when `plotHeatmap` is called on a ClusterExperiment object or SummarizedExperiment object,  `sampleData` must refer to columns of the `colData` of that object.  
 
-# ClusterExperiment Object
 
 # clusterMany
+
+Here is a simple example where we want to basic PAM clustering for different k (we choose this for simplicity, but will discuss better, more computationally expensive, clustering options below). We also can compare if we decide to treat samples with negative silhouette values as unassigned or not. `compareMany` computes all of these clusterings based on one command. Each combination of the arguments that is given will result in another clustering. So, by putting both TRUE and FALSE for removeSil, it that all combations of 'k' and 'removeSil' will be tried. We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$). 
+
+We will also compare different dimensionality reductions: the top 5,15, and 50 principal components of the data as well as the top 100, 500, and 1000 most variable genes. 
+
+
+**Tip** A good first check before running `clusterMany` is to determine how many such clusterings you are asking for, by setting `run=FALSE`. `clusterMany` has some limited internal checks to not do unnecessary duplicates (e.g. `removeSil` only works with some clusterFunctions so `clusterMany` would detect that), but generally takes all combinations. This can take a while for more complicated clustering techniques, so it is a good idea to check what you are getting into. 
+
+```{r clusterManyCheckParam}
+checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,removeSil=c(TRUE,FALSE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
+dim(checkParam$paramMatrix) #number of rows is the number of clusterings
+```
+
+Each row of this matrix is a requested clustering (the columns indicate the value of a possible parameter). Our selections indicate `r nrow(checkParam$paramMatrix)` different clusterings. 
+
+The output can also be fed back into clusterMany [**Check this**], which allows the user to modify the input (though do so carefully, there are not robust checks as to whether the input is of the right form). The best reason for modifying this would be to remove some of the clusterings. For example, if you only want to do some of the combinations, you could remove the unwanted ones by removing those rows of the `paramMatrix`.
+
 Here is a simple example where we want to basic PAM clustering for different k (we choose this for simplicity, but will discuss better, more computationally expensive, clustering options below). We also can compare if we decide to treat samples with negative silhouette values as unassigned or not. `compareMany` computes all of these clusterings based on one command. Each combination of the arguments that is given will result in another clustering. So, by putting both TRUE and FALSE for removeSil, it that all combations of 'k' and 'removeSil' will be tried. We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$). 
 
 We will also compare different dimensionality reductions: the top 5,15, and 50 principal components of the data as well as the top 100, 500, and 1000 most variable genes. 
