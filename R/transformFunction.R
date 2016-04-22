@@ -79,7 +79,7 @@ setMethod(
   x<-try(transFun(x),silent=TRUE)
   if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))
   if(any(is.na(x))) stop("User-supplied `transFun` produces NA values")
-
+  #browser()
   ###################
   ###Dim Reduction
   ###################
@@ -87,6 +87,8 @@ setMethod(
   ###################
   listReturn<-FALSE
   whFeatures<-NULL
+  #check valid options for dimReduce
+  if(any(!dimReduce %in% c("none","PCA","mostVar"))) stop("invalid options for 'dimReduce' must be one of: 'none','PCA',or 'mostVar'")
   if(any(dimReduce!="none")){
     if(any(is.na(nPCADims)) & "PCA" %in% dimReduce){
       if(length(nPCADims)==1){

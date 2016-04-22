@@ -26,7 +26,8 @@
 #' @param transFun function A function to use to transform the input data matrix
 #'   before clustering.
 #' @param dimReduce character A character identifying what type of
-#'   dimensionality reduction to perform before clustering
+#'   dimensionality reduction to perform before clustering. Options are 
+#'   "none","PCA", and "mostVar".
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{dimReduce}
 #'
