@@ -1,3 +1,5 @@
+context("Plot functions")
+skip("Skip for now, because it takes too long")
 source("create_objects.R")
 
 ps<-c(5,10,50)

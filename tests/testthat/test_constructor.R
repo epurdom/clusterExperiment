@@ -1,13 +1,15 @@
+context("Constructor")
 source("create_objects.R")
 
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
-            expect_error(clusterExperiment(mat,as.numeric(labels),transformation=log),info="Error checking transFun")
-            expect_error(clusterExperiment(mat, as.numeric(labels)), "missing")
-            expect_error(clusterExperiment(mat, labels[1:2], function(x){x}),
+            expect_error(clusterExperiment(mat,as.numeric(numLabels),transformation=log),info="Error checking transFun")
+            print(numLabels)
+            expect_error(clusterExperiment(mat, as.numeric(numLabels)), "missing")
+            expect_error(clusterExperiment(mat, numLabels[1:2], function(x){x}),
                          "must be a matrix of rows equal")
-            expect_error(clusterExperiment(as.data.frame(mat), labels, function(x){x}),
+            expect_error(clusterExperiment(as.data.frame(mat), numLabels, function(x){x}),
                          "unable to find an inherited method for function")
             #test character input
             ccChar<-clusterExperiment(mat, chLabels, function(x){x})
@@ -16,7 +18,7 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_equal(sort(unique(primaryClusterNamed(ccChar))),sort(unique(chLabels)))
 
             #test factor input
-            clusterExperiment(mat, labels, function(x){x})
+            clusterExperiment(mat, numLabels, function(x){x})
 
             expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")

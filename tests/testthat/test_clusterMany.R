@@ -1,3 +1,4 @@
+context("clusterMany")
 source("create_objects.R")
 
 sData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))

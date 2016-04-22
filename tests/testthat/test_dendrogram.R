@@ -1,3 +1,4 @@
+context("Dendrogram")
 source("create_objects.R")
 
 mat <- matrix(data=rnorm(200), ncol=10)
@@ -15,6 +16,8 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     makeDendrogram(cc2)
     #test CE version
     makeDendrogram(cc2,unassigned="cluster")
-    #test CE version
-    expect_equal(nobs(makeDendrogram(cc2 ,unassigned="remove")$samples),length(labels)-2)
+    
+    #test matrix version
+    expect_equal(nobs(makeDendrogram(mat, primaryCluster(cc2), unassigned="remove")$samples),length(labels)-2)
+    #add test for CE version
 })

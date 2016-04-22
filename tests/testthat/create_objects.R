@@ -1,6 +1,10 @@
 library(clusterExperiment)
 data(simData)
-if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
+if(ncol(simData) != 300) {
+  stop("not current version of simData") 
+  #get all kinds of annoyances because using old version. 
+  #Can delete this once package is stabilized.
+}
 
 #################################
 ###Simple, trivial sized objects for testing:
@@ -15,12 +19,12 @@ mat <- matrix(data=rnorm(20*15), ncol=15)
 mat[1,1]<- -1 #force a negative value
 colnames(mat)<-paste("Sample",1:ncol(mat))
 rownames(mat)<-paste("Gene",1:nrow(mat))
-labels <- as.character(gl(5, 3))
-labels[c(1:2)]<- c("-1","-2") #make sure some not assigned
-labels<-factor(labels)
+numLabels <- as.character(gl(5, 3))
+numLabels[c(1:2)]<- c("-1","-2") #make sure some not assigned
+numLabels<-factor(numLabels)
 chLabels<-rep(LETTERS[1:5],each=3)
 chLabels[c(2:3)]<- c("-1","-2") #make sure some not assigned
-labMat<-cbind(as.numeric(as.character(labels)),as.numeric(as.character(labels)))
+labMat<-cbind(as.numeric(as.character(numLabels)),as.numeric(as.character(numLabels)))
 colnames(labMat)<-c("Cluster1","Cluster2")
 sData<-data.frame(sample(letters[2:5],size=NCOL(mat),replace=TRUE),sample(2:5,size=NCOL(mat),replace=TRUE))
 sData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(mat),replace=TRUE),stringsAsFactors=FALSE)

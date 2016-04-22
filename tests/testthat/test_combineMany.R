@@ -1,3 +1,4 @@
+context("combineMany")
 source("create_objects.R")
 
 test_that("`combineMany` works with matrix and ClusterExperiment objects", {

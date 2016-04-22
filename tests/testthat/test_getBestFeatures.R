@@ -1,3 +1,4 @@
+context("getBestFeatures")
 source("create_objects.R")
 
 library(limma)

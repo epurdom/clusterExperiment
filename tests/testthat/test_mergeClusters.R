@@ -1,3 +1,4 @@
+context("mergeCLusters")
 source("create_objects.R")
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
