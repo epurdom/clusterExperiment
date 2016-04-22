@@ -9,7 +9,7 @@
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
 \S4method{plotClusters}{ClusterExperiment,character}(clusters,
-  whichClusters = c("pipeline", "all"), ...)
+  whichClusters = c("workflow", "all"), ...)
 
 \S4method{plotClusters}{ClusterExperiment,numeric}(clusters, whichClusters,
   existingColors = c("ignore", "all"), resetNames = FALSE,
@@ -35,8 +35,8 @@ their order influences the plot greatly.}
 the plot. If x is a \code{\link{ClusterExperiment}} object,
 \code{whichClusters} can be a character value identifying the
 \code{clusterTypes} to be used; alternatively \code{whichClusters}
-can be either 'all' or 'pipeline' to indicate choosing all clusters or
-choosing all \code{\link{pipelineClusters}}.}
+can be either 'all' or 'workflow' to indicate choosing all clusters or
+choosing all \code{\link{workflowClusters}}.}
 
 \item{...}{for \code{plotClusters} arguments passed either to the method
 of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
@@ -172,7 +172,7 @@ All arguments of the matrix version can be passed to the
   \code{ClusterExperiment} version. As noted above, however, some arguments
   have different interpretations.
 
-If \code{whichClusters = "pipeline"}, then the pipeline clusterings
+If \code{whichClusters = "workflow"}, then the workflow clusterings
   will be plotted in the following order: final, mergeClusters, combineMany,
   clusterMany.
 }

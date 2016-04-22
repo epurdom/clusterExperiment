@@ -14,20 +14,20 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             shared2 <- combineMany(clustNothing, "all")
             expect_equal(shared1$clustering, primaryCluster(shared2))
 
-            shared3 <- combineMany(clustNothing, "pipeline")
+            shared3 <- combineMany(clustNothing, "workflow")
             expect_equal(shared2, shared3)
 
             shared4 <- combineMany(clustNothing, 1:nClusters(clustNothing))
             expect_equal(shared3, shared4)
 
-            shared5 <- combineMany(clustNothing, "pipeline",
+            shared5 <- combineMany(clustNothing, "workflow",
                                           proportion=.5)
 
-            shared6 <- combineMany(clustNothing, "pipeline",
+            shared6 <- combineMany(clustNothing, "workflow",
                                           proportion=.5,
                                           clusterFunction="tight")
 
-            expect_error(combineMany(clustNothing, "pipeline",
+            expect_error(combineMany(clustNothing, "workflow",
                                           proportion=.5,
                                           clusterFunction="pam"), "implemented")
 
@@ -36,27 +36,32 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             expect_true(all(primaryCluster(shared6)==clusterMatrix(shared6)[,"combineMany"]))
 })
 
-test_that("`combineMany` works when multiple runs of pipeline", {
+test_that("`combineMany` works when multiple runs of workflow", {
   clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
                               subsample=FALSE, sequential=FALSE,
                               isCount=FALSE,verbose=FALSE)
 
   shared1 <- combineMany(clustNothing, "all")
-
-  clustNothing2 <- clusterMany(shared1, ks=c(5,6), clusterFunction="pam",
+  shared2<-combineMany(shared1,"all")
+  expect_true("combineMany_1" %in% clusterType(shared2))
+  
+  clustNothing2 <- clusterMany(shared2, ks=c(5,6), clusterFunction="pam",
                                subsample=FALSE, sequential=FALSE,
                                isCount=FALSE,verbose=FALSE)
-
+  expect_true("combineMany_1" %in% clusterType(clustNothing2))
+  expect_true("clusterMany_2" %in% clusterType(clustNothing2))
+  expect_true("combineMany_2" %in% clusterType(clustNothing2))
+  
   shared3 <- combineMany(clustNothing2, "all")
   shared4 <- combineMany(clusterMatrix(clustNothing2))
   expect_equal(shared4$clustering, primaryCluster(shared3))
 
-  shared5 <- combineMany(clustNothing2, "pipeline")
+  shared5 <- combineMany(clustNothing2, "workflow")
   shared6 <- combineMany(clusterMatrix(clustNothing2)[,1:2])
   expect_equal(shared6$clustering, primaryCluster(shared5))
 
 
   clustNothing3 <- addClusters(clustNothing2, primaryCluster(shared5))
   shared7 <- combineMany(clustNothing3, "all")
-  shared8 <- combineMany(clustNothing3, "pipeline")
+  shared8 <- combineMany(clustNothing3, "workflow")
 })

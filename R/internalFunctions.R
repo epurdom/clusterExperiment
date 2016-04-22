@@ -112,12 +112,12 @@
 
 ##Universal way to change character indication of clusterType into indices.
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("pipeline","all","none","primary")),silent=TRUE)
+  test<-try(match.arg(whClusters[1],c("workflow","all","none","primary")),silent=TRUE)
   if(!inherits(test,"try-error")){
-    if(test=="pipeline"){
-      ppIndex<-pipelineClusterDetails(x)
+    if(test=="workflow"){
+      ppIndex<-workflowClusterDetails(x)
       if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-        wh<-unlist(lapply(.pipelineValues,function(tt){
+        wh<-unlist(lapply(.workflowValues,function(tt){
           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
         }))
       }
@@ -140,32 +140,6 @@
   return(wh)
 }
 
-#change current pipeline to old iteration 
-# add number to it if eraseOld=FALSE
-# delete ALL pipeline if eraseOld=TRUE (not just the current iteration)
-.updateCurrentPipeline<-function(x,eraseOld){
-  ppIndex<-pipelineClusterDetails(x)
-  if(!is.null(ppIndex)){ #need to change the clusterType values (or erase them) before get new ones
-    if(eraseOld){ #removes all of them, not just current
-      newX<-removeClusters(x,ppIndex[,"index"]) 
-    }
-    else{
-      if(0 %in% ppIndex[,"iteration"]){
-        newIteration<-max(ppIndex[,"iteration"])+1
-        whCurrent<-ppIndex[ppIndex[,"iteration"]==0,"index"]
-        updateCluster<-clusterType(x)
-        updateCluster[whCurrent]<-paste(updateCluster[whCurrent],newIteration,sep="_")
-        newX<-x
-        newX@clusterType<-updateCluster          
-      }
-    }
-    
-  }
-  else newX<-x
-  newX<-.unnameClusterSlots(newX)
-  validObject(newX)
-  return(newX)
-}
 
 #check what type
 .checkAlgType<-function(clusterFunction){

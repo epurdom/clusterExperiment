@@ -138,7 +138,7 @@ The basic clustering workflow is
   ** Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
   ** Merge together clusters of this hierarchy based on how the percentage of differential expression.
 
-The basic premise of our pipeline is to find small, robust clusters of samples, and then unifying them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
+The basic premise of our workflow is to find small, robust clusters of samples, and then unifying them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
 There is special functionality to assist in quickly visualizing and managing the results of this workflow.
 
@@ -231,7 +231,7 @@ To find a consensus cluster across the many different clusterings created by `cl
 
 ```{r}
 ce<-combineMany(ce)
-plotClusters(ce,whichClusters="pipeline")
+plotClusters(ce,whichClusters="workflow")
 ```
 
 Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those with `clusterType="clusterMany"`. 
@@ -241,7 +241,7 @@ The default result is not great. The resulting clusters leave most samples unass
 
 ```{r}
 ce<-combineMany(ce,proportion=0.7)
-plotClusters(ce,whichClusters="pipeline")
+plotClusters(ce,whichClusters="workflow")
 ```
 
 
@@ -262,7 +262,7 @@ For this reason, we often create an additional clustering based on merging clust
 ```{r mergeClusters}
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 ce<-mergeClusters(ce)
-plotClusters(ce,whichClusters="pipeline")
+plotClusters(ce,whichClusters="workflow")
 ```
 
 In this case, merging the clusters had no effect -- no clusters were identified as needing clustering.
@@ -659,7 +659,7 @@ Note that, even in this toy example, it is not easy to choose the correct number
 
 ## Subsampling
 
-We can add the additional task to our clustering pipeline to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterSingle` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
+We can add the additional task to our clustering workflow to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterSingle` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
 
 Then, `clusterSingle` will cluster this co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in clustering the subsampled data, but doesn't have to be. Indeed, several of the cluster algorithm options (`tight` and `hierarchical`) are designed to cluster 0-1 co-occurance matrices from subsampling. 
 

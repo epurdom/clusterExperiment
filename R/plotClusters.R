@@ -14,8 +14,8 @@
 #'   the plot. If x is a \code{\link{ClusterExperiment}} object,
 #'   \code{whichClusters} can be a character value identifying the
 #'   \code{clusterTypes} to be used; alternatively \code{whichClusters}
-#'   can be either 'all' or 'pipeline' to indicate choosing all clusters or
-#'   choosing all \code{\link{pipelineClusters}}.
+#'   can be either 'all' or 'workflow' to indicate choosing all clusters or
+#'   choosing all \code{\link{workflowClusters}}.
 #' @param orderSamples A predefined order in which the samples will be plotted.
 #'   Otherwise the order will be found internally by aligning the clusters
 #'   (assuming \code{input="clusters"})
@@ -72,7 +72,7 @@
 #' @details All arguments of the matrix version can be passed to the
 #'   \code{ClusterExperiment} version. As noted above, however, some arguments
 #'   have different interpretations.
-#' @details If \code{whichClusters = "pipeline"}, then the pipeline clusterings
+#' @details If \code{whichClusters = "workflow"}, then the workflow clusterings
 #'   will be plotted in the following order: final, mergeClusters, combineMany,
 #'   clusterMany.
 #' @return If \code{clusters} is a \code{\link{ClusterExperiment}} Object, then
@@ -183,7 +183,7 @@
 setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",whichClusters="character"),
-  definition = function(clusters, whichClusters=c("pipeline","all"),...)
+  definition = function(clusters, whichClusters=c("workflow","all"),...)
   {
     wh<-.TypeIntoIndices(clusters,whClusters=whichClusters)
     return(plotClusters(clusters,whichClusters=wh,...))
@@ -283,7 +283,7 @@ setMethod(
   signature = signature(clusters = "ClusterExperiment",whichClusters="missing"),
   definition = function(clusters, whichClusters,...)
   {
-    if(!is.null(pipelineClusterDetails(clusters))) plotClusters(clusters,whichClusters="pipeline",...)
+    if(!is.null(workflowClusterDetails(clusters))) plotClusters(clusters,whichClusters="workflow",...)
     else plotClusters(clusters,whichClusters="all",...)
   })
 

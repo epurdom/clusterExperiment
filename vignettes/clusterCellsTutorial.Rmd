@@ -292,7 +292,7 @@ Note that, even in this toy example, it is not easy to choose the correct number
 
 ## Subsampling
 
-We can add the additional task to our clustering pipeline to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterSingle` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
+We can add the additional task to our clustering workflow to subsample the samples and cluster the resampled data. This is accomplished by setting `subsample=TRUE`. In this case, `clusterSingle` will first subsample the rows of the data matrix, cluster the subsamples for a specified clustering algorithm, and return a clustering co-occurance matrix. 
 
 Then, `clusterSingle` will cluster this co-occurance matrix using another specified algorithm, which can be the same as the algorithm used in clustering the subsampled data, but doesn't have to be. Indeed, several of the cluster algorithm options (`tight` and `hierarchical`) are designed to cluster 0-1 co-occurance matrices from subsampling. 
 

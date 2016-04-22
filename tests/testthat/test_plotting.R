@@ -45,7 +45,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal( x,cl)
 
     xx<-plotClusters(cl2,whichClusters="clusterMany")
-    xx2<-plotClusters(clusters=cl2,whichClusters="pipeline") #only clusterMany values so should be the same
+    xx2<-plotClusters(clusters=cl2,whichClusters="workflow") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
 
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
@@ -67,10 +67,10 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test -1
     plotClusters(cl3)
 
-    #CE object with mixture of pipeline and other types
-    x1<-plotClusters(clusters=cl2,whichClusters="pipeline",resetColors=TRUE)
+    #CE object with mixture of workflow and other types
+    x1<-plotClusters(clusters=cl2,whichClusters="workflow",resetColors=TRUE)
     x2<-plotClusters(clusters=cl,resetColors=TRUE)
-    whP<-.TypeIntoIndices(cl2,"pipeline")
+    whP<-.TypeIntoIndices(cl2,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
@@ -124,9 +124,9 @@ test_that("`plotHeatmap` works with matrix objects", {
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
     plotHeatmap(smCl)
     plotHeatmap(smCl,whichClusters="none")
-    expect_warning(plotHeatmap(smCl,whichClusters="pipeline") ,"whichClusters value does not match any clusters") #there are no pipeline for this one
+    expect_warning(plotHeatmap(smCl,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
     clusterType(smCl)[2:3]<-"clusterMany"
-    plotHeatmap(smCl,whichClusters="pipeline")
+    plotHeatmap(smCl,whichClusters="workflow")
     plotHeatmap(smCl,whichClusters="all",alignSampleData=TRUE)
     expect_error(plotHeatmap(smCl,whichClusters=1:15),"Indices in whichClusters invalid")
 
