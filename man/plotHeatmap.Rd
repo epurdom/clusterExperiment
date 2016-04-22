@@ -18,7 +18,7 @@
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "pipeline", "all", "none"),
   sampleData = NULL, clusterFeatures = TRUE, colorScale = if
-  (centerAndScaleFeatures) seqPal3 else seqPal5, ...)
+  (visualizeData == "centerAndScaled") seqPal3 else seqPal5, ...)
 
 \S4method{plotHeatmap}{matrix}(data, sampleData = NULL,
   clusterSamplesData = data, clusterFeaturesData = data,
