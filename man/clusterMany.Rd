@@ -30,7 +30,8 @@ in rows), a list of datasets overwhich the clusterings should be run, a
 \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
 
 \item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering}
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", and "mostVar".}
 
 \item{nVarDims}{vector of the number of the most variable features to keep
 (when "mostVar" is identified in \code{dimReduce}). If NA is included, then
@@ -93,7 +94,9 @@ that all of the runs are run on the same subsample of the data)}
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
 rownames equal to the names of the resulting column names of clMat object
-that would be returned if \code{run=TRUE}).}
+that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
+however, the function will create the dimensionality reductions of the data
+indicated by the user input.}
 
 \item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass
 creating the matrix of possible parameters, and will use the given matrix.
