@@ -1,6 +1,5 @@
-library(clusterExperiment)
-data(simData)
-if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
+source("create_objects.R")
+
 library(limma)
 test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 

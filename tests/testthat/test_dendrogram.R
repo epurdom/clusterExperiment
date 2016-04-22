@@ -1,3 +1,5 @@
+source("create_objects.R")
+
 mat <- matrix(data=rnorm(200), ncol=10)
 mat[1,1]<- -1 #force a negative value
 labels <- as.character(gl(5, 2))

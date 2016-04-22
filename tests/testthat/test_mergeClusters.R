@@ -1,6 +1,4 @@
-library(clusterExperiment)
-data(simData)
-if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
+source("create_objects.R")
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustNothing <- clusterMany(simData, ks=c(9,11),clusterFunction="pam",

@@ -1,3 +1,7 @@
+library(clusterExperiment)
+data(simData)
+if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version. Can delete this once package is stabilized.
+
 #################################
 ###Simple, trivial sized objects for testing:
 # mat=20x15 matrix of data with row and column names

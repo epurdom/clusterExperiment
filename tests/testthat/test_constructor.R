@@ -1,4 +1,4 @@
-library(clusterExperiment)
+source("create_objects.R")
 
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
