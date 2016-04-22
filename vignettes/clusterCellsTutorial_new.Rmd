@@ -274,7 +274,7 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue")
 ```
 
 # ClusterExperiment Object
-### ClusteringExperiment Object
+
 The `ce` object that we created from calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SummarizedExperiment`, which means the data and `colData` and other information orginally in the `fluidigm` object is retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the `SummarizedExperiment` object, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
 
 Typing the name at the control prompt results in a quick summary of the object. 
@@ -283,21 +283,23 @@ Typing the name at the control prompt results in a quick summary of the object.
 ce
 ```
 
-This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard pipeline you have completed. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusters that has been choosen to be the "primary" cluster, meaning that by default various functions will turn to this clustering as the desired cluster to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, but the user can select a different one.
+This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusters that has been choosen to be the "primary" cluster, meaning that by default various functions will turn to this clustering as the desired cluster to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can select a different one.
 
-There are also additional commands to access the clusterings (type `help("ClusterExperiment-methods")` for more:
+There are also additional commands to access the clusterings and their related information (type `help("ClusterExperiment-methods")` for more).
 
-```{r CEHelperCommands}
-nClusters(ce)
+The cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'.
+
+```{r CEHelperCommands1}
 head(clusterMatrix(ce))
-clusterLabels(ce)
-clusterType(ce)
 primaryCluster(ce)
 ```
 
-Notice that the cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'.
+`clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name. But clusterings might also have no specific label if the user created them. `clusterType` on the otherhand indicates what call made the clustering. 
 
-`clusterLabels(ce)` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, but clusterings might also have no specific label if the user created them. `clusterType` on the otherhand indicates what call made the clustering. Right now, all our clusterings are created by `clusterMany`, so all clusterings have the same type. But as we operate further in the workflow, we will have additional types of clusterings created. 
+```{r CEHelperCommands2}
+clusterLabels(ce)
+clusterType(ce)
+```
 
 The information that was in the original `fluidigm` object has also been preserved, like `colData` that contains information on each sample.
 
@@ -311,7 +313,7 @@ Another important slot in the `ClusterExperiment` object is the `clusterLegend` 
 clusterLegend(ce)
 ```
 
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values, but we will see as we go through the pipeline how the user might want to manipulate these for better plotting results. 
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. 
 
 
 # Visualizing the data
@@ -354,7 +356,6 @@ plotClusters(ce,whichClusters=c(4:6,1:3), sampleData=c("Biological_Condition","C
                main="Clusters from clusterMany, different order",axisLine=-1)
 ```
 
-
 ### Saving the alignment of plotClusters
 
 `plotClusters` invisibly returns a `ClusterExperiment` object. In our previous calls, this would be the same as the input object. However, the alignment and color assignments created by `plotClusters` can be requested to be saved via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` will be changed so that the colors of each cluster will be as shown in the plot. Similarly, if `resetNames=TRUE` the names of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore not consecutive integers, which is why these are saved as names and not `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be saved in the slot `orderSamples`. 
@@ -375,8 +376,6 @@ par(mar=c(1.1,10.1,4.1,1.1))
 plotClusters(ce, sampleData=c("Biological_Condition","Cluster2"), existingColors="all",
                main="Clusters from clusterMany, fix the color of clusters",axisLine=-1)
 ```
-
-
 
 ## Heatmap with the clusters
 There is also a default heatmap command for a ClusterExperiment object. By default it clusters on the most variable features (after transforming the data) and shows the primaryCluster alongside the data. I'll set the primaryClusterIndex so that it shows with nPCA=5 
@@ -407,7 +406,9 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluste
 Like `plotClusters`, when `plotHeatmap` is called on a ClusterExperiment object or SummarizedExperiment object,  `sampleData` must refer to columns of the `colData` of that object.  
 
 
-# clusterMany
+# The clustering workflow
+
+## clusterMany
 
 Here is a simple example where we want to basic PAM clustering for different k (we choose this for simplicity, but will discuss better, more computationally expensive, clustering options below). We also can compare if we decide to treat samples with negative silhouette values as unassigned or not. `compareMany` computes all of these clusterings based on one command. Each combination of the arguments that is given will result in another clustering. So, by putting both TRUE and FALSE for removeSil, it that all combations of 'k' and 'removeSil' will be tried. We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$). 
 
@@ -459,7 +460,7 @@ ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 Note that we also provide additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call
 
 
-# combineMany 
+## combineMany 
 
 It can be useful to create heatmaps that keep the clusters together. However, arbitrarily ordered clusters will not make compelling heatmaps either. The function `clusterHclust` will perform hierarchical clustering of the cluster mediods, and provide a dendrogram that will order the samples according to this clustering of the clusters.
 
@@ -561,7 +562,7 @@ plotHeatmap(cluster, exp(dataMatrix), eps=0, clusterData=dataMatrix, annCol = da
 Another feature of plotHeatmap is that a different dataset can be used for determining the clustering than for determining the color-scale image of the heatmap. This can be useful, for example, for clustering on the normalized data which is not on the count-scale, but showing the original count-scale in the color-scale which is more interpretable. 
 
 
-# Fine tune clustering with `clusterSingle`
+# Fine tuned clustering with `clusterSingle`
 
 Let us start with a walkthrough of `clusterSingle`.  `clusterSingle` is the primary function for performing the primary clustering tasks. Each of these tasks has an underlying (user-accessible) function and `clusterSingle` is a wrapper around these tasks:
 
