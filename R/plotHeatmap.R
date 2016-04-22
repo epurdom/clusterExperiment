@@ -233,7 +233,7 @@ setMethod(
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","pipeline","all","none"),
                         sampleData=NULL,clusterFeatures=TRUE,
-                        colorScale=if(visualizeData=="centerAndScaled") seqPal3 else seqPal5,
+                        colorScale,
                        ...
   ){
 
@@ -242,7 +242,10 @@ setMethod(
     ####
     ##Transform data and determine which features to use
     ####
-    clusterFeaturesData<-.convertTry(clusterFeaturesData,try(match.arg(clusterFeaturesData),silent=TRUE))
+    clusterFeaturesData <- .convertTry(clusterFeaturesData,
+                                       try(match.arg(clusterFeaturesData),
+                                           silent=TRUE))
+
     if(is.list(clusterFeaturesData)){
       groupFeatures<-clusterFeaturesData
       clusterFeaturesData<-unlist(clusterFeaturesData)
@@ -280,7 +283,17 @@ setMethod(
     #########
     ##Assign visualization data and clusterFeaturesData
     #########
-    visualizeData<-.convertTry(visualizeData,try(match.arg(visualizeData),silent=TRUE))
+    visualizeData <- .convertTry(visualizeData,
+                                 try(match.arg(visualizeData), silent=TRUE))
+
+    if(missing(colorScale)) {
+      colorScale <- seqPal5
+      if(is.character(visualizeData)) {
+        if (visualizeData == "centeredAndScaled") {
+          colorScale <- seqPal3
+        }
+      }
+    }
 
     if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
     else{
@@ -382,7 +395,13 @@ setMethod(
         }
         else if(clusterSamplesData=="hclust"){
             #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
-            clusterSamplesData<-if(visualizeData=="original") transObj$x else heatData
+            clusterSamplesData <- heatData
+
+            if(is.character(visualizeData)) {
+              if(visualizeData=="original") {
+                transObj$x
+              }
+            }
         }
     }
     else stop("clusterSamplesData must be either character, or vector of indices of samples")
