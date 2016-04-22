@@ -3,7 +3,7 @@
 #' These methods will return or set the clustering labels (i.e., the
 #' colnames of the clusterMatrix slot).
 #'
-#' @name clusterLabels
+#' @aliases clusterLabels
 #'
 #' @param x a \code{\link{ClusterExperiment}} object.
 #' @param whichClusters controls which labels to be returned. It is either

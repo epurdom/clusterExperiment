@@ -2,7 +2,7 @@
 #' @description Calls limma on input data to determine features most associated
 #'   with found clusters (based on an F-statistic, pairwise comparisons, or
 #'   following a tree that clusters the clusters).
-#' @name getBestFeatures
+#' @aliases getBestFeatures
 #' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
 #' @param cl A numeric vector with cluster assignments to compare to clRef.

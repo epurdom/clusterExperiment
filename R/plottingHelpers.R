@@ -29,7 +29,7 @@
 #' @importFrom RColorBrewer brewer.pal brewer.pal.info
 #' @export
 #' @name convertClusterLegend
-#' @aliases convertClusterLegend
+#' @aliases convertClusterLegend convertClusterLegend,ClusterExperiment-method
 setMethod(
   f = "convertClusterLegend",
   signature = c("ClusterExperiment"),

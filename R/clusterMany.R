@@ -4,7 +4,7 @@
 #' clustering of the samples across the range, which can be passed to
 #' \code{plotClusters} for visualization.
 #'
-#' @name clusterMany
+#' @aliases clusterMany
 #'
 #' @param x the data on which to run the clustering. Can be: matrix (with genes
 #'   in rows), a list of datasets overwhich the clusterings should be run, a
@@ -37,9 +37,9 @@
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
 #'   rownames equal to the names of the resulting column names of clMat object
-#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
+#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 #'   however, the function will create the dimensionality reductions of the data
-#'   indicated by the user input. 
+#'   indicated by the user input.
 #' @param paramMatrix matrix or data.frame. If given, the algorithm will bypass
 #'   creating the matrix of possible parameters, and will use the given matrix.
 #'   There are basically no checks as to whether this matrix is in the right
@@ -396,8 +396,8 @@ setMethod(
       x<-.updateCurrentPipeline(x,eraseOld)
       retval<-addClusters(outval,x)
       validObject(retval)
-      
-      
+
+
       return(retval)
     } else {
       return(outval)
@@ -419,14 +419,14 @@ setMethod(
                           ...)
     if(class(outval)=="ClusterExperiment") {
         retval<-clusterExperiment(x,
-                      clusters=clusterMatrix(outval), 
-                      transformation=transformation(outval), 
+                      clusters=clusterMatrix(outval),
+                      transformation=transformation(outval),
                       clusterType=clusterType(outval),
                                      clusterInfo=clusterInfo(outval))
         clusterLegend(retval)<-clusterLegend(outval)
         orderSamples(retval)<-orderSamples(outval)
         coClustering(retval)<-coClustering(retval)
-        
+
         return(retval)
     }  #need to redo it to make sure get any other part of summarized experiment
     else {

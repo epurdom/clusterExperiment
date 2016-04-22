@@ -3,7 +3,6 @@
 #' Align multiple clusterings of the same set of samples and provide a
 #' color-coded plot of their shared cluster assignments
 #'
-#' @name plotClusters
 #' @aliases plotClusters
 #' @docType methods
 #' @param clusters A matrix of with each column corresponding to a clustering

@@ -3,7 +3,7 @@
 #' Find sets of samples that stay together across clusterings in order to define
 #' a new clustering vector.
 #'
-#' @name combineMany
+#' @aliases combineMany
 #'
 #' @param x a matrix or \code{\link{clusterExperiment}} object.
 #' @param whichCluster a numeric or character vector that specifies which

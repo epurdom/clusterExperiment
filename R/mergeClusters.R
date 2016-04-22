@@ -4,7 +4,7 @@
 #'   returns estimates of number of proportion of non-null and merges those
 #'   below a certain cutoff.
 #'
-#' @name mergeClusters
+#' @aliases mergeClusters
 #'
 #' @param x data to perform the test on. It can be a matrix or a
 #'   \code{\link{ClusterExperiment}}.

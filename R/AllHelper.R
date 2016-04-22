@@ -2,7 +2,7 @@
 #'
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods
+#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
@@ -231,6 +231,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterInfo} returns the clusterInfo slot.
+#' @aliases clusterInfo
 #' @export
 setMethod(
   f = "clusterInfo",

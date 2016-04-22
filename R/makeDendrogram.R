@@ -3,7 +3,7 @@
 #' @description Makes a dendrogram of a set of clusters based on hclust on the
 #' medoids of the cluster.
 #'
-#' @name makeDendrogram
+#' @aliases makeDendrogram
 #'
 #' @param x data to define the medoids from. Matrix and
 #' \code{\link{ClusterExperiment}} supported.

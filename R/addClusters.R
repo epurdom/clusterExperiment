@@ -11,7 +11,6 @@
 #'   arguments. In particular, the \code{primaryCluster} and all of its
 #'   supporting information (dendrogram, coClustering, and orderSamples) are all
 #'   kept from the x object, even if y is a ClusterExperiment.
-#' @name addClusters
 #' @rdname addClusters
 #' @aliases addClusters removeClusters
 #' @export

@@ -51,6 +51,7 @@
 #' z<-transform(cc) #just return tranformed data
 #' @export
 #' @name transform
+#' @aliases transform,ClusterExperiment-method
 setMethod(
   f = "transform",
   signature = "ClusterExperiment",

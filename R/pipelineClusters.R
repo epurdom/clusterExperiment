@@ -12,8 +12,9 @@
 #'
 #' @return \code{pipelineClusters} returns a matrix consisting of the
 #'   appropriate columns of the \code{clusterMatrix} slot.
-#' @name pipelineClusters
 #' @aliases pipelineClusters pipelineClusterTable pipelineClusterDetails
+#'   pipelineClusters,ClusterExperiment-method
+#' @name pipelineClusters
 #' @export
 #' @examples
 #' data(simData)

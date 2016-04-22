@@ -1,3 +1,4 @@
+#' @rdname clusterSingle
 setGeneric(
   name = "clusterSingle",
   def = function(x,  ...) {
@@ -5,6 +6,7 @@ setGeneric(
   }
 )
 
+#' @rdname plotHeatmap
 setGeneric(
   name = "plotCoClustering",
   def = function(data,  ...) {
@@ -12,6 +14,7 @@ setGeneric(
   }
 )
 
+#' @rdname convertClusterLegend
 setGeneric(
   name = "convertClusterLegend",
   def = function(object,  ...) {
@@ -19,6 +22,7 @@ setGeneric(
   }
 )
 
+#' @rdname makeDendrogram
 setGeneric(
   name = "makeDendrogram",
   def = function(x,  ...) {
@@ -26,6 +30,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
     name = "clusterLegend",
     def = function(x) {
@@ -33,6 +38,7 @@ setGeneric(
     }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
     name = "clusterLegend<-",
     def = function(object, value) {
@@ -40,6 +46,7 @@ setGeneric(
     }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
     name = "orderSamples",
     def = function(x) {
@@ -47,6 +54,7 @@ setGeneric(
     }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
     name = "orderSamples<-",
     def = function(object, value) {
@@ -54,6 +62,7 @@ setGeneric(
     }
 )
 
+#' @rdname clusterLabels
 setGeneric(
   name = "clusterLabels",
   def = function(x, whichClusters) {
@@ -61,6 +70,7 @@ setGeneric(
   }
 )
 
+#' @rdname clusterLabels
 setGeneric(
     name = "clusterLabels<-",
     def = function(object, value) {
@@ -68,6 +78,7 @@ setGeneric(
     }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "nClusters",
   def = function(x) {
@@ -75,6 +86,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "nFeatures",
   def = function(x) {
@@ -82,6 +94,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "nSamples",
   def = function(x) {
@@ -89,6 +102,7 @@ setGeneric(
   }
 )
 
+#' @rdname pipelineClusters
 setGeneric(
   name = "pipelineClusters",
   def = function(x,iteration=0) {
@@ -96,6 +110,7 @@ setGeneric(
   }
 )
 
+#' @rdname pipelineClusters
 setGeneric(
   name = "pipelineClusterDetails",
   def = function(x) {
@@ -103,6 +118,7 @@ setGeneric(
   }
 )
 
+#' @rdname pipelineClusters
 setGeneric(
   name = "pipelineClusterTable",
   def = function(x) {
@@ -110,13 +126,14 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "paramValues",
-  def = function(x,type) {
-    standardGeneric("paramValues")
-  }
-)
+# setGeneric(
+#   name = "paramValues",
+#   def = function(x,type) {
+#     standardGeneric("paramValues")
+#   }
+# )
 
+#' @rdname clusterMany
 setGeneric(
   name = "clusterMany",
   def = clusterMany <- function(x, ... ) {
@@ -124,6 +141,7 @@ setGeneric(
   }
 )
 
+#' @rdname makeDendrogram
 setGeneric(
   name="plotDendrogram",
   def=function(x,...)
@@ -132,6 +150,7 @@ setGeneric(
   }
 )
 
+#' @rdname plotClusters
 setGeneric(
     name="plotClusters",
     def=function(clusters, whichClusters,...)
@@ -140,6 +159,7 @@ setGeneric(
     }
 )
 
+#' @rdname plotHeatmap
 setGeneric(
   name="plotHeatmap",
   def=function(data,...)
@@ -148,6 +168,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "transformation",
   def = function(x) {
@@ -155,6 +176,7 @@ setGeneric(
   }
 )
 
+#' @rdname transform
 setGeneric(
   name = "transform",
   def = function(x,...) {
@@ -162,6 +184,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "clusterMatrix",
   def = function(x) {
@@ -169,6 +192,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "primaryCluster",
   def = function(x) {
@@ -176,6 +200,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "primaryClusterIndex",
   def = function(x) {
@@ -183,6 +208,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "primaryClusterIndex<-",
   def = function(object, value) {
@@ -190,6 +216,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "coClustering",
   def = function(x) {
@@ -197,6 +224,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "coClustering<-",
   def = function(object, value) {
@@ -204,6 +232,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "clusterType",
   def = function(x) {
@@ -211,6 +240,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
     name = "clusterType<-",
     def = function(object,value) {
@@ -218,6 +248,7 @@ setGeneric(
     }
 )
 
+#' @rdname addClusters
 setGeneric(
   name = "addClusters",
   def = function(x, y,...) {
@@ -225,6 +256,7 @@ setGeneric(
   }
 )
 
+#' @rdname addClusters
 setGeneric(
   name = "removeClusters",
   def = function(x, whichRemove,exactMatch=TRUE) {
@@ -232,6 +264,7 @@ setGeneric(
   }
 )
 
+#' @rdname addClusters
 setGeneric(
   name = "removeUnclustered",
   def = function(x) {
@@ -239,6 +272,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "clusterInfo",
   def = function(x) {
@@ -246,13 +280,14 @@ setGeneric(
   }
 )
 
-setGeneric(
-    name = "convertClusterColors",
-    def = function(x) {
-        standardGeneric("convertClusterColors")
-    }
-)
+# setGeneric(
+#     name = "convertClusterColors",
+#     def = function(x) {
+#         standardGeneric("convertClusterColors")
+#     }
+# )
 
+#' @rdname combineMany
 setGeneric(
   name = "combineMany",
   def = function(x, whichClusters, ...) {
@@ -260,6 +295,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "clusterMatrixNamed",
   def = function(x,  ...) {
@@ -267,6 +303,7 @@ setGeneric(
   }
 )
 
+#' @rdname ClusterExperiment-methods
 setGeneric(
   name = "primaryClusterNamed",
   def = function(x,  ...) {
@@ -274,6 +311,7 @@ setGeneric(
   }
 )
 
+#' @rdname getBestFeatures
 setGeneric(
   name = "getBestFeatures",
   def = function(x, ...) {
@@ -281,6 +319,7 @@ setGeneric(
   }
 )
 
+#' @rdname mergeClusters
 setGeneric(
   name = "mergeClusters",
   def = function(x, ...) {
