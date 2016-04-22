@@ -39,7 +39,7 @@ value of \code{clusterType(x)}. Only relevant if whichRemove is character.}
 }
 \description{
 These functions are used to add or remove clusters to a
-\code{\link{ClusterEcperiment}} object.
+\code{\link{ClusterExperiment}} object.
 }
 \details{
 addClusters adds y to x, and is thus not symmetric in the two
