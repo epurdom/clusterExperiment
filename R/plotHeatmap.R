@@ -603,5 +603,5 @@ setMethod(
     fakeCE@dendro_samples<-data@dendro_samples
     fakeCE@primaryIndex<-data@primaryIndex
     validObject(fakeCE) #just in case screwed something up
-    plotHeatmap(fakeCE,isSymmetric=TRUE,whichFeatures="all",...)
+    plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
   })
