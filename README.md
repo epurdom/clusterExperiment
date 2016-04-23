@@ -14,8 +14,6 @@ install_github("epurdom/clusterExperiment")
 | ------------- | ------------ |
 | R CMD check   | [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=develop)](https://travis-ci.org/epurdom/clusterExperiment) |
 | Test coverage |  [![Coverage Status](https://coveralls.io/repos/github/epurdom/clusterExperiment/badge.svg?branch=develop)](https://coveralls.io/github/epurdom/clusterExperiment?branch=develop) |
-* Travis CI: 
-* Coveralls: 
 
 ## Issues and bug reports
 
