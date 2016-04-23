@@ -44,8 +44,10 @@ case \code{log(count + 1)} will be used for \code{\link{makeDendrogram}}
 and voom correction will be used in \code{\link{getBestFeatures}}). Ignored
 if input is \code{\link{ClusterExperiment}}.}
 
-\item{...}{arguments passed to the \code{\link{plot.phylo}} function of
-\code{ade4} that plots the dendrogram.}
+\item{...}{for signature \code{matrix}, arguments passed to the
+\code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
+For signature \code{ClusterExperiment} arguments passed to the method for
+signature \code{matrix}.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements

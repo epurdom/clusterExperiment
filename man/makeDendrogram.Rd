@@ -28,7 +28,9 @@ dimensionality reduction to perform before clustering.}
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}.}
 
-\item{...}{arguments passed to hclust.}
+\item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed
+to hclust; if signature \code{ClusterExperiment} passed to the method for
+signature \code{matrix}. For plotDendrogram, passed to \code{plot}.}
 
 \item{cluster}{A numeric vector with cluster assignments. If x is a
 ClusterExperiment object, cluster is automatically the primaryCluster(x).

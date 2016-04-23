@@ -16,7 +16,9 @@
 #' dimensionality reduction to perform before clustering.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #' in the reduction specified by \code{dimReduce}.
-#' @param ... arguments passed to hclust.
+#' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
+#'   to hclust; if signature \code{ClusterExperiment} passed to the method for
+#'   signature \code{matrix}. For plotDendrogram, passed to \code{plot}.
 #' @details The function returns two dendrograms (as a list if x is a matrix) or
 #' in the appropriate slots if x is ClusterExperiment. The cluster dendrogram
 #' is created by applying \code{\link{hclust}} to the medoids of each cluster.
