@@ -43,7 +43,7 @@ ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
 data(simData)
 if(ncol(simData)!=300) stop("not current version of simData") #get all kinds of annoyances because using old version.
 simSData<-data.frame(sample(letters[2:5],size=NCOL(simData),replace=TRUE),sample(2:5,size=NCOL(simData),replace=TRUE))
-simSData<-data.frame(sData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
+simSData<-data.frame(simSData,sample(LETTERS[2:5],size=NCOL(simData),replace=TRUE),stringsAsFactors=FALSE)
 colnames(simSData)<-c("A","B","C")
 gSimData<-data.frame(sample(letters[2:5],size=NROW(simData),replace=TRUE),sample(2:5,size=NROW(simData),replace=TRUE))
 gSimData<-data.frame(gSimData,sample(LETTERS[2:5],size=NROW(simData),replace=TRUE),stringsAsFactors=FALSE)
@@ -63,7 +63,8 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
     return(x)
 })
 #make a new object with -1 values
-ceSim<-clusterExperiment(simCount,clMatNew,transformation=function(x){log(x+1)})
+ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log(x+1)})
+clusterType(ceSim)<-clusterType(test)
 rm(test)
 #################################
 ###small object based on simData/simCount (same size as trivial data)

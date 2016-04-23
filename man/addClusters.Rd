@@ -34,7 +34,7 @@ or a matrix/vector of clusters.}
 
 \item{clusterType}{a string describing the nature of the clustering. The
 values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-reserved for the clustering coming from the package pipeline and should not
+reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
 \item{...}{Passed to signature \code{ClusterExperiment,matrix}.}

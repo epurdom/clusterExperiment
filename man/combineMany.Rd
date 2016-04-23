@@ -12,7 +12,8 @@
 \S4method{combineMany}{matrix,missing}(x, whichClusters, proportion = 1,
   clusterFunction = "hierarchical", propUnassigned = 0.5, minSize = 5)
 
-\S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters, ...)
+\S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
+  eraseOld = FALSE, ...)
 
 \S4method{combineMany}{ClusterExperiment,character}(x, whichClusters, ...)
 

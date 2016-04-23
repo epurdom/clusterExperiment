@@ -219,8 +219,14 @@ setMethod(
         args<-list(...)
         if("plot" %in% names(args) ){
             whPlot<-which(names(args)=="plot")
-            if(length(args)>length(whPlot)) args<-args[-whPlot]
-            else args<-NULL
+            if(length(args)>length(whPlot)){
+              plotArg<-args[[whPlot]]
+              args<-args[-whPlot]
+            }
+            else{
+              args<-NULL
+              plotArg<-TRUE
+            }
         }
         #align the samples, but don't plot them.
         outval<-do.call(plotClusters,c(list(clusters=clusterMatrix(clusters)[,whichClusters,drop=FALSE],input="clusters",plot=FALSE,sampleData=sampleData),args))
@@ -233,7 +239,7 @@ setMethod(
             m<-match(as.character(cl),colMat[,"clusterIds"])
             colVect<-colMat[m,"color"]
         }))
-        do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=TRUE),args))
+        do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=plotArg),args))
 
     }
     else{
@@ -243,32 +249,40 @@ setMethod(
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!
       ## also includes values from sampleData, which are always at the bottom, so don't affect anything.
-        oldClMat<-clusterMatrix(clusters)[,whichClusters]
+        browser()
+      oldClMat<-clusterMatrix(clusters)[,whichClusters]
         newClMat<-outval$alignedClusterIds
-        #make both colors switch to aligned values (but keep name the same!)
+       #make both colors switch to aligned values (but keep name the same!)
         #can't convert the cluster ids because then wouldn't be consecutive numbers... but can give them names that match.
-        newClLegend<-lapply(1:NCOL(oldClMat),function(ii){
-            oldColMat<-clusterLegend(clusters)[whichClusters][[ii]]
-            newColMat<-outval$clusterLegend[[ii]]
-            if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
-            #update colors
-            if(resetColors){
-                m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
-                oldColMat[,"color"]<-newColMat[m,"color"]
+        convertAlignedColorLegend<-function(ii){
+          oldColMat<-clusterLegend(clusters)[whichClusters][[ii]]
+          newColMat<-outval$clusterLegend[[ii]]
+          #weird space introduced in plotCluster to clusterIds
+          newColMat[,"clusterIds"]<-as.character(as.numeric(newColMat[,"clusterIds"]))
+          if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
+          #update colors
+          if(resetColors){
+            m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
+            oldColMat[,"color"]<-newColMat[m,"color"]
+          }
+          #convert from old to new names
+          if(resetNames){
+            
+            newCl<-newClMat[,ii]
+            oldCl<-oldClMat[,ii]
+            oldNew<-unique(cbind(old=oldCl,new=newCl))
+            if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend from plotClusters output")
+            #update clusterIds -- can't do
+            m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
+            oldColMat[,"name"]<-oldNew[m,"new"]
+            if(any(oldColMat[,"clusterIds"] %in% c(-1,-2))){
+              whNeg<-which(oldColMat[,"clusterIds"] %in% c(-1,-2))
+              oldColMat[whNeg,"name"]<-as.character(oldColMat[whNeg,"clusterIds"])
             }
-            #convert from old to new ids
-            if(resetNames){
-
-                newCl<-newClMat[,ii]
-                oldCl<-oldClMat[,ii]
-                oldNew<-unique(cbind(old=oldCl,new=newCl))
-                if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend from plotClusters output")
-                #update clusterIds -- can't do
-                m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
-                oldColMat[,"name"]<-oldNew[m,"new"]
-            }
-            return(oldColMat)
-        })
+          }
+          return(oldColMat)
+        }
+        newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
         clusterLegend(clusters)[whichClusters]<-newClLegend
     }
     if(resetOrderSamples) orderSamples(clusters)<-outval$orderSamples
@@ -316,7 +330,8 @@ setMethod(
 	  else{
 	    if(nrow(sampleData)!=nrow(clusters)) stop("sampleData must have same number of observations as clusterings")
 
-	   }
+	  }
+	  #browser()
     clusters<-cbind(clusters,sampleData)
 	}
 

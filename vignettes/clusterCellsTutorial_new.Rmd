@@ -196,23 +196,19 @@ This removed `r length(whZero)` genes out of `r NROW(fluidigm)` (`r length(whZer
 
 ## Step 1: Clustering with `clusterMany`
 
-`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. We set `dimReduce` Other possible features we keep fixed: we use 'pam', and let the algorithm pick the best $k$ ( from 2:10) via silhouette distance, and then unassign samples from clusters if they have negative silhouette scores. by picking letting `clusterMany` find the best $K$ via total silhouette distance. 
+`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to pick options to vary is to give multiple values to an argument. Below in our call to `clusterMany` we will 
+* set `dimReduce=c("PCA", "mostVar")` meaning cluster after a dimensionality reduction to the top principal componetns, and also cluster after filtering to the top most variable genes
+* For PCA reduction, choose 5,15, and 50 principal components ifor the reduced data set (set `nPCADims=c(5,15,50)`)
+* For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
 
-```{r clusterManyCheckParam2}
-checkParam<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
-dim(checkParam$paramMatrix) #number of rows is the number of clusterings
+Other possible options we will keep fixed to reduce the number of clusterings by giving only a single value to the argument: 
+* we will use 'pam' (`clusterFunction`) 
+* we will have the algorithm pick the best $k$ ( from 2:10) via silhouette distance (`findBestK=TRUE` and `ks=2:10`)
+* we will unassign samples from clusters if they have negative silhouette scores (`removeSil=TRUE`)
 
-```
-
-We can now run this, either by giving the information in `checkParam$paramMatrix` to clusterMany argument `paramMatrix`, or by recalling the function from scratch. There's no advantage in giving `paramMatrix` rather than just recalling `clusterMany`, but we'll do it here just to show how it is done. 
-
-```{r clusterManyCheckParam2}
-# ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, clusterDArgs=checkParam$clusterDArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
+```{r clusterMany}
 ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
-
-Note that we also provide additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call
-
 
 
 
@@ -220,10 +216,12 @@ We would like to visualize this clustering using the `plotClusters` command.
 
 ```{r plotClusterEx1}
 par(mar=c(1.1,7.1,4.1,1.1))
-plotClusters(ce,main="Clusters from clusterMany",axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow",axisLine=-1)
 ```
 
-There are many different options for how to run `plotClusters` discussed in Section XXX, but for now, this quick and dirty plot is good enough.
+This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been choosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
+
+We have set `whichClusters="workflow"` to only plot clusters created from the workflow. There are many different options for how to run `plotClusters` discussed in Section XXX, but for now, this plot is good enough for a quick visualization. 
 
 ## Step 2: Find a consensus with `combineMany`
 
@@ -234,10 +232,9 @@ ce<-combineMany(ce)
 plotClusters(ce,whichClusters="workflow")
 ```
 
-Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those with `clusterType="clusterMany"`. 
+Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those with `clusterType="clusterMany"` that we got in the previous step of the workflow. 
 
-The default result is not great. The resulting clusters leave most samples unassigned. This is because the default way of combining is very conservative -- it require samples to only be in the same cluster if they are in the same clusters in *every clustering*, and makes clusters that satisfy this requirement. This is quite stringent, and we can vary this by setting `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to. This will be discussed more in Section XXX.
-
+The default result of `combineMany` is not usually a great choice. The resulting clusters leave most samples unassigned. This is because the default way of combining is very conservative -- it require samples to only be in the same cluster if they are in the same clusters in *every clustering*, and makes clusters that satisfy this requirement. This is quite stringent. We can vary this by setting `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to. Explicit details on how this is done will be discussed  in Section XXX.
 
 ```{r}
 ce<-combineMany(ce,proportion=0.7)
@@ -245,19 +242,19 @@ plotClusters(ce,whichClusters="workflow")
 ```
 
 
-We can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called `combineMany`):
+We can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called `combineMany` as long as `proportion` value is <1):
 
 ```{r}
 plotCoClustering(ce)
 ```
 
-## Step 3: Merge clusters together with `mergeClusters`
+## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters`
 
-For simplicity, we have not created many clusters with `clusterMany`. However, it is not uncommon in practice to create forty or more clusterings with `clusterMany`, and the results of `combineMany` can often still result in many small clusters, and we might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`, but we have found that it is often after looking at the clusters and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
+For computational simplicity in the vignette, we have not created many clusters with `clusterMany`. However, it is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case, the results of `combineMany` can often still result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
 
-For this reason, we often create an additional clustering based on merging clusters together that are not different based on running tests of differential expression between the clusters found in `clusterMany`. We often display and use both sets of clusterings side-by-side (that from `combineMany` and that from `mergeClusters`)
+For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `combineMany`. We often display and use both sets of clusterings side-by-side (that from `combineMany` and that from `mergeClusters`)
 
-`mergeClusters` needs a hierarchical clustering of the clusters, and then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the mediods of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it internally. This is because different options in `makeDendrogram` can affect how the clusters are hierarchically clustered, and we want to have the user make these choices.
+`mergeClusters` needs a hierarchical clustering of the clusters. With this hiearchy it then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the mediods of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it internally. This is because different options in `makeDendrogram` can affect how the clusters are hierarchically clustered, and we want to encourage the user make these choices.
 
 ```{r mergeClusters}
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
@@ -265,7 +262,7 @@ ce<-mergeClusters(ce)
 plotClusters(ce,whichClusters="workflow")
 ```
 
-In this case, merging the clusters had no effect -- no clusters were identified as needing clustering.
+In this case, merging the clusters had no effect -- no clusters were identified as needing to merged into a larger cluster.
 
 Finally, we can do a heatmap visualizing our final clustering (see Section XXX for many more options to `plotHeatmap`)
 
@@ -273,7 +270,7 @@ Finally, we can do a heatmap visualizing our final clustering (see Section XXX f
 plotHeatmap(ce,clusterSamplesData="dendrogramValue")
 ```
 
-# ClusterExperiment Object
+# ClusterExperiment Objects
 
 The `ce` object that we created from calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SummarizedExperiment`, which means the data and `colData` and other information orginally in the `fluidigm` object is retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the `SummarizedExperiment` object, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
 
@@ -319,7 +316,7 @@ We can see that each element of `clusterLegend` consists of a matrix, with numbe
 # Visualizing the data
 
 ## Plotting the clusters
-We would like to visualize this clustering using the `plotClusters` command.
+We can visualize multiple clusterings using the `plotClusters` command.
 
 ```{r plotClusterEx1}
 par(mar=c(1.1,7.1,4.1,1.1))
@@ -348,7 +345,7 @@ plotClusters(ce,whichClusters=c(4:6,1:3),
                main="Clusters from clusterMany, different order",axisLine=-1)
 ```
 
-We can also add (categorical) information from the `colData` of our fluidigm object, which is also kept in our ClusterExperiment object. This can be helpful to see if the clusterings correspond to other features of the samples, such as sample batches. 
+We can also add (categorical) information from the `colData` of our fluidigm object, which is also retained in our ClusterExperiment object. This can be helpful to see if the clusterings correspond to other features of the samples, such as sample batches. 
 
 ```{r plotClusterEx1_addData}
 par(mar=c(1.1,10.1,4.1,1.1))
@@ -358,7 +355,7 @@ plotClusters(ce,whichClusters=c(4:6,1:3), sampleData=c("Biological_Condition","C
 
 ### Saving the alignment of plotClusters
 
-`plotClusters` invisibly returns a `ClusterExperiment` object. In our previous calls, this would be the same as the input object. However, the alignment and color assignments created by `plotClusters` can be requested to be saved via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` will be changed so that the colors of each cluster will be as shown in the plot. Similarly, if `resetNames=TRUE` the names of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore not consecutive integers, which is why these are saved as names and not `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be saved in the slot `orderSamples`. 
+`plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` will be changed so that the colors of each cluster will be as shown in the plot. Similarly, if `resetNames=TRUE` the names of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore not consecutive integers, which is why these are saved as names and not `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be saved in the slot `orderSamples`. 
 
 ```{r plotClusterEx1_setColors}
 par(mar=c(1.1,10.1,4.1,1.1))
