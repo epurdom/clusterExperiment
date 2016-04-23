@@ -6,7 +6,7 @@
 #' @aliases combineMany
 #'
 #' @param x a matrix or \code{\link{clusterExperiment}} object.
-#' @param whichCluster a numeric or character vector that specifies which
+#' @param whichClusters a numeric or character vector that specifies which
 #'   clusters to compare (missing if x is a matrix)
 #' @param clusterFunction the clustering to use (passed to
 #'   \code{\link{clusterD}}); currently must be of type '01'.
@@ -18,6 +18,8 @@
 #' @param propUnassigned samples with greater than this proportion of
 #'   assignments equal to '-1' are assigned a '-1' cluster value as a last step
 #'   (only if proportion < 1)
+#' @param ... arguments to be passed on to the method for signature
+#'   \code{matrix,missing}.
 #'
 #' @details The function tries to find a consensus cluster across many different
 #'   clusterings of the same samples. It does so by creating a \code{nSamples} x

@@ -45,8 +45,10 @@
 #'   There are basically no checks as to whether this matrix is in the right
 #'   format, and is only intended to be used to feed the results of setting
 #'   \code{run=FALSE} back into the algorithm (see example).
-#' @param ... arguments to be passed on to mclapply (if ncores>1)
-#'
+#' @param ... For signature \code{list}, arguments to be passed on to mclapply
+#'   (if ncores>1). For all the other signatures, arguments to be passed to the
+#'   method for signature \code{list}.
+#' @param verbose logical. If TRUE it will print informative messages.
 #' @details While the function allows for multiple values of clusterFunction,
 #'   the code does not reuse the same subsampling matrix and try different
 #'   clusterFunctions on it. If sequential=TRUE, different

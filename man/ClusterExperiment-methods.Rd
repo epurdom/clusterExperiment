@@ -88,12 +88,10 @@
 \S4method{clusterType}{ClusterExperiment,character}(object) <- value
 }
 \arguments{
-\item{x}{a ClusterExperiment object.}
+\item{x, object}{a ClusterExperiment object.}
 
-\item{..., i, j}{Forwarded to the
+\item{..., i, j, drop}{Forwarded to the
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.}
-
-\item{object}{a ClusterExperiment object.}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what

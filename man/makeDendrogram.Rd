@@ -34,13 +34,13 @@ in the reduction specified by \code{dimReduce}.}
 ClusterExperiment object, cluster is automatically the primaryCluster(x).
 ``-1'' indicates the sample was not assigned to a cluster.}
 
+\item{unassignedSamples}{how to handle unassigned samples("-1") ; only relevant
+for sample clustering. See details.}
+
 \item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise
 it has one per cluster.}
 
 \item{main}{passed to the \code{plot} function.}
-
-\item{unassigned}{how to handle unassigned samples("-1") ; only relevant
-for sample clustering. See details.}
 }
 \value{
 If x is a matrix, a list with two dendrograms, one in which the

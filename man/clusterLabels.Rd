@@ -20,12 +20,15 @@
 \S4method{clusterLabels}{ClusterExperiment,missing}(x, whichClusters)
 }
 \arguments{
-\item{x}{a \code{\link{ClusterExperiment}} object.}
+\item{x, object}{a \code{\link{ClusterExperiment}} object.}
 
 \item{whichClusters}{controls which labels to be returned. It is either
 numeric, in which case gives the indices of the clusters, or character, in
 which case it matches to \code{clusterType(x)} to find the indices of the
 clusters.}
+
+\item{value}{character. A vector of length equal to
+\code{NCOL(clusterMatrix(object))}.}
 }
 \description{
 These methods will return or set the clustering labels (i.e., the

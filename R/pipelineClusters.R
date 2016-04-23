@@ -9,7 +9,7 @@
 #'   those obtained in a different way) can be obtained with the functions
 #'   documented here.
 #' @param x a \code{\link{ClusterExperiment}} object.
-#'
+#' @param iteration numeric. Which iteration of the workflow should be used.
 #' @return \code{pipelineClusters} returns a matrix consisting of the
 #'   appropriate columns of the \code{clusterMatrix} slot.
 #' @aliases pipelineClusters pipelineClusterTable pipelineClusterDetails

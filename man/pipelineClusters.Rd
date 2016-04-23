@@ -18,6 +18,8 @@
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
+
+\item{iteration}{numeric. Which iteration of the workflow should be used.}
 }
 \value{
 \code{pipelineClusters} returns a matrix consisting of the

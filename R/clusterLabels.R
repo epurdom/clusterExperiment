@@ -5,7 +5,7 @@
 #'
 #' @aliases clusterLabels
 #'
-#' @param x a \code{\link{ClusterExperiment}} object.
+#' @param x,object a \code{\link{ClusterExperiment}} object.
 #' @param whichClusters controls which labels to be returned. It is either
 #'   numeric, in which case gives the indices of the clusters, or character, in
 #'   which case it matches to \code{clusterType(x)} to find the indices of the
@@ -38,6 +38,8 @@ setMethod(
 #' @export
 #' @rdname clusterLabels
 #' @aliases clusterLabels<-
+#' @param value character. A vector of length equal to
+#'   \code{NCOL(clusterMatrix(object))}.
 setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),

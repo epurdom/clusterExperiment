@@ -67,10 +67,13 @@
 #' @param unassignedColor color assigned to cluster values of '-1'
 #'   ("unassigned").
 #' @param missingColor color assigned to cluster values of '-2' ("missing").
-#' @param ... passed to \code{aheatmap}.
+#' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}.
+#'   For the other signatures, passed to the method for signature \code{matrix}.
 #' @param nFeatures integer indicating how many features should be used (if
 #'   \code{clusterFeaturesData} is 'mostVar' or 'PCA').
-#'
+#' @param isSymmetric logical. if TRUE indicates that the input matrix is
+#'   symmetric. Useful when plotting a co-clustering matrix or other sample by
+#'   sample matrices (e.g., correlation).
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -598,8 +601,7 @@ setMethod(
 )
 
 #' @rdname plotHeatmap
-#' @name plotHeatmap
-#' @aliases plotHeatmap plotCoClustering
+#' @aliases plotCoClustering
 #'
 #' @details \code{plotCoClustering} is a convenience function to plot the heatmap
 #' of the co-clustering matrix stored in the \code{coClustering} slot of a

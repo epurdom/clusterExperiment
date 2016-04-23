@@ -10,7 +10,7 @@
 #' @param cluster A numeric vector with cluster assignments. If x is a
 #' ClusterExperiment object, cluster is automatically the primaryCluster(x).
 #' ``-1'' indicates the sample was not assigned to a cluster.
-#' @param unassigned how to handle unassigned samples("-1") ; only relevant
+#' @param unassignedSamples how to handle unassigned samples("-1") ; only relevant
 #' for sample clustering. See details.
 #' @param dimReduce character A character identifying what type of
 #' dimensionality reduction to perform before clustering.

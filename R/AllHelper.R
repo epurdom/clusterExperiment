@@ -6,7 +6,7 @@
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
-#' @param ...,i,j Forwarded to the
+#' @param ...,i,j,drop Forwarded to the
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
@@ -57,7 +57,6 @@ setMethod(
 ## show
 #' @rdname ClusterExperiment-methods
 #' @export
-#' @param object a ClusterExperiment object.
 setMethod(
   f = "show",
   signature = "ClusterExperiment",
@@ -81,7 +80,7 @@ setMethod(
 #' @details \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
 #' @aliases clusterMatrixNamed
-#' @param x a ClusterExperiment object.
+#' @param x,object a ClusterExperiment object.
 setMethod(
   f = "clusterMatrixNamed",
   signature = "ClusterExperiment",

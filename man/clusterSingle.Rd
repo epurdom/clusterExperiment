@@ -51,11 +51,14 @@ function to \code{transFun}.}
 before clustering.}
 
 \item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are 
+dimensionality reduction to perform before clustering. Options are
 "none","PCA", and "mostVar".}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
+
+\item{...}{arguments to be passed on to the method for signature
+\code{matrix}.}
 }
 \value{
 A \code{\link{ClusterExperiment}} object.

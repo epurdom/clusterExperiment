@@ -21,6 +21,9 @@
 \arguments{
 \item{x}{a matrix or \code{\link{clusterExperiment}} object.}
 
+\item{whichClusters}{a numeric or character vector that specifies which
+clusters to compare (missing if x is a matrix)}
+
 \item{proportion}{The proportion of times that two sets of samples should be
 together in order to be grouped into a cluster (if <1, passed to clusterD
 via alpha = 1 - proportion)}
@@ -35,8 +38,8 @@ assignments equal to '-1' are assigned a '-1' cluster value as a last step
 \item{minSize}{minimum size required for a set of samples to be considered in
 a cluster because of shared clustering, passed to \code{\link{clusterD}}}
 
-\item{whichCluster}{a numeric or character vector that specifies which
-clusters to compare (missing if x is a matrix)}
+\item{...}{arguments to be passed on to the method for signature
+\code{matrix,missing}.}
 }
 \value{
 If x is a matrix, a list with values

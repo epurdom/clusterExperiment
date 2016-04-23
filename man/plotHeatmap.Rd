@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotHeatmap,SummarizedExperiment-method}
 \alias{plotCoClustering}
-\alias{plotHeatmap}
+\alias{plotCoClustering,ClusterExperiment-method}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,matrix-method}
@@ -43,7 +43,8 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{...}{passed to \code{aheatmap}.}
+\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}.
+For the other signatures, passed to the method for signature \code{matrix}.}
 
 \item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that
 will be used to in \code{hclust} to define the hiearchical clustering of
@@ -120,6 +121,10 @@ be format of \code{ClusterExperiment}.}
 number between 0 and 1, indicating that the breaks should be equally spaced
 (based on the range in the data) upto the `breaks' quantile, see
 \code{\link{setBreaks}}}
+
+\item{isSymmetric}{logical. if TRUE indicates that the input matrix is
+symmetric. Useful when plotting a co-clustering matrix or other sample by
+sample matrices (e.g., correlation).}
 }
 \value{
 Returns (invisibly) a list with elements
