@@ -42,7 +42,7 @@ as the log.}
 
 \item{clusterType}{a string describing the nature of the clustering. The
 values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-reserved for the clustering coming from the package pipeline and should not
+reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
 \item{clusterInfo}{a list with information on the clustering (see Slots).}

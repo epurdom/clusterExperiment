@@ -75,7 +75,7 @@
 #' "100%Similarity"=clCommon100$clustering), axisLine=-2)
 #'
 #' #method for ClusterExperiment object
-#' clCommon <- combineMany(cl, whichClusters="pipeline", proportion=0.7,
+#' clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
 #' minSize=10)
 #' plotClusters(clCommon)
 #' par(oldpar)
@@ -136,7 +136,7 @@ setMethod(
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
-  definition = function(x, whichClusters, ...){
+  definition = function(x, whichClusters, eraseOld=FALSE,...){
 
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
@@ -159,6 +159,8 @@ setMethod(
     if(!is.null(outlist$percentageShared)) {
       coClustering(newObj) <- outlist$percentageShared
     }
+    ##Check if pipeline already ran previously and if so increase
+    x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
 
     return(addClusters(newObj, x))
   }

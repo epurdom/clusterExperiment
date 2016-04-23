@@ -101,7 +101,7 @@ plotClusters(cbind("70\%Similarity"=clCommon70$clustering, clMat,
 "100\%Similarity"=clCommon100$clustering), axisLine=-2)
 
 #method for ClusterExperiment object
-clCommon <- combineMany(cl, whichClusters="pipeline", proportion=0.7,
+clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
 minSize=10)
 plotClusters(clCommon)
 par(oldpar)

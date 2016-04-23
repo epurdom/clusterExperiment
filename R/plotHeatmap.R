@@ -235,7 +235,7 @@ setMethod(
                         clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"),
                         clusterFeaturesData=c("mostVar","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
-                        whichClusters= c("primary","pipeline","all","none"),
+                        whichClusters= c("primary","workflow","all","none"),
                         sampleData=NULL,clusterFeatures=TRUE,
                         colorScale,
                        ...

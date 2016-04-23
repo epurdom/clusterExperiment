@@ -110,10 +110,10 @@ format, and is only intended to be used to feed the results of setting
 \code{run=FALSE} back into the algorithm (see example).}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
-\code{ClusterExperiment}. If TRUE, will erase existing pipeline results
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-pipeline results will have "\code{_i}" added to the clusterType value,
-where \code{i} is one more than the largest such existing pipeline
+workflow results will have "\code{_i}" added to the clusterType value,
+where \code{i} is one more than the largest such existing workflow
 clusterType.}
 }
 \value{

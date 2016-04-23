@@ -209,7 +209,7 @@ setMethod(f = "mergeClusters",
 #' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x, ...) {
+          definition = function(x, eraseOld=FALSE,...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
@@ -229,6 +229,9 @@ setMethod(f = "mergeClusters",
                               transformation=transformation(x),
                               clusterType="mergeClusters")
   clusterLabels(newObj) <- "mergeClusters"
+  ##Check if pipeline already ran previously and if so increase
+  x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
+  
 
   retval <- addClusters(newObj, x)
   retval@dendro_samples <- x@dendro_samples
@@ -237,7 +240,7 @@ setMethod(f = "mergeClusters",
 )
 
 .myTryFunc<-function(FUN,...){
-  x<-try(FUN(...))
+  x<-try(FUN(...),silent=TRUE)
   if(!inherits(x, "try-error")) return(x)
   else return(NA)
 }
@@ -257,6 +260,6 @@ setMethod(f = "mergeClusters",
 }
 .m1_JC<-function(tstats){
   #copied code from Jianshin's website
-  musigma<-try(.EstNull.func(tstats))
+  musigma<-try(.EstNull.func(tstats),silent=TRUE)
   .epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
 }

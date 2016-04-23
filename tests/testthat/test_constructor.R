@@ -115,7 +115,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             clusterLabels(c3)[1]<-"User4"
             expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
             expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
-            expect_equal(length(clusterLabels(c3,"pipeline")),0) #nothing get back
+            expect_equal(length(clusterLabels(c3,"workflow")),0) #nothing get back
             
             ###check adding matrix of clusters
             c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterType="New")
@@ -187,17 +187,17 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
 
             ##########
-            #check pipeline stuff
+            #check workflow stuff
             ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterType=c("clusterMany","mergeClusters"))
-            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),2))
+            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),2))
 
             ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5)),clusterType=c("clusterMany"))
-            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),1))
+            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
 
             ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterType=c("clusterMany","mergeClusters_1"))
-            expect_equal(dim(pipelineClusters(ppC)),c(nSamples(cc),1))
-            expect_equal(dim(pipelineClusters(ppC,iteration=NA)),c(nSamples(cc),2))
-            expect_null(pipelineClusters(cc,iteration=NA))
+            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
+            expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
+            expect_null(workflowClusters(cc,iteration=NA))
 
             ##########
             #clusterLegend

@@ -90,23 +90,23 @@ setGeneric(
 )
 
 setGeneric(
-  name = "pipelineClusters",
+  name = "workflowClusters",
   def = function(x,iteration=0) {
-    standardGeneric("pipelineClusters")
+    standardGeneric("workflowClusters")
   }
 )
 
 setGeneric(
-  name = "pipelineClusterDetails",
+  name = "workflowClusterDetails",
   def = function(x) {
-    standardGeneric("pipelineClusterDetails")
+    standardGeneric("workflowClusterDetails")
   }
 )
 
 setGeneric(
-  name = "pipelineClusterTable",
+  name = "workflowClusterTable",
   def = function(x) {
-    standardGeneric("pipelineClusterTable")
+    standardGeneric("workflowClusterTable")
   }
 )
 

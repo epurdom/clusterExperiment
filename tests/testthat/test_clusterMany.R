@@ -12,7 +12,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
                                        isCount=FALSE,verbose=FALSE)
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
-            clusterLabels(clustNothing,whichClusters="pipeline")
+            clusterLabels(clustNothing,whichClusters="workflow")
 
             ##Make this better here:
             se <- SummarizedExperiment(simData,colData=sData)
@@ -43,7 +43,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
                                            isCount=FALSE,eraseOld=FALSE)
             expect_equal(NCOL(clusterMatrix(clustNothing5)),5)
-            ppIndex<-pipelineClusterDetails(clustNothing5)
+            ppIndex<-workflowClusterDetails(clustNothing5)
             expect_equal(as.numeric(table(ppIndex[,"iteration"])),c(2,2))
             #check dim reduce
             cc <- clusterMany(simData, ks=c(3,4),nVarDim=c(15,20),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
