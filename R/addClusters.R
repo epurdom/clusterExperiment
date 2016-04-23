@@ -139,6 +139,7 @@ setMethod(
 #'   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
 #'   be unclustered in other clusters found in \code{clusterMatrix(x)}).
 #' @rdname addClusters
+#' @aliases removeUnclustered
 #' @export
 setMethod(
   f = "removeUnclustered",

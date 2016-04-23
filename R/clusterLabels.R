@@ -37,6 +37,7 @@ setMethod(
 
 #' @export
 #' @rdname clusterLabels
+#' @aliases clusterLabels<-
 setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),

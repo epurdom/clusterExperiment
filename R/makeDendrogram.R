@@ -164,6 +164,7 @@ setMethod(
 #' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
 #'   it has one per cluster.
 #' @param main passed to the \code{plot} function.
+#' @aliases plotDendrogram
 setMethod(
     f = "plotDendrogram",
     signature = "ClusterExperiment",

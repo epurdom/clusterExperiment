@@ -80,6 +80,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
+#' @aliases clusterMatrixNamed
 #' @param x a ClusterExperiment object.
 setMethod(
   f = "clusterMatrixNamed",
@@ -101,6 +102,7 @@ setMethod(
 #' @details \code{primaryClusterNamed} returns the primary cluster (using cluster
 #' labels).
 #' @export
+#' @aliases primaryClusterNamed
 setMethod(
   f = "primaryClusterNamed",
   signature = "ClusterExperiment",
@@ -112,6 +114,7 @@ setMethod(
 #' @details \code{transformation} prints the function used to transform the data
 #' prior to clustering.
 #' @export
+#' @aliases transformation
 setMethod(
   f = "transformation",
   signature = "ClusterExperiment",
@@ -124,6 +127,7 @@ setMethod(
 #' @details \code{nClusters} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
 #' @export
+#' @aliases nClusters
 setMethod(
   f = "nClusters",
   signature = "ClusterExperiment",
@@ -134,6 +138,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{nFeatures} returns the number of features (same as `nrow`).
 #' @export
+#' @aliases nFeatures
 setMethod(
   f = "nFeatures",
   signature =  "ClusterExperiment",
@@ -145,6 +150,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{nSamples} returns the number of samples (same as `ncol`).
 #' @export
+#' @aliases nSamples
 setMethod(
   f = "nSamples",
   signature = "ClusterExperiment",
@@ -156,6 +162,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
+#' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
   signature = "ClusterExperiment",
@@ -167,6 +174,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{primaryCluster} returns the primary clustering (as numeric).
 #' @export
+#' @aliases primaryCluster
 setMethod(
   f = "primaryCluster",
   signature = "ClusterExperiment",
@@ -179,6 +187,7 @@ setMethod(
 #' @details \code{primaryClusterIndex} returns/sets the primary clustering index
 #' (i.e., which column of clusterMatrix corresponds to the primary clustering).
 #' @export
+#' @aliases primaryClusterIndex
 setMethod(
   f = "primaryClusterIndex",
   signature = "ClusterExperiment",
@@ -189,6 +198,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @aliases primaryClusterIndex<-
 setReplaceMethod(
   f = "primaryClusterIndex",
   signature = signature("ClusterExperiment", "numeric"),
@@ -202,6 +212,7 @@ setReplaceMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{coClustering} returns/sets the co-clustering matrix.
 #' @export
+#' @aliases coClustering
 setMethod(
   f = "coClustering",
   signature = "ClusterExperiment",
@@ -212,6 +223,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @aliases coClustering<-
 setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="matrix"),
@@ -225,6 +237,7 @@ setReplaceMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterType} returns/sets the clusterType slot.
 #' @export
+#' @aliases clusterType
 setMethod(
   f = "clusterType",
   signature = "ClusterExperiment",
@@ -252,6 +265,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{clusterLegend} returns/sets the clusterLegend slot.
 #' @export
+#' @aliases clusterLegend
 setMethod(
     f = "clusterLegend",
     signature = "ClusterExperiment",
@@ -263,6 +277,7 @@ setMethod(
 )
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @aliases clusterLegend<-
 setReplaceMethod(
     f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
@@ -276,6 +291,7 @@ setReplaceMethod(
 #' @rdname ClusterExperiment-methods
 #' @details \code{orderSamples} returns/sets the orderSamples slot.
 #' @export
+#' @aliases orderSamples
 setMethod(
     f = "orderSamples",
     signature = "ClusterExperiment",
@@ -285,6 +301,7 @@ setMethod(
 )
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @aliases orderSamples<-
 setReplaceMethod(
     f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
@@ -297,6 +314,7 @@ setReplaceMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @aliases clusterType<-
 setReplaceMethod(
     f = "clusterType",
     signature = signature(object="ClusterExperiment", value="character"),
