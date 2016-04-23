@@ -215,6 +215,7 @@
 #' }
 #'
 #' @rdname plotHeatmap
+#' @aliases plotHeatmap
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),

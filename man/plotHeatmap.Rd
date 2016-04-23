@@ -4,6 +4,7 @@
 \name{plotHeatmap,SummarizedExperiment-method}
 \alias{plotCoClustering}
 \alias{plotCoClustering,ClusterExperiment-method}
+\alias{plotHeatmap}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,matrix-method}
