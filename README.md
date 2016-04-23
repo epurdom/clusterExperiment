@@ -11,7 +11,7 @@ install_github("epurdom/clusterExperiment")
 ## Status
 
 * Travis CI: [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=develop)](https://travis-ci.org/epurdom/clusterExperiment)
-
+* Coveralls: [![Coverage Status](https://coveralls.io/repos/github/epurdom/clusterExperiment/badge.svg?branch=develop)](https://coveralls.io/github/epurdom/clusterExperiment?branch=develop)
 
 ## Issues and bug reports
 
