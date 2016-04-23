@@ -8,6 +8,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustCombined <- combineMany(clustNothing, whichClusters = "clusterMany")
 
   clustWithDendro <- makeDendrogram(clustCombined)
+  #matrix version
   mergedList <- mergeClusters(x=transform(clustCombined), countData=FALSE,
                               cl=primaryCluster(clustCombined),
                               dendro=clustWithDendro@dendro_clusters,
@@ -32,4 +33,12 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC")
 
+  #test if already exists
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
+  primaryClusterIndex(clustMerged)<-2
+  clustMerged<- makeDendrogram(clustMerged)
+  clustMerged2<-mergeClusters(clustMerged)
+  expect_true("mergeClusters_1" %in% clusterType(clustMerged2))
+  expect_true(!"combineMany_1" %in% clusterType(clustMerged2))
+  expect_true(!"clusterMany_1" %in% clusterType(clustMerged2))
 })
