@@ -59,14 +59,6 @@
 #'   there is no gain in computational complexity (i.e. each subsampled
 #'   co-occurence matrix is recalculated for each set of parameters).
 #'
-#' @details Note that the behavior of clusterMany for dimensionality reduction
-#'   is slightly different if the input is a list of datasets rather than a
-#'   matrix. If the input is a single matrix, a single dimensionality step is
-#'   performed, while if the input is a list of datasets, the dimensionality
-#'   reduction step is performed for every combination (i.e. the program is not
-#'   smart in realizing it is the same set of data across different dimensions
-#'   and so only one dimensionality reduction is needed).
-#'
 #' @details The argument 'ks' is interpreted differently for different choices
 #'   of the other parameters. When/if sequential=TRUE, ks defines the argument
 #'   k0 of \code{\link{seqCluster}}. When/if clusterFunction="pam" and

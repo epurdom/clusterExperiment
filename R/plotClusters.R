@@ -217,6 +217,7 @@ setMethod(
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
         args<-list(...)
+        plotArg<-TRUE #the default
         if("plot" %in% names(args) ){
             whPlot<-which(names(args)=="plot")
             if(length(args)>length(whPlot)){
@@ -225,7 +226,6 @@ setMethod(
             }
             else{
               args<-NULL
-              plotArg<-TRUE
             }
         }
         #align the samples, but don't plot them.
@@ -239,6 +239,7 @@ setMethod(
             m<-match(as.character(cl),colMat[,"clusterIds"])
             colVect<-colMat[m,"color"]
         }))
+        colnames(newColorMat)<-colnames(existingClusters)
         do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=plotArg),args))
 
     }
@@ -249,7 +250,7 @@ setMethod(
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!
       ## also includes values from sampleData, which are always at the bottom, so don't affect anything.
-        browser()
+       # browser()
       oldClMat<-clusterMatrix(clusters)[,whichClusters]
         newClMat<-outval$alignedClusterIds
        #make both colors switch to aligned values (but keep name the same!)
