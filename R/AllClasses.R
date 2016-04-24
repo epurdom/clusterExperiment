@@ -64,7 +64,6 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
-#' @import Biobase
 #' @import SummarizedExperiment
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #' @export
