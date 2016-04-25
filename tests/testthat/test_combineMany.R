@@ -2,13 +2,16 @@ context("combineMany")
 source("create_objects.R")
 
 test_that("`combineMany` works with matrix and ClusterExperiment objects", {
-            clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
+            clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         isCount=FALSE,verbose=FALSE)
             x1<-combineMany(clustNothing,whichClusters = "clusterMany")
             expect_warning(x2<-combineMany(clustNothing),"no clusters specified")
             expect_equal(x1,x2)
-            expect_error(combineMany(clusterSingle(simData,subsample=FALSE,clusterFunction="pam",clusterDArgs=list(k=3))), "no clusters specified")
+            expect_error(combineMany(clusterSingle(mat, subsample=FALSE,
+                                                   clusterFunction="pam",
+                                                   clusterDArgs=list(k=3))),
+                         "no clusters specified")
 
             shared1 <- combineMany(clusterMatrix(clustNothing))
             shared2 <- combineMany(clustNothing, "all")
@@ -37,21 +40,21 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 })
 
 test_that("`combineMany` works when multiple runs of workflow", {
-  clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",
+  clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                               subsample=FALSE, sequential=FALSE,
                               isCount=FALSE,verbose=FALSE)
 
   shared1 <- combineMany(clustNothing, "all")
   shared2<-combineMany(shared1,"all")
   expect_true("combineMany_1" %in% clusterType(shared2))
-  
+
   clustNothing2 <- clusterMany(shared2, ks=c(5,6), clusterFunction="pam",
                                subsample=FALSE, sequential=FALSE,
                                isCount=FALSE,verbose=FALSE)
   expect_true("combineMany_1" %in% clusterType(clustNothing2))
   expect_true("clusterMany_2" %in% clusterType(clustNothing2))
   expect_true("combineMany_2" %in% clusterType(clustNothing2))
-  
+
   shared3 <- combineMany(clustNothing2, "all")
   shared4 <- combineMany(clusterMatrix(clustNothing2))
   expect_equal(shared4$clustering, primaryCluster(shared3))
