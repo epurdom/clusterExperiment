@@ -170,11 +170,11 @@ setMethod(
 setMethod(
     f = "plotDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x,leaves=c("samples", "clusters"),
+    definition = function(x,leaves=c("clusters","samples" ),
                           main,...)
     {
         leaves<-match.arg(leaves)
         if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
-        dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
+        if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
         plot(dend,main=main,...)
     })

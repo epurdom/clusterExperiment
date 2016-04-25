@@ -189,6 +189,7 @@ For this reason, we often find the need for an additional clustering step that m
 
 ```{r mergeClusters}
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+plotDendrogram(ce)
 ce<-mergeClusters(ce)
 plotClusters(ce,whichClusters="workflow")
 ```
@@ -373,7 +374,7 @@ I can choose to instead to not cluster the samples, but order them by cluster:
 plotHeatmap(ce,clusterSamplesData="primaryCluster",whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
 ```
 
-As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I can do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object; otherwise `plotHeatmap` will call makeDendrogram with its default settings. I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
+As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I could do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object; alternatively `plotHeatmap` will call makeDendrogram with its default settings, which is what I will do here. I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
 
 ```{r plotHeatmap_dendro}
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluster",main="Heatmap with clusterMany",sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
@@ -476,6 +477,7 @@ Like clustering, the dendrogram can depend on what features are included from th
 
 ```{r makeDendrogram, reducedFeatures}
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+plotDendrogram(ce,leaves="cluster")
 ```
 
 
