@@ -11,7 +11,8 @@
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"), cutoff = 0.1,
   plotType = c("none", "all", "mergeMethod"), countData = TRUE, ...)
 
-\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE, ...)
+\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE, mergeMethod,
+  ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a

@@ -87,7 +87,6 @@ setMethod(f = "mergeClusters",
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
                           cutoff=0.1, plotType=c("none", "all", "mergeMethod"),
                           countData=TRUE, ...) {
-
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- as.numeric(as.character(cl))
@@ -113,6 +112,7 @@ setMethod(f = "mergeClusters",
 
   mergeMethod <- match.arg(mergeMethod)
   plotType <- match.arg(plotType)
+  if(mergeMethod=="none" & plotType=="none") stop("mergeMethod and plotType both equal 'none'; nothing to be done.")
   if(plotType=="mergeValue" & mergeMethod=="none") {
     stop("can only plot merge method values if one method is selected")
   }
@@ -180,7 +180,7 @@ setMethod(f = "mergeClusters",
     #match to order of tree
     m <- match(allInternal, names(sigByNode))
     edgeLty <- rep(1, nrow(phyloObj$edge))
-    if(mergeMethod != "none" & length(whToMerge) > 0) {
+    if(mergeMethod != "none" && length(whToMerge) > 0) {
       whMerge <- which(phyloObj$node.label %in% nodesToMerge) #which of nodes merged
       nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
       whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
@@ -200,8 +200,12 @@ setMethod(f = "mergeClusters",
   nodePropTable <- data.frame("Node"=names(sigByNode),
                               "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)],
                               nodePropTable)
-
-  invisible(list(clustering=newcl, oldClToNew=table(Original=cl, New=newcl),
+  if(mergeMethod=="none"){
+    newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
+    oldClToNew<-NULL
+      }
+  else oldClToNew=table(Original=cl, New=newcl)
+  invisible(list(clustering=newcl, oldClToNew=oldClToNew,
                  propDE=nodePropTable, originalClusterDendro=dendro))
 }
 )
@@ -210,33 +214,39 @@ setMethod(f = "mergeClusters",
 #' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x, eraseOld=FALSE,...) {
+          definition = function(x, eraseOld=FALSE,
+                                mergeMethod,...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
   outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
                            dendro=x@dendro_clusters,
-                           countData=FALSE, ...)
-
-  #add "m" to name of cluster
-  idx <- which(outlist$clustering>0)
-  cl <- as.numeric(as.factor(outlist$clustering[idx]))
-  cl <- paste("m", cl, sep="")
-  cl_labels <- as.character(outlist$clustering)
-  cl_labels[idx] <- cl
-
-  newObj <- clusterExperiment(x, cl_labels,
-                              transformation=transformation(x),
-                              clusterType="mergeClusters")
-  clusterLabels(newObj) <- "mergeClusters"
-  ##Check if pipeline already ran previously and if so increase
-  x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-  
-
-  retval <- addClusters(newObj, x)
-  retval@dendro_samples <- x@dendro_samples
-  return(retval)
+                           countData=FALSE,mergeMethod=mergeMethod, ...)
+  if(mergeMethod!="none"){
+    #only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+    #add "m" to name of cluster
+    idx <- which(outlist$clustering>0)
+    cl <- as.numeric(as.factor(outlist$clustering[idx]))
+    cl <- paste("m", cl, sep="")
+    cl_labels <- as.character(outlist$clustering)
+    cl_labels[idx] <- cl
+    
+    newObj <- clusterExperiment(x, cl_labels,
+                                transformation=transformation(x),
+                                clusterType="mergeClusters")
+    clusterLabels(newObj) <- "mergeClusters"
+    ##Check if pipeline already ran previously and if so increase
+    x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
+    
+    
+    retval <- addClusters(newObj, x)
+    #retval@dendro_samples <- x@dendro_samples
+    invisible(retval)
+  }
+  else{ #don't do anything, since there was no merging done.
+    invisible(x)
+  }
 }
 )
 

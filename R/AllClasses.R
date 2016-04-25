@@ -136,12 +136,18 @@ setValidity("ClusterExperiment", function(object) {
       return("dendro_samples must have the same number of leaves as the number of samples")
     }
   }
+  else{
+    if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
+  }
   if(!is.null(object@dendro_clusters)){
     if(nobs(object@dendro_clusters) != max(primaryCluster(object))) {
       return("dendro_clusters must have the same number of leaves as the number of clusters")
     }
   }
-
+  else{
+    if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
+  }
+  
   if(!all(is.na(object@coClustering)>0) &
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
