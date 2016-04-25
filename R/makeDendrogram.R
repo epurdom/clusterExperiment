@@ -19,8 +19,8 @@
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to \code{plot}.
-#' @details The function returns two dendrograms (as a list if x is a matrix) or
-#' in the appropriate slots if x is ClusterExperiment. The cluster dendrogram
+#' @details The function returns two dendrograms (as a list if x is a matrix or
+#' in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
 #' is created by applying \code{\link{hclust}} to the medoids of each cluster.
 #' In the sample dendrogram the clusters are again clustered, but now the
 #' samples are also part of the resulting dendrogram. This is done by giving
@@ -30,7 +30,12 @@
 #' unassigned samples (defined by a -1 cluster value). If unassigned=="cluster",
 #' then the dendrogram is created by hclust of the expanded medoid data plus the
 #' original unclustered observations. If \code{unassignedSamples} is "outgroup",
-#' then all unassigned samples are put as an outgroup.
+#' then all unassigned samples are put as an outgroup. If the \code{x} object is
+#' a matrix, then \code{unassignedSamples} can also be "remove", to indicate
+#' that samples with "-1" should be discarded. This is not a permitted option,
+#' however, when \code{x} is a \code{ClusterExperiment} object, because it would
+#' return a dendrogram with less samples than \code{NCOL(x)}, which is not
+#' permitted for the \code{@dendro_samples} slot.
 #'
 #'
 #' @return If x is a matrix, a list with two dendrograms, one in which the
@@ -49,15 +54,16 @@
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
 #' plotDendrogram(hcl)
-#' plotDendrogram(hcl, leaves="clusters")
+#' plotDendrogram(hcl, leaves="samples")
 #'
 #' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, dimReduce=c("none", "PCA", "mostVar"),
-                        ndims=NA,...)
+                        ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
   {
+    unassignedSamples<-match.arg(unassignedSamples)
     ########
     ##Transform the data
     ########
@@ -77,7 +83,7 @@ setMethod(
     if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
-    outlist <- makeDendrogram(x=dat, cluster=primaryCluster(x), ...)
+    outlist <- makeDendrogram(x=dat, cluster=primaryCluster(x),unassignedSamples=unassignedSamples, ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     validObject(x)
@@ -166,15 +172,42 @@ setMethod(
 #' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
 #'   it has one per cluster.
 #' @param main passed to the \code{plot} function.
+#' @param clusterNames logical. If \code{leaves="clusters"}, then clusters will
+#'   be identified with their 'name' value in legend; otherwise the 'clusterIds'
+#'   value will be used.
 #' @aliases plotDendrogram
+#' @details If \code{leaves="clusters"}, the plotting function will work best if
+#'   the clusters in the dendrogram correspond to the primary cluster. This is
+#'   because the function colors the cluster labels based on the colors of the
+#'   clusterIds of the primaryCluster
 setMethod(
-    f = "plotDendrogram",
-    signature = "ClusterExperiment",
-    definition = function(x,leaves=c("clusters","samples" ),
-                          main,...)
-    {
-        leaves<-match.arg(leaves)
-        if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
-        if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
-        plot(dend,main=main,...)
-    })
+  f = "plotDendrogram",
+  signature = "ClusterExperiment",
+  definition = function(x,leaves=c("clusters","samples" ), clusterNames=TRUE,
+                        main,...)
+  {
+    leaves<-match.arg(leaves)
+    if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
+    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+    dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
+    labs<-labels(dend)
+    if(leaves=="clusters"){
+      leg<-clusterLegend(x)[[primaryClusterIndex(x)]]
+      m<-match(labs,leg[,"clusterIds"])
+      if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
+      else{
+        #function to change to labels and colors of a node:
+        reLabel <- function(n) { 
+          if(is.leaf(n)) {
+            a <- attributes(n)
+            m<-match(a$label,leg[,"clusterIds"])
+            if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label 
+            attr(n, "nodePar") <- c(a$nodePar, list(lab.col = leg[m,"color"],col=leg[m,"color"],pch=19)) #   change the node color
+          }
+          return(n)
+        }
+        dend <- dendrapply(dend, reLabel)
+      }
+    }
+    plot(dend,main=main,...)
+  })

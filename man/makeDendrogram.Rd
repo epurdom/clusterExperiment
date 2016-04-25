@@ -10,13 +10,13 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x, dimReduce = c("none", "PCA",
-  "mostVar"), ndims = NA, ...)
+  "mostVar"), ndims = NA, unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
 
-\S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("samples",
-  "clusters"), main, ...)
+\S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("clusters",
+  "samples"), clusterNames = TRUE, main, ...)
 }
 \arguments{
 \item{x}{data to define the medoids from. Matrix and
@@ -28,6 +28,9 @@ dimensionality reduction to perform before clustering.}
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}.}
 
+\item{unassignedSamples}{how to handle unassigned samples("-1") ; only relevant
+for sample clustering. See details.}
+
 \item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed
 to hclust; if signature \code{ClusterExperiment} passed to the method for
 signature \code{matrix}. For plotDendrogram, passed to \code{plot}.}
@@ -36,11 +39,12 @@ signature \code{matrix}. For plotDendrogram, passed to \code{plot}.}
 ClusterExperiment object, cluster is automatically the primaryCluster(x).
 ``-1'' indicates the sample was not assigned to a cluster.}
 
-\item{unassignedSamples}{how to handle unassigned samples("-1") ; only relevant
-for sample clustering. See details.}
-
 \item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise
 it has one per cluster.}
+
+\item{clusterNames}{logical. If \code{leaves="clusters"}, then clusters will
+be identified with their 'name' value in legend; otherwise the 'clusterIds'
+value will be used.}
 
 \item{main}{passed to the \code{plot} function.}
 }
@@ -54,8 +58,8 @@ Makes a dendrogram of a set of clusters based on hclust on the
 medoids of the cluster.
 }
 \details{
-The function returns two dendrograms (as a list if x is a matrix) or
-in the appropriate slots if x is ClusterExperiment. The cluster dendrogram
+The function returns two dendrograms (as a list if x is a matrix or
+in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
 is created by applying \code{\link{hclust}} to the medoids of each cluster.
 In the sample dendrogram the clusters are again clustered, but now the
 samples are also part of the resulting dendrogram. This is done by giving
@@ -65,7 +69,17 @@ The argument \code{unassignedSamples} governs what is done with
 unassigned samples (defined by a -1 cluster value). If unassigned=="cluster",
 then the dendrogram is created by hclust of the expanded medoid data plus the
 original unclustered observations. If \code{unassignedSamples} is "outgroup",
-then all unassigned samples are put as an outgroup.
+then all unassigned samples are put as an outgroup. If the \code{x} object is
+a matrix, then \code{unassignedSamples} can also be "remove", to indicate
+that samples with "-1" should be discarded. This is not a permitted option,
+however, when \code{x} is a \code{ClusterExperiment} object, because it would
+return a dendrogram with less samples than \code{NCOL(x)}, which is not
+permitted for the \code{@dendro_samples} slot.
+
+If \code{leaves="clusters"}, the plotting function will work best if
+  the clusters in the dendrogram correspond to the primary cluster. This is
+  because the function colors the cluster labels based on the colors of the
+  clusterIds of the primaryCluster
 }
 \examples{
 data(simData)
@@ -77,7 +91,7 @@ sequential=FALSE, clusterDArgs=list(k=8))
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
-plotDendrogram(hcl, leaves="clusters")
+plotDendrogram(hcl, leaves="samples")
 
 }
 
