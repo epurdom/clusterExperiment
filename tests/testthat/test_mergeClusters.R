@@ -19,7 +19,8 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
   expect_warning(mergeClusters(x=transform(clustWithDendro), countData=FALSE,
-                               cl=primaryCluster(clustWithDendro),
+                               cl=primaryCluster(clustWithDendro),plot="none",
+                               mergeMethod="adjP",
                                dendro=clustWithDendro@dendro_samples),
                  "not equal to the number")
 
@@ -37,7 +38,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
   primaryClusterIndex(clustMerged)<-2
   clustMerged<- makeDendrogram(clustMerged)
-  clustMerged2<-mergeClusters(clustMerged)
+  clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
   expect_true("mergeClusters_1" %in% clusterType(clustMerged2))
   expect_true(!"combineMany_1" %in% clusterType(clustMerged2))
   expect_true(!"clusterMany_1" %in% clusterType(clustMerged2))
