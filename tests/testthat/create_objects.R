@@ -1,10 +1,13 @@
 library(clusterExperiment)
 data(simData)
 if(ncol(simData) != 300) {
-  stop("not current version of simData") 
-  #get all kinds of annoyances because using old version. 
+  stop("not current version of simData")
+  #get all kinds of annoyances because using old version.
   #Can delete this once package is stabilized.
 }
+
+## make sure the tests are reproducible
+set.seed(23)
 
 #################################
 ###Simple, trivial sized objects for testing:
@@ -71,7 +74,8 @@ rm(test)
 ### 15 samples from each of groups (including -2,-1)
 ###
 #################################
-whSamp<-unlist(tapply(1:nSamples(ceSim),primaryCluster(ceSim),function(x){sample(x,size=3)})) #15 
+whSamp<-unlist(tapply(1:nSamples(ceSim),primaryCluster(ceSim),function(x){sample(x,size=3)})) #15
 smSimData<-simData[1:20,whSamp]
 smSimCount<-simCount[1:20,whSamp]
 smSimCE<-ceSim[1:20,whSamp]
+smSimSE <- seSimData[1:20,whSamp]

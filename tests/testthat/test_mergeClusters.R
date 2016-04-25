@@ -2,19 +2,22 @@ context("mergeCLusters")
 source("create_objects.R")
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
-  clustNothing <- clusterMany(simData, ks=c(9,11),clusterFunction="pam",
-                              subsample=FALSE, sequential=FALSE,
-                              isCount=FALSE,verbose=FALSE)
-  clustCombined <- combineMany(clustNothing, whichClusters = "clusterMany")
-
-  clustWithDendro <- makeDendrogram(clustCombined)
+  cl1 <- clusterSingle(smSimData, clusterFunction="pam",
+                       subsample=FALSE, sequential=FALSE,
+                       clusterDArgs=list(k=6),isCount=FALSE)
+  clustWithDendro <- makeDendrogram(cl1)
   #matrix version
-  mergedList <- mergeClusters(x=transform(clustCombined), countData=FALSE,
-                              cl=primaryCluster(clustCombined),
+  mergedList <- mergeClusters(x=transform(cl1), countData=FALSE,
+                              cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotType="mergeMethod")
 
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotType="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotType="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotType="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="mergeMethod")
+
   expect_true("mergeClusters" %in% clusterType(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
@@ -22,16 +25,6 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                                cl=primaryCluster(clustWithDendro),
                                dendro=clustWithDendro@dendro_samples),
                  "not equal to the number")
-
-  mergedList <- mergeClusters(x=simCount, countData=TRUE,
-                              cl=primaryCluster(clustWithDendro),
-                              dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="adjP")
-
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC")
 
   #test if already exists
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
