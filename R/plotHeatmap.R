@@ -505,20 +505,22 @@ setMethod(
       ##Deal with annotation of samples (sampleData) ...
       ##########
       #check sampleData input:
-      #browser()
+
       if(!is.null(sampleData)){
         if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame")
         if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")
 
         ###Make sampleData explicitly factors, except for whSampleDataCont
         ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
-
+        #browser()
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
         names(tmpDf)<-colnames(sampleData)
         if(!is.null(whSampleDataCont)) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
         annCol<-tmpDf
-        # browser()
+        #browser()
+        convertNames <- FALSE
         if(is.null(clusterLegend)){ #assign default colors
+          convertNames <- TRUE
           if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ #if not all continuous
             #Pull out the factors to assign clusters
             if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
@@ -541,6 +543,7 @@ setMethod(
               maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
               maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1))
               pal<-rep(bigPalette,length=sum(maxPerAnn)) #make sure don't run out of colors
+
               clusterLegend<-lapply(1:ncol(tmpDfNum),FUN=function(ii){
                 facInt<-tmpDfNum[,ii]
                 facOrig<-tmpDf[,ii]
@@ -558,8 +561,11 @@ setMethod(
           }
         }
         #browser()
-        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) annColors<-.convertToAheatmap(clusterLegend)
-        else annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
+        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) {
+          annColors<-.convertToAheatmap(clusterLegend, names=convertNames)
+        } else {
+          annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
+        }
       }
       else{
         annCol<-NA

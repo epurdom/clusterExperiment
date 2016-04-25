@@ -3,6 +3,7 @@ context("Plot functions")
 source("create_objects.R")
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
+
     #test matrix version
     x<-plotClusters(clusters=clusterMatrix(ceSim))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
@@ -54,16 +55,12 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     x4<-plotClusters(ceSim,whichClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
     expect_false(isTRUE(all.equal(x3,x4)))
 
-    #test if only a single cluster
-    plotClusters(ceSim,whichClusters=2)
-    x5<-plotClusters(ceSim,whichClusters=2,resetColors=TRUE)
-    expect_equal(x5,ceSim)
-
     par(mfrow=c(1,1)) #otherwise will affect other tests.
 })
 
 
 test_that("`plotClusters` rerun above tests with sampleData included", {
+
   #test matrix version
   x<-plotClusters(clusters=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$colors))
@@ -85,10 +82,12 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 #   par(mfrow=c(1,2))
 #   x2<-plotClusters(ceSim,sampleData="all",resetColors=FALSE)
 #   x1<-plotClusters(ceSim,resetColors=FALSE)
-  
+  par(mfrow=c(1,1))
+
 })
 
 test_that("`plotHeatmap` works with matrix objects", {
+
     x1<-plotHeatmap(data=smSimData)
     x2<-plotHeatmap(data=smSimCount,clusterSamplesData=smSimData,clusterFeaturesData=smSimData)
     expect_equal(x1$aheatmapOut,x2$aheatmapOut)
@@ -104,17 +103,18 @@ test_that("`plotHeatmap` works with matrix objects", {
 })
 
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
-    plotHeatmap(smSimCE)
-    plotHeatmap(smSimCE,whichClusters="none")
-    expect_warning(plotHeatmap(smSimCE,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
-    clusterType(smSimCE)[2:3]<-"clusterMany"
+
+    plotHeatmap(cc)
+    plotHeatmap(cc,whichClusters="none")
+    expect_warning(plotHeatmap(cc,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
+
     plotHeatmap(smSimCE,whichClusters="workflow")
     plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE)
     expect_error(plotHeatmap(smSimCE,whichClusters=1:15),"Indices in whichClusters invalid")
 
     #test sampleData
-    expect_error(plotHeatmap(smSimCE,sampleData="A"))
-    colData(smSimCE)<-DataFrame(smSData)
+    expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
+
     plotHeatmap(smSimCE,sampleData="all")
     plotHeatmap(smSimCE,sampleData="A")
     plotHeatmap(smSimCE,sampleData=2:3)
@@ -124,12 +124,12 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     #plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
 
     #SummarizedExperiment
-    se<-SummarizedExperiment(smSimData)
-    plotHeatmap(se)
+    plotHeatmap(smSimSE)
 
 })
 
 test_that("`plotHeatmap` visualization choices/feature choices all work", {
+
   plotHeatmap(smSimCE,visualizeData=smSimCount)
   plotHeatmap(smSimCE,visualizeData="transformed")
   plotHeatmap(smSimCE,visualizeData="original")
@@ -154,6 +154,8 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
 })
 
 test_that("`makeBlankData` works", {
+
+
   ##call directly
   gps<-list(c(3,6,7),c(2,1))
   xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps)
@@ -169,11 +171,12 @@ test_that("`makeBlankData` works", {
 })
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-  smSimCE<-combineMany(smSimCE,whichClusters=1:4,proportion=.9) #gives all -1, but creates coClustering
-  plotCoClustering(smSimCE,clusterSamplesData="hclust")
-  expect_error(plotCoClustering(smSimCE,clusterSamplesData="dendrogramValue"),"all samples have clusterIds<0")
-  primaryClusterIndex(smSimCE)<-3
-  plotCoClustering(smSimCE,clusterSamplesData="dendrogramValue")
+  smMin1<-combineMany(smSimCE,whichClusters=1:4,proportion=.95) #gives all -1, but creates coClustering
+  plotCoClustering(smMin1,clusterSamplesData="hclust")
+  expect_error(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue"),
+               "all samples have clusterIds<0")
+  sm<-combineMany(smSimCE,whichClusters=1:4,proportion=.5)
+  plotCoClustering(sm,clusterSamplesData="dendrogramValue")
 })
 
 test_that("plotting helpers", {
