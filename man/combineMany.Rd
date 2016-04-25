@@ -39,6 +39,13 @@ assignments equal to '-1' are assigned a '-1' cluster value as a last step
 \item{minSize}{minimum size required for a set of samples to be considered in
 a cluster because of shared clustering, passed to \code{\link{clusterD}}}
 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterType value,
+where \code{i} is one more than the largest such existing workflow
+clusterType.}
+
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix,missing}.}
 }
