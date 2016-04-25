@@ -12,7 +12,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotType="mergeMethod")
 
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotType="all")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotType="mergeMethod")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotType="mergeMethod")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotType="mergeMethod")
