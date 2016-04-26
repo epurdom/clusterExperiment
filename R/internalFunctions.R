@@ -123,7 +123,11 @@
       }
       else wh<-vector("integer",length=0)
     }
-    if(test=="all") wh<-1:ncol(clusterMatrix(x))
+    if(test=="all"){
+      #put primary cluster first
+      ppcl<-primaryClusterIndex(x)
+      wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
+    }
     if(test=="none") wh<-vector("integer",length=0)
     if(test=="primary") wh<-primaryClusterIndex(x)
   }
