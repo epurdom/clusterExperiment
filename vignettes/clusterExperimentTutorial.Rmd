@@ -214,7 +214,7 @@ The last step is to then find features that are different between these clusters
 There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
 
 ```{r getBestFeatures}
-pairsAll<-getBestFeatures(ce,type="Pairs",p.value=0.05,number=nrow(ce),voomCorrection=TRUE)
+pairsAll<-getBestFeatures(ce,type="Pairs",p.value=0.05,number=nrow(ce),countData=TRUE)
 head(pairsAll)
 ```
 
