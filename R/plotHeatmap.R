@@ -220,7 +220,7 @@
 #' @import stats
 #' @import graphics
 #' @import utils
-#' @import NMF
+#' @import NMF aheatmap vplayout
 #' @import grid
 setMethod(
     f = "plotHeatmap",

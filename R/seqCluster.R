@@ -212,7 +212,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
         				}
         				else{
         				  tempArgs<-c(list(k=k + i - 1),clusterDArgs) #set k
-        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
 
         				}
 				# if(length(res)==0) {
@@ -233,7 +233,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical","pam"), su
             }
             else{
               tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k
-              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempSubsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
 
             }
       			if(length(res)>0) res <- res[1:min(top.can,length(res))]
