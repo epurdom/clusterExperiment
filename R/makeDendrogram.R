@@ -44,7 +44,6 @@
 #'
 #' @export
 #'
-#' @import stats
 #' @examples
 #' data(simData)
 #'
@@ -198,11 +197,11 @@ setMethod(
       if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
       else{
         #function to change to labels and colors of a node:
-        reLabel <- function(n) { 
+        reLabel <- function(n) {
           if(is.leaf(n)) {
             a <- attributes(n)
             m<-match(a$label,leg[,"clusterIds"])
-            if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label 
+            if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label
             attr(n, "nodePar") <- c(a$nodePar, list(lab.col = leg[m,"color"],col=leg[m,"color"],pch=19)) #   change the node color
           }
           return(n)
