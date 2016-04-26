@@ -21,7 +21,6 @@
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix,missing}.
 #' @inheritParams clusterMany,matrix-method
-#'
 #' @details The function tries to find a consensus cluster across many different
 #'   clusterings of the same samples. It does so by creating a \code{nSamples} x
 #'   \code{nSamples} matrix of the percentage of co-occurance of each sample and
@@ -188,7 +187,7 @@ setMethod(
     wh<-.TypeIntoIndices(x,"clusterMany")
     if(length(wh)>0){
       warning("no clusters specified to combine, using results from clusterMany")
-      combineMany(x, wh = "clusterMany",...)
+      combineMany(x, whichClusters = "clusterMany",...)
     }
     else{
       stop("no clusters specified to combine, please specify.")

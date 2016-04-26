@@ -13,9 +13,9 @@ BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
     R (>= 3.3),
+    methods,
     SummarizedExperiment
 Imports:
-    methods,
     NMF,
     RColorBrewer,
     ape,

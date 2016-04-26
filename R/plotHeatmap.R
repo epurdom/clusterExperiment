@@ -162,6 +162,7 @@
 #' }
 #' @author Elizabeth Purdom
 #'
+#' @importFrom NMF aheatmap
 #' @export
 #'
 #' @examples
