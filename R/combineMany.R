@@ -187,7 +187,7 @@ setMethod(
     wh<-.TypeIntoIndices(x,"clusterMany")
     if(length(wh)>0){
       warning("no clusters specified to combine, using results from clusterMany")
-      combineMany(x, wh = "clusterMany",...)
+      combineMany(x, whichClusters = "clusterMany",...)
     }
     else{
       stop("no clusters specified to combine, please specify.")
