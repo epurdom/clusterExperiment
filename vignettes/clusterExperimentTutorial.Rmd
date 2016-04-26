@@ -109,6 +109,7 @@ Other possible options we will keep fixed to reduce the number of clusterings by
 * we will use 'pam' (`clusterFunction`) 
 * we will have the algorithm pick the best $k$ ( from 2-10) via silhouette distance (`findBestK=TRUE` and `ks=2:10`)
 * we will unassign samples from clusters if they have negative silhouette scores (`removeSil=TRUE`). Such unassigned samples will be given the value -1. 
+* we will leave the default (see help pages) of requiring clusters to be of size at least 5; smaller clusters will be ignored and samples assigned to them given the unassigned value of -1
 
 We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `function(x){x}`). 
 
@@ -431,6 +432,8 @@ Now that we've explained the underlying architecture of the clustering provided 
 
 
 Other parameters for the clustering are kept fixed. As described above XXX, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `clusterDArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the clustering of $D$, the creation of $D$ via subsampling, and the sequential clustering process, respectiely). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
+
+
 
 ### Dealing with large numbers of clusterings
 

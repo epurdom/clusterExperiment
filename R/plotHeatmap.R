@@ -217,7 +217,7 @@
 #' @rdname plotHeatmap
 #' @aliases plotHeatmap
 #' @importFrom stats hclust dist
-#' @importFrom NMF aheatmap vplayout
+#' @importFrom NMF aheatmap
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),
