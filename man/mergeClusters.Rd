@@ -32,7 +32,7 @@ the slot \code{dendro_clusters} will be used. This means that
 used to merge clusters (if 'none', no merging will be done). See details
 for description of methods.}
 
-\item{cutoff}{minimimum value required for NOT merging a cluster, i.e. 
+\item{cutoff}{minimimum value required for NOT merging a cluster, i.e.
 two clusters with the proportion of DE below cutoff will be merged.
 Must be a value between 0, 1, where
 lower values will make it harder to merge clusters.}
@@ -50,6 +50,13 @@ if input is \code{\link{ClusterExperiment}}.}
 \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 For signature \code{ClusterExperiment} arguments passed to the method for
 signature \code{matrix}.}
+
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterType value,
+where \code{i} is one more than the largest such existing workflow
+clusterType.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements
