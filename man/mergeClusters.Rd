@@ -11,8 +11,8 @@
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"), cutoff = 0.1,
   plotType = c("none", "all", "mergeMethod"), countData = TRUE, ...)
 
-\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE, mergeMethod,
-  ...)
+\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE, countData,
+  mergeMethod, ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a
@@ -41,10 +41,7 @@ lower values will make it harder to merge clusters.}
 estimates of proportion non-null will be plotted; if 'mergeMethod', then
 only the value used in the merging is plotted for each node.}
 
-\item{countData}{logical as to whether input data is a count matrix (in which
-case \code{log(count + 1)} will be used for \code{\link{makeDendrogram}}
-and voom correction will be used in \code{\link{getBestFeatures}}). Ignored
-if input is \code{\link{ClusterExperiment}}.}
+\item{countData}{logical as to whether input data is a count matrix. See details.}
 
 \item{...}{for signature \code{matrix}, arguments passed to the
 \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
@@ -78,6 +75,17 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
+If  \code{countData=TRUE}, and the input is a matrix,
+  \code{log(count + 1)} will be used for \code{\link{makeDendrogram}} and the
+  original data with voom correction will be used in 
+  \code{\link{getBestFeatures}}). If input is 
+  \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} means 
+  that the log(1+x) will be used as the transformation internally, like for
+  the matrix case, (and therefore will use the voom calculation) and NOT the
+  transformation stored in the object. If FALSE, then transform(x) will be
+  given to the input and will be used for both \code{makeDendrogram} and
+  \code{getBestFeatures}, with no voom correction.
+
 "JC" refers to the method of Ji and Cai (2007), and implementation
   of "JC" method is copied from code available on Jiashin Ji's website,
   December 16, 2015

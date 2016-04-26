@@ -36,9 +36,11 @@ All of our methods also have a barebones version that allows input of matrices a
 The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouete width, sequential clustering procedures, and so forth. We describe here the basic expected usage of the package. The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. 
 
 The basic clustering workflow is 
+
 * Implement many different clusterings using different choices of parameters using the function `clusterMany`. This results in a large collection of clusterings, where each clustering is based on different parameters. 
 * Find a unifying clustering across these many clusterings using the `combineMany` function. 
 * Determine whether some clusters should be merged together into larger clusters. This involves two steps:
+
   ** Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
   ** Merge together clusters of this hierarchy based on how the percentage of differential expression.
 
@@ -385,8 +387,6 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluste
 
 **To Add**
 
-### Plotting coClusterings
-
 
 
 
@@ -467,10 +467,27 @@ After creating many clusterings, `combineMany` finds a single cluster based on w
 
 As mentioned in the Quick Start section, the default option for `combineMany` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
 
-Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `comineMany` makes a coClustering matrix $D$, similar to that of subsampl
+Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `comineMany` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`).
+
+```{r combineMany_detailed}
+ce<-combineMany(ce,proportion=0.7)
+plotCoClustering(ce)
+```
+
+We can also manually choose the set of clusters to use with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features.
+
+```{r combineMany_chooseClusters}
+wh<-grep("nVarFeatures",clusterLabels(ce))
+ce<-combineMany(ce,whichCluster=wh,proportion=0.7)
+plotCoClustering(ce)
+```
+
+`combineMany` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being hierarchical). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which requires clusters to have a minimim number of samples to be a clustering.
+
+*Treatment of Unclustered assignments* -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `combineMany`.
 
 
-Some range of parameters make better choices to `combineMany` across. 
+*Good scenarios for running `combineMany`* Varying certain parameters result in clusterings better for `combineMany` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `combineMany`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
 ## Creating a Hierarchy of Clusters and Merging clusters
 
@@ -517,7 +534,7 @@ Notice that the summary of ce now has 'makeDendrogram run?' as 'No'. These seems
 For example, to rerun `mergeClusters`, we need to reset the primaryCluster to be the `combineMany` clustering and remake the dendrogram:
 
 
-```{r mergeClusters_ex}
+```{r mergeClusters_redo}
 primaryClusterIndex(ce)<-which(clusterLabels(ce)=="combineMany")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 ce<-mergeClusters(ce,cutoff=0.1,mergeMethod="adjP")

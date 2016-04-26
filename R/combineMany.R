@@ -197,39 +197,40 @@ setMethod(
 
 #from: https://johanndejong.wordpress.com/2015/10/02/faster-hamming-distance-in-r-2/
 .hammingdist <- function(X, Y,uniqValue=1539263) {
-	#samples are in the rows!
-    if ( missing(Y) ) {
-        uniqs <- na.omit(unique(as.vector(X)))
-		if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
-		isobsX<-abs(is.na(X)-1)
-		if(any(is.na(X))){
-			X[is.na(X)]<-uniqValue
-		}
-    	U <- X == uniqs[1]
-        H <- t(U) %*% U
-        N <- t(isobsX) %*% (isobsX)
- 		for ( uniq in uniqs[-1] ) {
-            U <- X == uniq
-            H <- H + t(U) %*% U
-        }
-    } else {
-        uniqs <- na.omit(union(X, Y))
-		if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
-		isobsX<-abs(is.na(X)-1)
-		if(any(is.na(X))){
-			X[is.na(X)]<-uniqValue
-		}
-		isobsY<-abs(is.na(Y)-1)
-		if(any(is.na(Y))){
-			Y[is.na(Y)]<-uniqValue
-		}
-        H <- t(X == uniqs[1]) %*% (Y == uniqs[1])
-        N <- t(isobsX) %*% (isobsY)
- 		for ( uniq in uniqs[-1] ) {
-			A<-t(X == uniq) %*% (Y == uniq)
-           H <- H + A
-        }
+  #samples are in the rows!
+  if ( missing(Y) ) {
+    uniqs <- na.omit(unique(as.vector(X)))
+    if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
+    isobsX<-abs(is.na(X)-1)
+    if(any(is.na(X))){
+      X[is.na(X)]<-uniqValue
     }
-    H/N
+    U <- X == uniqs[1]
+    H <- t(U) %*% U
+    N <- t(isobsX) %*% (isobsX)
+    for ( uniq in uniqs[-1] ) {
+      U <- X == uniq
+      H <- H + t(U) %*% U
+    }
+  } 
+  else {
+    uniqs <- na.omit(union(X, Y))
+    if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
+    isobsX<-abs(is.na(X)-1)
+    if(any(is.na(X))){
+      X[is.na(X)]<-uniqValue
+    }
+    isobsY<-abs(is.na(Y)-1)
+    if(any(is.na(Y))){
+      Y[is.na(Y)]<-uniqValue
+    }
+    H <- t(X == uniqs[1]) %*% (Y == uniqs[1])
+    N <- t(isobsX) %*% (isobsY)
+    for ( uniq in uniqs[-1] ) {
+      A<-t(X == uniq) %*% (Y == uniq)
+      H <- H + A
+    }
+  }
+  H/N
 }
 

@@ -10,12 +10,12 @@
 \S4method{getBestFeatures}{matrix}(x, cl, type = c("F", "Dendro", "Pairs",
   "OneAgainstAll"), dendro = NULL, pairMat = NULL, returnType = c("Table",
   "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  voomCorrection = FALSE, ...)
+  countData = FALSE, ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, type = c("F", "Dendro",
   "Pairs", "OneAgainstAll"), pairMat = NULL, returnType = c("Table",
   "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  voomCorrection = FALSE, ...)
+  countData = FALSE, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
@@ -45,14 +45,8 @@ given by topTable or topTableF.}
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests
 (i.e. if type='Dendro' or 'Pairs').}
 
-\item{voomCorrection}{Whether to perform voom correction to data, e.g. if
-input data matrix is counts. If input to \code{x} consists of counts, this
-argument should be set to TRUE. Otherwise, dat should be something like log
-of counts (which is not preferable for count data) or some other kind of
-similar input data that does not need a variance stabilization (e.g.
-microarray data). Currently the default is set to FALSE, simply because the
-voomCorrection has not been heavily tested. But TRUE with \code{x} being
-counts really should be the default for RNA-Seq data.}
+\item{countData}{logical as to whether input data is count data, in which
+case to perform voom correction to data. See details.}
 
 \item{...}{options to pass to \code{\link{topTable}} or
 \code{\link{topTableF}} (see \code{\link{limma}} package)}
@@ -114,6 +108,28 @@ Note that the default option for \code{\link[limma]{topTable}} is
   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05);
   the default value of \code{p.value = 1} will not result in any effect on
   the adjusted p-value otherwise.
+
+\code{countData} triggers whether the "voom" correction will be 
+  performed in \code{limma}. If the input data is a matrix is counts (or a 
+  `ClusterExperiment` object with counts as the primary data before 
+  transformation) this should be set to TRUE and they will be log-transformed
+  internally by voom for the differential expression analysis in a way that 
+  accounts for the difference in the mean-variance relationships. Otherwise, 
+  dat should be on the correct (log) scale for differential expression 
+  analysis without a need a variance stabilization (e.g. microarray data). 
+  Currently the default is set to FALSE, simply because the countData has not
+  been heavily tested. If the But TRUE with \code{x} being counts really 
+  should be the default for RNA-Seq data. If the input data is a 
+  `ClusterExperiment` object, setting `countData=TRUE` will cause the program
+  to ignore the internally stored transformation function and instead use 
+  voom with log(x+1). Alternatively, `countData=FALSE` for a 
+  `ClusterExperiment` object will cause the DE to be performed with `limma` 
+  after transforming the data with the stored transformation. Although some
+  writing about "voom" seem to suggest that it would be appropriate for
+  arbitrary transformations, the authors have cautioned against using it for
+  anything other than count data on mailing lists. For this reason we are not
+  implementing it for arbitrary transformations at this time (e.g.
+  log(FPKM+epsilon) transformations).
 }
 \examples{
 data(simData)
@@ -124,15 +140,15 @@ sequential=FALSE, clusterDArgs=list(k=8))
 
 #basic F test, return all, even if not significant:
 testF <- getBestFeatures(cl, type="F", number=nrow(simData),
-voomCorrection=FALSE)
+countData=FALSE)
 
 #Do all pairwise, only return significant, try different adjustments:
 pairsPerC <- getBestFeatures(cl, type="Pairs", contrastAdj="PerContrast",
-p.value=0.05, voomCorrection=FALSE)
+p.value=0.05, countData=FALSE)
 pairsAfterF <- getBestFeatures(cl, type="Pairs", contrastAdj="AfterF",
-p.value=0.05, voomCorrection=FALSE)
+p.value=0.05, countData=FALSE)
 pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
-p.value=0.05, voomCorrection=FALSE)
+p.value=0.05, countData=FALSE)
 
 #not useful for this silly example, but could look at overlap with Venn
 allGenes <- paste("Row", 1:nrow(simData),sep="")
@@ -156,7 +172,7 @@ number=ncol(simData), p.value=0.05)
 # compare results to if used simData instead (not on count scale).
 # Again, not relevant for this silly example, but basic principle useful
 testFVoom <- getBestFeatures(simCount, primaryCluster(cl), type="F",
-number=nrow(simData), voomCorrection=TRUE)
+number=nrow(simData), countData=TRUE)
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 

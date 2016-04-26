@@ -26,16 +26,23 @@
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the
 #'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
 #'   only the value used in the merging is plotted for each node.
-#' @param countData logical as to whether input data is a count matrix (in which
-#'   case \code{log(count + 1)} will be used for \code{\link{makeDendrogram}}
-#'   and voom correction will be used in \code{\link{getBestFeatures}}). Ignored
-#'   if input is \code{\link{ClusterExperiment}}.
+#' @param countData logical as to whether input data is a count matrix. See details.
 #' @param ... for signature \code{matrix}, arguments passed to the
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
 #'   signature \code{matrix}.
 #' @inheritParams clusterMany,matrix-method
 #'
+#' @details If  \code{countData=TRUE}, and the input is a matrix,
+#'   \code{log(count + 1)} will be used for \code{\link{makeDendrogram}} and the
+#'   original data with voom correction will be used in 
+#'   \code{\link{getBestFeatures}}). If input is 
+#'   \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} means 
+#'   that the log(1+x) will be used as the transformation internally, like for
+#'   the matrix case, (and therefore will use the voom calculation) and NOT the
+#'   transformation stored in the object. If FALSE, then transform(x) will be
+#'   given to the input and will be used for both \code{makeDendrogram} and
+#'   \code{getBestFeatures}, with no voom correction.
 #' @details "JC" refers to the method of Ji and Cai (2007), and implementation
 #'   of "JC" method is copied from code available on Jiashin Ji's website,
 #'   December 16, 2015
@@ -121,7 +128,7 @@ setMethod(f = "mergeClusters",
   #get test-statistics for the contrasts corresponding to each node (and return all)
   sigTable <- getBestFeatures(x, cl, type=c("Dendro"), dendro=dendro,
                            returnType=c("Table"), contrastAdj=c("All"),
-                           number=nrow(x), p.value=1, voomCorrection=countData)
+                           number=nrow(x), p.value=1, countData=countData)
 
   #divide table into each node.
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
@@ -215,15 +222,24 @@ setMethod(f = "mergeClusters",
 #' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x, eraseOld=FALSE,
+          definition = function(x, eraseOld=FALSE,countData=FALSE,
                                 mergeMethod,...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
-  outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
+  if(!countData) outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
                            dendro=x@dendro_clusters,
                            countData=FALSE,mergeMethod=mergeMethod, ...)
+  else{
+    note(
+      "If `countData=TRUE` the data will be transformed with voom() rather than
+with the transformation function in the slot `transformation`.
+This makes sense only for counts.")
+    outlist <- mergeClusters(x=assay(x), cl=primaryCluster(x),
+                                          dendro=x@dendro_clusters,
+                                          countData=TRUE,mergeMethod=mergeMethod, ...)
+  }
   if(mergeMethod!="none"){
     #only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     #add "m" to name of cluster
