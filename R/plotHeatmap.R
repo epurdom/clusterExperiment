@@ -289,9 +289,12 @@ setMethod(
     #########
     ##Assign visualization data and clusterFeaturesData
     #########
+    #browser()
     visualizeData <- .convertTry(visualizeData,
                                  try(match.arg(visualizeData), silent=TRUE))
-
+    if(is.character(visualizeData)){
+      if(!visualizeData %in% c("transformed","centeredAndScaled","original")) stop("visualizeData value, '",visualizeData,"',is invalid option")
+    }
     if(missing(colorScale)) {
       colorScale <- seqPal5
       if(is.character(visualizeData)) {

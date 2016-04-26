@@ -391,11 +391,12 @@ This makes sense only for counts.")
 
 .getBestPairsGenes<-function(cl,pairMat,...){
 	## basic limma design
+  #browser()
 	if(is.null(pairMat)){ #make pair Mat of all pairwise
 		levs<-levels(cl)
 		pairMat<-t(apply(expand.grid(levs,levs),1,sort))
 		pairMat<-unique(pairMat)
-		pairMat<-pairMat[-which(pairMat[,1]==pairMat[,2]),]
+		pairMat<-pairMat[-which(pairMat[,1]==pairMat[,2]),,drop=FALSE]
 	}
 	if(is.null(dim(pairMat)) || ncol(pairMat)!=2) stop("pairMat must be matrix of 2 columns")
 	if(!all(as.character(unique(c(pairMat[,1],pairMat[,2]))) %in% as.character(cl))) stop("Some elements of pairMat do not match cl")
