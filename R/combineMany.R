@@ -20,6 +20,7 @@
 #'   (only if proportion < 1)
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix,missing}.
+#' @inheritParams clusterMany,matrix-method
 #'
 #' @details The function tries to find a consensus cluster across many different
 #'   clusterings of the same samples. It does so by creating a \code{nSamples} x

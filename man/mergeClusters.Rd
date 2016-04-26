@@ -50,6 +50,13 @@ if input is \code{\link{ClusterExperiment}}.}
 \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 For signature \code{ClusterExperiment} arguments passed to the method for
 signature \code{matrix}.}
+
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterType value,
+where \code{i} is one more than the largest such existing workflow
+clusterType.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements
@@ -82,7 +89,7 @@ Takes an input of hierarchical clusterings of clusters and
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
 If \code{mergeMethod} is not equal to 'none' then the plotting will
-  indicate the merged clusters (assuming \code{plotType} is not 'none').
+  indicate where the clusters will be merged (assuming \code{plotType} is not 'none').
 }
 \examples{
 data(simData)

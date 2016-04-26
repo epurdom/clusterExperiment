@@ -34,6 +34,7 @@
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
 #'   signature \code{matrix}.
+#' @inheritParams clusterMany,matrix-method
 #'
 #' @details "JC" refers to the method of Ji and Cai (2007), and implementation
 #'   of "JC" method is copied from code available on Jiashin Ji's website,
@@ -46,7 +47,7 @@
 #'   adjusted p-values (method "BH") and a cutoff of 0.05.
 #'
 #' @details If \code{mergeMethod} is not equal to 'none' then the plotting will
-#'   indicate the merged clusters (assuming \code{plotType} is not 'none').
+#'   indicate where the clusters will be merged (assuming \code{plotType} is not 'none').
 #' @return If `x` is a matrix, it returns (invisibly) a list with elements
 #'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x)
 #'   giving the integer-valued cluster ids for each sample. "-1" indicates the

@@ -44,6 +44,7 @@
 #'
 #' @export
 #'
+#' @import stats
 #' @examples
 #' data(simData)
 #'

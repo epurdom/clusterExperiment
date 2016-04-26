@@ -216,6 +216,11 @@
 #'
 #' @rdname plotHeatmap
 #' @aliases plotHeatmap
+#' @import stats
+#' @import graphics
+#' @import utils
+#' @import NMF
+#' @import grid
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),
