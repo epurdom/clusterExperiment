@@ -52,7 +52,7 @@ minSize=10)
 
 clCommon <- makeDendrogram(clCommon)
 
-clMerged <- mergeClusters(clCommon)
+clMerged <- mergeClusters(clCommon,mergeMethod="adjP")
 
 head(workflowClusters(clMerged))
 workflowClusterDetails(clMerged)

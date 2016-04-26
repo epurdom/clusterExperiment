@@ -89,7 +89,7 @@ Takes an input of hierarchical clusterings of clusters and
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
 If \code{mergeMethod} is not equal to 'none' then the plotting will
-  indicate the merged clusters (assuming \code{plotType} is not 'none').
+  indicate where the clusters will be merged (assuming \code{plotType} is not 'none').
 }
 \examples{
 data(simData)
