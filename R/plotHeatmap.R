@@ -162,7 +162,6 @@
 #' }
 #' @author Elizabeth Purdom
 #'
-#' @importFrom NMF aheatmap
 #' @export
 #'
 #' @examples
@@ -217,11 +216,8 @@
 #'
 #' @rdname plotHeatmap
 #' @aliases plotHeatmap
-#' @import stats
-#' @import graphics
-#' @import utils
-#' @import NMF aheatmap vplayout
-#' @import grid
+#' @importFrom stats hclust dist
+#' @importFrom NMF aheatmap vplayout
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),
@@ -474,7 +470,7 @@ setMethod(
             clusterSamplesData<-data.matrix(clusterSamplesData)
             #check valid
             if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-            dendroSamples<-as.dendrogram(hclust(dist(t(clusterSamplesData)))) #dist finds distances between rows
+            dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
           }
         }
         else{
@@ -496,7 +492,7 @@ setMethod(
           clusterFeaturesData<-data.matrix(clusterFeaturesData)
           #check valid
           if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
-          dendroFeatures<-as.dendrogram(hclust(dist(clusterFeaturesData))) #dist finds distances between rows
+          dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
         }
       }
       else{

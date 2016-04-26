@@ -36,3 +36,18 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true(!"combineMany_1" %in% clusterType(clustMerged2))
   expect_true(!"clusterMany_1" %in% clusterType(clustMerged2))
 })
+
+test_that("`mergeClusters` preserves the colData and rowData of SE", {
+
+  cl <- clusterSingle(smSimSE, clusterFunction="pam",
+                       subsample=FALSE, sequential=FALSE,
+                       clusterDArgs=list(k=6),isCount=FALSE)
+  cl <- makeDendrogram(cl)
+  cl <- mergeClusters(cl, mergeMethod = "adjP")
+  expect_equal(colData(cl),colData(smSimSE))
+  expect_equal(rownames(cl),rownames(smSimSE))
+  expect_equal(colnames(cl),colnames(smSimSE))
+  expect_equal(metadata(cl),metadata(smSimSE))
+  expect_equal(rowData(cl),rowData(smSimSE))
+
+})

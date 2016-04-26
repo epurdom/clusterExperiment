@@ -68,3 +68,17 @@ test_that("`combineMany` works when multiple runs of workflow", {
   shared7 <- combineMany(clustNothing3, "all")
   shared8 <- combineMany(clustNothing3, "workflow")
 })
+
+test_that("`combineMany` preserves the colData and rowData of SE", {
+  cl <- clusterMany(se, clusterFunction="pam", ks=2:4, findBestK=c(FALSE),
+                    removeSil=TRUE, subsample=FALSE)
+
+  cl <- combineMany(cl, whichClusters="workflow", proportion=0.5)
+
+  expect_equal(colData(cl),colData(se))
+  expect_equal(rownames(cl),rownames(se))
+  expect_equal(colnames(cl),colnames(se))
+  expect_equal(metadata(cl),metadata(se))
+  expect_equal(rowData(cl),rowData(se))
+
+})

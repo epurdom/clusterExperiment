@@ -65,6 +65,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
 #' @import SummarizedExperiment
+#' @import methods
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #' @export
 #'
@@ -147,7 +148,7 @@ setValidity("ClusterExperiment", function(object) {
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
   }
-  
+
   if(!all(is.na(object@coClustering)>0) &
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {

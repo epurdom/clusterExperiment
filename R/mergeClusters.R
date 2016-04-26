@@ -19,10 +19,10 @@
 #' @param mergeMethod method for calculating proportion of non-null that will be
 #'   used to merge clusters (if 'none', no merging will be done). See details
 #'   for description of methods.
-#' @param cutoff minimimum value required for NOT merging a cluster, i.e. 
+#' @param cutoff minimimum value required for NOT merging a cluster, i.e.
 #'   two clusters with the proportion of DE below cutoff will be merged.
 #'   Must be a value between 0, 1, where
-#'   lower values will make it harder to merge clusters. 
+#'   lower values will make it harder to merge clusters.
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the
 #'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
 #'   only the value used in the merging is plotted for each node.
@@ -232,15 +232,15 @@ setMethod(f = "mergeClusters",
     cl <- paste("m", cl, sep="")
     cl_labels <- as.character(outlist$clustering)
     cl_labels[idx] <- cl
-    
+
     newObj <- clusterExperiment(x, cl_labels,
                                 transformation=transformation(x),
                                 clusterType="mergeClusters")
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-    
-    
+
+
     retval <- addClusters(newObj, x)
     #retval@dendro_samples <- x@dendro_samples
     invisible(retval)

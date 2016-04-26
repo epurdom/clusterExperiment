@@ -32,7 +32,7 @@ the slot \code{dendro_clusters} will be used. This means that
 used to merge clusters (if 'none', no merging will be done). See details
 for description of methods.}
 
-\item{cutoff}{minimimum value required for NOT merging a cluster, i.e. 
+\item{cutoff}{minimimum value required for NOT merging a cluster, i.e.
 two clusters with the proportion of DE below cutoff will be merged.
 Must be a value between 0, 1, where
 lower values will make it harder to merge clusters.}
