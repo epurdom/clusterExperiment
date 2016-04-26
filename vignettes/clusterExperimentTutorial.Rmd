@@ -463,6 +463,14 @@ Note that we also provided in the above call the additional arguments `clusterDA
 
 ## Create a unified cluster from many clusters with `combineMany`
 
+After creating many clusterings, `combineMany` finds a single cluster based on what samples were in the same clusters throughout the many clusters found by `clusterMany`. While subsampling the data helps be robust to outlying samples, combining across many clustering parameters can help be robust to choice in parameters, particularly then the parameters give roughly similar numbers of clusters. 
+
+As mentioned in the Quick Start section, the default option for `combineMany` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
+
+Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `comineMany` makes a coClustering matrix $D$, similar to that of subsampl
+
+
+Some range of parameters make better choices to `combineMany` across. 
 
 ## Creating a Hierarchy of Clusters and Merging clusters
 
