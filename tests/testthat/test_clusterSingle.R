@@ -104,3 +104,16 @@ test_that("Different options of `clusterSingle` ", {
                             clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
                  "do not match the choice of typeAlg")
 })
+
+test_that("`clusterSingle` preserves the colData and rowData of SE", {
+  cl <- clusterSingle(se, clusterFunction="pam",
+                      subsample=FALSE, sequential=FALSE,
+                      clusterDArgs=list(k=3),isCount=FALSE)
+
+  expect_equal(colData(cl),colData(se))
+  expect_equal(rownames(cl),rownames(se))
+  expect_equal(colnames(cl),colnames(se))
+  expect_equal(metadata(cl),metadata(se))
+  expect_equal(rowData(cl),rowData(se))
+
+})
