@@ -161,8 +161,10 @@ setMethod(
     }
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
-
-    return(addClusters(newObj, x))
+    if(!is.null(x)) retval<-addClusters(newObj,x)
+    else retval<-newObj
+    
+    return(retval)
   }
 )
 

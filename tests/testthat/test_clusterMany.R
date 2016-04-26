@@ -27,7 +27,12 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
                                          subsample=FALSE, sequential=FALSE,
                                          isCount=FALSE,verbose=FALSE)
             expect_true(nClusters(clustNothing3) == nClusters(ccSE) + 2)
-
+            expect_equal(colData(clustNothing3),colData(ccSE))
+            expect_equal(rownames(clustNothing3),rownames(ccSE))
+            expect_equal(colnames(clustNothing3),colnames(ccSE))
+            expect_equal(metadata(clustNothing3),metadata(ccSE))
+            expect_equal(rowData(clustNothing3),rowData(ccSE))
+            
             test <- clusterSingle(se, clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         clusterDArgs=list(k=4),isCount=FALSE)

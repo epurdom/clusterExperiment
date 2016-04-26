@@ -385,10 +385,13 @@ setMethod(
     outval<-clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
+      outval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      
       ##Check if clusterMany already ran previously
       ###ToDo: check what happens if the only clusters existing are workflow clusters
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
-      retval<-addClusters(outval,x)
+      if(!is.null(x)) retval<-addClusters(outval,x)
+      else retval<-outval
       validObject(retval)
 
 
@@ -412,14 +415,7 @@ setMethod(
                           nPCADims=nPCADims, transFun=transFun, isCount=isCount,
                           ...)
     if(class(outval)=="ClusterExperiment") {
-        retval<-clusterExperiment(x,
-                      clusters=clusterMatrix(outval),
-                      transformation=transformation(outval),
-                      clusterType=clusterType(outval),
-                                     clusterInfo=clusterInfo(outval))
-        clusterLegend(retval)<-clusterLegend(outval)
-        orderSamples(retval)<-orderSamples(outval)
-        coClustering(retval)<-coClustering(retval)
+        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 
         return(retval)
     }  #need to redo it to make sure get any other part of summarized experiment

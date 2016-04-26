@@ -115,7 +115,8 @@ setMethod(
             if(eraseOld){ 
                 #removes all past iterations, not just current, except for current iteration that upstream of new one
                 whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
-                newX<-removeClusters(x,whRm) 
+                if(length(whRm)==nClusters(x)) return(NULL)
+                else newX<-removeClusters(x,whRm) 
             }
             else{
                 #otherwise, only current downstream ones exist

@@ -1,3 +1,14 @@
+.addBackSEInfo<-function(newObj,oldObj){
+  retval<-clusterExperiment(oldObj,
+                            clusters=clusterMatrix(newObj),
+                            transformation=transformation(newObj),
+                            clusterType=clusterType(newObj),
+                            clusterInfo=clusterInfo(newObj))
+  clusterLegend(retval)<-clusterLegend(newObj)
+  orderSamples(retval)<-orderSamples(newObj)
+  coClustering(retval)<-coClustering(newObj)
+  return(retval)
+}
 .pullSampleData<-function(ce,wh){
   if(!is.null(wh)){
     sData<-colData(ce)

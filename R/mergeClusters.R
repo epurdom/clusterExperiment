@@ -255,9 +255,8 @@ This makes sense only for counts.")
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-
-
-    retval <- addClusters(newObj, x)
+    if(!is.null(x)) retval<-addClusters(newObj,x)
+    else retval<-newObj
     #retval@dendro_samples <- x@dendro_samples
     invisible(retval)
   }
