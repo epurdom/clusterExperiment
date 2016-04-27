@@ -31,28 +31,31 @@ The results from our methods will make an object `ClusterExperiment` that expand
 All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We focus in this tutorial on using `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object. 
 
 
-## Basic overview of the clustering workflow
+## The clustering workflow
 
 The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouete width, sequential clustering procedures, and so forth. We describe here the basic expected usage of the package. The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. 
 
-The basic clustering workflow is 
+The basic intended clustering workflow is 
 
 * Implement many different clusterings using different choices of parameters using the function `clusterMany`. This results in a large collection of clusterings, where each clustering is based on different parameters. 
 * Find a unifying clustering across these many clusterings using the `combineMany` function. 
 * Determine whether some clusters should be merged together into larger clusters. This involves two steps:
 
-  ** Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
-  ** Merge together clusters of this hierarchy based on how the percentage of differential expression.
+  * Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
+  * Merge together clusters of this hierarchy based on how the percentage of differential expression.
 
-The basic premise of our workflow is to find small, robust clusters of samples, and then unifying them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
+The basic premise of our workflow is to find small, robust clusters of samples, and then unify them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
-There is special functionality to assist in quickly visualizing and managing the results of this workflow.
+Users can also run or add their own clusters to this workflow at different stages.  However, there is special functionality to ease in quickly visualizing and managing the results of this workflow.
+
 
 ## Finding related features/genes
 
 A common practice after determining clusters is to perform differential gene expression analysis in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are not valid, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters and to perform differential expression analysis.
 
-Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. The `getBestFeatures` function uses the DE analysis provided by the `limma` package. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. Unlike edgeR or DESeq, the voom correction does not require a count matrix, and therefore can be used on FPKM or TPM entries, as well as normalized data.
+Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. The `getBestFeatures` function uses the DE analysis provided by the `limma` package. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. 
+
+
 
 ## Visualization Tools
 
@@ -70,7 +73,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 ## Data example
 
-We will make use of a single cell sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to download the data. 
+We will make use of a single cell sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. 
 
 ```{r}
 library(scRNAseq)
@@ -86,7 +89,7 @@ NCOL(fluidigm) #number of samples
 ```
 
 
-While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice as different sequencing depth. We will limit to those with high sequencing depth. We will also do some minimal filtering of the genes, removing genes without at least 100 reads across all 65 cells.
+While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice as different sequencing depth. We will limit to those with high sequencing depth. We will also do some minimal filtering of the genes, removing genes without at least 100 reads across totalled across all 65 cells.
 
 ```{r}
 se<-fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
@@ -96,24 +99,26 @@ se<-se[-whLow,]
 dim(se)
 ```
 
-This removed `r length(whLow)` genes out of `r NROW(fluidigm)` (`r length(whZero)` of which had zero in all samples). We now have `r NROW(se)` genes (or features) remaining.
+This removed `r length(whLow)` genes out of `r NROW(fluidigm)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to remove genes with all zero in all samples (we had `r length(whZero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
 
 
 
 ## Step 1: Clustering with `clusterMany`
 
 `clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to pick options to vary is to give multiple values to an argument. Below in our call to `clusterMany` we will 
-* set `dimReduce=c("PCA", "mostVar")` meaning cluster after a dimensionality reduction to the top principal componetns, and also cluster after filtering to the top most variable genes
+
+* set `dimReduce=c("PCA", "mostVar")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
 * For PCA reduction, choose 5,15, and 50 principal components ifor the reduced data set (set `nPCADims=c(5,15,50)`)
 * For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
 
 Other possible options we will keep fixed to reduce the number of clusterings by giving only a single value to the argument: 
+
 * we will use 'pam' (`clusterFunction`) 
 * we will have the algorithm pick the best $k$ ( from 2-10) via silhouette distance (`findBestK=TRUE` and `ks=2:10`)
 * we will unassign samples from clusters if they have negative silhouette scores (`removeSil=TRUE`). Such unassigned samples will be given the value -1. 
 * we will leave the default (see help pages) of requiring clusters to be of size at least 5; smaller clusters will be ignored and samples assigned to them given the unassigned value of -1
 
-We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `function(x){x}`). 
+We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `function(x){x}` for the identify). 
 
 ```{r clusterMany}
 ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE),
@@ -610,14 +615,19 @@ Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" colu
 levels((bestDendro)$Contrast)
 ```
 
+## Analysis for count and other RNASeq data
+
+The `getBestFeatures` method for `ClusterExperiment` objects has an argument `countData`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom` correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set this in the call to `getBestFeatures`.  
+
+If instead `countData=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data stored in the `ClusterExperiment` object, and there is no `voom` correction. 
+
+Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. However, the authors of the package to not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 
 ## Additional considerations
 
 The user should be careful about questions of multiple comarisons when all of these multiple tests are being performed on each feature; the default is to correct across all of these tests (see the help of `getBestFeatures` and the argument `contrastAdj` for more). As noted in the introduction, p-values created in this way are reusing the data (since the data was also used for creating the clusters) and hence should not be considered valid p-values regardless.
 
 
-
-As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned for each contrast. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05.
-
+As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned for each contrast. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
 
 

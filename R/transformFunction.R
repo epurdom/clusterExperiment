@@ -75,7 +75,7 @@ setMethod(
   origX<-x
   #transform data
   if(is.null(transFun)){
-    transFun<-if(isCount) function(x){log(x+1)} else function(x){x}
+    transFun<-if(isCount) function(x){log2(x+1)} else function(x){x}
   }
   x<-try(transFun(x),silent=TRUE)
   if(inherits(x, "try-error")) stop(paste("User-supplied `transFun` produces error on the input data matrix:\n",x))

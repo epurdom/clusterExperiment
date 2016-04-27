@@ -27,6 +27,10 @@
 #'   case to perform voom correction to data. See details.
 #' @param ... options to pass to \code{\link{topTable}} or
 #'   \code{\link{topTableF}} (see \code{\link{limma}} package)
+#' @param normalize.method character value, passed to \code{\link{voom}} in 
+#'   \code{\link{limma}} package. Only used if \code{countData=TRUE}. 
+#'   Note that the default value is set to "none", which is not the
+#'   default value of \code{\link{voom}}.
 #'
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
@@ -72,7 +76,7 @@
 #'   should be the default for RNA-Seq data. If the input data is a 
 #'   `ClusterExperiment` object, setting `countData=TRUE` will cause the program
 #'   to ignore the internally stored transformation function and instead use 
-#'   voom with log(x+1). Alternatively, `countData=FALSE` for a 
+#'   voom with log2(x+0.5). Alternatively, `countData=FALSE` for a 
 #'   `ClusterExperiment` object will cause the DE to be performed with `limma` 
 #'   after transforming the data with the stored transformation. Although some
 #'   writing about "voom" seem to suggest that it would be appropriate for
@@ -155,7 +159,7 @@ setMethod(f = "getBestFeatures",
                                 dendro=NULL, pairMat=NULL,
                                 returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
-                                countData=FALSE, ...) {
+                                countData=FALSE, normalize.method="none",...) {
 
             #... is always sent to topTable, and nothing else
             if(is.factor(cl)) {
@@ -196,7 +200,7 @@ setMethod(f = "getBestFeatures",
 
               if(countData) {
                 v <- voom(tmp, design=designContr, plot=FALSE,
-                                 normalize.method = "none")
+                                 normalize.method = normalize.method)
                 fitContr <- lmFit(v, designContr)
               } else {
                 fitContr <- lmFit(tmp, designContr)
@@ -208,7 +212,7 @@ setMethod(f = "getBestFeatures",
 
               if(countData) {
                 v <- voom(tmp, design=designF, plot=FALSE,
-                                 normalize.method = "none")
+                                 normalize.method = normalize.method)
                 fitF <- lmFit(v, designF)
               } else {
                 fitF <- lmFit(tmp, designF)

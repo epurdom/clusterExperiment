@@ -37,7 +37,7 @@
 interpretation of parameters depends on the type of the input.}
 
 \item{isCount}{logical. Whether the data are in counts, in which case the
-default \code{transFun} argument is set as log(x+1). This is simply a
+default \code{transFun} argument is set as log2(x+1). This is simply a
 convenience to the user, and can be overridden by giving an explicit
 function to \code{transFun}.}
 
@@ -168,7 +168,7 @@ If \code{data} is a \code{ClusterExperiment} object,
   \code{ClusterExperiment} object contains normalized data, but the user
   wishes that the color scale be based on the log-counts for easier
   interpretation, \code{visualizeData} could be set to be the
-  \code{log(counts + 1)}.
+  \code{log2(counts + 1)}.
 
 If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterSamplesData} can be used to indicate the type of clustering
@@ -216,7 +216,7 @@ If \code{breaks} is a numeric value between 0 and 1, then
   \code{breaks} is assumed to indicate the upper quantile (on the log scale)
   at which the heatmap color scale should stop. For example, if
   \code{breaks=0.9}, then the breaks will evenly spaced up until the 0.9
-  upper quantile of the log of the \code{data}, and then all values after the
+  upper quantile of \code{data}, and then all values after the
   0.9 quantile will be absorbed by the upper-most color bin. This can help to
   reduce the visual impact of a few highly expressed genes (features).
 
@@ -238,7 +238,7 @@ cl <- rep(1:3,each=100)
 cl2 <- cl
 changeAssign <- sample(1:length(cl), 80)
 cl2[changeAssign] <- sample(cl[changeAssign])
-ce <- clusterExperiment(simCount, cl2, transformation=function(x){log(x+1)})
+ce <- clusterExperiment(simCount, cl2, transformation=function(x){log2(x+1)})
 
 #simple, minimal, example. Show counts, but cluster on underlying means
 plotHeatmap(ce)

@@ -34,12 +34,12 @@
 #' @inheritParams clusterMany,matrix-method
 #'
 #' @details If  \code{countData=TRUE}, and the input is a matrix,
-#'   \code{log(count + 1)} will be used for \code{\link{makeDendrogram}} and the
+#'   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
 #'   original data with voom correction will be used in 
 #'   \code{\link{getBestFeatures}}). If input is 
-#'   \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} means 
-#'   that the log(1+x) will be used as the transformation internally, like for
-#'   the matrix case, (and therefore will use the voom calculation) and NOT the
+#'   \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} also means 
+#'   that the log2(1+count) will be used as the transformation, like for
+#'   the matrix case as well as the voom calculation, and will NOT use the
 #'   transformation stored in the object. If FALSE, then transform(x) will be
 #'   given to the input and will be used for both \code{makeDendrogram} and
 #'   \code{getBestFeatures}, with no voom correction.
@@ -112,7 +112,7 @@ setMethod(f = "mergeClusters",
 
   if(is.null(dendro)) {
     dendro <- if(countData) {
-        makeDendrogram(x=log(x+1), cl)$clusters
+        makeDendrogram(x=log2(x+1), cl)$clusters
       } else {
         makeDendrogram(x=x, cl)$clusters
       }

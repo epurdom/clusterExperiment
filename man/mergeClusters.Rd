@@ -11,8 +11,8 @@
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"), cutoff = 0.1,
   plotType = c("none", "all", "mergeMethod"), countData = TRUE, ...)
 
-\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE, countData,
-  mergeMethod, ...)
+\S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
+  countData = FALSE, mergeMethod, ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a
@@ -76,12 +76,12 @@ Takes an input of hierarchical clusterings of clusters and
 }
 \details{
 If  \code{countData=TRUE}, and the input is a matrix,
-  \code{log(count + 1)} will be used for \code{\link{makeDendrogram}} and the
+  \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
   original data with voom correction will be used in 
   \code{\link{getBestFeatures}}). If input is 
-  \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} means 
-  that the log(1+x) will be used as the transformation internally, like for
-  the matrix case, (and therefore will use the voom calculation) and NOT the
+  \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} also means 
+  that the log2(1+count) will be used as the transformation, like for
+  the matrix case as well as the voom calculation, and will NOT use the
   transformation stored in the object. If FALSE, then transform(x) will be
   given to the input and will be used for both \code{makeDendrogram} and
   \code{getBestFeatures}, with no voom correction.
