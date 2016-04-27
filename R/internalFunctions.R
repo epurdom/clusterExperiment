@@ -123,7 +123,7 @@
 
 ##Universal way to change character indication of clusterType into indices.
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("workflow","all","none","primary")),silent=TRUE)
+  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster")),silent=TRUE)
   if(!inherits(test,"try-error")){
     if(test=="workflow"){
       ppIndex<-workflowClusterDetails(x)
