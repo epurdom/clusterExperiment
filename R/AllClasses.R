@@ -157,8 +157,9 @@ setValidity("ClusterExperiment", function(object) {
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
     #check primary index
     if(length(object@primaryIndex) != 1) {
-      return("If more than one set of cluster labels, a primary cluster must
+        if(length(object@primaryIndex) == 0) return("If more than one set of clusterings, a primary cluster must
                be specified.")
+        if(length(object@primaryIndex) > 0) return("Only a single primary index may be specified")
     }
     if(object@primaryIndex > NCOL(object@clusterMatrix) |
        object@primaryIndex < 1) {

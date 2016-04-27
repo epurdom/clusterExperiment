@@ -522,12 +522,12 @@ ce<-combineMany(ce,whichCluster=wh,proportion=0.7)
 plotCoClustering(ce)
 ```
 
-`combineMany` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being hierarchical). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which requires clusters to have a minimim number of samples to be a clustering.
+`combineMany` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimimum size of a cluster.
 
-*Treatment of Unclustered assignments* -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `combineMany`.
+**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `combineMany`.
 
 
-*Good scenarios for running `combineMany`* Varying certain parameters result in clusterings better for `combineMany` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `combineMany`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+**Good scenarios for running `combineMany`** Varying certain parameters result in clusterings better for `combineMany` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `combineMany`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
 ## Creating a Hierarchy of Clusters and Merging clusters
 
@@ -543,26 +543,32 @@ We provide a method for doing this that consists of two steps. Making a hierarch
 
 Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `dimReduce` and the number of dimensions via `ndims`.
 
-```{r makeDendrogram, reducedFeatures}
+```{r makeDendrogram_reducedFeatures}
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
+```
+Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
+
+If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'. 
+
+```{r makeDendrogram_show}
 ce
 ```
 
-A few important notes: `makeDendrogram` operates on the primaryCluster. If the user has done something between combineMany and makeDendrogram, then that cluster may be not the one expected. 
-
-Note also that now the summary of ce has 'makeDendrogram' marked as 'Yes'. Furthermore that the plotting function for the dendrogram colors (and labels) the clusters assuming that they correspond to the primaryCluster. 
+*A few important notes* `makeDendrogram` operates on the primaryCluster. If the user has done something between combineMany and makeDendrogram, then that cluster may be not the one expected. **To do: discuss what happens to dendrogram if change primaryCluster, run other functions, etc**.
 
 ### Merging clusters with little differential expression
-We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (section), where the `type` argument is set to "Dendro".
+We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (section XXX), where the `type` argument is set to "Dendro".
 
 Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate thresshold (using the Benjamini-Hochberg procedure). However, other methods are also implemented (see the help of `mergeClusters`). 
 
-`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method.
+`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotType="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
 
 ```{r mergeClusters_plot}
 mergeClusters(ce,mergeMethod="none",plotType="all")
 ```
+
+Now we can pick a cutoff.
 
 ```{r mergeClusters_ex}
 ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP")
@@ -585,15 +591,33 @@ ce
 
 The commands we have shown above show a workflow which continually saves the results over the previous object, so that additional information just gets added to the existing object. 
 
-What happens if some parts of the clustering workflow are re-run? For example, in the above we reran parts of the workflow when we talked about them in more detail. 
+What happens if some parts of the clustering workflow are re-run? For example, in the above we reran parts of the workflow when we talked about them in more detail, or to experiment with parameter settings. 
 
-The workflow commands check for existing clusters of the workflow (based on the `clusterType` of the clusterings), and if there exist clusterings from previous runs that are "downstream" of it, and change their names by adding a "_i", where $i$ is a numerical index keeping track of replicate calls.
+The workflow commands check for existing clusters of the workflow (based on the `clusterType` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterType value by adding a "_i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany_x`, where $x$ is the largest such number needed to be greater than any existing `combineMany_x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters_x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`.
+For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany_x`, where $x$ is the largest such number needed to be greater than any existing `combineMany_x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters_x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
 
-This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed.
+This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix` with functions like `workflowClusterDetails` and `workflowClusterTable`. 
 
-If you really want to, you can see more about the existing iterations with functions like `workflowClusterDetails` and `workflowClusterTable`. You can also choose to have old versions erased by choosing the options `eraseOld=TRUE` for `clusteMany`, `combineMany` and `mergeClusters` (note this will wipe out ALL past workflow results except for those that are the current workflow and "upstream" of the requested command)
+You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany` and/or `mergeClusters`. `eraseOld=TRUE` will delete ALL past workflow results except for those that are both in the current workflow and "upstream" of the requested command. 
+
+Note that there is nothing that governs or protects the `clusterType` values to be of a certain kind. This means that if the user decides to name a clusterType of a clustering one of these protected names, that is allowed.
+
+**Designate a Final Clustering** A final protected clusterType is "final". This is not created by any method, but can be set as the clusterType of a clustering by the user (via the `clusterType` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with "_x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
+
+For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
+
+Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. Note that the clusterLabel will not change without our setting it. 
+
+```{r markFinal}
+whFinal<-which(clusterType(ce)=="mergeClusters_1")
+clusterType(ce)[whFinal]<-"final"
+clusterLabels(ce)[whFinal]<-"My Final Clustering"
+primaryClusterIndex(ce)<-whFinal
+ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+par(mar=plotCMar)
+plotClusters(ce,whichClusters="workflow")
+```
 
 # Finding Features related to a Clustering
 
@@ -612,7 +636,7 @@ The $F$ test is a test for whether there are *any* differences in expression bet
 
 Note that for all of these contrasts, we are making use of all of the data, not just the samples in the particular cluster pairs being compared. This means the variance is estimated with all the samples. Indeed, the same linear model is being used for all of these comparisons. 
 
-*Pairs:* The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons:
+**Pairs:** The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons:
 
 ```{r getBestFeatures_onlyTopPairs}
 pairsAllTop<-getBestFeatures(ce,type="Pairs",p.value=0.05)
@@ -624,7 +648,7 @@ Notice that compared to the quick start guide, I didn't set the parameter `numbe
 
 In addition to the columns provided by `topTable`, the column `Contrast` tells us what pairwise contrast the result is from. `X1-X2` means a comparison of cluster 1 and cluster 2. The column `IndexInOriginal` gives the index of the gene to the original input data matrix, namely `assay(ce)`. The other columns are given by `topTable` (with the column `Feature` renamed -- it is usually `ProbeID` in `limma`).  
 
-*OneAgainsAll:* The choice `type="OneAgainsAll"` performs a comparison of a cluster against the mean of all of the other clusters. 
+**OneAgainsAll:** The choice `type="OneAgainsAll"` performs a comparison of a cluster against the mean of all of the other clusters. 
 
 ```{r getBestFeatures_oneAgainstAll}
 best1vsAll<-getBestFeatures(ce,type="OneAgainstAll",p.value=0.05)
@@ -634,7 +658,7 @@ head(best1vsAll)
 Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4)/3-X1", meaning the mean of the means of cluster 2,3,4 is compared to the mean of cluster1. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
 
 
-*Dendro:* The option `type="Dendro" is more complex; it assumes that there is a hiearchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, defines a contrast or comparison of the mean expression between the daughter nodes. 
+**Dendro:** The option `type="Dendro"` is more complex; it assumes that there is a hiearchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, defines a contrast or comparison of the mean expression between the daughter nodes. 
 
 To run this option, it is important that `makeDendrogram` corresponds to the dendrogram you want (that the relevant set of features were chosen, etc., see `makeDendrogram` above). For this reason, it is good to rerun the `makeDendrogram` command first. 
 

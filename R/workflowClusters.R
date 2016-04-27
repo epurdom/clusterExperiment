@@ -105,9 +105,9 @@ setMethod(
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(x,eraseOld,newToAdd){
     ppIndex<-workflowClusterDetails(x)
-    if(!newToAdd %in% .workflowValues) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
+    if(!newToAdd %in% .workflowValues[-1]) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
     whNew<-match(newToAdd, .workflowValues)
-    downstreamType<-.workflowValues[1:whNew]
+    downstreamType<-.workflowValues[2:whNew]
     newX<-x
     if(!is.null(ppIndex)){ #there are pre-existing workflow results
         curr<-ppIndex[ppIndex[,"iteration"]==0,]

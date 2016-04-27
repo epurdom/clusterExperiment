@@ -31,7 +31,10 @@
 #'   those clusterings where both samples were assigned. Then samples with more
 #'   than \code{propUnassigned} values that are '-1' across all of the
 #'   clusterings are assigned a '-1' regardless of their cluster assignment.
-#'
+#'@details The method calls \code{\link{clusterD}} on the proportion matrix with 
+#' \code{clusterFunction} as the 01 clustering algorithm, \code{alpha=1-proportion},
+#' \code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of 
+#' \code{\link{clusterD}} for more details.
 #' @return If x is a matrix, a list with values
 #' \itemize{
 #'   \item{\code{clustering}}{ vector of cluster assignments, with "-1" implying
