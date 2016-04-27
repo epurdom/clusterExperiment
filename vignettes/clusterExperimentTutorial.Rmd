@@ -583,7 +583,7 @@ For example, to rerun `mergeClusters`, we need to reset the primaryCluster to be
 ```{r mergeClusters_redo}
 primaryClusterIndex(ce)<-which(clusterLabels(ce)=="combineMany")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-ce<-mergeClusters(ce,cutoff=0.1,mergeMethod="adjP")
+ce<-mergeClusters(ce,cutoff=0.01,mergeMethod="adjP")
 ce
 ```
 
