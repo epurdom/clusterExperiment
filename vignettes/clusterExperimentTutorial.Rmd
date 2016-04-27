@@ -385,9 +385,9 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluste
 
 ### Using separate input data for clustering and for visualization
 
-**To Add**
+While count data is a common type of data, it is also common that the input data in the SummarizedExperiment object might be normalized data from a normalization package such as `RUVSeq`. In this case, the clustering and all numerical calculations should be done on the normalized data (which may or may not need a log transform). However, these normalized data might not be on a logical count scale (for example, in `RUVSeq`, the normalize data are residuals after subtracting out gene-specific batch effects). 
 
-
+In this case, it can be convenient to have the *visualization* of the data (i.e. the color scale), be based on a count scale that is interpretable, even while the clustering is done based on the normalized data. This is possible by giving a new matrix of values to the argument `visualizeData`. In this case, the color scale (and clustering of the features) is based on the input `visualizeData` matrix, but all clustering of the samples is done on the internal data in the `ClusterExperiment` object. 
 
 
 # The clustering workflow
