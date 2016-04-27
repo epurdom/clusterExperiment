@@ -10,7 +10,7 @@
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{combineMany}{matrix,missing}(x, whichClusters, proportion = 1,
-  clusterFunction = "hierarchical", propUnassigned = 0.5, minSize = 5)
+  clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5)
 
 \S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
   eraseOld = FALSE, ...)

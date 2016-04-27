@@ -244,7 +244,7 @@ setMethod(
           }
         }
       }
-      type01 <- which(param[,"clusterFunction"] %in% c("hierarchical","tight"))
+      type01 <- which(param[,"clusterFunction"] %in% c("hierarchical01","tight"))
       if(length(type01)>0){
         param[type01,"findBestK"] <- FALSE
         param[type01,"removeSil"] <- FALSE

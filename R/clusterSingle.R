@@ -52,7 +52,7 @@
 #' #use clusterSingle to do sequential clustering
 #' #(same as example in seqCluster only using clusterSingle ...)
 #' set.seed(44261)
-#' clustSeqHier_v2 <- clusterSingle(simData, clusterFunction="hierarchical",
+#' clustSeqHier_v2 <- clusterSingle(simData, clusterFunction="hierarchical01",
 #' sequential=TRUE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
 #' clusterFunction="kmeans", clusterArgs=list(nstart=10)),
 #' seqArgs=list(beta=0.8, k0=5), clusterDArgs=list(minSize=5))
@@ -69,7 +69,7 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical", "pam","kmeans"),
+      clusterFunction=c("tight", "hierarchical01", "pam","kmeans"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
       ndims=NA) {

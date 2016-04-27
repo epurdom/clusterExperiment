@@ -30,7 +30,7 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 	}
 	diagram::openplotmat(main = "", xlim =c(0,1), ylim = c(0,1)) #so have plot open to determine string width
 	Layer1Names<-c("clusterFunction","subsample", "sequential")
-	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical", "pam", "kmeans"), "subsample"=c("subsample.FALSE","subsample.TRUE"), "sequential"=c("sequential.FALSE","sequential.TRUE"))
+	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical01", "pam", "kmeans"), "subsample"=c("subsample.FALSE","subsample.TRUE"), "sequential"=c("sequential.FALSE","sequential.TRUE"))
 	
 	Layer2Names<-c("clusterDArgs","subsampleArgs","seqArgs")
 	Layer2NamesSimple<-c("clusterDArgs","subsampleArgs","seqArgs")
@@ -44,7 +44,7 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 	Layer1Pos<-list("clusterFunction"=makeDf(0.25, 0.77,boxRadx("clusterFunction"),0.4,options),"subsample"=makeDf(0.50,0.77,0.06,0.4,options), "sequential"=makeDf(0.75, 0.77,0.06,0.4,options))
 	Layer1OptionsPos<-list(
 		"clusterFunction"=list(
-			"tight"=makeDf( 0.081, 0.59,boxRadx("tight"),0.4,values), "hierarchical"=makeDf(0.162, 0.59,boxRadx("hierarchical"),0.4,values), 
+			"tight"=makeDf( 0.081, 0.59,boxRadx("tight"),0.4,values), "hierarchical01"=makeDf(0.162, 0.59,boxRadx("hierarchical01"),0.4,values), 
 			"pam"=makeDf(0.243, 0.59,boxRadx("pam"),0.4,values), "kmeans"=makeDf(0.324, 0.59,boxRadx("kmeans"),0.4,values)), 
 		"subsample"=list("subsample.FALSE"=makeDf(0.45, 0.59,0.03,0.4,values),"subsample.TRUE"=makeDf(0.55, 0.59,0.03,0.4,values)), 
 		"sequential"=list("sequential.FALSE"=makeDf(0.77, 0.59,0.03,0.4,values),"sequential.TRUE"=makeDf(0.88, 0.59,0.03,0.4,values))
@@ -207,7 +207,7 @@ The arguments of `clusterSingle` indicate which of these tasks should be perform
 
 Here are the argument calls for `clusterSingle`:
 ```{r clusterSingleArgs, eval=FALSE}
-clusterSingle(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+clusterSingle(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 ```
 
 The primary arguments `clusterFunction`,`subsample`, and `sequential` govern each of these tasks:
@@ -321,11 +321,11 @@ Again, we need to pass arguments to control how this is done, as a list to the a
 This time we will use the hierarchical method for clustering the 0-1 co-occurance matrix. 
 
 ```{r visualizeSeq, echo=FALSE}
-drawClusterAll(highlight = c("hierarchical", "subsample.TRUE", "sequential.TRUE"),Layer2Options=list("subsampleArgs"=c("clusterFunction"),seqArgs=c("k0","verbose")),plotOptions=TRUE)
+drawClusterAll(highlight = c("hierarchical01", "subsample.TRUE", "sequential.TRUE"),Layer2Options=list("subsampleArgs"=c("clusterFunction"),seqArgs=c("k0","verbose")),plotOptions=TRUE)
 ```
 
 ```{r clusterSingleSeq}
-Cluster<-clusterSingle(expression, subsample=TRUE, sequential=TRUE, clusterFunction="hierarchical", seqArgs=list(k0=5, verbose = FALSE), subsampleArgs = list(clusterFunction="kmeans"))
+Cluster<-clusterSingle(expression, subsample=TRUE, sequential=TRUE, clusterFunction="hierarchical01", seqArgs=list(k0=5, verbose = FALSE), subsampleArgs = list(clusterFunction="kmeans"))
 ```
 
 Running `clusterSingle` with `sequential=TRUE` will return a list of the three elements `clustering`, `clusterInfo`, and `whyStop`. `clusterInfo` is a matrix of information regarding the algorithm behavior for each cluster (the starting and stopping k set for subsampling clustering for each cluster, and the number of iterations for each cluster). `whyStop` is a character string explaining what triggered the algorithm to stop.

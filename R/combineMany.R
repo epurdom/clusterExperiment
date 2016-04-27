@@ -86,7 +86,7 @@ setMethod(
   f = "combineMany",
   signature = signature(x = "matrix", whichClusters = "missing"),
   definition = function(x, whichClusters, proportion=1,
-                        clusterFunction="hierarchical",
+                        clusterFunction="hierarchical01",
                         propUnassigned=.5, minSize=5) {
 
   clusterMat <- x

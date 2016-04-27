@@ -87,7 +87,7 @@
 #'   cluster01 methods: "tight" method refers to the method of finding clusters
 #'   from a subsampling matrix given in the tight algorithm of Tsang and Wong.
 #'   Arguments for the tight method are 'minSize.core' (default=2), which sets
-#'   the minimimum number of samples that form a core cluster. "hierarchical"
+#'   the minimimum number of samples that form a core cluster. "hierarchical01"
 #'   refers to running the hclust algorithm on D and transversing down the tree
 #'   until getting a block of samples with whose summary of the values  is
 #'   greater than or equal to 1-alpha. Arguments that can be passed to
@@ -141,7 +141,7 @@
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
-#' clustSubHier <- clusterD(subD, clusterFunction="hierarchical", alpha=0.1,
+#' clustSubHier <- clusterD(subD, clusterFunction="hierarchical01", alpha=0.1,
 #' minSize=5, clusterArgs=list(evalClusterMethod="average", method="single"))
 #'
 #' #do tight
@@ -179,7 +179,7 @@
 #' clustSubHier_test <- clusterD(subD, clusterFunction="hier", alpha=0.1,
 #' clusterArgs=list(minSize.core=4))
 #' @export
-clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
+clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
@@ -232,13 +232,13 @@ clusterD<-function(D,clusterFunction=c("hierarchical","tight","pam"),typeAlg=c("
 
 .args01<-c("alpha")
 #' @rdname clusterD
-cluster01<-function(D, clusterFunction=c("hierarchical","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
+cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
 {
 	if(!is.function(clusterFunction)){
 		method<-match.arg(clusterFunction)
 		##These return lists of indices of clusters satisifying alpha criteria
 		if(method=="tight") clusterFunction<-.tightClusterDMat
-		if(method=="hierarchical") clusterFunction<-.hierClusterDMat
+		if(method=="hierarchical01") clusterFunction<-.hierClusterDMat
 	}
 	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)

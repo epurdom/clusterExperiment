@@ -6,11 +6,11 @@
 \alias{clusterK}
 \title{Cluster distance matrix from subsampling}
 \usage{
-clusterD(D, clusterFunction = c("hierarchical", "tight", "pam"),
+clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam"),
   typeAlg = c("01", "K"), minSize = 1, orderBy = c("size", "best"),
   format = c("vector", "list"), clusterArgs = NULL, checkArgs = TRUE, ...)
 
-cluster01(D, clusterFunction = c("hierarchical", "tight"), alpha = 0.1,
+cluster01(D, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
   clusterArgs = NULL, checkArgs)
 
 clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
@@ -133,7 +133,7 @@ cluster01 is for clustering functions that expect as an input D that
   cluster01 methods: "tight" method refers to the method of finding clusters
   from a subsampling matrix given in the tight algorithm of Tsang and Wong.
   Arguments for the tight method are 'minSize.core' (default=2), which sets
-  the minimimum number of samples that form a core cluster. "hierarchical"
+  the minimimum number of samples that form a core cluster. "hierarchical01"
   refers to running the hclust algorithm on D and transversing down the tree
   until getting a block of samples with whose summary of the values  is
   greater than or equal to 1-alpha. Arguments that can be passed to
@@ -171,7 +171,7 @@ clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
 #run hierarchical method for finding blocks, with method of evaluating
 #coherence of block set to evalClusterMethod="average", and the hierarchical
 #clustering using single linkage:
-clustSubHier <- clusterD(subD, clusterFunction="hierarchical", alpha=0.1,
+clustSubHier <- clusterD(subD, clusterFunction="hierarchical01", alpha=0.1,
 minSize=5, clusterArgs=list(evalClusterMethod="average", method="single"))
 
 #do tight

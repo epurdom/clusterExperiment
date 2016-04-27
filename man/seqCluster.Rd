@@ -4,7 +4,7 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x, k0, clusterFunction = c("tight", "hierarchical", "pam"),
+seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam"),
   subsample = TRUE, beta = 0.7, top.can = 15, remain.n = 30,
   k.min = 2, k.max = k0 + 10, verbose = TRUE, subsampleArgs = NULL,
   clusterDArgs = NULL)
@@ -156,7 +156,7 @@ data(simData)
 set.seed(12908)
 
 clustSeqHier <- seqCluster(t(simData), k0=5, subsample=TRUE,
-clusterFunction="hierarchical", beta=0.8, subsampleArgs=list(resamp.n=100,
+clusterFunction="hierarchical01", beta=0.8, subsampleArgs=list(resamp.n=100,
 samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
 clusterDArgs=list(minSize=5))
 }
