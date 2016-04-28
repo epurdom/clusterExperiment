@@ -180,7 +180,7 @@
 	}
 	else{
 		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
-		Dbar<-as.matrix(dist(x)	)	
+		Dbar<-as.matrix(dist(x)	)	#######Here where assume distance is dist(x). Should make it so depending on typeAlg has different default, and that user can define it.
 		findBestK<-FALSE	
 		if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
 				findBestK<-clusterDArgs[["findBestK"]]
@@ -191,7 +191,7 @@
 	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
-	return(list(results=res,subsampleCocluster=subDbar)) #nothing found
+	return(list(results=res,subsampleCocluster=subDbar)) 
 }
 
 #convert list output into cluster vector.
