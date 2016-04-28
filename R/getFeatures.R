@@ -248,7 +248,6 @@ setMethod(f = "getBestFeatures",
             }
 
             if(returnType=="Table") {
-              colnames(tops)[colnames(tops)=="Gene"] <- "Feature"
               return(tops)
             }
           }
@@ -298,7 +297,7 @@ This makes sense only for counts.")
 	fit2 <- eBayes(fit)
 	#tops<-topTableF(fit2,number=nGenes,genelist=rownames(fit$coef),...)
 	tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
-	colnames(tops)[colnames(tops)=="ProbeID"]<-"Gene"
+	colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
 
 	return(tops)
 }
@@ -381,7 +380,7 @@ This makes sense only for counts.")
 # 	fit2<-contrasts.fit(fit,cont.matrix)
 # 	fit2<-eBayes(fit2)
 # 	tt<-topTable(fit=fit2,coef=1,number=nGenes,genelist=rownames(fit$coef),...)
-# 	colnames(tt)[colnames(tt)=="ID"]<-"Gene"
+# 	colnames(tt)[colnames(tt)=="ID"]<-"Feature"
 # 	#pretty back up
 # 	cont<-gsub("_",",",cont)
 # 	cont<-gsub("[\\.]",":",cont)
@@ -443,7 +442,7 @@ This makes sense only for counts.")
 		else{
 			tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
 		}
-		colnames(tt)[colnames(tt)=="ID"]<-"Gene"
+		colnames(tt)[colnames(tt)=="ID"]<-"Feature"
 		if(nrow(tt)>0){
 			tt<-data.frame("Contrast"=unname(contrastNames[ii]),tt,row.names=NULL)
 			if(!is.null(names(contrastNames))){
