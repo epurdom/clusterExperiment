@@ -77,7 +77,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 We will make use of a single cell sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. 
 
-```{r}
+```{r,cache=FALSE}
 library(scRNAseq)
 data("fluidigm")
 ```
@@ -361,7 +361,7 @@ Here we make a call to plotClusters, but now ask to reset everything to match th
 par(mar=plotCMar)
 ce<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), 
                main="Clusters from clusterMany, different order",axisLine=-1,resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
-clusterLegend(ce)[,c("mergeClusters","combineMany")]
+clusterLegend(ce)[c("mergeClusters","combineMany")]
 ```
 
 Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. 

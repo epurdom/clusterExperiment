@@ -238,12 +238,12 @@ setMethod(f = "getBestFeatures",
                                                        ...)
             )
 
-            tops <- data.frame(IndexInOriginal=match(tops$Gene, rownames(tmp)),
+            tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),
                                tops)
 
             if(returnType=="Index") {
               whGenes <- tops$IndexInOriginal
-              names(whGenes) <- tops$Gene
+              names(whGenes) <- tops$Feature
               return(whGenes)
             }
 
@@ -456,7 +456,7 @@ This makes sense only for counts.")
 	  fitF2<-eBayes(fitF)
 		topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
 		whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
-		tops<-tops[tops$Gene %in% whGenesSigF,]
+		tops<-tops[tops$Feature %in% whGenesSigF,]
 	}
 	#do FDR correction on all raw p-values (that remain)
 	if(contrastAdj%in%c("AfterF","All")) {
