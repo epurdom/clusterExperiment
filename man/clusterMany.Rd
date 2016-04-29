@@ -17,7 +17,7 @@
   subsample = FALSE, silCutoff = 0, verbose = FALSE,
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
-  random.seed = NULL, run = TRUE, paramMatrix = NULL, ...)
+  random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
@@ -103,12 +103,6 @@ that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 
-\item{paramMatrix}{matrix or data.frame. If given, the algorithm will bypass
-creating the matrix of possible parameters, and will use the given matrix.
-There are basically no checks as to whether this matrix is in the right
-format, and is only intended to be used to feed the results of setting
-\code{run=FALSE} back into the algorithm (see example).}
-
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
@@ -159,13 +153,19 @@ While the function allows for multiple values of clusterFunction,
   there is no gain in computational complexity (i.e. each subsampled
   co-occurence matrix is recalculated for each set of parameters).
 
-The argument 'ks' is interpreted differently for different choices
-  of the other parameters. When/if sequential=TRUE, ks defines the argument
-  k0 of \code{\link{seqCluster}}. When/if clusterFunction="pam" and
-  "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}}
-  unless kRange is specified by the user via the clusterDArgs; note this
-  means that the default option of setting kRange that depends on the input k
-  (see \code{\link{clusterD}}) is not available in clusterMany.
+The argument 'ks' is interpreted differently for different choices 
+  of the other parameters. When/if sequential=TRUE, ks defines the argument 
+  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both 
+  subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to 
+  \code{\link{clusterD}} and \code{\link{subsamplingCluster}}. This passing
+  of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
+  if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
+  will only have an effect when the clusterFunction argument includes a
+  clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
+  the kRange argument of \code{\link{clusterD}} unless kRange is specified by
+  the user via the clusterDArgs; note this means that the default option of
+  setting kRange that depends on the input k (see \code{\link{clusterD}}) is
+  not available in clusterMany.
 }
 \examples{
 data(simData)
@@ -176,13 +176,13 @@ data(simData)
 checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 clusterFunction="pam",
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
-print(checkParams$paramMatrix)
+print(head(checkParams$paramMatrix))
 
 #Now actually run it
 cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
-colnames(clusterMatrix(cl))
+head(colnames(clusterMatrix(cl)))
 
 #make names shorter for plotting
 clMat <- clusterMatrix(cl)
@@ -193,14 +193,6 @@ colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
 par(mar=c(2, 10, 1, 1))
 plotClusters(clMat, axisLine=-2)
 
-#get rid of some of the choices manually
-#note that the supplement arguments could have been changed too, so
-#we give those to clusterMany as well.
-checkParamsMat <- checkParams$paramMatrix[-c(1,2),]
-
-clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
-paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
-seqArgs=checkParams$seqArgs, clusterDArgs=checkParams$clusterDArgs)
 
 \dontrun{
 #following code takes around 1+ minutes to run because of the subsampling

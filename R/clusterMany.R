@@ -101,13 +101,13 @@
 #' checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam",
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
-#' print(checkParams$paramMatrix)
+#' print(head(checkParams$paramMatrix))
 #'
 #' #Now actually run it
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
-#' colnames(clusterMatrix(cl))
+#' head(colnames(clusterMatrix(cl)))
 #'
 #' #make names shorter for plotting
 #' clMat <- clusterMatrix(cl)
