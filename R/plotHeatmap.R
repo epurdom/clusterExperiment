@@ -328,7 +328,7 @@ setMethod(
     if(length(whCl)>0){
       if(!is.numeric(whCl)) stop("invalid whichClusters choices")
       if(!all(whCl %in% 1:nClusters(data))) stop("Indices in whichClusters invalid: not in 1 to nClusters(data)")
-      clusterData<-clusterMatrix(data)[,whCl,drop=FALSE]
+      clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
     }
     else{
       if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
@@ -367,7 +367,8 @@ setMethod(
       }
       if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
     }
-
+    
+    
     ######
     #Create clusterSamplesData
     ######
@@ -523,7 +524,7 @@ setMethod(
         if(!is.null(whSampleDataCont)) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
         annCol<-tmpDf
         #browser()
-        convertNames <- FALSE
+        convertNames <- TRUE
         if(is.null(clusterLegend)){ #assign default colors
           convertNames <- TRUE
           if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ #if not all continuous
