@@ -93,7 +93,8 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
-                          cutoff=0.1, plotType=c("none", "all", "mergeMethod"),
+                          plotType=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"),
+                          cutoff=0.1,
                           isCount=TRUE, ...) {
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
@@ -121,21 +122,25 @@ setMethod(f = "mergeClusters",
   mergeMethod <- match.arg(mergeMethod)
   plotType <- match.arg(plotType)
   if(mergeMethod=="none" & plotType=="none") stop("mergeMethod and plotType both equal 'none'; nothing to be done.")
-  if(plotType=="mergeValue" & mergeMethod=="none") {
+  if(plotType=="mergeMethod" & mergeMethod=="none") {
     stop("can only plot merge method values if one method is selected")
   }
 
   #get test-statistics for the contrasts corresponding to each node (and return all)
   sigTable <- getBestFeatures(x, cl, type=c("Dendro"), dendro=dendro,
-                           returnType=c("Table"), contrastAdj=c("All"),
-                           number=nrow(x), p.value=1, isCount=isCount)
-
+                              returnType=c("Table"), contrastAdj=c("All"),
+                              number=nrow(x), p.value=1, isCount=isCount)
+  
   #divide table into each node.
+  whMethodCalculate<-mergeMethod
+  if(plotType=="all") whMethodCalculate<-c("adjP", "locfdr", "MB", "JC")
+  if(plotType%in% c("adjP", "locfdr", "MB", "JC")) whMethodCalculate<-unique(c(whMethodCalculate,plotType))
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
-    mb <- .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB)
-    locfdr <- .myTryFunc(tstats=x$t, FUN=.m1_locfdr)
-    jc <- .myTryFunc(tstats=x$t, FUN=.m1_JC)
-    return(c("adjP"=.m1_adjP(x$adj), "locfdr"=locfdr, "MB"=mb,"JC"=jc))
+      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
+      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
+      jc <-if("MB" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
+      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
+      return(c("adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
   })
   newcl <- cl
   phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
@@ -197,8 +202,9 @@ setMethod(f = "mergeClusters",
     if(plotType == "mergeMethod"){
       phyloObj$node.label <- as.character(valsPerNode)
     }
-    if(plotType == "all") {
+    if(plotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
       phyloObj$node.label <- sapply(sigByNode[m], function(x){
+          x<-na.omit(x)
         paste(paste(names(x), signif(x,2), sep=":"), collapse=",\n")})
     }
 

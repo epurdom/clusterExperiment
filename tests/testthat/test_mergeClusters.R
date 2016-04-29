@@ -13,11 +13,15 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               mergeMethod="adjP", plotType="mergeMethod")
 
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotType="all")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="locfdr")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotType="mergeMethod")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotType="mergeMethod")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotType="mergeMethod")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="mergeMethod")
-
+  expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="mergeMethod"),"can only plot merge method values if one method is selected")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="none")
+  
   expect_true("mergeClusters" %in% clusterType(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
