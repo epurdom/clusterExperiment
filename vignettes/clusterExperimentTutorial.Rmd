@@ -486,9 +486,11 @@ checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,removeSil=c(TRUE,FALS
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```
 
-Each row of the matrix `checkParam$paramMatrix` is a requested clustering (the columns indicate the value of a possible parameter). Our selections indicate `r nrow(checkParam$paramMatrix)` different clusterings (!). We can set `ncores` argument to have these clusterings done in parallel. The parallelization is done via `mclapply` and should not be done in the Rgui interface (see help pages for `mclapply`). 
+Each row of the matrix `checkParam$paramMatrix` is a requested clustering (the columns indicate the value of a possible parameter). Our selections indicate `r nrow(checkParam$paramMatrix)` different clusterings (!). 
 
-The output can also be fed back into clusterMany [**Check this**], which allows the user to modify the input (though do so carefully, there are not robust checks as to whether the input is of the right form). The best reason for modifying this would be to remove some of the clusterings. For example, if you only want to do some of the combinations, you could remove the unwanted ones by removing those rows of the `paramMatrix`.
+We can set `ncores` argument to have these clusterings done in parallel. If `ncores>1`, the parallelization is done via `mclapply` and should not be done in the Rgui interface (see help pages for `mclapply`). 
+
+<!---The output can also be fed back into clusterMany [**Check this**], which allows the user to modify the input (though do so carefully, there are not robust checks as to whether the input is of the right form). The best reason for modifying this would be to remove some of the clusterings. For example, if you only want to do some of the combinations, you could remove the unwanted ones by removing those rows of the `paramMatrix`.
 
 
 We can now run this, either by giving the information in `checkParam$paramMatrix` to clusterMany argument `paramMatrix`, or by recalling the function from scratch. If the user has not changed `paramMatrix`, there's no advantage in giving `paramMatrix` to `clusterMany` rather than just recalling `clusterMany`, but we'll do it here just to show how it is done. 
@@ -499,7 +501,7 @@ ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 ```
 
 Note that we also provided in the above call the additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
-
+-->
 
 ## Create a unified cluster from many clusters with `combineMany`
 

@@ -40,11 +40,6 @@
 #'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 #'   however, the function will create the dimensionality reductions of the data
 #'   indicated by the user input.
-#' @param paramMatrix matrix or data.frame. If given, the algorithm will bypass
-#'   creating the matrix of possible parameters, and will use the given matrix.
-#'   There are basically no checks as to whether this matrix is in the right
-#'   format, and is only intended to be used to feed the results of setting
-#'   \code{run=FALSE} back into the algorithm (see example).
 #' @param ... For signature \code{list}, arguments to be passed on to mclapply
 #'   (if ncores>1). For all the other signatures, arguments to be passed to the
 #'   method for signature \code{list}.
@@ -117,14 +112,6 @@
 #' par(mar=c(2, 10, 1, 1))
 #' plotClusters(clMat, axisLine=-2)
 #'
-#' #get rid of some of the choices manually
-#' #note that the supplement arguments could have been changed too, so
-#' #we give those to clusterMany as well.
-#' checkParamsMat <- checkParams$paramMatrix[-c(1,2),]
-#'
-#' clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
-#' paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
-#' seqArgs=checkParams$seqArgs, clusterDArgs=checkParams$clusterDArgs)
 #'
 #' \dontrun{
 #'	#following code takes around 1+ minutes to run because of the subsampling
@@ -138,6 +125,22 @@
 #' @rdname clusterMany
 #' @importFrom parallel mclapply
 #' @export
+# not currently functional:
+# @param paramMatrix matrix or data.frame. If given, the algorithm will bypass
+#   creating the matrix of possible parameters, and will use the given matrix.
+#   There are basically no checks as to whether this matrix is in the right
+#   format, and is only intended to be used to feed the results of setting
+#   \code{run=FALSE} back into the algorithm (see example).
+##Was in @examples:
+# #get rid of some of the choices manually
+# #note that the supplement arguments could have been changed too, so
+# #we give those to clusterMany as well.
+# checkParamsMat <- checkParams$paramMatrix[-c(1,2),]
+#
+# clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
+# paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
+# seqArgs=checkParams$seqArgs, clusterDArgs=checkParams$clusterDArgs)
+
 setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
@@ -189,10 +192,11 @@ setMethod(
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9, k.min=3, verbose=FALSE),
-                        ncores=1, random.seed=NULL, run=TRUE, paramMatrix=NULL,
+                        ncores=1, random.seed=NULL, run=TRUE, 
                         ...
   )
   {
+      paramMatrix<-NULL
     data <- x
     if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
       stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
