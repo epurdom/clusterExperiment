@@ -5,6 +5,7 @@ if(ncol(simData) != 300) {
   #get all kinds of annoyances because using old version.
   #Can delete this once package is stabilized.
 }
+options(getClass.msg=FALSE) #get rid of annoying messages about cache so not printed on build
 
 ## make sure the tests are reproducible
 set.seed(23)

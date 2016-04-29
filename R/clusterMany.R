@@ -54,13 +54,19 @@
 #'   there is no gain in computational complexity (i.e. each subsampled
 #'   co-occurence matrix is recalculated for each set of parameters).
 #'
-#' @details The argument 'ks' is interpreted differently for different choices
-#'   of the other parameters. When/if sequential=TRUE, ks defines the argument
-#'   k0 of \code{\link{seqCluster}}. When/if clusterFunction="pam" and
-#'   "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}}
-#'   unless kRange is specified by the user via the clusterDArgs; note this
-#'   means that the default option of setting kRange that depends on the input k
-#'   (see \code{\link{clusterD}}) is not available in clusterMany.
+#' @details The argument 'ks' is interpreted differently for different choices 
+#'   of the other parameters. When/if sequential=TRUE, ks defines the argument 
+#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both 
+#'   subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to 
+#'   \code{\link{clusterD}} and \code{\link{subsamplingCluster}}. This passing
+#'   of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
+#'   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
+#'   will only have an effect when the clusterFunction argument includes a
+#'   clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
+#'   the kRange argument of \code{\link{clusterD}} unless kRange is specified by
+#'   the user via the clusterDArgs; note this means that the default option of
+#'   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
+#'   not available in clusterMany.
 #' @return If \code{run=TRUE} and the input is either a matrix, a
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
 #'   will return a \code{ClusterExperiment} object, where the results are stored
@@ -272,7 +278,7 @@ setMethod(
       }
 
       if(nrow(param)<=1) {
-        stop("set of parameters imply only 1 combination")
+        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
       }
 
       #give names to the parameter combinations.
@@ -281,7 +287,7 @@ setMethod(
         cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
         paste(colnames(param)[whVary],x,sep="=",collapse=",")})
       } else {
-        stop("set of parameters imply only 1 combination")
+        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
       }
 
       cnames <- gsub("dataset=","",cnames)
