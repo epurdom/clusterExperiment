@@ -48,8 +48,8 @@ given by topTable or topTableF.}
 \item{countData}{logical as to whether input data is count data, in which
 case to perform voom correction to data. See details.}
 
-\item{normalize.method}{character value, passed to \code{\link{voom}} in 
-\code{\link{limma}} package. Only used if \code{countData=TRUE}. 
+\item{normalize.method}{character value, passed to \code{\link{voom}} in
+\code{\link{limma}} package. Only used if \code{countData=TRUE}.
 Note that the default value is set to "none", which is not the
 default value of \code{\link{voom}}.}
 
@@ -114,21 +114,21 @@ Note that the default option for \code{\link[limma]{topTable}} is
   the default value of \code{p.value = 1} will not result in any effect on
   the adjusted p-value otherwise.
 
-\code{countData} triggers whether the "voom" correction will be 
-  performed in \code{limma}. If the input data is a matrix is counts (or a 
-  `ClusterExperiment` object with counts as the primary data before 
+\code{countData} triggers whether the "voom" correction will be
+  performed in \code{limma}. If the input data is a matrix is counts (or a
+  `ClusterExperiment` object with counts as the primary data before
   transformation) this should be set to TRUE and they will be log-transformed
-  internally by voom for the differential expression analysis in a way that 
-  accounts for the difference in the mean-variance relationships. Otherwise, 
-  dat should be on the correct (log) scale for differential expression 
-  analysis without a need a variance stabilization (e.g. microarray data). 
+  internally by voom for the differential expression analysis in a way that
+  accounts for the difference in the mean-variance relationships. Otherwise,
+  dat should be on the correct (log) scale for differential expression
+  analysis without a need a variance stabilization (e.g. microarray data).
   Currently the default is set to FALSE, simply because the countData has not
-  been heavily tested. If the But TRUE with \code{x} being counts really 
-  should be the default for RNA-Seq data. If the input data is a 
+  been heavily tested. If the But TRUE with \code{x} being counts really
+  should be the default for RNA-Seq data. If the input data is a
   `ClusterExperiment` object, setting `countData=TRUE` will cause the program
-  to ignore the internally stored transformation function and instead use 
-  voom with log2(x+0.5). Alternatively, `countData=FALSE` for a 
-  `ClusterExperiment` object will cause the DE to be performed with `limma` 
+  to ignore the internally stored transformation function and instead use
+  voom with log2(x+0.5). Alternatively, `countData=FALSE` for a
+  `ClusterExperiment` object will cause the DE to be performed with `limma`
   after transforming the data with the stored transformation. Although some
   writing about "voom" seem to suggest that it would be appropriate for
   arbitrary transformations, the authors have cautioned against using it for
