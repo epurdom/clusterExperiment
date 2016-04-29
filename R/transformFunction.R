@@ -33,6 +33,8 @@
 #'   will be return, each corresponding to the multiple choices implied by these
 #'   parameters.
 #'
+#' @importFrom matrixStats rowVars
+#'
 #' @examples
 #' mat <- matrix(data=rnorm(200), ncol=10)
 #' mat[1,1] <- -1 #force a negative value
@@ -122,7 +124,18 @@ setMethod(
       if(max(nPCADims)>NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
       if(min(nPCADims)<1) stop("the number of PCA dimensions must be equal to 1 or greater")
       if(max(nPCADims)>100) warning("the number PCA dimensions to be selected is greater than 100. Are you sure you meant to choose to use PCA dimensionality reduction rather than the top most variable features?")
-      prc<-t(stats::prcomp(t(x),center=TRUE,scale=TRUE)$x)
+
+      rowvars <- matrixStats::rowVars(x)
+      if(any(rowvars==0)) {
+
+        if(all(rowvars==0)) {
+          stop("All features have zero variance.")
+        }
+
+        warning("Found features with zero variance.\nMost likely these are features with 0 across all samples.\nThey will be removed from PCA.")
+      }
+
+      prc<-t(stats::prcomp(t(x[rowvars>0,]),center=TRUE,scale=TRUE)$x)
       if(NCOL(prc)!=NCOL(origX)) stop("error in coding of principle components.")
       if(length(nPCADims)==1 & length(dimReduce)==1){ #just return single matrix
         x<-prc[1:nPCADims,]
