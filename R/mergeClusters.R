@@ -26,18 +26,18 @@
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the
 #'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
 #'   only the value used in the merging is plotted for each node.
-#' @param countData logical as to whether input data is a count matrix. See details.
+#' @param isCount logical as to whether input data is a count matrix. See details.
 #' @param ... for signature \code{matrix}, arguments passed to the
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
 #'   signature \code{matrix}.
 #' @inheritParams clusterMany,matrix-method
 #'
-#' @details If  \code{countData=TRUE}, and the input is a matrix,
+#' @details If  \code{isCount=TRUE}, and the input is a matrix,
 #'   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
 #'   original data with voom correction will be used in 
 #'   \code{\link{getBestFeatures}}). If input is 
-#'   \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} also means 
+#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means 
 #'   that the log2(1+count) will be used as the transformation, like for
 #'   the matrix case as well as the voom calculation, and will NOT use the
 #'   transformation stored in the object. If FALSE, then transform(x) will be
@@ -94,7 +94,7 @@ setMethod(f = "mergeClusters",
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
                           cutoff=0.1, plotType=c("none", "all", "mergeMethod"),
-                          countData=TRUE, ...) {
+                          isCount=TRUE, ...) {
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- as.numeric(as.character(cl))
@@ -111,7 +111,7 @@ setMethod(f = "mergeClusters",
   }
 
   if(is.null(dendro)) {
-    dendro <- if(countData) {
+    dendro <- if(isCount) {
         makeDendrogram(x=log2(x+1), cl)$clusters
       } else {
         makeDendrogram(x=x, cl)$clusters
@@ -128,7 +128,7 @@ setMethod(f = "mergeClusters",
   #get test-statistics for the contrasts corresponding to each node (and return all)
   sigTable <- getBestFeatures(x, cl, type=c("Dendro"), dendro=dendro,
                            returnType=c("Table"), contrastAdj=c("All"),
-                           number=nrow(x), p.value=1, countData=countData)
+                           number=nrow(x), p.value=1, isCount=isCount)
 
   #divide table into each node.
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
@@ -222,23 +222,23 @@ setMethod(f = "mergeClusters",
 #' @export
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x, eraseOld=FALSE,countData=FALSE,
+          definition = function(x, eraseOld=FALSE,isCount=FALSE,
                                 mergeMethod,...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
-  if(!countData) outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
+  if(!isCount) outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
                            dendro=x@dendro_clusters,
-                           countData=FALSE,mergeMethod=mergeMethod, ...)
+                           isCount=FALSE,mergeMethod=mergeMethod, ...)
   else{
     note(
-      "If `countData=TRUE` the data will be transformed with voom() rather than
+      "If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
     outlist <- mergeClusters(x=assay(x), cl=primaryCluster(x),
                                           dendro=x@dendro_clusters,
-                                          countData=TRUE,mergeMethod=mergeMethod, ...)
+                                          isCount=TRUE,mergeMethod=mergeMethod, ...)
   }
   if(mergeMethod!="none"){
     #only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!

@@ -436,7 +436,7 @@ The output is similar to before, but now there are two identifiers for the contr
 We can use this basic idea to merge clusters based on what percentage of genes are found differentially expressed. The `mergeClusters` function performs such contrasts for each node, and then calculates the proportion of significant hypotheses. There are several methods implemented, but the simplest is just the proportion found by calculating the proportion of DE genes at a given False Discovery Rate thresshold (using the Benjamini-Hochberg procedure).
 
 ```{r mergeClusters}
-mergeOut<-mergeClusters(dat=simCount, cl=cl$clustering, mergeMethod = c("adjP"), cutoff = 0.1, plotType = "mergeMethod",countData=TRUE)
+mergeOut<-mergeClusters(dat=simCount, cl=cl$clustering, mergeMethod = c("adjP"), cutoff = 0.1, plotType = "mergeMethod",isCount=TRUE)
 table(Meged_clusters=mergeOut$cl,Original_clusters=cl$clustering)
 print(mergeOut$propDE)
 ```
