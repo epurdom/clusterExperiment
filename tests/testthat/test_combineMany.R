@@ -46,14 +46,14 @@ test_that("`combineMany` works when multiple runs of workflow", {
 
   shared1 <- combineMany(clustNothing, "all")
   shared2<-combineMany(shared1,"all")
-  expect_true("combineMany_1" %in% clusterType(shared2))
+  expect_true("combineMany.1" %in% clusterType(shared2))
 
   clustNothing2 <- clusterMany(shared2, ks=c(5,6), clusterFunction="pam",
                                subsample=FALSE, sequential=FALSE,
                                isCount=FALSE,verbose=FALSE)
-  expect_true("combineMany_1" %in% clusterType(clustNothing2))
-  expect_true("clusterMany_2" %in% clusterType(clustNothing2))
-  expect_true("combineMany_2" %in% clusterType(clustNothing2))
+  expect_true("combineMany.1" %in% clusterType(clustNothing2))
+  expect_true("clusterMany.2" %in% clusterType(clustNothing2))
+  expect_true("combineMany.2" %in% clusterType(clustNothing2))
 
   shared3 <- combineMany(clustNothing2, "all")
   shared4 <- combineMany(clusterMatrix(clustNothing2))

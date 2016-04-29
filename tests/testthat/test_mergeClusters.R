@@ -32,9 +32,9 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   primaryClusterIndex(clustMerged)<-2
   clustMerged<- makeDendrogram(clustMerged)
   clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
-  expect_true("mergeClusters_1" %in% clusterType(clustMerged2))
-  expect_true(!"combineMany_1" %in% clusterType(clustMerged2))
-  expect_true(!"clusterMany_1" %in% clusterType(clustMerged2))
+  expect_true("mergeClusters.1" %in% clusterType(clustMerged2))
+  expect_true(!"combineMany.1" %in% clusterType(clustMerged2))
+  expect_true(!"clusterMany.1" %in% clusterType(clustMerged2))
 })
 
 test_that("`mergeClusters` preserves the colData and rowData of SE", {

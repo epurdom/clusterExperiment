@@ -65,11 +65,11 @@ setMethod(
     if(length(clusterType(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
     #check if old iterations already exist; note assumes won't have previous iteration unless have current one.
     existingOld<-lapply(.workflowValues,function(ch){
-      regex<-paste(ch,"_",sep="")
+      regex<-paste(ch,".",sep="")
       grep(regex,clusterType(x))
 
     })
-    st<-strsplit(clusterType(x)[unlist(existingOld)],"_")
+    st<-strsplit(clusterType(x)[unlist(existingOld)],".")
     oldValues<-data.frame(index=unlist(existingOld),type=sapply(st,.subset2,1),iteration=as.numeric(sapply(st,.subset2,2)),stringsAsFactors=FALSE)
 
     wh<-which(clusterType(x) %in% .workflowValues) #current iteration
@@ -124,7 +124,7 @@ setMethod(
                     newIteration<-max(ppIndex[,"iteration"])+1
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
                     updateCluster<-clusterType(x)
-                    updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep="_")
+                    updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
                     newX@clusterType<-updateCluster          
                 }
             }

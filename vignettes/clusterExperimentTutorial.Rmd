@@ -558,7 +558,7 @@ If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'.
 ce
 ```
 
-*A few important notes* `makeDendrogram` operates on the primaryCluster. If the user has done something between combineMany and makeDendrogram, then that cluster may be not the one expected. **To do: discuss what happens to dendrogram if change primaryCluster, run other functions, etc**.
+**Dendrograms can get deleted!** `makeDendrogram` operates on the primaryCluster and the dendrograms that are stored internally are required to match the primaryCluster. For this reason if the primaryCluster is changed (either because the user requests it or because some part of the workflow has changed the primaryCluster), then the dendrograms will be deleted in the object returned. Usually `makeDendrogram` does not take too long to recalculate, but if it is too slow the user's needs, then it the user may wish to not copy over existing `ce` at certain steps and instead give the outputs new name (and be sure not to change the primaryCluster with `primaryClusterIndex`).
 
 ### Merging clusters with little differential expression {#mergeClusters}
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
@@ -596,9 +596,9 @@ The commands we have shown above show a workflow which continually saves the res
 
 What happens if some parts of the clustering workflow are re-run? For example, in the above we reran parts of the workflow when we talked about them in more detail, or to experiment with parameter settings. 
 
-The workflow commands check for existing clusters of the workflow (based on the `clusterType` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterType value by adding a "_i", where $i$ is a numerical index keeping track of replicate calls.
+The workflow commands check for existing clusters of the workflow (based on the `clusterType` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterType value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany_x`, where $x$ is the largest such number needed to be greater than any existing `combineMany_x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters_x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
+For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
 
 This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix` with functions like `workflowClusterDetails` and `workflowClusterTable`. 
 
@@ -606,14 +606,14 @@ You can also choose to have **all** old versions erased by choosing the options 
 
 Note that there is nothing that governs or protects the `clusterType` values to be of a certain kind. This means that if the user decides to name a clusterType of a clustering one of these protected names, that is allowed.
 
-**Designate a Final Clustering** A final protected clusterType is "final". This is not created by any method, but can be set as the clusterType of a clustering by the user (via the `clusterType` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with "_x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
+**Designate a Final Clustering** A final protected clusterType is "final". This is not created by any method, but can be set as the clusterType of a clustering by the user (via the `clusterType` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with ".x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
 
 For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
 
 Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. Note that the clusterLabel will not change without our setting it. 
 
 ```{r markFinal}
-whFinal<-which(clusterType(ce)=="mergeClusters_1")
+whFinal<-which(clusterType(ce)=="mergeClusters.1")
 clusterType(ce)[whFinal]<-"final"
 clusterLabels(ce)[whFinal]<-"My Final Clustering"
 primaryClusterIndex(ce)<-whFinal

@@ -194,7 +194,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5)),clusterType=c("clusterMany"))
             expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
 
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterType=c("clusterMany","mergeClusters_1"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterType=c("clusterMany","mergeClusters.1"))
             expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
             expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
             expect_null(workflowClusters(cc,iteration=NA))
