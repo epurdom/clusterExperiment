@@ -69,7 +69,7 @@ setMethod(
       grep(regex,clusterType(x))
 
     })
-    st<-strsplit(clusterType(x)[unlist(existingOld)],".")
+    st<-strsplit(clusterType(x)[unlist(existingOld)],"[.]")
     oldValues<-data.frame(index=unlist(existingOld),type=sapply(st,.subset2,1),iteration=as.numeric(sapply(st,.subset2,2)),stringsAsFactors=FALSE)
 
     wh<-which(clusterType(x) %in% .workflowValues) #current iteration
@@ -104,6 +104,7 @@ setMethod(
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(x,eraseOld,newToAdd){
+    #browser()
     ppIndex<-workflowClusterDetails(x)
     if(!newToAdd %in% .workflowValues[-1]) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
     whNew<-match(newToAdd, .workflowValues)
@@ -121,7 +122,15 @@ setMethod(
             else{
                 #otherwise, only current downstream ones exist
                 if(any(curr[,"type"] %in% downstreamType)){
-                    newIteration<-max(ppIndex[,"iteration"])+1
+                  whDown<-which(ppIndex[,"type"] %in% downstreamType)
+                  maxDownstream<-max(ppIndex[whDown,"iteration"])
+                  newIteration<-maxDownstream+1
+                  #check if any upstream have iteration > maxDownstream
+                  whUp<-which(!ppIndex[,"type"] %in% downstreamType)
+                  if(length(whUp)>0){
+                    maxUpstream<-max(ppIndex[whUp,"iteration"])
+                    if(maxUpstream>newIteration) newIteration<-maxUpstream
+                  }
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
                     updateCluster<-clusterType(x)
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
