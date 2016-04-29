@@ -140,7 +140,7 @@
       wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
     }
     if(test=="none") wh<-vector("integer",length=0)
-    if(test=="primary") wh<-primaryClusterIndex(x)
+    if(test=="primaryCluster") wh<-primaryClusterIndex(x)
   }
   else{
     if(!any(whClusters %in% clusterType(x))){
