@@ -116,7 +116,7 @@ setMethod(
     #############
     whRm <- which(cl >= 0) #remove -1, -2
     if(length(whRm) == 0) stop("all samples have clusterIds<0")
-    if(length(unique(cl))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
+    if(length(unique(cl[whRm]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
     clFactor <- factor(cl[whRm])
     medoids <- do.call("rbind", by(dat[whRm,], clFactor,
                                    function(x){apply(x, 2, median)}))

@@ -9,10 +9,10 @@
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"), cutoff = 0.1,
-  plotType = c("none", "all", "mergeMethod"), countData = TRUE, ...)
+  plotType = c("none", "all", "mergeMethod"), isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  countData = FALSE, mergeMethod, ...)
+  isCount = FALSE, mergeMethod, ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a
@@ -41,7 +41,7 @@ lower values will make it harder to merge clusters.}
 estimates of proportion non-null will be plotted; if 'mergeMethod', then
 only the value used in the merging is plotted for each node.}
 
-\item{countData}{logical as to whether input data is a count matrix. See details.}
+\item{isCount}{logical as to whether input data is a count matrix. See details.}
 
 \item{...}{for signature \code{matrix}, arguments passed to the
 \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
@@ -75,11 +75,11 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
-If  \code{countData=TRUE}, and the input is a matrix,
+If  \code{isCount=TRUE}, and the input is a matrix,
   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
   original data with voom correction will be used in 
   \code{\link{getBestFeatures}}). If input is 
-  \code{\link{ClusterExperiment}}, then setting \code{countData=TRUE} also means 
+  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means 
   that the log2(1+count) will be used as the transformation, like for
   the matrix case as well as the voom calculation, and will NOT use the
   transformation stored in the object. If FALSE, then transform(x) will be

@@ -153,13 +153,19 @@ While the function allows for multiple values of clusterFunction,
   there is no gain in computational complexity (i.e. each subsampled
   co-occurence matrix is recalculated for each set of parameters).
 
-The argument 'ks' is interpreted differently for different choices
-  of the other parameters. When/if sequential=TRUE, ks defines the argument
-  k0 of \code{\link{seqCluster}}. When/if clusterFunction="pam" and
-  "findBestK=TRUE", ks defines the kRange argument of \code{\link{clusterD}}
-  unless kRange is specified by the user via the clusterDArgs; note this
-  means that the default option of setting kRange that depends on the input k
-  (see \code{\link{clusterD}}) is not available in clusterMany.
+The argument 'ks' is interpreted differently for different choices 
+  of the other parameters. When/if sequential=TRUE, ks defines the argument 
+  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both 
+  subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to 
+  \code{\link{clusterD}} and \code{\link{subsamplingCluster}}. This passing
+  of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
+  if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
+  will only have an effect when the clusterFunction argument includes a
+  clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
+  the kRange argument of \code{\link{clusterD}} unless kRange is specified by
+  the user via the clusterDArgs; note this means that the default option of
+  setting kRange that depends on the input k (see \code{\link{clusterD}}) is
+  not available in clusterMany.
 }
 \examples{
 data(simData)
@@ -170,13 +176,13 @@ data(simData)
 checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 clusterFunction="pam",
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
-print(checkParams$paramMatrix)
+print(head(checkParams$paramMatrix))
 
 #Now actually run it
 cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
-colnames(clusterMatrix(cl))
+head(colnames(clusterMatrix(cl)))
 
 #make names shorter for plotting
 clMat <- clusterMatrix(cl)

@@ -23,7 +23,7 @@
 #'   given by topTable or topTableF.
 #' @param contrastAdj What type of FDR correction to do for contrasts tests
 #'   (i.e. if type='Dendro' or 'Pairs').
-#' @param countData logical as to whether input data is count data, in which
+#' @param isCount logical as to whether input data is count data, in which
 #'   case to perform voom correction to data. See details.
 #' @param ... options to pass to \code{\link{topTable}} or
 #'   \code{\link{topTableF}} (see \code{\link{limma}} package)
@@ -63,7 +63,7 @@
 #'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05);
 #'   the default value of \code{p.value = 1} will not result in any effect on
 #'   the adjusted p-value otherwise.
-#' @details  \code{countData} triggers whether the "voom" correction will be
+#' @details  \code{isCount} triggers whether the "voom" correction will be
 #'   performed in \code{limma}. If the input data is a matrix is counts (or a
 #'   `ClusterExperiment` object with counts as the primary data before
 #'   transformation) this should be set to TRUE and they will be log-transformed
@@ -71,12 +71,12 @@
 #'   accounts for the difference in the mean-variance relationships. Otherwise,
 #'   dat should be on the correct (log) scale for differential expression
 #'   analysis without a need a variance stabilization (e.g. microarray data).
-#'   Currently the default is set to FALSE, simply because the countData has not
+#'   Currently the default is set to FALSE, simply because the isCount has not
 #'   been heavily tested. If the But TRUE with \code{x} being counts really
 #'   should be the default for RNA-Seq data. If the input data is a
-#'   `ClusterExperiment` object, setting `countData=TRUE` will cause the program
+#'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
 #'   to ignore the internally stored transformation function and instead use
-#'   voom with log2(x+0.5). Alternatively, `countData=FALSE` for a
+#'   voom with log2(x+0.5). Alternatively, `isCount=FALSE` for a
 #'   `ClusterExperiment` object will cause the DE to be performed with `limma`
 #'   after transforming the data with the stored transformation. Although some
 #'   writing about "voom" seem to suggest that it would be appropriate for
@@ -113,15 +113,15 @@
 #'
 #' #basic F test, return all, even if not significant:
 #' testF <- getBestFeatures(cl, type="F", number=nrow(simData),
-#' countData=FALSE)
+#' isCount=FALSE)
 #'
 #' #Do all pairwise, only return significant, try different adjustments:
 #' pairsPerC <- getBestFeatures(cl, type="Pairs", contrastAdj="PerContrast",
-#' p.value=0.05, countData=FALSE)
+#' p.value=0.05, isCount=FALSE)
 #' pairsAfterF <- getBestFeatures(cl, type="Pairs", contrastAdj="AfterF",
-#' p.value=0.05, countData=FALSE)
+#' p.value=0.05, isCount=FALSE)
 #' pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
-#' p.value=0.05, countData=FALSE)
+#' p.value=0.05, isCount=FALSE)
 #'
 #' #not useful for this silly example, but could look at overlap with Venn
 #' allGenes <- paste("Row", 1:nrow(simData),sep="")
@@ -145,7 +145,7 @@
 #' # compare results to if used simData instead (not on count scale).
 #' # Again, not relevant for this silly example, but basic principle useful
 #' testFVoom <- getBestFeatures(simCount, primaryCluster(cl), type="F",
-#' number=nrow(simData), countData=TRUE)
+#' number=nrow(simData), isCount=TRUE)
 #' plot(testF$P.Value[order(testF$Index)],
 #' testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 #'
@@ -159,7 +159,7 @@ setMethod(f = "getBestFeatures",
                                 dendro=NULL, pairMat=NULL,
                                 returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
-                                countData=FALSE, normalize.method="none",...) {
+                                isCount=FALSE, normalize.method="none",...) {
 
             #... is always sent to topTable, and nothing else
             if(is.factor(cl)) {
@@ -198,7 +198,7 @@ setMethod(f = "getBestFeatures",
               designContr <- model.matrix(~ 0 + cl)
               colnames(designContr) <- make.names(levels(cl))
 
-              if(countData) {
+              if(isCount) {
                 v <- voom(tmp, design=designContr, plot=FALSE,
                                  normalize.method = normalize.method)
                 fitContr <- lmFit(v, designContr)
@@ -210,7 +210,7 @@ setMethod(f = "getBestFeatures",
             if(type=="F" || contrastAdj=="AfterF") {
               designF <- model.matrix(~cl)
 
-              if(countData) {
+              if(isCount) {
                 v <- voom(tmp, design=designF, plot=FALSE,
                                  normalize.method = normalize.method)
                 fitF <- lmFit(v, designF)
@@ -262,7 +262,7 @@ setMethod(f = "getBestFeatures",
                                 pairMat=NULL,
                                 returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
-                                countData=FALSE, ...) {
+                                isCount=FALSE, ...) {
 
             type <- match.arg(type)
 
@@ -274,9 +274,9 @@ setMethod(f = "getBestFeatures",
               }
             }
 
-            if(countData) {
+            if(isCount) {
               note(
-"If `countData=TRUE` the data will be transformed with voom() rather than
+"If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
               dat <- assay(x)
@@ -286,7 +286,7 @@ This makes sense only for counts.")
 
             getBestFeatures(dat, primaryCluster(x), type=type, dendro=dendro,
                          pairMat=pairMat, returnType=returnType,
-                         contrastAdj=contrastAdj, countData=countData, ...)
+                         contrastAdj=contrastAdj, isCount=isCount, ...)
 
           }
 )

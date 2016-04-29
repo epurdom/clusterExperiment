@@ -77,7 +77,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 We will make use of a single cell sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. 
 
-```{r}
+```{r,cache=FALSE}
 library(scRNAseq)
 data("fluidigm")
 ```
@@ -241,7 +241,7 @@ The last step is to then find features that are different between these clusters
 There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
 
 ```{r getBestFeatures}
-pairsAll<-getBestFeatures(ce,type="Pairs",p.value=0.05,number=nrow(ce),countData=TRUE)
+pairsAll<-getBestFeatures(ce,type="Pairs",p.value=0.05,number=nrow(ce),isCount=TRUE)
 head(pairsAll)
 ```
 
@@ -361,7 +361,7 @@ Here we make a call to plotClusters, but now ask to reset everything to match th
 par(mar=plotCMar)
 ce<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), 
                main="Clusters from clusterMany, different order",axisLine=-1,resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
-clusterLegend(ce)[,c("mergeClusters","combineMany")]
+clusterLegend(ce)[c("mergeClusters","combineMany")]
 ```
 
 Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. 
@@ -460,7 +460,7 @@ Now that we've explained the underlying architecture of the clustering provided 
 * `sequential` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the sequential strategy should be implemented or not. 
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
 * `clusterFunction` The clustering functions to be tried. If `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the co-clustering matrix $D$ created from subsampling the data (where pam clustering is used on the subsampled data). Otherwise, `clusterFunction` is the clustering method that will be used on  `dist(t(x))`
-* `ks` The argument 'ks' is interpreted differently for different choices of the other parameters. If `sequential=TRUE` is part of the combination, `ks` defines the argument `k0` of sequential clustering (see `help(seqCluster)`), which is approximately like the initial starting point for the number of clusters in the sequential process.  When/if `clusterFunction="pam"` and `findBestK=TRUE` is part of the combination, `ks` defines the range of values to search for the best k (see the details in `help(clusterMany)` for more). If the clustering method is a "01" algorithm, like `tight` or `hierarchical`, then 'ks' have no effect *XXXcheck this*
+* `ks` The argument 'ks' is interpreted differently for different choices of the other parameters. If `sequential=TRUE` is part of the combination, `ks` defines the argument `k0` of sequential clustering (see `help(seqCluster)`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set $K$ of both the clustering of subsampled data and the actual clustering of the data (if a $K$ needs to be set, i.e. a type "K" algorithm). When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in `help(clusterMany)` for more).
 * `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "mostVar", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "mostVar" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values as we have seen):
     * `nVarDims`
     * `nPCADims`
@@ -679,11 +679,11 @@ levels((bestDendro)$Contrast)
 
 ## Analysis for count and other RNASeq data
 
-The `getBestFeatures` method for `ClusterExperiment` objects has an argument `countData`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom` correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
+The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom` correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
 
-If instead `countData=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
+If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
-Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `countData=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package to not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package to not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 
 ## Additional considerations
 

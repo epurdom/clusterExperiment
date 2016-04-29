@@ -10,12 +10,12 @@
 \S4method{getBestFeatures}{matrix}(x, cl, type = c("F", "Dendro", "Pairs",
   "OneAgainstAll"), dendro = NULL, pairMat = NULL, returnType = c("Table",
   "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  countData = FALSE, normalize.method = "none", ...)
+  isCount = FALSE, normalize.method = "none", ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, type = c("F", "Dendro",
   "Pairs", "OneAgainstAll"), pairMat = NULL, returnType = c("Table",
   "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  countData = FALSE, ...)
+  isCount = FALSE, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
@@ -45,7 +45,7 @@ given by topTable or topTableF.}
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests
 (i.e. if type='Dendro' or 'Pairs').}
 
-\item{countData}{logical as to whether input data is count data, in which
+\item{isCount}{logical as to whether input data is count data, in which
 case to perform voom correction to data. See details.}
 
 \item{normalize.method}{character value, passed to \code{\link{voom}} in
@@ -114,7 +114,7 @@ Note that the default option for \code{\link[limma]{topTable}} is
   the default value of \code{p.value = 1} will not result in any effect on
   the adjusted p-value otherwise.
 
-\code{countData} triggers whether the "voom" correction will be
+\code{isCount} triggers whether the "voom" correction will be
   performed in \code{limma}. If the input data is a matrix is counts (or a
   `ClusterExperiment` object with counts as the primary data before
   transformation) this should be set to TRUE and they will be log-transformed
@@ -122,12 +122,12 @@ Note that the default option for \code{\link[limma]{topTable}} is
   accounts for the difference in the mean-variance relationships. Otherwise,
   dat should be on the correct (log) scale for differential expression
   analysis without a need a variance stabilization (e.g. microarray data).
-  Currently the default is set to FALSE, simply because the countData has not
+  Currently the default is set to FALSE, simply because the isCount has not
   been heavily tested. If the But TRUE with \code{x} being counts really
   should be the default for RNA-Seq data. If the input data is a
-  `ClusterExperiment` object, setting `countData=TRUE` will cause the program
+  `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
   to ignore the internally stored transformation function and instead use
-  voom with log2(x+0.5). Alternatively, `countData=FALSE` for a
+  voom with log2(x+0.5). Alternatively, `isCount=FALSE` for a
   `ClusterExperiment` object will cause the DE to be performed with `limma`
   after transforming the data with the stored transformation. Although some
   writing about "voom" seem to suggest that it would be appropriate for
@@ -145,15 +145,15 @@ sequential=FALSE, clusterDArgs=list(k=8))
 
 #basic F test, return all, even if not significant:
 testF <- getBestFeatures(cl, type="F", number=nrow(simData),
-countData=FALSE)
+isCount=FALSE)
 
 #Do all pairwise, only return significant, try different adjustments:
 pairsPerC <- getBestFeatures(cl, type="Pairs", contrastAdj="PerContrast",
-p.value=0.05, countData=FALSE)
+p.value=0.05, isCount=FALSE)
 pairsAfterF <- getBestFeatures(cl, type="Pairs", contrastAdj="AfterF",
-p.value=0.05, countData=FALSE)
+p.value=0.05, isCount=FALSE)
 pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
-p.value=0.05, countData=FALSE)
+p.value=0.05, isCount=FALSE)
 
 #not useful for this silly example, but could look at overlap with Venn
 allGenes <- paste("Row", 1:nrow(simData),sep="")
@@ -177,7 +177,7 @@ number=ncol(simData), p.value=0.05)
 # compare results to if used simData instead (not on count scale).
 # Again, not relevant for this silly example, but basic principle useful
 testFVoom <- getBestFeatures(simCount, primaryCluster(cl), type="F",
-number=nrow(simData), countData=TRUE)
+number=nrow(simData), isCount=TRUE)
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
