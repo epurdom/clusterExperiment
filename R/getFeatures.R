@@ -437,6 +437,22 @@ This makes sense only for counts.")
 #'   syntatically valid R names. For this reason, the names of the levels will
 #'   be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
 #'   be "X.1","X.2", etc.
+#' @return If \code{outputType=="limma"}, returns the results of running
+#'   \code{\link{makeContrasts}}. This is a matrix with number of columns equal
+#'   to the number of contrasts, and rows equal to the number of levels of the
+#'   factor that will be fit in a linear model.
+#' @examples 
+#' data(simData)
+#'
+#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
+#' subsample=FALSE)
+#' #Pairs:
+#' clusterContrasts(cl,contrastType="Pairs")
+#' #Dendrogram
+#' cl<-makeDendrogram(cl)
+#' clusterContrasts(cl,contrastType="Pairs")
+
 setMethod(f = "clusterContrasts",
           signature = "ClusterExperiment",
           definition = function(cluster,contrastType,...){

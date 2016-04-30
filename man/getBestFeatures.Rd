@@ -19,7 +19,7 @@
   returnType = c("Table", "Index"), contrastAdj = c("All", "PerContrast",
   "AfterF"), isCount = FALSE, ...)
 
-\S4method{clusterContrasts}{ClusterExperiment}(cluster, ...)
+\S4method{clusterContrasts}{ClusterExperiment}(cluster, contrastType, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
@@ -89,6 +89,11 @@ applicable, depends on \code{contrastType} argument)}
 corresponds to. For dendrogram searches, this will be the node of the tree of
 the dendrogram.}
 }
+
+If \code{outputType=="limma"}, returns the results of running
+  \code{\link{makeContrasts}}. This is a matrix with number of columns equal
+  to the number of contrasts, and rows equal to the number of levels of the
+  factor that will be fit in a linear model.
 }
 \description{
 Calls limma on input data to determine features most associated
@@ -203,5 +208,15 @@ number=nrow(simData), isCount=TRUE)
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
+data(simData)
+
+cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
+subsample=FALSE)
+#Pairs:
+clusterContrasts(cl,contrastType="Pairs")
+#Dendrogram
+cl<-makeDendrogram(cl)
+clusterContrasts(cl,contrastType="Pairs")
 }
 
