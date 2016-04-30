@@ -28,32 +28,32 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   table(primaryCluster(cl))
 
   top1 <- getBestFeatures(simData, primaryCluster(cl), contrastType="F",
-                       returnType="Table", isCount=FALSE)
+                        isCount=FALSE)
   idx <- top1$IndexInOriginal
   expect_equal(rowMeans(simData[idx,clusters>0]), top1$AveExpr)
 
   ## check defaults
   topC0 <- getBestFeatures(cl)
-  topC1 <- getBestFeatures(cl, contrastType="F", returnType="Table", isCount=FALSE)
+  topC1 <- getBestFeatures(cl, contrastType="F",  isCount=FALSE)
   expect_equal(topC1, topC0)
 
   expect_equal(topC1, top1)
 
   top2 <- getBestFeatures(simData, primaryCluster(cl), contrastType="Pairs",
-                       returnType="Table", isCount=FALSE)
+                        isCount=FALSE)
   idx <- top2$IndexInOriginal
   expect_equal(rowMeans(simData[idx,clusters>0]), top2$AveExpr)
 
-  topC2 <- getBestFeatures(cl, contrastType="Pairs", returnType="Table",
+  topC2 <- getBestFeatures(cl, contrastType="Pairs", 
                         isCount=FALSE)
   expect_equal(topC2, top2)
 
   top3 <- getBestFeatures(simData, primaryCluster(cl), contrastType="OneAgainstAll",
-                       returnType="Table", isCount=FALSE)
+                        isCount=FALSE)
   idx <- top3$IndexInOriginal
   expect_equal(rowMeans(simData[idx,clusters>0]), top3$AveExpr)
 
-  topC3 <- getBestFeatures(cl, contrastType="OneAgainstAll", returnType="Table",
+  topC3 <- getBestFeatures(cl, contrastType="OneAgainstAll", 
                         isCount=FALSE)
   expect_equal(topC3, top3)
 
@@ -61,32 +61,32 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
   logcpm <- t(log2(t(simCount + 0.5)/(colSums(simCount) + 1) * 1e+06))
   voom1 <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
-                       returnType="Table", isCount=TRUE)
+                        isCount=TRUE)
   idx <- voom1$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,clusters>0]), voom1$AveExpr)
 
   voom2 <- getBestFeatures(simCount, primaryCluster(cl), contrastType="Pairs",
-                       returnType="Table", isCount=TRUE)
+                        isCount=TRUE)
   idx <- voom2$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,clusters>0]), voom2$AveExpr)
 
   voom3 <- getBestFeatures(simCount, primaryCluster(cl), contrastType="OneAgainstAll",
-                       returnType="Table", isCount=TRUE)
+                        isCount=TRUE)
   idx <- voom3$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,clusters>0]), voom3$AveExpr)
 
-  ## test index output
-  idx1 <- getBestFeatures(simData, primaryCluster(cl), contrastType="F",
-                       returnType="Index", isCount=FALSE)
-  expect_equal(as.numeric(idx1), top1$IndexInOriginal)
-
-  idx2 <- getBestFeatures(simData, primaryCluster(cl), contrastType="Pairs",
-                       returnType="Index", isCount=FALSE)
-  expect_equal(as.numeric(idx2), top2$IndexInOriginal)
-
-  idx3 <- getBestFeatures(simData, primaryCluster(cl), contrastType="OneAgainstAll",
-                       returnType="Index", isCount=FALSE)
-  expect_equal(as.numeric(idx3), top3$IndexInOriginal)
+#   ## test index output
+#   idx1 <- getBestFeatures(simData, primaryCluster(cl), contrastType="F",
+#                        returnType="Index", isCount=FALSE)
+#   expect_equal(as.numeric(idx1), top1$IndexInOriginal)
+# 
+#   idx2 <- getBestFeatures(simData, primaryCluster(cl), contrastType="Pairs",
+#                        returnType="Index", isCount=FALSE)
+#   expect_equal(as.numeric(idx2), top2$IndexInOriginal)
+# 
+#   idx3 <- getBestFeatures(simData, primaryCluster(cl), contrastType="OneAgainstAll",
+#                        returnType="Index", isCount=FALSE)
+#   expect_equal(as.numeric(idx3), top3$IndexInOriginal)
 
   ## test dendrogram
   expect_error(getBestFeatures(simData, primaryCluster(cl), contrastType="Dendro"),

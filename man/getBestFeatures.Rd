@@ -11,13 +11,11 @@
 \usage{
 \S4method{getBestFeatures}{matrix}(x, cluster, contrastType = c("F", "Dendro",
   "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  returnType = c("Table", "Index"), contrastAdj = c("All", "PerContrast",
-  "AfterF"), isCount = FALSE, normalize.method = "none", ...)
+  contrastAdj = c("All", "PerContrast", "AfterF"), isCount = FALSE,
+  normalize.method = "none", ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
-  "Dendro", "Pairs", "OneAgainstAll"), pairMat = NULL,
-  returnType = c("Table", "Index"), contrastAdj = c("All", "PerContrast",
-  "AfterF"), isCount = FALSE, ...)
+  "Dendro", "Pairs", "OneAgainstAll"), isCount = FALSE, ...)
 
 \S4method{clusterContrasts}{ClusterExperiment}(cluster, contrastType, ...)
 }
@@ -25,7 +23,8 @@
 \item{x}{data for the test. Can be a numeric matrix or a
 \code{\link{ClusterExperiment}}.}
 
-\item{cluster}{Either a vector giving contrasts assignments or a ClusterExperiment object}
+\item{cluster}{A numeric vector with cluster assignments.
+``-1'' indicates the sample was not assigned to a cluster.}
 
 \item{contrastType}{What type of test to do. `F' gives the omnibus
 F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
@@ -57,8 +56,7 @@ default value of \code{\link{voom}}.}
 \item{...}{options to pass to \code{\link{topTable}} or
 \code{\link{topTableF}} (see \code{\link{limma}} package)}
 
-\item{cl}{A numeric vector with cluster assignments.
-``-1'' indicates the sample was not assigned to a cluster.}
+\item{cluster}{Either a vector giving contrasts assignments or a ClusterExperiment object}
 
 \item{contrastType}{What type of contrast to create.
 `Dendro' traverses the given dendrogram and does contrasts of the samples

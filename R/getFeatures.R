@@ -5,7 +5,7 @@
 #' @aliases getBestFeatures
 #' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments.
+#' @param cluster A numeric vector with cluster assignments.
 #'   ``-1'' indicates the sample was not assigned to a cluster.
 #' @param contrastType What type of test to do. `F' gives the omnibus
 #'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
@@ -149,7 +149,6 @@ setMethod(f = "getBestFeatures",
           definition = function(x, cluster,
                                 contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,
-                                returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
                                 isCount=FALSE, normalize.method="none",...) {
 
@@ -163,6 +162,7 @@ setMethod(f = "getBestFeatures",
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
+            returnType<-c("Table", "Index")
             returnType <- match.arg(returnType)
 
             if(is.null(rownames(dat))) {
@@ -252,9 +252,6 @@ setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x,
                                 contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                pairMat=NULL,
-                                returnType=c("Table", "Index"),
-                                contrastAdj=c("All", "PerContrast", "AfterF"),
                                 isCount=FALSE, ...) {
 
             contrastType <- match.arg(contrastType)
@@ -278,8 +275,7 @@ This makes sense only for counts.")
             }
 
             getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
-                         pairMat=pairMat, returnType=returnType,
-                         contrastAdj=contrastAdj, isCount=isCount, ...)
+                         isCount=isCount, ...)
 
           }
 )

@@ -130,7 +130,7 @@ setMethod(f = "mergeClusters",
 
   #get test-statistics for the contrasts corresponding to each node (and return all)
   sigTable <- getBestFeatures(x, cl, contrastType=c("Dendro"), dendro=dendro,
-                              returnType=c("Table"), contrastAdj=c("All"),
+                               contrastAdj=c("All"),
                               number=nrow(x), p.value=1, isCount=isCount)
 
   #divide table into each node.
