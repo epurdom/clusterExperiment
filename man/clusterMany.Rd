@@ -153,11 +153,11 @@ While the function allows for multiple values of clusterFunction,
   there is no gain in computational complexity (i.e. each subsampled
   co-occurence matrix is recalculated for each set of parameters).
 
-The argument 'ks' is interpreted differently for different choices 
-  of the other parameters. When/if sequential=TRUE, ks defines the argument 
-  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both 
-  subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to 
-  \code{\link{clusterD}} and \code{\link{subsamplingCluster}}. This passing
+The argument 'ks' is interpreted differently for different choices
+  of the other parameters. When/if sequential=TRUE, ks defines the argument
+  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both
+  subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to
+  \code{\link{clusterD}} and \code{\link{subsampleClustering}}. This passing
   of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
   will only have an effect when the clusterFunction argument includes a

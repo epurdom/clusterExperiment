@@ -26,7 +26,9 @@ Imports:
     dendextend,
     howmany,
     locfdr,
-    matrixStats
+    matrixStats,
+    graphics,
+    parallel
 Suggests:
     BiocStyle,
     knitr,
@@ -36,3 +38,4 @@ Suggests:
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 5.0.1
+biocViews: Clustering, RNASeq, Sequencing, Software

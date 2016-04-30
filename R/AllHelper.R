@@ -77,7 +77,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{clusterMatrixNamed} returns a matrix with cluster labels.
+#' @return \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
 #' @aliases clusterMatrixNamed
 #' @param x,object a ClusterExperiment object.
@@ -98,7 +98,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{primaryClusterNamed} returns the primary cluster (using cluster
+#' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
 #' labels).
 #' @export
 #' @aliases primaryClusterNamed
@@ -110,7 +110,7 @@ setMethod(
   })
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{transformation} prints the function used to transform the data
+#' @return \code{transformation} prints the function used to transform the data
 #' prior to clustering.
 #' @export
 #' @aliases transformation
@@ -123,7 +123,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{nClusters} returns the number of clusterings (i.e., ncol of
+#' @return \code{nClusters} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
 #' @export
 #' @aliases nClusters
@@ -135,7 +135,7 @@ setMethod(
   }
 )
 #' @rdname ClusterExperiment-methods
-#' @details \code{nFeatures} returns the number of features (same as `nrow`).
+#' @return \code{nFeatures} returns the number of features (same as `nrow`).
 #' @export
 #' @aliases nFeatures
 setMethod(
@@ -147,7 +147,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{nSamples} returns the number of samples (same as `ncol`).
+#' @return \code{nSamples} returns the number of samples (same as `ncol`).
 #' @export
 #' @aliases nSamples
 setMethod(
@@ -159,7 +159,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{clusterMatrix} returns the matrix with all the clusterings.
+#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
 setMethod(
@@ -171,7 +171,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{primaryCluster} returns the primary clustering (as numeric).
+#' @return \code{primaryCluster} returns the primary clustering (as numeric).
 #' @export
 #' @aliases primaryCluster
 setMethod(
@@ -183,7 +183,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{primaryClusterIndex} returns/sets the primary clustering index
+#' @return \code{primaryClusterIndex} returns/sets the primary clustering index
 #' (i.e., which column of clusterMatrix corresponds to the primary clustering).
 #' @export
 #' @aliases primaryClusterIndex
@@ -211,7 +211,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{coClustering} returns/sets the co-clustering matrix.
+#' @return \code{coClustering} returns/sets the co-clustering matrix.
 #' @export
 #' @aliases coClustering
 setMethod(
@@ -236,7 +236,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{clusterType} returns/sets the clusterType slot.
+#' @return \code{clusterType} returns/sets the clusterType slot.
 #' @export
 #' @aliases clusterType
 setMethod(
@@ -250,7 +250,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{clusterInfo} returns the clusterInfo slot.
+#' @return \code{clusterInfo} returns the clusterInfo slot.
 #' @aliases clusterInfo
 #' @export
 setMethod(
@@ -264,7 +264,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{clusterLegend} returns/sets the clusterLegend slot.
+#' @return \code{clusterLegend} returns/sets the clusterLegend slot.
 #' @export
 #' @aliases clusterLegend
 setMethod(
@@ -290,7 +290,7 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @details \code{orderSamples} returns/sets the orderSamples slot.
+#' @return \code{orderSamples} returns/sets the orderSamples slot.
 #' @export
 #' @aliases orderSamples
 setMethod(

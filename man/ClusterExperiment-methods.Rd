@@ -97,13 +97,7 @@
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
 }
-\description{
-This is a collection of helper methods for the ClusterExperiment class.
-}
-\details{
-Note that when subsetting the data, the dendrogram information and
-the co-clustering matrix are lost.
-
+\value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
 
 \code{primaryClusterNamed} returns the primary cluster (using cluster
@@ -135,5 +129,12 @@ clusterMatrix).
 \code{clusterLegend} returns/sets the clusterLegend slot.
 
 \code{orderSamples} returns/sets the orderSamples slot.
+}
+\description{
+This is a collection of helper methods for the ClusterExperiment class.
+}
+\details{
+Note that when subsetting the data, the dendrogram information and
+the co-clustering matrix are lost.
 }
 

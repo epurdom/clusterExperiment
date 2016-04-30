@@ -10,6 +10,8 @@
 #'   numeric, in which case gives the indices of the clusters, or character, in
 #'   which case it matches to \code{clusterType(x)} to find the indices of the
 #'   clusters.
+#'
+#' @return A vector with the clustering labels.
 #' @export
 #' @rdname clusterLabels
 #' @examples
