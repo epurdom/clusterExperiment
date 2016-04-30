@@ -42,9 +42,8 @@ The basic intended clustering workflow is
 * Implement many different clusterings using different choices of parameters using the function `clusterMany`. This results in a large collection of clusterings, where each clustering is based on different parameters. 
 * Find a unifying clustering across these many clusterings using the `combineMany` function. 
 * Determine whether some clusters should be merged together into larger clusters. This involves two steps:
-
-  * Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
-  * Merge together clusters of this hierarchy based on how the percentage of differential expression.
+  - Find a hierarchical clustering of the cluster found by `combineMany` using `makeDendrogram`
+  - Merge together clusters of this hierarchy based on how the percentage of differential expression.
 
 The basic premise of our workflow is to find small, robust clusters of samples, and then unify them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of a few number of clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
@@ -75,7 +74,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 ## Data example {#data}
 
-We will make use of a single cell sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. 
+We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. Please refer to the README.md file at https://github.com/drisso/scRNAseq for instructions on how to download and install the `scRNAseq` package.
 
 ```{r,cache=FALSE}
 library(scRNAseq)
@@ -90,20 +89,29 @@ colData(fluidigm)[,1:5]
 NCOL(fluidigm) #number of samples
 ```
 
+While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice as different sequencing depth. We will limit to those with high sequencing depth. 
 
-While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice as different sequencing depth. We will limit to those with high sequencing depth. We will also do some minimal filtering of the genes, removing genes without at least 100 reads across totalled across all 65 cells.
+## Step 0: Filtering and normalization {#step0}
+
+First, we filter out lowly expressed genes: We retain only those genes with at least 10 reads in at least 10 cells.
 
 ```{r}
-se<-fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-whZero<-which(rowSums(assay(se))==100)
-whLow<-which(rowSums(assay(se))<100)
-se<-se[-whLow,]
+se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
+wh_zero <- which(rowSums(assay(se))==0)
+pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
+se <- se[pass_filter,]
 dim(se)
 ```
 
-This removed `r length(whLow)` genes out of `r NROW(fluidigm)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to remove genes with all zero in all samples (we had `r length(whZero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
+This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to remove genes with all zero in all samples (we had `r length(wh_zero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
 
+Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
+```{r normalization}
+library(limma)
+fq <- round(normalizeQuantiles(assay(se)))
+assays(se) <- list(normalized_counts=fq)
+```
 
 ## Step 1: Clustering with `clusterMany` {#step1}
 
@@ -123,7 +131,7 @@ Other possible options we will keep fixed to reduce the number of clusterings by
 We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `function(x){x}` for the identify). 
 
 ```{r clusterMany}
-ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE),
+ce<-clusterMany(se, clusterFunction="pam",ks=5:10,findBestK=FALSE,removeSil=c(FALSE),
       isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 ```
@@ -137,7 +145,6 @@ defaultMar<-par("mar")
 plotCMar<-c(1.1,8.1,4.1,1.1)
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), axisLine=-1)
-
 ```
 
 This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been choosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
@@ -153,7 +160,7 @@ There are many accessor functions that help you get at the information in a `Clu
 For right now we will only mention the most basic such function that retrieves the actual cluster assignments. This is the `clusterMatrix` function, that returns a matrix where the columns are the different clusterings and the rows are samples. Within a clustering, the clusters are encoded by consecutive integers. 
 
 ```{r clusterMatrix}
-head(clusterMatrix(ce))
+head(clusterMatrix(ce)[,1:3])
 ```
 
 Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why this is the case depends on the underlying choices of the clustering routine. In this case, we chose `removeSil=TRUE` so that samples with negative silhouette distance from their originally assigned clusters are discarded. 
@@ -174,7 +181,7 @@ If we look at the `clusterMatrix` of the returned `ce` object, we see that the n
 
 ```{r}
 dim(clusterMatrix(ce))
-head(clusterMatrix(ce))
+head(clusterMatrix(ce)[,1:3])
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 
@@ -229,7 +236,7 @@ Notice that two sets of clusters were merged into a larger cluster.
 Finally, we can do a heatmap visualizing our this final step of clustering.
 
 ```{r plotHeatmap}
-plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99)
+plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99, sampleData=c("Biological_Condition", "Cluster1", "Cluster2"))
 ```
 
 By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
