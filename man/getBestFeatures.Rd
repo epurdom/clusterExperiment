@@ -2,8 +2,6 @@
 % Please edit documentation in R/getFeatures.R
 \docType{methods}
 \name{getBestFeatures,matrix-method}
-\alias{clusterContrasts}
-\alias{clusterContrasts,ClusterExperiment-method}
 \alias{getBestFeatures}
 \alias{getBestFeatures,ClusterExperiment-method}
 \alias{getBestFeatures,matrix-method}
@@ -16,8 +14,6 @@
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
   "Dendro", "Pairs", "OneAgainstAll"), isCount = FALSE, ...)
-
-\S4method{clusterContrasts}{ClusterExperiment}(cluster, contrastType, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
@@ -55,18 +51,6 @@ default value of \code{\link{voom}}.}
 
 \item{...}{options to pass to \code{\link{topTable}} or
 \code{\link{topTableF}} (see \code{\link{limma}} package)}
-
-\item{cluster}{Either a vector giving contrasts assignments or a ClusterExperiment object}
-
-\item{contrastType}{What type of contrast to create.
-`Dendro' traverses the given dendrogram and does contrasts of the samples
-in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
-pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
-each cluster to the average of all others.}
-
-\item{removeNegative}{logical, whether to remove negative valued clusters 
-from the design matrix. Appropriate to pick TRUE (default) if design will
-be input into linear model on samples that excludes -1.}
 }
 \value{
 A \code{data.frame} in the same format as
@@ -87,18 +71,11 @@ applicable, depends on \code{contrastType} argument)}
 corresponds to. For dendrogram searches, this will be the node of the tree of
 the dendrogram.}
 }
-
-If \code{outputType=="limma"}, returns the results of running
-  \code{\link{makeContrasts}}. This is a matrix with number of columns equal
-  to the number of contrasts, and rows equal to the number of levels of the
-  factor that will be fit in a linear model.
 }
 \description{
 Calls limma on input data to determine features most associated
   with found clusters (based on an F-statistic, pairwise comparisons, or
   following a tree that clusters the clusters).
-
-Uses cluster to create different types of contrasts to be tested that can then be fed into DE testing programs.
 }
 \details{
 getBestFeatures returns the top ranked features corresponding to a
@@ -154,12 +131,6 @@ Note that the default option for \code{\link[limma]{topTable}} is
   anything other than count data on mailing lists. For this reason we are not
   implementing it for arbitrary transformations at this time (e.g.
   log(FPKM+epsilon) transformations).
-
-The input vector must be numeric clusters, but the external commands
-  that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require
-  syntatically valid R names. For this reason, the names of the levels will
-  be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
-  be "X.1","X.2", etc.
 }
 \examples{
 data(simData)
@@ -206,15 +177,5 @@ number=nrow(simData), isCount=TRUE)
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
-data(simData)
-
-cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-subsample=FALSE)
-#Pairs:
-clusterContrasts(cl,contrastType="Pairs")
-#Dendrogram
-cl<-makeDendrogram(cl)
-clusterContrasts(cl,contrastType="Pairs")
 }
 

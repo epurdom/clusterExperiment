@@ -162,9 +162,10 @@ setMethod(f = "getBestFeatures",
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
-            returnType<-c("Table", "Index")
-            returnType <- match.arg(returnType)
-
+#             returnType<-c("Table", "Index")
+#             returnType<-match.arg(returnType)
+             returnType <- "Table" 
+            
             if(is.null(rownames(dat))) {
               rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
             }
@@ -408,11 +409,14 @@ This makes sense only for counts.")
 	return(.testContrasts(contrastNames=contrVect, ...))
 }
 
-#' @title Function for creating contrasts for a cluster
-#' @description Uses cluster to create different types of contrasts to be tested that can then be fed into DE testing programs.
-#' @rdname getBestFeatures
-#' @aliases clusterContrasts
-#' @param cluster Either a vector giving contrasts assignments or a ClusterExperiment object
+#' @title Create contrasts for testing DE of a cluster
+#' @docType methods
+#' @description Uses clustering to create different types of contrasts to be
+#'   tested that can then be fed into DE testing programs.
+#' @name clusterContrasts
+#' @aliases clusterContrasts,ClusterExperiment-method
+#' @param cluster Either a vector giving contrasts assignments or a
+#'   ClusterExperiment object
 #' @param contrastType What type of contrast to create.
 #'   `Dendro' traverses the given dendrogram and does contrasts of the samples
 #'   in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
@@ -428,6 +432,11 @@ This makes sense only for counts.")
 #' @param removeNegative logical, whether to remove negative valued clusters 
 #'   from the design matrix. Appropriate to pick TRUE (default) if design will
 #'   be input into linear model on samples that excludes -1.
+#' @param outputType character string. Gives format for the resulting contrast
+#'   matrix. Currently the only option is the format appropriate for
+#'   \code{\link{limma}} package, but we anticipate adding more.
+#' @param ... arguments that are passed to from the \code{ClusterExperiment}
+#'   version to the matrix version.
 #' @details The input vector must be numeric clusters, but the external commands
 #'   that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require
 #'   syntatically valid R names. For this reason, the names of the levels will
@@ -437,9 +446,9 @@ This makes sense only for counts.")
 #'   \code{\link{makeContrasts}}. This is a matrix with number of columns equal
 #'   to the number of contrasts, and rows equal to the number of levels of the
 #'   factor that will be fit in a linear model.
+#' @author Elizabeth Purdom
 #' @examples 
 #' data(simData)
-#'
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
@@ -448,7 +457,8 @@ This makes sense only for counts.")
 #' #Dendrogram
 #' cl<-makeDendrogram(cl)
 #' clusterContrasts(cl,contrastType="Pairs")
-
+#' @export
+#' @rdname clusterContrasts
 setMethod(f = "clusterContrasts",
           signature = "ClusterExperiment",
           definition = function(cluster,contrastType,...){
@@ -459,6 +469,9 @@ setMethod(f = "clusterContrasts",
       else dendro<-NULL
     clusterContrasts(primaryCluster(cluster),contrastType=contrastType,dendro=dendro,...)
 })
+#' @rdname clusterContrasts
+#' @export
+#' @importFrom limma makeContrasts
 setMethod(f = "clusterContrasts",
           signature = "numeric",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
@@ -528,7 +541,7 @@ setMethod(f = "clusterContrasts",
 #         levnames<-levels(factor(cluster[cluster>0]))
 #     }
     levnames<-make.names(levels(cl))
-    if(outputType=="limma") return(makeContrasts(contrasts=contrastNames,levels=levnames))
+    if(outputType=="limma") return(limma::makeContrasts(contrasts=contrastNames,levels=levnames))
     
 })
 
