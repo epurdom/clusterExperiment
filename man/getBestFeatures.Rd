@@ -2,48 +2,49 @@
 % Please edit documentation in R/getFeatures.R
 \docType{methods}
 \name{getBestFeatures,matrix-method}
+\alias{clusterContrasts}
+\alias{clusterContrasts,ClusterExperiment-method}
 \alias{getBestFeatures}
 \alias{getBestFeatures,ClusterExperiment-method}
 \alias{getBestFeatures,matrix-method}
 \title{Function for finding best features associated with clusters}
 \usage{
-\S4method{getBestFeatures}{matrix}(x, cl, type = c("F", "Dendro", "Pairs",
-  "OneAgainstAll"), dendro = NULL, pairMat = NULL, returnType = c("Table",
-  "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  isCount = FALSE, normalize.method = "none", ...)
+\S4method{getBestFeatures}{matrix}(x, cluster, contrastType = c("F", "Dendro",
+  "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
+  returnType = c("Table", "Index"), contrastAdj = c("All", "PerContrast",
+  "AfterF"), isCount = FALSE, normalize.method = "none", ...)
 
-\S4method{getBestFeatures}{ClusterExperiment}(x, type = c("F", "Dendro",
-  "Pairs", "OneAgainstAll"), pairMat = NULL, returnType = c("Table",
-  "Index"), contrastAdj = c("All", "PerContrast", "AfterF"),
-  isCount = FALSE, ...)
+\S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
+  "Dendro", "Pairs", "OneAgainstAll"), pairMat = NULL,
+  returnType = c("Table", "Index"), contrastAdj = c("All", "PerContrast",
+  "AfterF"), isCount = FALSE, ...)
+
+\S4method{clusterContrasts}{ClusterExperiment}(cluster, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
 \code{\link{ClusterExperiment}}.}
 
-\item{cl}{A numeric vector with cluster assignments to compare to clRef.
-``-1'' indicates the sample was not assigned to a cluster.}
+\item{cluster}{Either a vector giving contrasts assignments or a ClusterExperiment object}
 
-\item{type}{What type of test to do. `F' gives the omnibus F-statistic,
-`Dendro' traverses the given dendrogram and does contrasts of the samples
-in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
-pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
-each cluster to the average of all others.}
+\item{contrastType}{What type of test to do. `F' gives the omnibus
+F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
+the samples in each side,  `Pairs' does pair-wise contrasts based on the
+pairs given in pairMat (if pairMat=NULL, does all pairwise), and
+`OneAgainstAll' compares each cluster to the average of all others. Passed
+to \code{\link{clusterContrasts}}}
 
-\item{dendro}{The dendrogram to traverse if type="Dendro". Note that this
+\item{dendro}{The dendrogram to traverse if contrastType="Dendro". Note that this
 should be the dendrogram of the clusters, not of the individual samples.}
 
 \item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise
 contrasts (must match to elements of cl). If NULL, will do all pairwise of
-the clusters in \code{cl} (excluding "-1" categories). Each row is a pair
+the clusters in \code{cluster} (excluding "-1" categories). Each row is a pair
 to be compared and must match the names of the clusters in the vector
-\code{cl}.}
-
-\item{returnType}{Whether to return the index of genes, or the full table
-given by topTable or topTableF.}
+\code{cluster}.}
 
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests
-(i.e. if type='Dendro' or 'Pairs').}
+(i.e. if contrastType='Dendro' or 'Pairs').}
 
 \item{isCount}{logical as to whether input data is count data, in which
 case to perform voom correction to data. See details.}
@@ -55,6 +56,19 @@ default value of \code{\link{voom}}.}
 
 \item{...}{options to pass to \code{\link{topTable}} or
 \code{\link{topTableF}} (see \code{\link{limma}} package)}
+
+\item{cl}{A numeric vector with cluster assignments.
+``-1'' indicates the sample was not assigned to a cluster.}
+
+\item{contrastType}{What type of contrast to create.
+`Dendro' traverses the given dendrogram and does contrasts of the samples
+in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
+pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
+each cluster to the average of all others.}
+
+\item{removeNegative}{logical, whether to remove negative valued clusters 
+from the design matrix. Appropriate to pick TRUE (default) if design will
+be input into linear model on samples that excludes -1.}
 }
 \value{
 A \code{data.frame} in the same format as
@@ -69,7 +83,7 @@ A \code{data.frame} in the same format as
 input dataset, \code{x}}
 
 \item{\code{Contrast}}{ The contrast that the results corresponds to (if
-applicable, depends on \code{type} argument)}
+applicable, depends on \code{contrastType} argument)}
 
 \item{\code{ContrastName}}{ The name of the contrast that the results
 corresponds to. For dendrogram searches, this will be the node of the tree of
@@ -80,6 +94,8 @@ the dendrogram.}
 Calls limma on input data to determine features most associated
   with found clusters (based on an F-statistic, pairwise comparisons, or
   following a tree that clusters the clusters).
+
+Uses cluster to create different types of contrasts to be tested that can then be fed into DE testing programs.
 }
 \details{
 getBestFeatures returns the top ranked features corresponding to a
@@ -91,8 +107,8 @@ getBestFeatures returns the top ranked features corresponding to a
   significant features to return (where number is per contrast for the
   `Pairs` or `Dendro` option)
 
-When `type` argument implies that the best features should be found
-  via contrasts (i.e. 'type' is `Pairs` or `Dendro`), then then `contrastAdj`
+When `contrastType` argument implies that the best features should be found
+  via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then then `contrastAdj`
   determines the type of multiple testing correction to perform.
   `PerContrast` does FDR correction for each set of contrasts, and does not
   guarantee control across all the different contrasts (so probably not the
@@ -135,6 +151,12 @@ Note that the default option for \code{\link[limma]{topTable}} is
   anything other than count data on mailing lists. For this reason we are not
   implementing it for arbitrary transformations at this time (e.g.
   log(FPKM+epsilon) transformations).
+
+The input vector must be numeric clusters, but the external commands
+  that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require
+  syntatically valid R names. For this reason, the names of the levels will
+  be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
+  be "X.1","X.2", etc.
 }
 \examples{
 data(simData)
@@ -144,15 +166,15 @@ cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))
 
 #basic F test, return all, even if not significant:
-testF <- getBestFeatures(cl, type="F", number=nrow(simData),
+testF <- getBestFeatures(cl, contrastType="F", number=nrow(simData),
 isCount=FALSE)
 
 #Do all pairwise, only return significant, try different adjustments:
-pairsPerC <- getBestFeatures(cl, type="Pairs", contrastAdj="PerContrast",
+pairsPerC <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="PerContrast",
 p.value=0.05, isCount=FALSE)
-pairsAfterF <- getBestFeatures(cl, type="Pairs", contrastAdj="AfterF",
+pairsAfterF <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="AfterF",
 p.value=0.05, isCount=FALSE)
-pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
+pairsAll <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="All",
 p.value=0.05, isCount=FALSE)
 
 #not useful for this silly example, but could look at overlap with Venn
@@ -165,18 +187,18 @@ vennDiagram(vennC, main="FDR Overlap")
 }
 
 #Do one cluster against all others
-oneAll <- getBestFeatures(cl, type="OneAgainstAll", contrastAdj="All",
+oneAll <- getBestFeatures(cl, contrastType="OneAgainstAll", contrastAdj="All",
 p.value=0.05)
 
 #Do dendrogram testing
 hcl <- makeDendrogram(cl)
-allDendro <- getBestFeatures(hcl, type="Dendro", contrastAdj=c("All"),
+allDendro <- getBestFeatures(hcl, contrastType="Dendro", contrastAdj=c("All"),
 number=ncol(simData), p.value=0.05)
 
 # do DE on counts using voom
 # compare results to if used simData instead (not on count scale).
 # Again, not relevant for this silly example, but basic principle useful
-testFVoom <- getBestFeatures(simCount, primaryCluster(cl), type="F",
+testFVoom <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
 number=nrow(simData), isCount=TRUE)
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
