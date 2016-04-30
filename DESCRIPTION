@@ -36,3 +36,4 @@ Suggests:
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 5.0.1
+BiocViews: Clustering, RNASeq, Sequencing, Software
