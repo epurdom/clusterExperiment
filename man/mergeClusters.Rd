@@ -8,8 +8,9 @@
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
-  mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"), cutoff = 0.1,
-  plotType = c("none", "all", "mergeMethod"), isCount = TRUE, ...)
+  mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
+  plotType = c("none", "all", "mergeMethod", "adjP", "locfdr", "MB", "JC"),
+  cutoff = 0.1, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod, ...)
@@ -32,14 +33,14 @@ the slot \code{dendro_clusters} will be used. This means that
 used to merge clusters (if 'none', no merging will be done). See details
 for description of methods.}
 
+\item{plotType}{what type of plotting of dendrogram. If 'all', then all the
+estimates of proportion non-null will be plotted; if 'mergeMethod', then
+only the value used in the merging is plotted for each node.}
+
 \item{cutoff}{minimimum value required for NOT merging a cluster, i.e.
 two clusters with the proportion of DE below cutoff will be merged.
 Must be a value between 0, 1, where
 lower values will make it harder to merge clusters.}
-
-\item{plotType}{what type of plotting of dendrogram. If 'all', then all the
-estimates of proportion non-null will be plotted; if 'mergeMethod', then
-only the value used in the merging is plotted for each node.}
 
 \item{isCount}{logical as to whether input data is a count matrix. See details.}
 

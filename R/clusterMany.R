@@ -54,11 +54,11 @@
 #'   there is no gain in computational complexity (i.e. each subsampled
 #'   co-occurence matrix is recalculated for each set of parameters).
 #'
-#' @details The argument 'ks' is interpreted differently for different choices 
-#'   of the other parameters. When/if sequential=TRUE, ks defines the argument 
-#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both 
-#'   subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to 
-#'   \code{\link{clusterD}} and \code{\link{subsamplingCluster}}. This passing
+#' @details The argument 'ks' is interpreted differently for different choices
+#'   of the other parameters. When/if sequential=TRUE, ks defines the argument
+#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both
+#'   subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to
+#'   \code{\link{clusterD}} and \code{\link{subsampleClustering}}. This passing
 #'   of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
 #'   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
 #'   will only have an effect when the clusterFunction argument includes a
@@ -198,7 +198,7 @@ setMethod(
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9, k.min=3, verbose=FALSE),
-                        ncores=1, random.seed=NULL, run=TRUE, 
+                        ncores=1, random.seed=NULL, run=TRUE,
                         ...
   )
   {
@@ -396,7 +396,7 @@ setMethod(
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
       outval<-.addBackSEInfo(newObj=outval,oldObj=x)
-      
+
       ##Check if clusterMany already ran previously
       ###ToDo: check what happens if the only clusters existing are workflow clusters
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
