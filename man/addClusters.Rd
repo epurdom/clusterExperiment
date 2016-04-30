@@ -46,6 +46,9 @@ character, should match a \code{clusterType} of x.}
 \item{exactMatch}{logical. Whether \code{whichRemove} must exactly match a
 value of \code{clusterType(x)}. Only relevant if whichRemove is character.}
 }
+\value{
+A \code{\link{ClusterExperiment}} object with the added clusters.
+}
 \description{
 These functions are used to add or remove clusters to a
 \code{\link{ClusterExperiment}} object.

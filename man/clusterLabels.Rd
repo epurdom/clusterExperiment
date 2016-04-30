@@ -30,6 +30,9 @@ clusters.}
 \item{value}{character. A vector of length equal to
 \code{NCOL(clusterMatrix(object))}.}
 }
+\value{
+A vector with the clustering labels.
+}
 \description{
 These methods will return or set the clustering labels (i.e., the
 colnames of the clusterMatrix slot).
