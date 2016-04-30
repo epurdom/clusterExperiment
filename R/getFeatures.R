@@ -5,24 +5,16 @@
 #' @aliases getBestFeatures
 #' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments to compare to clRef.
+#' @param cl A numeric vector with cluster assignments.
 #'   ``-1'' indicates the sample was not assigned to a cluster.
-#' @param type What type of test to do. `F' gives the omnibus F-statistic,
-#'   `Dendro' traverses the given dendrogram and does contrasts of the samples
-#'   in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
-#'   pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
-#'   each cluster to the average of all others.
-#' @param dendro The dendrogram to traverse if type="Dendro". Note that this
-#'   should be the dendrogram of the clusters, not of the individual samples.
-#' @param pairMat matrix giving the pairs of clusters for which to do pair-wise
-#'   contrasts (must match to elements of cl). If NULL, will do all pairwise of
-#'   the clusters in \code{cl} (excluding "-1" categories). Each row is a pair
-#'   to be compared and must match the names of the clusters in the vector
-#'   \code{cl}.
-#' @param returnType Whether to return the index of genes, or the full table
-#'   given by topTable or topTableF.
+#' @param contrastType What type of test to do. `F' gives the omnibus
+#'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
+#'   the samples in each side,  `Pairs' does pair-wise contrasts based on the
+#'   pairs given in pairMat (if pairMat=NULL, does all pairwise), and
+#'   `OneAgainstAll' compares each cluster to the average of all others. Passed
+#'   to \code{\link{clusterContrasts}}
 #' @param contrastAdj What type of FDR correction to do for contrasts tests
-#'   (i.e. if type='Dendro' or 'Pairs').
+#'   (i.e. if contrastType='Dendro' or 'Pairs').
 #' @param isCount logical as to whether input data is count data, in which
 #'   case to perform voom correction to data. See details.
 #' @param ... options to pass to \code{\link{topTable}} or
@@ -31,7 +23,7 @@
 #'   \code{\link{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the
 #'   default value of \code{\link{voom}}.
-#'
+#' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
@@ -41,8 +33,8 @@
 #'   significant features to return (where number is per contrast for the
 #'   `Pairs` or `Dendro` option)
 #'
-#' @details When `type` argument implies that the best features should be found
-#'   via contrasts (i.e. 'type' is `Pairs` or `Dendro`), then then `contrastAdj`
+#' @details When `contrastType` argument implies that the best features should be found
+#'   via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then then `contrastAdj`
 #'   determines the type of multiple testing correction to perform.
 #'   `PerContrast` does FDR correction for each set of contrasts, and does not
 #'   guarantee control across all the different contrasts (so probably not the
@@ -97,7 +89,7 @@
 #' input dataset, \code{x}}
 #'
 #' \item{\code{Contrast}}{ The contrast that the results corresponds to (if
-#' applicable, depends on \code{type} argument)}
+#' applicable, depends on \code{contrastType} argument)}
 #'
 #' \item{\code{ContrastName}}{ The name of the contrast that the results
 #' corresponds to. For dendrogram searches, this will be the node of the tree of
@@ -112,15 +104,15 @@
 #' sequential=FALSE, clusterDArgs=list(k=8))
 #'
 #' #basic F test, return all, even if not significant:
-#' testF <- getBestFeatures(cl, type="F", number=nrow(simData),
+#' testF <- getBestFeatures(cl, contrastType="F", number=nrow(simData),
 #' isCount=FALSE)
 #'
 #' #Do all pairwise, only return significant, try different adjustments:
-#' pairsPerC <- getBestFeatures(cl, type="Pairs", contrastAdj="PerContrast",
+#' pairsPerC <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="PerContrast",
 #' p.value=0.05, isCount=FALSE)
-#' pairsAfterF <- getBestFeatures(cl, type="Pairs", contrastAdj="AfterF",
+#' pairsAfterF <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="AfterF",
 #' p.value=0.05, isCount=FALSE)
-#' pairsAll <- getBestFeatures(cl, type="Pairs", contrastAdj="All",
+#' pairsAll <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="All",
 #' p.value=0.05, isCount=FALSE)
 #'
 #' #not useful for this silly example, but could look at overlap with Venn
@@ -133,18 +125,18 @@
 #' }
 #'
 #' #Do one cluster against all others
-#' oneAll <- getBestFeatures(cl, type="OneAgainstAll", contrastAdj="All",
+#' oneAll <- getBestFeatures(cl, contrastType="OneAgainstAll", contrastAdj="All",
 #' p.value=0.05)
 #'
 #' #Do dendrogram testing
 #' hcl <- makeDendrogram(cl)
-#' allDendro <- getBestFeatures(hcl, type="Dendro", contrastAdj=c("All"),
+#' allDendro <- getBestFeatures(hcl, contrastType="Dendro", contrastAdj=c("All"),
 #' number=ncol(simData), p.value=0.05)
 #'
 #' # do DE on counts using voom
 #' # compare results to if used simData instead (not on count scale).
 #' # Again, not relevant for this silly example, but basic principle useful
-#' testFVoom <- getBestFeatures(simCount, primaryCluster(cl), type="F",
+#' testFVoom <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
 #' number=nrow(simData), isCount=TRUE)
 #' plot(testF$P.Value[order(testF$Index)],
 #' testFVoom$P.Value[order(testFVoom$Index)],log="xy")
@@ -154,21 +146,22 @@
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
           signature = signature(x = "matrix"),
-          definition = function(x, cl,
-                                type=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+          definition = function(x, cluster,
+                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,
                                 returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
                                 isCount=FALSE, normalize.method="none",...) {
 
             #... is always sent to topTable, and nothing else
-            if(is.factor(cl)) {
-              warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
+            cl<-cluster
+             if(is.factor(cl)) {
+              warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
               cl <- as.numeric(as.character(cl))
             }
 
             dat <- data.matrix(x)
-            type <- match.arg(type)
+            contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
             returnType <- match.arg(returnType)
 
@@ -185,7 +178,7 @@ setMethod(f = "getBestFeatures",
             }
             cl <- factor(cl)
 
-            if(type=="Dendro") {
+            if(contrastType=="Dendro") {
               if(is.null(dendro)) {
                 stop("must provide dendro")
               }
@@ -194,7 +187,7 @@ setMethod(f = "getBestFeatures",
               }
             }
 
-            if(type %in% c("Pairs", "Dendro", "OneAgainstAll")) {
+            if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
               designContr <- model.matrix(~ 0 + cl)
               colnames(designContr) <- make.names(levels(cl))
 
@@ -207,7 +200,7 @@ setMethod(f = "getBestFeatures",
               }
             }
 
-            if(type=="F" || contrastAdj=="AfterF") {
+            if(contrastType=="F" || contrastAdj=="AfterF") {
               designF <- model.matrix(~cl)
 
               if(isCount) {
@@ -222,7 +215,7 @@ setMethod(f = "getBestFeatures",
             }
 
 
-            tops <- switch(type,
+            tops <- switch(contrastType,
                            "F"=.getBestFGenes(fitF,...),
                            "Dendro"=.getBestDendroGenes(cl=cl, dendro=dendro,
                                                         contrastAdj=contrastAdj,
@@ -258,17 +251,17 @@ setMethod(f = "getBestFeatures",
 setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x,
-                                type=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 pairMat=NULL,
                                 returnType=c("Table", "Index"),
                                 contrastAdj=c("All", "PerContrast", "AfterF"),
                                 isCount=FALSE, ...) {
 
-            type <- match.arg(type)
+            contrastType <- match.arg(contrastType)
 
-            if(type=="Dendro") {
+            if(contrastType=="Dendro") {
               if(is.null(x@dendro_clusters)) {
-                stop("If `type='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
+                stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
               } else {
               dendro <- x@dendro_clusters
               }
@@ -284,7 +277,7 @@ This makes sense only for counts.")
               dat <- transform(x)
             }
 
-            getBestFeatures(dat, primaryCluster(x), type=type, dendro=dendro,
+            getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
                          pairMat=pairMat, returnType=returnType,
                          contrastAdj=contrastAdj, isCount=isCount, ...)
 
@@ -418,6 +411,110 @@ This makes sense only for counts.")
 	names(contrVect)<-levs
 	return(.testContrasts(contrastNames=contrVect, ...))
 }
+
+#' @title Function for creating contrasts for a cluster
+#' @description Uses cluster to create different types of contrasts to be tested that can then be fed into DE testing programs.
+#' @rdname getBestFeatures
+#' @aliases clusterContrasts
+#' @param cluster Either a vector giving contrasts assignments or a ClusterExperiment object
+#' @param contrastType What type of contrast to create.
+#'   `Dendro' traverses the given dendrogram and does contrasts of the samples
+#'   in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
+#'   pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
+#'   each cluster to the average of all others.
+#' @param dendro The dendrogram to traverse if contrastType="Dendro". Note that this
+#'   should be the dendrogram of the clusters, not of the individual samples.
+#' @param pairMat matrix giving the pairs of clusters for which to do pair-wise
+#'   contrasts (must match to elements of cl). If NULL, will do all pairwise of
+#'   the clusters in \code{cluster} (excluding "-1" categories). Each row is a pair
+#'   to be compared and must match the names of the clusters in the vector
+#'   \code{cluster}.
+#' @param removeNegative logical, whether to remove negative valued clusters 
+#'   from the design matrix. Appropriate to pick TRUE (default) if design will
+#'   be input into linear model on samples that excludes -1.
+#' @details The input vector must be numeric clusters, but the external commands
+#'   that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require
+#'   syntatically valid R names. For this reason, the names of the levels will
+#'   be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
+#'   be "X.1","X.2", etc.
+setMethod(f = "clusterContrasts",
+          signature = "ClusterExperiment",
+          definition = function(cluster,...){
+    clusterContrasts(primaryCluster(cluster),...)
+})
+setMethod(f = "clusterContrasts",
+          signature = "numeric",
+          definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
+    dendro=NULL, pairMat=NULL,outputType="limma",removeNegative=TRUE){
+              
+    if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
+    cl<-factor(cl)
+    contrastType<-match.arg(contrastType)
+    if(contrastType=="Dendro"){
+        if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
+        ####
+        #Convert to object used by phylobase so can navigate easily -- might should make generic function...
+        phylo4Obj<-.makePhylobaseTree(dendro,type="dendro")
+        clChar<-as.character(cl)
+        allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]
+        if(any(sort(allTipNames)!=sort(unique(clChar)))) stop("tip names of dendro don't match cluster vector values")
+        
+        #each internal node (including root) construct contrast between them.
+        #(before just tested differences between them)
+        allInternal<-phylobase::getNode(phylo4Obj,  type=c("internal"))
+        .makeNodeContrast<-function(nodeId){
+            children<-phylobase::descendants(phylo4Obj,nodeId,"children") #get immediate descendants
+            if(length(children)!=2) stop("More than 2 children for internal node; does not make sense with code")
+            #find tips of each child:
+            contrAvePerChild<-sapply(children,function(x){
+                tips<-phylobase::descendants(phylo4Obj,x,"tip")
+                tipNames<-phylobase::labels(phylo4Obj)[tips]
+                #should make this code use make.names instead of pasting X...
+                if(length(tipNames)>1) return(paste("(",paste(make.names(tipNames),collapse="+"),")/",length(tips),sep=""))
+                else return(make.names(tipNames))
+            })
+            return(paste(contrAvePerChild,collapse="-"))
+        }
+        contrastNames<-sapply(allInternal,.makeNodeContrast)
+        
+    }
+    if(contrastType=="OneAgainstAll"){
+        levs<-levels(cl)
+        contrastNames<-sapply(levs,function(x){
+            one<-make.names(x)
+            all<-make.names(levs[-which(levs==x)])
+            all<-paste("(",paste(all,collapse="+"),")/",length(all),sep="")
+            contr<-paste(all,"-",one,sep="")
+            return(contr)
+        })
+        names(contrastNames)<-levs
+    }
+    if(contrastType=="Pairs"){
+        if(is.null(pairMat)){ #make pair Mat of all pairwise
+            levs<-levels(cl)
+            pairMat<-t(apply(expand.grid(levs,levs),1,sort))
+            pairMat<-unique(pairMat)
+            pairMat<-pairMat[-which(pairMat[,1]==pairMat[,2]),,drop=FALSE]
+        }
+        if(is.null(dim(pairMat)) || ncol(pairMat)!=2) stop("pairMat must be matrix of 2 columns")
+        if(!all(as.character(unique(c(pairMat[,1],pairMat[,2]))) %in% as.character(cl))) stop("Some elements of pairMat do not match cl")
+        contrastNames <- apply(pairMat,1,function(y){y<-make.names(as.character(y));paste(y[1],y[2],sep="-")})
+    }
+#     if(!removeNegative){
+#         levnames<-levels(cl)
+#         whNeg<-which(cluster<0)
+#         if(length(whNeg)>0){
+#             levnames[whNeg]<-paste("Neg",cluster[whNeg],sep="")
+#         }
+#     }
+#     if(removeNegative){
+#         levnames<-levels(factor(cluster[cluster>0]))
+#     }
+    levnames<-make.names(levels(cl))
+    if(outputType=="limma") return(makeContrasts(contrasts=contrastNames,levels=levnames))
+    
+})
+
 .testContrasts<-function(contrastNames,fit,fitF,contrastAdj,...){
 	ncontr<-length(contrastNames)
 	cont.matrix<-makeContrasts(contrasts=contrastNames,levels=fit$design)

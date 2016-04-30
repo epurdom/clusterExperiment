@@ -11,7 +11,12 @@ setGeneric(
     standardGeneric("plotCoClustering")
   }
 )
-
+setGeneric(
+    name="clusterContrasts",
+    def=function(cluster,...){
+        standardGeneric("clusterContrasts")
+    }
+)
 setGeneric(
   name = "convertClusterLegend",
   def = function(object,  ...) {
