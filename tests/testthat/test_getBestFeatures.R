@@ -3,9 +3,17 @@ source("create_objects.R")
 
 library(limma)
 test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", {
-#     clusterContrasts(primaryCluster(ccSE),contrastType="Pairs")
-#     clusterContrasts(primaryCluster(ccSE),contrastType="Dendro")
-#     clusterContrasts(primaryCluster(ccSE),contrastType="One")
+   x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Pairs")
+  x2<-clusterContrasts(ccSE,contrastType="Pairs")
+  expect_equal(x1,x2)
+  x1<- clusterContrasts(primaryCluster(ccSE),contrastType="OneAgainstAll")
+  x2<-clusterContrasts(ccSE,contrastType="OneAgainstAll")
+  expect_equal(x1,x2)
+  expect_error(clusterContrasts(primaryCluster(ccSE),contrastType="Dendro"),"must provide dendrogram if contrastType='Dendro'")
+  ccSE<-makeDendrogram(ccSE)
+  x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Dendro",dendro=ccSE@dendro_clusters)
+  x2<-clusterContrasts(ccSE,contrastType="Dendro")
+  expect_equal(x1,x2)
 })
 test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 

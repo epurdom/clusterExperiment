@@ -439,8 +439,13 @@ This makes sense only for counts.")
 #'   be "X.1","X.2", etc.
 setMethod(f = "clusterContrasts",
           signature = "ClusterExperiment",
-          definition = function(cluster,...){
-    clusterContrasts(primaryCluster(cluster),...)
+          definition = function(cluster,contrastType,...){
+      if(contrastType=="Dendro"){
+        if(is.null(cluster@dendro_clusters)) stop("Must run makeDendrogram before calling clusterContrasts if want contrastType='Dendro'")
+        else dendro<-cluster@dendro_clusters
+      }
+      else dendro<-NULL
+    clusterContrasts(primaryCluster(cluster),contrastType=contrastType,dendro=dendro,...)
 })
 setMethod(f = "clusterContrasts",
           signature = "numeric",
