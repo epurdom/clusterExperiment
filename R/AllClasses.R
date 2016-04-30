@@ -67,6 +67,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @import SummarizedExperiment
 #' @import methods
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(

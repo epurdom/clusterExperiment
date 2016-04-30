@@ -179,6 +179,7 @@
 #' clustSubHier_test <- clusterD(subD, clusterFunction="hier", alpha=0.1,
 #' clusterArgs=list(minSize.core=4))
 #' @export
+#' @importFrom cluster daisy silhouette pam
 clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)

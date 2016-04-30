@@ -78,9 +78,9 @@ Takes an input of hierarchical clusterings of clusters and
 \details{
 If  \code{isCount=TRUE}, and the input is a matrix,
   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
-  original data with voom correction will be used in 
-  \code{\link{getBestFeatures}}). If input is 
-  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means 
+  original data with voom correction will be used in
+  \code{\link{getBestFeatures}}). If input is
+  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means
   that the log2(1+count) will be used as the transformation, like for
   the matrix case as well as the voom calculation, and will NOT use the
   transformation stored in the object. If FALSE, then transform(x) will be

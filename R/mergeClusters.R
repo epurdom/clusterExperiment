@@ -35,9 +35,9 @@
 #'
 #' @details If  \code{isCount=TRUE}, and the input is a matrix,
 #'   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
-#'   original data with voom correction will be used in 
-#'   \code{\link{getBestFeatures}}). If input is 
-#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means 
+#'   original data with voom correction will be used in
+#'   \code{\link{getBestFeatures}}). If input is
+#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means
 #'   that the log2(1+count) will be used as the transformation, like for
 #'   the matrix case as well as the voom calculation, and will NOT use the
 #'   transformation stored in the object. If FALSE, then transform(x) will be
@@ -88,6 +88,8 @@
 #' @importClassesFrom phylobase phylo4
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo
+#' @importFrom howmany howmany lowerbound
+#' @importFrom locfdr locfdr
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
@@ -130,7 +132,7 @@ setMethod(f = "mergeClusters",
   sigTable <- getBestFeatures(x, cl, type=c("Dendro"), dendro=dendro,
                               returnType=c("Table"), contrastAdj=c("All"),
                               number=nrow(x), p.value=1, isCount=isCount)
-  
+
   #divide table into each node.
   whMethodCalculate<-mergeMethod
   if(plotType=="all") whMethodCalculate<-c("adjP", "locfdr", "MB", "JC")
