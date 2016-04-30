@@ -23,7 +23,7 @@
 #'   \code{\link{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the
 #'   default value of \code{\link{voom}}.
-#' @inheritParams clusterContrasts
+#' @inheritParams clusterContrasts,ClusterExperiment-method
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
@@ -413,8 +413,7 @@ This makes sense only for counts.")
 #' @docType methods
 #' @description Uses clustering to create different types of contrasts to be
 #'   tested that can then be fed into DE testing programs.
-#' @name clusterContrasts
-#' @aliases clusterContrasts,ClusterExperiment-method
+#' @aliases clusterContrasts
 #' @param cluster Either a vector giving contrasts assignments or a
 #'   ClusterExperiment object
 #' @param contrastType What type of contrast to create.
