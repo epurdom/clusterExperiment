@@ -30,10 +30,15 @@
 #'   syntatically valid R names. For this reason, the names of the levels will
 #'   be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
 #'   be "X.1","X.2", etc.
-#' @return If \code{outputType=="limma"}, returns the results of running
-#'   \code{\link{makeContrasts}}. This is a matrix with number of columns equal
+#' @return List with components:
+#'\itemize{
+#' \item{\code{contrastMatrix}}{ Contrast matrix, the form of which depends on \code{outputType}.
+#' If \code{outputType=="limma"}, the result of running
+#'   \code{\link{makeContrasts}}: a matrix with number of columns equal
 #'   to the number of contrasts, and rows equal to the number of levels of the
-#'   factor that will be fit in a linear model.
+#'   factor that will be fit in a linear model.}
+#'   \item{\code{contrastNames}}{A vector of names for each of the contrasts. NULL if no such additional names.}
+#'   }
 #' @author Elizabeth Purdom
 #' @examples 
 #' data(simData)
@@ -129,6 +134,6 @@ setMethod(f = "clusterContrasts",
             #         levnames<-levels(factor(cluster[cluster>0]))
             #     }
             levnames<-make.names(levels(cl))
-            if(outputType=="limma") return(limma::makeContrasts(contrasts=contrastNames,levels=levnames))
-            
+            if(outputType=="limma") contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)
+            return(list(contrastMatrix=contr.matrix,contrastNames=names(contrastNames)))
           })

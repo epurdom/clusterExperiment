@@ -44,10 +44,15 @@ from the design matrix. Appropriate to pick TRUE (default) if design will
 be input into linear model on samples that excludes -1.}
 }
 \value{
-If \code{outputType=="limma"}, returns the results of running
-  \code{\link{makeContrasts}}. This is a matrix with number of columns equal
+List with components:
+\itemize{
+\item{\code{contrastMatrix}}{ Contrast matrix, the form of which depends on \code{outputType}.
+If \code{outputType=="limma"}, the result of running
+  \code{\link{makeContrasts}}: a matrix with number of columns equal
   to the number of contrasts, and rows equal to the number of levels of the
-  factor that will be fit in a linear model.
+  factor that will be fit in a linear model.}
+  \item{\code{contrastNames}}{A vector of names for each of the contrasts. NULL if no such additional names.}
+  }
 }
 \description{
 Uses clustering to create different types of contrasts to be

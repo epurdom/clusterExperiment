@@ -214,8 +214,8 @@ setMethod(f = "getBestFeatures",
             } else {
               fitF <- NULL
             }
-            if(contrastType!="F") contr.matrix<-clusterContrasts(cl,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
-            tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.matrix,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
+            if(contrastType!="F") contr.result<-clusterContrasts(cl,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
+            tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
             tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
             if(returnType=="Index") {
               whGenes <- tops$IndexInOriginal
@@ -272,10 +272,9 @@ This makes sense only for counts.")
 
 	return(tops)
 }
-.testContrasts<-function(cont.matrix,fit,fitF,contrastAdj,...){
-  ncontr<-ncol(cont.matrix)
-  contrastNames<-colnames(cont.matrix)
-  fit2<-contrasts.fit(fit,cont.matrix)
+.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj,...){
+  ncontr<-ncol(contr.matrix)
+  fit2<-contrasts.fit(fit,contr.matrix)
   fit2<-eBayes(fit2)
   args<-list(...)
   if("p.value" %in% names(args)){
@@ -289,7 +288,7 @@ This makes sense only for counts.")
   
   
   #get raw p-values for all(!)
-  tops<-do.call("rbind",lapply(1:ncontr,function(ii){
+  getRaw<-function(ii){
     if(contrastAdj%in%c("AfterF","All")) {
       tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
     }
@@ -298,13 +297,14 @@ This makes sense only for counts.")
     }
     colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     if(nrow(tt)>0){
-      tt<-data.frame("Contrast"=unname(contrastNames[ii]),tt,row.names=NULL)
-      if(!is.null(names(contrastNames))){
-        tt<-data.frame("ContrastName"=names(contrastNames)[ii],tt,row.names=NULL)
+      tt<-data.frame("Contrast"=unname(colnames(contr.matrix)[ii]),tt,row.names=NULL)
+      if(!is.null(contrastNames)){
+        tt<-data.frame("ContrastName"=contrastNames[ii],tt,row.names=NULL)
       }
     }
     return(tt)
-  }))
+  }
+  tops<-do.call("rbind",lapply(1:ncontr,getRaw))
   if(contrastAdj=="AfterF" & p.value<1){
     #get p-value for F test for all genes, and only consider genes with significant F.
     fitF2<-eBayes(fitF)
