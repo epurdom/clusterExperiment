@@ -155,7 +155,9 @@
   return(wh)
 }
 
-
+#######
+#Internal algorithms for clustering
+#######
 #check what type
 .checkAlgType<-function(clusterFunction){
 	##These return lists of indices of clusters satisifying alpha criteria
@@ -178,17 +180,16 @@
 		}
     subDbar<-Dbar
 	}
-	else{
-		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
-		Dbar<-as.matrix(dist(x)	)	#######Here where assume distance is dist(x). Should make it so depending on typeAlg has different default, and that user can define it.
-		findBestK<-FALSE	
-		if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-				findBestK<-clusterDArgs[["findBestK"]]
-			}
-		if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not subsampling, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+	else{ #create distance matrix if not subsampling
 	  subDbar<-NULL
 	}
-	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+  if(typeAlg=="K"){
+    findBestK<-FALSE	
+    if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+      findBestK<-clusterDArgs[["findBestK"]]
+    }
+    if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+  }
 	
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
 	return(list(results=res,subsampleCocluster=subDbar)) 

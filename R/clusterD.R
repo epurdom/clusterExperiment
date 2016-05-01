@@ -10,7 +10,7 @@
 #' @aliases cluster01
 #' @aliases clusterK
 #'
-#' @param D the \code{n x n} matrix of 0-1 values.
+#' @param D either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.
 #' @param clusterFunction clusterFunction a function that clusters a nxn matrix
 #'   of dissimilarities/distances. Can also be given character values to
 #'   indicate use of internal wrapper functions for default methods. See Details
@@ -22,6 +22,8 @@
 #'   Otherwise, for methods provided by the package (i.e. by user setting
 #'   clusterFunction to a character value) clusterD will determine the
 #'   appropriate input for 'typeAlg' and will ignore user input.
+#' @param dist a distance function to be applied to \code{D}. Only relevant if
+#'   input \code{D} is a matrix of data, rather than a distance
 #' @param minSize the minimum number of samples in a cluster. Clusters found
 #'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
@@ -135,6 +137,13 @@
 #'
 #' @examples
 #' data(simData)
+#' cl1<-clusterD(simData,clusterFunction="pam",k=3)
+#' cl2<-clusterD(simData,clusterFunction="hierarchical01")
+#' cl3<-clusterD(simData,clusterFunction="tight")
+#' #change distance to manhattan distance
+#' cl4<-clusterD(simData,clusterFunction="pam",k=3,distFunction=function(x){dist(x,method="manhattan")})
+#' 
+#' #Use result of subsampling as input D
 #' subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
 #' clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
 #'
@@ -180,12 +189,11 @@
 #' clusterArgs=list(minSize.core=4))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
+clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),distFunction=NULL,minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
-	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
 	if(length(passedArgs)>0){
 		#get rid of wrong args passed because of user confusion between the two
@@ -194,7 +202,26 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c
 		if(length(whRightArgs)>0) passedArgs<-passedArgs[whRightArgs]
 		else passedArgs<-NULL
 	}
+	### Create distance if needed, and check it.
+	if(!all(dim(D)==dim(t(D))) || !all(D==t(D))){
+	  #browser()
+	  x<-D
+	  if(is.null(distFunction)){
+	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=dist)
+	  }
+	  D<-try(as.matrix(distFunction(x)	))	
+	  if(inherits(D,"try-error")) stop("input distance gives error when applied to x")
+	  if(!all(dim(D) == c(nrow(x),nrow(x)))) stop("distance function must result in a ",nrow(x),"by",nrow(x),"matrix of distances")
+	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
+	  
+	}
+	if(any(is.na(as.vector(D)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
+	if(any(D<0)) stop("distance function must give strictly positive values")
+	
+	####Run clustering:
 	if(typeAlg=="01") {
+	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
 		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 	if(typeAlg=="K") {
@@ -265,7 +292,7 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 		if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
 			passedArgs<-list(...)
 			pamArgs<-names(as.list(args(cluster::pam)))
-			if(any(wh<-!passedArgs %in% pamArgs)){
+			if(any(wh<-!names(passedArgs) %in% pamArgs)){
 				passedArgs<-passedArgs[-which(wh)]
 				if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
 			}
@@ -312,8 +339,9 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
 	passedArgs<-list(...)
 	hclustArgs<-names(as.list(args(stats::hclust)))
-	if(any(wh<-!passedArgs %in% hclustArgs)){
-		passedArgs<-passedArgs[-which(wh)]
+	if(any(!names(passedArgs) %in% hclustArgs)){
+	  wh<-which(!names(passedArgs) %in% hclustArgs)
+		passedArgs<-passedArgs[-wh]
 		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
 	hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))

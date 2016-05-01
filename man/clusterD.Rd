@@ -7,8 +7,9 @@
 \title{Cluster distance matrix from subsampling}
 \usage{
 clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam"),
-  typeAlg = c("01", "K"), minSize = 1, orderBy = c("size", "best"),
-  format = c("vector", "list"), clusterArgs = NULL, checkArgs = TRUE, ...)
+  typeAlg = c("01", "K"), distFunction = NULL, minSize = 1,
+  orderBy = c("size", "best"), format = c("vector", "list"),
+  clusterArgs = NULL, checkArgs = TRUE, ...)
 
 cluster01(D, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
   clusterArgs = NULL, checkArgs)
@@ -17,7 +18,7 @@ clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
   removeSil = FALSE, silCutoff = 0, clusterArgs = NULL, checkArgs)
 }
 \arguments{
-\item{D}{the \code{n x n} matrix of 0-1 values.}
+\item{D}{either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.}
 
 \item{clusterFunction}{clusterFunction a function that clusters a nxn matrix
 of dissimilarities/distances. Can also be given character values to
@@ -75,6 +76,9 @@ unless kRange is set to be the same.}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
+
+\item{dist}{a distance function to be applied to \code{D}. Only relevant if
+input \code{D} is a matrix of data, rather than a distance}
 }
 \value{
 clusterD returns a vector of cluster assignments (if format="vector")
@@ -165,6 +169,13 @@ given by D and k directly.
 }
 \examples{
 data(simData)
+cl1<-clusterD(simData,clusterFunction="pam",k=3)
+cl2<-clusterD(simData,clusterFunction="hierarchical01")
+cl3<-clusterD(simData,clusterFunction="tight")
+#change distance to manhattan distance
+cl4<-clusterD(simData,clusterFunction="pam",k=3,distFunction=function(x){dist(x,method="manhattan")})
+
+#Use result of subsampling as input D
 subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
 clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
 

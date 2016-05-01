@@ -73,9 +73,10 @@ Details).}
 
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff}
 
-\item{subsample}{logical as to whether to subsample via
-\code{\link{subsampleClustering}} to get the distance matrix at each
-iteration; otherwise the distance matrix is dist(x).}
+\item{subsample}{logical as to whether to subsample via 
+\code{\link{subsampleClustering}} to get the distance matrix at each 
+iteration; otherwise the distance function will be determined by argument
+\code{distFunction} passed in \code{clusterDArgs}.}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
