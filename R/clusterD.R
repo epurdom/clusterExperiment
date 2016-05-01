@@ -22,8 +22,8 @@
 #'   Otherwise, for methods provided by the package (i.e. by user setting
 #'   clusterFunction to a character value) clusterD will determine the
 #'   appropriate input for 'typeAlg' and will ignore user input.
-#' @param dist a distance function to be applied to \code{D}. Only relevant if
-#'   input \code{D} is a matrix of data, rather than a distance
+#' @param distFunction a distance function to be applied to \code{D}. Only relevant if
+#'   input \code{D} is a matrix of data, rather than a distance. See details.
 #' @param minSize the minimum number of samples in a cluster. Clusters found
 #'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
@@ -73,7 +73,7 @@
 #'   also assumed to cluster all samples to a cluster, and therefore clusterK
 #'   gives options to exclude poorly clustered samples via silhouette distances.
 #'
-#'   cluster01 required format for input and output for clusterFunction:
+#'   @details cluster01 required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes (as a minimum) an argument
 #'   "D" and "alpha". 0-1 clustering algorithms are expected to use the fact
 #'   that the D input is 0-1 range to find the clusters, rather than a user
@@ -86,7 +86,7 @@
 #'   clusters' (as defined by the clusterFunction), with first being the best
 #'   and last being worst.
 #'
-#'   cluster01 methods: "tight" method refers to the method of finding clusters
+#'   @details cluster01 methods: "tight" method refers to the method of finding clusters
 #'   from a subsampling matrix given in the tight algorithm of Tsang and Wong.
 #'   Arguments for the tight method are 'minSize.core' (default=2), which sets
 #'   the minimimum number of samples that form a core cluster. "hierarchical01"
@@ -101,7 +101,7 @@
 #'   of hclust can also be passed via clusterArgs to control the hierarchical
 #'   clustering of D.
 #'
-#'   clusterK required format for input and output for clusterFunction:
+#'   @details clusterK required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes as a minimum an argument
 #'   'D' and 'k'. The output must be a list similar to that of
 #'   'partition.object' of cluster package. Specifically, an element
@@ -114,11 +114,24 @@
 #'   clusters will be ordered by the average of the values
 #'   silinfo$widths[,"sil_width"] in each cluster (after removing poorly
 #'   clustered samples, if removeSil=TRUE).
-
-#' clusterK methods: "pam" performs pam clustering on the input Dmatrix using
+#'
+#' @details clusterK methods: "pam" performs pam clustering on the input Dmatrix using
 #' \code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can
 #' be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are
 #' given by D and k directly.
+#'   @details To provide a distance matrix via the argument \code{distFunction},
+#'     the function must be defined to take the distance of the rows of a matrix
+#'     (internally, the function will call \code{distFunction(t(x))}. This is to
+#'     be compatible with the input for the \code{dist} function.
+#'     \code{as.matrix} will be performed on the output of \code{distFunction},
+#'     so if the object returned has a \code{as.matrix} method that will convert
+#'     the output into a symmetric matrix of distances, this is fine (for
+#'     example the class \code{dist} for objects returned by \code{dist} have
+#'     such a method). If \code{distFunction=NA}, then a default distance will 
+#'     be calculated based on the type of clustering algorithm of 
+#'     \code{clusterFunction}. For type "K" the default is to take \code{dist}
+#'     as the distance function. For type "01", the default is to take the
+#'     absolute value of the correlation between the samples.
 #'
 #' @return clusterD returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
@@ -126,7 +139,7 @@
 #'   the size of the cluster, instead of by the internal ordering of the
 #'   clusterFunction.
 #'
-#'   cluster01 and clusterK return a list of indices of the clusters found,
+#'   @return cluster01 and clusterK return a list of indices of the clusters found,
 #'   which each element of the list corresponding to a cluster and the elements
 #'   of that list a vector of indices giving the indices of the samples assigned
 #'   to that cluster. Indices not included in any list are assumed to have not
@@ -189,7 +202,7 @@
 #' clusterArgs=list(minSize.core=4))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),distFunction=NULL,minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
+clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
@@ -206,7 +219,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c
 	if(!all(dim(D)==dim(t(D))) || !all(D==t(D))){
 	  #browser()
 	  x<-D
-	  if(is.null(distFunction)){
+	  if(is.na(distFunction)){
 	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=dist)
 	  }
 	  D<-try(as.matrix(distFunction(x)	))	

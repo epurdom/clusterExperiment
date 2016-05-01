@@ -71,7 +71,7 @@ setMethod(
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical01", "pam","kmeans"),
-      distFunction=NULL, clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
+      clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
       ndims=NA) {
 
@@ -103,8 +103,8 @@ setMethod(
     ##########
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
-      if(!subsample & clusterFunction !="pam")
-        stop("If not subsampling, clusterFunction must be 'pam'")
+#       if(!subsample & clusterFunction !="pam")
+#         stop("If not subsampling, clusterFunction must be 'pam'")
       typeAlg <- .checkAlgType(clusterFunction)
     }
     else{

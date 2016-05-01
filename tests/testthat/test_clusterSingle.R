@@ -9,7 +9,28 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
 
-
+            #test default 01 distance
+            x1 <- clusterSingle(mat, clusterFunction="tight",
+                                          subsample=FALSE, sequential=FALSE,
+                                          isCount=FALSE)
+            expect_error(clusterSingle(mat, clusterFunction="tight",
+                                       subsample=FALSE, sequential=FALSE,
+                                       clusterDArgs=list(distFunction=function(x){dist(x,method="manhattan")}),isCount=FALSE),"distance function must give values between 0 and 1")
+            
+            #test default 01 distance
+            x2<-clusterSingle(mat, clusterFunction="tight",
+                                       subsample=FALSE, sequential=FALSE,
+                                       isCount=FALSE)
+            
+            #warn wrong arguments
+            expect_warning(clusterSingle(mat, clusterFunction="tight",
+                              subsample=FALSE, sequential=FALSE,
+                              clusterDArgs=list(k=3),isCount=FALSE),"do not match the choice of typeAlg")
+            #turn off warning
+            expect_silent(clusterSingle(mat, clusterFunction="tight",
+                                        subsample=FALSE, sequential=FALSE,
+                                        clusterDArgs=list(k=3,checkArgs=FALSE),isCount=FALSE))
+            
             clustNothing2 <- clusterSingle(se, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)

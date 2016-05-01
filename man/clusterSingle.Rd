@@ -11,9 +11,9 @@
 \usage{
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"),
-  distFunction = NULL, clusterDArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  dimReduce = c("none", "PCA", "mostVar"), ndims = NA)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
+  "mostVar"), ndims = NA)
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 

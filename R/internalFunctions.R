@@ -181,6 +181,7 @@
     subDbar<-Dbar
 	}
 	else{ #create distance matrix if not subsampling
+	  Dbar<-x
 	  subDbar<-NULL
 	}
   if(typeAlg=="K"){

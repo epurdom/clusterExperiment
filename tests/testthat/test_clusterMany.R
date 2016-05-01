@@ -52,17 +52,26 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             ppIndex<-workflowClusterDetails(clustNothing5)
             expect_equal(as.numeric(table(ppIndex[,"iteration"])),c(2,2))
 
-            #check dim reduce
-            cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-                                           subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                                           isCount=FALSE)
-            #check giving paramMatrix
-            param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-                                           subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
-                                           isCount=FALSE)
-#             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-#                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
-#                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
-#             expect_equal(cc,cc2)
-
+ 
           })
+test_that("`clusterMany` works changing parameters", {
+  #check dim reduce
+  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
+                    isCount=FALSE)
+  #check giving paramMatrix
+  param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+                       subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
+                       isCount=FALSE)
+  #             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+  #                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
+  #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
+  #             expect_equal(cc,cc2)
+  
+  #check giving distance
+  dist1<-function(x){dist(x,method="manhattan")}
+  cc <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
+                    distFunction=c("dist1","dist",NA),
+                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
+                    isCount=FALSE)
+})
