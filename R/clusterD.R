@@ -115,7 +115,7 @@
 #'   silinfo$widths[,"sil_width"] in each cluster (after removing poorly
 #'   clustered samples, if removeSil=TRUE).
 #'
-#' @details clusterK methods: "pam" performs pam clustering on the input Dmatrix using
+#' @details clusterK methods: "pam" performs pam clustering on the input \code{D} matrix using
 #' \code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can
 #' be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are
 #' given by D and k directly.

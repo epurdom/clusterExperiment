@@ -105,11 +105,11 @@ test_that("Different options of `clusterSingle` ", {
                             seqArgs=list(verbose=FALSE),
                             isCount=FALSE, clusterDArgs=list("findBestK"==TRUE)),
                "seqArgs must contain element 'k0'")
-  expect_error(clusterSingle(mat, clusterFunction="tight",
+  expect_warning(clusterSingle(mat, clusterFunction="tight",
                           subsample=FALSE, sequential=FALSE,
                           subsampleArgs=list(resamp.num=3),
                           clusterDArgs=list(k=3), isCount=FALSE),
-               "If not subsampling, clusterFunction must be 'pam'")
+               "do not match the choice of typeAlg")
   expect_warning(clusterSingle(mat, clusterFunction="pam",
                             subsample=TRUE, sequential=FALSE,
                             subsampleArgs=list(resamp.num=3),

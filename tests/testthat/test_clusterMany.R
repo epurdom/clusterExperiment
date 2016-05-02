@@ -74,4 +74,10 @@ test_that("`clusterMany` works changing parameters", {
                     distFunction=c("dist1","dist",NA),
                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
                     isCount=FALSE)
+  #check doesn't spit out warnings because alphas/clusterD args not match 
+  expect_silent(clusterMany(mat, clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
+                    alphas=c(0.1,0.2),
+                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
+                    clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
+                    isCount=FALSE))
 })
