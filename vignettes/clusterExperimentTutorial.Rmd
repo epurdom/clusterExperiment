@@ -1,5 +1,5 @@
 ---
-title: "clusterExperiment Tutorial"
+title: "clusterExperiment Vignette"
 author: "Elizabeth Purdom"
 date: "`r Sys.Date()`"
 bibliography: bibFile.bib
@@ -7,18 +7,19 @@ output:
   BiocStyle::html_document:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Tutorial}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-
 ---
+<!--
+%\VignetteEngine{rmarkdown::render}
+%\VignetteIndexEntry{clusterExperiment Vignette}
+-->
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 #rmarkdown::render("clusterExperimentTutorial.Rmd")
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
-options(getClass.msg=FALSE) #get rid of annoying messages about cache
-devtools::load_all()
-#library(clusterExperiment)
+options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed in R
+#devtools::load_all()
+library(clusterExperiment)
 ```
 
 
