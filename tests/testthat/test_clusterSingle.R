@@ -129,6 +129,18 @@ test_that("Different options of subsampling",{
                                subsample=TRUE, sequential=FALSE,
                                subsampleArgs=list(resamp.num=20, k=3,classifyMethod="OutOfSample"),
                                clusterDArgs=list(k=3),isCount=FALSE),"NA values found in Dbar")
+    
+    #errors in missing args in subsample
+    expect_warning(clusterSingle(mat, clusterFunction="pam",
+                                 subsample=TRUE, sequential=FALSE,
+                                 subsampleArgs=list(resamp.num=3),
+                                 clusterDArgs=list(k=3), isCount=FALSE),
+                   "did not give 'k' in 'subsampleArgs'.")
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=TRUE, sequential=FALSE,
+                               subsampleArgs=list(resamp.num=3), isCount=FALSE),
+                 "must pass 'k' in subsampleArgs")
+    
 })
 
 test_that("Different options of clusterD",{
@@ -145,21 +157,10 @@ test_that("Different options of clusterD",{
                  "seqArgs must contain element 'k0'")
     expect_warning(clusterSingle(mat, clusterFunction="tight",
                                  subsample=FALSE, sequential=FALSE,
-                                 subsampleArgs=list(resamp.num=3),
                                  clusterDArgs=list(k=3), isCount=FALSE),
                    "do not match the choice of typeAlg")
-    expect_warning(clusterSingle(mat, clusterFunction="pam",
-                                 subsample=TRUE, sequential=FALSE,
-                                 subsampleArgs=list(resamp.num=3),
-                                 clusterDArgs=list(k=3), isCount=FALSE),
-                   "did not give 'k' in 'subsampleArgs'.")
-    expect_error(clusterSingle(mat, clusterFunction="pam",
-                               subsample=TRUE, sequential=FALSE,
-                               subsampleArgs=list(resamp.num=3), isCount=FALSE),
-                 "must pass 'k' in subsampleArgs")
     expect_warning(clusterSingle(mat, clusterFunction="tight",
-                                 subsample=TRUE, sequential=FALSE,
-                                 subsampleArgs=list(resamp.num=3,k=3),
+                                 subsample=FALSE, sequential=FALSE,
                                  clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
                    "do not match the choice of typeAlg")
 })
@@ -173,6 +174,15 @@ test_that("Different options of seqCluster",{
                                subsample=FALSE, sequential=TRUE,
                                isCount=FALSE), "must give seqArgs so as to identify k0")
     
+    clustSeq <- clusterSingle(mat, clusterFunction="tight",
+                              subsample=FALSE, sequential=TRUE,
+                              isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
+    clustSeq <- clusterSingle(mat, clusterFunction="hierarchicalK",
+                              subsample=FALSE, sequential=TRUE,
+                              isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
+    clustSeq <- clusterSingle(mat, clusterFunction="hierarchical01",
+                              subsample=FALSE, sequential=TRUE,
+                              isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
     
     
 })

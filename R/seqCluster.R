@@ -125,6 +125,10 @@
 #' \item{\code{whyStop}}{ a character string explaining what triggered the
 #' algorithm to stop.}
 #' }
+#' @references Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
+#'   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
+#'   61:10-16.
+#' 
 #' @examples
 #' \dontrun{
 #' data(simData)
@@ -137,13 +141,12 @@
 #' clusterDArgs=list(minSize=5))
 #' }
 #' @export
-seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
+seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
 {
 	x<-t(x) #old code had nxp
     #for now, if use pam for subsampleClusterMethod, just use given k.
     if(!is.function(clusterFunction)){
 		clusterFunction<-match.arg(clusterFunction)
-		if(!subsample & clusterFunction !="pam") stop("If not subsampling, clusterFunction must be 'pam'")
 		if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
 	}
 	else{
