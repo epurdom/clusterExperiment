@@ -130,7 +130,7 @@ setMethod(
         stop("seqArgs must contain element 'k0'")
       }
       outlist <- do.call("seqCluster",
-                        c(list(x=t(x), subsample=subsample,
+                        c(list(x=x, subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs,
                                clusterFunction=clusterFunction), seqArgs))
@@ -165,7 +165,7 @@ setMethod(
       ##########
       ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
       ##########
-      finalClusterList <- .clusterWrapper(t(x), clusterFunction=clusterFunction,
+      finalClusterList <- .clusterWrapper(x, clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,

@@ -46,7 +46,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 
           })
 
-test_that("Different options algorithms of `clusterSingle` ", {
+test_that("Different options algorithms of `clusterD` ", {
   #check algorithms
   clusterSingle(mat, clusterFunction="tight",
                 subsample=FALSE, sequential=FALSE,
@@ -65,7 +65,116 @@ test_that("Different options algorithms of `clusterSingle` ", {
                 subsample=FALSE, sequential=FALSE,
                 isCount=FALSE)
   
+  ########
+  #Check clusterD
+  ########
+  ###Check pam exactly same:
+  x<-clusterD(mat, clusterFunction="pam",k=3,
+           minSize=1, removeSil=FALSE)
+  expect_equal(length(x),ncol(mat))
+  x2<-cluster::pam(t(mat),k=3,cluster.only=TRUE)
+  expect_equal(x,x2)
+  ###Check hierarchicalK exactly same:
+  x<-clusterD(mat, clusterFunction="hierarchicalK",k=3,
+              minSize=1, removeSil=FALSE)
+  expect_equal(length(x),ncol(mat))
+  x2<-stats::cutree(stats::hclust(dist(t(mat))),k=3)
+  expect_equal(x,x2)
   
+  
+  #check giving wrong parameters gives warning:
+  expect_warning(clusterD(mat, clusterFunction="tight", alpha=0.1,
+      minSize=5, removeSil=TRUE),"do not match the choice of typeAlg")
+  expect_warning(clusterD(mat, clusterFunction="pam", alpha=0.1,
+        minSize=5, removeSil=TRUE, findBestK=TRUE),"do not match the choice of typeAlg")
+  expect_warning(clusterD(mat, clusterFunction="tight", alpha=0.1,
+    clusterArgs=list(evalClusterMethod="average")),"arguments passed via clusterArgs")
+  expect_warning(clusterD(mat, clusterFunction="hierarchical01", alpha=0.1,
+   clusterArgs=list(minSize.core=4)),"arguments passed via clusterArgs")
+  #check turn off if checkArgs=TRUE
+  expect_silent(clusterD(mat, clusterFunction="tight", alpha=0.1,checkArgs=FALSE,
+                          minSize=5, removeSil=TRUE))
+  expect_silent(clusterD(mat, clusterFunction="pam", alpha=0.1,checkArgs=FALSE,
+                          minSize=5, removeSil=TRUE, findBestK=TRUE))
+  expect_silent(clusterD(mat, clusterFunction="tight", alpha=0.1,checkArgs=FALSE,
+                          clusterArgs=list(evalClusterMethod="average")))
+  expect_silent(clusterD(mat, clusterFunction="hierarchical01", alpha=0.1,checkArgs=FALSE,
+                          clusterArgs=list(minSize.core=4)))
+  
+})
+
+test_that("Different options of subsampling",{
+    #check subsample
+    clustSubsample <- clusterSingle(mat, clusterFunction="pam",
+                                    subsample=TRUE, sequential=FALSE,
+                                    subsampleArgs=list(resamp.num=3, k=3),
+                                    clusterDArgs=list(k=3),isCount=FALSE)
+    expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
+    clusterSingle(mat, clusterFunction="pam",
+                  subsample=TRUE, sequential=FALSE,
+                  subsampleArgs=list(resamp.num=3, k=3,clusterFunction="kmeans"),
+                  clusterDArgs=list(k=3),isCount=FALSE)
+    set.seed(1045)
+    clusterSingle(mat, clusterFunction="pam",
+                  subsample=TRUE, sequential=FALSE,
+                  subsampleArgs=list(resamp.num=20, k=3,classifyMethod="InSample"),
+                  clusterDArgs=list(k=3),isCount=FALSE)
+    set.seed(1045)
+    clusterSingle(mat, clusterFunction="pam",
+                  subsample=TRUE, sequential=FALSE,
+                  subsampleArgs=list(resamp.num=40, k=3,classifyMethod="OutOfSample"),
+                  clusterDArgs=list(k=3),isCount=FALSE)
+    set.seed(1045)
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=TRUE, sequential=FALSE,
+                               subsampleArgs=list(resamp.num=20, k=3,classifyMethod="OutOfSample"),
+                               clusterDArgs=list(k=3),isCount=FALSE),"NA values found in Dbar")
+})
+
+test_that("Different options of clusterD",{
+    #check errors and warnings
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=FALSE, sequential=TRUE,
+                               seqArgs=list(verbose=FALSE),
+                               isCount=FALSE,clusterDArgs=list("typeAlg"=="K")),
+                 "seqArgs must contain element 'k0'")
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=FALSE, sequential=TRUE,
+                               seqArgs=list(verbose=FALSE),
+                               isCount=FALSE, clusterDArgs=list("findBestK"==TRUE)),
+                 "seqArgs must contain element 'k0'")
+    expect_warning(clusterSingle(mat, clusterFunction="tight",
+                                 subsample=FALSE, sequential=FALSE,
+                                 subsampleArgs=list(resamp.num=3),
+                                 clusterDArgs=list(k=3), isCount=FALSE),
+                   "do not match the choice of typeAlg")
+    expect_warning(clusterSingle(mat, clusterFunction="pam",
+                                 subsample=TRUE, sequential=FALSE,
+                                 subsampleArgs=list(resamp.num=3),
+                                 clusterDArgs=list(k=3), isCount=FALSE),
+                   "did not give 'k' in 'subsampleArgs'.")
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=TRUE, sequential=FALSE,
+                               subsampleArgs=list(resamp.num=3), isCount=FALSE),
+                 "must pass 'k' in subsampleArgs")
+    expect_warning(clusterSingle(mat, clusterFunction="tight",
+                                 subsample=TRUE, sequential=FALSE,
+                                 subsampleArgs=list(resamp.num=3,k=3),
+                                 clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
+                   "do not match the choice of typeAlg")
+})
+
+test_that("Different options of seqCluster",{
+    #check sequential
+    clustSeq <- clusterSingle(mat, clusterFunction="pam",
+                              subsample=FALSE, sequential=TRUE,
+                              isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
+    expect_error(clusterSingle(mat, clusterFunction="pam",
+                               subsample=FALSE, sequential=TRUE,
+                               isCount=FALSE), "must give seqArgs so as to identify k0")
+    
+    
+    
 })
 
 test_that("Different options of `clusterSingle` ", {
@@ -77,12 +186,6 @@ test_that("Different options of `clusterSingle` ", {
                           subsample=FALSE, sequential=FALSE,
                           clusterDArgs=list(k=3),isCount=TRUE),info="test error handling for isCount=TRUE when can't take log")
 
-  #check subsample
-  clustSubsample <- clusterSingle(mat, clusterFunction="pam",
-                               subsample=TRUE, sequential=FALSE,
-                               subsampleArgs=list(resamp.num=3, k=3),
-                               clusterDArgs=list(k=3),isCount=FALSE)
-  expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
 
   #check pca reduction
   clustndims <- clusterSingle(mat, clusterFunction="pam",
@@ -109,46 +212,8 @@ test_that("Different options of `clusterSingle` ", {
                             clusterDArgs=list(k=3),isCount=FALSE),
                  "specifying ndims has no effect if dimReduce==`none`")
 
-  #check sequential
-  clustSeq <- clusterSingle(mat, clusterFunction="pam",
-                         subsample=FALSE, sequential=TRUE,
-                         isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE))
-  expect_error(clusterSingle(mat, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,
-                            isCount=FALSE), "must give seqArgs so as to identify k0")
-
- 
   
-  #check errors and warnings
-  expect_error(clusterSingle(mat, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,
-                            seqArgs=list(verbose=FALSE),
-                            isCount=FALSE,clusterDArgs=list("typeAlg"=="K")),
-               "seqArgs must contain element 'k0'")
-  expect_error(clusterSingle(mat, clusterFunction="pam",
-                            subsample=FALSE, sequential=TRUE,
-                            seqArgs=list(verbose=FALSE),
-                            isCount=FALSE, clusterDArgs=list("findBestK"==TRUE)),
-               "seqArgs must contain element 'k0'")
-  expect_warning(clusterSingle(mat, clusterFunction="tight",
-                          subsample=FALSE, sequential=FALSE,
-                          subsampleArgs=list(resamp.num=3),
-                          clusterDArgs=list(k=3), isCount=FALSE),
-               "do not match the choice of typeAlg")
-  expect_warning(clusterSingle(mat, clusterFunction="pam",
-                            subsample=TRUE, sequential=FALSE,
-                            subsampleArgs=list(resamp.num=3),
-                            clusterDArgs=list(k=3), isCount=FALSE),
-                 "did not give 'k' in 'subsampleArgs'.")
-  expect_error(clusterSingle(mat, clusterFunction="pam",
-                          subsample=TRUE, sequential=FALSE,
-                          subsampleArgs=list(resamp.num=3), isCount=FALSE),
-               "must pass 'k' in subsampleArgs")
-  expect_warning(clusterSingle(mat, clusterFunction="tight",
-                            subsample=TRUE, sequential=FALSE,
-                            subsampleArgs=list(resamp.num=3,k=3),
-                            clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
-                 "do not match the choice of typeAlg")
+
 })
 
 test_that("`clusterSingle` preserves the colData and rowData of SE", {
@@ -163,3 +228,4 @@ test_that("`clusterSingle` preserves the colData and rowData of SE", {
   expect_equal(rowData(cl),rowData(se))
 
 })
+

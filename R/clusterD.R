@@ -151,20 +151,17 @@
 #' cl2<-clusterD(simData,clusterFunction="hierarchical01")
 #' cl3<-clusterD(simData,clusterFunction="tight")
 #' #change distance to manhattan distance
-#' cl4<-clusterD(simData,clusterFunction="pam",k=3,distFunction=function(x){dist(x,method="manhattan")})
+#' cl4<-clusterD(simData,clusterFunction="pam",k=3,
+#'      distFunction=function(x){dist(x,method="manhattan")})
 #' 
-#' #Use result of subsampling as input D
-#' subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
-#' clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
-#'
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
-#' clustSubHier <- clusterD(subD, clusterFunction="hierarchical01", alpha=0.1,
+#' clustSubHier <- clusterD(simData, clusterFunction="hierarchical01", alpha=0.1,
 #' minSize=5, clusterArgs=list(evalClusterMethod="average", method="single"))
 #'
 #' #do tight
-#' clustSubTight <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' minSize=5)
 #'
 #' #two twists to pam
@@ -173,30 +170,12 @@
 #' clustSubPamBestK <- clusterD(subD, clusterFunction="pam", silCutoff=0,
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
-#' #visualize the results of different clusterings
-#' if(require(NMF)) {
-#' clusterDF <- data.frame("hier"=factor(clustSubHier),
-#' "tight"=factor(clustSubTight), "PamK"=factor(clustSubPamK),
-#' "PamBestK"=factor(clustSubPamBestK))
-#' maxNumb <- max(sapply(clusterDF, function(x){max(as.numeric(levels(x)))}))
-#' cols <- bigPalette[1:(maxNumb+2)]
-#' names(cols) <- as.character(seq(-1, maxNumb, by=1))
-#' annColors <- list("hier"=cols, "tight"=cols, "PamK"=cols, "PamBestK"=cols)
-#' aheatmap(subD, annCol=clusterDF, annColors=annColors, annLegend=FALSE)
-#' }
-#'
-#' #note the following examples pass the wrong arguments and give warnings
-#' #(which can be turned off with checkArgs)
+#' # note that passing the wrong arguments for an algorithm results in warnings
+#' # (which can be turned off with checkArgs=FALSE)
 #' clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
 #' minSize=5, removeSil=TRUE)
-#' clustSubPam_test <- clusterD(subD, clusterFunction="pam", alpha=0.1,
-#' minSize=5, removeSil=TRUE, findBestK=TRUE)
-#' #passing arguments appropriate for 'tight' to hier and vice-versa gives
-#' #warning:
-#' clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight_test2 <- clusterD(subD, clusterFunction="tight", alpha=0.1,
 #' clusterArgs=list(evalClusterMethod="average"))
-#' clustSubHier_test <- clusterD(subD, clusterFunction="hier", alpha=0.1,
-#' clusterArgs=list(minSize.core=4))
 #' @export
 #' @importFrom cluster daisy silhouette pam
 clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
@@ -213,15 +192,15 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 		else passedArgs<-NULL
 	}
 	### Create distance if needed, and check it.
-	if(!all(dim(D)==dim(t(D))) || !all(D==t(D))){
-	  #browser()
-	  x<-D
-	  if(is.na(distFunction)){
-	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=dist)
+	#browser()
+	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
+	  x<-D 
+	  if(!is.function(distFunction) && is.na(distFunction)){
+	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=function(x){dist(x)})
 	  }
-	  D<-try(as.matrix(distFunction(x)	))	
+	  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
 	  if(inherits(D,"try-error")) stop("input distance gives error when applied to x")
-	  if(!all(dim(D) == c(nrow(x),nrow(x)))) stop("distance function must result in a ",nrow(x),"by",nrow(x),"matrix of distances")
+	  if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
 	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
 	  
 	}

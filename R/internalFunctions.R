@@ -175,7 +175,7 @@
 	if(subsample){
 		if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
 		Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
-		if(typeAlg=="K"){
+	    if(typeAlg=="K"){
 			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
 			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
 		}
@@ -192,7 +192,6 @@
     }
     if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
   }
-	
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
 	return(list(results=res,subsampleCocluster=subDbar)) 
 }
