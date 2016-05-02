@@ -17,8 +17,8 @@ vignette: >
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
 options(getClass.msg=FALSE) #get rid of annoying messages about cache
-devtools::load_all()
-#library(clusterExperiment)
+#devtools::load_all()
+library(clusterExperiment)
 ```
 
 
@@ -108,7 +108,7 @@ This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
 ```{r normalization}
-library(limma)
+#library(limma)
 fq <- round(normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
