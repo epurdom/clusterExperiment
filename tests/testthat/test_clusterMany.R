@@ -3,7 +3,7 @@ source("create_objects.R")
 
 test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {
-            clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
+            clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction=c("pam","hierarchicalK","hierarchical01","tight"),
                                        subsample=FALSE, sequential=FALSE,
                                        isCount=FALSE,verbose=FALSE)
             expect_is(clustNothing, "ClusterExperiment")

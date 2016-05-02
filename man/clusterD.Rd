@@ -6,16 +6,17 @@
 \alias{clusterK}
 \title{Cluster distance matrix from subsampling}
 \usage{
-clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam"),
-  typeAlg = c("01", "K"), distFunction = NA, minSize = 1,
-  orderBy = c("size", "best"), format = c("vector", "list"),
+clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam",
+  "hierarchicalK"), typeAlg = c("01", "K"), distFunction = NA,
+  minSize = 1, orderBy = c("size", "best"), format = c("vector", "list"),
   clusterArgs = NULL, checkArgs = TRUE, ...)
 
 cluster01(D, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
   clusterArgs = NULL, checkArgs)
 
-clusterK(D, clusterFunction = c("pam"), findBestK = FALSE, k, kRange,
-  removeSil = FALSE, silCutoff = 0, clusterArgs = NULL, checkArgs)
+clusterK(D, clusterFunction = c("pam", "hierarchicalK"), findBestK = FALSE,
+  k, kRange, removeSil = FALSE, silCutoff = 0, clusterArgs = NULL,
+  checkArgs)
 }
 \arguments{
 \item{D}{either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.}
@@ -134,39 +135,36 @@ cluster01 is for clustering functions that expect as an input D that
   clusters' (as defined by the clusterFunction), with first being the best
   and last being worst.
 
-  @details cluster01 methods: "tight" method refers to the method of finding clusters
-  from a subsampling matrix given in the tight algorithm of Tsang and Wong.
-  Arguments for the tight method are 'minSize.core' (default=2), which sets
-  the minimimum number of samples that form a core cluster. "hierarchical01"
-  refers to running the hclust algorithm on D and transversing down the tree
-  until getting a block of samples with whose summary of the values  is
-  greater than or equal to 1-alpha. Arguments that can be passed to
-  'hierarchical' are 'evalClusterMethod' which determines how to summarize
-  the samples' values of D[samples,samples] for comparison to 1-alpha:
-  "minimum" (default) takes the minimum of D[samples,samples] and requires it
-  to be greater than or equal to 1-alpha; "average" requires that each row
-  mean of D[samples,samples] be greater than or equal to 1-alpha. Arguments
-  of hclust can also be passed via clusterArgs to control the hierarchical
-  clustering of D.
+  @details cluster01 methods: "tight" method refers to the method of finding 
+    clusters from a subsampling matrix given internally in the tight 
+    algorithm code of Tsang and Wong. Arguments for the tight method are
+    'minSize.core' (default=2), which sets the minimimum number of samples
+    that form a core cluster. "hierarchical01" refers to running the hclust
+    algorithm on D and transversing down the tree until getting a block of
+    samples with whose summary of the values  is greater than or equal to
+    1-alpha. Arguments that can be passed to 'hierarchical' are
+    'evalClusterMethod' which determines how to summarize the samples' values
+    of D[samples,samples] for comparison to 1-alpha: "minimum" (default)
+    takes the minimum of D[samples,samples] and requires it to be greater
+    than or equal to 1-alpha; "average" requires that each row mean of
+    D[samples,samples] be greater than or equal to 1-alpha. Arguments of
+    hclust can also be passed via clusterArgs to control the hierarchical 
+    clustering of D.
 
   @details clusterK required format for input and output for clusterFunction:
   clusterFunction should be a function that takes as a minimum an argument
-  'D' and 'k'. The output must be a list similar to that of
-  'partition.object' of cluster package. Specifically, an element
-  'clustering' which gives the vector of clusters; and an argument 'silinfo'
-  like that of the partition.object that is a list with silhouette values.
-  Whether these are actually silhouette values is up to the clusterFunction,
-  but they will be used in the following way: silinfo$avg.width will be used
-  to pick the best k (if findBestK=TRUE), silinfo$widths[,"sil_width"] will
-  be used to exclude poorly clustered samples (if removeSil=TRUE), and
-  clusters will be ordered by the average of the values
-  silinfo$widths[,"sil_width"] in each cluster (after removing poorly
-  clustered samples, if removeSil=TRUE).
+  'D' and 'k'. The output must be a clustering, specified by integer values. 
+  The function \code{\link{silhouette}} will be used on the clustering to
+  calculate silhouette scores for each observation.
 
-clusterK methods: "pam" performs pam clustering on the input Dmatrix using
-\code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can
-be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are
-given by D and k directly.
+clusterK methods: "pam" performs pam clustering on the input 
+  \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
+  to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
+  arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
+  performs hierarchical clustering on the input via the \code{\link{hclust}}
+  and then applies \code{\link{cutree}} with the specified k to obtain
+  clusters. Arguments to \code{\link{hclust}} can be passed via
+  \code{clusterArgs}.
   @details To provide a distance matrix via the argument \code{distFunction},
     the function must be defined to take the distance of the rows of a matrix
     (internally, the function will call \code{distFunction(t(x))}. This is to

@@ -10,7 +10,7 @@
 \title{General wrapper method to cluster the data}
 \usage{
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
-  clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"),
+  clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
   isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
   "mostVar"), ndims = NA)

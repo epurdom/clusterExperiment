@@ -163,6 +163,7 @@
 	##These return lists of indices of clusters satisifying alpha criteria
 	if(clusterFunction=="tight") type<-"01"
 	if(clusterFunction=="hierarchical01") type<-"01"
+	if(clusterFunction=="hierarchicalK") type<-"K"
 	if(clusterFunction=="pam") type<-"K"
 	return(type)
 }

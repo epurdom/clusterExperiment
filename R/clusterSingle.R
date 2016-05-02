@@ -70,7 +70,7 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical01", "pam","kmeans"),
+      clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
       ndims=NA) {

@@ -1,6 +1,7 @@
 context("clusterSingle")
 source("create_objects.R")
 
+
 test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
           SummarizedExperiments", {
             clustNothing <- clusterSingle(mat, clusterFunction="pam",
@@ -44,6 +45,28 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
 
           })
+
+test_that("Different options algorithms of `clusterSingle` ", {
+  #check algorithms
+  clusterSingle(mat, clusterFunction="tight",
+                subsample=FALSE, sequential=FALSE,
+                isCount=FALSE)
+  clusterSingle(mat, clusterFunction="hierarchical01",
+                subsample=FALSE, sequential=FALSE,
+                isCount=FALSE)
+  clusterSingle(mat, clusterFunction="hierarchicalK", clusterDArgs=list("k"=3),
+                subsample=FALSE, sequential=FALSE,
+                isCount=FALSE)
+  #K algorithm options
+  clusterSingle(mat, clusterFunction="hierarchicalK",
+                subsample=FALSE, sequential=FALSE, clusterDArgs=list(findBestK=TRUE,removeSil=TRUE), 
+                isCount=FALSE)
+  clusterSingle(mat, clusterFunction="pam", clusterDArgs=list(findBestK=TRUE,removeSil=TRUE),
+                subsample=FALSE, sequential=FALSE,
+                isCount=FALSE)
+  
+  
+})
 
 test_that("Different options of `clusterSingle` ", {
   #check isCount
@@ -94,6 +117,8 @@ test_that("Different options of `clusterSingle` ", {
                             subsample=FALSE, sequential=TRUE,
                             isCount=FALSE), "must give seqArgs so as to identify k0")
 
+ 
+  
   #check errors and warnings
   expect_error(clusterSingle(mat, clusterFunction="pam",
                             subsample=FALSE, sequential=TRUE,

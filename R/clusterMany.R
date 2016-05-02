@@ -236,7 +236,7 @@ setMethod(
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
       ###########
-      typeK <- which(param[,"clusterFunction"] %in% c("pam"))
+      typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
 
