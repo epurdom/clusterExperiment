@@ -14,11 +14,9 @@ vignette: >
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
-#rmarkdown::render("clusterExperimentTutorial.Rmd")
 knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
 options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed in R
-#devtools::load_all()
 library(clusterExperiment)
 ```
 
@@ -109,8 +107,8 @@ This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
 ```{r normalization}
-library(limma)
-fq <- round(normalizeQuantiles(assay(se)))
+#library(limma)
+fq <- round(limma::normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
 
@@ -150,6 +148,18 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", samp
 
 This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been choosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
 
+The labels shown are those given by `clusterMany` but can be a bit much for plotting. We can assign new labels if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (note we are permanently changing the labels here within the `ClusterExperiment` object). We choose to remove "Features" as being too wordy:
+
+```{r plotCluster_newLabels}
+cl<-clusterLabels(ce)
+cl<-gsub("Features","",cl)
+clusterLabels(ce)<-cl
+par(mar=plotCMar)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), axisLine=-1)
+```
+
+We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. It is also clear that with higher dimensions, removing negative silhouette values results in more samples being removed -- a single cutoff of silhouette distance is not robust across the dimension of the clustering routine. 
+
 We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow. There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
 ### The output 
@@ -164,7 +174,7 @@ For right now we will only mention the most basic such function that retrieves t
 head(clusterMatrix(ce)[,1:3])
 ```
 
-Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why this is the case depends on the underlying choices of the clustering routine. In this case, we chose `removeSil=TRUE` so that samples with negative silhouette distance from their originally assigned clusters are discarded. 
+Because we have changed `clusterLabels` above, these new cluster labels are shown here. Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why this is the case depends on the underlying choices of the clustering routine. In this case, we chose `removeSil=TRUE` so that samples with negative silhouette distance from their originally assigned clusters are discarded. Furthermore, the default in `clusterMany` set the minimum size of a cluster to be 5, which can also result in -1 assignments.
 
 (Another special value is -2 discussed in the section on [ClusterExperiment objects](#ceobjects)
 
@@ -188,7 +198,7 @@ plotClusters(ce,whichClusters="workflow")
 
 ```
 
-The default result of `combineMany` is not usually a great choice, and certainly isn't helpful here. The resulting clusters leave most samples unassigned. This is because the default way of combining is very conservative -- it require samples to only be in the same cluster if they are in the same clusters in *every clustering*, and makes clusters that satisfy this requirement. This is quite stringent. We can vary this by setting `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to. Explicit details on how this is done will be discussed  in the section on [combineMany](#combineMany).
+The default result of `combineMany` is not usually a great choice, and certainly isn't helpful here. The resulting clusters leave most samples unassigned (white in the above plot). This is because the default way of combining is very conservative -- it require samples to only be in the same cluster if they are in the same clusters in *every clustering*, and makes clusters that satisfy this requirement. This is quite stringent. We can vary this by setting `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to. Explicit details on how this is done will be discussed  in the section on [combineMany](#combineMany).
 
 ```{r}
 ce<-combineMany(ce,proportion=0.7)
@@ -197,12 +207,15 @@ plotClusters(ce,whichClusters="workflow")
 
 ```
 
+We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Vary the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster.
 
 We can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called `combineMany` as long as `proportion` value is <1):
 
 ```{r}
 plotCoClustering(ce)
 ```
+
+This visualization can help in determining whether to change the value of `proportion` (though see [combineMany](#combineMany) for how -1 assignments affect `combineMany`)
 
 ## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
 
@@ -217,7 +230,7 @@ ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
 ```
 
-We can see that clusters 1 and 4 are most closely related, at least in the top 500 most variable genes. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 1 and 4, and between 2 and 3. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 1 and 4 will be merged and/or 2 and 3. And so on up the tree.
+We can see that clusters 1 and 4 are most closely related, at least in the top 500 most variable genes. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 4 and 5, and between 2 and 3. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 4 and 5 will be merged and/or 2 and 3. And so on up the tree.
 
 It is useful to first run mergeClusters without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 ```{r mergeClustersPlot}
@@ -229,10 +242,10 @@ Then we can decide on a cutoff:
 ```{r mergeClusters}
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05)
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow")
+plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"))
 ```
 
-Notice that two sets of clusters were merged into a larger cluster. 
+Notice that two clusters were merged into a larger cluster. 
 
 Finally, we can do a heatmap visualizing our this final step of clustering.
 
@@ -331,16 +344,7 @@ plotClusters(ce,main="Clusters from clusterMany",whichClusters="workflow",axisLi
 
 ```
 
-We can assign new labels if we prefer, for example to be more succinct by changing the clusterLabels of the object (note we are permanently changing the labels here within the `ClusterExperiment` object) 
 
-```{r plotClusterEx1_nicelabels}
-cl<-clusterLabels(ce)
-cl<-gsub("Features","",cl)
-clusterLabels(ce)<-cl
-par(mar=plotCMar)
-plotClusters(ce,main="Clusters from clusterMany",axisLine=-1)
-
-```
 
 We can get very different plots depending on how we order the clusterings. The argument `whichClusters` allows you to give choose different clusters or provide an explicit ordering of the clusters. `whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusters chosen are either all clusters, or only clusters from the most recent calls to the workflow function. Choosing "workflow" removes from the visualization both user-defined clusters and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `combineMany` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.  
 
