@@ -14,11 +14,9 @@ vignette: >
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
+knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
 fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
-knitr::dep_auto()
-options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed in R
-library(clusterExperiment)
+#knitr::dep_auto()
 ```
 
 
@@ -112,8 +110,8 @@ This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
 ```{r normalization}
-#library(limma)
-fq <- round(limma::normalizeQuantiles(assay(se)))
+library(limma)
+fq <- round(normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
 
@@ -135,6 +133,8 @@ Other possible options we will keep fixed to reduce the number of clusterings by
 We will also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `function(x){x}` for the identify). 
 
 ```{r clusterMany}
+options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
+library(clusterExperiment)
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10,findBestK=FALSE,removeSil=c(FALSE),
       isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
@@ -235,7 +235,7 @@ ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
 ```
 
-We can see that clusters 1 and 4 are most closely related, at least in the top 500 most variable genes. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 4 and 5, and between 2 and 3. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 4 and 5 will be merged and/or 2 and 3. And so on up the tree.
+We can see that clusters 4 and 5 are most closely related, at least in the top 500 most variable genes. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 4 and 5, and between 2 and 3. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 4 and 5 will be merged and/or 2 and 3. And so on up the tree.
 
 It is useful to first run mergeClusters without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 ```{r mergeClustersPlot}
@@ -571,13 +571,23 @@ Like clustering, the dendrogram can depend on what features are included from th
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
 ```
-Recall that the most recent run is of `combineMany` on only the ones with most variable genes, so there are only 3 clusters to merge (rather than the 5 found in quick start). Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
-
+ Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
+ 
 If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'. 
 
 ```{r makeDendrogram_show}
 ce
 ```
+
+Recall that the most recent run is of `combineMany` on only the ones with most variable genes, so there are only 3 clusters to merge (rather than the 5 found in quick start). The easiest way to do this is just redo `combineMany` and then call `makeDendrogram` on that output:
+
+```{r getBackCombineMany}
+ce<-combineMany(ce,proportion=0.7)
+ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+plotDendrogram(ce)
+```
+
+Alternatively, we could have deleted the new `combineMany` cluster with `removeClusters` and then reset the primary index with `primaryClusterIndex` to the existing `combineMany` result that is stored. But it doesn't take long to rerun, and that way we don't have to delete a cluster in case we want it later. 
 
 **Dendrograms can get deleted!** `makeDendrogram` operates on the primaryCluster and the dendrograms that are stored internally are required to match the primaryCluster. For this reason if the primaryCluster is changed (either because the user requests it or because some part of the workflow has changed the primaryCluster), then the dendrograms will be deleted in the object returned. Usually `makeDendrogram` does not take too long to recalculate, but if it is too slow the user's needs, then it the user may wish to not copy over existing `ce` at certain steps and instead give the outputs new name (and be sure not to change the primaryCluster with `primaryClusterIndex`).
 
@@ -607,7 +617,7 @@ For example, to rerun `mergeClusters` with a different cutoff, we need to reset 
 ```{r mergeClusters_redo}
 primaryClusterIndex(ce)<-which(clusterLabels(ce)=="combineMany")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-ce<-mergeClusters(ce,cutoff=0.1,mergeMethod="adjP")
+ce<-mergeClusters(ce,cutoff=0.04,mergeMethod="adjP")
 ce
 ```
 
@@ -631,17 +641,30 @@ Note that there is nothing that governs or protects the `clusterType` values to 
 
 For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
 
-Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. Note that the clusterLabel will not change without our setting it. 
+Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We will show all of the clusters that have clusterType "mergeClusters" in their name, regardless of the iteration:
+
+```{r findMergeClusters}
+data.frame( grep("mergeClusters",clusterType(ce)),clusterType(ce)[grep("mergeClusters",clusterType(ce))])
+```
+
+Now we mark the mergeClusters.1" version as the final one by changing it's clusterType manually to "final". 
 
 ```{r markFinal}
 whFinal<-which(clusterType(ce)=="mergeClusters.1")
 clusterType(ce)[whFinal]<-"final"
-clusterLabels(ce)[whFinal]<-"My Final Clustering"
-primaryClusterIndex(ce)<-whFinal
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 ```
+
+Note that because it is labeled as `final` it shows up automatically in "workflow" clusters. If we are settled on this one, then we probably want to also set it as the primaryCluster as well as change it's clusterLabel to be more meaningful for plots, etc. We also will make a dendrogram to go with it for later use (recall any dendrogram we had will be lost when we change the primaryCluster):
+
+```{r updateFinalToPrimary}
+clusterLabels(ce)[whFinal]<-"My Final Clustering"
+primaryClusterIndex(ce)<-whFinal
+ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+```
+
+This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as the mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterType to `mergeClusters.2` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
 
 # Finding Features related to a Clustering {#getBestFeatures}
 
