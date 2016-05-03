@@ -14,7 +14,8 @@ vignette: >
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
+knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
+fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
 options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed in R
 library(clusterExperiment)
@@ -223,7 +224,7 @@ This visualization can help in determining whether to change the value of `propo
 
 ## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
 
-For computational simplicity in the vignette, we have not created many clusters with `clusterMany`. However, it is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case, the results of `combineMany` can often still result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
+It is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case, the results of `combineMany` can often still result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
 
 For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `combineMany`. We often display and use both sets of clusterings side-by-side (that from `combineMany` and that from `mergeClusters`)
 
@@ -257,7 +258,7 @@ Finally, we can do a heatmap visualizing our this final step of clustering.
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99, sampleData=c("Biological_Condition", "Cluster1", "Cluster2"))
 ```
 
-By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
+By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. The argument `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
 
 ## Step 4: Finding Features related to the clusters {#step4}
 
@@ -307,7 +308,7 @@ primaryCluster(ce)
 
 Notice how some `extra` clusterings have snuck in, like `combineMany.1` because we made multiple calls to `combineMany`; only the last such call has the proper name `combineMany` and therefore will be shown when we use `whichClusters="workflow"` in our plotting (see this [section](#rerun) for a discussion of how these repeated calls are handled.)
 
-*Negative Valued clusters* The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'. '-2' is for samples that were not included in the original input to the clustering. This is useful, if for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
+**Negative Valued clusters** The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed samples with negative silhouette distance to their cluster, so they were assigned '-1'. '-2' is for samples that were not included in the original input to the clustering. This is useful, if for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
 
 `clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name. But clusterings might also have no specific label if the user created them. 
 
@@ -386,7 +387,7 @@ We can also force `plotClusters` to use the existing color definitions, rather t
 
 For example, I set the colors above based on the cluster order from `plotClusters` where the clusters were ordered according to the workflow. But now I want to plot only the clusters from `clusterMany`, yet keep the same colors as before so I can compare them. I do this by setting the argument `existingColors="all"`, meaning use all of the existing colors (currently this is the only option available for how to use the existing colors).
 
-```{r plotClusterEx1_forceColors}
+```{r plotClusterEx1_forceColors,fig.width=18,fig.height=6}
 par(mar=plotCMar)
 par(mfrow=c(1,2))
 plotClusters(ce, sampleData=c("Biological_Condition","Cluster2"), whichClusters="workflow", existingColors="all",
@@ -416,11 +417,11 @@ The `plotHeatmap` command has numerous options, in addition to those of `aheatma
 
 Like `plotClusters`, `plotHeatmap` has a `whichClusters` option that behaves similarly to that of `plotClusters`.  In addition to the options `all` and `workflow` that we saw with `plotClusters`, `plotHeatmap` also takes the option `none` (no clusters shown) and `primary` (only the primaryCluster). The user can also request a subset of the clusters by giving specific indices to `whichClusters` like in `plotClusters`.
 
-Here we create a heatmap that shows the clusters from the workflow. Note that we do that in a smaller object from which we removed most of the clusters. This is because `ce` now has 39 different clusterings, and these are too many to visualize on top of the heatmap.
+Here we create a heatmap that shows the clusters from the workflow. Notice that we choose only the last 2 -- from `combineMany` and `mergeClusters`. If we chose all "workflow" clusters it would be too many.
 
 ```{r plotHeatmap_Ex1.1}
-ce_sub <- removeClusters(ce, whichRemove = 4:39)
-plotHeatmap(ce_sub,whichClusters="workflow", annLegend=FALSE)
+whClusterPlot<-1:2
+plotHeatmap(ce,whichClusters=whClusterPlot, annLegend=FALSE)
 ```
 
 Notice I also passed the option 'annLegend=FALSE' to the underlying `aheatmap` command (with many clusterings shown, it is often not useful to have a legend for all the clusters because the legend doesn't fit on the page!). The many detailed commands of `aheatmap` that are not set internally by `plotHeatmap` can be passed along as well. 
@@ -429,16 +430,19 @@ Like `plotClusters`, `plotHeatmap` takes an argument `sampleData`, which refers 
 
 ### Additional options for clustering/ordering samples
 
-I can choose to instead to not cluster the samples, but order them by cluster:
+I can choose to instead to not cluster the samples, but order them by cluster. This time I'll just show the primary cluster (the `mergeCluster` result) by setting `whichClusters="primaryCluster"`:
 
 ```{r plotHeatmap_primaryCluster}
-plotHeatmap(ce_sub,clusterSamplesData="primaryCluster",whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
+plotHeatmap(ce,clusterSamplesData="primaryCluster",whichClusters="primaryCluster",main="Heatmap with clusterMany",annLegend=FALSE)
 ```
 
-As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I could do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object; alternatively `plotHeatmap` will call makeDendrogram with its default settings, which is what I will do here. I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
+As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I could do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object and `plotHeatmap` will pull from it; alternatively `plotHeatmap` will call `makeDendrogram` (based on the primary cluster) with its default settings, which is what I will do here. For visualization purposes, it's better to have the dendrogram for the `combineMany` cluster rather than the `mergeCluster` cluster (since the `mergeCluster` is based on the dendrogram anyway). So I'm going to set the primary cluster index to 2.
+
+I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
 
 ```{r plotHeatmap_dendro}
-plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters="primaryCluster",main="Heatmap with clusterMany",sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
+primaryClusterIndex(ce)<-2
+plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters=whClusterPlot,main="Heatmap with clusterMany",sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
 ```
 
 ### Using separate input data for clustering and for visualization
@@ -567,7 +571,7 @@ Like clustering, the dendrogram can depend on what features are included from th
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
 ```
-Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
+Recall that the most recent run is of `combineMany` on only the ones with most variable genes, so there are only 3 clusters to merge (rather than the 5 found in quick start). Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
 
 If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'. 
 
@@ -597,13 +601,13 @@ ce
 
 Notice that the summary of ce now has 'makeDendrogram run?' as 'No'. These seems odd, since we just ran it. However, running `mergeClusters` changed the primaryCluster identification, so the dendrogram we made before no longer matches the existing primaryCluster, so they are discarded. This means if the user wants a dendrogram downstream (e.g. for `plotHeatmap`) or to rerun `mergeClusters` then `makeDendrogram` must be rerun with the appropriate `primaryCluster`. 
 
-For example, to rerun `mergeClusters`, we need to reset the primaryCluster to be the `combineMany` clustering and remake the dendrogram:
+For example, to rerun `mergeClusters` with a different cutoff, we need to reset the primaryCluster to be the `combineMany` clustering and remake the dendrogram:
 
 
 ```{r mergeClusters_redo}
 primaryClusterIndex(ce)<-which(clusterLabels(ce)=="combineMany")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-ce<-mergeClusters(ce,cutoff=0.01,mergeMethod="adjP")
+ce<-mergeClusters(ce,cutoff=0.1,mergeMethod="adjP")
 ce
 ```
 
