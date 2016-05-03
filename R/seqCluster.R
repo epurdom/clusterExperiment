@@ -1,19 +1,18 @@
 #' Program for sequentially clustering, removing cluster, and starting again.
 #'
-#' Given a data matrix, this function will call clustering
+#' Given a \code{n x p} data matrix, this function will call clustering
 #' routines, and sequentially remove best clusters, and iterate to find
 #' clusters.
 #'
-#' @param x \code{p x} data matrix on which to run the clustering (samples in
-#'   columns).
+#' @param x \code{n x p} data matrix on which to run the clustering (samples in
+#'   rows).
 #' @param k0 the value of K at the first iteration of sequential algorithm, see
 #'   details below or vignette.
 #' @param clusterFunction passed to clusterDMat option 'clusterFunction' to
 #'   indicate method of clustering, see \code{\link{clusterD}}.
-#' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
-#'   iteration; otherwise the distance matrix is set by arguments to
-#'   \code{\link{clusterD}}.
+#' @param subsample logical as to whether to subsample via
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each
+#'   iteration; otherwise the distance matrix is dist(x).
 #' @param beta value between 0 and 1 to decide how stable clustership membership
 #'   has to be before 'finding' and removing the cluster.
 #' @param top.can only the top.can clusters from \code{\link{clusterD}} (ranked
@@ -125,10 +124,6 @@
 #' \item{\code{whyStop}}{ a character string explaining what triggered the
 #' algorithm to stop.}
 #' }
-#' @references Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
-#'   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
-#'   61:10-16.
-#' 
 #' @examples
 #' \dontrun{
 #' data(simData)
@@ -141,12 +136,12 @@
 #' clusterDArgs=list(minSize=5))
 #' }
 #' @export
-seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
+seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
 {
-	x<-t(x) #old code had nxp
-    #for now, if use pam for subsampleClusterMethod, just use given k.
+	#for now, if use pam for subsampleClusterMethod, just use given k.
     if(!is.function(clusterFunction)){
 		clusterFunction<-match.arg(clusterFunction)
+		if(!subsample & clusterFunction !="pam") stop("If not subsampling, clusterFunction must be 'pam'")
 		if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
 	}
 	else{
@@ -213,11 +208,11 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam","h
                 if(verbose) cat(paste("k =", k + i - 1,"\n"))
         				if(subsample){
         				  tempArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
-        				  res <- .clusterWrapper(x=t(x), subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
         				}
         				else{
         				  tempArgs<-c(list(k=k + i - 1),clusterDArgs) #set k
-        				  res <- .clusterWrapper(x=t(x), subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+        				  res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
 
         				}
 				# if(length(res)==0) {
@@ -234,7 +229,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam","h
 				#add new k (because always list o)
             if(subsample){
               tempArgs<-c(list(k=k + seq.num - 1),subsampleArgs)  #set k
-              res <- .clusterWrapper(x=t(x), subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
             }
             else{
               tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k

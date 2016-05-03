@@ -10,12 +10,12 @@ subsampleClustering(x, k, clusterFunction = "pam", clusterArgs = NULL,
   ...)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (samples in columns).}
+\item{x}{the data on which to run the clustering (samples in rows).}
 
 \item{k}{number of clusters to find for each clustering of a subsample
 (passed to clusterFunction).}
 
-\item{clusterFunction}{a function that clusters a \code{p x n} matrix of
+\item{clusterFunction}{a function that clusters a \code{n x p} matrix of
 data. Can also be given character values 'pam' or 'kmeans' to indicate use
 of internal wrapper functions. Must accept arguments 'x' and 'k' (whether
 uses them or not). See Details for format of what must return.}
@@ -48,13 +48,13 @@ be called.}
 A \code{n x n} matrix of co-occurances.
 }
 \description{
-Given a data matrix, this function will subsample the rows
+Given a \code{n x p} data matrix, this function will subsample the rows
 (samples), cluster the subsamples, and return a \code{n x n} matrix with the
 probability of co-occurance.
 }
 \details{
 The \code{clusterFunction} must be a function that takes as an
-  argument 'x' which is a \code{p x n} matrix  of data and integer 'k'. It
+  argument 'x' which is a \code{n x p} matrix  of data and integer 'k'. It
   minimally must return a list with element named 'clustering' giving the
   vector of cluster ids. To be incorporated with the larger hierarchy, it
   should be list with elements of a partition object, just as is returned by
@@ -66,7 +66,7 @@ The \code{clusterFunction} must be a function that takes as an
   clusterArgs.
 
 The classifyFunction should take as an object a data matrix 'x' with
-  samples on the columns, and the output of the clusterFunction. Note that the
+  samples on the rows, and the output of the clusterFunction. Note that the
   function should assume that the input 'x' is not the same samples that were
   input to the clusterFunction (but can assume that it is the same number of
   features/columns).

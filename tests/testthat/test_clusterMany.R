@@ -3,7 +3,7 @@ source("create_objects.R")
 
 test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {
-            clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction=c("pam","hierarchicalK","hierarchical01","tight"),
+            clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        isCount=FALSE,verbose=FALSE)
             expect_is(clustNothing, "ClusterExperiment")
@@ -52,32 +52,17 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             ppIndex<-workflowClusterDetails(clustNothing5)
             expect_equal(as.numeric(table(ppIndex[,"iteration"])),c(2,2))
 
- 
+            #check dim reduce
+            cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+                                           subsample=FALSE, sequential=FALSE,verbose=FALSE,
+                                           isCount=FALSE)
+            #check giving paramMatrix
+            param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+                                           subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
+                                           isCount=FALSE)
+#             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+#                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
+#                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
+#             expect_equal(cc,cc2)
+
           })
-test_that("`clusterMany` works changing parameters", {
-  #check dim reduce
-  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    isCount=FALSE)
-  #check giving paramMatrix
-  param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-                       subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
-                       isCount=FALSE)
-  #             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
-  #                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
-  #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
-  #             expect_equal(cc,cc2)
-  
-  #check giving distance
-  dist1<-function(x){dist(x,method="manhattan")}
-  cc <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
-                    distFunction=c("dist1","dist",NA),
-                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    isCount=FALSE)
-  #check doesn't spit out warnings because alphas/clusterD args not match 
-  expect_silent(clusterMany(mat, clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
-                    alphas=c(0.1,0.2),
-                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
-                    isCount=FALSE))
-})

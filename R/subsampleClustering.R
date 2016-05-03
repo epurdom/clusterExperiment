@@ -1,13 +1,13 @@
 #' Cluster subsamples of the data
 #'
-#' Given a data matrix, this function will subsample the rows
+#' Given a \code{n x p} data matrix, this function will subsample the rows
 #' (samples), cluster the subsamples, and return a \code{n x n} matrix with the
 #' probability of co-occurance.
 #'
-#' @param x the data on which to run the clustering (samples in columns).
+#' @param x the data on which to run the clustering (samples in rows).
 #' @param k number of clusters to find for each clustering of a subsample
 #'   (passed to clusterFunction).
-#' @param clusterFunction a function that clusters a \code{p x n} matrix of
+#' @param clusterFunction a function that clusters a \code{n x p} matrix of
 #'   data. Can also be given character values 'pam' or 'kmeans' to indicate use
 #'   of internal wrapper functions. Must accept arguments 'x' and 'k' (whether
 #'   uses them or not). See Details for format of what must return.
@@ -30,7 +30,7 @@
 #' @param ... arguments passed to mclapply (if ncores>1).
 #'
 #' @details The \code{clusterFunction} must be a function that takes as an
-#'   argument 'x' which is a \code{p x n} matrix  of data and integer 'k'. It
+#'   argument 'x' which is a \code{n x p} matrix  of data and integer 'k'. It
 #'   minimally must return a list with element named 'clustering' giving the
 #'   vector of cluster ids. To be incorporated with the larger hierarchy, it
 #'   should be list with elements of a partition object, just as is returned by
@@ -42,7 +42,7 @@
 #'   clusterArgs.
 #'
 #' @details The classifyFunction should take as an object a data matrix 'x' with
-#'   samples on the columns, and the output of the clusterFunction. Note that the
+#'   samples on the rows, and the output of the clusterFunction. Note that the
 #'   function should assume that the input 'x' is not the same samples that were
 #'   input to the clusterFunction (but can assume that it is the same number of
 #'   features/columns).
@@ -59,7 +59,7 @@
 #' @export
 subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,resamp.num = 100, samp.p = 0.7,ncores=1,... )
 {
-    if(!is.function(clusterFunction)){
+	if(!is.function(clusterFunction)){
 		if(clusterFunction%in%c("pam","kmeans")){
 			if(clusterFunction=="pam"){
 				clusterFunction<-.pamCluster
@@ -76,14 +76,14 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, class
 	if(classifyMethod %in% c("All","OutOfSample") && missing(classifyFunction)){
 		stop("Must provide a classification function for the 'All' or 'OutOfSample' options")
 	}
-	N <- dim(x)[2]
+	N <- dim(x)[1]
     subSize <- round(samp.p * N)
     idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
 	perSample<-function(ids){
-		result<-do.call(clusterFunction,c(list(x=x[,ids,drop=FALSE],k=k),clusterArgs))
+		result<-do.call(clusterFunction,c(list(x=x[ids,],k=k),clusterArgs))
 		if(classifyMethod=="All") classX<-classifyFunction(x,result)
 		if(classifyMethod=="OutOfSample"){
-			classElse<-classifyFunction(x[,-ids,drop=FALSE], result)
+			classElse<-classifyFunction(x[-ids,], result)
 			classX<-rep(NA,N)
 			classX[-ids]<-classElse
 		}
@@ -111,6 +111,6 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, class
 	DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
 	DNum<-Reduce("+",lapply(DList,function(y){y$D}))
 	Dbar = DNum/DDenom
-	rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+	rownames(Dbar)<-colnames(Dbar)<-rownames(x)
 	return(Dbar)
 }

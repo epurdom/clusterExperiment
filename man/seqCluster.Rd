@@ -4,14 +4,14 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam",
-  "hierarchicalK"), subsample = TRUE, beta = 0.7, top.can = 15,
-  remain.n = 30, k.min = 2, k.max = k0 + 10, verbose = TRUE,
-  subsampleArgs = NULL, clusterDArgs = NULL)
+seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam"),
+  subsample = TRUE, beta = 0.7, top.can = 15, remain.n = 30,
+  k.min = 2, k.max = k0 + 10, verbose = TRUE, subsampleArgs = NULL,
+  clusterDArgs = NULL)
 }
 \arguments{
-\item{x}{\code{p x} data matrix on which to run the clustering (samples in
-columns).}
+\item{x}{\code{n x p} data matrix on which to run the clustering (samples in
+rows).}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
@@ -19,10 +19,9 @@ details below or vignette.}
 \item{clusterFunction}{passed to clusterDMat option 'clusterFunction' to
 indicate method of clustering, see \code{\link{clusterD}}.}
 
-\item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
-iteration; otherwise the distance matrix is set by arguments to
-\code{\link{clusterD}}.}
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
+iteration; otherwise the distance matrix is dist(x).}
 
 \item{beta}{value between 0 and 1 to decide how stable clustership membership
 has to be before 'finding' and removing the cluster.}
@@ -72,7 +71,7 @@ algorithm to stop.}
 }
 }
 \description{
-Given a data matrix, this function will call clustering
+Given a \code{n x p} data matrix, this function will call clustering
 routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
@@ -161,10 +160,5 @@ clusterFunction="hierarchical01", beta=0.8, subsampleArgs=list(resamp.n=100,
 samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
 clusterDArgs=list(minSize=5))
 }
-}
-\references{
-Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
-  Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
-  61:10-16.
 }
 
