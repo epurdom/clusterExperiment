@@ -14,7 +14,7 @@ vignette: >
 ---
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 #rmarkdown::render("clusterExperimentTutorial.Rmd")
-knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=TRUE,autodep=TRUE,out.width="600px",out.height="600px")
+knitr::opts_chunk$set(fig.align="center", cache=TRUE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/", fig.width=6,fig.height=6,error=FALSE,autodep=TRUE,out.width="600px",out.height="600px")
 knitr::dep_auto()
 options(getClass.msg=FALSE) #get rid of annoying messages about cache
 devtools::load_all()
@@ -74,7 +74,11 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 ## Data example {#data}
 
-We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package at github/drisso. Note that because of the large size of the data files, you need to have the large file system installed (https://git-lfs.github.com/) to clone the repository and have the data download. Please refer to the README.md file at https://github.com/drisso/scRNAseq for instructions on how to download and install the `scRNAseq` package.
+We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package at github/drisso. For the current version of this vignette, we used version `0.0.8` of the `scRNAseq` package, available at (https://github.com/drisso/scRNAseq/releases/download/v0.0.8/scRNAseq_0.0.8.tar.gz). Once downloaded, the package can be installed within R with the following command.
+
+```{r, eval=FALSE}
+install.packages("scRNAseq_0.0.8.tar.gz", repos=NULL)
+```
 
 ```{r,cache=FALSE}
 library(scRNAseq)
@@ -231,7 +235,7 @@ par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 ```
 
-Notice that two sets of clusters were merged into a larger cluster. 
+Notice that three clusters were merged into one.
 
 Finally, we can do a heatmap visualizing our this final step of clustering.
 
@@ -248,7 +252,7 @@ The last step is to then find features that are different between these clusters
 There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
 
 ```{r getBestFeatures}
-pairsAll<-getBestFeatures(ce,type="Pairs",p.value=0.05,number=nrow(ce),isCount=TRUE)
+pairsAll<-getBestFeatures(ce,contrastType="Pairs",p.value=0.05,number=nrow(ce),isCount=TRUE)
 head(pairsAll)
 ```
 
@@ -258,7 +262,7 @@ We can visualize only these significantly different pair-wise features with `plo
 length(pairsAll$Feature)==length(unique(pairsAll$Feature))
 ```
 
-In this case they are unique. But to be careful (and for future use of this code), we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap.
+In this case they are not unique. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
 
 ```{r getBestFeatures_heatmap}
 plotHeatmap(ce, clusterSamplesData="dendrogramValue",clusterFeaturesData=unique(pairsAll[,"IndexInOriginal"]),main="Heatmap of features w/ significant pairwise differences",breaks=.99)
@@ -392,10 +396,10 @@ plotClusters(ce, sampleData=c("Biological_Condition","Cluster2"), existingColors
 There is also a default heatmap command for a ClusterExperiment object that we used in the Quick Start. By default it clusters on the most variable features (after transforming the data) and shows the primaryCluster alongside the data. The primaryCluster now that we've run the workflow will be set as that from the mergeClusters step. 
 
 ```{r plotHeatmap_Ex1}
+par(mfrow=c(1,1))
+par(mar=defaultMar)
 plotHeatmap(ce,main="Heatmap with clusterMany")
 ```
-
-
 
 The `plotHeatmap` command has numerous options, in addition to those of `aheatmap`. `plotHeatmap` mainly provides additional functionality in the following areas: 
 
@@ -407,10 +411,11 @@ The `plotHeatmap` command has numerous options, in addition to those of `aheatma
 
 Like `plotClusters`, `plotHeatmap` has a `whichClusters` option that behaves similarly to that of `plotClusters`.  In addition to the options `all` and `workflow` that we saw with `plotClusters`, `plotHeatmap` also takes the option `none` (no clusters shown) and `primary` (only the primaryCluster). The user can also request a subset of the clusters by giving specific indices to `whichClusters` like in `plotClusters`.
 
-Here we create a heatmap that shows the clusters from the workflow. 
+Here we create a heatmap that shows the clusters from the workflow. Note that we do that in a smaller object from which we removed most of the clusters. This is because `ce` now has 39 different clusterings, and these are too many to visualize on top of the heatmap.
 
 ```{r plotHeatmap_Ex1.1}
-plotHeatmap(ce,whichClusters="workflow",main="Heatmap with clusterMany, all clusters",annLegend=FALSE)
+ce_sub <- removeClusters(ce, whichRemove = 4:39)
+plotHeatmap(ce_sub,whichClusters="workflow", annLegend=FALSE)
 ```
 
 Notice I also passed the option 'annLegend=FALSE' to the underlying `aheatmap` command (with many clusterings shown, it is often not useful to have a legend for all the clusters because the legend doesn't fit on the page!). The many detailed commands of `aheatmap` that are not set internally by `plotHeatmap` can be passed along as well. 
@@ -422,7 +427,7 @@ Like `plotClusters`, `plotHeatmap` takes an argument `sampleData`, which refers 
 I can choose to instead to not cluster the samples, but order them by cluster:
 
 ```{r plotHeatmap_primaryCluster}
-plotHeatmap(ce,clusterSamplesData="primaryCluster",whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
+plotHeatmap(ce_sub,clusterSamplesData="primaryCluster",whichClusters="all",main="Heatmap with clusterMany",annLegend=FALSE)
 ```
 
 As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I could do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object; alternatively `plotHeatmap` will call makeDendrogram with its default settings, which is what I will do here. I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
@@ -649,7 +654,7 @@ Note that for all of these contrasts, we are making use of all of the data, not 
 **Pairs:** The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons:
 
 ```{r getBestFeatures_onlyTopPairs}
-pairsAllTop<-getBestFeatures(ce,type="Pairs",p.value=0.05)
+pairsAllTop<-getBestFeatures(ce,contrastType="Pairs",p.value=0.05)
 dim(pairsAllTop)
 head(pairsAllTop)
 ```
@@ -661,7 +666,7 @@ In addition to the columns provided by `topTable`, the column `Contrast` tells u
 **OneAgainsAll:** The choice `type="OneAgainsAll"` performs a comparison of a cluster against the mean of all of the other clusters. 
 
 ```{r getBestFeatures_oneAgainstAll}
-best1vsAll<-getBestFeatures(ce,type="OneAgainstAll",p.value=0.05)
+best1vsAll<-getBestFeatures(ce,contrastType="OneAgainstAll",p.value=0.05)
 head(best1vsAll)
 ```
 
@@ -674,7 +679,7 @@ To run this option, it is important that `makeDendrogram` corresponds to the den
 
 ```{r getBestFeatures_dendro}
 ce<-makeDendrogram(ce)
-bestDendro<-getBestFeatures(ce,type="Dendro",p.value=0.05)
+bestDendro<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
 head(bestDendro)
 ```
 
