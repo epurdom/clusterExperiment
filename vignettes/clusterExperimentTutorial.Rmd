@@ -617,7 +617,7 @@ For example, to rerun `mergeClusters` with a different cutoff, we need to reset 
 ```{r mergeClusters_redo}
 primaryClusterIndex(ce)<-which(clusterLabels(ce)=="combineMany")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-ce<-mergeClusters(ce,cutoff=0.04,mergeMethod="adjP")
+ce<-mergeClusters(ce,cutoff=0.2,mergeMethod="MB")
 ce
 ```
 
@@ -631,32 +631,41 @@ The workflow commands check for existing clusters of the workflow (based on the 
 
 For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
 
-This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix` with functions like `workflowClusterDetails` and `workflowClusterTable`. 
-
-You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany` and/or `mergeClusters`. `eraseOld=TRUE` will delete ALL past workflow results except for those that are both in the current workflow and "upstream" of the requested command. 
+This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. 
 
 Note that there is nothing that governs or protects the `clusterType` values to be of a certain kind. This means that if the user decides to name a clusterType of a clustering one of these protected names, that is allowed.
+
+**Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany` and/or `mergeClusters`. `eraseOld=TRUE` will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
+
+
+**Finding workflow iterations** Sometimes which numbered iteration a particular call is in will not be obvious if there are many calls to the workflow. You may have a `mergeClusters.2` cluster but no `mergeClusters.1` because of an upstream workflow call in the middle that bumped the iteration value up to 2 without ever making a `mergeClusters.1`. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix`. 
+
+```{r workflowTable}
+workflowClusterTable(ce)
+```
+
+Explicit details about every workflow cluster and their index in `clusterMatrix` is given by `workflowClusterDetails`:
+
+```{r workflowDetails}
+head(workflowClusterDetails(ce),8)
+```
+
 
 **Designate a Final Clustering** A final protected clusterType is "final". This is not created by any method, but can be set as the clusterType of a clustering by the user (via the `clusterType` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with ".x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
 
 For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
 
-Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We will show all of the clusters that have clusterType "mergeClusters" in their name, regardless of the iteration:
-
-```{r findMergeClusters}
-data.frame( grep("mergeClusters",clusterType(ce)),clusterType(ce)[grep("mergeClusters",clusterType(ce))])
-```
-
-Now we mark the mergeClusters.1" version as the final one by changing it's clusterType manually to "final". 
+Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We see from our above call to the workflow functions above, that it is `mergeClusters.2`.
+Now we mark the "mergeClusters.2" version as the final one by changing it's clusterType manually to "final". 
 
 ```{r markFinal}
-whFinal<-which(clusterType(ce)=="mergeClusters.1")
+whFinal<-which(clusterType(ce)=="mergeClusters.2")
 clusterType(ce)[whFinal]<-"final"
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 ```
 
-Note that because it is labeled as `final` it shows up automatically in "workflow" clusters. If we are settled on this one, then we probably want to also set it as the primaryCluster as well as change it's clusterLabel to be more meaningful for plots, etc. We also will make a dendrogram to go with it for later use (recall any dendrogram we had will be lost when we change the primaryCluster):
+Note that because it is labeled as `final` it shows up automatically in "workflow" clusters in our `plotClusters` command. If we are settled on this cluster being our primary focus of plots, dendrograms, etc., then we probably want to also set it as the primaryCluster as well as change it's clusterLabel to be more meaningful for plots, etc. We also will make a dendrogram to go with it for later use (recall any dendrogram we had will be lost when we change the primaryCluster):
 
 ```{r updateFinalToPrimary}
 clusterLabels(ce)[whFinal]<-"My Final Clustering"
@@ -664,7 +673,7 @@ primaryClusterIndex(ce)<-whFinal
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 ```
 
-This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as the mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterType to `mergeClusters.2` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
+This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the"" mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterType to `mergeClusters.x` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
 
 # Finding Features related to a Clustering {#getBestFeatures}
 
