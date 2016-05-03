@@ -26,7 +26,7 @@
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
-  isSymmetric = FALSE, ...)
+  isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data, ...)
 }
@@ -126,6 +126,11 @@ number between 0 and 1, indicating that the breaks should be equally spaced
 \item{isSymmetric}{logical. if TRUE indicates that the input matrix is
 symmetric. Useful when plotting a co-clustering matrix or other sample by
 sample matrices (e.g., correlation).}
+
+\item{overRideClusterLimit}{logical. Whether to override the internal limit 
+that only allows 10 clusterings/annotations. If overridden, may result in 
+incomprehensible errors from aheatmap. Only override this if you have a
+very large plotting device and want to see if aheatmap can render it.}
 }
 \value{
 Returns (invisibly) a list with elements

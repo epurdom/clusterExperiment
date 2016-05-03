@@ -74,6 +74,10 @@
 #' @param isSymmetric logical. if TRUE indicates that the input matrix is
 #'   symmetric. Useful when plotting a co-clustering matrix or other sample by
 #'   sample matrices (e.g., correlation).
+#' @param overRideClusterLimit logical. Whether to override the internal limit 
+#'   that only allows 10 clusterings/annotations. If overridden, may result in 
+#'   incomprehensible errors from aheatmap. Only override this if you have a
+#'   very large plotting device and want to see if aheatmap can render it.
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -452,7 +456,8 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,
+                          overRideClusterLimit=FALSE,...
     ){
 
 
@@ -515,8 +520,11 @@ setMethod(
       if(!is.null(sampleData)){
         if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame")
         if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")
-
-        ###Make sampleData explicitly factors, except for whSampleDataCont
+        if(NCOL(sampleData)>10){
+            if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
+            else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
+        }
+                    ###Make sampleData explicitly factors, except for whSampleDataCont
         ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
         #browser()
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
