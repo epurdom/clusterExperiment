@@ -619,7 +619,7 @@ setMethod(
 #' @details \code{plotCoClustering} is a convenience function to plot the heatmap
 #' of the co-clustering matrix stored in the \code{coClustering} slot of a
 #' \code{ClusterExperiment} object.
-#'
+#' @export
 setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",

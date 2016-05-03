@@ -165,16 +165,16 @@
 #' minSize=5)
 #'
 #' #two twists to pam
-#' clustSubPamK <- clusterD(subD, clusterFunction="pam", silCutoff=0, minSize=5,
+#' clustSubPamK <- clusterD(simData, clusterFunction="pam", silCutoff=0, minSize=5,
 #' removeSil=TRUE, k=3)
-#' clustSubPamBestK <- clusterD(subD, clusterFunction="pam", silCutoff=0,
+#' clustSubPamBestK <- clusterD(simData, clusterFunction="pam", silCutoff=0,
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
 #' # note that passing the wrong arguments for an algorithm results in warnings
 #' # (which can be turned off with checkArgs=FALSE)
-#' clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight_test <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' minSize=5, removeSil=TRUE)
-#' clustSubTight_test2 <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' clusterArgs=list(evalClusterMethod="average"))
 #' @export
 #' @importFrom cluster daisy silhouette pam
