@@ -61,7 +61,7 @@ setGeneric(
 
 setGeneric(
   name = "clusterLabels",
-  def = function(x, whichClusters) {
+  def = function(x) {
     standardGeneric("clusterLabels")
   }
 )

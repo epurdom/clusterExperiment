@@ -115,7 +115,6 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             clusterLabels(c3)[1]<-"User4"
             expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
             expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
-            expect_equal(length(clusterLabels(c3,"workflow")),0) #nothing get back
             
             ###check adding matrix of clusters
             c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterType="New")
@@ -144,7 +143,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             whUn<-which(primaryCluster(ccSE) <0)
             ccR<-removeUnclustered(ccSE)
             expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
-            ###Check retain SE info -- need to fix this for the removeUnclustered
+            ###Check retain SE info
             expect_equal(colData(ccR),colData(se[,-whUn]) )
             expect_equal(rownames(ccR),rownames(se)) 
             expect_equal(colnames(ccR),colnames(se[,-whUn])) 

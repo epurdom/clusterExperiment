@@ -6,6 +6,10 @@
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
 \alias{clusterInfo}
 \alias{clusterInfo,ClusterExperiment-method}
+\alias{clusterLabels}
+\alias{clusterLabels,ClusterExperiment-method}
+\alias{clusterLabels<-}
+\alias{clusterLabels<-,ClusterExperiment,character-method}
 \alias{clusterLegend}
 \alias{clusterLegend,ClusterExperiment-method}
 \alias{clusterLegend<-}
@@ -77,6 +81,10 @@
 
 \S4method{clusterInfo}{ClusterExperiment}(x)
 
+\S4method{clusterLabels}{ClusterExperiment}(x)
+
+\S4method{clusterLabels}{ClusterExperiment,character}(object) <- value
+
 \S4method{clusterLegend}{ClusterExperiment}(x)
 
 \S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
@@ -96,6 +104,9 @@
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
+
+\item{value}{character. A vector of length equal to
+\code{NCOL(clusterMatrix(object))}.}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
@@ -125,6 +136,8 @@ clusterMatrix).
 \code{clusterType} returns/sets the clusterType slot.
 
 \code{clusterInfo} returns the clusterInfo slot.
+
+\code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
 

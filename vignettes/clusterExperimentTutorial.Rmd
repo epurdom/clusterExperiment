@@ -313,13 +313,13 @@ Notice how some `extra` clusterings have snuck in, like `combineMany.1` because 
 `clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name. But clusterings might also have no specific label if the user created them. 
 
 ```{r CEHelperCommands2}
-clusterLabels(ce)
+head(clusterLabels(ce),10)
 ```
 
 `clusterType` on the otherhand indicates what call made the clustering. 
 
 ```{r CEHelperCommands3}
-clusterType(ce)
+head(clusterType(ce),10)
 ```
 
 The information that was in the original `fluidigm` object has also been preserved, like `colData` that contains information on each sample.
@@ -538,11 +538,11 @@ ce<-combineMany(ce,proportion=0.7)
 plotCoClustering(ce)
 ```
 
-We can also manually choose the set of clusters to use with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features.
+We can also manually choose the set of clusters to use with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
 
 ```{r combineMany_chooseClusters}
 wh<-grep("nVar",clusterLabels(ce))
-ce<-combineMany(ce,whichCluster=wh,proportion=0.7)
+ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3)
 plotCoClustering(ce)
 ```
 
@@ -579,7 +579,7 @@ If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'.
 ce
 ```
 
-Recall that the most recent run is of `combineMany` on only the ones with most variable genes, so there are only 3 clusters to merge (rather than the 5 found in quick start). The easiest way to do this is just redo `combineMany` and then call `makeDendrogram` on that output:
+Recall that the most recent run is of `combineMany` is based on experimenting with different parameters of `combineMany`, so is combining only the clusterings from `clusterMany` that use the top  most variable genes. We might prefer to run `mergeClusters` based on running `combineMany` on all the clusterings of `combineMany` like in quick start. The easiest way to do get back to this result is just to redo `combineMany` and then call `makeDendrogram` on that output:
 
 ```{r getBackCombineMany}
 ce<-combineMany(ce,proportion=0.7)

@@ -132,9 +132,14 @@ setMethod(
                     if(maxUpstream>newIteration) newIteration<-maxUpstream
                   }
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
+                    #browser()
                     updateCluster<-clusterType(x)
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
-                    newX@clusterType<-updateCluster          
+                    clusterType(newX)<-updateCluster    
+                    updateLabel<-clusterLabels(x)
+                    updateLabel[whFix]<-paste(updateLabel[whFix],newIteration,sep=".")
+                    clusterLabels(newX)<-updateLabel    
+                    
                 }
             }
         }

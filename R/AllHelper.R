@@ -244,7 +244,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     out<-x@clusterType
-    names(out)<-clusterLabels(x)
+    #names(out)<-clusterLabels(x)
     return(out)
   }
 )
@@ -262,7 +262,36 @@ setMethod(
     return(out)
   }
 )
-
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
+#' @export
+#' @aliases clusterLabels
+setMethod(
+  f = "clusterLabels",
+  signature = signature(x = "ClusterExperiment"),
+  definition = function(x){
+    labels<-colnames(clusterMatrix(x))
+    if(is.null(labels)) cat("No labels found for clusterings\n")
+    return(labels)
+    
+  }
+)
+#' @export
+#' @rdname ClusterExperiment-methods
+#' @aliases clusterLabels<-
+#' @param value character. A vector of length equal to
+#'   \code{NCOL(clusterMatrix(object))}.
+setReplaceMethod(
+  f = "clusterLabels",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value) {
+    if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
+    if(any(duplicated(value))) stop("cannot have duplicated clusterLabels")
+    colnames(object@clusterMatrix) <- value
+    validObject(object)
+    return(object)
+  }
+)
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterLegend} returns/sets the clusterLegend slot.
 #' @export
