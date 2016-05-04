@@ -279,8 +279,6 @@ setMethod(
 #' @export
 #' @rdname ClusterExperiment-methods
 #' @aliases clusterLabels<-
-#' @param value character. A vector of length equal to
-#'   \code{NCOL(clusterMatrix(object))}.
 setReplaceMethod(
   f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
