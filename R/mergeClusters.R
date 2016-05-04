@@ -158,7 +158,7 @@ setMethod(f = "mergeClusters",
       desc <- phylobase::descendants(phylo4Obj, node, type = c("all"))
       return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
     })
-    if(length(whToMerge) > 0){
+    if(length(which(whToMerge)) > 0){
       nodesToMerge <- nodesBelowCutoff[whToMerge]
 
       #now find top ones
@@ -166,6 +166,7 @@ setMethod(f = "mergeClusters",
         anc <- phylobase::ancestors(phylo4Obj, node, type="all")
         return(!any(names(anc) %in% nodesToMerge))
       })
+     # browser()
       nodesAtTop <- nodesToMerge[whAnc]
 
       #make new clusters

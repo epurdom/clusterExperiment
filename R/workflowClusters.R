@@ -81,7 +81,11 @@ setMethod(
       if(nrow(oldValues)>0) existingValues<-oldValues
       else   return(NULL)
     }
-
+    if(nrow(existingValues)>0){ #just to make sure
+        existingValues$label=clusterLabels(x)[existingValues$index]
+        existingValues<-existingValues[order(existingValues$index),]
+    }
+    rownames(existingValues)<-NULL
     return(existingValues)
 
   }
@@ -137,8 +141,12 @@ setMethod(
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
                     clusterTypes(newX)<-updateCluster    
                     updateLabel<-clusterLabels(x)
-                    updateLabel[whFix]<-paste(updateLabel[whFix],newIteration,sep=".")
-                    clusterLabels(newX)<-updateLabel    
+                    if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those that haven't been manually fixed by the user
+                        whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
+                        updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+                        clusterLabels(newX)<-updateLabel    
+                        
+                    }
                     
                 }
             }
