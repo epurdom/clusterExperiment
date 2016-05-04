@@ -149,14 +149,12 @@ setMethod(
 
     outlist <- combineMany(clusterMat, ...)
 
-    #add "c" to name of cluster
-    cl_labels <- as.character(outlist$clustering)
-    idx <- which(!(cl_labels %in% c("-1", "-2")))
-    cl_labels[idx] <- paste("c", cl_labels[idx], sep="")
 
-    newObj <- clusterExperiment(x, cl_labels,
+    newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="combineMany")
+    #add "c" to name of cluster
+    newObj<-.addPrefixToClusterNames(newObj,prefix="c_",whCluster=1)
     clusterLabels(newObj) <- "combineMany"
 
     if(!is.null(outlist$percentageShared)) {

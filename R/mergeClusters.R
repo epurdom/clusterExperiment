@@ -249,18 +249,15 @@ This makes sense only for counts.")
                                           dendro=x@dendro_clusters,
                                           isCount=TRUE,mergeMethod=mergeMethod, ...)
   }
-  if(mergeMethod!="none"){
-    #only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+  if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+    #----
     #add "m" to name of cluster
-    idx <- which(outlist$clustering>0)
-    cl <- as.numeric(as.factor(outlist$clustering[idx]))
-    cl <- paste("m", cl, sep="")
-    cl_labels <- as.character(outlist$clustering)
-    cl_labels[idx] <- cl
-
-    newObj <- clusterExperiment(x, cl_labels,
+    #----
+    newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters")
+    #add "m" to name of cluster
+    newObj<-.addPrefixToClusterNames(newObj,prefix="m_",whCluster=1)
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")

@@ -1,3 +1,11 @@
+.addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
+    ceLegend<-clusterLegend(ceObj)[[whCluster]]
+    whPos<-which(ceLegend[,"clusterIds"] >0)
+    if(length(whPos)>0) ceLegend[whPos,"name"]<-paste(prefix,ceLegend[whPos,"clusterIds"],sep="")
+    clusterLegend(ceObj)[[whCluster]]<-ceLegend
+    return(ceObj)
+}
+
 .addBackSEInfo<-function(newObj,oldObj){
   retval<-clusterExperiment(oldObj,
                             clusters=clusterMatrix(newObj),
