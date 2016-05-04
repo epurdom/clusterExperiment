@@ -8,8 +8,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
                                        isCount=FALSE,verbose=FALSE)
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
-            clusterLabels(clustNothing,whichClusters="workflow")
-
+ 
             clustNothing2 <- clusterMany(se, ks=c(3,4),clusterFunction="pam",
                                             subsample=FALSE, sequential=FALSE,
                                             isCount=FALSE,verbose=FALSE)
