@@ -403,7 +403,7 @@ ce<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition
 clusterLegend(ce)[c("mergeClusters","combineMany")]
 ```
 
-Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. 
+Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to the distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the clusterLegend values).
 
 We can also force `plotClusters` to use the existing color definitions, rather than create its own. This makes particular sense if you want to have continuity between plots -- i.e. be sure that a particular cluster always has a certain color -- but would like to do different variations of plotClusters to get a sense of how similar the clusters are.
 

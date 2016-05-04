@@ -154,7 +154,7 @@ setMethod(
                                 transformation=transformation(x),
                                 clusterTypes="combineMany")
     #add "c" to name of cluster
-    newObj<-.addPrefixToClusterNames(newObj,prefix="c_",whCluster=1)
+    newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
     clusterLabels(newObj) <- "combineMany"
 
     if(!is.null(outlist$percentageShared)) {

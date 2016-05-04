@@ -158,7 +158,8 @@ setMethod(f = "mergeClusters",
       desc <- phylobase::descendants(phylo4Obj, node, type = c("all"))
       return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
     })
-    if(length(which(whToMerge)) > 0){
+    #browser()
+    if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
       nodesToMerge <- nodesBelowCutoff[whToMerge]
 
       #now find top ones
@@ -257,7 +258,7 @@ This makes sense only for counts.")
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters")
     #add "m" to name of cluster
-    newObj<-.addPrefixToClusterNames(newObj,prefix="m_",whCluster=1)
+    newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
