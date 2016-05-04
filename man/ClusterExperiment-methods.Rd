@@ -104,9 +104,6 @@
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
-
-\item{value}{character. A vector of length equal to
-\code{NCOL(clusterMatrix(object))}.}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
