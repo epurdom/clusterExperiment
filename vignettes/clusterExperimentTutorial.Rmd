@@ -395,12 +395,13 @@ plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","C
 
 `plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot. Similarly, if `resetNames=TRUE` the names of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore not consecutive integers, which is why these are saved as names for the clusters and not `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
 
-Here we make a call to plotClusters, but now ask to reset everything to match this ordering. 
+Here we make a call to plotClusters, but now ask to reset everything to match this ordering. We'll save this as a different object so that this is not a permanent change for the rest of the vignette.
+
 ```{r plotClusterEx1_setColors}
 par(mar=plotCMar)
-ce<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), 
+ce_temp<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), 
                main="Clusters from clusterMany, different order",axisLine=-1,resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
-clusterLegend(ce)[c("mergeClusters","combineMany")]
+clusterLegend(ce_temp)[c("mergeClusters","combineMany")]
 ```
 
 Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to the distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the clusterLegend values).
@@ -412,10 +413,10 @@ For example, I set the colors above based on the cluster order from `plotCluster
 ```{r plotClusterEx1_forceColors,fig.width=18,fig.height=6}
 par(mar=plotCMar)
 par(mfrow=c(1,2))
-plotClusters(ce, sampleData=c("Biological_Condition","Cluster2"), whichClusters="workflow", existingColors="all",
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Cluster2"), whichClusters="workflow", existingColors="all",
                main="Workflow Clusters, fix the color of clusters",axisLine=-1)
 
-plotClusters(ce, sampleData=c("Biological_Condition","Cluster2"), existingColors="all",
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Cluster2"), existingColors="all",
              whichClusters="clusterMany",
                main="clusterMany Clusters, fix the color of clusters",axisLine=-1)
 ```
@@ -579,7 +580,7 @@ We can compare to all of our other versions of `combineMany`. While they do not 
 ```{r combineMany_showDifferent}
 wh<-grep("combineMany",clusterTypes(ce))
 par(mar=plotCMar)
-plotClusters(ce,whichClusters=wh,axisLine=-1)
+plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 ```
 
 
