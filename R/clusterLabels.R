@@ -12,7 +12,7 @@
 # #' @param x,object a \code{\link{ClusterExperiment}} object.
 # #' @param whichClusters controls which labels to be returned. It is either
 # #'   numeric, in which case gives the indices of the clusters, or character, in
-# #'   which case it matches to \code{clusterType(x)} to find the indices of the
+# #'   which case it matches to \code{clusterTypes(x)} to find the indices of the
 # #'   clusters.
 # #'
 # #' @return A vector with the clustering labels.
@@ -28,7 +28,7 @@
 # #' clusterLabels(cl)
 # #' clusterLabels(cl, whichClusters=1:3)
 # #'
-# #' clusterType(cl)
+# #' clusterTypes(cl)
 # #' clusterLabels(cl, whichClusters="clusterMany")
 # #' @rdname clusterLabels
 # #' @export

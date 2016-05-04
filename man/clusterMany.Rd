@@ -106,17 +106,17 @@ indicated by the user input.}
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterType value,
+workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
-clusterType.}
+clusterTypes.}
 }
 \value{
 If \code{run=TRUE} and the input is either a matrix, a
   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
   will return a \code{ClusterExperiment} object, where the results are stored
-  as clusterings with clusterType \code{clusterMany}. Depending on
+  as clusterings with clusterTypes \code{clusterMany}. Depending on
   \code{eraseOld} argument above, this will either delete existing such
-  objects, or change the clusterType of existing objects. See argument
+  objects, or change the clusterTypes of existing objects. See argument
   \code{eraseOld} above. Arbitrarily the first clustering is set as the
   primaryClusteringIndex.
 

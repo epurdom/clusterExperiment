@@ -259,7 +259,7 @@ This makes sense only for counts.")
 
     newObj <- clusterExperiment(x, cl_labels,
                                 transformation=transformation(x),
-                                clusterType="mergeClusters")
+                                clusterTypes="mergeClusters")
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")

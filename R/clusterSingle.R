@@ -191,7 +191,7 @@ setMethod(
     retval <- clusterExperiment(origX, outlist$clustering,
                                 transformation=transFun,
                                 clusterInfo=clInfo,
-                                clusterType="clusterSingle")
+                                clusterTypes="clusterSingle")
     if(subsample & !sequential) {
       retval@coClustering<-finalClusterList$subsampleCocluster
     }
@@ -210,7 +210,7 @@ setMethod(
     retval <- clusterExperiment(x, primaryCluster(outval),
                                 transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
-    retval@clusterType <- clusterType(outval) #shouldn't this add to the end
+    retval@clusterTypes <- clusterTypes(outval) #shouldn't this add to the end
     retval<-.unnameClusterSlots(retval)
     return(retval)
   }
@@ -230,7 +230,7 @@ setMethod(
     ## for now, replacing it
     #     retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
     #     retval@clusterInfo <- clusterInfo(outval)
-    #     retval@clusterType <- clusterType(outval)
+    #     retval@clusterTypes <- clusterTypes(outval)
 
     ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
     retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first

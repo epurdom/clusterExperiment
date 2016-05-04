@@ -62,19 +62,19 @@ setMethod(
   signature = signature("ClusterExperiment"),
   definition = function(x) {
 
-    if(length(clusterType(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
+    if(length(clusterTypes(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
     #check if old iterations already exist; note assumes won't have previous iteration unless have current one.
     existingOld<-lapply(.workflowValues,function(ch){
       regex<-paste(ch,".",sep="")
-      grep(regex,clusterType(x))
+      grep(regex,clusterTypes(x))
 
     })
-    st<-strsplit(clusterType(x)[unlist(existingOld)],"[.]")
+    st<-strsplit(clusterTypes(x)[unlist(existingOld)],"[.]")
     oldValues<-data.frame(index=unlist(existingOld),type=sapply(st,.subset2,1),iteration=as.numeric(sapply(st,.subset2,2)),stringsAsFactors=FALSE)
 
-    wh<-which(clusterType(x) %in% .workflowValues) #current iteration
+    wh<-which(clusterTypes(x) %in% .workflowValues) #current iteration
     if(length(wh)>0){
-      existingValues<-data.frame(index=wh,type=clusterType(x)[wh], iteration=0,stringsAsFactors=FALSE) #0 indicates current iteration
+      existingValues<-data.frame(index=wh,type=clusterTypes(x)[wh], iteration=0,stringsAsFactors=FALSE) #0 indicates current iteration
       if(nrow(oldValues)>0) existingValues<-rbind(oldValues,existingValues)
     }
     else{
@@ -133,9 +133,9 @@ setMethod(
                   }
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
                     #browser()
-                    updateCluster<-clusterType(x)
+                    updateCluster<-clusterTypes(x)
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
-                    clusterType(newX)<-updateCluster    
+                    clusterTypes(newX)<-updateCluster    
                     updateLabel<-clusterLabels(x)
                     updateLabel[whFix]<-paste(updateLabel[whFix],newIteration,sep=".")
                     clusterLabels(newX)<-updateLabel    

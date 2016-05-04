@@ -50,7 +50,7 @@
 #'
 #' @return If x is a \code{\link{ClusterExperiment}}, a
 #'  \code{\link{ClusterExperiment}} object, with an added clustering of
-#'  clusterType equal to \code{combineMany} and the \code{percentageShared}
+#'  clusterTypes equal to \code{combineMany} and the \code{percentageShared}
 #'  matrix stored in the \code{coClustering} slot.
 #'
 #' @examples
@@ -156,7 +156,7 @@ setMethod(
 
     newObj <- clusterExperiment(x, cl_labels,
                                 transformation=transformation(x),
-                                clusterType="combineMany")
+                                clusterTypes="combineMany")
     clusterLabels(newObj) <- "combineMany"
 
     if(!is.null(outlist$percentageShared)) {

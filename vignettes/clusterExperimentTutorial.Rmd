@@ -191,7 +191,7 @@ To find a consensus cluster across the many different clusterings created by `cl
 ce<-combineMany(ce)
 ```
 
-Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those with `clusterType="clusterMany"` that we got in the previous step of the workflow. 
+Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those with `clusterTypes="clusterMany"` that we got in the previous step of the workflow. 
 
 If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of the functions in this package. Any clustering that is created is added to existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
 
@@ -316,10 +316,10 @@ Notice how some `extra` clusterings have snuck in, like `combineMany.1` because 
 head(clusterLabels(ce),10)
 ```
 
-`clusterType` on the otherhand indicates what call made the clustering. 
+`clusterTypes` on the otherhand indicates what call made the clustering. 
 
 ```{r CEHelperCommands3}
-head(clusterType(ce),10)
+head(clusterTypes(ce),10)
 ```
 
 The information that was in the original `fluidigm` object has also been preserved, like `colData` that contains information on each sample.
@@ -627,13 +627,13 @@ The commands we have shown above show a workflow which continually saves the res
 
 What happens if some parts of the clustering workflow are re-run? For example, in the above we reran parts of the workflow when we talked about them in more detail, or to experiment with parameter settings. 
 
-The workflow commands check for existing clusters of the workflow (based on the `clusterType` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterType value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
+The workflow commands check for existing clusters of the workflow (based on the `clusterTypes` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterTypes value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterType` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
+For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterTypes` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
 
 This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. 
 
-Note that there is nothing that governs or protects the `clusterType` values to be of a certain kind. This means that if the user decides to name a clusterType of a clustering one of these protected names, that is allowed.
+Note that there is nothing that governs or protects the `clusterTypes` values to be of a certain kind. This means that if the user decides to name a clusterTypes of a clustering one of these protected names, that is allowed.
 
 **Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany` and/or `mergeClusters`. `eraseOld=TRUE` will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
 
@@ -651,16 +651,16 @@ head(workflowClusterDetails(ce),8)
 ```
 
 
-**Designate a Final Clustering** A final protected clusterType is "final". This is not created by any method, but can be set as the clusterType of a clustering by the user (via the `clusterType` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with ".x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
+**Designate a Final Clustering** A final protected clusterTypes is "final". This is not created by any method, but can be set as the clusterTypes of a clustering by the user (via the `clusterTypes` command). Any clustering marked `final` will be be considered one of the workflow values for commands like `whichClusters="workflow"`. However, they will NOT be renamed with ".x" or removed if `eraseOld=TRUE`. This is a way for a user to 'save' a clustering as important/final so it will not be changed internally by any method, yet still have it show up with the "workflow" clustering results. There is no limit to the number of such clusters that are so marked, but the utility of doing so will drop if too many such clusters are chosen. 
 
 For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
 
 Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We see from our above call to the workflow functions above, that it is `mergeClusters.2`.
-Now we mark the "mergeClusters.2" version as the final one by changing it's clusterType manually to "final". 
+Now we mark the "mergeClusters.2" version as the final one by changing it's clusterTypes manually to "final". 
 
 ```{r markFinal}
-whFinal<-which(clusterType(ce)=="mergeClusters.2")
-clusterType(ce)[whFinal]<-"final"
+whFinal<-which(clusterTypes(ce)=="mergeClusters.2")
+clusterTypes(ce)[whFinal]<-"final"
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 ```
@@ -673,7 +673,7 @@ primaryClusterIndex(ce)<-whFinal
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 ```
 
-This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the"" mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterType to `mergeClusters.x` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
+This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the"" mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterTypes to `mergeClusters.x` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
 
 # Finding Features related to a Clustering {#getBestFeatures}
 

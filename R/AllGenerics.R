@@ -203,16 +203,16 @@ setGeneric(
 )
 
 setGeneric(
-  name = "clusterType",
+  name = "clusterTypes",
   def = function(x) {
-    standardGeneric("clusterType")
+    standardGeneric("clusterTypes")
   }
 )
 
 setGeneric(
-    name = "clusterType<-",
+    name = "clusterTypes<-",
     def = function(object,value) {
-        standardGeneric("clusterType<-")
+        standardGeneric("clusterTypes<-")
     }
 )
 

@@ -63,12 +63,12 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-     cat("Primary cluster type:", clusterType(object)[primaryClusterIndex(object)],"\n")
+     cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
     cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")
     cat("Table of clusters (of primary clustering):")
     print(table(primaryClusterNamed(object)))
     cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
-    typeTab<-names(table(clusterType(object)))
+    typeTab<-names(table(clusterTypes(object)))
     cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
     cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
     cat("makeDendrogram run?",if(!is.null(object@dendro_samples) & !is.null(object@dendro_clusters) ) "Yes" else "No","\n")
@@ -236,14 +236,14 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterType} returns/sets the clusterType slot.
+#' @return \code{clusterTypes} returns/sets the clusterTypes slot.
 #' @export
-#' @aliases clusterType
+#' @aliases clusterTypes
 setMethod(
-  f = "clusterType",
+  f = "clusterTypes",
   signature = "ClusterExperiment",
   definition = function(x) {
-    out<-x@clusterType
+    out<-x@clusterTypes
     #names(out)<-clusterLabels(x)
     return(out)
   }
@@ -344,12 +344,12 @@ setReplaceMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
-#' @aliases clusterType<-
+#' @aliases clusterTypes<-
 setReplaceMethod(
-    f = "clusterType",
+    f = "clusterTypes",
     signature = signature(object="ClusterExperiment", value="character"),
     definition = function(object,value) {
-        object@clusterType<-value
+        object@clusterTypes<-value
         object<-.unnameClusterSlots(object)
         validObject(object)
         return(object)
@@ -362,7 +362,7 @@ setReplaceMethod(
 #   f= "paramValues",
 #   signature = "ClusterExperiment",
 #   definition=function(x,type){
-#     whCC<-which(clusterType(x)==type)
+#     whCC<-which(clusterTypes(x)==type)
 #     if(length(wwCC)==0) stop("No clusterings of type equal to ",type,"are found")
 #     if(type=="clusterMany"){
 #       #recreate the paramMatrix return value

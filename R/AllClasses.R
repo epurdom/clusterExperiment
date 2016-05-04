@@ -40,7 +40,7 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
 #' found, a character string explaining what triggered the algorithm to stop.}
 #' }
-#' @slot clusterType character vector with the origin of each column of
+#' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
 #' @slot dendro_samples dendrogram. A dendrogram containing the cluster
 #' relationship (leaves are samples; see \code{\link{makeDendrogram}} for
@@ -77,7 +77,7 @@ setClass(
     clusterMatrix = "matrix",
     primaryIndex = "numeric",
     clusterInfo = "list",
-    clusterType = "character",
+    clusterTypes = "character",
     dendro_samples = "dendrogramOrNULL",
     dendro_clusters = "dendrogramOrNULL",
     coClustering = "matrix",
@@ -117,8 +117,8 @@ setValidity("ClusterExperiment", function(object) {
     return("`clusterMatrix` must be a numeric matrix.")
   }
 
-  if(NCOL(object@clusterMatrix)!= length(object@clusterType)) {
-    return("length of clusterType must be same as NCOL of the clusterMatrix")
+  if(NCOL(object@clusterMatrix)!= length(object@clusterTypes)) {
+    return("length of clusterTypes must be same as NCOL of the clusterMatrix")
   }
 
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
@@ -165,9 +165,9 @@ setValidity("ClusterExperiment", function(object) {
        object@primaryIndex < 1) {
       return("`primaryIndex` out of bounds.")
     }
-    #check clusterType
-    if(NCOL(object@clusterMatrix) != length(object@clusterType)) {
-      return("`clusterType` must be the same length as NCOL of
+    #check clusterTypes
+    if(NCOL(object@clusterMatrix) != length(object@clusterTypes)) {
+      return("`clusterTypes` must be the same length as NCOL of
                `clusterMatrix`.")
     }
     #check internally stored as integers
@@ -184,7 +184,7 @@ setValidity("ClusterExperiment", function(object) {
     ####
     if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
     if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
-    if(!is.null(names(object@clusterType))) return("clusterType should not have names")
+    if(!is.null(names(object@clusterTypes))) return("clusterTypes should not have names")
     if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
     if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
     ####
@@ -263,7 +263,7 @@ setValidity("ClusterExperiment", function(object) {
 #'@param transformation function. A function to transform the data before
 #'performing steps that assume normal-like data (i.e. constant variance), such
 #'as the log.
-#'@param ... The arguments \code{transformation}, \code{clusterType} and
+#'@param ... The arguments \code{transformation}, \code{clusterTypes} and
 #'  \code{clusterInfo} to be passed to the constructor for signature
 #'  \code{SummarizedExperiment,matrix}.
 #'
@@ -320,7 +320,7 @@ setMethod(
     clusterExperiment(se,clusters,...)
   })
 #' @rdname ClusterExperiment-class
-#' @param clusterType a string describing the nature of the clustering. The
+#' @param clusterTypes a string describing the nature of the clustering. The
 #' values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 #' reserved for the clustering coming from the package workflow and should not
 #' be used when creating a new object with the constructor.
@@ -328,20 +328,20 @@ setMethod(
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, transformation, clusterType="User",
+  definition = function(se, clusters, transformation, clusterTypes="User",
                         clusterInfo=NULL){
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
     }
-    if(length(clusterType)==1) {
-      clusterType <- rep(clusterType, length=NCOL(clusters))
+    if(length(clusterTypes)==1) {
+      clusterTypes <- rep(clusterTypes, length=NCOL(clusters))
     }
     if(is.null(clusterInfo)) {
       clusterInfo<-rep(list(NULL),length=NCOL(clusters))
     }
-    if(length(clusterType)!=NCOL(clusters)) {
-      stop("clusterType must be of length equal to number of clusters in
+    if(length(clusterTypes)!=NCOL(clusters)) {
+      stop("clusterTypes must be of length equal to number of clusters in
            `clusters`")
     }
     #fix up names of clusters and match
@@ -352,8 +352,8 @@ setMethod(
     if(any(duplicated(colnames(clusters)))){#probably not possible
       colnames(clusters)<-make.names(colnames(clusters),unique=TRUE)
     }
-    if(length(clusterType) == 1) {
-        clusterType <- rep(clusterType, length=NCOL(clusters))
+    if(length(clusterTypes) == 1) {
+        clusterTypes <- rep(clusterTypes, length=NCOL(clusters))
     }
     if(is.null(clusterInfo)) {
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
@@ -369,7 +369,7 @@ setMethod(
                transformation=transformation,
                clusterMatrix = clustersNum,
                primaryIndex = 1,
-               clusterType = unname(clusterType),
+               clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
@@ -388,7 +388,7 @@ setMethod(
 #                transformation=transformation,
 #                clusterMatrix = clustersNum,
 #                primaryIndex = 1,
-#                clusterType = unname(clusterType),
+#                clusterTypes = unname(clusterTypes),
 #                clusterInfo=unname(clusterInfo),
 #                clusterLegend=unname(clusterLegend),
 #                orderSamples=1:ncol(se),

@@ -629,7 +629,7 @@ setMethod(
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusterInfo(data),
-                              clusterType=clusterType(data)
+                              clusterTypes=clusterTypes(data)
     )
     clusterLegend(fakeCE)<-clusterLegend(data)
     orderSamples(fakeCE)<-orderSamples(data)

@@ -80,7 +80,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             
             ##########
             #addClusters
-            c1 <- addClusters(ccSE, rep(c(-1, 1, 2), each=5),clusterType="newUser")
+            c1 <- addClusters(ccSE, rep(c(-1, 1, 2), each=5),clusterTypes="newUser")
             ###Check retain SE info
             expect_equal(colData(c1),colData(se)) 
             expect_equal(rownames(c1),rownames(se)) 
@@ -89,7 +89,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(rowData(c1),rowData(se)) 
             #Other checks
             expect_equal(NCOL(clusterMatrix(c1)), nClusters(ccSE)+1)
-            expect_equal(unname(clusterType(c1)), unname(c(clusterType(ccSE),"newUser")))
+            expect_equal(unname(clusterTypes(c1)), unname(c(clusterTypes(ccSE),"newUser")))
             expect_equal(length(clusterInfo(c1)), nClusters(ccSE)+1)
             expect_equal(primaryCluster(c1), primaryCluster(ccSE))
             primaryClusterIndex(c1) <- 3
@@ -100,7 +100,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
             c3<-addClusters(ccSE,ccSE)
             expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
-            expect_equal(length(clusterType(c3)), nClusters(ccSE)*2)
+            expect_equal(length(clusterTypes(c3)), nClusters(ccSE)*2)
             expect_equal(length(clusterInfo(c3)), nClusters(ccSE)*2)
             expect_equal(primaryCluster(c3), primaryCluster(ccSE))
             ###Check retain SE info
@@ -117,10 +117,10 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
             
             ###check adding matrix of clusters
-            c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterType="New")
+            c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterTypes="New")
             newLeng<-nClusters(ccSE)+nClusters(smSimCE)
             expect_equal(NCOL(clusterMatrix(c4)), newLeng)
-            expect_equal(length(clusterType(c4)), newLeng)
+            expect_equal(length(clusterTypes(c4)), newLeng)
             expect_equal(length(clusterInfo(c4)), newLeng)
             expect_equal(primaryCluster(c4), primaryCluster(ccSE))
             ###Check retain SE info
@@ -156,7 +156,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             #single cluster
             c5<-removeClusters(c4,1)
             expect_equal(NCOL(clusterMatrix(c5)), nClusters(c4)-1)
-            expect_equal(length(clusterType(c5)), nClusters(c4)-1)
+            expect_equal(length(clusterTypes(c5)), nClusters(c4)-1)
             expect_equal(length(clusterInfo(c5)), nClusters(c4)-1)
             expect_equal(primaryCluster(c4), primaryCluster(removeClusters(c4,2)))
             ###Check retain SE info 
@@ -169,7 +169,7 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             #vector clusters
             c6<-removeClusters(c4,c(1,3))
             expect_equal(NCOL(clusterMatrix(c6)), nClusters(c4)-2)
-            expect_equal(length(clusterType(c6)), nClusters(c4)-2)
+            expect_equal(length(clusterTypes(c6)), nClusters(c4)-2)
             expect_equal(length(clusterInfo(c6)), nClusters(c4)-2)
             ###Check retain SE info 
             expect_equal(colData(c6),colData(se)) 
@@ -182,18 +182,18 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             
             c7<-removeClusters(c4,"User") #two have "user" label
             expect_equal(NCOL(clusterMatrix(c7)), nClusters(c4)-2)
-            expect_equal(length(clusterType(c7)), nClusters(c4)-2)
+            expect_equal(length(clusterTypes(c7)), nClusters(c4)-2)
             expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
 
             ##########
             #check workflow stuff
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterType=c("clusterMany","mergeClusters"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterTypes=c("clusterMany","mergeClusters"))
             expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),2))
 
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5)),clusterType=c("clusterMany"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5)),clusterTypes=c("clusterMany"))
             expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
 
-            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterType=c("clusterMany","mergeClusters.1"))
+            ppC<-addClusters(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterTypes=c("clusterMany","mergeClusters.1"))
             expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
             expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
             expect_null(workflowClusters(cc,iteration=NA))

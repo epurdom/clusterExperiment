@@ -13,7 +13,7 @@
 \alias{removeUnclustered,ClusterExperiment-method}
 \title{Functions to add/remove clusters to ClusterExperiment}
 \usage{
-\S4method{addClusters}{ClusterExperiment,matrix}(x, y, clusterType = "User")
+\S4method{addClusters}{ClusterExperiment,matrix}(x, y, clusterTypes = "User")
 
 \S4method{addClusters}{ClusterExperiment,ClusterExperiment}(x, y)
 
@@ -32,7 +32,7 @@
 \item{y}{additional clusters to add to x. Can be a ClusterExperiment object
 or a matrix/vector of clusters.}
 
-\item{clusterType}{a string describing the nature of the clustering. The
+\item{clusterTypes}{a string describing the nature of the clustering. The
 values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
@@ -41,10 +41,10 @@ be used when creating a new object with the constructor.}
 
 \item{whichRemove}{which clusters to remove. Can be numeric or character. If
 numeric, must give indices of \code{clusterMatrix(x)} to remove. If
-character, should match a \code{clusterType} of x.}
+character, should match a \code{clusterTypes} of x.}
 
 \item{exactMatch}{logical. Whether \code{whichRemove} must exactly match a
-value of \code{clusterType(x)}. Only relevant if whichRemove is character.}
+value of \code{clusterTypes(x)}. Only relevant if whichRemove is character.}
 }
 \value{
 A \code{\link{ClusterExperiment}} object with the added clusters.

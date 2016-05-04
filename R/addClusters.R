@@ -30,8 +30,8 @@
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "matrix"),
-  definition = function(x, y, clusterType="User") {
-    ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterType=clusterType)
+  definition = function(x, y, clusterTypes="User") {
+    ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes)
     addClusters(x,ccObj)
   }
 )
@@ -47,7 +47,7 @@ setMethod(
     }
     x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
     #browser()
-    x@clusterType <- c(x@clusterType, y@clusterType)
+    x@clusterTypes <- c(x@clusterTypes, y@clusterTypes)
     x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
     x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
     if(any(duplicated(colnames(x@clusterMatrix)))){
@@ -76,19 +76,19 @@ setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
   definition = function(x, whichRemove,exactMatch=TRUE) {
-    if(exactMatch) wh<-which(clusterType(x) %in% whichRemove)
+    if(exactMatch) wh<-which(clusterTypes(x) %in% whichRemove)
     else{
-      sapply(whichRemove,grep, clusterType(x))
+      sapply(whichRemove,grep, clusterTypes(x))
     }
     removeClusters(x,wh)
   }
 )
 
 #' @param exactMatch logical. Whether \code{whichRemove} must exactly match a
-#'   value of \code{clusterType(x)}. Only relevant if whichRemove is character.
+#'   value of \code{clusterTypes(x)}. Only relevant if whichRemove is character.
 #' @param whichRemove which clusters to remove. Can be numeric or character. If
 #'   numeric, must give indices of \code{clusterMatrix(x)} to remove. If
-#'   character, should match a \code{clusterType} of x.
+#'   character, should match a \code{clusterTypes} of x.
 #'
 #'@details \code{removeClusters} removes the clusters given by
 #'  \code{whichRemove}. If all clusters are implied, then returns a
@@ -110,7 +110,7 @@ setMethod(
     }
     newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove]
-    newClusterType<-clusterType(x)[-whichRemove]
+    newClusterType<-clusterTypes(x)[-whichRemove]
     newClusterColors<-clusterLegend(x)[-whichRemove]
     if(primaryClusterIndex(x) %in% whichRemove){
       pIndex<-1
@@ -126,7 +126,7 @@ setMethod(
       coMat<-x@coClustering
       orderSamples<-orderSamples(x)
     }
-    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),clusterType=newClusterType,clusterInfo<-newClusterInfo)
+    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),clusterTypes=newClusterType,clusterInfo<-newClusterInfo)
     retval@coClustering<-coMat
     validObject(retval)
     clusterLegend(retval)<-newClusterColors

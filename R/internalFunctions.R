@@ -2,7 +2,7 @@
   retval<-clusterExperiment(oldObj,
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
-                            clusterType=clusterType(newObj),
+                            clusterTypes=clusterTypes(newObj),
                             clusterInfo=clusterInfo(newObj))
   clusterLegend(retval)<-clusterLegend(newObj)
   orderSamples(retval)<-orderSamples(newObj)
@@ -32,7 +32,7 @@
 }
 
 .unnameClusterSlots<-function(ce){
-    names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterType)<-NULL
+    names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterTypes)<-NULL
     return(ce)
 }
 
@@ -121,7 +121,7 @@
     return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
-##Universal way to change character indication of clusterType into indices.
+##Universal way to change character indication of clusterTypes into indices.
 .TypeIntoIndices<-function(x,whClusters){
   test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster")),silent=TRUE)
   if(!inherits(test,"try-error")){
@@ -143,13 +143,13 @@
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
   }
   else{
-    if(!any(whClusters %in% clusterType(x))){
-      #warning("none of indicated clusters match a clusterType")
+    if(!any(whClusters %in% clusterTypes(x))){
+      #warning("none of indicated clusters match a clusterTypes")
       wh<-vector("integer",length=0)
     }
     else{
-      #if(!all(whClusters %in% clusterType(x))) warning("not all indicated clusters match a clusterType")
-      wh<-which(clusterType(x) %in% whClusters)
+      #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
+      wh<-which(clusterTypes(x) %in% whClusters)
     }
   }
   return(wh)
