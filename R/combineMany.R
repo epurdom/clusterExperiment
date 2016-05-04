@@ -144,7 +144,7 @@ setMethod(
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
     }
-
+    if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
@@ -179,7 +179,6 @@ setMethod(
   definition = function(x, whichClusters, ...){
 
     wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-
     combineMany(x, wh, ...)
   }
 )

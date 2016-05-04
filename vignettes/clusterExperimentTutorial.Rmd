@@ -97,7 +97,7 @@ While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because eac
 
 First, we filter out lowly expressed genes: We retain only those genes with at least 10 reads in at least 10 cells.
 
-```{r}
+```{r filter}
 se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
 wh_zero <- which(rowSums(assay(se))==0)
 pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
@@ -517,9 +517,9 @@ We can set `ncores` argument to have these clusterings done in parallel. If `nco
 
 We can now run this, either by giving the information in `checkParam$paramMatrix` to clusterMany argument `paramMatrix`, or by recalling the function from scratch. If the user has not changed `paramMatrix`, there's no advantage in giving `paramMatrix` to `clusterMany` rather than just recalling `clusterMany`, but we'll do it here just to show how it is done. 
 
-```{r clusterManyCheckParam2}
+```{r clusterManyCheckParam2,eval=FALSE}
 # ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, clusterDArgs=checkParam$clusterDArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
-ce<-clusterMany(se, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
+ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
 
 Note that we also provided in the above call the additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
@@ -541,7 +541,7 @@ plotCoClustering(ce)
 We can also manually choose the set of clusters to use with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features.
 
 ```{r combineMany_chooseClusters}
-wh<-grep("nVarFeatures",clusterLabels(ce))
+wh<-grep("nVar",clusterLabels(ce))
 ce<-combineMany(ce,whichCluster=wh,proportion=0.7)
 plotCoClustering(ce)
 ```
