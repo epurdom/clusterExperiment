@@ -96,8 +96,8 @@ test_that("`plotHeatmap` works with matrix objects", {
     sampleData<-clusterMatrix(smSimCE)
     alList<-plotClusters(sampleData)
     alCol<-alList$clusterLegend
-    x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
-    x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
+    x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
+    x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
 #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
 #    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 })
@@ -108,14 +108,14 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     plotHeatmap(cc,whichClusters="none")
     expect_warning(plotHeatmap(cc,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
 
-    plotHeatmap(smSimCE,whichClusters="workflow")
-    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE)
+    plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
+    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
     expect_error(plotHeatmap(smSimCE,whichClusters=1:15),"Indices in whichClusters invalid")
 
     #test sampleData
     expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
 
-    plotHeatmap(smSimCE,sampleData="all")
+    plotHeatmap(smSimCE,sampleData="all",overRideClusterLimit=TRUE)
     plotHeatmap(smSimCE,sampleData="A")
     plotHeatmap(smSimCE,sampleData=2:3)
 
