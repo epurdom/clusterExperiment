@@ -1,20 +1,21 @@
-Package: clusterCells
+Package: clusterExperiment
 Title: Compare clusterings for single-cell sequencing
-Version: 0.0.0.9006
+Version: 0.1.0
 Description: This package provides functions for running and comparing many
     different clusterings of single-cell sequencing data.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
             role = c("aut", "cre", "cph")),
-	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com",))
-Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
+	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com"),
+	     person("Marla", "Johnson", role = "ctb"))
+Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut], Marla Johnson [ctb]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
-BugReports: https://github.com/epurdom/clusterCells/issues
+BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 2.10),
-    Biobase
+    R (>= 3.3),
+    methods,
+    SummarizedExperiment
 Imports:
-    BiocGenerics,
     NMF,
     RColorBrewer,
     ape,
@@ -23,12 +24,18 @@ Imports:
     stats,
     limma,
     dendextend,
-	howmany,
-	locfdr
+    howmany,
+    locfdr,
+    matrixStats,
+    graphics,
+    parallel
 Suggests:
+    BiocStyle,
     knitr,
     rmarkdown,
-    diagram
+    diagram,
+    testthat
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 5.0.1
+biocViews: Clustering, RNASeq, Sequencing, Software
