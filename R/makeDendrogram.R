@@ -16,6 +16,9 @@
 #' dimensionality reduction to perform before clustering.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #' in the reduction specified by \code{dimReduce}.
+#' @param whichCluster an integer index or character string that identifies
+#'   which cluster should be used to make the dendrogram. Default is
+#'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to \code{plot}.
@@ -60,10 +63,13 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, dimReduce=c("none", "PCA", "mostVar"),
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "mostVar"),
                         ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
+    whCl<-.TypeIntoIndices(x,whClusters=whichCluster)
+    if(length(whCl)!=1) stop("invalid value for 'whichCluster'. Returns",length(whCl),"clusterings. 'whichCluster' must identify only a single clustering.")
+    cl<-clusterMatrix(x)[,whCl]
     ########
     ##Transform the data
     ########
@@ -83,9 +89,10 @@ setMethod(
     if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
-    outlist <- makeDendrogram(x=dat, cluster=primaryCluster(x),unassignedSamples=unassignedSamples, ...)
+    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
+    x@dendro_index<-whCl
     validObject(x)
     return(x)
   })

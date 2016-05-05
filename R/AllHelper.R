@@ -203,8 +203,6 @@ setReplaceMethod(
   signature = signature("ClusterExperiment", "numeric"),
   definition = function(object, value) {
     object@primaryIndex <- value
-    object@dendro_samples<-NULL
-    object@dendro_clusters<-NULL
     validObject(object)
     return(object)
   }

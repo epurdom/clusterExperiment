@@ -48,6 +48,8 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @slot dendro_clusters dendrogram. A dendrogram containing the cluster
 #' relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 #' details).
+#' @slot dendro_index numeric. An integer giving the cluster that was used to
+#'   make the dendrograms. NA_real_ value if no dendrograms are saved.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
@@ -80,6 +82,7 @@ setClass(
     clusterTypes = "character",
     dendro_samples = "dendrogramOrNULL",
     dendro_clusters = "dendrogramOrNULL",
+    dendro_index = "numeric",
     coClustering = "matrix",
     clusterLegend="list",
     orderSamples="numeric"
@@ -125,12 +128,6 @@ setValidity("ClusterExperiment", function(object) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
 
-  # now have assigned class to slot and constructor creates one automatically
-  #   if(length(object@dendrogram) > 0) {
-  #     if(class(object@dendrogram) != "dendrogram") {
-  #       return("`dendrogram` must be of class dendrogram.")
-  #     }
-  #   }
   ##Check dendrograms
   if(!is.null(object@dendro_samples)){
     if(nobs(object@dendro_samples) != NCOL(object)) {
@@ -141,8 +138,10 @@ setValidity("ClusterExperiment", function(object) {
     if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
   }
   if(!is.null(object@dendro_clusters)){
-    if(nobs(object@dendro_clusters) != max(primaryCluster(object))) {
-      return("dendro_clusters must have the same number of leaves as the number of clusters")
+    if(is.na(object@dendro_index)) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
+    dcluster<-clusterMatrix(object)[,object@dendro_index]
+    if(nobs(object@dendro_clusters) != max(dcluster)) {
+      return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
     }
   }
   else{
@@ -374,24 +373,9 @@ setMethod(
                clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
                dendro_samples=NULL,
-               dendro_clusters=NULL
+               dendro_clusters=NULL,
+               dendro_index=NA_real_
     )
     validObject(out)
     return(out)
   })
-
-#old code:
-#     out <- new("ClusterExperiment",
-#                assays = Assays(assays(se)), #losing rownames here...
-#                elementMetadata = mcols(se),
-#                colData = colData(se),
-#                transformation=transformation,
-#                clusterMatrix = clustersNum,
-#                primaryIndex = 1,
-#                clusterTypes = unname(clusterTypes),
-#                clusterInfo=unname(clusterInfo),
-#                clusterLegend=unname(clusterLegend),
-#                orderSamples=1:ncol(se),
-#                dendro_samples=NULL,
-#                dendro_clusters=NULL
-#     )
