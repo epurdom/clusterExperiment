@@ -112,6 +112,9 @@ details).}
 relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 details).}
 
+\item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
+make the dendrograms. NA_real_ value if no dendrograms are saved.}
+
 \item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering
 across parameter sets (see \code{clusterMany}). The matrix is a square matrix

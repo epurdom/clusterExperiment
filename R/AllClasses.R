@@ -298,8 +298,7 @@ setMethod(
   signature = signature("SummarizedExperiment", "numeric"),
   definition = function(se, clusters, ...){
     if(NCOL(se) != length(clusters)) {
-      stop("`clusters` must be a vector of length equal to the number of
-           samples.")
+      stop("`clusters` must be a vector of length equal to the number of samples.")
     }
   clusterExperiment(se,matrix(clusters, ncol=1),...)
 })

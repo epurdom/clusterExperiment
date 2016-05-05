@@ -9,8 +9,9 @@
 \alias{plotDendrogram,ClusterExperiment-method}
 \title{Make hierarchy of set of clusters}
 \usage{
-\S4method{makeDendrogram}{ClusterExperiment}(x, dimReduce = c("none", "PCA",
-  "mostVar"), ndims = NA, unassignedSamples = c("outgroup", "cluster"), ...)
+\S4method{makeDendrogram}{ClusterExperiment}(x,
+  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "mostVar"),
+  ndims = NA, unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
@@ -21,6 +22,10 @@
 \arguments{
 \item{x}{data to define the medoids from. Matrix and
 \code{\link{ClusterExperiment}} supported.}
+
+\item{whichCluster}{an integer index or character string that identifies
+which cluster should be used to make the dendrogram. Default is
+primaryCluster.}
 
 \item{dimReduce}{character A character identifying what type of
 dimensionality reduction to perform before clustering.}
