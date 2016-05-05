@@ -3,6 +3,19 @@ Changes in version 0.1.0 (Release date: 2014-08-18)
 
 Changes:
 
+* allow 'whichCluster'/'whichClusters' arguments to match to clusterLabels, not just clusterTypes
+* add slot 'dendro_index' 
+* add 'whichCluster' argument to `makeDendrogram`
+* add 'hierarchicalK' clustering
+* add default distance for 0-1 clustering
+* add ability to define distance for clustering
+
+
+Changes in version 0.1.0 (Release date: 2014-08-18)
+==============
+
+Changes:
+
 * Conversion to S4 language for bioConductor submission
 * All previous functions have been overhauled, renamed, etc.
 

@@ -38,3 +38,25 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
   expect_equal(rowData(dend),rowData(se))
 
 })
+
+test_that("`makeDendrogram` works with whichCluster", {
+    x1<-makeDendrogram(ccSE,whichCluster="Cluster2")
+    x2<-makeDendrogram(ccSE,whichCluster=2)
+    expect_equal(x1,x2)
+    
+    bigCE<-ccSE
+    bigCE<-makeDendrogram(bigCE,whichCluster="Cluster2")
+    
+    #check clusterMany updates dendrogram correctly
+    bigCE<-clusterMany(bigCE,k=2:8,clusterFunction="hierarchicalK")
+    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
+    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
+    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    expect_error(makeDendrogram(bigCE,whichCluster="workflow"),"'whichCluster' must identify only a single clustering")
+ 
+    #check combineMany updates dendrogram correctly
+    
+    
+    #check mergeClusters updates dendrogram correctly
+    
+})

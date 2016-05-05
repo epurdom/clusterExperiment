@@ -67,8 +67,10 @@ setMethod(
                         ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
-    whCl<-.TypeIntoIndices(x,whClusters=whichCluster)
-    if(length(whCl)!=1) stop("invalid value for 'whichCluster'. Returns",length(whCl),"clusterings. 'whichCluster' must identify only a single clustering.")
+    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
+    if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+#    browser()
     cl<-clusterMatrix(x)[,whCl]
     ########
     ##Transform the data

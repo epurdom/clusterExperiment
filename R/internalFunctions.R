@@ -6,15 +6,33 @@
     return(ceObj)
 }
 
+.addNewResult<-function(newObj,oldObj){
+    retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
+    #erases dendrogram so need to put it back
+    if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
+        retval@dendro_samples<-oldObj@dendro_samples
+        retval@dendro_clusters<-oldObj@dendro_clusters
+        retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+    }
+    #put back orderSamples, coClustering
+    retval@orderSamples<-oldObj@orderSamples
+    if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
+    validObject(retval)
+    return(retval)
+}
+
 .addBackSEInfo<-function(newObj,oldObj){
   retval<-clusterExperiment(oldObj,
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusterInfo(newObj))
+                            clusterInfo=clusterInfo(newObj),
+                            orderSamples=orderSamples(newObj),
+                            coClustering=coClustering(newObj),
+                            dendro_samples=newObj@dendro_samples,
+                            dendro_clusters=newObj@dendro_clusters,
+                            dendro_index=newObj@dendro_index)
   clusterLegend(retval)<-clusterLegend(newObj)
-  orderSamples(retval)<-orderSamples(newObj)
-  coClustering(retval)<-coClustering(newObj)
   return(retval)
 }
 .pullSampleData<-function(ce,wh){
@@ -152,8 +170,10 @@
   }
   else{
     if(!any(whClusters %in% clusterTypes(x))){
-      #warning("none of indicated clusters match a clusterTypes")
-      wh<-vector("integer",length=0)
+        if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
+        else{
+            wh<-which(clusterLabels(x) %in% whClusters)
+        }
     }
     else{
       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")

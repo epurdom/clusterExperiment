@@ -67,7 +67,7 @@ test_that("`clusterMany` works changing parameters", {
   #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
   #             expect_equal(cc,cc2)
   
-  #check giving distance
+  #check giving distance -- problem because grab from global environment
   dist1<-function(x){dist(x,method="manhattan")}
   cc <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                     distFunction=c("dist1","dist",NA),

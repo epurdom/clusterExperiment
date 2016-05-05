@@ -1,5 +1,6 @@
 setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
+setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -83,7 +84,7 @@ setClass(
     dendro_samples = "dendrogramOrNULL",
     dendro_clusters = "dendrogramOrNULL",
     dendro_index = "numeric",
-    coClustering = "matrix",
+    coClustering = "matrixOrNULL",
     clusterLegend="list",
     orderSamples="numeric"
     )
@@ -147,8 +148,7 @@ setValidity("ClusterExperiment", function(object) {
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
   }
-
-  if(!all(is.na(object@coClustering)>0) &
+  if(!is.null(object@coClustering) &&
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
@@ -326,8 +326,17 @@ setMethod(
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, transformation, clusterTypes="User",
-                        clusterInfo=NULL){
+  definition = function(se, clusters, 
+            transformation, 
+            primaryIndex=1,
+            clusterTypes="User",
+            clusterInfo=NULL,
+            orderSamples=1:ncol(se),
+            dendro_samples=NULL,
+            dendro_index=NA_real_,
+            dendro_clusters=NULL,
+            coClustering=NULL
+            ){
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
@@ -366,14 +375,15 @@ setMethod(
                se,
                transformation=transformation,
                clusterMatrix = clustersNum,
-               primaryIndex = 1,
+               primaryIndex = primaryIndex,
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
-               dendro_samples=NULL,
-               dendro_clusters=NULL,
-               dendro_index=NA_real_
+               dendro_samples=dendro_samples,
+               dendro_clusters=dendro_clusters,
+               dendro_index=dendro_index,
+               coClustering=coClustering
     )
     validObject(out)
     return(out)

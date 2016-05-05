@@ -75,6 +75,9 @@
 #'   the user via the clusterDArgs; note this means that the default option of
 #'   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
 #'   not available in clusterMany.
+#' @details If the input is a \code{ClusterExperiment} object, currently
+#'   existing \code{orderSamples},\code{coClustering} or dendrogram slots will
+#'   be retained.
 #' @return If \code{run=TRUE} and the input is either a matrix, a
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
 #'   will return a \code{ClusterExperiment} object, where the results are stored
@@ -411,15 +414,12 @@ setMethod(
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
       outval<-.addBackSEInfo(newObj=outval,oldObj=x)
-
       ##Check if clusterMany already ran previously
-      ###ToDo: check what happens if the only clusters existing are workflow clusters
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
-      if(!is.null(x)) retval<-addClusters(outval,x)
+     
+      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep. 
       else retval<-outval
       validObject(retval)
-
-
       return(retval)
     } else {
       return(outval)
