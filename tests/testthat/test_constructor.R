@@ -96,7 +96,6 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
 
             ####check adding a clusterExperiment to existing CE
-            expect_error(addClusters(ccSE,ceSim),"non-conformable arrays") #dims of assays don't match
             expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
             c3<-addClusters(ccSE,ccSE)
             expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
@@ -117,8 +116,8 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
             
             ###check adding matrix of clusters
-            c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterTypes="New")
-            newLeng<-nClusters(ccSE)+nClusters(smSimCE)
+            c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
+            newLeng<-2*nClusters(ccSE)
             expect_equal(NCOL(clusterMatrix(c4)), newLeng)
             expect_equal(length(clusterTypes(c4)), newLeng)
             expect_equal(length(clusterInfo(c4)), newLeng)
@@ -204,9 +203,9 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             clusterLegend(cc)<-x
             clusterLegend(c4)[1:2]<-x[1:2]
             clusterLegend(c4)[[1]]<-x[[1]]
-
-            expect_error(clusterLegend(c4)[3]<-x[1],"each element of `clusterLegend` must be matrix with")
-            expect_error(clusterLegend(c4)[[3]]<-x[[1]],"must be matrix with")
+#add wrong dimensions:
+            expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
+            expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
             
         })
 test_that("accessing transformed data works as promised",

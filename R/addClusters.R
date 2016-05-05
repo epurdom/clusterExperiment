@@ -42,7 +42,7 @@ setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "ClusterExperiment"),
   definition = function(x, y) {
-    if(!all(assay(y) == assay(x))) {
+    if(!all(dim(assay(y)) == dim(assay(x))) || !all(assay(y) == assay(x))) {
       stop("Cannot merge clusters from different data.")
     }
     x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
