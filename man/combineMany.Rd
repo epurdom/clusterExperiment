@@ -42,9 +42,9 @@ a cluster because of shared clustering, passed to \code{\link{clusterD}}}
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterType value,
+workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
-clusterType.}
+clusterTypes.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix,missing}.}
@@ -65,7 +65,7 @@ If x is a matrix, a list with values
 
 If x is a \code{\link{ClusterExperiment}}, a
  \code{\link{ClusterExperiment}} object, with an added clustering of
- clusterType equal to \code{combineMany} and the \code{percentageShared}
+ clusterTypes equal to \code{combineMany} and the \code{percentageShared}
  matrix stored in the \code{coClustering} slot.
 }
 \description{

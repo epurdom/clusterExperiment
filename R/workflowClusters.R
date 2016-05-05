@@ -62,26 +62,30 @@ setMethod(
   signature = signature("ClusterExperiment"),
   definition = function(x) {
 
-    if(length(clusterType(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
+    if(length(clusterTypes(x))!=NCOL(clusterMatrix(x))) stop("Invalid ClusterExperiment object")
     #check if old iterations already exist; note assumes won't have previous iteration unless have current one.
     existingOld<-lapply(.workflowValues,function(ch){
       regex<-paste(ch,".",sep="")
-      grep(regex,clusterType(x))
+      grep(regex,clusterTypes(x))
 
     })
-    st<-strsplit(clusterType(x)[unlist(existingOld)],"[.]")
+    st<-strsplit(clusterTypes(x)[unlist(existingOld)],"[.]")
     oldValues<-data.frame(index=unlist(existingOld),type=sapply(st,.subset2,1),iteration=as.numeric(sapply(st,.subset2,2)),stringsAsFactors=FALSE)
 
-    wh<-which(clusterType(x) %in% .workflowValues) #current iteration
+    wh<-which(clusterTypes(x) %in% .workflowValues) #current iteration
     if(length(wh)>0){
-      existingValues<-data.frame(index=wh,type=clusterType(x)[wh], iteration=0,stringsAsFactors=FALSE) #0 indicates current iteration
+      existingValues<-data.frame(index=wh,type=clusterTypes(x)[wh], iteration=0,stringsAsFactors=FALSE) #0 indicates current iteration
       if(nrow(oldValues)>0) existingValues<-rbind(oldValues,existingValues)
     }
     else{
       if(nrow(oldValues)>0) existingValues<-oldValues
       else   return(NULL)
     }
-
+    if(nrow(existingValues)>0){ #just to make sure
+        existingValues$label=clusterLabels(x)[existingValues$index]
+        existingValues<-existingValues[order(existingValues$index),]
+    }
+    rownames(existingValues)<-NULL
     return(existingValues)
 
   }
@@ -132,9 +136,18 @@ setMethod(
                     if(maxUpstream>newIteration) newIteration<-maxUpstream
                   }
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
-                    updateCluster<-clusterType(x)
+                    #browser()
+                    updateCluster<-clusterTypes(x)
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
-                    newX@clusterType<-updateCluster          
+                    clusterTypes(newX)<-updateCluster    
+                    updateLabel<-clusterLabels(x)
+                    if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those that haven't been manually fixed by the user
+                        whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
+                        updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+                        clusterLabels(newX)<-updateLabel    
+                        
+                    }
+                    
                 }
             }
         }

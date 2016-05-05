@@ -15,6 +15,7 @@ test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", 
   x2<-clusterContrasts(ccSE,contrastType="Dendro")
   expect_equal(x1,x2)
 })
+
 test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
   cl <- clusterMany(simData, ks=c(3,4),clusterFunction="pam",

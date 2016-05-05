@@ -4,11 +4,10 @@
 #' \code{\link{ClusterExperiment}} object, this function will find clusters,
 #' based on a single specification of parameters.
 #'
-#' @param x the data on which to run the clustering (features in rows).
-#' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
-#'   iteration; otherwise the distance function will be determined by argument
-#'   \code{distFunction} passed in \code{clusterDArgs}.
+#' @param x the data on which to run the clustering (genes in rows).
+#' @param subsample logical as to whether to subsample via
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each
+#'   iteration; otherwise the distance matrix is dist(x).
 #' @param sequential logical whether to use the sequential strategy (see
 #'   Details).
 #' @param clusterFunction passed to \code{\link{clusterD}} option
@@ -70,7 +69,7 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
+      clusterFunction=c("tight", "hierarchical01", "pam","kmeans"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
       ndims=NA) {
@@ -103,8 +102,8 @@ setMethod(
     ##########
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
-#       if(!subsample & clusterFunction !="pam")
-#         stop("If not subsampling, clusterFunction must be 'pam'")
+      if(!subsample & clusterFunction !="pam")
+        stop("If not subsampling, clusterFunction must be 'pam'")
       typeAlg <- .checkAlgType(clusterFunction)
     }
     else{
@@ -121,6 +120,7 @@ setMethod(
                'findBestK=TRUE' is passed via clusterDArgs.
                See help documentation.")
       }
+
     }
     if(sequential){
       if(is.null(seqArgs)) {
@@ -130,7 +130,7 @@ setMethod(
         stop("seqArgs must contain element 'k0'")
       }
       outlist <- do.call("seqCluster",
-                        c(list(x=x, subsample=subsample,
+                        c(list(x=t(x), subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs,
                                clusterFunction=clusterFunction), seqArgs))
@@ -165,7 +165,7 @@ setMethod(
       ##########
       ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
       ##########
-      finalClusterList <- .clusterWrapper(x, clusterFunction=clusterFunction,
+      finalClusterList <- .clusterWrapper(t(x), clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,
@@ -191,7 +191,7 @@ setMethod(
     retval <- clusterExperiment(origX, outlist$clustering,
                                 transformation=transFun,
                                 clusterInfo=clInfo,
-                                clusterType="clusterSingle")
+                                clusterTypes="clusterSingle")
     if(subsample & !sequential) {
       retval@coClustering<-finalClusterList$subsampleCocluster
     }
@@ -210,7 +210,7 @@ setMethod(
     retval <- clusterExperiment(x, primaryCluster(outval),
                                 transformation(outval))
     retval@clusterInfo <- clusterInfo(outval)
-    retval@clusterType <- clusterType(outval) #shouldn't this add to the end
+    retval@clusterTypes <- clusterTypes(outval) #shouldn't this add to the end
     retval<-.unnameClusterSlots(retval)
     return(retval)
   }
@@ -230,7 +230,7 @@ setMethod(
     ## for now, replacing it
     #     retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
     #     retval@clusterInfo <- clusterInfo(outval)
-    #     retval@clusterType <- clusterType(outval)
+    #     retval@clusterTypes <- clusterTypes(outval)
 
     ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
     retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first

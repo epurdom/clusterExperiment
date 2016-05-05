@@ -22,7 +22,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="mergeMethod"),"can only plot merge method values if one method is selected")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="none")
   
-  expect_true("mergeClusters" %in% clusterType(clustMerged))
+  expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
   expect_warning(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
@@ -36,9 +36,9 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   primaryClusterIndex(clustMerged)<-2
   clustMerged<- makeDendrogram(clustMerged)
   clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
-  expect_true("mergeClusters.1" %in% clusterType(clustMerged2))
-  expect_true(!"combineMany.1" %in% clusterType(clustMerged2))
-  expect_true(!"clusterMany.1" %in% clusterType(clustMerged2))
+  expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
+  expect_true(!"combineMany.1" %in% clusterTypes(clustMerged2))
+  expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
 })
 
 test_that("`mergeClusters` preserves the colData and rowData of SE", {

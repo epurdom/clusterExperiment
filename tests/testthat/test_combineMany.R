@@ -34,7 +34,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
                                           proportion=.5,
                                           clusterFunction="pam"), "implemented")
 
-            expect_true("combineMany" %in% clusterType(shared6))
+            expect_true("combineMany" %in% clusterTypes(shared6))
             expect_true("combineMany" %in% clusterLabels(shared6))
             expect_true(all(primaryCluster(shared6)==clusterMatrix(shared6)[,"combineMany"]))
 })
@@ -46,14 +46,14 @@ test_that("`combineMany` works when multiple runs of workflow", {
 
   shared1 <- combineMany(clustNothing, "all")
   shared2<-combineMany(shared1,"all")
-  expect_true("combineMany.1" %in% clusterType(shared2))
+  expect_true("combineMany.1" %in% clusterTypes(shared2))
 
   clustNothing2 <- clusterMany(shared2, ks=c(5,6), clusterFunction="pam",
                                subsample=FALSE, sequential=FALSE,
                                isCount=FALSE,verbose=FALSE)
-  expect_true("combineMany.1" %in% clusterType(clustNothing2))
-  expect_true("clusterMany.2" %in% clusterType(clustNothing2))
-  expect_true("combineMany.2" %in% clusterType(clustNothing2))
+  expect_true("combineMany.1" %in% clusterTypes(clustNothing2))
+  expect_true("clusterMany.2" %in% clusterTypes(clustNothing2))
+  expect_true("combineMany.2" %in% clusterTypes(clustNothing2))
 
   shared3 <- combineMany(clustNothing2, "all")
   shared4 <- combineMany(clusterMatrix(clustNothing2))

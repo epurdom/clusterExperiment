@@ -35,7 +35,7 @@ their order influences the plot greatly.}
 \item{whichClusters}{If numeric, a predefined order for the clusterings in
 the plot. If x is a \code{\link{ClusterExperiment}} object,
 \code{whichClusters} can be a character value identifying the
-\code{clusterTypes} to be used; alternatively \code{whichClusters}
+\code{clusterTypess} to be used; alternatively \code{whichClusters}
 can be either 'all' or 'workflow' to indicate choosing all clusters or
 choosing all \code{\link{workflowClusters}}.}
 

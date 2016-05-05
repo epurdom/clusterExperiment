@@ -14,7 +14,7 @@
 
 \S4method{clusterMany}{list}(x, ks, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, verbose = FALSE,
+  subsample = FALSE, silCutoff = 0, verbose = FALSE,
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
   random.seed = NULL, run = TRUE, ...)
@@ -60,15 +60,7 @@ choices).}
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{clusterSingle}, this must be a character vector of pre-defined
 clustering techniques provided by the package, and can not be a
-user-defined function.
-@param distFunction a vector of character strings that are the names of
-  distance functions found in the global environment. See the help pages of
-  \code{\link{clusterD}} for details about the required format of distance
-  functions. Currently, this distance function must be applicable for all
-  clusterFunction types. Therefore, it is not possible to intermix type "K"
-  and type "01" algorithms if you also give distances to evaluate unless
-  all distances give 0-1 values for the distance (and hence are possible
-  for both type "01" and "K" algorithms).}
+user-defined function.}
 
 \item{alphas}{values of alpha to be tried. Only used for
 subsampleclusterFunction either 'tight' or 'hierarchical'.}
@@ -81,16 +73,12 @@ Details).}
 
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff}
 
-\item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
-iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs}.}
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
+iteration; otherwise the distance matrix is dist(x).}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
-
-\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input \code{D} is a matrix of data, rather than a distance. See details.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
@@ -118,17 +106,17 @@ indicated by the user input.}
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterType value,
+workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
-clusterType.}
+clusterTypes.}
 }
 \value{
 If \code{run=TRUE} and the input is either a matrix, a
   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
   will return a \code{ClusterExperiment} object, where the results are stored
-  as clusterings with clusterType \code{clusterMany}. Depending on
+  as clusterings with clusterTypes \code{clusterMany}. Depending on
   \code{eraseOld} argument above, this will either delete existing such
-  objects, or change the clusterType of existing objects. See argument
+  objects, or change the clusterTypes of existing objects. See argument
   \code{eraseOld} above. Arbitrarily the first clustering is set as the
   primaryClusteringIndex.
 

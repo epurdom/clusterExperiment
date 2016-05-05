@@ -158,7 +158,8 @@ setMethod(f = "mergeClusters",
       desc <- phylobase::descendants(phylo4Obj, node, type = c("all"))
       return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
     })
-    if(length(whToMerge) > 0){
+    #browser()
+    if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
       nodesToMerge <- nodesBelowCutoff[whToMerge]
 
       #now find top ones
@@ -166,6 +167,7 @@ setMethod(f = "mergeClusters",
         anc <- phylobase::ancestors(phylo4Obj, node, type="all")
         return(!any(names(anc) %in% nodesToMerge))
       })
+     # browser()
       nodesAtTop <- nodesToMerge[whAnc]
 
       #make new clusters
@@ -248,18 +250,15 @@ This makes sense only for counts.")
                                           dendro=x@dendro_clusters,
                                           isCount=TRUE,mergeMethod=mergeMethod, ...)
   }
-  if(mergeMethod!="none"){
-    #only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+  if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+    #----
     #add "m" to name of cluster
-    idx <- which(outlist$clustering>0)
-    cl <- as.numeric(as.factor(outlist$clustering[idx]))
-    cl <- paste("m", cl, sep="")
-    cl_labels <- as.character(outlist$clustering)
-    cl_labels[idx] <- cl
-
-    newObj <- clusterExperiment(x, cl_labels,
+    #----
+    newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterType="mergeClusters")
+                                clusterTypes="mergeClusters")
+    #add "m" to name of cluster
+    newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- "mergeClusters"
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")

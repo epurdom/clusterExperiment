@@ -6,6 +6,10 @@
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
 \alias{clusterInfo}
 \alias{clusterInfo,ClusterExperiment-method}
+\alias{clusterLabels}
+\alias{clusterLabels,ClusterExperiment-method}
+\alias{clusterLabels<-}
+\alias{clusterLabels<-,ClusterExperiment,character-method}
 \alias{clusterLegend}
 \alias{clusterLegend,ClusterExperiment-method}
 \alias{clusterLegend<-}
@@ -14,10 +18,10 @@
 \alias{clusterMatrix,ClusterExperiment-method}
 \alias{clusterMatrixNamed}
 \alias{clusterMatrixNamed,ClusterExperiment-method}
-\alias{clusterType}
-\alias{clusterType,ClusterExperiment-method}
-\alias{clusterType<-}
-\alias{clusterType<-,ClusterExperiment,character-method}
+\alias{clusterTypes}
+\alias{clusterTypes,ClusterExperiment-method}
+\alias{clusterTypes<-}
+\alias{clusterTypes<-,ClusterExperiment,character-method}
 \alias{coClustering}
 \alias{coClustering,ClusterExperiment-method}
 \alias{coClustering<-}
@@ -73,9 +77,13 @@
 
 \S4method{coClustering}{ClusterExperiment,matrix}(object) <- value
 
-\S4method{clusterType}{ClusterExperiment}(x)
+\S4method{clusterTypes}{ClusterExperiment}(x)
 
 \S4method{clusterInfo}{ClusterExperiment}(x)
+
+\S4method{clusterLabels}{ClusterExperiment}(x)
+
+\S4method{clusterLabels}{ClusterExperiment,character}(object) <- value
 
 \S4method{clusterLegend}{ClusterExperiment}(x)
 
@@ -85,7 +93,7 @@
 
 \S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
 
-\S4method{clusterType}{ClusterExperiment,character}(object) <- value
+\S4method{clusterTypes}{ClusterExperiment,character}(object) <- value
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -122,9 +130,11 @@ clusterMatrix).
 
 \code{coClustering} returns/sets the co-clustering matrix.
 
-\code{clusterType} returns/sets the clusterType slot.
+\code{clusterTypes} returns/sets the clusterTypes slot.
 
 \code{clusterInfo} returns the clusterInfo slot.
+
+\code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
 

@@ -52,9 +52,9 @@ signature \code{matrix}.}
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterType value,
+workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
-clusterType.}
+clusterTypes.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements

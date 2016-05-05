@@ -58,7 +58,7 @@ seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,me
 
 test<- clusterMany(simCount,dimReduce="PCA",nPCADims=c(5,10,50), isCount=TRUE,
                          clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
-test<-addClusters(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterType="User")
+test<-addClusters(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
 clMatNew<-apply(clusterMatrix(test),2,function(x){
     wh<-sample(1:nSamples(test),size=10)
     x[wh]<- -1
@@ -68,7 +68,7 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
 })
 #make a new object with -1 values
 ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
-clusterType(ceSim)<-clusterType(test)
+clusterTypes(ceSim)<-clusterTypes(test)
 rm(test)
 #################################
 ###small object based on simData/simCount (same size as trivial data)

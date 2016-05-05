@@ -23,7 +23,7 @@ clusterExperiment(se, clusters, ...)
 \S4method{clusterExperiment}{SummarizedExperiment,factor}(se, clusters, ...)
 
 \S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
-  transformation, clusterType = "User", clusterInfo = NULL)
+  transformation, clusterTypes = "User", clusterInfo = NULL)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
@@ -32,7 +32,7 @@ clustered.}
 \item{clusters}{can be either a numeric or character vector, a factor, or a
 numeric matrix, containing the cluster labels.}
 
-\item{...}{The arguments \code{transformation}, \code{clusterType} and
+\item{...}{The arguments \code{transformation}, \code{clusterTypes} and
 \code{clusterInfo} to be passed to the constructor for signature
 \code{SummarizedExperiment,matrix}.}
 
@@ -40,7 +40,7 @@ numeric matrix, containing the cluster labels.}
 performing steps that assume normal-like data (i.e. constant variance), such
 as the log.}
 
-\item{clusterType}{a string describing the nature of the clustering. The
+\item{clusterTypes}{a string describing the nature of the clustering. The
 values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
@@ -101,7 +101,7 @@ iterations for each cluster).}
 found, a character string explaining what triggered the algorithm to stop.}
 }}
 
-\item{\code{clusterType}}{character vector with the origin of each column of
+\item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}
 
 \item{\code{dendro_samples}}{dendrogram. A dendrogram containing the cluster

@@ -1,8 +1,16 @@
+.addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
+    ceLegend<-clusterLegend(ceObj)[[whCluster]]
+    whPos<-which(ceLegend[,"clusterIds"] >0)
+    if(length(whPos)>0) ceLegend[whPos,"name"]<-paste(prefix,ceLegend[whPos,"clusterIds"],sep="")
+    clusterLegend(ceObj)[[whCluster]]<-ceLegend
+    return(ceObj)
+}
+
 .addBackSEInfo<-function(newObj,oldObj){
   retval<-clusterExperiment(oldObj,
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
-                            clusterType=clusterType(newObj),
+                            clusterTypes=clusterTypes(newObj),
                             clusterInfo=clusterInfo(newObj))
   clusterLegend(retval)<-clusterLegend(newObj)
   orderSamples(retval)<-orderSamples(newObj)
@@ -32,7 +40,7 @@
 }
 
 .unnameClusterSlots<-function(ce){
-    names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterType)<-NULL
+    names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterTypes)<-NULL
     return(ce)
 }
 
@@ -121,7 +129,7 @@
     return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
-##Universal way to change character indication of clusterType into indices.
+##Universal way to change character indication of clusterTypes into indices.
 .TypeIntoIndices<-function(x,whClusters){
   test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster")),silent=TRUE)
   if(!inherits(test,"try-error")){
@@ -143,27 +151,24 @@
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
   }
   else{
-    if(!any(whClusters %in% clusterType(x))){
-      #warning("none of indicated clusters match a clusterType")
+    if(!any(whClusters %in% clusterTypes(x))){
+      #warning("none of indicated clusters match a clusterTypes")
       wh<-vector("integer",length=0)
     }
     else{
-      #if(!all(whClusters %in% clusterType(x))) warning("not all indicated clusters match a clusterType")
-      wh<-which(clusterType(x) %in% whClusters)
+      #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
+      wh<-which(clusterTypes(x) %in% whClusters)
     }
   }
   return(wh)
 }
 
-#######
-#Internal algorithms for clustering
-#######
+
 #check what type
 .checkAlgType<-function(clusterFunction){
 	##These return lists of indices of clusters satisifying alpha criteria
 	if(clusterFunction=="tight") type<-"01"
 	if(clusterFunction=="hierarchical01") type<-"01"
-	if(clusterFunction=="hierarchicalK") type<-"K"
 	if(clusterFunction=="pam") type<-"K"
 	return(type)
 }
@@ -175,23 +180,24 @@
 	if(subsample){
 		if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
 		Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
-	    if(typeAlg=="K"){
+		if(typeAlg=="K"){
 			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
 			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
 		}
     subDbar<-Dbar
 	}
-	else{ #create distance matrix if not subsampling
-	  Dbar<-x
+	else{
+		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
+		Dbar<-as.matrix(dist(x)	)	#######Here where assume distance is dist(x). Should make it so depending on typeAlg has different default, and that user can define it.
+		findBestK<-FALSE	
+		if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+				findBestK<-clusterDArgs[["findBestK"]]
+			}
+		if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not subsampling, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
 	  subDbar<-NULL
 	}
-  if(typeAlg=="K"){
-    findBestK<-FALSE	
-    if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-      findBestK<-clusterDArgs[["findBestK"]]
-    }
-    if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
-  }
+	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
 	return(list(results=res,subsampleCocluster=subDbar)) 
 }

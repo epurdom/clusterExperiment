@@ -50,7 +50,7 @@
 #'
 #' @return If x is a \code{\link{ClusterExperiment}}, a
 #'  \code{\link{ClusterExperiment}} object, with an added clustering of
-#'  clusterType equal to \code{combineMany} and the \code{percentageShared}
+#'  clusterTypes equal to \code{combineMany} and the \code{percentageShared}
 #'  matrix stored in the \code{coClustering} slot.
 #'
 #' @examples
@@ -144,19 +144,17 @@ setMethod(
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
     }
-
+    if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
 
-    #add "c" to name of cluster
-    cl_labels <- as.character(outlist$clustering)
-    idx <- which(!(cl_labels %in% c("-1", "-2")))
-    cl_labels[idx] <- paste("c", cl_labels[idx], sep="")
 
-    newObj <- clusterExperiment(x, cl_labels,
+    newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterType="combineMany")
+                                clusterTypes="combineMany")
+    #add "c" to name of cluster
+    newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
     clusterLabels(newObj) <- "combineMany"
 
     if(!is.null(outlist$percentageShared)) {
@@ -179,7 +177,6 @@ setMethod(
   definition = function(x, whichClusters, ...){
 
     wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-
     combineMany(x, wh, ...)
   }
 )
