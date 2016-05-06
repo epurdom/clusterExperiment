@@ -17,6 +17,7 @@
     #put back orderSamples, coClustering
     retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
+    retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
     validObject(retval)
     return(retval)
 }

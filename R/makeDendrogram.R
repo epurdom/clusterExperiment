@@ -193,15 +193,16 @@ setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
   definition = function(x,leaves=c("clusters","samples" ), clusterNames=TRUE,
-                        main,...)
+                        main,sub,...)
   {
     leaves<-match.arg(leaves)
     if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     labs<-labels(dend)
     if(leaves=="clusters"){
-      leg<-clusterLegend(x)[[primaryClusterIndex(x)]]
+      leg<-clusterLegend(x)[[x@dendro_index]]
       m<-match(labs,leg[,"clusterIds"])
       if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
       else{
@@ -218,5 +219,5 @@ setMethod(
         dend <- dendrapply(dend, reLabel)
       }
     }
-    plot(dend,main=main,...)
+    plot(dend,main=main,sub=sub,...)
   })

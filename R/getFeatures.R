@@ -156,15 +156,13 @@ setMethod(f = "getBestFeatures",
             cl<-cluster
              if(is.factor(cl)) {
               warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-              cl <- as.numeric(as.character(cl))
+              cl <- .convertToNum(cl)
             }
 
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
-#             returnType<-c("Table", "Index")
-#             returnType<-match.arg(returnType)
-             returnType <- "Table" 
+            returnType <- "Table" 
             
             if(is.null(rownames(dat))) {
               rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
@@ -172,8 +170,8 @@ setMethod(f = "getBestFeatures",
 
             tmp <- dat
 
-            if(any(cl== -1)){ #only use those assigned to a cluster to get good genes.
-              whNA <- which(cl== -1)
+            if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+              whNA <- which(cl<0)
               tmp <- tmp[, -whNA]
               cl <- cl[-whNA]
             }
@@ -214,6 +212,7 @@ setMethod(f = "getBestFeatures",
             } else {
               fitF <- NULL
             }
+            #browser()
             if(contrastType!="F") contr.result<-clusterContrasts(cl,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
             tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
             tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
@@ -232,34 +231,32 @@ setMethod(f = "getBestFeatures",
 #' @export
 setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x,
-                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                isCount=FALSE, ...) {
-
+          definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                                isCount=FALSE, ...){
             contrastType <- match.arg(contrastType)
-
             if(contrastType=="Dendro") {
               if(is.null(x@dendro_clusters)) {
                 stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
               } else {
-              dendro <- x@dendro_clusters
+                if(primaryClusterIndex(x)!= x@dendro_index) stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+                else dendro <- x@dendro_clusters
               }
             }
-
+            
             if(isCount) {
               note(
-"If `isCount=TRUE` the data will be transformed with voom() rather than
+                "If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
               dat <- assay(x)
             } else {
               dat <- transform(x)
             }
-
+            
             getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
-                         isCount=isCount, ...)
-
-          }
+                            isCount=isCount, ...)
+            
+}
 )
 
 

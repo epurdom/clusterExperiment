@@ -413,7 +413,7 @@ setMethod(
     outval<-clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
-      outval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
      

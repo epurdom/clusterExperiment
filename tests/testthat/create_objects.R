@@ -69,6 +69,10 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
 #make a new object with -1 values
 ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)
+
+ceSimCont<-clusterExperiment(seSimData,clMatNew,transformation=function(x){x})
+clusterTypes(ceSimCont)<-clusterTypes(test)
+
 rm(test)
 #################################
 ###small object based on simData/simCount (same size as trivial data)
