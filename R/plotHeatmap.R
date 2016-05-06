@@ -637,13 +637,16 @@ setMethod(
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusterInfo(data),
-                              clusterTypes=clusterTypes(data)
+                              clusterTypes=clusterTypes(data),
+                              orderSamples=orderSamples(data),
+                              dendro_samples=data@dendro_samples,
+                              dendro_clusters=data@dendro_clusters,
+                              dendro_index=data@dendro_index,
+                              primaryIndex=data@primaryIndex
+                              
+                              
     )
     clusterLegend(fakeCE)<-clusterLegend(data)
-    orderSamples(fakeCE)<-orderSamples(data)
     colData(fakeCE)<-colData(data)
-    fakeCE@dendro_samples<-data@dendro_samples
-    fakeCE@primaryIndex<-data@primaryIndex
-    validObject(fakeCE) #just in case screwed something up
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
   })

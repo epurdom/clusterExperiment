@@ -13,7 +13,7 @@
   cutoff = 0.1, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  isCount = FALSE, mergeMethod, ...)
+  isCount = FALSE, mergeMethod, clusterLabel = "mergeClusters", ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a

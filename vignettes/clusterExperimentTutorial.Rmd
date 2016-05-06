@@ -215,21 +215,24 @@ The default result of `combineMany` is not usually a great choice, and certainly
 
 So let's label the one we found "combineMany, default" and then create a new one. (Making a label will make it easier to keep track later). 
 
-```{r combineMany_quickstart}
+```{r combineMany_changeLabel}
 wh<-which(clusterLabels(ce)=="combineMany")
 if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,default"
-ce<-combineMany(ce,proportion=0.7)
+```
+
+Now we'll rerun `combineMany` with `proportion=0.7`. This time, we will give it a label upfront in our call to `combineMany`.
+
+```{r combineMany_newCombineMany}
+ce<-combineMany(ce,proportion=0.7,clusterLabel="combineMany,0.7")
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 
 ```
 
-We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. We also note that there is also a default of `minSize=5` for this command. We could reduce that requirement as well and more of the unsampled clusters would be grouped into a clustering. Again, we'll label our old one "combineMany,0.7" before creating a new one. 
+We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. We also note that there is also a default of `minSize=5` for this command. We could reduce that requirement as well and more of the unsampled clusters would be grouped into a clustering. 
 
 ```{r combineMany_changeMinSize}
-wh<-which(clusterLabels(ce)=="combineMany")
-if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,0.7"
-ce<-combineMany(ce,proportion=0.7,minSize=3)
+ce<-combineMany(ce,proportion=0.7,minSize=3,clusterLabel="combineMany,final")
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow",main="Min. Size=3")
 ```
@@ -256,25 +259,35 @@ ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 plotDendrogram(ce)
 ```
 
-We can see that clusters 4 and 5 are most closely related, at least in the top 500 most variable genes. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 4 and 5, and between 1 and 7. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 4 and 5 will be merged and/or 1 and 7. And so on up the tree.
+We can see that clusters 1 and 3 are most closely related, at least in the top 500 most variable genes. 
+
+If we look at the summary of `ce`, it now has 'makeDendrogram' marked as 'Yes'. 
+
+```{r makeDendrogram_show}
+ce
+```
+
+
+Now we are ready to actually merge clusters together. We now run `mergeClusters` that will go up this hierarchy and compare the level of DE in each pair. In otherwords, DE tests are run between 4 and 5, and between 1 and 7. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 4 and 5 will be merged and/or 1 and 7. And so on up the tree.
 
 It is useful to first run mergeClusters without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
+
 ```{r mergeClustersPlot}
 mergeClusters(ce,mergeMethod="adjP",plot="mergeMethod")
 ```
 
-Then we can decide on a cutoff and visualize the resulting clustering:
+Then we can decide on a cutoff and visualize the resulting clustering. <!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:--->
 
 ```{r mergeClusters}
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.01)
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"))
-plotCoClustering(ce,whichClusters=c("mergeClusters","combineMany"))
+plotCoClustering(ce,whichClusters=c("mergeClusters","combineMany"),sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
 ```
 
 Notice that `mergeClusters` combines clusters based on the actual values of the features, while the coClustering plot is how often the samples clustered together. It is not uncommon that `mergeClusters` will merge clusters that don't look "close" on the coClustering plot. This can be due to just the choices of the hierarchical clustering, but can also be because the two merged clusters are not often confused for each other across the clustering algorithms, yet don't have strong differences on individual genes. This can be the case especially when the clustering is done on reduced PCA space, where an accumulation of small differences might consistently separate the samples (so the two clusters are not "confused" as to the samples), but because the differences are not strong on individual genes, `mergeClusters` combines them. These are ultimately different criteria.
 
-Finally, we can do a heatmap visualizing our this final step of clustering.
+Finally, we can do a heatmap visualizing this final step of clustering.
 
 ```{r plotHeatmap}
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99, sampleData=c("Biological_Condition", "Cluster1", "Cluster2"))
@@ -368,7 +381,6 @@ We demonstrated during the quick start that we can visualize multiple clustering
 ```{r plotClusterEx1_redo}
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany",whichClusters="workflow",axisLine=-1)
-
 ```
 
 
@@ -401,7 +413,7 @@ Here we make a call to plotClusters, but now ask to reset everything to match th
 par(mar=plotCMar)
 ce_temp<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Cluster2"), 
                main="Clusters from clusterMany, different order",axisLine=-1,resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
-clusterLegend(ce_temp)[c("mergeClusters","combineMany")]
+clusterLegend(ce_temp)[c("mergeClusters","combineMany,final")]
 ```
 
 Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but now has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to the distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the clusterLegend values).
@@ -459,14 +471,20 @@ I can choose to instead to not cluster the samples, but order them by cluster. T
 plotHeatmap(ce,clusterSamplesData="primaryCluster",whichClusters="primaryCluster",main="Heatmap with clusterMany",annLegend=FALSE)
 ```
 
-As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. I could do this by explicitly calling `makeDendrogram` (and therefore be able to control the choices in how it is done, which we will discuss below) which will store a dendrogram in our clusterExperiment object and `plotHeatmap` will pull from it; alternatively `plotHeatmap` will call `makeDendrogram` (based on the primary cluster) with its default settings, which is what I will do here. For visualization purposes, it's better to have the dendrogram for the `combineMany` cluster rather than the `mergeCluster` cluster (since the `mergeCluster` is based on the dendrogram anyway). So I'm going to set the primary cluster index to 2.
+As an improvement upone this, I can cluster my clusters into a dendrogram so that the most similar clusters will be near each other. We already did this before with our call to `makeDendrogram`. We haven't done anything to change that, so the dendrogram from that call is still stored in the object. We can check this in the information shown in our object:
 
-I will also add some data about my samples from my `colData` slot using the `sampleData` argument. 
+```{r showCE_dendrogram}
+show(ce)
+```
+
+
+We can see, as we expected, that the dendrogram we made from "combineMany,final" is still the active dendrogram saved in the `ce` object. Now I will call `plotHeatmap` choosing to display the "mergeClusters" and "combineMany,final" clustering, and ordering the samples by the dendrogram in `ce`. I will also display some data about my samples from my `colData` slot using the `sampleData` argument. Notice that instead of giving the index, I can also give the clusterLabels of the clusters I want to show.
 
 ```{r plotHeatmap_dendro}
-primaryClusterIndex(ce)<-2
-plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters=whClusterPlot,main="Heatmap with clusterMany",sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
+plotHeatmap(ce,clusterSamplesData="dendrogramValue",whichClusters=c("mergeClusters","combineMany,final"),main="Heatmap with clusterMany",sampleData=c("Biological_Condition","Cluster2"),annLegend=FALSE)
 ```
+
+If there is not a dendrogram stored, `plotHeatmap` will call `makeDendrogram` based on the primary cluster (with the default settings of `makeDendrogram`); calling `makeDendrogram` on `ce` is preferred so that the user can control the choices in how it is done (which we will discuss below). For visualization purposes, the dendrogram for the `combineMany` cluster is preferred to that of the `mergeCluster` cluster, since "combineMany,final" is just a finer partition of the "mergeClusters" clustering. 
 
 ### Using separate input data for clustering and for visualization
 
@@ -554,11 +572,9 @@ After creating many clusterings, `combineMany` finds a single cluster based on w
 
 As mentioned in the Quick Start section, the default option for `combineMany` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
 
-Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `comineMany` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our call to `combineMany` (`proportion=0.7` and `minSize=3`). Let's label that one our 'combineMany,final' before we start playing around.
+Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `comineMany` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `combineMany` (`proportion=0.7` and `minSize=3`). 
 
 ```{r combineMany_detailed}
-wh<-which(clusterLabels(ce)=="combineMany")
-if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,final"
 plotCoClustering(ce)
 ```
 
@@ -569,13 +585,11 @@ We can also manually choose the set of clusters to use in `combineMany` with the
 
 ```{r combineMany_chooseClusters}
 wh<-grep("nVar",clusterLabels(ce))
-ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3)
-wh<-which(clusterLabels(ce)=="combineMany")
-if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,nVar"
+ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3,clusterLabel="combineMany,nVar")
 plotCoClustering(ce)
 ```
 
-We can compare to all of our other versions of `combineMany`. While they do not all have `clusterTypes` equal to "combineMany" (only the most recent call has clusterType exactly equal to ), they all have "combineMany" as part of their clusterType, even though they have different clusterLabels (and now we'll see that it was useful to give them different labels!)
+We can compare to all of our other versions of `combineMany`. While they do not all have `clusterTypes` equal to "combineMany" (only the most recent call has clusterType exactly equal to "combineMany"), they all have "combineMany" as part of their clusterType, even though they have different clusterLabels (and now we'll see that it was useful to give them different labels!)
 
 ```{r combineMany_showDifferent}
 wh<-grep("combineMany",clusterTypes(ce))
@@ -609,44 +623,43 @@ plotDendrogram(ce)
 ```
  Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
  
-If we look at the summary of ce, it now has 'makeDendrogram' marked as 'Yes'. 
 
-```{r makeDendrogram_show}
-ce
+Recall that the most recent run is of `combineMany`, based on experimenting with different parameters of `combineMany`, so that is our current primaryCluster:
+
+```{r showCe}
+show(ce)
 ```
 
-Recall that the most recent run is of `combineMany` is based on experimenting with different parameters of `combineMany`, so is combining only the clusterings from `clusterMany` that use the top  most variable genes. We might prefer to run `mergeClusters` based on running `combineMany` on all the clusterings of `combineMany` like in quick start (the `combineMany, final`). 
+This is the clustering from combining only the clusterings from `clusterMany` that use the top  most variable genes. Because it is the primaryCluster, it was the clustering that was used by default to make the dendrogram. 
 
-However, since we labeled them, we can also just set the primaryCluster to the one with that label (`makeDendrogram` always pulls from the primaryCluster)
+We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
-```{r getBackCombineMany_label}
-wh<-which(clusterLabels(ce)=="combineMany,final")
-if(length(wh)!=1) stop() else primaryClusterIndex(ce)<-wh
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+
+```{r remakeMakeDendrogram}
+ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500,whichCluster="combineMany,final")
 plotDendrogram(ce)
 ```
 
-Note that the clusterType of this clustering is not "combineMany", but "combineMany_x", where "x" indicates what iteration it is. If we want it to show up in our "workflow" plots, we need to set its clusterType to be "combineMany" (and change the existing "combineMany" or delete it with `removeCluster`). This is rather complicated, and future versions of the package will probably provides some functionality to do this. 
+Note that the clusterType of this clustering is not "combineMany", but "combineMany_x", where "x" indicates what iteration it is. We can ask that it be reset as the current 'combineMany' output (and will also set it to be the primaryCluster).
 
-Alternatively, we can just redo `combineMany` with the same parameters and then call `makeDendrogram` on that output (we'll give it a new label to keep it separate):
 
 ```{r getBackCombineMany}
-ce<-combineMany(ce,proportion=0.7,minSize=3)
+ce<-setToCurrent(ce,whichCluster="combineMany,final")
 ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+show(ce)
 plotDendrogram(ce)
-if(length(wh)!=1) stop() else wh<-which(clusterLabels(ce)=="combineMany")
-clusterLabels(ce)[wh]<-"combineMany,finalV2"
 ```
-
-
-
-
-**Dendrograms can get deleted!** `makeDendrogram` operates on the primaryCluster and the dendrograms that are stored internally are required to match the primaryCluster. For this reason if the primaryCluster is changed (either because the user requests it or because some part of the workflow has changed the primaryCluster), then the dendrograms will be deleted in the object returned. Usually `makeDendrogram` does not take too long to recalculate, but if it is too slow the user's needs, then it the user may wish to not copy over existing `ce` at certain steps and instead give the outputs new name (and be sure not to change the primaryCluster with `primaryClusterIndex`).
 
 ### Merging clusters with little differential expression {#mergeClusters}
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
 Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate thresshold (using the Benjamini-Hochberg procedure). However, other methods are also implemented (see the help of `mergeClusters`). 
+
+Notice that `mergeClusters` will always run based on the clustering that made the currently existing dendrogram. So it is alway good to check that it is what we expect. 
+
+```{r checkWhatDendro}
+ce
+```
 
 `mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotType="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
 
@@ -654,23 +667,18 @@ Starting at the bottom of the tree, those clusters that have the percentage of f
 mergeClusters(ce,mergeMethod="none",plotType="all")
 ```
 
-Now we can pick a cutoff.
+Now we can pick a cutoff. We'll give it a label to keep it separate from the previous run we had made.
 
 ```{r mergeClusters_ex}
-ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP")
+ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP",clusterLabel="mergeClusters,v2")
 ce
 ```
 
-Notice that the summary of ce now has 'makeDendrogram run?' as 'No'. These seems odd, since we just ran it. However, running `mergeClusters` changed the primaryCluster identification, so the dendrogram we made before no longer matches the existing primaryCluster, so they are discarded. This means if the user wants a dendrogram downstream (e.g. for `plotHeatmap`) or to rerun `mergeClusters` then `makeDendrogram` must be rerun with the appropriate `primaryCluster`. 
 
-For example, to rerun `mergeClusters` with a different cutoff, we need to reset the primaryCluster to be the last `combineMany` clustering and remake the dendrogram:
-
+If we want to rerun `mergeClusters` with a different cutoff, we can go ahead and do that (notice in the summary above, that the dendrogram is still there, and associated with the same cluster, so we rerun `mergeClusters` and know that it will still pull from the same input clustering from `combineMany`)
 
 ```{r mergeClusters_redo}
-wh<-which(clusterTypes(ce)=="combineMany")
-if(length(wh)!=1) stop() else primaryClusterIndex(ce)<-wh
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB")
+ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB",clusterLabel="mergeClusters,v3")
 ce
 ```
 
@@ -682,16 +690,20 @@ What happens if some parts of the clustering workflow are re-run? For example, i
 
 The workflow commands check for existing clusters of the workflow (based on the `clusterTypes` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterTypes value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my imput object. Any existing `combineMany` results will have their `clusterTypes` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
+For example, suppose I rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in my input object. Any existing `combineMany` results will have their `clusterTypes` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Their labels will also be updated if they just have the default label, but if the user has given different labels to the clusters those will be preserved. 
+
+Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
 
 This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not dispayed. 
 
+However, if the user wants to "go back" to previous versions and make them the current iteration, we have seen that the `setToCurrent` command will do this. `setToCurrent` follows the same process as described above, only with an existing cluster set as the new part of the pipeline. 
+
 Note that there is nothing that governs or protects the `clusterTypes` values to be of a certain kind. This means that if the user decides to name a clusterTypes of a clustering one of these protected names, that is allowed.
 
-**Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany` and/or `mergeClusters`. `eraseOld=TRUE` will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
+**Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany`,`mergeClusters` and/or `setToCurrent`. `eraseOld=TRUE` in any of these functions will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
 
 
-**Finding workflow iterations** Sometimes which numbered iteration a particular call is in will not be obvious if there are many calls to the workflow. You may have a `mergeClusters.2` cluster but no `mergeClusters.1` because of an upstream workflow call in the middle that bumped the iteration value up to 2 without ever making a `mergeClusters.1`. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix`. 
+**Finding workflow iterations** Sometimes which numbered iteration a particular call is in will not be obvious if there are many calls to the workflow. You may have a `mergeClusters.2` cluster but no `mergeClusters.1` because of an upstream workflow call in the middle that bumped the iteration value up to 2 without ever making a `mergeClusters.1`. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix`. "0" refers to the current iteration; otherwise the smaller the iteration number, the earlier it was run.
 
 ```{r workflowTable}
 workflowClusterTable(ce)
@@ -703,6 +715,7 @@ Explicit details about every workflow cluster and their index in `clusterMatrix`
 head(workflowClusterDetails(ce),8)
 ```
 
+**A note on the `whichCluster` argument** Many functions take the `whichCluster` argument for identifying a cluster or cluster(s) on which to perform an action. These arguments all act similarly across functions, and allow the user to give character arguments. As described above, these can be shortcuts like "workflow", or they can match either clusterTypes or clusterLabels of the object. It is important to note that matching is first done to clusterTypes, and then if not successful to clusterLabels. Since neither clusterTypes nor clusterLabels is guaranteed to be unique, the user should be careful in how they make the call. And, of course, `whichCluster` arguments can also take explicit numeric integers that identify the column(s) of the clusterMatrix that should be used.
 
 ### Designate a Final Clustering
 
@@ -710,25 +723,19 @@ A final protected clusterTypes is "final". This is not created by any method, bu
 
 For best functionality, particularly if a user has determined a single final clustering after completing clustering, a user will probably want to set the primaryClusterIndex to be that of the final cluster and rerun makeDendrogram. This will help in plotting and visualizing. 
 
-Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We see from our above call to the workflow functions above, that it is `mergeClusters.4` (we also see that if we had labelled these with clusterLabels, it would be much easier to track down!).
-Now we mark the "mergeClusters.4" version as the final one by changing it's clusterTypes manually to "final". 
+Here we will go back to our previous mergeClusters that we found with `cutoff=0.05` and mark it as our final clustering. First we need to find which cluster it is. We see from our above call to the workflow functions above, that it is clusterType equal to "mergeClusters.4" and label equal to "mergeClusters,v2"
+We can mark this clustering version as the final one by changing it's clusterTypes manually to "final". 
 
 ```{r markFinal}
-whFinal<-which(clusterTypes(ce)=="mergeClusters.4")
-if(length(whFinal)!=1) stop() else clusterTypes(ce)[whFinal]<-"final"
+ce<-setToFinal(ce,whichCluster="mergeClusters,v2",clusterLabel="Final Clustering")
 par(mar=plotCMar)
 plotClusters(ce,whichClusters="workflow")
 ```
 
-Note that because it is labeled as `final` it shows up automatically in "workflow" clusters in our `plotClusters` command. If we are settled on this cluster being our primary focus of plots, dendrograms, etc., then we probably want to also set it as the primaryCluster as well as change it's clusterLabel to be more meaningful for plots, etc. We also will make a dendrogram to go with it for later use (recall any dendrogram we had will be lost when we change the primaryCluster):
+Note that because it is labeled as `final` it shows up automatically in "workflow" clusters in our `plotClusters` command. It has also been set as our primaryCluster and has the new clusterLabel we gave it in the call to `setToFinal`.
 
-```{r updateFinalToPrimary}
-clusterLabels(ce)[whFinal]<-"My Final Clustering"
-primaryClusterIndex(ce)<-whFinal
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
-```
-
-This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the"" mergeClusters result. This might be undesired. We could remove it with `removeClusters` or manually change the clusterTypes to `mergeClusters.x` so that it doesn't show up as current. We can also change it's label, without changing its type, so as to be more informative.
+This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the" mergeClusters result. This might be undesired. We could remove that "mergeClusters" result with `removeClusters`. Alternatively, we could manually change the clusterTypes to `mergeClusters.x` so that it doesn't show up as current. 
+A cleaner way to do this would have been to first set the desired cluster ("mergeClusters.4") to the most current iteration with `setToCurrent`, which would have 
 
 # Finding Features related to a Clustering {#getBestFeatures}
 
@@ -774,10 +781,22 @@ Notice that now there is both a "Contrast" and a "ContrastName" column. Like bef
 ### Dendrogram
 The option `type="Dendro"` is more complex; it assumes that there is a hiearchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, defines a contrast or comparison of the mean expression between the daughter nodes. 
 
-To run this option, it is important that `makeDendrogram` corresponds to the dendrogram you want (that the relevant set of features were chosen, etc., see `makeDendrogram` above). For this reason, it is good to rerun the `makeDendrogram` command first. 
+Notice the problem if I try to run the command, however.
+
+```{r getBestFeatures_dendroFail,error=TRUE}
+bestDendroTest1<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
+```
+
+This is because the dendrogram we have does not correspond to the primaryCluster. 
+
+```{r showCeAgain}
+show(ce)
+```
+
+`getBestFeatures` only works on the primaryCluster, and has noticed that the dendrogram in our `ce` object was not made from the primaryCluster. So we need to rerun `makeDendrogram` with our primaryCluster. It's regardless generally a good idea to make sure the dendrogram you have is the one you want. 
 
 ```{r getBestFeatures_dendro}
-ce<-makeDendrogram(ce)
+ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
 bestDendro<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
 head(bestDendro)
 ```

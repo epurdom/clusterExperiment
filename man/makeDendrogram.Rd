@@ -17,7 +17,7 @@
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
 
 \S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("clusters",
-  "samples"), clusterNames = TRUE, main, ...)
+  "samples"), clusterNames = TRUE, main, sub, ...)
 }
 \arguments{
 \item{x}{data to define the medoids from. Matrix and

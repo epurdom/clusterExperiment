@@ -54,10 +54,10 @@ These functions are used to add or remove clusters to a
 \code{\link{ClusterExperiment}} object.
 }
 \details{
-addClusters adds y to x, and is thus not symmetric in the two
-  arguments. In particular, the \code{primaryCluster} and all of its
-  supporting information (dendrogram, coClustering, and orderSamples) are all
-  kept from the x object, even if y is a ClusterExperiment.
+addClusters adds y to x, and is thus not symmetric in the two 
+  arguments. In particular, the \code{primaryCluster}, all of the dendrogram
+  information, \code{coClustering}, and \code{orderSamples} are all kept from
+  the x object, even if y is a ClusterExperiment.
 
 \code{removeClusters} removes the clusters given by
  \code{whichRemove}. If all clusters are implied, then returns a

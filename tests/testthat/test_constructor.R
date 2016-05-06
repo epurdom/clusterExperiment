@@ -229,3 +229,27 @@ test_that("accessing transformed data works as promised",
 
 
             })
+
+test_that("workflow functions work",
+          {
+  ceNew<-combineMany(ceSim,proportion=0.7)
+  ceNew<-combineMany(ceNew,proportion=0.3,clusterLabel="combineMany,v2")
+  expect_equal(clusterLabels(ceNew)[1:2],c("combineMany,v2","combineMany.1"))
+  expect_equal(clusterTypes(ceNew)[1:2],c("combineMany","combineMany.1"))
+  ceNew2<-setToCurrent(ceNew,whichCluster="combineMany.1")
+  expect_equal(clusterLabels(ceNew2)[1:2],c("combineMany,v2","combineMany"))
+  expect_equal(clusterTypes(ceNew2)[1:2],c("combineMany.2","combineMany"))
+  ceNew3<-setToCurrent(ceNew2,whichCluster="combineMany.2")
+  expect_equal(clusterLabels(ceNew3)[1:2],c("combineMany,v2","combineMany.3"))
+  expect_equal(clusterTypes(ceNew3)[1:2],c("combineMany","combineMany.3"))
+
+  ceNew4<-setToFinal(ceNew,whichCluster="combineMany,v2",clusterLabel="Final Version")
+  expect_equal(primaryClusterIndex(ceNew4),1)
+  expect_equal(clusterLabels(ceNew4)[primaryClusterIndex(ceNew4)],"Final Version")
+  expect_equal(clusterTypes(ceNew4)[primaryClusterIndex(ceNew4)],"final")
+  
+  ceNew5<-setToFinal(ceNew,whichCluster="combineMany.1",clusterLabel="Final Version")
+  expect_equal(primaryClusterIndex(ceNew5),2)
+  expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
+  expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")
+          })

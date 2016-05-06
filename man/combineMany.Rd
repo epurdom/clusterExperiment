@@ -13,7 +13,7 @@
   clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5)
 
 \S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
-  eraseOld = FALSE, ...)
+  eraseOld = FALSE, clusterLabel = "combineMany", ...)
 
 \S4method{combineMany}{ClusterExperiment,character}(x, whichClusters, ...)
 

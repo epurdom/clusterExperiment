@@ -178,6 +178,10 @@ The argument 'ks' is interpreted differently for different choices
   the user via the clusterDArgs; note this means that the default option of
   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
   not available in clusterMany.
+
+If the input is a \code{ClusterExperiment} object, currently
+  existing \code{orderSamples},\code{coClustering} or dendrogram slots will
+  be retained.
 }
 \examples{
 data(simData)
