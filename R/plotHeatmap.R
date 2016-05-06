@@ -632,7 +632,7 @@ setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
   definition = function(data, ...){
-    if(nrow(data@coClustering)==0) stop("coClustering slot is empty")
+    if(is.null(data@coClustering)) stop("coClustering slot is empty")
     fakeCE<-clusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},

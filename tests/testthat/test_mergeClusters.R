@@ -25,11 +25,11 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
-  expect_warning(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
+  expect_error(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
                                cl=primaryCluster(clustWithDendro),plot="none",
                                mergeMethod="adjP",
                                dendro=clustWithDendro@dendro_samples),
-                 "not equal to the number")
+                 "Not a valid input dendrogram")
 
   #test if already exists
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")

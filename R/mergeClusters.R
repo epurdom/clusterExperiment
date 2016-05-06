@@ -106,8 +106,7 @@ setMethod(f = "mergeClusters",
     #check valid
     ncluster <- length(table(cl[cl>0]))
     if(nobs(dendro) != ncluster) {
-      stop("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).
-              Will recompute dendrogram")
+      stop("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).")
     }
   }
   mergeMethod <- match.arg(mergeMethod)
