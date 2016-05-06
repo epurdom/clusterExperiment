@@ -148,8 +148,6 @@ setMethod(
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
-
-
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="combineMany")
@@ -162,8 +160,9 @@ setMethod(
     }
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
-    if(!is.null(x)) retval<-addClusters(newObj,x)
-    else retval<-newObj
+    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep. 
+    else retval<-outval
+    validObject(retval)
     
     return(retval)
   }

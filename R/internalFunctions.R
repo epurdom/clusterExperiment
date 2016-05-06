@@ -6,15 +6,34 @@
     return(ceObj)
 }
 
+.addNewResult<-function(newObj,oldObj){
+    retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
+    #erases dendrogram so need to put it back
+    if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
+        retval@dendro_samples<-oldObj@dendro_samples
+        retval@dendro_clusters<-oldObj@dendro_clusters
+        retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+    }
+    #put back orderSamples, coClustering
+    retval@orderSamples<-oldObj@orderSamples
+    if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
+    retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
+    validObject(retval)
+    return(retval)
+}
+
 .addBackSEInfo<-function(newObj,oldObj){
   retval<-clusterExperiment(oldObj,
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusterInfo(newObj))
+                            clusterInfo=clusterInfo(newObj),
+                            orderSamples=orderSamples(newObj),
+                            coClustering=coClustering(newObj),
+                            dendro_samples=newObj@dendro_samples,
+                            dendro_clusters=newObj@dendro_clusters,
+                            dendro_index=newObj@dendro_index)
   clusterLegend(retval)<-clusterLegend(newObj)
-  orderSamples(retval)<-orderSamples(newObj)
-  coClustering(retval)<-coClustering(newObj)
   return(retval)
 }
 .pullSampleData<-function(ce,wh){
@@ -152,8 +171,10 @@
   }
   else{
     if(!any(whClusters %in% clusterTypes(x))){
-      #warning("none of indicated clusters match a clusterTypes")
-      wh<-vector("integer",length=0)
+        if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
+        else{
+            wh<-which(clusterLabels(x) %in% whClusters)
+        }
     }
     else{
       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
@@ -163,12 +184,15 @@
   return(wh)
 }
 
-
+#######
+#Internal algorithms for clustering
+#######
 #check what type
 .checkAlgType<-function(clusterFunction){
 	##These return lists of indices of clusters satisifying alpha criteria
 	if(clusterFunction=="tight") type<-"01"
 	if(clusterFunction=="hierarchical01") type<-"01"
+	if(clusterFunction=="hierarchicalK") type<-"K"
 	if(clusterFunction=="pam") type<-"K"
 	return(type)
 }
@@ -180,24 +204,23 @@
 	if(subsample){
 		if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
 		Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
-		if(typeAlg=="K"){
+	    if(typeAlg=="K"){
 			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
 			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
 		}
     subDbar<-Dbar
 	}
-	else{
-		if(typeAlg!="K") stop("currently, if not subsampling, must use 'pam' or a clusterFunction defined as typeAlg='K' as clusterMethod")
-		Dbar<-as.matrix(dist(x)	)	#######Here where assume distance is dist(x). Should make it so depending on typeAlg has different default, and that user can define it.
-		findBestK<-FALSE	
-		if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-				findBestK<-clusterDArgs[["findBestK"]]
-			}
-		if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not subsampling, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+	else{ #create distance matrix if not subsampling
+	  Dbar<-x
 	  subDbar<-NULL
 	}
-	if(any(is.na(as.vector(Dbar)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	
+  if(typeAlg=="K"){
+    findBestK<-FALSE	
+    if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+      findBestK<-clusterDArgs[["findBestK"]]
+    }
+    if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+  }
 	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
 	return(list(results=res,subsampleCocluster=subDbar)) 
 }

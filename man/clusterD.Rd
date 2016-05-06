@@ -153,21 +153,6 @@ cluster01 is for clustering functions that expect as an input D that
 
   @details clusterK required format for input and output for clusterFunction:
   clusterFunction should be a function that takes as a minimum an argument
-  'D' and 'k'. The output must be a list similar to that of
-  'partition.object' of cluster package. Specifically, an element
-  'clustering' which gives the vector of clusters; and an argument 'silinfo'
-  like that of the partition.object that is a list with silhouette values.
-  Whether these are actually silhouette values is up to the clusterFunction,
-  but they will be used in the following way: silinfo$avg.width will be used
-  to pick the best k (if findBestK=TRUE), silinfo$widths[,"sil_width"] will
-  be used to exclude poorly clustered samples (if removeSil=TRUE), and
-  clusters will be ordered by the average of the values
-  silinfo$widths[,"sil_width"] in each cluster (after removing poorly
-  clustered samples, if removeSil=TRUE).
-clusterK methods: "pam" performs pam clustering on the input Dmatrix using
-\code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can
-be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are
-given by D and k directly.
   'D' and 'k'. The output must be a clustering, specified by integer values. 
   The function \code{\link{silhouette}} will be used on the clustering to
   calculate silhouette scores for each observation.

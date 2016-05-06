@@ -1,4 +1,21 @@
-Changes in version 0.1.0 (Release date: 2014-08-18)
+Changes in version 0.2.0 (Release date: )
+==============
+
+Changes:
+
+* allow 'whichCluster'/'whichClusters' arguments to match to clusterLabels, not just clusterTypes
+* add slot 'dendro_index' 
+* add 'whichCluster' argument to `makeDendrogram`
+* add 'hierarchicalK' clustering
+* add default distance for 0-1 clustering
+* add ability to define distance for clustering
+* 'getBestFeatures' now calls 'clusterContrasts'
+* output for 'clusterContrasts' changed
+* removed 'Index' output for getBestFeatures
+* changed tests for getBestFeatures to run on standard objects (so have -2 values)
+
+
+Changes in version 0.1.0 (Release date: 2016-05-04)
 ==============
 
 Changes:

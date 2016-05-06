@@ -7,10 +7,10 @@
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
 #' @inheritParams clusterExperiment
-#' @details addClusters adds y to x, and is thus not symmetric in the two
-#'   arguments. In particular, the \code{primaryCluster} and all of its
-#'   supporting information (dendrogram, coClustering, and orderSamples) are all
-#'   kept from the x object, even if y is a ClusterExperiment.
+#' @details addClusters adds y to x, and is thus not symmetric in the two 
+#'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
+#'   information, \code{coClustering}, and \code{orderSamples} are all kept from
+#'   the x object, even if y is a ClusterExperiment.
 #'
 #' @return A \code{\link{ClusterExperiment}} object with the added clusters.
 #'
@@ -102,38 +102,40 @@ setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","numeric"),
   definition = function(x, whichRemove) {
-    #browser()
     if(any(whichRemove>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
     if(length(whichRemove)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
+      return(as(x,"SummarizedExperiment"))
     }
     newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove]
     newClusterType<-clusterTypes(x)[-whichRemove]
     newClusterColors<-clusterLegend(x)[-whichRemove]
-    if(primaryClusterIndex(x) %in% whichRemove){
-      pIndex<-1
-      dend_samples<-NULL
-      dend_cl <- NULL
-      coMat<-new("matrix")
-      orderSamples<-1:NCOL(x)
+    dend_samples <- x@dendro_samples
+    dend_cl <- x@dendro_clusters
+    dend_ind<-x@dendro_index
+    coMat<-x@coClustering
+    orderSamples<-orderSamples(x)
+    if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
+    else pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
+    if(x@dendro_index %in% whichRemove){
+        dend_cl<-NULL
+        dend_samples<-NULL
+        dend_ind<-NA_real_
     }
-    else{
-      pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
-      dend_samples <- x@dendro_samples
-      dend_cl <- x@dendro_clusters
-      coMat<-x@coClustering
-      orderSamples<-orderSamples(x)
-    }
-    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),clusterTypes=newClusterType,clusterInfo<-newClusterInfo)
-    retval@coClustering<-coMat
+    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),
+                              clusterTypes=newClusterType,
+                              clusterInfo<-newClusterInfo,
+                              primaryIndex=pIndex,
+                              dendro_samples=dend_samples,
+                              dendro_clusters=dend_cl,
+                            dendro_index=dend_ind,
+                            coClustering=coMat,
+                            orderSamples=orderSamples
+                              )
     validObject(retval)
     clusterLegend(retval)<-newClusterColors
-    primaryClusterIndex(retval)<-pIndex #Note can only set it on valid object so put it here...
-    retval@dendro_samples <- dend_samples
-    retval@dendro_clusters <- dend_cl
-    orderSamples(retval)<-orderSamples
     return(retval)
   }
 )

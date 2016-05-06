@@ -17,6 +17,14 @@
 #'   \code{clusterSingle}, this must be a character vector of pre-defined
 #'   clustering techniques provided by the package, and can not be a
 #'   user-defined function.
+#'   @param distFunction a vector of character strings that are the names of
+#'     distance functions found in the global environment. See the help pages of
+#'     \code{\link{clusterD}} for details about the required format of distance
+#'     functions. Currently, this distance function must be applicable for all
+#'     clusterFunction types. Therefore, it is not possible to intermix type "K"
+#'     and type "01" algorithms if you also give distances to evaluate unless
+#'     all distances give 0-1 values for the distance (and hence are possible
+#'     for both type "01" and "K" algorithms).
 #' @param nVarDims vector of the number of the most variable features to keep
 #'   (when "mostVar" is identified in \code{dimReduce}). If NA is included, then
 #'   the full dataset will also be included.
@@ -67,6 +75,9 @@
 #'   the user via the clusterDArgs; note this means that the default option of
 #'   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
 #'   not available in clusterMany.
+#' @details If the input is a \code{ClusterExperiment} object, currently
+#'   existing \code{orderSamples},\code{coClustering} or dendrogram slots will
+#'   be retained.
 #' @return If \code{run=TRUE} and the input is either a matrix, a
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
 #'   will return a \code{ClusterExperiment} object, where the results are stored
@@ -194,7 +205,7 @@ setMethod(
   signature = signature(x = "list"),
   definition = function(x, ks, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
-                        silCutoff=0, verbose=FALSE,
+                        silCutoff=0, distFunction=NA,verbose=FALSE,
                         clusterDArgs=list(minSize=5),
                         subsampleArgs=list(resamp.num=50),
                         seqArgs=list(beta=0.9, k.min=3, verbose=FALSE),
@@ -219,7 +230,7 @@ setMethod(
     if(is.null(paramMatrix)){
       param <- expand.grid(dataset=dataName, #dimReduce="none",nVarDims=NA,nPCADims=NA,
                          k=ks, alpha=alphas, findBestK=findBestK,
-                         sequential=sequential,
+                         sequential=sequential, distFunction=distFunction,
                          removeSil=removeSil, subsample=subsample,
                          clusterFunction=clusterFunction, silCutoff=silCutoff)
       ###########
@@ -228,7 +239,7 @@ setMethod(
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
       ###########
-      typeK <- which(param[,"clusterFunction"] %in% c("pam"))
+      typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
 
@@ -259,6 +270,10 @@ setMethod(
         param[type01,"findBestK"] <- FALSE
         param[type01,"removeSil"] <- FALSE
         param[type01,"silCutoff"] <- 0
+      }
+      whSubsample<-which(param[,"subsample"])
+      if(length(whSubsample)>0){
+        param[whSubsample,"dist"]<-NA
       }
       param <- unique(param)
 
@@ -322,6 +337,7 @@ setMethod(
       subsample <- as.logical(gsub(" ","",par["subsample"]))
       findBestK <- as.logical(gsub(" ","",par["findBestK"]))
       clusterFunction <- as.character(par[["clusterFunction"]])
+      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else distFunction<-NULL
       if(!is.na(par[["k"]])){
         if(sequential) {
           seqArgs[["k0"]] <- par[["k"]]
@@ -331,6 +347,8 @@ setMethod(
           clusterDArgs[["k"]] <- par[["k"]]
         }
       }
+      #browser()
+      clusterDArgs[["distFunction"]]<-if(!is.null(distFunction)) get(distFunction,envir = globalenv()) else NULL
       clusterDArgs[["alpha"]] <- par[["alpha"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil
@@ -395,16 +413,13 @@ setMethod(
     outval<-clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
-      outval<-.addBackSEInfo(newObj=outval,oldObj=x)
-
+      #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
-      ###ToDo: check what happens if the only clusters existing are workflow clusters
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
-      if(!is.null(x)) retval<-addClusters(outval,x)
+     
+      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep. 
       else retval<-outval
       validObject(retval)
-
-
       return(retval)
     } else {
       return(outval)

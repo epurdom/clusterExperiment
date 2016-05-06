@@ -1,5 +1,6 @@
 setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
+setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -48,6 +49,8 @@ setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 #' @slot dendro_clusters dendrogram. A dendrogram containing the cluster
 #' relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 #' details).
+#' @slot dendro_index numeric. An integer giving the cluster that was used to
+#'   make the dendrograms. NA_real_ value if no dendrograms are saved.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
@@ -80,7 +83,8 @@ setClass(
     clusterTypes = "character",
     dendro_samples = "dendrogramOrNULL",
     dendro_clusters = "dendrogramOrNULL",
-    coClustering = "matrix",
+    dendro_index = "numeric",
+    coClustering = "matrixOrNULL",
     clusterLegend="list",
     orderSamples="numeric"
     )
@@ -125,12 +129,6 @@ setValidity("ClusterExperiment", function(object) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
 
-  # now have assigned class to slot and constructor creates one automatically
-  #   if(length(object@dendrogram) > 0) {
-  #     if(class(object@dendrogram) != "dendrogram") {
-  #       return("`dendrogram` must be of class dendrogram.")
-  #     }
-  #   }
   ##Check dendrograms
   if(!is.null(object@dendro_samples)){
     if(nobs(object@dendro_samples) != NCOL(object)) {
@@ -141,15 +139,16 @@ setValidity("ClusterExperiment", function(object) {
     if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
   }
   if(!is.null(object@dendro_clusters)){
-    if(nobs(object@dendro_clusters) != max(primaryCluster(object))) {
-      return("dendro_clusters must have the same number of leaves as the number of clusters")
+    if(is.na(object@dendro_index)) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
+    dcluster<-clusterMatrix(object)[,object@dendro_index]
+    if(nobs(object@dendro_clusters) != max(dcluster)) {
+      return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
     }
   }
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
   }
-
-  if(!all(is.na(object@coClustering)>0) &
+  if(!is.null(object@coClustering) &&
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
@@ -299,8 +298,7 @@ setMethod(
   signature = signature("SummarizedExperiment", "numeric"),
   definition = function(se, clusters, ...){
     if(NCOL(se) != length(clusters)) {
-      stop("`clusters` must be a vector of length equal to the number of
-           samples.")
+      stop("`clusters` must be a vector of length equal to the number of samples.")
     }
   clusterExperiment(se,matrix(clusters, ncol=1),...)
 })
@@ -328,8 +326,17 @@ setMethod(
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, transformation, clusterTypes="User",
-                        clusterInfo=NULL){
+  definition = function(se, clusters, 
+            transformation, 
+            primaryIndex=1,
+            clusterTypes="User",
+            clusterInfo=NULL,
+            orderSamples=1:ncol(se),
+            dendro_samples=NULL,
+            dendro_index=NA_real_,
+            dendro_clusters=NULL,
+            coClustering=NULL
+            ){
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
@@ -368,30 +375,16 @@ setMethod(
                se,
                transformation=transformation,
                clusterMatrix = clustersNum,
-               primaryIndex = 1,
+               primaryIndex = primaryIndex,
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
                orderSamples=1:ncol(se),
-               dendro_samples=NULL,
-               dendro_clusters=NULL
+               dendro_samples=dendro_samples,
+               dendro_clusters=dendro_clusters,
+               dendro_index=dendro_index,
+               coClustering=coClustering
     )
     validObject(out)
     return(out)
   })
-
-#old code:
-#     out <- new("ClusterExperiment",
-#                assays = Assays(assays(se)), #losing rownames here...
-#                elementMetadata = mcols(se),
-#                colData = colData(se),
-#                transformation=transformation,
-#                clusterMatrix = clustersNum,
-#                primaryIndex = 1,
-#                clusterTypes = unname(clusterTypes),
-#                clusterInfo=unname(clusterInfo),
-#                clusterLegend=unname(clusterLegend),
-#                orderSamples=1:ncol(se),
-#                dendro_samples=NULL,
-#                dendro_clusters=NULL
-#     )
