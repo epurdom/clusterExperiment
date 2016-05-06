@@ -13,6 +13,7 @@ Changes:
 * output for 'clusterContrasts' changed
 * removed 'Index' output for getBestFeatures
 * changed tests for getBestFeatures to run on standard objects (so have -2 values)
+* User can now give clusterLabel for resulting cluster of combineMany and mergeClusters
 
 
 Changes in version 0.1.0 (Release date: 2016-05-04)

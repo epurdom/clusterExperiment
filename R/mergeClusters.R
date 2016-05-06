@@ -222,7 +222,7 @@ setMethod(f = "mergeClusters",
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod,...) {
+                                mergeMethod,clusterLabel="mergeClusters",...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
@@ -248,7 +248,7 @@ This makes sense only for counts.")
                                 clusterTypes="mergeClusters")
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
-    clusterLabels(newObj) <- "mergeClusters"
+    clusterLabels(newObj) <- clusterLabel
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)

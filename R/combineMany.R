@@ -139,7 +139,7 @@ setMethod(
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
-  definition = function(x, whichClusters, eraseOld=FALSE,...){
+  definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="combineMany",...){
 
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
@@ -153,7 +153,7 @@ setMethod(
                                 clusterTypes="combineMany")
     #add "c" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
-    clusterLabels(newObj) <- "combineMany"
+    clusterLabels(newObj) <- clusterLabel
 
     if(!is.null(outlist$percentageShared)) {
       coClustering(newObj) <- outlist$percentageShared
