@@ -3,16 +3,18 @@ Changes in version 0.2.0 (Release date: )
 
 Changes:
 
-* allow 'whichCluster'/'whichClusters' arguments to match to clusterLabels, not just clusterTypes
-* add slot 'dendro_index' 
-* add 'whichCluster' argument to `makeDendrogram`
-* add 'hierarchicalK' clustering
-* add default distance for 0-1 clustering
-* add ability to define distance for clustering
-* 'getBestFeatures' now calls 'clusterContrasts'
-* output for 'clusterContrasts' changed
-* removed 'Index' output for getBestFeatures
-* changed tests for getBestFeatures to run on standard objects (so have -2 values)
+* Allow 'whichCluster'/'whichClusters' arguments to match to clusterLabels, not just clusterTypes
+* Added slot 'dendro_index' 
+* Added 'whichCluster' argument to `makeDendrogram`
+* Added 'hierarchicalK' clustering
+* Added default distance for 0-1 clustering
+* Added ability to define distance for clustering
+* Added 'setToCurrent' and 'setToFinal' options to update status of a cluster.
+* Added unit tests for workflow function (in test_constructor)
+* 'getBestFeatures' now calls 'clusterContrasts' internally
+* Output for 'clusterContrasts' changed
+* Removed 'Index' output for getBestFeatures
+* Changed tests for getBestFeatures to run on standard objects (which means now have -2 values to test against)
 * User can now give clusterLabel for resulting cluster of combineMany and mergeClusters
 
 

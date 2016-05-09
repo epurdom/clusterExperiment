@@ -72,7 +72,8 @@ setMethod(
 # 2nd element is the transformation function
 # The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiment Object)
 # 3rd element is the index of most variable (if dimReduce="mostVar" and returns a simple matrix) otherwise NULL
-.transData<-function(x,transFun=NULL,isCount=FALSE,nPCADims,nVarDims,dimReduce)
+.transData<-function(x,transFun=NULL,isCount=FALSE,
+                     nPCADims,nVarDims,dimReduce)
 {
   origX<-x
   #transform data
