@@ -28,7 +28,7 @@
 #'   before clustering.
 #' @param dimReduce character A character identifying what type of
 #'   dimensionality reduction to perform before clustering. Options are
-#'   "none","PCA", and "mostVar".
+#'   "none","PCA", and "var".
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{dimReduce}
 #' @param ... arguments to be passed on to the method for signature
@@ -72,7 +72,7 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
+      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var"),
       ndims=NA) {
 
     origX <- x #ngenes x nsamples
@@ -87,7 +87,7 @@ setMethod(
       warning("specifying ndims has no effect if dimReduce==`none`")
     }
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
                            isCount=isCount)

@@ -209,11 +209,11 @@ test_that("Different options of `clusterSingle` ", {
   #check var reduction
   clustndims <- clusterSingle(mat, clusterFunction="pam",
                           subsample=FALSE, sequential=FALSE,
-                          dimReduce="mostVar", ndims=3,
+                          dimReduce="var", ndims=3,
                           clusterDArgs=list(k=3), isCount=FALSE)
   expect_error(clusterSingle(mat, clusterFunction="pam",
                             subsample=FALSE, sequential=FALSE,
-                            dimReduce="mostVar", ndims=NROW(mat)+1,
+                            dimReduce="var", ndims=NROW(mat)+1,
                             clusterDArgs=list(k=3),isCount=FALSE),
                "the number of most variable features must be strictly less than the number of rows of input data matrix")
   expect_warning(clusterSingle(mat, clusterFunction="pam",

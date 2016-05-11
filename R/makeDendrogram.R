@@ -63,7 +63,7 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "mostVar"),
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var"),
                         ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
@@ -84,7 +84,7 @@ setMethod(
     }
     origX <- assay(x)
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transformation(x))
     dat <- transObj$x

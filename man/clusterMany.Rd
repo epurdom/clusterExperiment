@@ -32,10 +32,10 @@ in rows), a list of datasets overwhich the clusterings should be run, a
 
 \item{dimReduce}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "mostVar".}
+"none","PCA", and "var".}
 
 \item{nVarDims}{vector of the number of the most variable features to keep
-(when "mostVar" is identified in \code{dimReduce}). If NA is included, then
+(when "var" is identified in \code{dimReduce}). If NA is included, then
 the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified

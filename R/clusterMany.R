@@ -26,7 +26,7 @@
 #'     all distances give 0-1 values for the distance (and hence are possible
 #'     for both type "01" and "K" algorithms).
 #' @param nVarDims vector of the number of the most variable features to keep
-#'   (when "mostVar" is identified in \code{dimReduce}). If NA is included, then
+#'   (when "var" is identified in \code{dimReduce}). If NA is included, then
 #'   the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be

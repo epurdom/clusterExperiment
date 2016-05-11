@@ -145,7 +145,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
   plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData=c(3,4,5))
 
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="all")
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="mostVar",nFeatures=3)
+  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="var",nFeatures=3)
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=3:5,nFeatures=3)
   expect_error(plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3))
   row.names(smSimCE)<-paste("Gene",1:NROW(smSimCE))

@@ -128,13 +128,13 @@ assays(se) <- list(normalized_counts=fq)
 options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
 library(clusterExperiment)
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10,findBestK=FALSE,removeSil=FALSE,
-      isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),
+      isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 ```
 
 In this call to `clusterMany` we made the follow choices about what to vary: 
 
-* set `dimReduce=c("PCA", "mostVar")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
+* set `dimReduce=c("PCA", "var")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
 * For PCA reduction, choose 5,15, and 50 principal components ifor the reduced data set (set `nPCADims=c(5,15,50)`)
 * For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
@@ -264,7 +264,7 @@ For this reason, we often find the need for an additional clustering step, `merg
 `mergeClusters` needs a hierarchical clustering of the clusters. With this hiearchy it then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the mediods of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it internally. This is because different options  in `makeDendrogram` on how to perform dimensionality reduction to the data before creating the hierarchiy can affect how the clusters are hierarchically clustered, and we want to encourage the user make these choices. Here we will make the choice to use the top 500 most variable genes. 
 
 ```{r makeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
 plotDendrogram(ce)
 ```
 
@@ -532,7 +532,7 @@ Now that we've explained the underlying architecture of the clustering provided 
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
 * `clusterFunction` The clustering functions to be tried. If `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the co-clustering matrix $D$ created from subsampling the data (where pam clustering is used on the subsampled data). Otherwise, `clusterFunction` is the clustering method that will be used on  `dist(t(x))`
 * `ks` The argument 'ks' is interpreted differently for different choices of the other parameters. If `sequential=TRUE` is part of the combination, `ks` defines the argument `k0` of sequential clustering (see `help(seqCluster)`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set $K$ of both the clustering of subsampled data and the actual clustering of the data (if a $K$ needs to be set, i.e. a type "K" algorithm). When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in `help(clusterMany)` for more).
-* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "mostVar", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "mostVar" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values as we have seen):
+* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "var", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values as we have seen):
     * `nVarDims`
     * `nPCADims`
 * `alphas` These are the $\alpha$ parameters for "01" clustering techniques; these values are only relevant if one of the `clusterFunction` values is a "01" clustering algorithm. The values given to `alphas` should be between 0 and 1, with smaller values indicating greater similarity required between the clusters. 
@@ -554,7 +554,7 @@ A good first check before running `clusterMany` is to determine how many  cluste
 In the following we consider expanding our original clustering choices to consider individual choices of $K$ (rather than just `findBestK=TRUE`). 
 
 ```{r clusterManyCheckParam}
-checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,removeSil=c(TRUE,FALSE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
+checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,removeSil=c(TRUE,FALSE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```
 
@@ -569,7 +569,7 @@ We can now run this, either by giving the information in `checkParam$paramMatrix
 
 ```{r clusterManyCheckParam2,eval=FALSE}
 # ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, clusterDArgs=checkParam$clusterDArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
-ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","mostVar"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
+ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
 
 Note that we also provided in the above call the additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
@@ -627,7 +627,7 @@ We provide a method for doing this that consists of two steps. Making a hierarch
 Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `dimReduce` and the number of dimensions via `ndims`.
 
 ```{r makeDendrogram_reducedFeatures}
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
 plotDendrogram(ce)
 ```
  Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
@@ -645,7 +645,7 @@ We might prefer to get back to the dendrogram based on our `combineMany` in quic
 
 
 ```{r remakeMakeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500,whichCluster="combineMany,final")
+ce<-makeDendrogram(ce,dimReduce="var",ndims=500,whichCluster="combineMany,final")
 plotDendrogram(ce)
 ```
 
@@ -815,7 +815,7 @@ show(ce)
 `getBestFeatures` only works on the primaryCluster, and has noticed that the dendrogram in our `ce` object was not made from the primaryCluster. So we need to rerun `makeDendrogram` with our primaryCluster. It's regardless generally a good idea to make sure the dendrogram you have is the one you want. 
 
 ```{r getBestFeatures_dendro}
-ce<-makeDendrogram(ce,dimReduce="mostVar",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
 bestDendro<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
 head(bestDendro)
 ```

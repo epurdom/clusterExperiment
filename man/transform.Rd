@@ -20,7 +20,7 @@ done.}
 keep, based on MAD variability.}
 
 \item{dimReduce}{Character vector specifying the dimensionality reduction to
-perform, any combination of 'none', 'PCA' and 'mostVar'. See details.}
+perform, any combination of 'none', 'PCA' and 'var'. See details.}
 }
 \value{
 If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of
@@ -39,7 +39,7 @@ The data matrix defined by \code{assay(x)} is transformed based on
   transformed matrix is returned. Otherwise, the user can request
   dimensionality reduction of the transformed data via \code{dimReduce}.
   'PCA' refers to PCA of the transformed data with the top nPCADims kept.
-  'mostVar' refers to keeping the top most variable features (defined by
+  'var' refers to keeping the top most variable features (defined by
   taking the MAD across all samples), and nVarDims defines how many such
   features to keep.
 
@@ -62,7 +62,7 @@ function(x){x^2}) #define transformation as x^2
 x <- transform(cc, dimReduce="PCA", nPCADims=3)
 
 #transform and take return untransformed, top 5 features, and top 10 features
-y <- transform(cc, dimReduce="mostVar", nVarDims=c(NA, 5, 10))
+y <- transform(cc, dimReduce="var", nVarDims=c(NA, 5, 10))
 names(y)
 
 z<-transform(cc) #just return tranformed data

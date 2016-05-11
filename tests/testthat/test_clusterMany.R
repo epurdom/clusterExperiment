@@ -55,14 +55,14 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
           })
 test_that("`clusterMany` works changing parameters", {
   #check dim reduce
-  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
                     isCount=FALSE)
   #check giving paramMatrix
-  param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+  param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
                        subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
                        isCount=FALSE)
-  #             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","mostVar"),clusterFunction="pam",
+  #             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
   #                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
   #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
   #             expect_equal(cc,cc2)
