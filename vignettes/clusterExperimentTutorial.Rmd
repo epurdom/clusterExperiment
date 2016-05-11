@@ -794,7 +794,7 @@ best1vsAll<-getBestFeatures(ce,contrastType="OneAgainstAll",p.value=0.05)
 head(best1vsAll)
 ```
 
-Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4+X5+X6+X7+X8)/7-X1", meaning the mean of the means of cluster 2-7 is compared to the mean of cluster1. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
+Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4+X5+X6)/5-X1", meaning the mean of the means of clusters 2-6 is compared to the mean of cluster1. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
 
 
 ### Dendrogram
