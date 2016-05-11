@@ -164,8 +164,8 @@ setMethod(f = "getBestFeatures",
             contrastAdj <- match.arg(contrastAdj)
 #             returnType<-c("Table", "Index")
 #             returnType<-match.arg(returnType)
-             returnType <- "Table" 
-            
+             returnType <- "Table"
+
             if(is.null(rownames(dat))) {
               rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
             }
@@ -428,12 +428,11 @@ This makes sense only for counts.")
 #'   the clusters in \code{cluster} (excluding "-1" categories). Each row is a pair
 #'   to be compared and must match the names of the clusters in the vector
 #'   \code{cluster}.
-#' @param removeNegative logical, whether to remove negative valued clusters 
+#' @param removeNegative logical, whether to remove negative valued clusters
 #'   from the design matrix. Appropriate to pick TRUE (default) if design will
 #'   be input into linear model on samples that excludes -1.
 #' @param outputType character string. Gives format for the resulting contrast
-#'   matrix. Currently the only option is the format appropriate for
-#'   \code{\link{limma}} package, but we anticipate adding more.
+#'   matrix. Currently, two formats are implemented: \code{limma} and \code{MAST}.
 #' @param ... arguments that are passed to from the \code{ClusterExperiment}
 #'   version to the matrix version.
 #' @details The input vector must be numeric clusters, but the external commands
@@ -446,7 +445,7 @@ This makes sense only for counts.")
 #'   to the number of contrasts, and rows equal to the number of levels of the
 #'   factor that will be fit in a linear model.
 #' @author Elizabeth Purdom
-#' @examples 
+#' @examples
 #' data(simData)
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
@@ -474,8 +473,10 @@ setMethod(f = "clusterContrasts",
 setMethod(f = "clusterContrasts",
           signature = "numeric",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
-    dendro=NULL, pairMat=NULL,outputType="limma",removeNegative=TRUE){
-              
+    dendro=NULL, pairMat=NULL,outputType=c("limma", "MAST"),removeNegative=TRUE){
+
+    outputType <- match.arg(outputType)
+
     if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
     cl<-factor(cl)
     contrastType<-match.arg(contrastType)
@@ -487,7 +488,7 @@ setMethod(f = "clusterContrasts",
         clChar<-as.character(cl)
         allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]
         if(any(sort(allTipNames)!=sort(unique(clChar)))) stop("tip names of dendro don't match cluster vector values")
-        
+
         #each internal node (including root) construct contrast between them.
         #(before just tested differences between them)
         allInternal<-phylobase::getNode(phylo4Obj,  type=c("internal"))
@@ -505,7 +506,7 @@ setMethod(f = "clusterContrasts",
             return(paste(contrAvePerChild,collapse="-"))
         }
         contrastNames<-sapply(allInternal,.makeNodeContrast)
-        
+
     }
     if(contrastType=="OneAgainstAll"){
         levs<-levels(cl)
@@ -540,8 +541,9 @@ setMethod(f = "clusterContrasts",
 #         levnames<-levels(factor(cluster[cluster>0]))
 #     }
     levnames<-make.names(levels(cl))
+
     if(outputType=="limma") return(limma::makeContrasts(contrasts=contrastNames,levels=levnames))
-    
+    if(outputType=="MAST") return(MAST::Hypothesis(contrastNames, levnames))
 })
 
 .testContrasts<-function(contrastNames,fit,fitF,contrastAdj,...){
