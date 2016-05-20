@@ -1,6 +1,6 @@
 ---
 title: "clusterExperiment Vignette"
-author: "Elizabeth Purdom"
+author: "Elizabeth Purdom and Davide Risso"
 date: "`r Sys.Date()`"
 bibliography: bibFile.bib
 output: 
@@ -115,7 +115,7 @@ This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will at least make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
 ```{r normalization}
-#library(limma)
+library(limma)
 fq <- round(normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
