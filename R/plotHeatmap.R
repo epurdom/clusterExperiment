@@ -70,7 +70,7 @@
 #' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}.
 #'   For the other signatures, passed to the method for signature \code{matrix}.
 #' @param nFeatures integer indicating how many features should be used (if
-#'   \code{clusterFeaturesData} is 'mostVar' or 'PCA').
+#'   \code{clusterFeaturesData} is 'var' or 'PCA').
 #' @param isSymmetric logical. if TRUE indicates that the input matrix is
 #'   symmetric. Useful when plotting a co-clustering matrix or other sample by
 #'   sample matrices (e.g., correlation).
@@ -127,7 +127,7 @@
 #'   clusterings will be shown closest to data (i.e. on bottom).
 #' @details If \code{data} is a \code{ClusterExperiment} object,
 #'   \code{clusterFeaturesData} is not a dataset, but instead indicates which
-#'   features should be shown in the heatmap. "mostVar" selects the
+#'   features should be shown in the heatmap. "var" selects the
 #'   \code{nFeatures} most variable genes (based on
 #'   \code{transformation(assay(data))}); "PCA" results in a heatmap of the top
 #'   \code{nFeatures} PCAs of the \code{transformation(assay(data))}.
@@ -239,7 +239,7 @@ setMethod(
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
                         clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"),
-                        clusterFeaturesData=c("mostVar","all","PCA"), nFeatures=NULL,
+                        clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
                         sampleData=NULL,clusterFeatures=TRUE,
@@ -261,12 +261,12 @@ setMethod(
       clusterFeaturesData<-unlist(clusterFeaturesData)
     }
     else groupFeatures<-NULL
-    if(all(clusterFeaturesData %in% c("mostVar","all","PCA"))){ #
+    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
         dimReduce=switch(clusterFeaturesData,
-                         "mostVar"="mostVar",
+                         "var"="var",
                         "PCA"="PCA",
                         "all"="none")
-        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"mostVar"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
         wh<-1:NROW(data)
     }
     else{
@@ -289,7 +289,7 @@ setMethod(
     }
     transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
     if(dimReduce%in%"PCA") wh<-1:nFeatures
-    if(dimReduce=="mostVar") wh<-transObj$whMostVar #give indices that will pull
+    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
     #########
     ##Assign visualization data and clusterFeaturesData
     #########

@@ -12,8 +12,8 @@
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
-  "mostVar"), ndims = NA)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var"),
+  ndims = NA)
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 
@@ -53,7 +53,7 @@ before clustering.}
 
 \item{dimReduce}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "mostVar".}
+"none","PCA", and "var".}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
