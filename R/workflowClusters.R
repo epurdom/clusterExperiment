@@ -104,6 +104,56 @@ setMethod(
   }
 )
 
+
+#' @rdname workflowClusters
+#' @param whichCluster which cluster to set to current in the workflow
+#' @inheritParams clusterMany,matrix-method
+#' @return \code{setToCurrent} returns a \code{ClusterExperiment} object where
+#'   the indicated cluster of \code{whichCluster} has been set to the most
+#'   current iteration in the workflow. Pre-existing clusters are appropriately
+#'   updated.
+#' @export
+setMethod(
+  f = "setToCurrent",
+  signature = signature("ClusterExperiment"),
+  definition = function(x,whichCluster,eraseOld=FALSE){
+    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
+    if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+    #browser()
+    type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
+    if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
+    newX<-.updateCurrentWorkflow(x,eraseOld=eraseOld,newToAdd=type)
+    clusterTypes(newX)[whCl]<-type
+    primaryClusterIndex(newX)<-whCl
+    #browser()
+    if(strsplit(clusterLabels(x)[whCl],"[.]")[[1]][1]==type){
+      clusterLabels(newX)[whCl]<-type
+    }
+    return(newX)
+  }
+)
+
+#' @rdname workflowClusters
+#' @param clusterLabel optional string value to give to cluster set to be "final"
+#' @return \code{setToFinal} returns a \code{ClusterExperiment} object where the
+#'   indicated cluster of \code{whichCluster} has clusterType set to "final".
+#'   The primaryClusterIndex is also set to this cluster, and the clusterLabel,
+#'   if given.
+#' @export
+setMethod(
+  f = "setToFinal",
+  signature = signature("ClusterExperiment"),
+  definition = function(x,whichCluster,clusterLabel){
+    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
+    if(length(whCl)!=1) warning("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+    clusterTypes(x)[whCl]<-"final"
+    if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
+    primaryClusterIndex(x)<-whCl
+    return(x)
+  }
+)  
 #change current workflow to old iteration 
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)

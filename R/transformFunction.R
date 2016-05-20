@@ -10,14 +10,14 @@
 #' @param nVarDims Numeric vector giving the number of features (e.g. genes) to
 #'   keep, based on MAD variability.
 #' @param dimReduce Character vector specifying the dimensionality reduction to
-#'   perform, any combination of 'none', 'PCA' and 'mostVar'. See details.
+#'   perform, any combination of 'none', 'PCA' and 'var'. See details.
 #'
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
 #'   the transformation function defined in x. If \code{dimReduce="none"} the
 #'   transformed matrix is returned. Otherwise, the user can request
 #'   dimensionality reduction of the transformed data via \code{dimReduce}.
 #'   'PCA' refers to PCA of the transformed data with the top nPCADims kept.
-#'   'mostVar' refers to keeping the top most variable features (defined by
+#'   'var' refers to keeping the top most variable features (defined by
 #'   taking the MAD across all samples), and nVarDims defines how many such
 #'   features to keep.
 #' @details The PCA uses prcomp on \code{t(assay(x))} with \code{center=TRUE}
@@ -47,7 +47,7 @@
 #' x <- transform(cc, dimReduce="PCA", nPCADims=3)
 #'
 #' #transform and take return untransformed, top 5 features, and top 10 features
-#' y <- transform(cc, dimReduce="mostVar", nVarDims=c(NA, 5, 10))
+#' y <- transform(cc, dimReduce="var", nVarDims=c(NA, 5, 10))
 #' names(y)
 #'
 #' z<-transform(cc) #just return tranformed data
@@ -71,8 +71,9 @@ setMethod(
 # if npcs=NA or length of npcs=1, transformed data is matrix; otherwise returns list of data matrices.
 # 2nd element is the transformation function
 # The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiment Object)
-# 3rd element is the index of most variable (if dimReduce="mostVar" and returns a simple matrix) otherwise NULL
-.transData<-function(x,transFun=NULL,isCount=FALSE,nPCADims,nVarDims,dimReduce)
+# 3rd element is the index of most variable (if dimReduce="var" and returns a simple matrix) otherwise NULL
+.transData<-function(x,transFun=NULL,isCount=FALSE,
+                     nPCADims,nVarDims,dimReduce)
 {
   origX<-x
   #transform data
@@ -91,7 +92,7 @@ setMethod(
   listReturn<-FALSE
   whFeatures<-NULL
   #check valid options for dimReduce
-  if(any(!dimReduce %in% c("none","PCA","mostVar"))) stop("invalid options for 'dimReduce' must be one of: 'none','PCA',or 'mostVar'")
+  if(any(!dimReduce %in% c("none","PCA","var"))) stop("invalid options for 'dimReduce' must be one of: 'none','PCA',or 'var'")
   if(any(dimReduce!="none")){
     if(any(is.na(nPCADims)) & "PCA" %in% dimReduce){
       if(length(nPCADims)==1){
@@ -104,10 +105,10 @@ setMethod(
         nPCADims<-nPCADims[!is.na(nPCADims)]
       }
     }
-    if(any(is.na(nVarDims)) & "mostVar" %in% dimReduce){
+    if(any(is.na(nVarDims)) & "var" %in% dimReduce){
       if(length(nVarDims)==1){
         if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
-        if(length(dimReduce)>1) dimReduce<-dimReduce[-match("mostVar",dimReduce)] #assume user goofed and didn't mean to also include
+        if(length(dimReduce)>1) dimReduce<-dimReduce[-match("var",dimReduce)] #assume user goofed and didn't mean to also include
 
       }
       else{#assume user meant to do none as well as dimReduce with other values.
@@ -147,7 +148,7 @@ setMethod(
         listReturn<-TRUE
       }
     }
-    if("mostVar" %in% dimReduce & all(!is.na(nVarDims))){ #do PCA dim reduction
+    if("var" %in% dimReduce & all(!is.na(nVarDims))){ #do PCA dim reduction
       if(max(nVarDims)>NROW(x)) stop("the number of most variable features must be strictly less than the number of rows of input data matrix")
       if(min(nVarDims)<1) stop("the number of most variable features must be equal to 1 or greater")
       if(min(nVarDims)<50 & NROW(x)>1000) warning("the number of most variable features to be selected is less than 50. Are you sure you meant to choose to use the top most variable features rather than PCA dimensionality reduction?")

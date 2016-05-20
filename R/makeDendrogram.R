@@ -16,6 +16,9 @@
 #' dimensionality reduction to perform before clustering.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #' in the reduction specified by \code{dimReduce}.
+#' @param whichCluster an integer index or character string that identifies
+#'   which cluster should be used to make the dendrogram. Default is
+#'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to \code{plot}.
@@ -60,10 +63,15 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, dimReduce=c("none", "PCA", "mostVar"),
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var"),
                         ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
+    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
+    if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+#    browser()
+    cl<-clusterMatrix(x)[,whCl]
     ########
     ##Transform the data
     ########
@@ -76,16 +84,17 @@ setMethod(
     }
     origX <- assay(x)
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transformation(x))
     dat <- transObj$x
     if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
-    outlist <- makeDendrogram(x=dat, cluster=primaryCluster(x),unassignedSamples=unassignedSamples, ...)
+    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
+    x@dendro_index<-whCl
     validObject(x)
     return(x)
   })
@@ -184,15 +193,16 @@ setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
   definition = function(x,leaves=c("clusters","samples" ), clusterNames=TRUE,
-                        main,...)
+                        main,sub,...)
   {
     leaves<-match.arg(leaves)
     if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     labs<-labels(dend)
     if(leaves=="clusters"){
-      leg<-clusterLegend(x)[[primaryClusterIndex(x)]]
+      leg<-clusterLegend(x)[[x@dendro_index]]
       m<-match(labs,leg[,"clusterIds"])
       if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
       else{
@@ -209,5 +219,5 @@ setMethod(
         dend <- dendrapply(dend, reLabel)
       }
     }
-    plot(dend,main=main,...)
+    plot(dend,main=main,sub=sub,...)
   })

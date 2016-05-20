@@ -4,10 +4,11 @@
 #' \code{\link{ClusterExperiment}} object, this function will find clusters,
 #' based on a single specification of parameters.
 #'
-#' @param x the data on which to run the clustering (genes in rows).
-#' @param subsample logical as to whether to subsample via
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each
-#'   iteration; otherwise the distance matrix is dist(x).
+#' @param x the data on which to run the clustering (features in rows).
+#' @param subsample logical as to whether to subsample via 
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
+#'   iteration; otherwise the distance function will be determined by argument
+#'   \code{distFunction} passed in \code{clusterDArgs}.
 #' @param sequential logical whether to use the sequential strategy (see
 #'   Details).
 #' @param clusterFunction passed to \code{\link{clusterD}} option
@@ -27,7 +28,7 @@
 #'   before clustering.
 #' @param dimReduce character A character identifying what type of
 #'   dimensionality reduction to perform before clustering. Options are
-#'   "none","PCA", and "mostVar".
+#'   "none","PCA", and "var".
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{dimReduce}
 #' @param ... arguments to be passed on to the method for signature
@@ -69,9 +70,9 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrix"),
   definition = function(x, subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical01", "pam","kmeans"),
+      clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","mostVar"),
+      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var"),
       ndims=NA) {
 
     origX <- x #ngenes x nsamples
@@ -86,7 +87,7 @@ setMethod(
       warning("specifying ndims has no effect if dimReduce==`none`")
     }
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="mostVar", ndims, NA)
+    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
                            isCount=isCount)
@@ -102,8 +103,8 @@ setMethod(
     ##########
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
-      if(!subsample & clusterFunction !="pam")
-        stop("If not subsampling, clusterFunction must be 'pam'")
+#       if(!subsample & clusterFunction !="pam")
+#         stop("If not subsampling, clusterFunction must be 'pam'")
       typeAlg <- .checkAlgType(clusterFunction)
     }
     else{
@@ -120,7 +121,6 @@ setMethod(
                'findBestK=TRUE' is passed via clusterDArgs.
                See help documentation.")
       }
-
     }
     if(sequential){
       if(is.null(seqArgs)) {
@@ -130,7 +130,7 @@ setMethod(
         stop("seqArgs must contain element 'k0'")
       }
       outlist <- do.call("seqCluster",
-                        c(list(x=t(x), subsample=subsample,
+                        c(list(x=x, subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs,
                                clusterFunction=clusterFunction), seqArgs))
@@ -165,7 +165,7 @@ setMethod(
       ##########
       ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
       ##########
-      finalClusterList <- .clusterWrapper(t(x), clusterFunction=clusterFunction,
+      finalClusterList <- .clusterWrapper(x, clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,

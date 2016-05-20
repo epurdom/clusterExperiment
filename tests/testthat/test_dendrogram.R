@@ -38,3 +38,36 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
   expect_equal(rowData(dend),rowData(se))
 
 })
+
+test_that("`makeDendrogram` works with whichCluster", {
+    x1<-makeDendrogram(ccSE,whichCluster="Cluster2")
+    x2<-makeDendrogram(ccSE,whichCluster=2)
+    expect_equal(x1,x2)
+    
+    bigCE<-ceSim
+    bigCE<-makeDendrogram(bigCE,whichCluster="cluster1")
+    x1<-bigCE
+    #--- check clusterMany updates dendrogram correctly
+    bigCE<-clusterMany(bigCE,k=2:8,clusterFunction="hierarchicalK")
+    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
+    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
+    #takes a long time!
+    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    expect_error(makeDendrogram(bigCE,whichCluster="workflow"),"'whichCluster' must identify only a single clustering")
+ 
+    #--- check combineMany updates dendrogram correctly
+    bigCE<-combineMany(bigCE,proportion=0.3)
+    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
+    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
+    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    makeDendrogram(bigCE,whichCluster="combineMany") 
+    
+    
+    #--- check mergeClusters updates dendrogram correctly
+    bigCE<-mergeClusters(bigCE,mergeMethod="adjP",cutoff=0.2)
+    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
+    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
+    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    
+    expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
+})

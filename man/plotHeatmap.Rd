@@ -15,7 +15,7 @@
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
   clusterSamplesData = c("hclust", "dendrogramValue", "orderSamplesValue",
-  "primaryCluster"), clusterFeaturesData = c("mostVar", "all", "PCA"),
+  "primaryCluster"), clusterFeaturesData = c("var", "all", "PCA"),
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "workflow", "all", "none"),
   sampleData = NULL, clusterFeatures = TRUE, colorScale, ...)
@@ -26,7 +26,7 @@
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
-  isSymmetric = FALSE, ...)
+  isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data, ...)
 }
@@ -63,7 +63,7 @@ input should be either character or integers indicating which features
 should be used (see details).}
 
 \item{nFeatures}{integer indicating how many features should be used (if
-\code{clusterFeaturesData} is 'mostVar' or 'PCA').}
+\code{clusterFeaturesData} is 'var' or 'PCA').}
 
 \item{visualizeData}{either a character string, indicating what form of the
 data should be used for visualizing the data (i.e. for making the
@@ -126,6 +126,11 @@ number between 0 and 1, indicating that the breaks should be equally spaced
 \item{isSymmetric}{logical. if TRUE indicates that the input matrix is
 symmetric. Useful when plotting a co-clustering matrix or other sample by
 sample matrices (e.g., correlation).}
+
+\item{overRideClusterLimit}{logical. Whether to override the internal limit 
+that only allows 10 clusterings/annotations. If overridden, may result in 
+incomprehensible errors from aheatmap. Only override this if you have a
+very large plotting device and want to see if aheatmap can render it.}
 }
 \value{
 Returns (invisibly) a list with elements
@@ -198,7 +203,7 @@ If \code{data} is a matrix, then \code{sampleData} is a data.frame
 
 If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterFeaturesData} is not a dataset, but instead indicates which
-  features should be shown in the heatmap. "mostVar" selects the
+  features should be shown in the heatmap. "var" selects the
   \code{nFeatures} most variable genes (based on
   \code{transformation(assay(data))}); "PCA" results in a heatmap of the top
   \code{nFeatures} PCAs of the \code{transformation(assay(data))}.

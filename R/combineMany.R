@@ -139,7 +139,7 @@ setMethod(
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
-  definition = function(x, whichClusters, eraseOld=FALSE,...){
+  definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="combineMany",...){
 
     if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
       stop("Invalid indices for clusterLabels")
@@ -148,22 +148,21 @@ setMethod(
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
-
-
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="combineMany")
     #add "c" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
-    clusterLabels(newObj) <- "combineMany"
+    clusterLabels(newObj) <- clusterLabel
 
     if(!is.null(outlist$percentageShared)) {
       coClustering(newObj) <- outlist$percentageShared
     }
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
-    if(!is.null(x)) retval<-addClusters(newObj,x)
-    else retval<-newObj
+    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep. 
+    else retval<-outval
+    validObject(retval)
     
     return(retval)
   }

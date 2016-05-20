@@ -96,7 +96,6 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
 
             ####check adding a clusterExperiment to existing CE
-            expect_error(addClusters(ccSE,ceSim),"non-conformable arrays") #dims of assays don't match
             expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
             c3<-addClusters(ccSE,ccSE)
             expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
@@ -117,8 +116,8 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
             
             ###check adding matrix of clusters
-            c4<-addClusters(ccSE,clusterMatrix(smSimCE),clusterTypes="New")
-            newLeng<-nClusters(ccSE)+nClusters(smSimCE)
+            c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
+            newLeng<-2*nClusters(ccSE)
             expect_equal(NCOL(clusterMatrix(c4)), newLeng)
             expect_equal(length(clusterTypes(c4)), newLeng)
             expect_equal(length(clusterInfo(c4)), newLeng)
@@ -204,9 +203,9 @@ test_that("adding clusters, setting primary labels and remove unclustered cells
             clusterLegend(cc)<-x
             clusterLegend(c4)[1:2]<-x[1:2]
             clusterLegend(c4)[[1]]<-x[[1]]
-
-            expect_error(clusterLegend(c4)[3]<-x[1],"each element of `clusterLegend` must be matrix with")
-            expect_error(clusterLegend(c4)[[3]]<-x[[1]],"must be matrix with")
+#add wrong dimensions:
+            expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
+            expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
             
         })
 test_that("accessing transformed data works as promised",
@@ -214,19 +213,43 @@ test_that("accessing transformed data works as promised",
 #check all of the option handling on the dimensionality reduction arguments
   expect_equal(dim(transform(cc)), dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3)), c(3,NCOL(assay(cc))))
-  expect_equal(dim(transform(cc,dimReduce="mostVar",nVarDims=3)), c(3,NCOL(assay(cc))))
-  expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nVarDims=2)),c(2,NCOL(assay(cc))))
-  expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=2)),c(2,NCOL(assay(cc))))
-  expect_equal(length(transform(cc,dimReduce="mostVar",nVarDims=c(2,3))),2)
+  expect_equal(dim(transform(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nVarDims=2)),c(2,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nPCADims=2)),c(2,NCOL(assay(cc))))
+  expect_equal(length(transform(cc,dimReduce="var",nVarDims=c(2,3))),2)
   expect_equal(length(transform(cc,dimReduce="PCA",nPCADims=c(2,3))),2)
-  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2,3))),2)
-  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nVarDims=c(2,3))),2)
-  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2,3),nVarDims=4)),3)
-  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(3),nVarDims=4)),2)
-  expect_equal(length(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=c(2),nVarDims=c(3,4))),3)
-  expect_equal(dim(transform(cc,dimReduce=c("PCA","mostVar"),nPCADims=NA,nVarDims=NA)),dim(assay(cc)))
+  expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nPCADims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nVarDims=c(2,3))),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nPCADims=c(2,3),nVarDims=4)),3)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nPCADims=c(3),nVarDims=4)),2)
+  expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nPCADims=c(2),nVarDims=c(3,4))),3)
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nPCADims=NA,nVarDims=NA)),dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce=c("PCA"),nPCADims=NA,nVarDims=3)),dim(assay(cc)))
   expect_equal(length(transform(cc,dimReduce=c("PCA"),nPCADims=c(NA,3),nVarDims=4)),2)
 
 
             })
+
+test_that("workflow functions work",
+          {
+  ceNew<-combineMany(ceSim,proportion=0.7)
+  ceNew<-combineMany(ceNew,proportion=0.3,clusterLabel="combineMany,v2")
+  expect_equal(clusterLabels(ceNew)[1:2],c("combineMany,v2","combineMany.1"))
+  expect_equal(clusterTypes(ceNew)[1:2],c("combineMany","combineMany.1"))
+  ceNew2<-setToCurrent(ceNew,whichCluster="combineMany.1")
+  expect_equal(clusterLabels(ceNew2)[1:2],c("combineMany,v2","combineMany"))
+  expect_equal(clusterTypes(ceNew2)[1:2],c("combineMany.2","combineMany"))
+  ceNew3<-setToCurrent(ceNew2,whichCluster="combineMany.2")
+  expect_equal(clusterLabels(ceNew3)[1:2],c("combineMany,v2","combineMany.3"))
+  expect_equal(clusterTypes(ceNew3)[1:2],c("combineMany","combineMany.3"))
+
+  ceNew4<-setToFinal(ceNew,whichCluster="combineMany,v2",clusterLabel="Final Version")
+  expect_equal(primaryClusterIndex(ceNew4),1)
+  expect_equal(clusterLabels(ceNew4)[primaryClusterIndex(ceNew4)],"Final Version")
+  expect_equal(clusterTypes(ceNew4)[primaryClusterIndex(ceNew4)],"final")
+  
+  ceNew5<-setToFinal(ceNew,whichCluster="combineMany.1",clusterLabel="Final Version")
+  expect_equal(primaryClusterIndex(ceNew5),2)
+  expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
+  expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")
+          })

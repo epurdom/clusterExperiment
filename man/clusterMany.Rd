@@ -14,7 +14,7 @@
 
 \S4method{clusterMany}{list}(x, ks, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, verbose = FALSE,
+  subsample = FALSE, silCutoff = 0, distFunction = NA, verbose = FALSE,
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
   seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
   random.seed = NULL, run = TRUE, ...)
@@ -32,10 +32,10 @@ in rows), a list of datasets overwhich the clusterings should be run, a
 
 \item{dimReduce}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "mostVar".}
+"none","PCA", and "var".}
 
 \item{nVarDims}{vector of the number of the most variable features to keep
-(when "mostVar" is identified in \code{dimReduce}). If NA is included, then
+(when "var" is identified in \code{dimReduce}). If NA is included, then
 the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified
@@ -60,7 +60,15 @@ choices).}
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{clusterSingle}, this must be a character vector of pre-defined
 clustering techniques provided by the package, and can not be a
-user-defined function.}
+user-defined function.
+@param distFunction a vector of character strings that are the names of
+  distance functions found in the global environment. See the help pages of
+  \code{\link{clusterD}} for details about the required format of distance
+  functions. Currently, this distance function must be applicable for all
+  clusterFunction types. Therefore, it is not possible to intermix type "K"
+  and type "01" algorithms if you also give distances to evaluate unless
+  all distances give 0-1 values for the distance (and hence are possible
+  for both type "01" and "K" algorithms).}
 
 \item{alphas}{values of alpha to be tried. Only used for
 subsampleclusterFunction either 'tight' or 'hierarchical'.}
@@ -73,12 +81,16 @@ Details).}
 
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff}
 
-\item{subsample}{logical as to whether to subsample via
-\code{\link{subsampleClustering}} to get the distance matrix at each
-iteration; otherwise the distance matrix is dist(x).}
+\item{subsample}{logical as to whether to subsample via 
+\code{\link{subsampleClustering}} to get the distance matrix at each 
+iteration; otherwise the distance function will be determined by argument
+\code{distFunction} passed in \code{clusterDArgs}.}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
+
+\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
+input \code{D} is a matrix of data, rather than a distance. See details.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
@@ -166,6 +178,10 @@ The argument 'ks' is interpreted differently for different choices
   the user via the clusterDArgs; note this means that the default option of
   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
   not available in clusterMany.
+
+If the input is a \code{ClusterExperiment} object, currently
+  existing \code{orderSamples},\code{coClustering} or dendrogram slots will
+  be retained.
 }
 \examples{
 data(simData)

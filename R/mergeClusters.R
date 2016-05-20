@@ -100,27 +100,15 @@ setMethod(f = "mergeClusters",
                           isCount=TRUE, ...) {
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
-    cl <- as.numeric(as.character(cl))
+    cl <- .convertToNum(cl)
   }
-
   if(!is.null(dendro)){
     #check valid
     ncluster <- length(table(cl[cl>0]))
     if(nobs(dendro) != ncluster) {
-      warning("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).
-              Will recompute dendrogram")
-      dendro<-NULL
+      stop("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).")
     }
   }
-
-  if(is.null(dendro)) {
-    dendro <- if(isCount) {
-        makeDendrogram(x=log2(x+1), cl)$clusters
-      } else {
-        makeDendrogram(x=x, cl)$clusters
-      }
-  }
-
   mergeMethod <- match.arg(mergeMethod)
   plotType <- match.arg(plotType)
   if(mergeMethod=="none" & plotType=="none") stop("mergeMethod and plotType both equal 'none'; nothing to be done.")
@@ -233,23 +221,23 @@ setMethod(f = "mergeClusters",
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod,...) {
+                                mergeMethod,clusterLabel="mergeClusters",...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
-  if(!isCount) outlist <- mergeClusters(x=transform(x), cl=primaryCluster(x),
-                           dendro=x@dendro_clusters,
-                           isCount=FALSE,mergeMethod=mergeMethod, ...)
   else{
-    note(
-      "If `isCount=TRUE` the data will be transformed with voom() rather than
+    cl<-clusterMatrix(x)[,x@dendro_index]
+    note("Merging will be done on '",clusterLabels(x)[x@dendro_index],"', with clustering index",x@dendro_index)
+  }
+  if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
-    outlist <- mergeClusters(x=assay(x), cl=primaryCluster(x),
-                                          dendro=x@dendro_clusters,
-                                          isCount=TRUE,mergeMethod=mergeMethod, ...)
-  }
+            #browser()
+  outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x), 
+                           cl=cl,
+                           dendro=x@dendro_clusters,
+                           isCount=isCount,mergeMethod=mergeMethod, ...)
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     #----
     #add "m" to name of cluster
@@ -259,12 +247,11 @@ This makes sense only for counts.")
                                 clusterTypes="mergeClusters")
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
-    clusterLabels(newObj) <- "mergeClusters"
+    clusterLabels(newObj) <- clusterLabel
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-    if(!is.null(x)) retval<-addClusters(newObj,x)
+    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-newObj
-    #retval@dendro_samples <- x@dendro_samples
     invisible(retval)
   }
   else{ #don't do anything, since there was no merging done.

@@ -23,7 +23,9 @@ clusterExperiment(se, clusters, ...)
 \S4method{clusterExperiment}{SummarizedExperiment,factor}(se, clusters, ...)
 
 \S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
-  transformation, clusterTypes = "User", clusterInfo = NULL)
+  transformation, primaryIndex = 1, clusterTypes = "User",
+  clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
+  dendro_index = NA_real_, dendro_clusters = NULL, coClustering = NULL)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
@@ -111,6 +113,9 @@ details).}
 \item{\code{dendro_clusters}}{dendrogram. A dendrogram containing the cluster
 relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 details).}
+
+\item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
+make the dendrograms. NA_real_ value if no dendrograms are saved.}
 
 \item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering

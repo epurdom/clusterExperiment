@@ -2,6 +2,8 @@
 % Please edit documentation in R/workflowClusters.R
 \docType{methods}
 \name{workflowClusters}
+\alias{setToCurrent,ClusterExperiment-method}
+\alias{setToFinal,ClusterExperiment-method}
 \alias{workflowClusterDetails}
 \alias{workflowClusterDetails,ClusterExperiment-method}
 \alias{workflowClusterTable}
@@ -15,11 +17,26 @@
 \S4method{workflowClusterDetails}{ClusterExperiment}(x)
 
 \S4method{workflowClusterTable}{ClusterExperiment}(x)
+
+\S4method{setToCurrent}{ClusterExperiment}(x, whichCluster, eraseOld = FALSE)
+
+\S4method{setToFinal}{ClusterExperiment}(x, whichCluster, clusterLabel)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
 \item{iteration}{numeric. Which iteration of the workflow should be used.}
+
+\item{whichCluster}{which cluster to set to current in the workflow}
+
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
+clusterTypes.}
+
+\item{clusterLabel}{optional string value to give to cluster set to be "final"}
 }
 \value{
 \code{workflowClusters} returns a matrix consisting of the
@@ -32,6 +49,16 @@
 \code{workflowClusterTable} returns a table of how many of the
   clusterings belong to each of the following possible values: `final`,
   `mergeClusters`, `combineMany` and `clusterMany`.
+
+\code{setToCurrent} returns a \code{ClusterExperiment} object where
+  the indicated cluster of \code{whichCluster} has been set to the most
+  current iteration in the workflow. Pre-existing clusters are appropriately
+  updated.
+
+\code{setToFinal} returns a \code{ClusterExperiment} object where the
+  indicated cluster of \code{whichCluster} has clusterType set to "final".
+  The primaryClusterIndex is also set to this cluster, and the clusterLabel,
+  if given.
 }
 \description{
 The main workflow of the package is made of

@@ -10,7 +10,7 @@
 #' @aliases cluster01
 #' @aliases clusterK
 #'
-#' @param D the \code{n x n} matrix of 0-1 values.
+#' @param D either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.
 #' @param clusterFunction clusterFunction a function that clusters a nxn matrix
 #'   of dissimilarities/distances. Can also be given character values to
 #'   indicate use of internal wrapper functions for default methods. See Details
@@ -22,6 +22,8 @@
 #'   Otherwise, for methods provided by the package (i.e. by user setting
 #'   clusterFunction to a character value) clusterD will determine the
 #'   appropriate input for 'typeAlg' and will ignore user input.
+#' @param distFunction a distance function to be applied to \code{D}. Only relevant if
+#'   input \code{D} is a matrix of data, rather than a distance. See details.
 #' @param minSize the minimum number of samples in a cluster. Clusters found
 #'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
@@ -71,7 +73,7 @@
 #'   also assumed to cluster all samples to a cluster, and therefore clusterK
 #'   gives options to exclude poorly clustered samples via silhouette distances.
 #'
-#'   cluster01 required format for input and output for clusterFunction:
+#'   @details cluster01 required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes (as a minimum) an argument
 #'   "D" and "alpha". 0-1 clustering algorithms are expected to use the fact
 #'   that the D input is 0-1 range to find the clusters, rather than a user
@@ -84,39 +86,49 @@
 #'   clusters' (as defined by the clusterFunction), with first being the best
 #'   and last being worst.
 #'
-#'   cluster01 methods: "tight" method refers to the method of finding clusters
-#'   from a subsampling matrix given in the tight algorithm of Tsang and Wong.
-#'   Arguments for the tight method are 'minSize.core' (default=2), which sets
-#'   the minimimum number of samples that form a core cluster. "hierarchical01"
-#'   refers to running the hclust algorithm on D and transversing down the tree
-#'   until getting a block of samples with whose summary of the values  is
-#'   greater than or equal to 1-alpha. Arguments that can be passed to
-#'   'hierarchical' are 'evalClusterMethod' which determines how to summarize
-#'   the samples' values of D[samples,samples] for comparison to 1-alpha:
-#'   "minimum" (default) takes the minimum of D[samples,samples] and requires it
-#'   to be greater than or equal to 1-alpha; "average" requires that each row
-#'   mean of D[samples,samples] be greater than or equal to 1-alpha. Arguments
-#'   of hclust can also be passed via clusterArgs to control the hierarchical
-#'   clustering of D.
+#'   @details cluster01 methods: "tight" method refers to the method of finding 
+#'     clusters from a subsampling matrix given internally in the tight 
+#'     algorithm code of Tsang and Wong. Arguments for the tight method are
+#'     'minSize.core' (default=2), which sets the minimimum number of samples
+#'     that form a core cluster. "hierarchical01" refers to running the hclust
+#'     algorithm on D and transversing down the tree until getting a block of
+#'     samples with whose summary of the values  is greater than or equal to
+#'     1-alpha. Arguments that can be passed to 'hierarchical' are
+#'     'evalClusterMethod' which determines how to summarize the samples' values
+#'     of D[samples,samples] for comparison to 1-alpha: "minimum" (default)
+#'     takes the minimum of D[samples,samples] and requires it to be greater
+#'     than or equal to 1-alpha; "average" requires that each row mean of
+#'     D[samples,samples] be greater than or equal to 1-alpha. Arguments of
+#'     hclust can also be passed via clusterArgs to control the hierarchical 
+#'     clustering of D.
 #'
-#'   clusterK required format for input and output for clusterFunction:
+#'   @details clusterK required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes as a minimum an argument
-#'   'D' and 'k'. The output must be a list similar to that of
-#'   'partition.object' of cluster package. Specifically, an element
-#'   'clustering' which gives the vector of clusters; and an argument 'silinfo'
-#'   like that of the partition.object that is a list with silhouette values.
-#'   Whether these are actually silhouette values is up to the clusterFunction,
-#'   but they will be used in the following way: silinfo$avg.width will be used
-#'   to pick the best k (if findBestK=TRUE), silinfo$widths[,"sil_width"] will
-#'   be used to exclude poorly clustered samples (if removeSil=TRUE), and
-#'   clusters will be ordered by the average of the values
-#'   silinfo$widths[,"sil_width"] in each cluster (after removing poorly
-#'   clustered samples, if removeSil=TRUE).
-
-#' clusterK methods: "pam" performs pam clustering on the input Dmatrix using
-#' \code{\link{pam}} in the cluster package. Arguments to \code{\link{pam}} can
-#' be passed via 'clusterArgs', except for the arguments 'x' and 'k' which are
-#' given by D and k directly.
+#'   'D' and 'k'. The output must be a clustering, specified by integer values. 
+#'   The function \code{\link{silhouette}} will be used on the clustering to
+#'   calculate silhouette scores for each observation.
+#'
+#' @details clusterK methods: "pam" performs pam clustering on the input 
+#'   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
+#'   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
+#'   arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
+#'   performs hierarchical clustering on the input via the \code{\link{hclust}}
+#'   and then applies \code{\link{cutree}} with the specified k to obtain
+#'   clusters. Arguments to \code{\link{hclust}} can be passed via
+#'   \code{clusterArgs}.
+#'   @details To provide a distance matrix via the argument \code{distFunction},
+#'     the function must be defined to take the distance of the rows of a matrix
+#'     (internally, the function will call \code{distFunction(t(x))}. This is to
+#'     be compatible with the input for the \code{dist} function.
+#'     \code{as.matrix} will be performed on the output of \code{distFunction},
+#'     so if the object returned has a \code{as.matrix} method that will convert
+#'     the output into a symmetric matrix of distances, this is fine (for
+#'     example the class \code{dist} for objects returned by \code{dist} have
+#'     such a method). If \code{distFunction=NA}, then a default distance will 
+#'     be calculated based on the type of clustering algorithm of 
+#'     \code{clusterFunction}. For type "K" the default is to take \code{dist}
+#'     as the distance function. For type "01", the default is to take the
+#'     absolute value of the correlation between the samples.
 #'
 #' @return clusterD returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
@@ -124,7 +136,7 @@
 #'   the size of the cluster, instead of by the internal ordering of the
 #'   clusterFunction.
 #'
-#'   cluster01 and clusterK return a list of indices of the clusters found,
+#'   @return cluster01 and clusterK return a list of indices of the clusters found,
 #'   which each element of the list corresponding to a cluster and the elements
 #'   of that list a vector of indices giving the indices of the samples assigned
 #'   to that cluster. Indices not included in any list are assumed to have not
@@ -135,57 +147,44 @@
 #'
 #' @examples
 #' data(simData)
-#' subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
-#' clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
-#'
+#' cl1<-clusterD(simData,clusterFunction="pam",k=3)
+#' cl2<-clusterD(simData,clusterFunction="hierarchical01")
+#' cl3<-clusterD(simData,clusterFunction="tight")
+#' #change distance to manhattan distance
+#' cl4<-clusterD(simData,clusterFunction="pam",k=3,
+#'      distFunction=function(x){dist(x,method="manhattan")})
+#' 
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
-#' clustSubHier <- clusterD(subD, clusterFunction="hierarchical01", alpha=0.1,
+#' clustSubHier <- clusterD(simData, clusterFunction="hierarchical01", alpha=0.1,
 #' minSize=5, clusterArgs=list(evalClusterMethod="average", method="single"))
 #'
 #' #do tight
-#' clustSubTight <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' minSize=5)
 #'
 #' #two twists to pam
-#' clustSubPamK <- clusterD(subD, clusterFunction="pam", silCutoff=0, minSize=5,
+#' clustSubPamK <- clusterD(simData, clusterFunction="pam", silCutoff=0, minSize=5,
 #' removeSil=TRUE, k=3)
-#' clustSubPamBestK <- clusterD(subD, clusterFunction="pam", silCutoff=0,
+#' clustSubPamBestK <- clusterD(simData, clusterFunction="pam", silCutoff=0,
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
-#' #visualize the results of different clusterings
-#' if(require(NMF)) {
-#' clusterDF <- data.frame("hier"=factor(clustSubHier),
-#' "tight"=factor(clustSubTight), "PamK"=factor(clustSubPamK),
-#' "PamBestK"=factor(clustSubPamBestK))
-#' maxNumb <- max(sapply(clusterDF, function(x){max(as.numeric(levels(x)))}))
-#' cols <- bigPalette[1:(maxNumb+2)]
-#' names(cols) <- as.character(seq(-1, maxNumb, by=1))
-#' annColors <- list("hier"=cols, "tight"=cols, "PamK"=cols, "PamBestK"=cols)
-#' aheatmap(subD, annCol=clusterDF, annColors=annColors, annLegend=FALSE)
-#' }
-#'
-#' #note the following examples pass the wrong arguments and give warnings
-#' #(which can be turned off with checkArgs)
-#' clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' # note that passing the wrong arguments for an algorithm results in warnings
+#' # (which can be turned off with checkArgs=FALSE)
+#' clustSubTight_test <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' minSize=5, removeSil=TRUE)
-#' clustSubPam_test <- clusterD(subD, clusterFunction="pam", alpha=0.1,
-#' minSize=5, removeSil=TRUE, findBestK=TRUE)
-#' #passing arguments appropriate for 'tight' to hier and vice-versa gives
-#' #warning:
-#' clustSubTight_test <- clusterD(subD, clusterFunction="tight", alpha=0.1,
+#' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' clusterArgs=list(evalClusterMethod="average"))
-#' clustSubHier_test <- clusterD(subD, clusterFunction="hier", alpha=0.1,
-#' clusterArgs=list(minSize.core=4))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c("01","K"),minSize=1, orderBy=c("size","best"),format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
+clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+                   typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
+                   format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
-	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
 	if(length(passedArgs)>0){
 		#get rid of wrong args passed because of user confusion between the two
@@ -194,7 +193,26 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam"),typeAlg=c
 		if(length(whRightArgs)>0) passedArgs<-passedArgs[whRightArgs]
 		else passedArgs<-NULL
 	}
+	### Create distance if needed, and check it.
+	#browser()
+	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
+	  x<-D 
+	  if(!is.function(distFunction) && is.na(distFunction)){
+	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=function(x){dist(x)})
+	  }
+	  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
+	  if(inherits(D,"try-error")) stop("input distance gives error when applied to x")
+	  if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
+	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
+	  
+	}
+	if(any(is.na(as.vector(D)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
+	if(any(D<0)) stop("distance function must give strictly positive values")
+	
+	####Run clustering:
 	if(typeAlg=="01") {
+	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
 		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 	if(typeAlg=="K") {
@@ -239,81 +257,20 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 		method<-match.arg(clusterFunction)
 		##These return lists of indices of clusters satisifying alpha criteria
 		if(method=="tight") clusterFunction<-.tightClusterDMat
-		if(method=="hierarchical01") clusterFunction<-.hierClusterDMat
+		if(method=="hierarchical01") clusterFunction<-.hier01ClusterDMat
 	}
 	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)
 }
-.argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
-#' @rdname clusterD
-clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
-{
-	if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
-	if(findBestK){
-		if(missing(kRange)){
-			if(!missing(k)) kRange<-(k-2):(k+20)
-			else kRange<-2:20
-		}
-		if(any(kRange<2)){
-			kRange<-kRange[kRange>=2]
-			if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
-		}
-	}
-	##These return lists of indices of clusters satisifying alpha criteria
-	if(!is.function(clusterFunction)){
-		method<-match.arg(clusterFunction)
-		if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
-			passedArgs<-list(...)
-			pamArgs<-names(as.list(args(cluster::pam)))
-			if(any(wh<-!passedArgs %in% pamArgs)){
-				passedArgs<-passedArgs[-which(wh)]
-				if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
-			}
-			do.call(cluster::pam,c(list(x=D,k=k,diss=TRUE),passedArgs))
-		}
-	}
-	if(findBestK) ks<-kRange else ks<-k
-	kmeansClusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk,checkArgs=checkArgs),clusterArgs))})
-	if(length(ks)>1){
-		whichBest<-which.max(sapply(kmeansClusters, function(z) z$silinfo$avg.width))
-		finalCluster<-kmeansClusters[[whichBest]]
-	}
-	else finalCluster<-kmeansClusters[[1]]
-	sil<-finalCluster$silinfo$widths[,"sil_width"]
-	if(removeSil){
-		cl<-as.numeric(sil>silCutoff)
-		cl[cl==0]<- -1
-		cl[cl>0]<-finalCluster$clustering[cl>0]
-		sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
-	}
-	else{
-		cl<-finalCluster$clustering
-	}
-
-	#make list of indices and put in order of silhouette width (of positive)
-	clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
-	clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
-	clList[order(clAveWidth,decreasing=TRUE)]
-
-	#remove -1 group
-	if(removeSil){
-		whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
-		if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
-		if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
-	}
-	return(clList)
-
-}
-
-
-.hierClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),checkArgs,...)
+.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),checkArgs,...)
 {
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
 	passedArgs<-list(...)
 	hclustArgs<-names(as.list(args(stats::hclust)))
-	if(any(wh<-!passedArgs %in% hclustArgs)){
-		passedArgs<-passedArgs[-which(wh)]
+	if(any(!names(passedArgs) %in% hclustArgs)){
+	  wh<-which(!names(passedArgs) %in% hclustArgs)
+		passedArgs<-passedArgs[-wh]
 		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
 	hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
@@ -443,43 +400,90 @@ clusterK<-function(D,  clusterFunction=c("pam"),findBestK=FALSE, k, kRange,remov
 
 }
 
-.pamClusterDMat<-function(D,alpha,ks, removeSil=TRUE,method=c("pam"),checkArgs,...)
+
+
+
+.argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
+#' @rdname clusterD
+clusterK<-function(D,  clusterFunction=c("pam","hierarchicalK"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
 {
-	#... doesn't go anywhere. Just so if giving arguments that don't match, won't kickup error
-	if(length(list(...))>0 & checkArgs) warning("some arguments passed via clusterArgs to tight clustering method not applicable")
-	method<-match.arg(method)
-	kmeansClusters<-lapply(ks,FUN=function(k){cluster::pam(D,k)})
-	if(length(ks)>1){
-		whichBest<-which.max(sapply(kmeansClusters, function(z) z$silinfo$avg.width))
-		finalCluster<-kmeansClusters[[whichBest]]
-	}
-	else finalCluster<-kmeansClusters[[1]]
-	sil<-finalCluster$silinfo$widths[,"sil_width"]
-	if(removeSil){
-		cl<-as.numeric(sil>0)
-		cl[cl==0]<- -1
-		cl[cl>0]<-finalCluster$clustering[cl>0]
-		sil[cl== -1] <- -Inf
-	}
-	else{
-		cl<-finalCluster$clustering
-	}
-	#make list of indices and put in order of silhouette width (of positive)
-	clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
-	clAveWidth<-tapply(sil,cl,mean)
-	clList[order(clAveWidth,decreasing=TRUE)]
+  if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
+  if(findBestK){
+    if(missing(kRange)){
+      if(!missing(k)) kRange<-(k-2):(k+20)
+      else kRange<-2:20
+    }
+    if(any(kRange<2)){
+      kRange<-kRange[kRange>=2]
+      if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
+    }
+  }
+  ##These return lists of indices of clusters satisifying alpha criteria
+  if(!is.function(clusterFunction)){
+    method<-match.arg(clusterFunction)
+    if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
+      passedArgs<-list(...)
+      pamArgs<-names(as.list(args(cluster::pam)))
+      if(any(wh<-!names(passedArgs) %in% pamArgs)){
+        passedArgs<-passedArgs[-which(wh)]
+        if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
+      }
+      do.call(cluster::pam,c(list(x=D,k=k,diss=TRUE,cluster.only=TRUE),passedArgs))
+      
+    }
+    if(method =="hierarchicalK") clusterFunction<-function(D,k,checkArgs,...){
+      passedArgs<-list(...)
+      hierArgs<-names(as.list(args(stats::hclust)))
+      if(any(wh<-!names(passedArgs) %in% hierArgs)){
+        passedArgs<-passedArgs[-which(wh)]
+        if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
+      }
+#      browser()
+      hclustOut<-do.call(stats::hclust,c(list(d=as.dist(D)),passedArgs))
+      cutree(hclustOut,k)
+    }
+  }
 
-	#remove -1 group
-	if(removeSil){
-		whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
-		if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
-		if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
-	}
-	return(clList)
 
+  if(findBestK) ks<-kRange else ks<-k
+  if(any(ks>= nrow(D))) ks<-ks[ks<nrow(D)]
+  #browser()
+  clusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk,checkArgs=checkArgs),clusterArgs))})
+  silClusters<-lapply(clusters,function(cl){
+    silhouette(cl,dmatrix=D)
+  })
+  if(length(ks)>1){
+    whichBest<-which.max(sapply(silClusters, mean))
+    finalCluster<-clusters[[whichBest]]
+    sil<-silClusters[[whichBest]][,"sil_width"]
+  }
+  else{
+    finalCluster<-clusters[[1]]
+    sil<-silClusters[[1]][,"sil_width"]
+  }
+  if(removeSil){
+    cl<-as.numeric(sil>silCutoff)
+    cl[cl==0]<- -1
+    cl[cl>0]<-finalCluster[cl>0]
+    sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
+  }
+  else{
+    cl<-finalCluster
+  }
+  
+  #make list of indices and put in order of silhouette width (of positive)
+  clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
+  clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
+  clList[order(clAveWidth,decreasing=TRUE)]
+  
+  #remove -1 group
+  if(removeSil){
+    whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
+    if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
+    if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
+  }
+  return(clList)
+  
 }
-
-
-
 
 

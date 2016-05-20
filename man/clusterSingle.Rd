@@ -10,21 +10,22 @@
 \title{General wrapper method to cluster the data}
 \usage{
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
-  clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"),
+  clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA",
-  "mostVar"), ndims = NA)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var"),
+  ndims = NA)
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 
 \S4method{clusterSingle}{ClusterExperiment}(x, ...)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (genes in rows).}
+\item{x}{the data on which to run the clustering (features in rows).}
 
-\item{subsample}{logical as to whether to subsample via
-\code{\link{subsampleClustering}} to get the distance matrix at each
-iteration; otherwise the distance matrix is dist(x).}
+\item{subsample}{logical as to whether to subsample via 
+\code{\link{subsampleClustering}} to get the distance matrix at each 
+iteration; otherwise the distance function will be determined by argument
+\code{distFunction} passed in \code{clusterDArgs}.}
 
 \item{sequential}{logical whether to use the sequential strategy (see
 Details).}
@@ -52,7 +53,7 @@ before clustering.}
 
 \item{dimReduce}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "mostVar".}
+"none","PCA", and "var".}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}

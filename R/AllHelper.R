@@ -20,10 +20,10 @@ setMethod(
     out <- callNextMethod()
     #browser()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
-    out@coClustering <- new("matrix") ###Need to think about this
+    out@coClustering <- NULL
     out@dendro_samples <- NULL
     out@dendro_clusters <- NULL
-
+    out@dendro_index <- NA_real_
    # browser()
     out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
 
@@ -68,6 +68,9 @@ setMethod(
     cat("Table of clusters (of primary clustering):")
     print(table(primaryClusterNamed(object)))
     cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
+    if(!is.na(object@dendro_index) ) cat("Dendrogram run on '",clusterLabels(object)[object@dendro_index],"' (cluster index: ", object@dendro_index,")\n",sep="") else cat("No dendrogram present\n")
+    cat("-----------\n")
+    cat("Workflow progress:\n")
     typeTab<-names(table(clusterTypes(object)))
     cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
     cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
@@ -203,8 +206,6 @@ setReplaceMethod(
   signature = signature("ClusterExperiment", "numeric"),
   definition = function(object, value) {
     object@primaryIndex <- value
-    object@dendro_samples<-NULL
-    object@dendro_clusters<-NULL
     validObject(object)
     return(object)
   }

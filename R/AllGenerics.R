@@ -4,7 +4,18 @@ setGeneric(
     standardGeneric("clusterSingle")
   }
 )
-
+setGeneric(
+  name = "setToCurrent",
+  def = function(x,  ...) {
+    standardGeneric("setToCurrent")
+  }
+)
+setGeneric(
+  name = "setToFinal",
+  def = function(x,  ...) {
+    standardGeneric("setToFinal")
+  }
+)
 setGeneric(
   name = "plotCoClustering",
   def = function(data,  ...) {

@@ -70,10 +70,14 @@
 #' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}.
 #'   For the other signatures, passed to the method for signature \code{matrix}.
 #' @param nFeatures integer indicating how many features should be used (if
-#'   \code{clusterFeaturesData} is 'mostVar' or 'PCA').
+#'   \code{clusterFeaturesData} is 'var' or 'PCA').
 #' @param isSymmetric logical. if TRUE indicates that the input matrix is
 #'   symmetric. Useful when plotting a co-clustering matrix or other sample by
 #'   sample matrices (e.g., correlation).
+#' @param overRideClusterLimit logical. Whether to override the internal limit 
+#'   that only allows 10 clusterings/annotations. If overridden, may result in 
+#'   incomprehensible errors from aheatmap. Only override this if you have a
+#'   very large plotting device and want to see if aheatmap can render it.
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -123,7 +127,7 @@
 #'   clusterings will be shown closest to data (i.e. on bottom).
 #' @details If \code{data} is a \code{ClusterExperiment} object,
 #'   \code{clusterFeaturesData} is not a dataset, but instead indicates which
-#'   features should be shown in the heatmap. "mostVar" selects the
+#'   features should be shown in the heatmap. "var" selects the
 #'   \code{nFeatures} most variable genes (based on
 #'   \code{transformation(assay(data))}); "PCA" results in a heatmap of the top
 #'   \code{nFeatures} PCAs of the \code{transformation(assay(data))}.
@@ -235,7 +239,7 @@ setMethod(
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
                         clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"),
-                        clusterFeaturesData=c("mostVar","all","PCA"), nFeatures=NULL,
+                        clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
                         sampleData=NULL,clusterFeatures=TRUE,
@@ -257,12 +261,12 @@ setMethod(
       clusterFeaturesData<-unlist(clusterFeaturesData)
     }
     else groupFeatures<-NULL
-    if(all(clusterFeaturesData %in% c("mostVar","all","PCA"))){ #
+    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
         dimReduce=switch(clusterFeaturesData,
-                         "mostVar"="mostVar",
+                         "var"="var",
                         "PCA"="PCA",
                         "all"="none")
-        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"mostVar"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
         wh<-1:NROW(data)
     }
     else{
@@ -285,7 +289,7 @@ setMethod(
     }
     transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
     if(dimReduce%in%"PCA") wh<-1:nFeatures
-    if(dimReduce=="mostVar") wh<-transObj$whMostVar #give indices that will pull
+    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
     #########
     ##Assign visualization data and clusterFeaturesData
     #########
@@ -452,7 +456,8 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,
+                          overRideClusterLimit=FALSE,...
     ){
 
 
@@ -515,8 +520,11 @@ setMethod(
       if(!is.null(sampleData)){
         if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame")
         if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")
-
-        ###Make sampleData explicitly factors, except for whSampleDataCont
+        if(NCOL(sampleData)>10){
+            if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
+            else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
+        }
+                    ###Make sampleData explicitly factors, except for whSampleDataCont
         ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
         #browser()
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
@@ -624,18 +632,21 @@ setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
   definition = function(data, ...){
-    if(nrow(data@coClustering)==0) stop("coClustering slot is empty")
+    if(is.null(data@coClustering)) stop("coClustering slot is empty")
     fakeCE<-clusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusterInfo(data),
-                              clusterTypes=clusterTypes(data)
+                              clusterTypes=clusterTypes(data),
+                              orderSamples=orderSamples(data),
+                              dendro_samples=data@dendro_samples,
+                              dendro_clusters=data@dendro_clusters,
+                              dendro_index=data@dendro_index,
+                              primaryIndex=data@primaryIndex
+                              
+                              
     )
     clusterLegend(fakeCE)<-clusterLegend(data)
-    orderSamples(fakeCE)<-orderSamples(data)
     colData(fakeCE)<-colData(data)
-    fakeCE@dendro_samples<-data@dendro_samples
-    fakeCE@primaryIndex<-data@primaryIndex
-    validObject(fakeCE) #just in case screwed something up
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
   })
