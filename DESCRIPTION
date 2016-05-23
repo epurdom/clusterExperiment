@@ -34,7 +34,8 @@ Suggests:
     knitr,
     rmarkdown,
     diagram,
-    testthat
+    testthat,
+    scRNAseq
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 5.0.1

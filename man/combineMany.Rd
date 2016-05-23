@@ -46,6 +46,11 @@ workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
+\item{clusterLabel}{a string used to describe the type of clustering. By
+default it is equal to "combineMany", to indicate that this clustering is
+the result of a call to combineMany. However, a more informative label can
+be set (see vignette).}
+
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix,missing}.}
 }
@@ -84,9 +89,9 @@ The function tries to find a consensus cluster across many different
   than \code{propUnassigned} values that are '-1' across all of the
   clusterings are assigned a '-1' regardless of their cluster assignment.
 
-The method calls \code{\link{clusterD}} on the proportion matrix with 
+The method calls \code{\link{clusterD}} on the proportion matrix with
 \code{clusterFunction} as the 01 clustering algorithm, \code{alpha=1-proportion},
-\code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of 
+\code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of
 \code{\link{clusterD}} for more details.
 }
 \examples{

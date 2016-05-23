@@ -181,6 +181,7 @@ setMethod(
 #' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
 #'   it has one per cluster.
 #' @param main passed to the \code{plot} function.
+#' @param sub passed to the \code{plot} function.
 #' @param clusterNames logical. If \code{leaves="clusters"}, then clusters will
 #'   be identified with their 'name' value in legend; otherwise the 'clusterIds'
 #'   value will be used.

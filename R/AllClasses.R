@@ -317,17 +317,25 @@ setMethod(
     clusters <- as.character(clusters)
     clusterExperiment(se,clusters,...)
   })
-#' @rdname ClusterExperiment-class
-#' @param clusterTypes a string describing the nature of the clustering. The
-#' values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-#' reserved for the clustering coming from the package workflow and should not
-#' be used when creating a new object with the constructor.
-#' @param clusterInfo a list with information on the clustering (see Slots).
+#'@rdname ClusterExperiment-class
+#'@param clusterTypes a string describing the nature of the clustering. The
+#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+#'  reserved for the clustering coming from the package workflow and should not
+#'  be used when creating a new object with the constructor.
+#'@param clusterInfo a list with information on the clustering (see Slots).
+#'@param primaryIndex integer. Sets the `primaryIndex` slot (see Slots).
+#'@param orderSamples a vector of integers. Sets the `orderSamples` slot (see
+#'  Slots).
+#'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
+#'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
+#'  Slots).
+#'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
+#'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters, 
-            transformation, 
+  definition = function(se, clusters,
+            transformation,
             primaryIndex=1,
             clusterTypes="User",
             clusterInfo=NULL,
