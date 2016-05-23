@@ -165,7 +165,7 @@ setMethod(
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
-    else retval<-outval
+    else retval<-newObj
     validObject(retval)
 
     return(retval)
