@@ -468,46 +468,47 @@ setMethod(
 
       ###Create the clustering dendrogram:
 
-      if(!isSymmetric){
-        if(clusterSamples){
-          if(inherits(clusterSamplesData, "dendrogram")){
-            if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-            dendroSamples<-clusterSamplesData
-          }
-          else{
-            if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
-            clusterSamplesData<-data.matrix(clusterSamplesData)
-            #check valid
-            if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-            dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
-          }
-        }
-        else{
-          clusterSamples<-NA
-        }
-        Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+    if(clusterSamples){
+      if(inherits(clusterSamplesData, "dendrogram")){
+        if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
+        dendroSamples<-clusterSamplesData
       }
       else{
+        if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
+        clusterSamplesData<-data.matrix(clusterSamplesData)
+        #check valid
+        if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
+        dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
+      }
+    }
+    else{
+      clusterSamples<-NA
+    }
+    Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+    
+    if(isSymmetric){
+        Rowv<-Colv
         Colv<-"Rowv"
-      }
-
-      if(clusterFeatures){
-        if(inherits(clusterFeaturesData, "dendrogram")){
-          if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-          dendroFeatures<-clusterFeaturesData
+     }
+    else{
+        if(clusterFeatures){
+            if(inherits(clusterFeaturesData, "dendrogram")){
+                if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+                dendroFeatures<-clusterFeaturesData
+            }
+            else{
+                if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
+                clusterFeaturesData<-data.matrix(clusterFeaturesData)
+                #check valid
+                if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
+                dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
+            }
         }
         else{
-          if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
-          clusterFeaturesData<-data.matrix(clusterFeaturesData)
-          #check valid
-          if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
-          dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
+            clusterFeatures<-NA
         }
-      }
-      else{
-        clusterFeatures<-NA
-      }
-      Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
+        Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
+    }
       #browser()
 
 
