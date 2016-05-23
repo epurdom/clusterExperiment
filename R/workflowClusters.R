@@ -113,6 +113,7 @@ setMethod(
 #'   current iteration in the workflow. Pre-existing clusters are appropriately
 #'   updated.
 #' @export
+#' @aliases setToCurrent
 setMethod(
   f = "setToCurrent",
   signature = signature("ClusterExperiment"),
@@ -141,6 +142,7 @@ setMethod(
 #'   The primaryClusterIndex is also set to this cluster, and the clusterLabel,
 #'   if given.
 #' @export
+#' @aliases setToFinal
 setMethod(
   f = "setToFinal",
   signature = signature("ClusterExperiment"),
@@ -153,8 +155,8 @@ setMethod(
     primaryClusterIndex(x)<-whCl
     return(x)
   }
-)  
-#change current workflow to old iteration 
+)
+#change current workflow to old iteration
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(x,eraseOld,newToAdd){
@@ -167,11 +169,11 @@ setMethod(
     if(!is.null(ppIndex)){ #there are pre-existing workflow results
         curr<-ppIndex[ppIndex[,"iteration"]==0,]
         if(any(curr[,"type"] %in% downstreamType) || any(ppIndex[,"iteration"]!=0)){
-            if(eraseOld){ 
+            if(eraseOld){
                 #removes all past iterations, not just current, except for current iteration that upstream of new one
                 whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
                 if(length(whRm)==nClusters(x)) return(NULL)
-                else newX<-removeClusters(x,whRm) 
+                else newX<-removeClusters(x,whRm)
             }
             else{
                 #otherwise, only current downstream ones exist
@@ -189,15 +191,15 @@ setMethod(
                     #browser()
                     updateCluster<-clusterTypes(x)
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
-                    clusterTypes(newX)<-updateCluster    
+                    clusterTypes(newX)<-updateCluster
                     updateLabel<-clusterLabels(x)
                     if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those that haven't been manually fixed by the user
                         whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
                         updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
-                        clusterLabels(newX)<-updateLabel    
-                        
+                        clusterLabels(newX)<-updateLabel
+
                     }
-                    
+
                 }
             }
         }

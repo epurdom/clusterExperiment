@@ -2,7 +2,9 @@
 % Please edit documentation in R/workflowClusters.R
 \docType{methods}
 \name{workflowClusters}
+\alias{setToCurrent}
 \alias{setToCurrent,ClusterExperiment-method}
+\alias{setToFinal}
 \alias{setToFinal,ClusterExperiment-method}
 \alias{workflowClusterDetails}
 \alias{workflowClusterDetails,ClusterExperiment-method}
