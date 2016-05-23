@@ -42,12 +42,26 @@ numeric matrix, containing the cluster labels.}
 performing steps that assume normal-like data (i.e. constant variance), such
 as the log.}
 
+\item{primaryIndex}{integer. Sets the `primaryIndex` slot (see Slots).}
+
 \item{clusterTypes}{a string describing the nature of the clustering. The
 values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
 \item{clusterInfo}{a list with information on the clustering (see Slots).}
+
+\item{orderSamples}{a vector of integers. Sets the `orderSamples` slot (see
+Slots).}
+
+\item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
+
+\item{dendro_index}{numeric. Sets the dendro_index slot (see Slots).}
+
+\item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
+Slots).}
+
+\item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
 }
 \value{
 A \code{ClusterExperiment} object.
