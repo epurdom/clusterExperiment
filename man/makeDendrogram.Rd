@@ -52,6 +52,8 @@ be identified with their 'name' value in legend; otherwise the 'clusterIds'
 value will be used.}
 
 \item{main}{passed to the \code{plot} function.}
+
+\item{sub}{passed to the \code{plot} function.}
 }
 \value{
 If x is a matrix, a list with two dendrograms, one in which the

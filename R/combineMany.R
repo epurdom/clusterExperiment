@@ -31,9 +31,9 @@
 #'   those clusterings where both samples were assigned. Then samples with more
 #'   than \code{propUnassigned} values that are '-1' across all of the
 #'   clusterings are assigned a '-1' regardless of their cluster assignment.
-#'@details The method calls \code{\link{clusterD}} on the proportion matrix with 
+#'@details The method calls \code{\link{clusterD}} on the proportion matrix with
 #' \code{clusterFunction} as the 01 clustering algorithm, \code{alpha=1-proportion},
-#' \code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of 
+#' \code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of
 #' \code{\link{clusterD}} for more details.
 #' @return If x is a matrix, a list with values
 #' \itemize{
@@ -136,6 +136,10 @@ setMethod(
 
 #' @rdname combineMany
 #' @export
+#' @param clusterLabel a string used to describe the type of clustering. By
+#'   default it is equal to "combineMany", to indicate that this clustering is
+#'   the result of a call to combineMany. However, a more informative label can
+#'   be set (see vignette).
 setMethod(
   f = "combineMany",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
@@ -160,10 +164,10 @@ setMethod(
     }
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
-    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep. 
+    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
     else retval<-outval
     validObject(retval)
-    
+
     return(retval)
   }
 )
@@ -213,7 +217,7 @@ setMethod(
       U <- X == uniq
       H <- H + t(U) %*% U
     }
-  } 
+  }
   else {
     uniqs <- na.omit(union(X, Y))
     if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")

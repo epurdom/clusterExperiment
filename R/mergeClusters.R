@@ -218,6 +218,9 @@ setMethod(f = "mergeClusters",
 
 #' @rdname mergeClusters
 #' @export
+#' @param clusterLabel a string used to describe the type of clustering. By
+#'   default it is equal to "mergeClusters", to indicate that this clustering is
+#'   the result of a call to mergeClusters.
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
@@ -234,7 +237,7 @@ setMethod(f = "mergeClusters",
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
             #browser()
-  outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x), 
+  outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
                            cl=cl,
                            dendro=x@dendro_clusters,
                            isCount=isCount,mergeMethod=mergeMethod, ...)

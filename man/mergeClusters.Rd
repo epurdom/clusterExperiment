@@ -55,6 +55,10 @@ signature \code{matrix}.}
 workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
+
+\item{clusterLabel}{a string used to describe the type of clustering. By
+default it is equal to "mergeClusters", to indicate that this clustering is
+the result of a call to mergeClusters.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements
