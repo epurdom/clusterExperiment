@@ -32,6 +32,10 @@
 #'   details.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{dimReduce}
+#' @param clusterLabel a string used to describe the clustering. By
+#'   default it is equal to "clusterSingle", to indicate that this clustering is
+#'   the result of a call to \code{clusterSingle}.
+
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #'
@@ -74,7 +78,7 @@ setMethod(
       clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
-      ndims=NA) {
+      ndims=NA,clusterLabel="clusterSingle") {
 
     origX <- x #ngenes x nsamples
     ##########
@@ -193,6 +197,7 @@ setMethod(
                                 transformation=transFun,
                                 clusterInfo=clInfo,
                                 clusterTypes="clusterSingle")
+    clusterLabels(retval)<-clusterLabel
     if(subsample & !sequential) {
       retval@coClustering<-finalClusterList$subsampleCocluster
     }
@@ -226,13 +231,7 @@ setMethod(
   definition = function(x, ...) {
 
     outval <- clusterSingle(assay(x),...)
-
-    ## do we want to add the clustering or replace it?
-    ## for now, replacing it
-    #     retval <- clusterExperiment(x, primaryCluster(outval), transformation(outval))
-    #     retval@clusterInfo <- clusterInfo(outval)
-    #     retval@clusterTypes <- clusterTypes(outval)
-
+    
     ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
     retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
     return(retval)

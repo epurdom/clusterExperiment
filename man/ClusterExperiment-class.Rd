@@ -89,6 +89,11 @@ these objects is the result of a call to \code{\link{clusterMany}} or
 Note that when subsetting the data, the co-clustering and
 dendrogram information are lost.
 }
+\details{
+The \code{clusterExperiment} constructor function gives clusterLabels
+ based on the column names of the input matrix/SummarizedExperiment. If
+ missing, will assign labels "cluster1","cluster2", etc.
+}
 \section{Slots}{
 
 \describe{

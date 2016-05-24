@@ -331,6 +331,9 @@ setMethod(
 #'  Slots).
 #'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
 #'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
+#'@details The \code{clusterExperiment} constructor function gives clusterLabels
+#'  based on the column names of the input matrix/SummarizedExperiment. If
+#'  missing, will assign labels "cluster1","cluster2", etc.
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),

@@ -7,9 +7,17 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing <- clusterSingle(mat, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
+            expect_equal(clusterLabels(clustNothing),"clusterSingle")
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
 
+            #test clusterLabel
+            clustNothing2 <- clusterSingle(mat, clusterFunction="pam",
+                                          subsample=FALSE, sequential=FALSE,
+                                          clusterDArgs=list(k=3),isCount=FALSE,clusterLabel="myownClustering")
+            expect_equal(clusterLabels(clustNothing2),"myownClustering")
+            
+            
             #test default 01 distance
             x1 <- clusterSingle(mat, clusterFunction="tight",
                                           subsample=FALSE, sequential=FALSE,

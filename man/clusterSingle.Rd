@@ -13,7 +13,7 @@
   clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
   isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var",
-  "cv", "mad"), ndims = NA)
+  "cv", "mad"), ndims = NA, clusterLabel = "clusterSingle")
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 
@@ -58,6 +58,10 @@ details.}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
+
+\item{clusterLabel}{a string used to describe the clustering. By
+default it is equal to "clusterSingle", to indicate that this clustering is
+the result of a call to \code{clusterSingle}.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
