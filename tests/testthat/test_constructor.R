@@ -214,8 +214,10 @@ test_that("accessing transformed data works as promised",
   expect_equal(dim(transform(cc)), dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="cv",nVarDims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="mad",nVarDims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nVarDims=2)),c(2,NCOL(assay(cc))))
-  expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nPCADims=2)),c(2,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nPCADims=4)),c(4,NCOL(assay(cc))))
   expect_equal(length(transform(cc,dimReduce="var",nVarDims=c(2,3))),2)
   expect_equal(length(transform(cc,dimReduce="PCA",nPCADims=c(2,3))),2)
   expect_equal(length(transform(cc,dimReduce=c("PCA","var"),nPCADims=c(2,3))),2)
@@ -227,8 +229,11 @@ test_that("accessing transformed data works as promised",
   expect_equal(dim(transform(cc,dimReduce=c("PCA"),nPCADims=NA,nVarDims=3)),dim(assay(cc)))
   expect_equal(length(transform(cc,dimReduce=c("PCA"),nPCADims=c(NA,3),nVarDims=4)),2)
 
-
-            })
+  expect_equal(length(transform(cc,dimReduce=c("var","cv","mad"),nPCADims=c(NA,3),nVarDims=4)),3)
+  expect_equal(length(transform(cc,dimReduce=c("var","cv","mad"),nPCADims=c(NA,3),nVarDims=c(2,4))),6)  
+  expect_equal(dim(transform(cc,dimReduce=c("PCA","var","cv"),nPCADims=c(3),nVarDims=NA)),c(3,NCOL(assay(cc))))  
+  expect_equal(dim(transform(cc,dimReduce=c("PCA"),nPCADims=c(3),nVarDims=2)),c(3,NCOL(assay(cc))))  
+          })
 
 test_that("workflow functions work",
           {
