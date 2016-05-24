@@ -170,16 +170,31 @@
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
   }
   else{
-    if(!any(whClusters %in% clusterTypes(x))){
-        if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
-        else{
-            wh<-which(clusterLabels(x) %in% whClusters)
+    #first match to clusterTypes  
+    mClType<-match(whClusters,clusterTypes(x))  
+    mClLabel<-match(whClusters,clusterLabels(x))  
+    totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
+        if(is.na(type) & !is.na(lab)) return(lab)
+        if(is.na(type) & is.na(lab)) return(NA)
+        if(!is.na(type)){
+            return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
         }
-    }
-    else{
-      #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
-      wh<-which(clusterTypes(x) %in% whClusters)
-    }
+    },SIMPLIFY=FALSE)
+    totalMatch<-unlist(totalMatch,use.names=FALSE)
+    #browser()
+    if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
+    else wh<-na.omit(totalMatch) #silently ignore things that don't match.
+#     
+#         if(!any(whClusters %in% clusterTypes(x))){
+#         if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
+#         else{
+#             wh<-which(clusterLabels(x) %in% whClusters)
+#         }
+#     }
+#     else{
+#       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
+#       wh<-which(clusterTypes(x) %in% whClusters)
+#     }
   }
   return(wh)
 }
