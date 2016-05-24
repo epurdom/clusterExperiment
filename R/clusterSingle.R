@@ -26,9 +26,10 @@
 #'   function to \code{transFun}.
 #' @param transFun function A function to use to transform the input data matrix
 #'   before clustering.
-#' @param dimReduce character A character identifying what type of
-#'   dimensionality reduction to perform before clustering. Options are
-#'   "none","PCA", and "var".
+#' @param dimReduce character A character identifying what type of 
+#'   dimensionality reduction to perform before clustering. Options are 
+#'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+#'   details.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{dimReduce}
 #' @param ... arguments to be passed on to the method for signature

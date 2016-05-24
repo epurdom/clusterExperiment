@@ -216,6 +216,12 @@ test_that("accessing transformed data works as promised",
   expect_equal(dim(transform(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce="cv",nVarDims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce="mad",nVarDims=3)), c(3,NCOL(assay(cc))))
+
+  expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="var",nVarDims=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="cv",nVarDims=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="mad",nVarDims=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
+  
   expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nVarDims=2)),c(2,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce=c("PCA","var"),nPCADims=4)),c(4,NCOL(assay(cc))))
   expect_equal(length(transform(cc,dimReduce="var",nVarDims=c(2,3))),2)

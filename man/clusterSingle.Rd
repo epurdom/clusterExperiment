@@ -51,9 +51,10 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "var".}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}

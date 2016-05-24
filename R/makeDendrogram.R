@@ -12,16 +12,14 @@
 #' ``-1'' indicates the sample was not assigned to a cluster.
 #' @param unassignedSamples how to handle unassigned samples("-1") ; only relevant
 #' for sample clustering. See details.
-#' @param dimReduce character A character identifying what type of
-#' dimensionality reduction to perform before clustering.
-#' @param ndims integer An integer identifying how many dimensions to reduce to
-#' in the reduction specified by \code{dimReduce}.
 #' @param whichCluster an integer index or character string that identifies
 #'   which cluster should be used to make the dendrogram. Default is
 #'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to \code{\link{plot.dendrogram}}.
+#' @inheritParams clusterSingle
+#' @inheritParams transform
 #' @details The function returns two dendrograms (as a list if x is a matrix or
 #' in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
 #' is created by applying \code{\link{hclust}} to the medoids of each cluster.
@@ -64,7 +62,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var"),
-                        ndims=NA,unassignedSamples=c("outgroup", "cluster"),...)
+                        ndims=NA,ignoreUnassignedVar=FALSE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
@@ -86,7 +84,7 @@ setMethod(
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
     nVarDims <- ifelse(dimReduce=="var", ndims, NA)
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transformation(x))
+                           dimReduce=dimReduce, transFun=transformation(x),clustering=ifelse(ignoreUnassignedVar,cl, NULL))
     dat <- transObj$x
     if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
