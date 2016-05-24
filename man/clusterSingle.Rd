@@ -12,8 +12,8 @@
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var"),
-  ndims = NA)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var",
+  "cv", "mad"), ndims = NA)
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 

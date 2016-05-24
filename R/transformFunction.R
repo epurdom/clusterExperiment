@@ -205,7 +205,7 @@ setMethod(
                 }
                 else{ #otherwise make it a list
                     xLIST<-lapply(nVarDims,function(nn){xVarOrdered[1:nn,]})
-                    listName<-paste("n",capwords(name),"Features=",sep="")
+                    listName<-paste("n",toupper(name),"Features=",sep="")
                     names(xLIST)<-paste(listName,nVarDims,sep="")
                     return(xLIST)
                 } 

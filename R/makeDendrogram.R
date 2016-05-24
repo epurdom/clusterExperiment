@@ -61,7 +61,7 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var"),
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var","cv","mad"),
                         ndims=NA,ignoreUnassignedVar=FALSE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
@@ -83,8 +83,9 @@ setMethod(
     origX <- assay(x)
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
     nVarDims <- ifelse(dimReduce=="var", ndims, NA)
+    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #if else doesn't work with NULL
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transformation(x),clustering=ifelse(ignoreUnassignedVar,cl, NULL))
+                           dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
     dat <- transObj$x
     if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")

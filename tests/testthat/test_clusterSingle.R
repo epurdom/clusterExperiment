@@ -222,6 +222,12 @@ test_that("Different options of `clusterSingle` ", {
                             clusterDArgs=list(k=3),isCount=FALSE),
                  "specifying ndims has no effect if dimReduce==`none`")
 
+  clustndims <- clusterSingle(mat, clusterFunction="pam",
+                              subsample=FALSE, sequential=FALSE, dimReduce="cv",
+                              ndims=3, clusterDArgs=list(k=3),isCount=FALSE)
+  clustndims <- clusterSingle(mat, clusterFunction="pam",
+                              subsample=FALSE, sequential=FALSE, dimReduce="mad",
+                              ndims=3, clusterDArgs=list(k=3),isCount=FALSE)
   
 
 })

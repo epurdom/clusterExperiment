@@ -10,8 +10,8 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var"),
-  ndims = NA, ignoreUnassignedVar = FALSE,
+  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var", "cv",
+  "mad"), ndims = NA, ignoreUnassignedVar = FALSE,
   unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,

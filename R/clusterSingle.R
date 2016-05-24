@@ -73,7 +73,7 @@ setMethod(
   definition = function(x, subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var"),
+      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
       ndims=NA) {
 
     origX <- x #ngenes x nsamples
