@@ -84,3 +84,12 @@ test_that("`makeDendrogram` with dimReduce options", {
     makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
     
 })
+
+test_that("plotDendrogram works", {
+  dend <- makeDendrogram(ccSE)
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg[,"name"]<-letters[1:nrow(leg)]
+  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+  plotDendrogram(dend)
+  plotDendrogram(dend,show.node.label=TRUE)
+})

@@ -278,6 +278,7 @@ setMethod(
 #'   the clusters in the dendrogram correspond to the primary cluster. This is
 #'   because the function colors the cluster labels based on the colors of the
 #'   clusterIds of the primaryCluster
+#' @importFrom ape plot.phylo
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
@@ -289,24 +290,34 @@ setMethod(
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-    labs<-labels(dend)
+    phylo4Obj <- .makePhylobaseTree(dend, "dendro")
+    phyloObj <- as(phylo4Obj, "phylo")
     if(leaves=="clusters"){
       leg<-clusterLegend(x)[[x@dendro_index]]
-      m<-match(labs,leg[,"clusterIds"])
-      if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
-      else{
-        #function to change to labels and colors of a node:
-        reLabel <- function(n) {
-          if(is.leaf(n)) {
-            a <- attributes(n)
-            m<-match(a$label,leg[,"clusterIds"])
-            if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label
-            attr(n, "nodePar") <- c(a$nodePar, list(lab.col = leg[m,"color"],col=leg[m,"color"],pch=19)) #   change the node color
-          }
-          return(n)
-        }
-        dend <- dendrapply(dend, reLabel)
-      }
+      m<-match(phyloObj$tip.label,leg[,"clusterIds"])
+      if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+      phyloObj$tip.label<-leg[m,"name"]
+      tip.color<-leg[m,"color"]
+      
     }
-    plot(dend,main=main,sub=sub,...)
+    ape::plot.phylo(phyloObj, tip.color=tip.color,...)
+    invisible(phyloObj)
+    #    labs<-labels(dend)
+  #       m<-match(labs,leg[,"clusterIds"])
+#       if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
+#       else{
+#         #function to change to labels and colors of a node:
+#         reLabel <- function(n) {
+#           if(is.leaf(n)) {
+#             a <- attributes(n)
+#             m<-match(a$label,leg[,"clusterIds"])
+#             if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label
+#             attr(n, "nodePar") <- c(a$nodePar, list(lab.col = leg[m,"color"],col=leg[m,"color"],pch=19)) #   change the node color
+#           }
+#           return(n)
+#         }
+#         dend <- dendrapply(dend, reLabel)
+#       }
+#     }
+#     plot(dend,main=main,sub=sub,...)
   })
