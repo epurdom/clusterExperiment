@@ -92,35 +92,62 @@ setMethod(
   listReturn<-FALSE
   whFeatures<-NULL
   #check valid options for dimReduce
-  if(any(!dimReduce %in% c("none","PCA","var"))) stop("invalid options for 'dimReduce' must be one of: 'none','PCA',or 'var'")
+  varValues<-c("var","mad","cv")
+  if(any(!dimReduce %in% c("none","PCA",varValues))) stop(paste("invalid options for 'dimReduce' must be one of: 'none','PCA',",paste(varValues,collapse=",")) )
   if(any(dimReduce!="none")){
-    if(any(is.na(nPCADims)) & "PCA" %in% dimReduce){
-      if(length(nPCADims)==1){
-        if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
-        if(length(dimReduce)>1) dimReduce<-dimReduce[-match("PCA",dimReduce)] #assume user goofed and didn't mean to also include
+      ##Check values are appropriate
+      checkValues<-function(name){
+          ndims<-switch(name %in% varValues,"TRUE"=nVarDims,"FALSE"=nPCADims)
+          
+          if(any(is.na(ndims)) & name %in% dimReduce){ #if NA in ndims
+              if(length(ndims)==1){ #ndims is only a NA value -- assume user goofed and meant to do just "none"
+                  if(length(dimReduce)==1) dimReduce<-"none" 
+                  if(length(dimReduce)>1) dimReduce<<-dimReduce[-match(name,dimReduce)]
+              }
+              else{# otherwise user meant to do none *as well* as dimReduce with other values.
+                  dimReduce<<-unique(c("none",dimReduce)) #add 'none' and remove NA
+                  ndims<-ndims[!is.na(ndims)]
+              }
+          }
       }
-      else{
-        #add 'none' option to dimReduce and get rid of NA
-        dimReduce<-unique(c("none",dimReduce))
-        nPCADims<-nPCADims[!is.na(nPCADims)]
-      }
-    }
-    if(any(is.na(nVarDims)) & "var" %in% dimReduce){
-      if(length(nVarDims)==1){
-        if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
-        if(length(dimReduce)>1) dimReduce<-dimReduce[-match("var",dimReduce)] #assume user goofed and didn't mean to also include
-
-      }
-      else{#assume user meant to do none as well as dimReduce with other values.
-        dimReduce<-unique(c("none",dimReduce)) #add 'none' and remove NA
-        nVarDims<-nVarDims[!is.na(nVarDims)]
-      }
-    }
+      checkValues("PCA")
+      temp<-lapply(varValues,function(name){checkValues(name)}) #doesn't do anything diferent for others, except if nVarDims=NA
+  }
+  #replaced below with 'checkValues' so not replicate.
+#     if(any(is.na(nPCADims)) & "PCA" %in% dimReduce){
+#       if(length(nPCADims)==1){
+#         if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
+#         if(length(dimReduce)>1) dimReduce<-dimReduce[-match("PCA",dimReduce)] #assume user goofed and didn't mean to also include
+#       }
+#       else{
+#         #add 'none' option to dimReduce and get rid of NA
+#         dimReduce<-unique(c("none",dimReduce))
+#         nPCADims<-nPCADims[!is.na(nPCADims)]
+#       }
+#     }
+#       
+#     if(any(is.na(nVarDims)) & "var" %in% dimReduce){
+#       if(length(nVarDims)==1){
+#         if(length(dimReduce)==1) dimReduce<-"none" #assume user goofed and meant to do none
+#         if(length(dimReduce)>1) dimReduce<-dimReduce[-match("var",dimReduce)] #assume user goofed and didn't mean to also include
+# 
+#       }
+#       else{#assume user meant to do none as well as dimReduce with other values.
+#         dimReduce<-unique(c("none",dimReduce)) #add 'none' and remove NA
+#         nVarDims<-nVarDims[!is.na(nVarDims)]
+#       }
+#     }
     dimReduce<-unique(dimReduce)
     nVarDims<-unique(nVarDims)
     nPCADims<-unique(nPCADims)
     xPCA<-xVAR<-xNone<-NULL #possible values
+    
+    
     #for each dim reduction method requested
+    doDimReduce<-function(name,fun){
+        
+    }
+    
     if("PCA" %in% dimReduce & !all(is.na(nPCADims))){ #do PCA dim reduction
       if(max(nPCADims)>NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
       if(min(nPCADims)<1) stop("the number of PCA dimensions must be equal to 1 or greater")
