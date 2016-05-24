@@ -55,7 +55,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
           })
 test_that("`clusterMany` works changing parameters", {
   #check dim reduce
-  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
+  cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var","cv","mad"),clusterFunction="pam",
                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
                     isCount=FALSE)
   #check giving paramMatrix
