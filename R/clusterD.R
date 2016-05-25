@@ -73,7 +73,7 @@
 #'   also assumed to cluster all samples to a cluster, and therefore clusterK
 #'   gives options to exclude poorly clustered samples via silhouette distances.
 #'
-#'   @details cluster01 required format for input and output for clusterFunction:
+#' @details cluster01 required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes (as a minimum) an argument
 #'   "D" and "alpha". 0-1 clustering algorithms are expected to use the fact
 #'   that the D input is 0-1 range to find the clusters, rather than a user
@@ -86,7 +86,7 @@
 #'   clusters' (as defined by the clusterFunction), with first being the best
 #'   and last being worst.
 #'
-#'   @details cluster01 methods: "tight" method refers to the method of finding 
+#' @details cluster01 methods: "tight" method refers to the method of finding 
 #'     clusters from a subsampling matrix given internally in the tight 
 #'     algorithm code of Tsang and Wong. Arguments for the tight method are
 #'     'minSize.core' (default=2), which sets the minimimum number of samples
@@ -102,7 +102,7 @@
 #'     hclust can also be passed via clusterArgs to control the hierarchical 
 #'     clustering of D.
 #'
-#'   @details clusterK required format for input and output for clusterFunction:
+#' @details clusterK required format for input and output for clusterFunction:
 #'   clusterFunction should be a function that takes as a minimum an argument
 #'   'D' and 'k'. The output must be a clustering, specified by integer values. 
 #'   The function \code{\link{silhouette}} will be used on the clustering to
@@ -116,7 +116,7 @@
 #'   and then applies \code{\link{cutree}} with the specified k to obtain
 #'   clusters. Arguments to \code{\link{hclust}} can be passed via
 #'   \code{clusterArgs}.
-#'   @details To provide a distance matrix via the argument \code{distFunction},
+#' @details To provide a distance matrix via the argument \code{distFunction},
 #'     the function must be defined to take the distance of the rows of a matrix
 #'     (internally, the function will call \code{distFunction(t(x))}. This is to
 #'     be compatible with the input for the \code{dist} function.
@@ -136,7 +136,7 @@
 #'   the size of the cluster, instead of by the internal ordering of the
 #'   clusterFunction.
 #'
-#'   @return cluster01 and clusterK return a list of indices of the clusters found,
+#' @return cluster01 and clusterK return a list of indices of the clusters found,
 #'   which each element of the list corresponding to a cluster and the elements
 #'   of that list a vector of indices giving the indices of the samples assigned
 #'   to that cluster. Indices not included in any list are assumed to have not
@@ -273,6 +273,8 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 		passedArgs<-passedArgs[-wh]
 		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
+	#use to be:
+	#hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
 	hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
 	method<-evalClusterMethod
 	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
