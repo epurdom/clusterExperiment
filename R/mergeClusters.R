@@ -254,7 +254,7 @@ setMethod(f = "mergeClusters",
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod,plotType,clusterLabel="mergeClusters",...) {
+                                mergeMethod="none",plotType="all",clusterLabel="mergeClusters",...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")

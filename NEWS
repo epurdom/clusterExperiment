@@ -1,3 +1,20 @@
+Changes in version 0.99.0-9000 (Release date: 2016-05-24 )
+==============
+
+Changes:
+* plot in mergeClusters now uses cluster names and colors from clusterLegend
+* plotDendrogram now calls plot.phylo
+* add 'clusterLabel' argument to `clusterSingle`
+* add options 'mad' and 'cv' to the dimensionality reduction. Also made option to only use clustered samples for feature reduction.
+
+Bug fixes:
+* fix bug in .TypeIntoIndices so that handles mix of clusterType and clusterLabels in whichClusters
+* fixed bug in plotCoClustering so handles clusterSamplesData
+
+Changes in version 0.99.0 (Release date: 2016-05-24 )
+==============
+
+
 Changes in version 0.2.0 (Release date: 2016-05-10 )
 ==============
 

@@ -292,13 +292,18 @@ setMethod(
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     phylo4Obj <- .makePhylobaseTree(dend, "dendro")
     phyloObj <- as(phylo4Obj, "phylo")
+    leg<-clusterLegend(x)[[x@dendro_index]]
     if(leaves=="clusters"){
-      leg<-clusterLegend(x)[[x@dendro_index]]
       m<-match(phyloObj$tip.label,leg[,"clusterIds"])
       if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
       phyloObj$tip.label<-leg[m,"name"]
       tip.color<-leg[m,"color"]
       
+    }
+    else{
+      cl<-clusterMatrix(x)[,x@dendro_index]
+      m<-match(cl,leg[,"clusterIds"])
+      tip.color<-leg[m,"color"]
     }
     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
     invisible(phyloObj)

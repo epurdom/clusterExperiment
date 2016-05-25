@@ -213,11 +213,7 @@ setMethod(
   signature = signature(x = "SummarizedExperiment"),
   definition = function(x, ...) {
     outval <- clusterSingle(assay(x), ...)
-    retval <- clusterExperiment(x, primaryCluster(outval),
-                                transformation(outval))
-    retval@clusterInfo <- clusterInfo(outval)
-    retval@clusterTypes <- clusterTypes(outval) #shouldn't this add to the end
-    retval<-.unnameClusterSlots(retval)
+    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
     return(retval)
   }
 )
