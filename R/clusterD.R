@@ -51,11 +51,25 @@
 #' @param checkArgs logical as to whether should give warning if arguments given
 #'   that don't match clustering choices given. Otherwise, inapplicable
 #'   arguments will be ignored without warning.
+#' @param returnD logical as to whether to return the D matrix in output.
 #' @param ... arguments given to clusterD to be passed to cluster01 or clusterK
 #'   (depending on the value of typeAlg). Examples include 'k' for clusterK or
 #'   'alpha' for cluster01. These should not be the arguments needed by
 #'   clusterFunction (which should be passed via the argument 'clusterArgs') but
 #'   the actual arguments of cluster01 or clusterK.
+#' @details To provide a distance matrix via the argument \code{distFunction},
+#'     the function must be defined to take the distance of the rows of a matrix
+#'     (internally, the function will call \code{distFunction(t(x))}. This is to
+#'     be compatible with the input for the \code{dist} function.
+#'     \code{as.matrix} will be performed on the output of \code{distFunction},
+#'     so if the object returned has a \code{as.matrix} method that will convert
+#'     the output into a symmetric matrix of distances, this is fine (for
+#'     example the class \code{dist} for objects returned by \code{dist} have
+#'     such a method). If \code{distFunction=NA}, then a default distance will 
+#'     be calculated based on the type of clustering algorithm of 
+#'     \code{clusterFunction}. For type "K" the default is to take \code{dist}
+#'     as the distance function. For type "01", the default is to take the
+#'     (1-cor(x))/2.
 #'
 #' @details cluster01 is for clustering functions that expect as an input D that
 #'   takes on 0-1 values (e.g. from subclustering). clusterK is for clustering
@@ -116,19 +130,6 @@
 #'   and then applies \code{\link{cutree}} with the specified k to obtain
 #'   clusters. Arguments to \code{\link{hclust}} can be passed via
 #'   \code{clusterArgs}.
-#' @details To provide a distance matrix via the argument \code{distFunction},
-#'     the function must be defined to take the distance of the rows of a matrix
-#'     (internally, the function will call \code{distFunction(t(x))}. This is to
-#'     be compatible with the input for the \code{dist} function.
-#'     \code{as.matrix} will be performed on the output of \code{distFunction},
-#'     so if the object returned has a \code{as.matrix} method that will convert
-#'     the output into a symmetric matrix of distances, this is fine (for
-#'     example the class \code{dist} for objects returned by \code{dist} have
-#'     such a method). If \code{distFunction=NA}, then a default distance will 
-#'     be calculated based on the type of clustering algorithm of 
-#'     \code{clusterFunction}. For type "K" the default is to take \code{dist}
-#'     as the distance function. For type "01", the default is to take the
-#'     absolute value of the correlation between the samples.
 #'
 #' @return clusterD returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
@@ -180,7 +181,7 @@
 #' @importFrom cluster daisy silhouette pam
 clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
-                   format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
+                   format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
 	passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
@@ -193,12 +194,14 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 		if(length(whRightArgs)>0) passedArgs<-passedArgs[whRightArgs]
 		else passedArgs<-NULL
 	}
+	#######################
 	### Create distance if needed, and check it.
+	#######################
 	#browser()
 	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
 	  x<-D 
 	  if(!is.function(distFunction) && is.na(distFunction)){
-	    distFunction<-switch(typeAlg,"01"=function(x){abs(cor(t(x)))},"K"=function(x){dist(x)})
+	    distFunction<-switch(typeAlg,"01"=function(x){(1-cor(t(x)))/2},"K"=function(x){dist(x)})
 	  }
 	  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
 	  if(inherits(D,"try-error")) stop("input distance gives error when applied to x")
@@ -206,11 +209,14 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
 	  
 	}
-	if(any(is.na(as.vector(D)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	if(any(is.na(as.vector(D)))) stop("NA values found in D (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(any(D<0)) stop("distance function must give strictly positive values")
+	#if(any(diag(D)!=0)) stop("distance function must zero values to the diagonal of the distance matrix")
 	
+	#######################
 	####Run clustering:
+	#######################
 	if(typeAlg=="01") {
 	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
 		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
@@ -218,15 +224,17 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	if(typeAlg=="K") {
 		res<-do.call("clusterK",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
-	N<-nrow(D)
 
-
+	#######################
 	#Now format into desired output
+	#######################
+	N<-nrow(D)
 	clusterSize<-sapply(res, length)
     if(length(res)>0) res <- res[clusterSize>=minSize]
 	if(length(res)==0){ #No clusters pass
-		if(format=="list") return(res)
-		else return(rep(-1,nrow(D)))
+# 		if(format=="list") return(res)
+# 		else return(rep(-1,nrow(D)))
+	    if(format=="vector") res<-rep(-1,nrow(D))
 	}
 	else{
 		#now reorders final groups by size
@@ -236,7 +244,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 		}
 		names(res)<-as.character(1:length(res))
 
-		if(format=="list") return(res)
+		#if(format=="list") return(res)
 		if(format=="vector"){
 
 			valMat<-do.call("rbind",mapply(res,names(res),FUN=function(ind,val){cbind(ind,rep(as.numeric(val),length=length(ind)))},SIMPLIFY=FALSE))
@@ -244,9 +252,11 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 			clusterVec[valMat[,1]]<-valMat[,2]
 			clusterVec<-as.numeric(clusterVec)
 			names(clusterVec)<-rownames(D)
-			return(clusterVec)
+		    res<-clusterVec #return(clusterVec)
 		}
 	}
+	if(!returnD) return(res)
+	else return(list(result=res,D=D))
 }
 
 .args01<-c("alpha")
@@ -262,8 +272,9 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)
 }
-.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),checkArgs,...)
+.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("minimum","average"),whichHierDist=c("old","new"),checkArgs,...)
 {
+    whichHierDist<-match.arg(whichHierDist)
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
 	passedArgs<-list(...)
@@ -273,24 +284,13 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 		passedArgs<-passedArgs[-wh]
 		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
-	#use to be:
-	#hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
+	#use to be (when D was similarity matrix):
 	hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
+# 	#browser()
+# 	d<-switch(whichHierDist,"old"=dist(1-D),"new"=as.dist(D))
+# 	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
 	method<-evalClusterMethod
 	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
-	# ############
-	# #convert into phylo4 (phylobase) object so can traverse tree easily.
-	# ############
-	# #first into phylo from ape package
-	# tempPhylo<-try(ape::as.phylo(hDmat),FALSE)
-	# if(inherits(tempPhylo, "try-error")) stop("the hclust of D cannot be converted to a phylo class (ape package).")
-	# # require(phylobase)
-	# phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE)
-	# if(inherits(phylo4Obj, "try-error")) stop("the created phylo object from hclust cannot be converted to a phylo4 class.")
-	# phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-
-
-
 	allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
 	#each internal node (including root) calculate whether passes value of alpha or not
 	nodesToCheck<-phylobase::rootNode(phylo4Obj)
@@ -350,6 +350,9 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 }
 .tightClusterDMat <- function(D, alpha, minSize.core=2,checkArgs,...)
 {
+    #previously, D was similarity matrix. To make it match in clusterD, I need it to be D=1-similarity
+    #so now convert it back
+    D<-1-D #now is similarity matrix...
     if(length(list(...))>0 & checkArgs) 	warning("some arguments passed via clusterArgs to tight clustering method are not applicable")
 	find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1

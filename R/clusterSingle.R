@@ -127,6 +127,12 @@ setMethod(
                See help documentation.")
       }
     }
+    if(subsample){ 
+        if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
+            warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
+            clusterDArgs[["distFunction"]]<-NA
+        }
+    }
     if(sequential){
       if(is.null(seqArgs)) {
         stop("must give seqArgs so as to identify k0")
@@ -143,7 +149,7 @@ setMethod(
     else{
       if(subsample){
         if(is.null(subsampleArgs) || !("k" %in% names(subsampleArgs))){
-          if(!is.null(clusterDArgs) & ("k" %in% names(clusterDArgs))){
+          if(!is.null(clusterDArgs) && ("k" %in% names(clusterDArgs))){
             #give by default the clusterDArgs to subsampling.
             warning("did not give 'k' in 'subsampleArgs'.
                     Set to 'k' argument in 'clusterDArgs'")
@@ -157,8 +163,7 @@ setMethod(
                  must pass 'k' in subsampleArgs")
         }
       }
-      else if(typeAlg=="K" && !is.null(clusterDArgs)
-              && !"k" %in% names(clusterDArgs)){
+      else if(typeAlg=="K" && !is.null(clusterDArgs) && !"k" %in% names(clusterDArgs)){
         #if don't specify k, then must have findBestK=TRUE in clusterDArgs;
         #is by default, so only need to check that if specified it,
         #set it to TRUE
@@ -198,8 +203,8 @@ setMethod(
                                 clusterInfo=clInfo,
                                 clusterTypes="clusterSingle")
     clusterLabels(retval)<-clusterLabel
-    if(subsample & !sequential) {
-      retval@coClustering<-finalClusterList$subsampleCocluster
+    if(!sequential) {
+      retval@coClustering<-finalClusterList$D
     }
     validObject(retval)
     return(retval)
@@ -233,3 +238,33 @@ setMethod(
     return(retval)
   }
 )
+
+
+#wrapper that calls the clusterSampling and clusterD routines in reasonable order.
+.clusterWrapper <- function(x, subsample, clusterFunction,clusterDArgs=NULL,
+                            subsampleArgs=NULL,typeAlg) 
+{
+    if(subsample){
+        if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
+        Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
+        Dbar<-1-Dbar #make it a distance.
+        if(typeAlg=="K"){
+            if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
+            else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
+        }
+    }
+    else{ #pass x along and distance matrix will be created by clusterD
+        Dbar<-x
+    }
+    if(typeAlg=="K"){
+        findBestK<-FALSE	
+        if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+            findBestK<-clusterDArgs[["findBestK"]]
+        }
+        if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+    }
+    resList<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs)) 
+    return(list(results=resList$result,D=resList$D)) 
+}
+
+
