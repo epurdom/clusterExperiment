@@ -900,6 +900,14 @@ Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" colu
 levels((bestDendro)$Contrast)
 ```
 
+We can plot the dendrogram showing the node names to help make sense of which contrasts go with which nodes (plotDendrogram calls `plot.phylo` from the `ape` package and can take those arguments).
+
+
+```{r dendroWithNodeNames}
+plotDendrogram(ce,show.node.label=TRUE)
+```
+
+
 ## Analysis for count and other RNASeq data
 
 The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom` correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
