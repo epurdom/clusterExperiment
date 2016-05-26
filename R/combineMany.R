@@ -114,8 +114,11 @@ setMethod(
     clusterMat <- apply(clusterMat, 2, as.character)
     clusterMat[clusterMat == "-1"] <- NA
     sharedPerct <- .hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back.
-    sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 #have no clusterings for which they are both not '-1'
-    cl <- clusterD(D=sharedPerct, clusterFunction=clusterFunction,
+
+    #fix those pairs that have no clusterings for which they are both not '-1'
+    diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
+    sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
+    cl <- clusterD(D=1-sharedPerct, clusterFunction=clusterFunction,
                    alpha=1-proportion, minSize=minSize, format="vector",
                    clusterArgs=list(evalClusterMethod=c("average")))
 

@@ -136,7 +136,7 @@ test_that("Different options of subsampling",{
     expect_error(clusterSingle(mat, clusterFunction="pam",
                                subsample=TRUE, sequential=FALSE,
                                subsampleArgs=list(resamp.num=20, k=3,classifyMethod="OutOfSample"),
-                               clusterDArgs=list(k=3),isCount=FALSE),"NA values found in Dbar")
+                               clusterDArgs=list(k=3),isCount=FALSE),"NA values found in D")
     
     #errors in missing args in subsample
     expect_warning(clusterSingle(mat, clusterFunction="pam",
@@ -171,6 +171,12 @@ test_that("Different options of clusterD",{
                                  subsample=FALSE, sequential=FALSE,
                                  clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
                    "do not match the choice of typeAlg")
+    expect_error(clusterSingle(mat, clusterFunction="tight",
+                                 subsample=FALSE, sequential=FALSE,
+                                 clusterDArgs=list(distFunction=function(x){abs(cor(t(x)))}),isCount=FALSE),
+                   "distance function must have zero values on the diagonal")
+    
+    
 })
 
 test_that("Different options of seqCluster",{
