@@ -92,11 +92,12 @@ setMethod(
       warning("specifying ndims has no effect if dimReduce==`none`")
     }
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
+    nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), ndims, NA)
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
                            isCount=isCount)
     x <- transObj$x
+    #browser()
     if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
