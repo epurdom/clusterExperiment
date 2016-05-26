@@ -10,7 +10,7 @@ seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam",
   subsampleArgs = NULL, clusterDArgs = NULL)
 }
 \arguments{
-\item{x}{\code{p x} data matrix on which to run the clustering (samples in
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see

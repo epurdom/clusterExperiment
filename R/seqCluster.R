@@ -4,7 +4,7 @@
 #' routines, and sequentially remove best clusters, and iterate to find
 #' clusters.
 #'
-#' @param x \code{p x} data matrix on which to run the clustering (samples in
+#' @param x \code{p x n} data matrix on which to run the clustering (samples in
 #'   columns).
 #' @param k0 the value of K at the first iteration of sequential algorithm, see
 #'   details below or vignette.
@@ -238,7 +238,7 @@ seqCluster<-function (x, k0, clusterFunction=c("tight","hierarchical01","pam","h
             }
             else{
               tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k
-              res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+              res <- .clusterWrapper(x=t(x), subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
 
             }
       			if(length(res)>0) res <- res[1:min(top.can,length(res))]
