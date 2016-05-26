@@ -11,6 +11,8 @@ Changes:
 Bug fixes:
 * fix bug in .TypeIntoIndices so that handles mix of clusterType and clusterLabels in whichClusters
 * fixed bug in plotCoClustering so handles clusterSamplesData
+* D for clusterD is now distance, not similarity, for 0-1, meaning larger values are values that are less similar.
+
 
 Changes in version 0.99.0 (Release date: 2016-05-24 )
 ==============

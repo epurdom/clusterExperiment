@@ -213,7 +213,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	if(any(is.na(as.vector(D)))) stop("NA values found in D (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(any(D<0)) stop("distance function must give strictly positive values")
-	if(any(diag(D)!=0)) stop("distance function must zero values to the diagonal of the distance matrix")
+	if(any(diag(D)!=0)) stop("distance function must have zero values on the diagonal of the distance matrix")
 	
 	#######################
 	####Run clustering:
