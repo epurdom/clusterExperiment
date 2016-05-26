@@ -170,16 +170,31 @@
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
   }
   else{
-    if(!any(whClusters %in% clusterTypes(x))){
-        if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
-        else{
-            wh<-which(clusterLabels(x) %in% whClusters)
+    #first match to clusterTypes  
+    mClType<-match(whClusters,clusterTypes(x))  
+    mClLabel<-match(whClusters,clusterLabels(x))  
+    totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
+        if(is.na(type) & !is.na(lab)) return(lab)
+        if(is.na(type) & is.na(lab)) return(NA)
+        if(!is.na(type)){
+            return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
         }
-    }
-    else{
-      #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
-      wh<-which(clusterTypes(x) %in% whClusters)
-    }
+    },SIMPLIFY=FALSE)
+    totalMatch<-unlist(totalMatch,use.names=FALSE)
+    #browser()
+    if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
+    else wh<-na.omit(totalMatch) #silently ignore things that don't match.
+#     
+#         if(!any(whClusters %in% clusterTypes(x))){
+#         if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
+#         else{
+#             wh<-which(clusterLabels(x) %in% whClusters)
+#         }
+#     }
+#     else{
+#       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
+#       wh<-which(clusterTypes(x) %in% whClusters)
+#     }
   }
   return(wh)
 }
@@ -197,44 +212,18 @@
 	return(type)
 }
 
-#wrapper that calls the clusterSampling and clusterD routines in reasonable order.
-.clusterWrapper <- function(x, subsample, clusterFunction,clusterDArgs=NULL,
-    subsampleArgs=NULL,typeAlg) 
-{
-	if(subsample){
-		if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
-		Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
-	    if(typeAlg=="K"){
-			if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
-			else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
-		}
-    subDbar<-Dbar
-	}
-	else{ #create distance matrix if not subsampling
-	  Dbar<-x
-	  subDbar<-NULL
-	}
-  if(typeAlg=="K"){
-    findBestK<-FALSE	
-    if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-      findBestK<-clusterDArgs[["findBestK"]]
-    }
-    if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
-  }
-	res<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction),clusterDArgs)) 
-	return(list(results=res,subsampleCocluster=subDbar)) 
-}
+
 
 #convert list output into cluster vector.
 .convertClusterListToVector<-function(clusterList,N)
 {
     clust.id <- rep(-1, N)
-	nfound<-length(clusterList)
+    nfound<-length(clusterList)
     if(nfound>0){
-		#make cluster ids in order of when found
-	    for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i 
-	}
-	return(clust.id)
+        #make cluster ids in order of when found
+        for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i 
+    }
+    return(clust.id)
 }
 
 ####

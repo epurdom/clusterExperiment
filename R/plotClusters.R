@@ -349,7 +349,9 @@ setMethod(
 		  #align them, including "-1","-2" as a cluster. To DO: do this without -1/-2 so not lose a color to them.
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
+			#browser()
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
+			  #browser()
 				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
@@ -457,9 +459,10 @@ setMethod(
 		mat<-cbind(mat,"name"=mat[,"alignedClusterIds"])
 		rownames(mat)<-NULL
 		mat<-(unique(mat))
-		mat<-mat[order(mat[,"clusterIds"]),]
+		mat<-mat[order(mat[,"clusterIds"]),,drop=FALSE]
         return(mat)
 	})
+#	browser()
 	names(clusterLegend)<-rownames(clusters)
 	invisible(list(orderSamples=index,colors=t(colorM),alignedClusterIds=t(alignCl),clusterLegend=clusterLegend))
 

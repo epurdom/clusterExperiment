@@ -17,17 +17,17 @@
 #'   \code{clusterSingle}, this must be a character vector of pre-defined
 #'   clustering techniques provided by the package, and can not be a
 #'   user-defined function.
-#'   @param distFunction a vector of character strings that are the names of
+#'   @param distFunction a vector of character strings that are the names of 
 #'     distance functions found in the global environment. See the help pages of
-#'     \code{\link{clusterD}} for details about the required format of distance
-#'     functions. Currently, this distance function must be applicable for all
+#'     \code{\link{clusterD}} for details about the required format of distance 
+#'     functions. Currently, this distance function must be applicable for all 
 #'     clusterFunction types. Therefore, it is not possible to intermix type "K"
-#'     and type "01" algorithms if you also give distances to evaluate unless
-#'     all distances give 0-1 values for the distance (and hence are possible
-#'     for both type "01" and "K" algorithms).
-#' @param nVarDims vector of the number of the most variable features to keep
-#'   (when "var" is identified in \code{dimReduce}). If NA is included, then
-#'   the full dataset will also be included.
+#'     and type "01" algorithms if you also give distances to evaluate via
+#'     \code{distFunction} unless all distances give 0-1 values for the distance
+#'     (and hence are possible for both type "01" and "K" algorithms).
+#' @param nVarDims vector of the number of the most variable features to keep 
+#'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
+#'   included, then the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be
 #'   included.
@@ -203,7 +203,7 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "list"),
-  definition = function(x, ks, clusterFunction, alphas=0.1, findBestK=FALSE,
+  definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, distFunction=NA,verbose=FALSE,
                         clusterDArgs=list(minSize=5),

@@ -12,7 +12,7 @@
 \S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
   nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{list}(x, ks, clusterFunction, alphas = 0.1,
+\S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, verbose = FALSE,
   clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
@@ -30,13 +30,14 @@
 in rows), a list of datasets overwhich the clusterings should be run, a
 \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "var".}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep
-(when "var" is identified in \code{dimReduce}). If NA is included, then
-the full dataset will also be included.}
+\item{nVarDims}{vector of the number of the most variable features to keep 
+(when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
+included, then the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified
 in \code{dimReduce}). If NA is included, then the full dataset will also be
@@ -61,14 +62,14 @@ choices).}
 \code{clusterSingle}, this must be a character vector of pre-defined
 clustering techniques provided by the package, and can not be a
 user-defined function.
-@param distFunction a vector of character strings that are the names of
+@param distFunction a vector of character strings that are the names of 
   distance functions found in the global environment. See the help pages of
-  \code{\link{clusterD}} for details about the required format of distance
-  functions. Currently, this distance function must be applicable for all
+  \code{\link{clusterD}} for details about the required format of distance 
+  functions. Currently, this distance function must be applicable for all 
   clusterFunction types. Therefore, it is not possible to intermix type "K"
-  and type "01" algorithms if you also give distances to evaluate unless
-  all distances give 0-1 values for the distance (and hence are possible
-  for both type "01" and "K" algorithms).}
+  and type "01" algorithms if you also give distances to evaluate via
+  \code{distFunction} unless all distances give 0-1 values for the distance
+  (and hence are possible for both type "01" and "K" algorithms).}
 
 \item{alphas}{values of alpha to be tried. Only used for
 subsampleclusterFunction either 'tight' or 'hierarchical'.}

@@ -12,8 +12,8 @@
 \S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
   clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
   clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var"),
-  ndims = NA)
+  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var",
+  "cv", "mad"), ndims = NA, clusterLabel = "clusterSingle")
 
 \S4method{clusterSingle}{SummarizedExperiment}(x, ...)
 
@@ -51,12 +51,17 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "var".}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
+
+\item{clusterLabel}{a string used to describe the clustering. By
+default it is equal to "clusterSingle", to indicate that this clustering is
+the result of a call to \code{clusterSingle}.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
