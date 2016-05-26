@@ -181,7 +181,7 @@
 clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
                    format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,...){
-	passedArgs<-list(...)
+    passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
@@ -194,6 +194,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 		else passedArgs<-NULL
 	}
 	### Create distance if needed, and check it.
+	#browser()
 	#browser()
 	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
 	  x<-D 
@@ -209,7 +210,6 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	if(any(is.na(as.vector(D)))) stop("NA values found in Dbar (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
 	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
 	if(any(D<0)) stop("distance function must give strictly positive values")
-	
 	####Run clustering:
 	if(typeAlg=="01") {
 	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
