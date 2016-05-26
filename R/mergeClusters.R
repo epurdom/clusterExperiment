@@ -180,7 +180,7 @@ setMethod(f = "mergeClusters",
   annotTable <- data.frame("Node"=names(sigByNode),
                               "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)])
     #add merge information:
-   if(mergeMethod != "none"){
+   if(mergeMethod != "none" && length(whToMerge)>0 && length(which(whToMerge)) > 0){
      logicalMerge<-annotTable$Node %in%nodesToMerge
 
  } else logicalMerge<-rep(FALSE,length=nrow(annotTable))
