@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 <!--
-%\VignetteEngine{rmarkdown::render}
+%\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
@@ -76,11 +76,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 
 ## Data example {#data}
 
-We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package at [github.com/drisso](https://github.com/drisso). For the current version of this vignette, we used version `0.0.8` of the `scRNAseq` package, available [here](https://github.com/drisso/scRNAseq/releases/download/v0.0.8/scRNAseq_0.0.8.tar.gz). Once downloaded, the package can be installed within R with the following command.
-
-```{r, eval=FALSE}
-install.packages("scRNAseq_0.0.8.tar.gz", repos=NULL)
-```
+We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package.
 
 ```{r,cache=FALSE}
 library(scRNAseq)
