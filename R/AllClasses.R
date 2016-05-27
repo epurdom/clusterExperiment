@@ -1,6 +1,7 @@
 setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
+setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends

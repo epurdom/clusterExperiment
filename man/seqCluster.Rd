@@ -4,14 +4,17 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam",
-  "hierarchicalK"), subsample = TRUE, beta = 0.7, top.can = 15,
-  remain.n = 30, k.min = 2, k.max = k0 + 10, verbose = TRUE,
-  subsampleArgs = NULL, clusterDArgs = NULL)
+seqCluster(x = NULL, diss = NULL, k0, clusterFunction = c("tight",
+  "hierarchical01", "pam", "hierarchicalK"), subsample = TRUE, beta = 0.7,
+  top.can = 15, remain.n = 30, k.min = 2, k.max = k0 + 10,
+  verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL)
 }
 \arguments{
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}

@@ -67,12 +67,14 @@ test_that("`clusterMany` works changing parameters", {
   #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
   #             expect_equal(cc,cc2)
   
-#   #check giving distance -- problem because grab from global environment
+#   #check giving distance -- this still doesn't work. 
 #   dist1<-function(x){dist(x,method="manhattan")}
+#   dist2<-function(x){dist(x)} ## problem to just give dist because need to grab from global environment
 #   cc <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
-#                     distFunction=c("dist1","dist",NA),
+#                     distFunction=c("dist1","dist2",NA),
 #                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
 #                     isCount=FALSE)
+  
   #check doesn't spit out warnings because alphas/clusterD args not match 
   expect_silent(clusterMany(mat, clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
                     alphas=c(0.1,0.2),

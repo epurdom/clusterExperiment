@@ -10,8 +10,11 @@
 #' @aliases cluster01
 #' @aliases clusterK
 #'
-#' @param D either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.
-#' @param clusterFunction clusterFunction a function that clusters a nxn matrix
+#' @param x \code{p x n} data matrix on which to run the clustering (samples in
+#'   columns).
+#' @param diss \code{n x n} data matrix of dissimilarities between the samples
+#'   on which to run the clustering
+##' @param clusterFunction clusterFunction a function that clusters a nxn matrix
 #'   of dissimilarities/distances. Can also be given character values to
 #'   indicate use of internal wrapper functions for default methods. See Details
 #'   for the format of what the function must take as arguments and what format
@@ -180,10 +183,11 @@
 #' clusterArgs=list(evalClusterMethod="average"))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+clusterD<-function(x=NULL, diss=NULL,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
                    format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
-	passedArgs<-list(...)
+	input<-.checkXDissInput(x,diss)
+  passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
@@ -200,8 +204,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	#######################
 	#browser()
 	#browser()
-	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
-	  x<-D 
+	if(input=="X"){
 	  if(!is.function(distFunction) && is.na(distFunction)){
 	    distFunction<-switch(typeAlg,"01"=function(x){(1-cor(t(x)))/2},"K"=function(x){dist(x)})
 	  }
@@ -211,20 +214,17 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
 	  
 	}
-	if(any(is.na(as.vector(D)))) stop("NA values found in D (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
-	if(any(D<0)) stop("distance function must give strictly positive values")
-	if(any(diag(D)!=0)) stop("distance function must have zero values on the diagonal of the distance matrix")
-	
+	else D<-diss
+	.checkDistFunction(D)	
 	#######################
 	####Run clustering:
 	#######################
 	if(typeAlg=="01") {
 	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
-		res<-do.call("cluster01",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
+		res<-do.call("cluster01",c(list(diss=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 	if(typeAlg=="K") {
-		res<-do.call("clusterK",c(list(D=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
+		res<-do.call("clusterK",c(list(diss=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
 	}
 
 	#######################
@@ -263,8 +263,9 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 
 .args01<-c("alpha")
 #' @rdname clusterD
-cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
+cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
 {
+  D<-diss
 	if(!is.function(clusterFunction)){
 		method<-match.arg(clusterFunction)
 		##These return lists of indices of clusters satisifying alpha criteria
@@ -414,8 +415,9 @@ cluster01<-function(D, clusterFunction=c("hierarchical01","tight"), alpha=0.1, c
 
 .argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
 #' @rdname clusterD
-clusterK<-function(D,  clusterFunction=c("pam","hierarchicalK"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
+clusterK<-function(diss,  clusterFunction=c("pam","hierarchicalK"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
 {
+  D<-diss
   if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
   if(findBestK){
     if(missing(kRange)){
