@@ -205,10 +205,12 @@ setMethod(
   signature = signature(x = "list"),
   definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
-                        silCutoff=0, distFunction=NA,verbose=FALSE,
-                        clusterDArgs=list(minSize=5),
+                        silCutoff=0, distFunction=NA,
+                        betas=0.9, minSizes=5,
+                        verbose=FALSE,
+                        clusterDArgs=NULL,
                         subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9, k.min=3, verbose=FALSE),
+                        seqArgs=list(verbose=FALSE),
                         ncores=1, random.seed=NULL, run=TRUE,
                         ...
   )
@@ -228,8 +230,8 @@ setMethod(
     dataList<-data
     dataName <- names(dataList)
     if(is.null(paramMatrix)){
-      param <- expand.grid(dataset=dataName, #dimReduce="none",nVarDims=NA,nPCADims=NA,
-                         k=ks, alpha=alphas, findBestK=findBestK,
+      param <- expand.grid(dataset=dataName, 
+                         k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSizes=minSizes,
                          sequential=sequential, distFunction=distFunction,
                          removeSil=removeSil, subsample=subsample,
                          clusterFunction=clusterFunction, silCutoff=silCutoff)
@@ -242,7 +244,8 @@ setMethod(
       typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
-
+        param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
+        
         #if findBestK make sure other arguments make sense:
         whFindBestK <- which(param[,"findBestK"])
         if(length(whFindBestK)>0){
@@ -349,6 +352,8 @@ setMethod(
       }
       #browser()
       clusterDArgs[["alpha"]] <- par[["alpha"]]
+      clusterDArgs[["beta"]] <- par[["beta"]]
+      clusterDArgs[["minSize"]] <- par[["minSize"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil
       clusterDArgs[["silCutoff"]] <- par[["silCutoff"]]

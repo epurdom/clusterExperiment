@@ -1,11 +1,11 @@
-Changes in version 0.99.0-9000 (Release date:  )
+Changes in version 0.99.1-9000 (Release date:  )
 ==============
 
 Changes:
 * plot in mergeClusters now uses cluster names and colors from clusterLegend
 * plotDendrogram now calls plot.phylo
 * add 'clusterLabel' argument to `clusterSingle`
-* add options 'mad' and 'cv' to the dimensionality reduction. Also made option to only use clustered samples for feature reduction.
+* add options 'mad' and 'cv' to the dimensionality reduction. Also made option to only use clustered samples for feature reduction for relevant functions (e.g. `makeDendrogram`).
 * clusterSingle now always returns the D matrix to the slot coClustering (previously only did so if D was from subsampling).
 * change so that clusterSingle takes dissimilarity matrix, and now clusterMany calculates dissimilarities up front (rather than recalculating each time)
 
@@ -15,6 +15,11 @@ Bug fixes:
 * D for clusterD is now distance, not similarity, for 0-1, meaning larger values are values that are less similar.
 * fix bug in plotClusters that would give clusterLegend entries that were vectors, not matrices.
 
+Changes in version 0.99.1 (Release date: 2016-05-24 )
+==============
+
+Changes:
+* changes to pass development version of bioConductor checks.
 
 Changes in version 0.99.0 (Release date: 2016-05-24 )
 ==============

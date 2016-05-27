@@ -27,7 +27,7 @@
 #' @param remain.n when only this number of samples are left (i.e. not yet
 #'   clustered) then algorithm will stop.
 #' @param k.min each iteration of sequential detection of clustering will
-#'   decrease the beginning K of subsampling, but not lower than k.min.
+#'   decrease the beginning K of subsampling, but not lower than k.min. 
 #' @param k.max algorithm will stop if K in iteration is increased beyond this
 #'   point.
 #' @param verbose whether the algorithm should print out information as to its
@@ -143,7 +143,9 @@
 #' clusterDArgs=list(minSize=5))
 #' }
 #' @export
-seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
+seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), 
+                      subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 3, 
+                      k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
 {
   input<-.checkXDissInput(x,diss)
     #for now, if use pam for subsampleClusterMethod, just use given k.

@@ -57,7 +57,9 @@
 #'
 #' heatmap(subD)
 #' @export
-subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,resamp.num = 100, samp.p = 0.7,ncores=1,... )
+subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, 
+                              classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,
+                              resamp.num = 100, samp.p = 0.7,ncores=1,... )
 {
   #input<-.checkXDissInput(x,diss)
   if(!is.function(clusterFunction)){
