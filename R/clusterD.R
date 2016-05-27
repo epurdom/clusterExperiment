@@ -180,10 +180,11 @@
 #' clusterArgs=list(evalClusterMethod="average"))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+clusterD<-function(x,diss,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
                    format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
-	passedArgs<-list(...)
+	input<-.checkXDissInput(x,diss)
+  passedArgs<-list(...)
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	clusterFunction<-match.arg(clusterFunction)
@@ -200,8 +201,7 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	#######################
 	#browser()
 	#browser()
-	if(!all(dim(D)==dim(t(D))) || !all(na.omit(D==t(D)))){
-	  x<-D 
+	if(input=="X"){
 	  if(!is.function(distFunction) && is.na(distFunction)){
 	    distFunction<-switch(typeAlg,"01"=function(x){(1-cor(t(x)))/2},"K"=function(x){dist(x)})
 	  }
@@ -211,11 +211,8 @@ clusterD<-function(D,clusterFunction=c("hierarchical01","tight","pam","hierarchi
 	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
 	  
 	}
-	if(any(is.na(as.vector(D)))) stop("NA values found in D (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
-	if(any(D<0)) stop("distance function must give strictly positive values")
-	if(any(diag(D)!=0)) stop("distance function must have zero values on the diagonal of the distance matrix")
-	
+	else D<-diss
+	.checkDistFunction(D)	
 	#######################
 	####Run clustering:
 	#######################

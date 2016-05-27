@@ -242,12 +242,12 @@ setMethod(
 
 
 #wrapper that calls the clusterSampling and clusterD routines in reasonable order.
-.clusterWrapper <- function(x, subsample, clusterFunction,clusterDArgs=NULL,
+.clusterWrapper <- function(x, diss, subsample, clusterFunction,clusterDArgs=NULL,
                             subsampleArgs=NULL,typeAlg) 
 {
     if(subsample){
         if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
-        Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
+        Dbar<-do.call("subsampleClustering",c(list(x=x,diss=diss),subsampleArgs))
         Dbar<-1-Dbar #make it a distance.
         if(typeAlg=="K"){
             if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
@@ -264,7 +264,7 @@ setMethod(
         }
         if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
     }
-    resList<-do.call("clusterD",c(list(D=Dbar,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs)) 
+    resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs)) 
     return(list(results=resList$result,D=resList$D)) 
 }
 
