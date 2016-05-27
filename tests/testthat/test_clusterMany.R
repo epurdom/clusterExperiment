@@ -89,3 +89,10 @@ test_that("`clusterMany` works changing parameters", {
                             clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
                             isCount=FALSE))
 })
+
+test_that("`RSEC` works",{
+    RSEC(x=mat, isCount=FALSE,dimReduce="none",ks=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+         subsampleArgs=list(resamp.num=5),random.seed=495
+        )
+    
+})
