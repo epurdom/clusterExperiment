@@ -1,4 +1,11 @@
 setGeneric(
+    name = "RSEC",
+    def = function(x, ...) {
+        standardGeneric("RSEC")
+    }
+)
+
+setGeneric(
   name = "clusterSingle",
   def = function(x, diss,  ...) {
     standardGeneric("clusterSingle")
