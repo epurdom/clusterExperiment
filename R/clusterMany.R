@@ -281,7 +281,7 @@ setMethod(
       }
       whSubsample<-which(param[,"subsample"])
       if(length(whSubsample)>0){
-        param[whSubsample,"dist"]<-NA
+        param[whSubsample,"distFunction"]<-NA
       }
       param <- unique(param)
 
