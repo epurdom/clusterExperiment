@@ -115,29 +115,25 @@ setMethod(
       if(subsample) stop("subsampling can only be done if",mess)
       if(dimReduce!="none") stop("dimReduce only applies when",mess)
     }
-
+    if(input %in% c("both","diss") && !is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs)){
+        if(!is.na(clusterDArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in clusterDArgs")
+    }
     ##########
     ##Checks that arguments make sense:
     ##########
     if(!is.function(clusterFunction)){
       clusterFunction <- match.arg(clusterFunction)
-#       if(!subsample & clusterFunction !="pam")
-#         stop("If not subsampling, clusterFunction must be 'pam'")
       typeAlg <- .checkAlgType(clusterFunction)
     }
     else{
-      if(! "typeAlg" %in% clusterDArgs)
-        stop("if you provide your own clustering algorithm to be passed to
-             clusterD, then you must specify 'typeAlg' in clusterDArgs")
-      else
-        typeAlg <- clusterDArgs[["typeAlg"]]
+      if(is.null(clusterDArgs) || (! "typeAlg" %in% names(clusterDArgs)))
+        stop("if you provide your own clustering algorithm to be passed to  clusterD, then you must specify 'typeAlg' in clusterDArgs")
+      else typeAlg <- clusterDArgs[["typeAlg"]]
     }
     if(typeAlg == "K"){
       if("findBestK" %in% names(clusterDArgs) & !subsample & sequential){
         if(clusterDArgs[["findBestK"]])
-          stop("Cannot do sequential clustering where subsample=FALSE and
-               'findBestK=TRUE' is passed via clusterDArgs.
-               See help documentation.")
+          stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
       }
     }
     if(subsample){ 
