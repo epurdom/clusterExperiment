@@ -1,11 +1,15 @@
-setGeneric(
-    name = "RSEC",
-    def = function(x, ...) {
-        standardGeneric("RSEC")
-    }
-)
+#' Resampling-based Sequential Ensemble Clustering
+#' 
+#' Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble 
+#' Clustering) for single cell sequencing data. This is a wrapper function 
+#' around the existing clusterExperiment workflow that results in the output of
+#' RSEC.
+#' @param combineProportion passed to \code{proportion} in \code{\link{combineMany}}
+#' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
+#' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
+#' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
 #' @inheritParams clusterMany
-#' @inheritParams
+#' @inheritParams mergeClusters
 setMethod(
     f = "RSEC",
     signature = signature(x = "matrix"),
@@ -21,8 +25,7 @@ setMethod(
                           clusterDArgs=NULL,
                           subsampleArgs=list(resamp.num=50),
                           seqArgs=list(verbose=FALSE),
-                          ncores=1, random.seed=NULL, run=TRUE,
-                          ...
+                          ncores=1, random.seed=NULL, run=TRUE
     )
 {
     ce<-clusterMany(x,ks=ks,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
@@ -33,6 +36,6 @@ setMethod(
                     seqArgs=seqArgs,ncores=ncoes,random.seed=random.seed,run=run)
     ce<-combineMany(ce,proportion=combineProportion,minSize=combineMinSize)
     ce<-makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE)
-    ce<-mergeClusters(ce,mergeMethod=mergeMethod,isCount=isCount)
+    ce<-mergeClusters(ce,mergeMethod=mergeMethod,plotMethod="none",isCount=isCount)
     return(ce)
 }
