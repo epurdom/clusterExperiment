@@ -348,7 +348,6 @@ setMethod(
         }
       }
       #browser()
-      clusterDArgs[["distFunction"]]<-if(!is.null(distFunction)) get(distFunction,envir = globalenv()) else NULL
       clusterDArgs[["alpha"]] <- par[["alpha"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil
@@ -357,12 +356,32 @@ setMethod(
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }
-      clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
+      if(!is.null(distFunction)){
+        diss<- allDist[[paste(par[["dataset"]],distFunction,sep="--")]]
+        clusterSingle(x=dataList[[par[["dataset"]]]], diss=diss,subsample=subsample,
+                      clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
+                      subsampleArgs=subsampleArgs, seqArgs=seqArgs,
+                      sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
+      }
+      else clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
                  clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
+      ##Calculate distances necessary only once
+      distParam<-unique(param[,c("dataset","distFunction")])
+      distParam<-distParam[!is.null(distParam[,"distFunction"])]
+      allDist<-lapply(1:nrow(distParam),function(ii){
+          distFun<-distParam[ii,"distFunction"]
+          dataName<-distParam[ii,"dataset"]
+          fun<-get(distFunction(envir=globalenv()))
+          distMat<-as.matrix(fun(t(dataList[[ii]])))
+          .checkDistFunction(distMat) #check it here!
+          return(distMat)
+      })
+      names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+      
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")
       }
