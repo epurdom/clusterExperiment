@@ -73,36 +73,46 @@
 #' @rdname clusterSingle
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrix"),
-  definition = function(x, subsample=TRUE, sequential=FALSE,
+  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing"),
+  definition = function(x, diss,subsample=TRUE, sequential=FALSE,
       clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
       ndims=NA,clusterLabel="clusterSingle") {
-
-    origX <- x #ngenes x nsamples
-    ##########
-    ##transformation to data x that will be input to clustering
-    ##########
-    dimReduce <- match.arg(dimReduce) #should be only 1
-    if(length(ndims)>1) {
-      stop("clusterSingle only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
+    if(missing(x)) x<-NULL
+    if(missing(diss)) diss<-NULL
+    input<-.checkXDissInput(x,diss)
+    if(input %in% c("X","both")){
+      origX <- x #ngenes x nsamples
+      ##########
+      ##transformation to data x that will be input to clustering
+      ##########
+      dimReduce <- match.arg(dimReduce) #should be only 1
+      if(length(ndims)>1) {
+        stop("clusterSingle only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
+      }
+      if(!is.na(ndims) & dimReduce=="none") {
+        warning("specifying ndims has no effect if dimReduce==`none`")
+      }
+      nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
+      nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), ndims, NA)
+      transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
+                             dimReduce=dimReduce, transFun=transFun,
+                             isCount=isCount)
+      x <- transObj$x
+      #browser()
+      if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
+        stop("Error in the internal transformation of x")
+      }
+      transFun <- transObj$transFun #need it later to create clusterExperimentObject
+      N <- dim(x)[2]
+      
     }
-    if(!is.na(ndims) & dimReduce=="none") {
-      warning("specifying ndims has no effect if dimReduce==`none`")
+    else{
+      mess<-"input to clusterSingle includes the original data matrix x"
+      if(subsample) stop("subsampling can only be done if",mess)
+      if(dimReduce!="none") stop("dimReduce only applies when",mess)
     }
-    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), ndims, NA)
-    transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transFun,
-                           isCount=isCount)
-    x <- transObj$x
-    #browser()
-    if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
-      stop("Error in the internal transformation of x")
-    }
-    transFun <- transObj$transFun #need it later to create clusterExperimentObject
-    N <- dim(x)[2]
 
     ##########
     ##Checks that arguments make sense:
@@ -142,7 +152,7 @@ setMethod(
         stop("seqArgs must contain element 'k0'")
       }
       outlist <- do.call("seqCluster",
-                        c(list(x=x, subsample=subsample,
+                        c(list(x=x, diss=diss,subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs,
                                clusterFunction=clusterFunction), seqArgs))
@@ -176,7 +186,7 @@ setMethod(
       ##########
       ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
       ##########
-      finalClusterList <- .clusterWrapper(x, clusterFunction=clusterFunction,
+      finalClusterList <- .clusterWrapper(x=x, diss=diss, clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           clusterDArgs=clusterDArgs,
@@ -184,10 +194,6 @@ setMethod(
       outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$results, N))
 
     }
-
-    ##########
-    ## Convert to clusterExperiment Object
-    ##########
     clInfo<-list(list(clusterInfo = outlist$clusterInfo,
                       whyStop = outlist$whyStop,
                       subsample = subsample,
@@ -199,16 +205,25 @@ setMethod(
                       dimReduce=dimReduce,
                       ndims=ndims
     ))
-    retval <- clusterExperiment(origX, outlist$clustering,
-                                transformation=transFun,
-                                clusterInfo=clInfo,
-                                clusterTypes="clusterSingle")
-    clusterLabels(retval)<-clusterLabel
-    if(!sequential) {
-      retval@coClustering<-finalClusterList$D
+    ##########
+    ## Convert to clusterExperiment Object
+    ##########
+    if(input %in% c("X","both")){
+      retval <- clusterExperiment(origX, outlist$clustering,
+                                  transformation=transFun,
+                                  clusterInfo=clInfo,
+                                  clusterTypes="clusterSingle")
+      clusterLabels(retval)<-clusterLabel
+      if(!sequential) {
+        retval@coClustering<-finalClusterList$D
+      }
+      validObject(retval)
+      return(retval)
     }
-    validObject(retval)
-    return(retval)
+    else{
+      out<-list(clustering=outlist$clustering,clusterInfo=clInfo)
+    }
+
   }
 )
 
@@ -216,9 +231,9 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "SummarizedExperiment"),
+  signature = signature(x = "SummarizedExperiment", diss="missing"),
   definition = function(x, ...) {
-    outval <- clusterSingle(assay(x), ...)
+    outval <- clusterSingle(assay(x),  ...)
     retval <- .addBackSEInfo(newObj=outval,oldObj=x)
     return(retval)
   }
@@ -229,7 +244,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "ClusterExperiment"),
+  signature = signature(x = "ClusterExperiment", diss="missing"),
   definition = function(x, ...) {
 
     outval <- clusterSingle(assay(x),...)
@@ -247,15 +262,13 @@ setMethod(
 {
     if(subsample){
         if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
-        Dbar<-do.call("subsampleClustering",c(list(x=x,diss=diss),subsampleArgs))
-        Dbar<-1-Dbar #make it a distance.
+        Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
+        diss<-1-Dbar #make it a distance.
+        x<-NULL
         if(typeAlg=="K"){
             if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
             else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         }
-    }
-    else{ #pass x along and distance matrix will be created by clusterD
-        Dbar<-x
     }
     if(typeAlg=="K"){
         findBestK<-FALSE	

@@ -1,6 +1,6 @@
 setGeneric(
   name = "clusterSingle",
-  def = function(x,  ...) {
+  def = function(x, diss,  ...) {
     standardGeneric("clusterSingle")
   }
 )

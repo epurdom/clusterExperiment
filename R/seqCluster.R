@@ -143,7 +143,7 @@
 #' clusterDArgs=list(minSize=5))
 #' }
 #' @export
-seqCluster<-function (x, diss, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
+seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 2, k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
 {
   input<-.checkXDissInput(x,diss)
     #for now, if use pam for subsampleClusterMethod, just use given k.

@@ -180,7 +180,7 @@
 #' clusterArgs=list(evalClusterMethod="average"))
 #' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(x,diss,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+clusterD<-function(x=NULL, diss=NULL,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
                    format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
 	input<-.checkXDissInput(x,diss)

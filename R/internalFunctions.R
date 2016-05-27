@@ -1,11 +1,11 @@
 .checkXDissInput<-function(x,diss){
-  if(missing(x) & missing(diss)) stop("must give either x or diss argument")
-  #  if(!missing(x) & !missing(diss)) stop("cannot give both x and diss argument")
-  if(!missing(x) & missing(diss)) input<-"X"
-  if(!missing(x) & !missing(diss)) input<-"both"
-  if(missing(x) & !missing(diss)) input<-"diss"
+  if(is.null(x) & is.null(diss)) stop("must give either x or diss argument")
+  #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
+  if(!is.null(x) & is.null(diss)) input<-"X"
+  if(!is.null(x) & !is.null(diss)) input<-"both"
+  if(is.null(x) & !is.null(diss)) input<-"diss"
   if(input %in% c("diss","both")) .checkDistFunction(diss)
-  if(input == "both" & ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss then must have compatible dimensions.") 
+  if(input == "both" && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss then must have compatible dimensions.") 
   return(input)
 }
 .checkDistFunction<-function(D){

@@ -5,8 +5,6 @@
 #' probability of co-occurance.
 #'
 #' @param x the data on which to run the clustering (samples in columns).
-#' @param diss the dissimilarity matrix on which to run the clustering (not all
-#'   methods can take a dissimilarity matrix)
 #' @param k number of clusters to find for each clustering of a subsample
 #'   (passed to clusterFunction).
 #' @param clusterFunction a function that clusters a \code{p x n} matrix of
@@ -59,9 +57,9 @@
 #'
 #' heatmap(subD)
 #' @export
-subsampleClustering<-function(x,k,diss,clusterFunction="pam", clusterArgs=NULL, classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,resamp.num = 100, samp.p = 0.7,ncores=1,... )
+subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,resamp.num = 100, samp.p = 0.7,ncores=1,... )
 {
-  input<-.checkXDissInput(x,diss)
+  #input<-.checkXDissInput(x,diss)
   if(!is.function(clusterFunction)){
     if(clusterFunction%in%c("pam","kmeans")){
       if(clusterFunction=="pam"){
@@ -79,18 +77,24 @@ subsampleClustering<-function(x,k,diss,clusterFunction="pam", clusterArgs=NULL, 
   if(classifyMethod %in% c("All","OutOfSample") && missing(classifyFunction)){
     stop("Must provide a classification function for the 'All' or 'OutOfSample' options")
   }
-  if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
+  #if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
+  N <- dim(x)[2]
   subSize <- round(samp.p * N)
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
   perSample<-function(ids){
-    xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
-    dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
-    xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
-    dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
-    result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
-    if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
+#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
+#     dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
+    xWithIds<-x[,ids,drop=FALSE]
+    #result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
+    result<-do.call(clusterFunction,c(list(x=xWithIds,k=k),clusterArgs))
+    #if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
+    if(classifyMethod=="All") classX<-classifyFunction(x=x,result)
     if(classifyMethod=="OutOfSample"){
-      classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
+      #     xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
+      #     dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
+      xWithoutIds<-x[,-ids,drop=FALSE]
+      #classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
+      classElse<-classifyFunction(x=xWithoutIds, result)
       classX<-rep(NA,N)
       classX[-ids]<-classElse
     }
@@ -118,7 +122,8 @@ subsampleClustering<-function(x,k,diss,clusterFunction="pam", clusterArgs=NULL, 
   DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
   DNum<-Reduce("+",lapply(DList,function(y){y$D}))
   Dbar = DNum/DDenom
-  if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
-  else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
-  return(Dbar)
+#   if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+#   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
+  rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+    return(Dbar)
 }
