@@ -5,6 +5,8 @@
 #' based on a single specification of parameters.
 #'
 #' @param x the data on which to run the clustering (features in rows).
+#' @param diss \code{n x n} data matrix of dissimilarities between the samples
+#'   on which to run the clustering (only if \code{subsample=FALSE})
 #' @param subsample logical as to whether to subsample via 
 #'   \code{\link{subsampleClustering}} to get the distance matrix at each 
 #'   iteration; otherwise the distance function will be determined by argument
@@ -69,7 +71,7 @@
 #' subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=3))
 #' @export
 #' @aliases clusterSingle clusterSingle-methods clusterSingle,matrix-method
-#'   clusterSingle,ClusterExperiment-method
+#'   clusterSingle,ClusterExperiment-method clusterSingle,matrix,missing-method
 #' @rdname clusterSingle
 setMethod(
   f = "clusterSingle",

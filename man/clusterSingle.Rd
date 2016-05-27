@@ -3,24 +3,30 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
+\alias{clusterSingle,ClusterExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment-method}
-\alias{clusterSingle,SummarizedExperiment-method}
+\alias{clusterSingle,SummarizedExperiment,missing-method}
+\alias{clusterSingle,matrix,missing-method}
 \alias{clusterSingle,matrix-method}
 \alias{clusterSingle-methods}
 \title{General wrapper method to cluster the data}
 \usage{
-\S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
-  clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var",
-  "cv", "mad"), ndims = NA, clusterLabel = "clusterSingle")
+\S4method{clusterSingle}{matrixOrMissing,matrixOrMissing}(x, diss,
+  subsample = TRUE, sequential = FALSE, clusterFunction = c("tight",
+  "hierarchical01", "pam", "hierarchicalK"), clusterDArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
+  transFun = NULL, dimReduce = c("none", "PCA", "var", "cv", "mad"),
+  ndims = NA, clusterLabel = "clusterSingle")
 
-\S4method{clusterSingle}{SummarizedExperiment}(x, ...)
+\S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{ClusterExperiment}(x, ...)
+\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering (only if \code{subsample=FALSE})}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 

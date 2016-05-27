@@ -357,30 +357,34 @@ setMethod(
         set.seed(random.seed)
       }
       if(!is.null(distFunction)){
-        diss<- allDist[[paste(par[["dataset"]],distFunction,sep="--")]]
-        clusterSingle(x=dataList[[par[["dataset"]]]], diss=diss,subsample=subsample,
+        diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
+        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
                       clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
                       subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                       sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
       }
-      else clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
+      else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
                  clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
       ##Calculate distances necessary only once
-      distParam<-unique(param[,c("dataset","distFunction")])
-      distParam<-distParam[!is.null(distParam[,"distFunction"])]
-      allDist<-lapply(1:nrow(distParam),function(ii){
-          distFun<-distParam[ii,"distFunction"]
-          dataName<-distParam[ii,"dataset"]
-          fun<-get(distFunction(envir=globalenv()))
-          distMat<-as.matrix(fun(t(dataList[[ii]])))
-          .checkDistFunction(distMat) #check it here!
-          return(distMat)
-      })
-      names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+      if(any(!is.na(param[,"distFunction"]))){
+        distParam<-unique(param[,c("dataset","distFunction")])
+        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
+        #browser()
+          allDist<-lapply(1:nrow(distParam),function(ii){
+            distFun<-as.character(distParam[ii,"distFunction"])
+            dataName<-as.character(distParam[ii,"dataset"])
+            fun<-get(distFun,envir=globalenv())
+            distMat<-as.matrix(fun(t(dataList[[dataName]])))
+            .checkDistFunction(distMat) #check it here!
+            return(distMat)
+          })
+        names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+        
+      }
       
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")

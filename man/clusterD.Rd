@@ -6,20 +6,25 @@
 \alias{clusterK}
 \title{Cluster distance matrix from subsampling}
 \usage{
-clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam",
-  "hierarchicalK"), typeAlg = c("01", "K"), distFunction = NA,
-  minSize = 1, orderBy = c("size", "best"), format = c("vector", "list"),
-  clusterArgs = NULL, checkArgs = TRUE, returnD = FALSE, ...)
+clusterD(x = NULL, diss = NULL, clusterFunction = c("hierarchical01",
+  "tight", "pam", "hierarchicalK"), typeAlg = c("01", "K"),
+  distFunction = NA, minSize = 1, orderBy = c("size", "best"),
+  format = c("vector", "list"), clusterArgs = NULL, checkArgs = TRUE,
+  returnD = FALSE, ...)
 
-cluster01(D, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
+cluster01(diss, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
   clusterArgs = NULL, checkArgs)
 
-clusterK(D, clusterFunction = c("pam", "hierarchicalK"), findBestK = FALSE,
-  k, kRange, removeSil = FALSE, silCutoff = 0, clusterArgs = NULL,
-  checkArgs)
+clusterK(diss, clusterFunction = c("pam", "hierarchicalK"),
+  findBestK = FALSE, k, kRange, removeSil = FALSE, silCutoff = 0,
+  clusterArgs = NULL, checkArgs)
 }
 \arguments{
-\item{D}{either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.}
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
+columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering}
 
 \item{clusterFunction}{clusterFunction a function that clusters a nxn matrix
 of dissimilarities/distances. Can also be given character values to
