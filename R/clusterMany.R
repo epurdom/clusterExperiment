@@ -12,16 +12,21 @@
 #' @param ks the range of k values (see details for meaning for different
 #'   choices).
 #' @param alphas values of alpha to be tried. Only used for
-#'   subsampleclusterFunction either 'tight' or 'hierarchical'.
+#'   clusterFunctions of type '01' (either 'tight' or 'hierarchical01').
+#' @param betas values of beta to be tried in sequential steps. Only used for
+#'   \code{sequential=TRUE}.
 #' @param clusterFunction function used for the clustering. Note that unlike in
 #'   \code{clusterSingle}, this must be a character vector of pre-defined
 #'   clustering techniques provided by the package, and can not be a
 #'   user-defined function.
-#'   @param distFunction a vector of character strings that are the names of 
+#' @param minSizes the minimimum size required for a cluster (in
+#'   \code{clusterD}). Clusters smaller than this are not kept and samples are
+#'   left unassigned.
+#' @param distFunction a vector of character strings that are the names of 
 #'     distance functions found in the global environment. See the help pages of
 #'     \code{\link{clusterD}} for details about the required format of distance 
 #'     functions. Currently, this distance function must be applicable for all 
-#'     clusterFunction types. Therefore, it is not possible to intermix type "K"
+#'     clusterFunction types tried. Therefore, it is not possible to intermix type "K"
 #'     and type "01" algorithms if you also give distances to evaluate via
 #'     \code{distFunction} unless all distances give 0-1 values for the distance
 #'     (and hence are possible for both type "01" and "K" algorithms).
@@ -231,7 +236,7 @@ setMethod(
     dataName <- names(dataList)
     if(is.null(paramMatrix)){
       param <- expand.grid(dataset=dataName, 
-                         k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSizes=minSizes,
+                         k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSize=minSizes,
                          sequential=sequential, distFunction=distFunction,
                          removeSil=removeSil, subsample=subsample,
                          clusterFunction=clusterFunction, silCutoff=silCutoff)

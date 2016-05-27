@@ -6,7 +6,7 @@
 \usage{
 seqCluster(x = NULL, diss = NULL, k0, clusterFunction = c("tight",
   "hierarchical01", "pam", "hierarchicalK"), subsample = TRUE, beta = 0.7,
-  top.can = 15, remain.n = 30, k.min = 2, k.max = k0 + 10,
+  top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL)
 }
 \arguments{

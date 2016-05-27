@@ -14,10 +14,10 @@
 
 \S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, verbose = FALSE,
-  clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
-  seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
-  random.seed = NULL, run = TRUE, ...)
+  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
+  minSizes = 5, verbose = FALSE, clusterDArgs = NULL,
+  subsampleArgs = list(resamp.num = 50), seqArgs = list(verbose = FALSE),
+  ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
@@ -61,18 +61,10 @@ choices).}
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{clusterSingle}, this must be a character vector of pre-defined
 clustering techniques provided by the package, and can not be a
-user-defined function.
-@param distFunction a vector of character strings that are the names of 
-  distance functions found in the global environment. See the help pages of
-  \code{\link{clusterD}} for details about the required format of distance 
-  functions. Currently, this distance function must be applicable for all 
-  clusterFunction types. Therefore, it is not possible to intermix type "K"
-  and type "01" algorithms if you also give distances to evaluate via
-  \code{distFunction} unless all distances give 0-1 values for the distance
-  (and hence are possible for both type "01" and "K" algorithms).}
+user-defined function.}
 
 \item{alphas}{values of alpha to be tried. Only used for
-subsampleclusterFunction either 'tight' or 'hierarchical'.}
+clusterFunctions of type '01' (either 'tight' or 'hierarchical01').}
 
 \item{findBestK}{logical, whether should find best K based on average
 silhouette width.}
@@ -90,8 +82,21 @@ iteration; otherwise the distance function will be determined by argument
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
 
-\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input \code{D} is a matrix of data, rather than a distance. See details.}
+\item{distFunction}{a vector of character strings that are the names of 
+distance functions found in the global environment. See the help pages of
+\code{\link{clusterD}} for details about the required format of distance 
+functions. Currently, this distance function must be applicable for all 
+clusterFunction types tried. Therefore, it is not possible to intermix type "K"
+and type "01" algorithms if you also give distances to evaluate via
+\code{distFunction} unless all distances give 0-1 values for the distance
+(and hence are possible for both type "01" and "K" algorithms).}
+
+\item{betas}{values of beta to be tried in sequential steps. Only used for
+\code{sequential=TRUE}.}
+
+\item{minSizes}{the minimimum size required for a cluster (in
+\code{clusterD}). Clusters smaller than this are not kept and samples are
+left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 

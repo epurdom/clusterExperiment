@@ -19,9 +19,6 @@ fig.width=6,fig.height=6,autodep=TRUE,out.width="600px",out.height="600px",
 message=FALSE)
 #knitr::opts_knit$set(stop_on_error = 2L) #really make it stop
 #knitr::dep_auto()
-options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
-
-set.seed(14456) ## for reproducibility, just in case
 ```
 
 
@@ -79,6 +76,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package.
 
 ```{r,cache=FALSE}
+set.seed(14456) ## for reproducibility, just in case
 library(scRNAseq)
 data("fluidigm")
 ```
@@ -120,13 +118,14 @@ assays(se) <- list(normalized_counts=fq)
 
 ## Step 1: Clustering with `clusterMany` {#step1}
 
-`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to designate which options to vary is to give multiple values to an argument. Here is our call to `clusterMany`:
+`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to designate which options to vary is to give multiple values to an argument. Due to a bug in R, we need to set `getClass.msg=FALSE` or otherwise a slew of annoying warnings will spit out at every call; this should be fixed in the next patch to R. 
+
+Here is our call to `clusterMany`:
 
 ```{r clusterMany}
+options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
 library(clusterExperiment)
-
-ce<-clusterMany(se, clusterFunction="pam",ks=5:10,findBestK=FALSE,
-                removeSil=c(FALSE),
+ce<-clusterMany(se, clusterFunction="pam",ks=5:10,
       isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 ```
@@ -138,10 +137,10 @@ In this call to `clusterMany` we made the follow choices about what to vary:
 * For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
 
-By giving only a single value to the relative argument, we keep the other possible options fixed, i.e.: 
+By giving only a single value to the relative argument, we keep the other possible options fixed, for example: 
 
 * we used 'pam' for all clustering (`clusterFunction`) 
-* we left the default which requires clusters to be of size at least 5 (see help pages); smaller clusters will be ignored and samples assigned to them given the unassigned value of -1.
+* we left the default of `minSize` which requires clusters to be of size at least 5; smaller clusters will be ignored and samples assigned to them given the unassigned value of -1.
 
 We also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `identity`). 
 
@@ -548,7 +547,9 @@ Now that we've explained the underlying architecture of the clustering provided 
     * `nVarDims`
     * `nPCADims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the `dist` function, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
+* `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `clusterD` part of clustering). 
 * `alphas` These are the $\alpha$ parameters for "01" clustering techniques; these values are only relevant if one of the `clusterFunction` values is a "01" clustering algorithm. The values given to `alphas` should be between 0 and 1, with smaller values indicating greater similarity required between the clusters. 
+* `betas` These are the $\beta$ parameters for sequential clustering; these values are only relevant if `sequential=TRUE` and determine the level of stability required between changes in the parameters to determine that a cluster is stable.
 * `findBestK` This option is for "K" clustering techniques, and indicates that $K$ should be chosen automatically as the $K$ that gives the largest silhouette distance between clusters.
 * `removeSil` A logical value as to whether samples with small silhouette distance to their assigned cluster are "removed", in the sense that they are not given their original cluster assignment but instead assigned -1. This option is for "K" clustering techniques as a method of removing poorly clustered samples (the "01" techniques used by `clusterMany` generally do this intrinsically as part of the algorithm). 
   * `silCutoff` If `removeSil` is TRUE, then `silCutoff` determines the cutoff on silhouette distance for unassigning the sample. 
