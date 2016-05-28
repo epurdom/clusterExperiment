@@ -8,6 +8,7 @@
 \alias{clusterSingle,SummarizedExperiment,missing-method}
 \alias{clusterSingle,matrix,missing-method}
 \alias{clusterSingle,matrix-method}
+\alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
 \alias{clusterSingle-methods}
 \title{General wrapper method to cluster the data}
 \usage{

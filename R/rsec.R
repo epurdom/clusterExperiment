@@ -8,6 +8,8 @@
 #' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
 #' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
+#' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
+#' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
 #' @inheritParams clusterMany,matrix-method
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
@@ -20,10 +22,10 @@ setMethod(
         dimReduce="PCA",nVarDims=NA,
         nPCADims=c(50), ks=4:15, 
         clusterFunction=c("tight","hierarchical01"), 
-        alphas=c(0.1,0.2),betas=0.9, minSizes=5,
+        alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=5,
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
-        mergeMethod="adjP",verbose=FALSE,
+        mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
         clusterDArgs=NULL,
         subsampleArgs=list(resamp.num=50),
         seqArgs=list(verbose=FALSE),
@@ -45,7 +47,7 @@ setMethod(
     dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
     if(!inherits(dendroTry,"try-error")){
       ce<-dendroTry  
-      ce<-mergeClusters(ce,mergeMethod=mergeMethod,plotType="none",isCount=isCount)
+      ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
     }
     else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
     return(ce)

@@ -11,12 +11,13 @@
 \usage{
 \S4method{RSEC}{matrix}(x, isCount = FALSE, transFun = NULL,
   dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), ks = 4:15,
-  clusterFunction = c("tight", "hierarchical"), alphas = c(0.1, 0.2),
+  clusterFunction = c("tight", "hierarchical01"), alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 5, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
-  mergeMethod = "adjP", verbose = FALSE, clusterDArgs = NULL,
-  subsampleArgs = list(resamp.num = 50), seqArgs = list(verbose = FALSE),
-  ncores = 1, random.seed = NULL, run = TRUE)
+  mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
+  clusterDArgs = NULL, subsampleArgs = list(resamp.num = 50),
+  seqArgs = list(verbose = FALSE), ncores = 1, random.seed = NULL,
+  run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
@@ -74,9 +75,9 @@ left unassigned.}
 
 \item{dendroNDims}{passed to \code{ndims} in \code{\link{makeDendrogram}}}
 
-\item{mergeMethod}{method for calculating proportion of non-null that will be
-used to merge clusters (if 'none', no merging will be done). See details
-for description of methods.}
+\item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
+
+\item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
