@@ -9,6 +9,7 @@
 #' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
 #' @inheritParams clusterMany,matrix-method
+#' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
 #' @inheritParams mergeClusters,matrix-method
 #' @export
@@ -29,6 +30,10 @@ setMethod(
         ncores=1, random.seed=NULL, run=TRUE
     )
 {
+      if(dimReduce=="none"){
+        nPCADims<-NA
+        nVarDims<-NA
+      }
     ce<-clusterMany(x,ks=ks,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
@@ -36,10 +41,40 @@ setMethod(
                     clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs, 
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
     ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-    if(any(primaryCluster(ce)!= -1)){
-        ce<-makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE)
-        ce<-mergeClusters(ce,mergeMethod=mergeMethod,plotMethod="none",isCount=isCount)
-        
+    if(dendroReduce=="none") dendroNDims<-NA
+    dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+    if(!inherits(dendroTry,"try-error")){
+      ce<-dendroTry  
+      ce<-mergeClusters(ce,mergeMethod=mergeMethod,plotType="none",isCount=isCount)
     }
+    else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
     return(ce)
 })
+
+#' @export
+#' @rdname RSEC
+setMethod(
+  f = "RSEC",
+  signature = signature(x = "SummarizedExperiment"),
+  definition = function(x, ...){
+    outval <- RSEC(assay(x),  ...)
+    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
+    return(retval)
+    
+  })
+  
+#' @export
+#' @rdname RSEC
+setMethod(
+  f = "RSEC",
+  signature = signature(x = "ClusterExperiment"),
+  definition = function(x, eraseOld=FALSE, ...){
+    newObj <- RSEC(assay(x),  ...)
+    ##Check if pipeline already ran previously and if so increase
+    x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
+    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
+    else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+    validObject(retval)
+    
+    return(retval)
+  })

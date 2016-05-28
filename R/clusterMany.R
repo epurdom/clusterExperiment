@@ -451,7 +451,7 @@ setMethod(
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
      
       if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep. 
-      else retval<-outval
+      else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
       validObject(retval)
       return(retval)
     } else {
