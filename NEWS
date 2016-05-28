@@ -8,6 +8,7 @@ Changes:
 * add options 'mad' and 'cv' to the dimensionality reduction. Also made option to only use clustered samples for feature reduction for relevant functions (e.g. `makeDendrogram`).
 * clusterSingle now always returns the D matrix to the slot coClustering (previously only did so if D was from subsampling).
 * change so that clusterSingle takes dissimilarity matrix, and now clusterMany calculates dissimilarities up front (rather than recalculating each time)
+* add RSEC function for wrapper that leads to RSEC algorithm.
 
 Bug fixes:
 * fix bug in .TypeIntoIndices so that handles mix of clusterType and clusterLabels in whichClusters
