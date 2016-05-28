@@ -19,7 +19,7 @@ setMethod(
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nVarDims=NA,
         nPCADims=c(50), ks=4:15, 
-        clusterFunction=c("tight","hierarchical"), 
+        clusterFunction=c("tight","hierarchical01"), 
         alphas=c(0.1,0.2),betas=0.9, minSizes=5,
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
