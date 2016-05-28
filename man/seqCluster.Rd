@@ -80,6 +80,9 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
+This code is adapted from the code of the \code{\link{tightClust}}
+ package of Tseng and Wong
+
 Each iteration of the algorithm will cluster the current set of
   samples. Depending on the method, the number of clusters resulting from
   \code{\link{clusterD}} may not be equal to the K used in the clustering of
@@ -169,5 +172,8 @@ clusterDArgs=list(minSize=5))
 Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
   61:10-16.
+}
+\seealso{
+tight.clust
 }
 

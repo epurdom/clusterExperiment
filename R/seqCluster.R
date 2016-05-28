@@ -38,6 +38,8 @@
 #'   \code{\link{clusterD}}(which can include arguments to be passed to
 #'   \code{\link{cluster01}} or \code{\link{clusterK}}).
 #'
+#' @details This code is adapted from the code of the \code{\link{tightClust}}
+#'  package of Tseng and Wong
 #' @details Each iteration of the algorithm will cluster the current set of
 #'   samples. Depending on the method, the number of clusters resulting from
 #'   \code{\link{clusterD}} may not be equal to the K used in the clustering of
@@ -131,6 +133,7 @@
 #'   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
 #'   61:10-16.
 #' 
+#' @seealso tight.clust
 #' @examples
 #' \dontrun{
 #' data(simData)

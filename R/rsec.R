@@ -4,6 +4,7 @@
 #' Clustering) for single cell sequencing data. This is a wrapper function 
 #' around the existing clusterExperiment workflow that results in the output of
 #' RSEC.
+#' @param k0s the k0 parameter for sequential clustering (see \code{\link{seqCluster}})
 #' @param combineProportion passed to \code{proportion} in \code{\link{combineMany}}
 #' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
 #' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
@@ -20,7 +21,7 @@ setMethod(
     signature = signature(x = "matrix"),
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nVarDims=NA,
-        nPCADims=c(50), ks=4:15, 
+        nPCADims=c(50), k0s=4:15, 
         clusterFunction=c("tight","hierarchical01"), 
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=5,
         combineProportion=0.7, combineMinSize=5,
@@ -28,15 +29,16 @@ setMethod(
         mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
         clusterDArgs=NULL,
         subsampleArgs=list(resamp.num=50),
-        seqArgs=list(verbose=FALSE),
+        seqArgs=NULL,
         ncores=1, random.seed=NULL, run=TRUE
     )
 {
-      if(dimReduce=="none"){
+    if(dimReduce=="none"){
         nPCADims<-NA
         nVarDims<-NA
-      }
-    ce<-clusterMany(x,ks=ks,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
+    }
+    if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[[verbose]]<-FALSE #turn off sequential messages
+    ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
