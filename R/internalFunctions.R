@@ -25,14 +25,14 @@
 
 .addNewResult<-function(newObj,oldObj){
     retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
-    #erases dendrogram so need to put it back
+    #erases dendrogram so need to put it back if wasn't already there
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
         retval@dendro_samples<-oldObj@dendro_samples
         retval@dendro_clusters<-oldObj@dendro_clusters
         retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
     }
     #put back orderSamples, coClustering
-    retval@orderSamples<-oldObj@orderSamples
+    if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
     validObject(retval)

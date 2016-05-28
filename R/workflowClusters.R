@@ -162,8 +162,8 @@ setMethod(
 .updateCurrentWorkflow<-function(x,eraseOld,newToAdd){
     #browser()
     ppIndex<-workflowClusterDetails(x)
-    if(!newToAdd %in% .workflowValues[-1]) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
-    whNew<-match(newToAdd, .workflowValues)
+    if(!any(newToAdd %in% .workflowValues[-1])) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
+    whNew<-max(match(newToAdd, .workflowValues))
     downstreamType<-.workflowValues[2:whNew]
     newX<-x
     if(!is.null(ppIndex)){ #there are pre-existing workflow results
@@ -176,7 +176,7 @@ setMethod(
                 else newX<-removeClusters(x,whRm)
             }
             else{
-                #otherwise, only current downstream ones exist
+                #otherwise, only current downstream ones that exist get updated number
                 if(any(curr[,"type"] %in% downstreamType)){
                   whDown<-which(ppIndex[,"type"] %in% downstreamType)
                   maxDownstream<-max(ppIndex[whDown,"iteration"])
@@ -193,7 +193,7 @@ setMethod(
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
                     clusterTypes(newX)<-updateCluster
                     updateLabel<-clusterLabels(x)
-                    if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those that haven't been manually fixed by the user
+                    if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those labels that haven't been manually fixed by the user
                         whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
                         updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
                         clusterLabels(newX)<-updateLabel

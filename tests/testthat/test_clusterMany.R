@@ -89,3 +89,4 @@ test_that("`clusterMany` works changing parameters", {
                             clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
                             isCount=FALSE))
 })
+

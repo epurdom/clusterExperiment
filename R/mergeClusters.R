@@ -288,7 +288,7 @@ This makes sense only for counts.")
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
-    else retval<-newObj
+    else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     invisible(retval)
   }
   else{ #don't do anything, since there was no merging done.
