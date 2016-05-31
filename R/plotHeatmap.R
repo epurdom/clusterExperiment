@@ -449,8 +449,8 @@ setMethod(
     f = "plotHeatmap",
     signature = signature(data = "matrix"),
     definition = function(data,sampleData=NULL,
-                          clusterSamplesData=data,
-                          clusterFeaturesData=data,
+                          clusterSamplesData=NULL,
+                          clusterFeaturesData=NULL,
                           whSampleDataCont=NULL,
                           clusterSamples=TRUE,showSampleNames=FALSE,
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
@@ -465,7 +465,14 @@ setMethod(
       ##Deal with numeric matrix for heatmap ...
       ##########
       heatData<-data.matrix(data)
-
+    aHeatmapArgs<-list(...)
+    aHeatmapDefaultArgs<-as.list(args(NMF::aheatmap))
+    getHeatmapValue<- function(string){
+        if(string %in% names(aHeatmapArgs)) distfun<-aHeatmapArgs[[string]]
+        else distfun<-aHeatmapDefaultArgs[[string]]
+        
+    }   
+    
       ###Create the clustering dendrogram:
 
     if(clusterSamples){
@@ -474,17 +481,28 @@ setMethod(
         dendroSamples<-clusterSamplesData
       }
       else{
-        if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
-        clusterSamplesData<-data.matrix(clusterSamplesData)
-        #check valid
-        if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-        dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
+          if(is.null(clusterSamplesData)){
+              dendroSamples<-NULL
+          }
+          else{
+              ##Call NMF:::cluster_mat so do the same thing:
+              
+              if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
+              clusterSamplesData<-data.matrix(clusterSamplesData)
+              #check valid
+              if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
+              NMF:::cluster_mat(clusterSamplesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun"))
+              
+              #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
+                 
+         }
       }
     }
     else{
       clusterSamples<-NA
     }
-    Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+    if(!is.na(clusterSamples) && clusterSamples && is.null(dendroSamples)) Colv<-TRUE #then just pass the data
+    else Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
     
     if(isSymmetric){
         Rowv<-Colv
