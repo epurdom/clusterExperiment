@@ -512,7 +512,7 @@ setMethod(
               #check valid
               if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
 #              browser()
-              dendroSamples<-NMF:::cluster_mat(clusterSamplesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))
+              dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
               
               #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
                  
@@ -546,8 +546,7 @@ setMethod(
                     clusterFeaturesData<-data.matrix(clusterFeaturesData)
                     #check valid
                     if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
-                    dendroFeatures<-NMF:::cluster_mat(clusterFeaturesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))
-
+                    dendroFeatures<-NMF:::cluster_mat(clusterFeaturesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
                     #                dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
                     
                 }

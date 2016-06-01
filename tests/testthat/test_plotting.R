@@ -89,9 +89,13 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 test_that("`plotHeatmap` works with matrix objects", {
 
     x1<-plotHeatmap(data=smSimData)
+    a1<-NMF::aheatmap(smSimData)
+    expect_equal(x1$aheatmapOut,a1)
     x2<-plotHeatmap(data=smSimCount,clusterSamplesData=smSimData,clusterFeaturesData=smSimData)
-    expect_equal(x1$aheatmapOut,x2$aheatmapOut)
-
+    #for some reason, labels on dendrogram move from character to numeric so can't test entire object...
+    expect_equal(x1$aheatmapOut$rowInd,x2$aheatmapOut$rowInd) 
+    expect_equal(x1$aheatmapOut$colInd,x2$aheatmapOut$colInd) 
+    
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
     sampleData<-clusterMatrix(smSimCE)
     alList<-plotClusters(sampleData)
@@ -108,6 +112,8 @@ test_that("`plotHeatmap` works with matrix objects", {
     expect_error( plotHeatmap(data=smSimData,annCol=rnorm(n=ncol(smSimData))),"arguments to aheatmap cannot be set by the user")
     expect_error( plotHeatmap(data=smSimData,annColors=list(a=c("blue","green"))),"arguments to aheatmap cannot be set by the user")
 
+    x1<-plotHeatmap(data=smSimData)
+    
     
     ##Should add tests that pass aheatmap arguments correctly.
 })
