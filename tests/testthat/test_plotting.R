@@ -100,6 +100,16 @@ test_that("`plotHeatmap` works with matrix objects", {
     x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
 #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
 #    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
+
+    expect_error( plotHeatmap(data=smSimData,Rowv=TRUE),"arguments to aheatmap cannot be set by the user")
+    expect_error( plotHeatmap(data=smSimData,Colv=TRUE),"arguments to aheatmap cannot be set by the user")
+    expect_error( plotHeatmap(data=smSimData,colorScale=seqPal5,color=TRUE),"arguments to aheatmap cannot be set by the user")
+
+    expect_error( plotHeatmap(data=smSimData,annCol=rnorm(n=ncol(smSimData))),"arguments to aheatmap cannot be set by the user")
+    expect_error( plotHeatmap(data=smSimData,annColors=list(a=c("blue","green"))),"arguments to aheatmap cannot be set by the user")
+
+    
+    ##Should add tests that pass aheatmap arguments correctly.
 })
 
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
