@@ -50,6 +50,9 @@ The basic premise of our workflow is to find small, robust clusters of samples, 
 
 Users can also run or add their own clusters to this workflow at different stages.  However, there is special functionality to ease in quickly visualizing and managing the results of this workflow.
 
+### The RSEC Routine
+
+The RSEC algorithm (Resampling-based Sequential Ensemble Clustering) was developed specifically for finding robust clusters in single cell sequencing data. It follows our above suggested workflow, but makes specific choices along the way that we find to be advantageous in clustering large mRNA expression datasets, like those of single cell sequencing. It is implemented in the function `RSEC`. This vignette serves to show how the pieces of the workflow operate, and use choices that are not those recommended by RSEC. This is both to show the flexibility of the functions and because RSEC is computationally more time-intensive, since it is based on both resampling, and sequential discovery of clusters. 
 
 ## Finding related features/genes
 
@@ -558,6 +561,31 @@ Now that we've explained the underlying architecture of the clustering provided 
 
 
 Other parameters for the clustering are kept fixed. As described above, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `clusterDArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the clustering of $D$, the creation of $D$ via subsampling, and the sequential clustering process, respectively). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
+
+
+```{r tableArguments, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+# simple table creation here
+tabl <- "  
+Argument| Dependencies |  Passed to | Argument passed to
+---------------|-----------------|:-------------:|------:|
+ks             | sequential=TRUE |  seqCluster   |  k0 
+-    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | clusterD | k
+-              | sequential=FALSE, findBestK=FALSE, subsample=TRUE | subsampleClustering | k
+-               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | clusterD | kRange
+dimReduce      | none            | transform     | dimReduce
+nVarDims       | dimReduce in 'mad','cv','var' | transform | nVarDims
+nPCADims       | dimReduce='PCA' | transform     | nPCADims
+clusterFunction| none            | clusterD      | clusterFunction    
+minSizes       | none            | clusterD      | minSize
+distFunction   | subsample=FALSE | clusterD      | distFunction
+alphas         | clusterFunction of type '01'| clusterD | alpha
+findBestK      | clusterFunction of type 'K' | clusterD | findBestK
+removeSil      | clusterFunction of type 'K' | clusterD | removeSil
+silCutoff      | clusterFunction of type 'K' | clusterD | silCutoff
+betas          | sequential=TRUE | seqCluster    | beta
+"
+cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
+```
 
 ### Example changing the distance function and clustering algorithm
 
