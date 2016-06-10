@@ -3,7 +3,6 @@
 ^.svn
 ^.git
 README[.]md
-NEWS[.]md
 
 # Travis-CI et al.
 ^[.]travis[.]yml$
@@ -27,3 +26,4 @@ NEWS[.]md
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.\./inst/NEWS$
+^tests/checkClusterMany/*$
