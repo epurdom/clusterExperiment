@@ -38,9 +38,11 @@ cat("User-given tag:",tag,"\n",file=outfile,append=TRUE)
 cat("Compare",matFile,"to fixed version (", fixedVersion,")", ":\n",file=outfile,append=TRUE)
 compMat<-read.table(fixedVersion,sep=",",header=TRUE)
 newMat<-read.table(matFile,sep=",",header=TRUE)
-compResult<-writeLines(capture.output(all.equal(compMat,newMat)))
-cat("Are all entries same?\n",compResult,"\n",file=outfile,append=TRUE)
-
+compResult<-all.equal(compMat,newMat)
+printResult<-if(isTRUE(compResult)) "Yes" else "No"
+cat("Are all entries the same?\n",printResult,"\n",file=outfile,append=TRUE)
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Complete Session Info:\n",file=outfile,append=TRUE)
-cat(writeLines(capture.output(sessionInfo())),file=outfile,append=TRUE)
+cat(paste(capture.output(x),collapse="\n"),file=outfile,append=TRUE )
+
+

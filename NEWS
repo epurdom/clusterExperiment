@@ -9,6 +9,7 @@ Changes:
 * clusterSingle now always returns the D matrix to the slot coClustering (previously only did so if D was from subsampling).
 * change so that clusterSingle takes dissimilarity matrix, and now clusterMany calculates dissimilarities up front (rather than recalculating each time)
 * add RSEC function for wrapper that leads to RSEC algorithm.
+* add test for clusterMany to make sure replicable with past results (not unit test because too long to run, so not part of R build)
 
 Bug fixes:
 * fix bug in .TypeIntoIndices so that handles mix of clusterType and clusterLabels in whichClusters
@@ -25,6 +26,8 @@ Changes:
 Changes in version 0.99.0 (Release date: 2016-05-24 )
 ==============
 
+Changes:
+* changed number to indicate bioconductor submission
 
 Changes in version 0.2.0 (Release date: 2016-05-10 )
 ==============
