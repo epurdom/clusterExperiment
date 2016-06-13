@@ -72,10 +72,10 @@ the actual arguments of cluster01 or clusterK.}
 (lower values more strict).}
 
 \item{findBestK}{logical, whether should find best K based on average
-silhouette width.}
+silhouette width (only used if clusterFunction of type "K").}
 
 \item{k}{single value to be used to determine how many clusters to find, if
-findBestK=FALSE.}
+findBestK=FALSE (only used if clusterFunction of type "K").}
 
 \item{kRange}{vector of integers. If findBestK=TRUE, this gives the range of
 k's to look over. Default is k-2 to k+20, subject to those values being
@@ -83,7 +83,8 @@ greater than 2. Note that default values depend on the input k, so running
 for different choices of k and findBestK=TRUE can give different answers
 unless kRange is set to be the same.}
 
-\item{removeSil}{logical as to whether remove when silhouette < silCutoff}
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff
+(only used if clusterFunction of type "K")}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}

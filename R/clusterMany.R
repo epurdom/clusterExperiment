@@ -214,8 +214,8 @@ setMethod(
                         betas=0.9, minSizes=5,
                         verbose=FALSE,
                         clusterDArgs=NULL,
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(verbose=FALSE),
+                        subsampleArgs=NULL,
+                        seqArgs=NULL,
                         ncores=1, random.seed=NULL, run=TRUE,
                         ...
   )
@@ -363,6 +363,7 @@ setMethod(
       clusterDArgs[["removeSil"]] <- removeSil
       clusterDArgs[["silCutoff"]] <- par[["silCutoff"]]
       clusterDArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
+      seqArgs[["verbose"]]<-FALSE
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }

@@ -12,7 +12,7 @@
 #'   iteration; otherwise the distance function will be determined by argument
 #'   \code{distFunction} passed in \code{clusterDArgs}.
 #' @param sequential logical whether to use the sequential strategy (see
-#'   Details).
+#'   details of \code{\link{seqCluster}}).
 #' @param clusterFunction passed to \code{\link{clusterD}} option
 #'   'clusterFunction' to indicate method of clustering, see
 #'   \code{\link{clusterD}}.

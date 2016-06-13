@@ -40,9 +40,9 @@
 #' @param alpha a cutoff value of how much similarity needed for drawing blocks
 #'   (lower values more strict).
 #' @param findBestK logical, whether should find best K based on average
-#'   silhouette width.
+#'   silhouette width (only used if clusterFunction of type "K").
 #' @param k single value to be used to determine how many clusters to find, if
-#'   findBestK=FALSE.
+#'   findBestK=FALSE (only used if clusterFunction of type "K").
 #' @param kRange vector of integers. If findBestK=TRUE, this gives the range of
 #'   k's to look over. Default is k-2 to k+20, subject to those values being
 #'   greater than 2. Note that default values depend on the input k, so running
@@ -51,6 +51,7 @@
 #' @param silCutoff Requirement on minimum silhouette width to be included in
 #'   cluster (only if removeSil=TRUE).
 #' @param removeSil logical as to whether remove when silhouette < silCutoff
+#'   (only used if clusterFunction of type "K")
 #' @param checkArgs logical as to whether should give warning if arguments given
 #'   that don't match clustering choices given. Otherwise, inapplicable
 #'   arguments will be ignored without warning.

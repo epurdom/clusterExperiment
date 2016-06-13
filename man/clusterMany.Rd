@@ -16,8 +16,8 @@
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
   minSizes = 5, verbose = FALSE, clusterDArgs = NULL,
-  subsampleArgs = list(resamp.num = 50), seqArgs = list(verbose = FALSE),
-  ncores = 1, random.seed = NULL, run = TRUE, ...)
+  subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
+  run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
@@ -67,12 +67,13 @@ user-defined function.}
 clusterFunctions of type '01' (either 'tight' or 'hierarchical01').}
 
 \item{findBestK}{logical, whether should find best K based on average
-silhouette width.}
+silhouette width (only used if clusterFunction of type "K").}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-Details).}
+details of \code{\link{seqCluster}}).}
 
-\item{removeSil}{logical as to whether remove when silhouette < silCutoff}
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff
+(only used if clusterFunction of type "K")}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 

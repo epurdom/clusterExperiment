@@ -35,7 +35,7 @@ iteration; otherwise the distance function will be determined by argument
 \code{distFunction} passed in \code{clusterDArgs}.}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-Details).}
+details of \code{\link{seqCluster}}).}
 
 \item{clusterFunction}{passed to \code{\link{clusterD}} option
 'clusterFunction' to indicate method of clustering, see
