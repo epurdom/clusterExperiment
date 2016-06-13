@@ -1,13 +1,14 @@
-#Usage: nohup RScript clusterManyTest.R <tagString> clusterManyTest.Rout &
+#Usage: nohup RScript clusterManyTest.R <tagString> <compareTo(optional)> &
 
 
 library(clusterExperiment) 
 load("L5_sumExp.rda")
-fixedVersion<-"fixedClusterManyResult.txt"
 ncores<-5
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript clusterManyTest.R <tagString>' where <tagString> will be name on saved file of output.")
 tag<-args[1]
+fixedVersion<-if(length(args)==2) args[2] else "fixedClusterManyResult.txt"
+
 x<-sessionInfo()
 version<-x$otherPkgs[["clusterExperiment"]][["Version"]]
 nm<-paste(tag,"_",version,sep="")
