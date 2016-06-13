@@ -147,7 +147,7 @@ By giving only a single value to the relative argument, we keep the other possib
 
 We also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `identity`). 
 
-We can visualize these clusterings using the `plotClusters` command. We will also add some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We will choose the columns "Biological_Condition" and "Cluster2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. We can give these names to the `sampleData` object, and it will retrieve them from the `colData`. It is also useful to change the amount of space to allow for the labels of the clusterings, so we will reset the `mar` option in `par` (we also change `axisLine` argument for this reason).
+We can visualize the resulting clusterings using the `plotClusters` command. It is also useful to change the amount of space to allow for the labels of the clusterings, so we will reset the `mar` option in `par` (we also change `axisLine` argument for this reason).
 
 ```{r plotClusterEx1}
 defaultMar<-par("mar")
@@ -158,8 +158,11 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", samp
 
 This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been chosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
 
+Notice that we also added the `sampleData` argument in our call, indicating that we also want to visualize some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We chose the columns "Biological_Condition" and "Cluster2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. These are shown at the bottom of the plot.
 
-We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. Notice that some samples are white. This indicates that they have the value -1, meaning they were not clustered. This is from our choices to require at least 5 samples to make a cluster. 
+Notice that some samples are white. This indicates that they have the value -1, meaning they were not clustered. This is from our choices to require at least 5 samples to make a cluster. 
+
+We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
 
 We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow.
 
@@ -195,7 +198,7 @@ For right now we will only mention the most basic such function that retrieves t
 head(clusterMatrix(ce)[,1:3])
 ```
 
-Because we have changed `clusterLabels` above, these new cluster labels are shown here. Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why this is the case depends on the underlying choices of the clustering routine. In this case, the default in `clusterMany` set the minimum size of a cluster to be 5, which resulted in -1 assignments.
+Because we have changed `clusterLabels` above, these new cluster labels are shown here. Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why certain samples are not clustered depends on the underlying choices of the clustering routine. In this case, the default in `clusterMany` set the minimum size of a cluster to be 5, which resulted in -1 assignments.
 
 Another special value is -2 discussed in the section on [ClusterExperiment objects](#ceobjects)
 
@@ -207,9 +210,11 @@ To find a consensus clustering across the many different clusterings created by 
 ce<-combineMany(ce)
 ```
 
-Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those from the previous call. 
+Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those from the `clusterMany` call. 
 
 If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of the functions in this package. Any clustering that is created is added to existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
+
+We can again run `plotClusters`, which will now also show the result of `combineMany`:
 
 ```{r lookAtCombineMany}
 head(clusterMatrix(ce)[,1:3])
@@ -218,7 +223,7 @@ plotClusters(ce,whichClusters="workflow")
 
 ```
 
-The default result of `combineMany` is not usually a great choice, and certainly isn't helpful here. The resulting clusters leave most samples unassigned (white in the above plot). This is because the default way of combining is very conservative -- it requires samples to be in the same cluster in *every clustering* to be assigned a cluster. This is quite stringent. We can vary this by setting the `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to.  Explicit details on how `combineMany` makes these clusters are discussed  in the section on [combineMany](#combineMany).
+The default result of `combineMany` is not usually a great choice, and certainly isn't helpful here. The clustering from the default `combineMany` leaves most samples unassigned (white in the above plot). This is because the default way of combining is very conservative -- it requires samples to be in the same cluster in *every clustering* to be assigned a cluster. This is quite stringent. We can vary this by setting the `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to.  Explicit details on how `combineMany` makes these clusters are discussed  in the section on [combineMany](#combineMany).
 
 So let's label the one we found "combineMany, default" and then create a new one. (Making an informative label will make it easier to keep track of this particular clustering later, particularly if we make multiple calls to the workflow). 
 
@@ -236,7 +241,7 @@ plotClusters(ce,whichClusters="workflow")
 
 ```
 
-We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. We also note that there is a default of `minSize=5` for this command. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. 
+We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. There is also a `minSize` parameter for `combineMany`, with the default of `minSize=5`. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. Here, we reduce it to `minSize=3` (we'll call this "combineMany,final"):
 
 ```{r combineMany_changeMinSize}
 ce<-combineMany(ce,proportion=0.7,minSize=3,clusterLabel="combineMany,final")
@@ -847,6 +852,10 @@ Note that because it is labeled as "final" it shows up automatically in "workflo
 
 This didn't get rid of our undesired `mergeClusters` result that is most recent. It still shows up as "the" mergeClusters result. This might be undesired. We could remove that "mergeClusters" result with `removeClusters`. Alternatively, we could manually change the clusterTypes to `mergeClusters.x` so that it doesn't show up as current. 
 A cleaner way to do this would have been to first set the desired cluster ("mergeClusters.4") to the most current iteration with `setToCurrent`, which would have bumped up the existing `mergeClusters` result to be no longer current. 
+
+## RSEC
+
+This clustering workflow is a generalization of our RSEC algorithm for single-cell sequencing data. The RSEC algorithm is particularly oriented around 
 
 # Finding Features related to a Clustering {#getBestFeatures}
 
