@@ -317,7 +317,7 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
       if(input %in% c("X","both")) tclust[[nfound]] <- colnames(x)[found.temp] #need to do rownames, because remove rows from x
       else tclust[[nfound]] <- colnames(diss)[found.temp] #need to do rownames, because remove rows from x
       mode(tclust[[nfound]]) <- "numeric"
-      if(input %in% c("X","both")) x <- x[-found.temp, ] 
+      if(input %in% c("X","both")) x <- x[,-found.temp] 
       if(input %in% c("diss","both")) diss<-diss[-found.temp,-found.temp]
       remain <- remain - length(tclust[[nfound]])
       if(verbose) cat(paste("Cluster size:", length(tclust[[nfound]]),

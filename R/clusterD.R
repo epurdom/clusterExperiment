@@ -216,6 +216,7 @@ clusterD<-function(x=NULL, diss=NULL,clusterFunction=c("hierarchical01","tight",
 	}
 	else D<-diss
 	.checkDistFunction(D)	
+	D<-round(D,10)
 	#######################
 	####Run clustering:
 	#######################
