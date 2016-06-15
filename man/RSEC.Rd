@@ -12,7 +12,7 @@
 \S4method{RSEC}{matrix}(x, isCount = FALSE, transFun = NULL,
   dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), k0s = 4:15,
   clusterFunction = c("tight", "hierarchical01"), alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 5, combineProportion = 0.7,
+  betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
   clusterDArgs = NULL, subsampleArgs = list(resamp.num = 50),

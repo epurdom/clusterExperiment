@@ -276,7 +276,7 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)
 }
-.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("old","new"),checkArgs,...)
+.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("dist(1-D)","D"),checkArgs,...)
 {
     whichHierDist<-match.arg(whichHierDist)
 	evalClusterMethod<-match.arg(evalClusterMethod)
@@ -292,7 +292,7 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 	#hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
 #	browser()
 	S<-round(1-D,10)
-	d<-switch(whichHierDist,"old"=dist(S),"new"=as.dist(D))
+	d<-switch(whichHierDist,"dist(1-D)"=dist(S),"D"=as.dist(D))
 	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
 	
 	method<-evalClusterMethod

@@ -211,7 +211,7 @@ setMethod(
   definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, distFunction=NA,
-                        betas=0.9, minSizes=5,
+                        betas=0.9, minSizes=1,
                         verbose=FALSE,
                         clusterDArgs=NULL,
                         subsampleArgs=NULL,
