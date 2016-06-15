@@ -217,7 +217,6 @@ clusterD<-function(x=NULL, diss=NULL,clusterFunction=c("hierarchical01","tight",
 	}
 	else D<-diss
 	.checkDistFunction(D)	
-	D<-round(D,10)
 	#######################
 	####Run clustering:
 	#######################
@@ -292,7 +291,7 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 	#use to be (when D was similarity matrix):
 	#hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
 #	browser()
-	S<-1-D
+	S<-round(1-D,10)
 	d<-switch(whichHierDist,"old"=dist(S),"new"=as.dist(D))
 	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
 	
