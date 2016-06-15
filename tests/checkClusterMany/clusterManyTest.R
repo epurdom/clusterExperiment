@@ -1,7 +1,9 @@
 #Usage: nohup RScript clusterManyTest.R <tagString> <compareTo(optional)> &
 
-
-library(clusterExperiment) 
+library(devtools)
+load_all()
+#install.packages(pkgs="../../../clusterExperiment",repos=NULL,type="source")
+#library(clusterExperiment)
 load("L5_sumExp.rda")
 ncores<-5
 args<-commandArgs(TRUE)
