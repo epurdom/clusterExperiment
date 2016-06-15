@@ -112,8 +112,11 @@ left unassigned.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
+subsampleArgs; instead set the argument 'ncores' of
+clusterMany directly (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with

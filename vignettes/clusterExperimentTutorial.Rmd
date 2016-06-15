@@ -24,21 +24,21 @@ message=FALSE)
 
 # Introduction {#Intro}
 
-The goal of this package is to encourage the user to try many different clustering algorithms in one package structure. We give tools for running many different clusterings and choices of parameters. We also provide visualization to compare many different clusterings and algorithm tools to find common shared clustering patterns. We implement common post-processing steps unrelated to the specific clustering algorithm (e.g. subsampling the data for stability, finding cluster-specific markers). 
+The goal of this package is to encourage the user to try many different clustering algorithms in one package structure. We give tools for running many different clusterings and choices of parameters. We also provide visualization to compare many different clusterings and algorithm tools to find common shared clustering patterns. We implement common post-processing steps unrelated to the specific clustering algorithm (e.g. subsampling the data for stability, finding cluster-specific markers via differential expression, etc). 
+
+The other main goal of this package is to implement strategies that we have developed for finding a single robust clustering based on the many clusterings that the user might create by perturbing various parameters of a clustering algorithm. There are several steps to these strategies that we call our standard clustering workflow. Our RSEC algorithm (Resampling-based Sequential Ensemble Clustering) is our preferred realization of this workflow that depends on subsampling on and other ensembl methods to provide robust clusterings, particularly for single-cell sequencing experiments and other large mRNA-Seq experiments.
 
 We also provide a class `clusterExperiment` that inherits from `SummarizedExperiment` to store the many clusterings and related information.  
-
-The results from our methods will make an object `ClusterExperiment` that expands the `SummarizedExperiment` container, meaning that the commands for accessing the data of a `SummarizedExperiment` will carry over to the `ClusterExperiment`.
 
 All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We do not discuss these barebone versions in this tutorial. Instead, we focus on using `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object. See the help pages of each method for more on how to allow for matrix input.
 
 Although this package was developed with (single-cell) RNA-seq data in mind, its use is not limited to RNA-seq or even to gene expression data. Any dataset characterized by high dimensionality could benefit from the methods implemented here.
 
-## The clustering workflow
+## The clustering workflow 
 
-The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouette width, sequential clustering procedures, and so forth. We describe here the basic expected usage of the package. Additional functionality is available in the `clusterSingle` function, and the user should see the documentation in the help page of that function. <!---The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. -->
+The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouette width, sequential clustering procedures, and so forth. It also provides novel strategies that we developed as part of the RSEC algorithm. 
 
-The basic intended clustering workflow is 
+As mentioned above, RSEC is a specific algorithm for creating a clustering that follows these basic steps:
 
 * Implement many different clusterings using different choices of parameters using the function `clusterMany`. This results in a large collection of clusterings, where each clustering is based on different parameters. 
 * Find a unifying clustering across these many clusterings using the `combineMany` function. 
@@ -46,13 +46,15 @@ The basic intended clustering workflow is
     - Find a hierarchical clustering of the clusters found by `combineMany` using `makeDendrogram`
     - Merge together clusters of this hierarchy based on the percentage of differential expression, using `mergeClusters`.
 
-The basic premise of our workflow is to find small, robust clusters of samples, and then merge them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of too few clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
+The basic premise of RSEC is to find small, robust clusters of samples, and then merge them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of too few clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
-Users can also run or add their own clusters to this workflow at different stages.  However, there is special functionality to ease in quickly visualizing and managing the results of this workflow.
+RSEC makes many specific choices in this basic workflow, and many steps of this workflow are useful separately from RSEC. For this reason, the `clusterExperiment` package generalizes this workflow so that the user can use these tools with their own choices. We call this generalization the clustering workflow, as oppose to the specific choices set in RSEC. We will introduce this workflow in its general setting, and only ing specific sections devoted to the `RSEC` function will discussed the RSEC algorithm. For this reason, the examples shown here use simple clustering choices in the workflow to save on computational overhead; RSEC uses extensive subsampling techniques and takes much longer to run than is practical for a vignette.
+
+Users can also run or add their own clusters to this workflow at different stages. Additional functionality for clustering is available in the `clusterSingle` function, and the user should see the documentation in the help page of that function. <!---The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. --> However, there is special functionality to ease in quickly visualizing and managing the results of this workflow.
 
 ### The RSEC Routine
 
-The RSEC algorithm (Resampling-based Sequential Ensemble Clustering) was developed specifically for finding robust clusters in single cell sequencing data. It follows our above suggested workflow, but makes specific choices along the way that we find to be advantageous in clustering large mRNA expression datasets, like those of single cell sequencing. It is implemented in the function `RSEC`. This vignette serves to show how the pieces of the workflow operate, and use choices that are not those recommended by RSEC. This is both to show the flexibility of the functions and because RSEC is computationally more time-intensive, since it is based on both resampling, and sequential discovery of clusters. 
+The RSEC algorithm (Resampling-based Sequential Ensemble Clustering) was developed specifically for finding robust clusters in single cell sequencing data. It follows our above suggested workflow, but makes specific choices along the way that we find to be advantageous in clustering large mRNA expression datasets, like those of single cell sequencing. It is implemented in the function `RSEC`. This vignette serves to show how the pieces of the workflow operate, and use choices that are shown are not those recommended by RSEC. This is both to show the flexibility of the functions and because RSEC is computationally more time-intensive, since it is based on both resampling, and sequential discovery of clusters. 
 
 ## Finding related features/genes
 
@@ -73,6 +75,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 * `makeDendrogram` -- get a hierarchical relationship between the clusters
 * `mergeClusters` -- merge together clusters with little DE between their genes.
 * `getBestFeatures` -- Find Features that are differential between the final clustering.
+
 
 ## Data example {#data}
 
@@ -855,7 +858,50 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 ## RSEC
 
-This clustering workflow is a generalization of our RSEC algorithm for single-cell sequencing data. The RSEC algorithm is particularly oriented around 
+The clustering workflow described so far is a generalization of our RSEC algorithm for single-cell sequencing data. The RSEC algorithm is particularly oriented around using subsampling and sequential discovery of clusters to find very robust signals. 
+
+In particular, `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE`. Furthermore, the only clustering functions that are allowed are the "01" types ("hierarchical01" and "tight"). This removes a number of options from clusterMany, making for a slightly reduced set of commands. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all arguments available to be set. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
+
+We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
+
+```{r rsecTable, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+# simple table creation here
+tabl <- "  
+| | Arguments Internally Fixed | Arguments for the user |  Correspondence | Notes |
+|:-----------------|:-----------------|:-------------|:------|:------|
+*clusterMany*     | |  | |
+-| sequential=TRUE | k0s              | ks | only sets 'k0', no other k 
+- | distFunction=NA | clusterFunction | | only tight or hierarchical01 
+- | removeSil=FALSE | dimReduce | | 
+- | subsample=TRUE | nVarDims | | 
+- |  silCutoff=0 | nPCADims | | 
+- |  | alphas | |
+- |  | betas | |
+- |  | minSizes | |
+-  | | clusterDArgs | |
+-  | | subsampleArgs | |
+- |  | seqArgs | |
+- |  | run | |
+- |  | ncores | |
+- |  | random.seed | |
+- |  | isCount | |
+- |  | transFun | |
+*combineMany* | |  | |
+-  | propUnassigned = *(default)* | combineProportion | proportion 
+-  | combineMinSize    | minSize | |
+*makeDendrogram* | |  | |
+-  | ignoreUnassignedVar=TRUE | dendroReduce      | dimReduce | 
+-  | unassignedSamples= *(default)* | dendroNDims       | ndims |  
+*mergeClusters*  | |  | |
+-  | plotType='none' | mergeMethod     | | 
+-  | | mergeCutoff | cutoff | 
+-  |  | isCount | | used for both mergeMethod and clusterMany 
+"
+
+cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
+
+```
+
 
 # Finding Features related to a Clustering {#getBestFeatures}
 
@@ -881,7 +927,7 @@ The $F$ test is a test for whether there are *any* differences in expression bet
 
 Note that for all of these contrasts, we are making use of all of the data, not just the samples in the particular cluster pairs being compared. This means the variance is estimated with all the samples. Indeed, the same linear model is being used for all of these comparisons. 
 
-### All Pairwise:
+### All Pairwise
 The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons:
 
 ```{r getBestFeatures_onlyTopPairs}
@@ -949,6 +995,13 @@ The `getBestFeatures` method for `ClusterExperiment` objects has an argument `is
 If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
 Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+
+## Piping into other DE routines
+
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq or MAST [@Finak:2015id] for single-cell sequencing. 
+
+Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
+
 
 ## Additional considerations
 

@@ -28,7 +28,7 @@ setMethod(
         dendroReduce="mad",dendroNDims=1000,
         mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
         clusterDArgs=NULL,
-        subsampleArgs=list(resamp.num=50),
+        subsampleArgs=NULL,
         seqArgs=NULL,
         ncores=1, random.seed=NULL, run=TRUE
     )

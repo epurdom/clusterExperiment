@@ -15,8 +15,8 @@
   betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-  clusterDArgs = NULL, subsampleArgs = list(resamp.num = 50),
-  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
+  random.seed = NULL, run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
@@ -90,8 +90,11 @@ left unassigned.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
+subsampleArgs; instead set the argument 'ncores' of
+clusterMany directly (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
