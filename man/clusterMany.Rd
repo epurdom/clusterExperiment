@@ -58,13 +58,16 @@ method for signature \code{list}.}
 \item{ks}{the range of k values (see details for meaning for different
 choices).}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
-\code{clusterSingle}, this must be a character vector of pre-defined
-clustering techniques provided by the package, and can not be a
-user-defined function.}
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\code{\link{clusterSingle}}, this must be a character vector of pre-defined
+clustering techniques provided by \code{\link{clusterSingle}}, and can not
+be a user-defined function. Current functions are "tight",
+"hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for
-clusterFunctions of type '01' (either 'tight' or 'hierarchical01').}
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+required in creating clusters from the dissimilarity matrix. Takes on
+values in [0,1]. See \code{\link{clusterD}}.}
 
 \item{findBestK}{logical, whether should find best K based on average
 silhouette width (only used if clusterFunction of type "K").}
@@ -92,8 +95,10 @@ and type "01" algorithms if you also give distances to evaluate via
 \code{distFunction} unless all distances give 0-1 values for the distance
 (and hence are possible for both type "01" and "K" algorithms).}
 
-\item{betas}{values of beta to be tried in sequential steps. Only used for
-\code{sequential=TRUE}.}
+\item{betas}{values of \code{beta} to be tried in sequential steps. Only used
+for \code{sequential=TRUE}. Determines the similarity between two clusters
+required in order to deem the cluster stable. Takes on values in [0,1]. See
+\code{\link{seqCluster}}.}
 
 \item{minSizes}{the minimimum size required for a cluster (in
 \code{clusterD}). Clusters smaller than this are not kept and samples are

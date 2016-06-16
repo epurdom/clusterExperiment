@@ -50,16 +50,21 @@ included.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
-\code{clusterSingle}, this must be a character vector of pre-defined
-clustering techniques provided by the package, and can not be a
-user-defined function.}
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\code{\link{clusterSingle}}, this must be a character vector of pre-defined
+clustering techniques provided by \code{\link{clusterSingle}}, and can not
+be a user-defined function. Current functions are "tight",
+"hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for
-clusterFunctions of type '01' (either 'tight' or 'hierarchical01').}
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+required in creating clusters from the dissimilarity matrix. Takes on
+values in [0,1]. See \code{\link{clusterD}}.}
 
-\item{betas}{values of beta to be tried in sequential steps. Only used for
-\code{sequential=TRUE}.}
+\item{betas}{values of \code{beta} to be tried in sequential steps. Only used
+for \code{sequential=TRUE}. Determines the similarity between two clusters
+required in order to deem the cluster stable. Takes on values in [0,1]. See
+\code{\link{seqCluster}}.}
 
 \item{minSizes}{the minimimum size required for a cluster (in
 \code{clusterD}). Clusters smaller than this are not kept and samples are
