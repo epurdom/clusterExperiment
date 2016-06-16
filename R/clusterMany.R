@@ -370,7 +370,7 @@ setMethod(
       }
       #browser()
       clusterDArgs[["alpha"]] <- par[["alpha"]]
-      clusterDArgs[["beta"]] <- par[["beta"]]
+      seqArgs[["beta"]] <- par[["beta"]]
       clusterDArgs[["minSize"]] <- par[["minSize"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil

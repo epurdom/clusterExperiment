@@ -44,14 +44,17 @@ setMethod(
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                     clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs, 
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
-    ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-    if(dendroReduce=="none") dendroNDims<-NA
-    dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
-    if(!inherits(dendroTry,"try-error")){
-      ce<-dendroTry  
-      ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
-    }
-    else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+    if(run){
+        ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
+        if(dendroReduce=="none") dendroNDims<-NA
+        dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+        if(!inherits(dendroTry,"try-error")){
+          ce<-dendroTry  
+          ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+        }
+        else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+        
+    } 
     return(ce)
 })
 
