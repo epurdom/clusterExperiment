@@ -223,7 +223,7 @@ setMethod(f = "mergeClusters",
         }
         if(plotType == "mergeMethod"){
             if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
-            phyloObj$node.label <- as.character(sigInfo[m,mergeMethod])
+            phyloObj$node.label <- as.character(signif(sigInfo[m,mergeMethod],2))
         }
         if(plotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
             meth<-if(plotType=="all") methods else methods[methods%in%plotType]
