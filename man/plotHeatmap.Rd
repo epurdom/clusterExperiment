@@ -28,7 +28,9 @@
   unassignedColor = "white", missingColor = "grey", breaks = NA,
   isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
 
-\S4method{plotCoClustering}{ClusterExperiment}(data, ...)
+\S4method{plotCoClustering}{ClusterExperiment}(data,
+  invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
+  == 0), TRUE, FALSE), ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,
@@ -132,6 +134,13 @@ sample matrices (e.g., correlation).}
 that only allows 10 clusterings/annotations. If overridden, may result in 
 incomprehensible errors from aheatmap. Only override this if you have a
 very large plotting device and want to see if aheatmap can render it.}
+
+\item{invert}{logical determining whether the coClustering matrix should be 
+inverted to be 1-coClustering for plotting. By default, if the diagonal 
+elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
+coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
+output from \code{\link{clusterSingle}}, then the user should manually set
+this parameter to FALSE.)}
 }
 \value{
 Returns (invisibly) a list with elements

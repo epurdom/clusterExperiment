@@ -11,14 +11,19 @@
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
 #' @param ks the range of k values (see details for meaning for different
 #'   choices).
-#' @param alphas values of alpha to be tried. Only used for
-#'   clusterFunctions of type '01' (either 'tight' or 'hierarchical01').
-#' @param betas values of beta to be tried in sequential steps. Only used for
-#'   \code{sequential=TRUE}.
-#' @param clusterFunction function used for the clustering. Note that unlike in
-#'   \code{clusterSingle}, this must be a character vector of pre-defined
-#'   clustering techniques provided by the package, and can not be a
-#'   user-defined function.
+#' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
+#'   type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+#'   required in creating clusters from the dissimilarity matrix. Takes on
+#'   values in [0,1]. See \code{\link{clusterD}}.
+#' @param betas values of \code{beta} to be tried in sequential steps. Only used
+#'   for \code{sequential=TRUE}. Determines the similarity between two clusters
+#'   required in order to deem the cluster stable. Takes on values in [0,1]. See
+#'   \code{\link{seqCluster}}.
+#' @param clusterFunction function used for the clustering. Note that unlike in 
+#'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
+#'   clustering techniques provided by \code{\link{clusterSingle}}, and can not
+#'   be a user-defined function. Current functions are "tight",
+#'   "hierarchical01","hierarchicalK", and "pam"
 #' @param minSizes the minimimum size required for a cluster (in
 #'   \code{clusterD}). Clusters smaller than this are not kept and samples are
 #'   left unassigned.
@@ -45,8 +50,11 @@
 #' @inheritParams clusterSingle
 #' @inheritParams clusterD
 #' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterSingle (so
-#'   that all of the runs are run on the same subsample of the data)
+#' @param random.seed a value to set seed before each run of clusterSingle (so 
+#'   that all of the runs are run on the same subsample of the data). Note, if
+#'   'random.seed' is set, argument 'ncores' should NOT be passed via
+#'   subsampleArgs; instead set the argument 'ncores' of
+#'   clusterMany directly (which is preferred for improving speed anyway).
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
 #'   rownames equal to the names of the resulting column names of clMat object
@@ -222,6 +230,11 @@ setMethod(
   {
       paramMatrix<-NULL
     data <- x
+    if(!is.null(random.seed)){
+        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
+            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
+        }
+    }
     if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
       stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
     }
@@ -357,7 +370,7 @@ setMethod(
       }
       #browser()
       clusterDArgs[["alpha"]] <- par[["alpha"]]
-      clusterDArgs[["beta"]] <- par[["beta"]]
+      seqArgs[["beta"]] <- par[["beta"]]
       clusterDArgs[["minSize"]] <- par[["minSize"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil

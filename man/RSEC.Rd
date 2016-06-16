@@ -15,8 +15,8 @@
   betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-  clusterDArgs = NULL, subsampleArgs = list(resamp.num = 50),
-  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE)
+  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
+  random.seed = NULL, run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
@@ -50,16 +50,21 @@ included.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
-\code{clusterSingle}, this must be a character vector of pre-defined
-clustering techniques provided by the package, and can not be a
-user-defined function.}
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\code{\link{clusterSingle}}, this must be a character vector of pre-defined
+clustering techniques provided by \code{\link{clusterSingle}}, and can not
+be a user-defined function. Current functions are "tight",
+"hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for
-clusterFunctions of type '01' (either 'tight' or 'hierarchical01').}
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+required in creating clusters from the dissimilarity matrix. Takes on
+values in [0,1]. See \code{\link{clusterD}}.}
 
-\item{betas}{values of beta to be tried in sequential steps. Only used for
-\code{sequential=TRUE}.}
+\item{betas}{values of \code{beta} to be tried in sequential steps. Only used
+for \code{sequential=TRUE}. Determines the similarity between two clusters
+required in order to deem the cluster stable. Takes on values in [0,1]. See
+\code{\link{seqCluster}}.}
 
 \item{minSizes}{the minimimum size required for a cluster (in
 \code{clusterD}). Clusters smaller than this are not kept and samples are
@@ -90,8 +95,11 @@ left unassigned.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
+subsampleArgs; instead set the argument 'ncores' of
+clusterMany directly (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with

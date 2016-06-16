@@ -28,7 +28,7 @@ setMethod(
         dendroReduce="mad",dendroNDims=1000,
         mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
         clusterDArgs=NULL,
-        subsampleArgs=list(resamp.num=50),
+        subsampleArgs=NULL,
         seqArgs=NULL,
         ncores=1, random.seed=NULL, run=TRUE
     )
@@ -44,14 +44,17 @@ setMethod(
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                     clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
-    ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-    if(dendroReduce=="none") dendroNDims<-NA
-    dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
-    if(!inherits(dendroTry,"try-error")){
-      ce<-dendroTry
-      ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+    if(run){
+        ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
+        if(dendroReduce=="none") dendroNDims<-NA
+        dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+        if(!inherits(dendroTry,"try-error")){
+          ce<-dendroTry
+          ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+        }
+        else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+
     }
-    else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
     return(ce)
 })
 

@@ -19,14 +19,23 @@ outfile<-paste(nm,".Rout",sep="")
 cat("Results for test of",version,"\n",file=outfile)
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Running clusterMany...",file=outfile,append=TRUE)
+# Old version: 
+# cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+#                  ks=4:8, clusterFunction="hierarchical01",
+#                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
+#                  ncores=ncores, subsampleArgs=list(resamp.num=20,
+#                                               clusterFunction="kmeans",
+#                                               clusterArgs=list(nstart=1)),
+#                  seqArgs=list(beta=0.9,k.min=3,verbose=FALSE),
+#                  clusterDArgs=list(minSize=5, verbose=FALSE),
+#                  random.seed=21321, run=TRUE)
 cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
+                 beta=0.9, minSize=5,
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
                  ncores=ncores, subsampleArgs=list(resamp.num=20,
-                                              clusterFunction="kmeans",
-                                              clusterArgs=list(nstart=1)),
-                 seqArgs=list(beta=0.9,k.min=3,verbose=FALSE),
-                 clusterDArgs=list(minSize=5, verbose=FALSE),
+                                                   clusterFunction="kmeans",
+                                                   clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.",file=outfile,append=TRUE)

@@ -676,7 +676,12 @@ setMethod(
 
 #' @rdname plotHeatmap
 #' @aliases plotCoClustering
-#'
+#' @param invert logical determining whether the coClustering matrix should be 
+#'   inverted to be 1-coClustering for plotting. By default, if the diagonal 
+#'   elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
+#'   coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
+#'   output from \code{\link{clusterSingle}}, then the user should manually set
+#'   this parameter to FALSE.)
 #' @details \code{plotCoClustering} is a convenience function to plot the heatmap
 #' of the co-clustering matrix stored in the \code{coClustering} slot of a
 #' \code{ClusterExperiment} object.
@@ -684,8 +689,9 @@ setMethod(
 setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
-  definition = function(data, ...){
+  definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
     if(is.null(data@coClustering)) stop("coClustering slot is empty")
+      if(invert) data@coClustering<-1-data@coClustering
     fakeCE<-clusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
