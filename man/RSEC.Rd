@@ -120,8 +120,8 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \description{
-Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble 
-Clustering) for single cell sequencing data. This is a wrapper function 
+Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
+Clustering) for single cell sequencing data. This is a wrapper function
 around the existing clusterExperiment workflow that results in the output of
 RSEC.
 }

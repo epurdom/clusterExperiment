@@ -149,7 +149,7 @@ If \code{run=TRUE} and the input is either a matrix, a
 
 If \code{run=TRUE} and the input is a list of data sets, a list with
   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-  row corresponding to a clustering and each column to a sample.}
+  column corresponding to a clustering and each row to a sample.}
   \item{\code{clusterInfo}}{ a list with information regarding clustering
   results (only relevant entries for those clusterings with sequential=TRUE)}
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
