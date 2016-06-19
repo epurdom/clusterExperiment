@@ -27,13 +27,13 @@
 #'   data should be used for visualizing the data (i.e. for making the
 #'   color-scale), or a data.frame/matrix with same dimensions of
 #'   \code{assay(data)}.
-#' @param clusterSamplesData If \code{data} is a matrix, either a matrix that
-#'   will be used to in \code{hclust} to define the hiearchical clustering of
-#'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters
+#' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
+#'   will be used to in \code{hclust} to define the hiearchical clustering of 
+#'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
 #'   the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-#'   should be either character or integers. Indicates how (and whether) the
-#'   samples should be clustered (or gives indices of the order for the
-#'   samples). See details.
+#'   should be either character or integers or logical. Indicates how (and
+#'   whether) the samples should be clustered (or gives indices of the order for
+#'   the samples). See details.
 #' @param whichClusters character string, or vector of characters or integers,
 #'   indicating what clusters should be visualized with the heatmap.
 #' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
@@ -389,49 +389,52 @@ setMethod(
     #Create clusterSamplesData
     ######
     clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
-    clusterSamples<-TRUE
     #browser()
-    if(is.numeric(clusterSamplesData)){
-        heatData<-heatData[,clusterSamplesData,drop=FALSE]
-        if(!is.null(sampleData)) sampleData<-sampleData[clusterSamplesData,,drop=FALSE]
-        clusterSamplesData<-heatData
-        clusterSamples<-FALSE
-    }
-    else if(is.character(clusterSamplesData)){
-        if(clusterSamplesData=="orderSamplesValue"){
-          heatData<-heatData[,orderSamples(data),drop=FALSE]
-          if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
+    if(is.logical(clusterSamplesData)) clusterSamples<-clusterSamplesData
+    else {
+      clusterSamples<-TRUE
+      #browser()
+      if(is.numeric(clusterSamplesData)){
+          heatData<-heatData[,clusterSamplesData,drop=FALSE]
+          if(!is.null(sampleData)) sampleData<-sampleData[clusterSamplesData,,drop=FALSE]
           clusterSamplesData<-heatData
-            clusterSamples<-FALSE
-
-        }
-        else if(clusterSamplesData=="primaryCluster"){
-            heatData<-heatData[,order(primaryCluster(data))]
-            if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
+          clusterSamples<-FALSE
+      }
+      else if(is.character(clusterSamplesData)){
+          if(clusterSamplesData=="orderSamplesValue"){
+            heatData<-heatData[,orderSamples(data),drop=FALSE]
+            if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
             clusterSamplesData<-heatData
-            clusterSamples<-FALSE
-        }
-        else if(clusterSamplesData=="dendrogramValue"){
-            if(is.null(data@dendro_samples)){
-              clusterSamplesData<-makeDendrogram(data)@dendro_samples
-            }
-            else{
-                clusterSamplesData<-data@dendro_samples
-            }
-        }
-        else if(clusterSamplesData=="hclust"){
-            #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
-            clusterSamplesData <- heatData
-
-            if(is.character(visualizeData)) {
-              if(visualizeData=="original") {
-                transObj$x
+              clusterSamples<-FALSE
+  
+          }
+          else if(clusterSamplesData=="primaryCluster"){
+              heatData<-heatData[,order(primaryCluster(data))]
+              if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
+              clusterSamplesData<-heatData
+              clusterSamples<-FALSE
+          }
+          else if(clusterSamplesData=="dendrogramValue"){
+              if(is.null(data@dendro_samples)){
+                clusterSamplesData<-makeDendrogram(data)@dendro_samples
               }
-            }
-        }
+              else{
+                  clusterSamplesData<-data@dendro_samples
+              }
+          }
+          else if(clusterSamplesData=="hclust"){
+              #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
+              clusterSamplesData <- heatData
+  
+              if(is.character(visualizeData)) {
+                if(visualizeData=="original") {
+                  transObj$x
+                }
+              }
+          }
+      }
+      else stop("clusterSamplesData must be either character, or vector of indices of samples")
     }
-    else stop("clusterSamplesData must be either character, or vector of indices of samples")
-
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
@@ -444,7 +447,6 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-  # browser()
     plotHeatmap(data=heatData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
