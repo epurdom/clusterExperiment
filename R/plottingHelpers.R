@@ -130,6 +130,7 @@ showBigPalette<-function(wh=NULL){
 #' @examples
 #' setBreaks(.9,simData)
 setBreaks<-function(breaks,data){
+  isPositive<-all(data>=0)
     if(length(breaks)>0 && !is.na(breaks)){
         #get arround bug in aheatmap
         #if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
@@ -137,7 +138,23 @@ setBreaks<-function(breaks,data){
         if(length(breaks)==1){
             if(breaks<=1){
                 ncols<-51
-                if(breaks<1) breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))
+                if(breaks<1){
+                  if(breaks<0.5) breaks<-1-breaks
+                  uppQ<-if(isPositive) quantile(data[data>0],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
+                  lowQ<-if(isPositive) min(data) else quantile(data,1-breaks,na.rm=TRUE)
+                  quantMin<-if(isTRUE(all.equal(round(lowQ,5),round(min(data),5)))) TRUE else FALSE
+                  quantMax<-if(isTRUE(all.equal(round(uppQ,5),round(max(data),5)))) TRUE else FALSE
+                  #browser()
+                  if(!quantMin & !quantMax) breaks<-c(min(data),seq(lowQ,uppQ,length=ncols-1),max(data))
+                  else{
+                    if(!quantMin & quantMax) breaks<-c(min(data),seq(lowQ,max(data),length=ncols))
+                    if(quantMin & !quantMax) breaks<-c(seq(min(data),uppQ,length=ncols),max(data))
+                    if(quantMin & quantMax) breaks<-seq(min(data),max(data),length=ncols+1)
+                  }
+#                     if(isPositive){
+#                     breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))
+#                   else breaks<-c(min(data),seq(quantile(data,1-breaks,na.rm=TRUE),quantile(data,breaks,na.rm=TRUE),length=ncols-1),max(data))
+                }
                 else breaks<-seq(min(data),max(data),length=ncols+1)
             }
             else{
