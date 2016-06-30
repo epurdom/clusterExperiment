@@ -17,6 +17,9 @@ NEWS[.]md
 ^vignettes/.*[.](pdf|PDF)$
 ^vignettes/.*[.](r|R)$
 ^vignettes/[.]install_extras$
+^vignettes/oldVignette
+^vignettes/R_cache
+^vignettes/R_figure
 ^Makefile$
 ^incl
 ^NAMESPACE,.*[.]txt$
