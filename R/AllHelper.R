@@ -140,7 +140,6 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @return \code{nFeatures} returns the number of features (same as `nrow`).
 #' @export
-#' @aliases nFeatures
 setMethod(
   f = "nFeatures",
   signature =  "ClusterExperiment",
@@ -152,7 +151,6 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @return \code{nSamples} returns the number of samples (same as `ncol`).
 #' @export
-#' @aliases nSamples
 setMethod(
   f = "nSamples",
   signature = "ClusterExperiment",
@@ -274,7 +272,7 @@ setMethod(
     labels<-colnames(clusterMatrix(x))
     if(is.null(labels)) cat("No labels found for clusterings\n")
     return(labels)
-    
+
   }
 )
 #' @export
