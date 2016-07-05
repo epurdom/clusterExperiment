@@ -1,0 +1,56 @@
+Changes in version 0.2.0 (Release date: 2016-05-10 )
+==============
+
+Changes:
+
+* Allow 'whichCluster'/'whichClusters' arguments to match to clusterLabels, not just clusterTypes
+* Added slot 'dendro_index' 
+* Added 'whichCluster' argument to `makeDendrogram`
+* Added 'hierarchicalK' clustering
+* Added default distance for 0-1 clustering
+* Added ability to define distance for clustering
+* Added 'setToCurrent' and 'setToFinal' options to update status of a cluster.
+* Added unit tests for workflow function (in test_constructor)
+* 'getBestFeatures' now calls 'clusterContrasts' internally
+* Output for 'clusterContrasts' changed
+* Removed 'Index' output for getBestFeatures
+* Changed tests for getBestFeatures to run on standard objects (which means now have -2 values to test against)
+* User can now give clusterLabel for resulting cluster of combineMany and mergeClusters
+
+
+Changes in version 0.1.0 (Release date: 2016-05-04)
+==============
+
+Changes:
+
+* Conversion to S4 language for bioConductor submission
+* All previous functions have been overhauled, renamed, etc.
+
+Changes in version 0.0.0.9006
+==============
+
+Changes:
+
+* fixed so that mergeClusters, clusterHclust, and getBestFeatures will appropriately convert if the input of clustering vector is a factor rather than numeric (with warning).
+* fixed mergeClusters to have option to indicate that input matrix is a count matrix (in which case will create dendrogram with log(counts+1) and will do getBestFeatures with the voom correction) 
+* added more tutoral-oriented vignette (old vignette is now the documentation vignette with more detail about the internal workings of package). Currently is just simulated data, but will be updated to real single-cell sequencing dataset.
+
+Changes in version 0.0.0.9005
+==============
+
+Changes:
+
+* Changed simulated data so load all with data(simData) rather than separate calls for simData and simCount. Also added 'trueCluster' vector to give true cluster assignments of simulated data
+* added dendro example to getBestFeatures
+* added example to clusterHclust
+* added single function for converting to phylobase tree (used internally by package)
+* added functionality to find proportion of significant null hypotheses for merging clusters (mergeClusters)
+
+Changes in version 0.0.0.9004
+==============
+
+Changes:
+
+* Changed clusterMany.R to only set k<-NA if sequential=FALSE (previously for all where findBestK=TRUE)
+* Added to vignette
+* fixed bug in plotClusters to correctly plot "-1"
