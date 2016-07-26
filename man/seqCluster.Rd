@@ -4,14 +4,17 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x, k0, clusterFunction = c("tight", "hierarchical01", "pam",
-  "hierarchicalK"), subsample = TRUE, beta = 0.7, top.can = 15,
-  remain.n = 30, k.min = 2, k.max = k0 + 10, verbose = TRUE,
-  subsampleArgs = NULL, clusterDArgs = NULL)
+seqCluster(x = NULL, diss = NULL, k0, clusterFunction = c("tight",
+  "hierarchical01", "pam", "hierarchicalK"), subsample = TRUE, beta = 0.7,
+  top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
+  verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL)
 }
 \arguments{
-\item{x}{\code{p x} data matrix on which to run the clustering (samples in
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
@@ -77,6 +80,9 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
+This code is adapted from the code of the \code{\link{tightClust}}
+ package of Tseng and Wong
+
 Each iteration of the algorithm will cluster the current set of
   samples. Depending on the method, the number of clusters resulting from
   \code{\link{clusterD}} may not be equal to the K used in the clustering of
@@ -166,5 +172,8 @@ clusterDArgs=list(minSize=5))
 Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
   61:10-16.
+}
+\seealso{
+tight.clust
 }
 

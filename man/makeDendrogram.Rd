@@ -10,8 +10,9 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var"),
-  ndims = NA, unassignedSamples = c("outgroup", "cluster"), ...)
+  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var", "cv",
+  "mad"), ndims = NA, ignoreUnassignedVar = FALSE,
+  unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
@@ -27,18 +28,25 @@
 which cluster should be used to make the dendrogram. Default is
 primaryCluster.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering.}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
-in the reduction specified by \code{dimReduce}.}
+in the reduction specified by \code{dimReduce}}
+
+\item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction 
+via top feature variability (i.e. 'var','cv','mad') should ignore 
+unassigned samples in the primary clustering for calculation of the top 
+features.}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only relevant
 for sample clustering. See details.}
 
 \item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed
 to hclust; if signature \code{ClusterExperiment} passed to the method for
-signature \code{matrix}. For plotDendrogram, passed to \code{plot}.}
+signature \code{matrix}. For plotDendrogram, passed to \code{\link{plot.dendrogram}}.}
 
 \item{cluster}{A numeric vector with cluster assignments. If x is a
 ClusterExperiment object, cluster is automatically the primaryCluster(x).

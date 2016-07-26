@@ -27,6 +27,8 @@
 #'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
 #'   only the value used in the merging is plotted for each node.
 #' @param isCount logical as to whether input data is a count matrix. See details.
+#' @param doPlot logical as to whether to plot the dendrogram (overrides
+#'   \code{plotType} value). Mainly used for internal coding purposes.
 #' @param ... for signature \code{matrix}, arguments passed to the
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
@@ -96,7 +98,7 @@ setMethod(f = "mergeClusters",
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
                           plotType=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"),
-                          cutoff=0.1,
+                          cutoff=0.1, doPlot=TRUE,
                           isCount=TRUE, ...) {
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
@@ -122,13 +124,13 @@ setMethod(f = "mergeClusters",
                               number=nrow(x), p.value=1, isCount=isCount)
 
   #divide table into each node.
-  whMethodCalculate<-mergeMethod
+  whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
   if(plotType=="all") whMethodCalculate<-c("adjP", "locfdr", "MB", "JC")
   if(plotType%in% c("adjP", "locfdr", "MB", "JC")) whMethodCalculate<-unique(c(whMethodCalculate,plotType))
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
       mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
       locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
-      jc <-if("MB" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
+      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
       adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
       return(c("adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
   })
@@ -173,48 +175,76 @@ setMethod(f = "mergeClusters",
     }
   }
 
-  if(plotType!="none"){
-    # phylobase has bug in plotting! submitted to their github
-    # move to ape package...
-    phyloObj <- as(phylo4Obj, "phylo")
-
-    #####
-    #convert names of internal nodes for plotting
-    #####
-    allInternal <- phyloObj$node
-    #match to order of tree
-    m <- match(allInternal, names(sigByNode))
-    edgeLty <- rep(1, nrow(phyloObj$edge))
-    if(mergeMethod != "none" && length(whToMerge) > 0) {
-      whMerge <- which(phyloObj$node.label %in% nodesToMerge) #which of nodes merged
-      nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
-      whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
-      edgeLty[whEdge] <- 2
-    }
-    if(plotType == "mergeMethod"){
-      phyloObj$node.label <- as.character(valsPerNode)
-    }
-    if(plotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
-      phyloObj$node.label <- sapply(sigByNode[m], function(x){
-          x<-na.omit(x)
-        paste(paste(names(x), signif(x,2), sep=":"), collapse=",\n")})
-    }
-
-    ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, ...)
-  }
+  #browser()
   nodePropTable <- do.call("rbind", sigByNode)
-  nodePropTable <- data.frame("Node"=names(sigByNode),
-                              "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)],
-                              nodePropTable)
+  annotTable <- data.frame("Node"=names(sigByNode),
+                              "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)])
+    #add merge information:
+   if(mergeMethod != "none" && length(whToMerge)>0 && length(which(whToMerge)) > 0){
+     logicalMerge<-annotTable$Node %in%nodesToMerge
+
+ } else logicalMerge<-rep(FALSE,length=nrow(annotTable))
+  nodePropTable<-data.frame(annotTable,"Merged"=logicalMerge,nodePropTable)
+  
   if(mergeMethod=="none"){
     newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
     oldClToNew<-NULL
       }
   else oldClToNew=table(Original=cl, New=newcl)
-  invisible(list(clustering=newcl, oldClToNew=oldClToNew,
-                 propDE=nodePropTable, originalClusterDendro=dendro))
+  out<-list(clustering=newcl, oldClToNew=oldClToNew,
+                 propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
+  if(doPlot) .plotMerge(dendro,mergeOutput=out,plotType=plotType,mergeMethod=mergeMethod,...)
+  invisible(out)
 }
 )
+
+.plotMerge<-function(dendro,mergeOutput,plotType,mergeMethod,clusterLegendMat=NULL,...){
+    sigInfo<-mergeOutput$propDE
+    whToMerge<-which(sigInfo$Merged)
+    nodesToMerge<-sigInfo$Node[whToMerge]
+    methods<-colnames(sigInfo[,-c(1:3)])
+    if(plotType!="none"){
+        # phylobase has bug in plotting! submitted to their github
+        # move to ape package...
+        phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
+        phyloObj <- as(phylo4Obj, "phylo")
+        
+        #####
+        #convert names of internal nodes for plotting
+        #####
+        #match to order of tree
+        m <- match(phyloObj$node, sigInfo$Node)
+        edgeLty <- rep(1, nrow(phyloObj$edge))
+        if(mergeMethod != "none" && length(whToMerge) > 0) {
+            whMerge <- which(phyloObj$node.label %in% nodesToMerge) #which of nodes merged
+            nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
+            whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
+            edgeLty[whEdge] <- 2
+        }
+        if(plotType == "mergeMethod"){
+            if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
+            phyloObj$node.label <- as.character(signif(sigInfo[m,mergeMethod],2))
+        }
+        if(plotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
+            meth<-if(plotType=="all") methods else methods[methods%in%plotType]
+            phyloObj$node.label <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
+                whKp<-which(!is.na(x))
+                paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse=",\n")})
+            
+        }
+        #browser()
+        ###Add color and name from the object.
+        #browser()
+        if(!is.null(clusterLegendMat)){
+            m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
+            if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+            phyloObj$tip.label<-clusterLegendMat[m,"name"]
+            tip.color<-clusterLegendMat[m,"color"]
+        }
+        else tip.color<-"black"
+        ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, tip.color=tip.color,...)
+    }
+}
 
 #' @rdname mergeClusters
 #' @export
@@ -224,7 +254,7 @@ setMethod(f = "mergeClusters",
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod,clusterLabel="mergeClusters",...) {
+                                mergeMethod="none",plotType="all",clusterLabel="mergeClusters",...) {
 
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
@@ -239,8 +269,12 @@ This makes sense only for counts.")
             #browser()
   outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
                            cl=cl,
-                           dendro=x@dendro_clusters,
+                           dendro=x@dendro_clusters, plotType=plotType,doPlot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
+  if(plotType!="none"){
+      .plotMerge(x@dendro_clusters,mergeOutput=outlist,plotType=plotType,mergeMethod=mergeMethod,clusterLegendMat=clusterLegend(x)[[x@dendro_index]])
+  }
+  
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     #----
     #add "m" to name of cluster
@@ -254,7 +288,7 @@ This makes sense only for counts.")
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
-    else retval<-newObj
+    else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     invisible(retval)
   }
   else{ #don't do anything, since there was no merging done.

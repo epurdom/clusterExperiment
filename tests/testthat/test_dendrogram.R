@@ -71,3 +71,25 @@ test_that("`makeDendrogram` works with whichCluster", {
     
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
 })
+test_that("`makeDendrogram` with dimReduce options", {
+    x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
+    expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
+    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
+    expect_equal(x,x2)
+    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
+    
+})
+
+test_that("plotDendrogram works", {
+  dend <- makeDendrogram(ccSE)
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg[,"name"]<-letters[1:nrow(leg)]
+  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+  plotDendrogram(dend)
+  plotDendrogram(dend,show.node.label=TRUE)
+})

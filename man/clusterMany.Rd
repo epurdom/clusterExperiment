@@ -12,12 +12,12 @@
 \S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
   nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{list}(x, ks, clusterFunction, alphas = 0.1,
+\S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, verbose = FALSE,
-  clusterDArgs = list(minSize = 5), subsampleArgs = list(resamp.num = 50),
-  seqArgs = list(beta = 0.9, k.min = 3, verbose = FALSE), ncores = 1,
-  random.seed = NULL, run = TRUE, ...)
+  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
+  minSizes = 1, verbose = FALSE, clusterDArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
+  run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
@@ -30,13 +30,14 @@
 in rows), a list of datasets overwhich the clusterings should be run, a
 \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "var".}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep
-(when "var" is identified in \code{dimReduce}). If NA is included, then
-the full dataset will also be included.}
+\item{nVarDims}{vector of the number of the most variable features to keep 
+(when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
+included, then the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified
 in \code{dimReduce}). If NA is included, then the full dataset will also be
@@ -57,29 +58,25 @@ method for signature \code{list}.}
 \item{ks}{the range of k values (see details for meaning for different
 choices).}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
-\code{clusterSingle}, this must be a character vector of pre-defined
-clustering techniques provided by the package, and can not be a
-user-defined function.
-@param distFunction a vector of character strings that are the names of
-  distance functions found in the global environment. See the help pages of
-  \code{\link{clusterD}} for details about the required format of distance
-  functions. Currently, this distance function must be applicable for all
-  clusterFunction types. Therefore, it is not possible to intermix type "K"
-  and type "01" algorithms if you also give distances to evaluate unless
-  all distances give 0-1 values for the distance (and hence are possible
-  for both type "01" and "K" algorithms).}
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\code{\link{clusterSingle}}, this must be a character vector of pre-defined
+clustering techniques provided by \code{\link{clusterSingle}}, and can not
+be a user-defined function. Current functions are "tight",
+"hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for
-subsampleclusterFunction either 'tight' or 'hierarchical'.}
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+required in creating clusters from the dissimilarity matrix. Takes on
+values in [0,1]. See \code{\link{clusterD}}.}
 
 \item{findBestK}{logical, whether should find best K based on average
-silhouette width.}
+silhouette width (only used if clusterFunction of type "K").}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-Details).}
+details of \code{\link{seqCluster}}).}
 
-\item{removeSil}{logical as to whether remove when silhouette < silCutoff}
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff
+(only used if clusterFunction of type "K")}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
@@ -89,8 +86,23 @@ iteration; otherwise the distance function will be determined by argument
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
 
-\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input \code{D} is a matrix of data, rather than a distance. See details.}
+\item{distFunction}{a vector of character strings that are the names of 
+distance functions found in the global environment. See the help pages of
+\code{\link{clusterD}} for details about the required format of distance 
+functions. Currently, this distance function must be applicable for all 
+clusterFunction types tried. Therefore, it is not possible to intermix type "K"
+and type "01" algorithms if you also give distances to evaluate via
+\code{distFunction} unless all distances give 0-1 values for the distance
+(and hence are possible for both type "01" and "K" algorithms).}
+
+\item{betas}{values of \code{beta} to be tried in sequential steps. Only used
+for \code{sequential=TRUE}. Determines the similarity between two clusters
+required in order to deem the cluster stable. Takes on values in [0,1]. See
+\code{\link{seqCluster}}.}
+
+\item{minSizes}{the minimimum size required for a cluster (in
+\code{clusterD}). Clusters smaller than this are not kept and samples are
+left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
@@ -105,8 +117,11 @@ input \code{D} is a matrix of data, rather than a distance. See details.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data)}
+\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
+subsampleArgs; instead set the argument 'ncores' of
+clusterMany directly (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
@@ -134,7 +149,7 @@ If \code{run=TRUE} and the input is either a matrix, a
 
 If \code{run=TRUE} and the input is a list of data sets, a list with
   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-  row corresponding to a clustering and each column to a sample.}
+  column corresponding to a clustering and each row to a sample.}
   \item{\code{clusterInfo}}{ a list with information regarding clustering
   results (only relevant entries for those clusterings with sequential=TRUE)}
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each

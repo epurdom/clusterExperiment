@@ -21,14 +21,16 @@
   sampleData = NULL, clusterFeatures = TRUE, colorScale, ...)
 
 \S4method{plotHeatmap}{matrix}(data, sampleData = NULL,
-  clusterSamplesData = data, clusterFeaturesData = data,
+  clusterSamplesData = NULL, clusterFeaturesData = NULL,
   whSampleDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
   isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
 
-\S4method{plotCoClustering}{ClusterExperiment}(data, ...)
+\S4method{plotCoClustering}{ClusterExperiment}(data,
+  invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
+  == 0), TRUE, FALSE), ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,
@@ -44,8 +46,9 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}.
-For the other signatures, passed to the method for signature \code{matrix}.}
+\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}. 
+For the other signatures, passed to the method for signature \code{matrix}.
+Not all arguments can be passed to aheatmap effectively, see details.}
 
 \item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that
 will be used to in \code{hclust} to define the hiearchical clustering of
@@ -131,6 +134,13 @@ sample matrices (e.g., correlation).}
 that only allows 10 clusterings/annotations. If overridden, may result in 
 incomprehensible errors from aheatmap. Only override this if you have a
 very large plotting device and want to see if aheatmap can render it.}
+
+\item{invert}{logical determining whether the coClustering matrix should be 
+inverted to be 1-coClustering for plotting. By default, if the diagonal 
+elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
+coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
+output from \code{\link{clusterSingle}}, then the user should manually set
+this parameter to FALSE.)}
 }
 \value{
 Returns (invisibly) a list with elements
@@ -231,6 +241,17 @@ Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
   you change the size of your plot window in an interactive session of R
   (this might be a problem for RStudio if you want to pop it out into a large
   window...).
+
+Many arguments can be passed on to aheatmap, however, some are set 
+  internally by \code{plotHeatmap.} In particular, setting the values of 
+  \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
+  \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
+  \code{annCol} to give annotation to the samples is replaced by the
+  \code{sampleData}; moreover, the \code{annColors} option in \code{aheatmap}
+  will also be set internally to give more vibrant colors than the default in
+  \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
+  also be set in the \code{clusterLegend} slot ). Other options should be
+  passed on to \code{aheatmap}, though they have not been all tested.
 
 \code{plotCoClustering} is a convenience function to plot the heatmap
 of the co-clustering matrix stored in the \code{coClustering} slot of a

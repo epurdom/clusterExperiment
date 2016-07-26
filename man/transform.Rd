@@ -7,7 +7,7 @@
 \title{Transform the original data in a ClusterExperiment object}
 \usage{
 \S4method{transform}{ClusterExperiment}(x, nPCADims = NA, nVarDims = NA,
-  dimReduce = "none")
+  dimReduce = "none", ignoreUnassignedVar = FALSE)
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}
@@ -20,12 +20,17 @@ done.}
 keep, based on MAD variability.}
 
 \item{dimReduce}{Character vector specifying the dimensionality reduction to
-perform, any combination of 'none', 'PCA' and 'var'. See details.}
+perform, any combination of 'none', 'PCA', 'var', 'cv', and 'mad'. See details.}
+
+\item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction 
+via top feature variability (i.e. 'var','cv','mad') should ignore 
+unassigned samples in the primary clustering for calculation of the top 
+features.}
 }
 \value{
 If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of
   length 1, a matrix will be returned of the same dimensions as
-  \code{assay(x)}. If these terms are vectors, then a list of data matrices
+  \code{assay(x)}. If these arguments are vectors, then a list of data matrices
   will be return, each corresponding to the multiple choices implied by these
   parameters.
 }
@@ -34,21 +39,29 @@ Provides the transformed data (as defined by the object), as well as
 dimensionality reduction.
 }
 \details{
-The data matrix defined by \code{assay(x)} is transformed based on
-  the transformation function defined in x. If \code{dimReduce="none"} the
-  transformed matrix is returned. Otherwise, the user can request
-  dimensionality reduction of the transformed data via \code{dimReduce}.
-  'PCA' refers to PCA of the transformed data with the top nPCADims kept.
-  'var' refers to keeping the top most variable features (defined by
-  taking the MAD across all samples), and nVarDims defines how many such
-  features to keep.
+The data matrix defined by \code{assay(x)} is transformed based on 
+  the transformation function defined in x. If \code{dimReduce="none"} the 
+  transformed matrix is returned. Otherwise, the user can request 
+  dimensionality reduction of the transformed data via \code{dimReduce}. 
+  'PCA' refers to PCA of the transformed data with the top nPCADims kept. 
+  'var', 'cv', and 'mad' refers to keeping the top most variable features, as
+  defined by taking the variance, the mad, or the coefficient of variation 
+  (respectively) across all samples. nVarDims defines how many such features 
+  to keep for any of 'var','cv', or 'mad'; note that the number of features
+  must be the same for all of these options (they cannot be set separately).
 
-The PCA uses prcomp on \code{t(assay(x))} with \code{center=TRUE}
-  and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
+The PCA uses prcomp on \code{t(assay(x))} with \code{center=TRUE} 
+  and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that 
   it is performing PCA on the correlation matrix of the features.
-  \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a vector of
-  values, in which case a list will be returned with the appropriate datasets
-  as elements of the list.
+
+\code{ignoreUnassignedVar} has no impact for PCA reduction, which
+  will always use all samples. At all times, regardless of the value of
+  \code{ignoreUnassignedVar}, a matrix with the same number of columns of 
+  \code{assay(x)} (i.e. the same number of samples) will be returned.
+
+\code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a
+  vector of values, in which case a list will be returned with the
+  appropriate datasets as elements of the list.
 }
 \examples{
 mat <- matrix(data=rnorm(200), ncol=10)

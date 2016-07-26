@@ -11,23 +11,33 @@
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
 #' @param ks the range of k values (see details for meaning for different
 #'   choices).
-#' @param alphas values of alpha to be tried. Only used for
-#'   subsampleclusterFunction either 'tight' or 'hierarchical'.
-#' @param clusterFunction function used for the clustering. Note that unlike in
-#'   \code{clusterSingle}, this must be a character vector of pre-defined
-#'   clustering techniques provided by the package, and can not be a
-#'   user-defined function.
-#'   @param distFunction a vector of character strings that are the names of
+#' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
+#'   type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+#'   required in creating clusters from the dissimilarity matrix. Takes on
+#'   values in [0,1]. See \code{\link{clusterD}}.
+#' @param betas values of \code{beta} to be tried in sequential steps. Only used
+#'   for \code{sequential=TRUE}. Determines the similarity between two clusters
+#'   required in order to deem the cluster stable. Takes on values in [0,1]. See
+#'   \code{\link{seqCluster}}.
+#' @param clusterFunction function used for the clustering. Note that unlike in 
+#'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
+#'   clustering techniques provided by \code{\link{clusterSingle}}, and can not
+#'   be a user-defined function. Current functions are "tight",
+#'   "hierarchical01","hierarchicalK", and "pam"
+#' @param minSizes the minimimum size required for a cluster (in
+#'   \code{clusterD}). Clusters smaller than this are not kept and samples are
+#'   left unassigned.
+#' @param distFunction a vector of character strings that are the names of 
 #'     distance functions found in the global environment. See the help pages of
-#'     \code{\link{clusterD}} for details about the required format of distance
-#'     functions. Currently, this distance function must be applicable for all
-#'     clusterFunction types. Therefore, it is not possible to intermix type "K"
-#'     and type "01" algorithms if you also give distances to evaluate unless
-#'     all distances give 0-1 values for the distance (and hence are possible
-#'     for both type "01" and "K" algorithms).
-#' @param nVarDims vector of the number of the most variable features to keep
-#'   (when "var" is identified in \code{dimReduce}). If NA is included, then
-#'   the full dataset will also be included.
+#'     \code{\link{clusterD}} for details about the required format of distance 
+#'     functions. Currently, this distance function must be applicable for all 
+#'     clusterFunction types tried. Therefore, it is not possible to intermix type "K"
+#'     and type "01" algorithms if you also give distances to evaluate via
+#'     \code{distFunction} unless all distances give 0-1 values for the distance
+#'     (and hence are possible for both type "01" and "K" algorithms).
+#' @param nVarDims vector of the number of the most variable features to keep 
+#'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
+#'   included, then the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be
 #'   included.
@@ -40,8 +50,11 @@
 #' @inheritParams clusterSingle
 #' @inheritParams clusterD
 #' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterSingle (so
-#'   that all of the runs are run on the same subsample of the data)
+#' @param random.seed a value to set seed before each run of clusterSingle (so 
+#'   that all of the runs are run on the same subsample of the data). Note, if
+#'   'random.seed' is set, argument 'ncores' should NOT be passed via
+#'   subsampleArgs; instead set the argument 'ncores' of
+#'   clusterMany directly (which is preferred for improving speed anyway).
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
 #'   rownames equal to the names of the resulting column names of clMat object
@@ -89,7 +102,7 @@
 #'
 #' @return If \code{run=TRUE} and the input is a list of data sets, a list with
 #'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-#'   row corresponding to a clustering and each column to a sample.}
+#'   column corresponding to a clustering and each row to a sample.}
 #'   \item{\code{clusterInfo}}{ a list with information regarding clustering
 #'   results (only relevant entries for those clusterings with sequential=TRUE)}
 #'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
@@ -203,18 +216,25 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "list"),
-  definition = function(x, ks, clusterFunction, alphas=0.1, findBestK=FALSE,
+  definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
-                        silCutoff=0, distFunction=NA,verbose=FALSE,
-                        clusterDArgs=list(minSize=5),
-                        subsampleArgs=list(resamp.num=50),
-                        seqArgs=list(beta=0.9, k.min=3, verbose=FALSE),
+                        silCutoff=0, distFunction=NA,
+                        betas=0.9, minSizes=1,
+                        verbose=FALSE,
+                        clusterDArgs=NULL,
+                        subsampleArgs=NULL,
+                        seqArgs=NULL,
                         ncores=1, random.seed=NULL, run=TRUE,
                         ...
   )
   {
       paramMatrix<-NULL
     data <- x
+    if(!is.null(random.seed)){
+        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
+            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
+        }
+    }
     if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
       stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
     }
@@ -228,8 +248,8 @@ setMethod(
     dataList<-data
     dataName <- names(dataList)
     if(is.null(paramMatrix)){
-      param <- expand.grid(dataset=dataName, #dimReduce="none",nVarDims=NA,nPCADims=NA,
-                         k=ks, alpha=alphas, findBestK=findBestK,
+      param <- expand.grid(dataset=dataName, 
+                         k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSize=minSizes,
                          sequential=sequential, distFunction=distFunction,
                          removeSil=removeSil, subsample=subsample,
                          clusterFunction=clusterFunction, silCutoff=silCutoff)
@@ -242,7 +262,8 @@ setMethod(
       typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
-
+        param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
+        
         #if findBestK make sure other arguments make sense:
         whFindBestK <- which(param[,"findBestK"])
         if(length(whFindBestK)>0){
@@ -273,7 +294,7 @@ setMethod(
       }
       whSubsample<-which(param[,"subsample"])
       if(length(whSubsample)>0){
-        param[whSubsample,"dist"]<-NA
+        param[whSubsample,"distFunction"]<-NA
       }
       param <- unique(param)
 
@@ -348,21 +369,47 @@ setMethod(
         }
       }
       #browser()
-      clusterDArgs[["distFunction"]]<-if(!is.null(distFunction)) get(distFunction,envir = globalenv()) else NULL
       clusterDArgs[["alpha"]] <- par[["alpha"]]
+      seqArgs[["beta"]] <- par[["beta"]]
+      clusterDArgs[["minSize"]] <- par[["minSize"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil
       clusterDArgs[["silCutoff"]] <- par[["silCutoff"]]
       clusterDArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
+      seqArgs[["verbose"]]<-FALSE
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }
-      clusterSingle(x=dataList[[par[["dataset"]]]], subsample=subsample,
+      if(!is.null(distFunction)){
+        diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
+        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
+                      clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
+                      subsampleArgs=subsampleArgs, seqArgs=seqArgs,
+                      sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
+      }
+      else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
                  clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
+      ##Calculate distances necessary only once
+      if(any(!is.na(param[,"distFunction"]))){
+        distParam<-unique(param[,c("dataset","distFunction")])
+        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
+        #browser()
+          allDist<-lapply(1:nrow(distParam),function(ii){
+            distFun<-as.character(distParam[ii,"distFunction"])
+            dataName<-as.character(distParam[ii,"dataset"])
+            fun<-get(distFun,envir=globalenv())
+            distMat<-as.matrix(fun(t(dataList[[dataName]])))
+            .checkDistFunction(distMat) #check it here!
+            return(distMat)
+          })
+        names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+        
+      }
+      
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")
       }
@@ -418,7 +465,7 @@ setMethod(
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
      
       if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep. 
-      else retval<-outval
+      else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
       validObject(retval)
       return(retval)
     } else {

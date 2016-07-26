@@ -5,6 +5,9 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   cl1 <- clusterSingle(smSimData, clusterFunction="pam",
                        subsample=FALSE, sequential=FALSE,
                        clusterDArgs=list(k=6),isCount=FALSE)
+  leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+  leg[,"name"]<-letters[1:6]
+  clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
   clustWithDendro <- makeDendrogram(cl1)
   #matrix version
   mergedList <- mergeClusters(x=transform(cl1), isCount=FALSE,
@@ -12,6 +15,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotType="mergeMethod")
 
+  
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotType="all")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="adjP")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="locfdr")
