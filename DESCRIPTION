@@ -1,5 +1,5 @@
 Package: clusterExperiment
-Title: Compare clusterings for single-cell sequencing data
+Title: Compare clusterings for single-cell sequencing
 Version: 0.99.3
 Description: This package provides functions for running and comparing many
     different clusterings of single-cell sequencing data.
