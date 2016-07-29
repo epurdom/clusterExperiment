@@ -211,13 +211,15 @@ bigPalette<-.thisPal
 #' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))
 #'
+#' \dontrun{
 #' par(mfrow=c(2,3))
 #' plotHeatmap(cl, colorScale=seqPal1, main="seqPal1")
 #' plotHeatmap(cl, colorScale=seqPal2, main="seqPal2")
 #' plotHeatmap(cl, colorScale=seqPal3, main="seqPal3")
 #' plotHeatmap(cl, colorScale=seqPal4, main="seqPal4")
 #' plotHeatmap(cl, colorScale=seqPal5, main="seqPal5")
-#' par(mfrow=c(2,3))
+#' par(mfrow=c(1,1))
+#' }
 #'
 showHeatmapPalettes<-function(){
 	palettesAll<-list(seqPal1=seqPal1,seqPal2=seqPal2,seqPal3=seqPal3,seqPal4=seqPal4,seqPal5=seqPal5)

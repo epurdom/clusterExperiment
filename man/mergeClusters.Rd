@@ -10,10 +10,11 @@
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
   plotType = c("none", "all", "mergeMethod", "adjP", "locfdr", "MB", "JC"),
-  cutoff = 0.1, isCount = TRUE, ...)
+  cutoff = 0.1, doPlot = TRUE, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  isCount = FALSE, mergeMethod, clusterLabel = "mergeClusters", ...)
+  isCount = FALSE, mergeMethod = "none", plotType = "all",
+  clusterLabel = "mergeClusters", ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a
@@ -41,6 +42,9 @@ only the value used in the merging is plotted for each node.}
 two clusters with the proportion of DE below cutoff will be merged.
 Must be a value between 0, 1, where
 lower values will make it harder to merge clusters.}
+
+\item{doPlot}{logical as to whether to plot the dendrogram (overrides
+\code{plotType} value). Mainly used for internal coding purposes.}
 
 \item{isCount}{logical as to whether input data is a count matrix. See details.}
 

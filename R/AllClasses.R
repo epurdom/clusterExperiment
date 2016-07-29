@@ -1,6 +1,7 @@
 setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
+setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -331,6 +332,9 @@ setMethod(
 #'  Slots).
 #'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
 #'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
+#'@details The \code{clusterExperiment} constructor function gives clusterLabels
+#'  based on the column names of the input matrix/SummarizedExperiment. If
+#'  missing, will assign labels "cluster1","cluster2", etc.
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),

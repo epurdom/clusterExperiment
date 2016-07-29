@@ -67,8 +67,9 @@
 #' @param unassignedColor color assigned to cluster values of '-1'
 #'   ("unassigned").
 #' @param missingColor color assigned to cluster values of '-2' ("missing").
-#' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}.
+#' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}. 
 #'   For the other signatures, passed to the method for signature \code{matrix}.
+#'   Not all arguments can be passed to aheatmap effectively, see details.
 #' @param nFeatures integer indicating how many features should be used (if
 #'   \code{clusterFeaturesData} is 'var' or 'PCA').
 #' @param isSymmetric logical. if TRUE indicates that the input matrix is
@@ -153,6 +154,17 @@
 #'   you change the size of your plot window in an interactive session of R
 #'   (this might be a problem for RStudio if you want to pop it out into a large
 #'   window...).
+#' @details Many arguments can be passed on to aheatmap, however, some are set 
+#'   internally by \code{plotHeatmap.} In particular, setting the values of 
+#'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
+#'   \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
+#'   \code{annCol} to give annotation to the samples is replaced by the
+#'   \code{sampleData}; moreover, the \code{annColors} option in \code{aheatmap}
+#'   will also be set internally to give more vibrant colors than the default in
+#'   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
+#'   also be set in the \code{clusterLegend} slot ). Other options should be
+#'   passed on to \code{aheatmap}, though they have not been all tested.
+#' 
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{aheatmapOut}}{ The output from the final call of
@@ -449,8 +461,8 @@ setMethod(
     f = "plotHeatmap",
     signature = signature(data = "matrix"),
     definition = function(data,sampleData=NULL,
-                          clusterSamplesData=data,
-                          clusterFeaturesData=data,
+                          clusterSamplesData=NULL,
+                          clusterFeaturesData=NULL,
                           whSampleDataCont=NULL,
                           clusterSamples=TRUE,showSampleNames=FALSE,
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
@@ -465,49 +477,90 @@ setMethod(
       ##Deal with numeric matrix for heatmap ...
       ##########
       heatData<-data.matrix(data)
+    aHeatmapArgs<-list(...)
+    aHeatmapDefaultArgs<-as.list(args(NMF::aheatmap))
+    getHeatmapValue<- function(string,value=NULL){ #note, doesn't work for pulling function 'reorder' so put in manually
+        if(string %in% names(aHeatmapArgs)) val<-aHeatmapArgs[[string]]
+        else{
+            if(is.null(value)) val<-aHeatmapDefaultArgs[[string]]
+            else val<-value
+        }
+        return(val)
+    }  
+    #browser()
+    badValues<-c("Rowv","Colv","color","annCol","annColors")
+    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","))
 
+    
+    
       ###Create the clustering dendrogram:
 
-      if(!isSymmetric){
-        if(clusterSamples){
-          if(inherits(clusterSamplesData, "dendrogram")){
-            if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-            dendroSamples<-clusterSamplesData
+    if(clusterSamples){
+      if(inherits(clusterSamplesData, "dendrogram")){
+        if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
+        dendroSamples<-clusterSamplesData
+      }
+      else{
+          if(is.null(clusterSamplesData)){
+              dendroSamples<-NULL
           }
           else{
-            if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
-            clusterSamplesData<-data.matrix(clusterSamplesData)
-            #check valid
-            if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-            dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
-          }
-        }
-        else{
-          clusterSamples<-NA
-        }
-        Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+              ##Call NMF:::cluster_mat so do the same thing:
+              
+              if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
+              clusterSamplesData<-data.matrix(clusterSamplesData)
+              #check valid
+              if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
+#              browser()
+              dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
+              
+              #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
+                 
+         }
       }
-      else{
+    }
+    else{
+      clusterSamples<-NA
+    }
+    if(!is.na(clusterSamples) && clusterSamples && is.null(dendroSamples)) Colv<-TRUE #then just pass the data
+    else Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+    
+    if(isSymmetric){
+        Rowv<-Colv
         Colv<-"Rowv"
-      }
-
-      if(clusterFeatures){
-        if(inherits(clusterFeaturesData, "dendrogram")){
-          if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-          dendroFeatures<-clusterFeaturesData
+     }
+    else{
+        if(clusterFeatures){
+            if(inherits(clusterFeaturesData, "dendrogram")){
+                if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+                dendroFeatures<-clusterFeaturesData
+            }
+            else{
+                if(is.null(clusterFeaturesData)){
+                    dendroFeatures<-NULL
+                }
+                else{
+                    ##Call NMF:::cluster_mat so do the same thing:
+                    
+                    if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
+                    clusterFeaturesData<-data.matrix(clusterFeaturesData)
+                    #check valid
+                    if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
+                    dendroFeatures<-NMF:::cluster_mat(clusterFeaturesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
+                    #                dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
+                    
+                }
+                
+            }
         }
         else{
-          if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
-          clusterFeaturesData<-data.matrix(clusterFeaturesData)
-          #check valid
-          if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
-          dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
+            clusterFeatures<-NA
         }
-      }
-      else{
-        clusterFeatures<-NA
-      }
-      Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
+        if(!is.na(clusterFeatures) && clusterFeatures && is.null(dendroFeatures)) Rowv<-TRUE #then just pass the data
+        else Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
+        
+        
+    }
       #browser()
 
 
@@ -592,7 +645,7 @@ setMethod(
       breaks<-setBreaks(breaks,heatData)
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
-                         color = colorScale, scale = "none",
+                         color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
 
       #############
@@ -623,7 +676,12 @@ setMethod(
 
 #' @rdname plotHeatmap
 #' @aliases plotCoClustering
-#'
+#' @param invert logical determining whether the coClustering matrix should be 
+#'   inverted to be 1-coClustering for plotting. By default, if the diagonal 
+#'   elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
+#'   coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
+#'   output from \code{\link{clusterSingle}}, then the user should manually set
+#'   this parameter to FALSE.)
 #' @details \code{plotCoClustering} is a convenience function to plot the heatmap
 #' of the co-clustering matrix stored in the \code{coClustering} slot of a
 #' \code{ClusterExperiment} object.
@@ -631,8 +689,9 @@ setMethod(
 setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
-  definition = function(data, ...){
+  definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
     if(is.null(data@coClustering)) stop("coClustering slot is empty")
+      if(invert) data@coClustering<-1-data@coClustering
     fakeCE<-clusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
