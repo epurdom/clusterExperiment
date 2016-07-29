@@ -1,0 +1,32 @@
+#----------------------------
+# Git and SVN related
+^.svn
+^.git
+README[.]md
+
+# Travis-CI et al.
+^[.]travis[.]yml$
+^travis-tool[.]sh$
+^pkg-build[.]sh$
+^appveyor[.]yml$
+^covr-utils.R$
+^[.]coveralls[.]R$
+# R related
+^cran-comments[.].*$
+^vignettes/.*[.](pdf|PDF)$
+^vignettes/.*[.](r|R)$
+^vignettes/[.]install_extras$
+^vignettes/oldVignette
+^vignettes/R_cache
+^vignettes/R_figure
+^Makefile$
+^incl
+^NAMESPACE,.*[.]txt$
+^nohup.*$
+^[.]devel
+^[.]test
+^[.]check
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.\./inst/NEWS$
+^tests/checkClusterMany/*$

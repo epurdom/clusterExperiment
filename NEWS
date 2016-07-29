@@ -1,3 +1,34 @@
+Changes in version 0.99.3 (Release date:  2016-07-26)
+==============
+
+Changes:
+* plot in mergeClusters now uses cluster names and colors from clusterLegend
+* plotDendrogram now calls plot.phylo
+* add 'clusterLabel' argument to `clusterSingle`
+* add options 'mad' and 'cv' to the dimensionality reduction. Also made option to only use clustered samples for feature reduction for relevant functions (e.g. `makeDendrogram`).
+* clusterSingle now always returns the D matrix to the slot coClustering (previously only did so if D was from subsampling).
+* change so that clusterSingle takes dissimilarity matrix, and now clusterMany calculates dissimilarities up front (rather than recalculating each time)
+* add RSEC function for wrapper that leads to RSEC algorithm.
+* add test for clusterMany to make sure replicable with past results (not unit test because too long to run, so not part of R build)
+
+Bug fixes:
+* fix bug in .TypeIntoIndices so that handles mix of clusterType and clusterLabels in whichClusters
+* fixed bug in plotCoClustering so handles clusterSamplesData
+* D for clusterD is now distance, not similarity, for 0-1, meaning larger values are values that are less similar.
+* fix bug in plotClusters that would give clusterLegend entries that were vectors, not matrices.
+
+Changes in version 0.99.1 (Release date: 2016-05-24 )
+==============
+
+Changes:
+* changes to pass development version of bioConductor checks.
+
+Changes in version 0.99.0 (Release date: 2016-05-24 )
+==============
+
+Changes:
+* changed number to indicate bioconductor submission
+
 Changes in version 0.2.0 (Release date: 2016-05-10 )
 ==============
 

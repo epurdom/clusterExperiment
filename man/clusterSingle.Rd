@@ -3,24 +3,31 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
+\alias{clusterSingle,ClusterExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment-method}
-\alias{clusterSingle,SummarizedExperiment-method}
+\alias{clusterSingle,SummarizedExperiment,missing-method}
+\alias{clusterSingle,matrix,missing-method}
 \alias{clusterSingle,matrix-method}
+\alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
 \alias{clusterSingle-methods}
 \title{General wrapper method to cluster the data}
 \usage{
-\S4method{clusterSingle}{matrix}(x, subsample = TRUE, sequential = FALSE,
-  clusterFunction = c("tight", "hierarchical01", "pam", "hierarchicalK"),
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  isCount = FALSE, transFun = NULL, dimReduce = c("none", "PCA", "var"),
-  ndims = NA)
+\S4method{clusterSingle}{matrixOrMissing,matrixOrMissing}(x, diss,
+  subsample = TRUE, sequential = FALSE, clusterFunction = c("tight",
+  "hierarchical01", "pam", "hierarchicalK"), clusterDArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
+  transFun = NULL, dimReduce = c("none", "PCA", "var", "cv", "mad"),
+  ndims = NA, clusterLabel = "clusterSingle")
 
-\S4method{clusterSingle}{SummarizedExperiment}(x, ...)
+\S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{ClusterExperiment}(x, ...)
+\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering (only if \code{subsample=FALSE})}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
@@ -28,7 +35,7 @@ iteration; otherwise the distance function will be determined by argument
 \code{distFunction} passed in \code{clusterDArgs}.}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-Details).}
+details of \code{\link{seqCluster}}).}
 
 \item{clusterFunction}{passed to \code{\link{clusterD}} option
 'clusterFunction' to indicate method of clustering, see
@@ -51,12 +58,17 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{dimReduce}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Options are
-"none","PCA", and "var".}
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+details.}
 
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
+
+\item{clusterLabel}{a string used to describe the clustering. By
+default it is equal to "clusterSingle", to indicate that this clustering is
+the result of a call to \code{clusterSingle}.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}

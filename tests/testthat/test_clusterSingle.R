@@ -7,9 +7,17 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             clustNothing <- clusterSingle(mat, clusterFunction="pam",
                                        subsample=FALSE, sequential=FALSE,
                                        clusterDArgs=list(k=3),isCount=FALSE)
+            expect_equal(clusterLabels(clustNothing),"clusterSingle")
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
 
+            #test clusterLabel
+            clustNothing2 <- clusterSingle(mat, clusterFunction="pam",
+                                          subsample=FALSE, sequential=FALSE,
+                                          clusterDArgs=list(k=3),isCount=FALSE,clusterLabel="myownClustering")
+            expect_equal(clusterLabels(clustNothing2),"myownClustering")
+            
+            
             #test default 01 distance
             x1 <- clusterSingle(mat, clusterFunction="tight",
                                           subsample=FALSE, sequential=FALSE,
@@ -128,7 +136,7 @@ test_that("Different options of subsampling",{
     expect_error(clusterSingle(mat, clusterFunction="pam",
                                subsample=TRUE, sequential=FALSE,
                                subsampleArgs=list(resamp.num=20, k=3,classifyMethod="OutOfSample"),
-                               clusterDArgs=list(k=3),isCount=FALSE),"NA values found in Dbar")
+                               clusterDArgs=list(k=3),isCount=FALSE),"NA values found in D")
     
     #errors in missing args in subsample
     expect_warning(clusterSingle(mat, clusterFunction="pam",
@@ -163,6 +171,12 @@ test_that("Different options of clusterD",{
                                  subsample=FALSE, sequential=FALSE,
                                  clusterDArgs=list(findBestK=TRUE),isCount=FALSE),
                    "do not match the choice of typeAlg")
+    expect_error(clusterSingle(mat, clusterFunction="tight",
+                                 subsample=FALSE, sequential=FALSE,
+                                 clusterDArgs=list(distFunction=function(x){abs(cor(t(x)))}),isCount=FALSE),
+                   "distance function must have zero values on the diagonal")
+    
+    
 })
 
 test_that("Different options of seqCluster",{
@@ -222,6 +236,12 @@ test_that("Different options of `clusterSingle` ", {
                             clusterDArgs=list(k=3),isCount=FALSE),
                  "specifying ndims has no effect if dimReduce==`none`")
 
+  clustndims <- clusterSingle(mat, clusterFunction="pam",
+                              subsample=FALSE, sequential=FALSE, dimReduce="cv",
+                              ndims=3, clusterDArgs=list(k=3),isCount=FALSE)
+  clustndims <- clusterSingle(mat, clusterFunction="pam",
+                              subsample=FALSE, sequential=FALSE, dimReduce="mad",
+                              ndims=3, clusterDArgs=list(k=3),isCount=FALSE)
   
 
 })

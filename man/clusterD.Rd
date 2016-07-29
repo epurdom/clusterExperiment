@@ -6,20 +6,25 @@
 \alias{clusterK}
 \title{Cluster distance matrix from subsampling}
 \usage{
-clusterD(D, clusterFunction = c("hierarchical01", "tight", "pam",
-  "hierarchicalK"), typeAlg = c("01", "K"), distFunction = NA,
-  minSize = 1, orderBy = c("size", "best"), format = c("vector", "list"),
-  clusterArgs = NULL, checkArgs = TRUE, ...)
+clusterD(x = NULL, diss = NULL, clusterFunction = c("hierarchical01",
+  "tight", "pam", "hierarchicalK"), typeAlg = c("01", "K"),
+  distFunction = NA, minSize = 1, orderBy = c("size", "best"),
+  format = c("vector", "list"), clusterArgs = NULL, checkArgs = TRUE,
+  returnD = FALSE, ...)
 
-cluster01(D, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
+cluster01(diss, clusterFunction = c("hierarchical01", "tight"), alpha = 0.1,
   clusterArgs = NULL, checkArgs)
 
-clusterK(D, clusterFunction = c("pam", "hierarchicalK"), findBestK = FALSE,
-  k, kRange, removeSil = FALSE, silCutoff = 0, clusterArgs = NULL,
-  checkArgs)
+clusterK(diss, clusterFunction = c("pam", "hierarchicalK"),
+  findBestK = FALSE, k, kRange, removeSil = FALSE, silCutoff = 0,
+  clusterArgs = NULL, checkArgs)
 }
 \arguments{
-\item{D}{either a \code{n x n} matrix of 0-1 values or a \code{p x n} matrix of data.}
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
+columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering}
 
 \item{clusterFunction}{clusterFunction a function that clusters a nxn matrix
 of dissimilarities/distances. Can also be given character values to
@@ -55,6 +60,8 @@ beyond the required input.}
 that don't match clustering choices given. Otherwise, inapplicable
 arguments will be ignored without warning.}
 
+\item{returnD}{logical as to whether to return the D matrix in output.}
+
 \item{...}{arguments given to clusterD to be passed to cluster01 or clusterK
 (depending on the value of typeAlg). Examples include 'k' for clusterK or
 'alpha' for cluster01. These should not be the arguments needed by
@@ -65,10 +72,10 @@ the actual arguments of cluster01 or clusterK.}
 (lower values more strict).}
 
 \item{findBestK}{logical, whether should find best K based on average
-silhouette width.}
+silhouette width (only used if clusterFunction of type "K").}
 
 \item{k}{single value to be used to determine how many clusters to find, if
-findBestK=FALSE.}
+findBestK=FALSE (only used if clusterFunction of type "K").}
 
 \item{kRange}{vector of integers. If findBestK=TRUE, this gives the range of
 k's to look over. Default is k-2 to k+20, subject to those values being
@@ -76,7 +83,8 @@ greater than 2. Note that default values depend on the input k, so running
 for different choices of k and findBestK=TRUE can give different answers
 unless kRange is set to be the same.}
 
-\item{removeSil}{logical as to whether remove when silhouette < silCutoff}
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff
+(only used if clusterFunction of type "K")}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
@@ -88,7 +96,7 @@ clusterD returns a vector of cluster assignments (if format="vector")
   the size of the cluster, instead of by the internal ordering of the
   clusterFunction.
 
-  @return cluster01 and clusterK return a list of indices of the clusters found,
+cluster01 and clusterK return a list of indices of the clusters found,
   which each element of the list corresponding to a cluster and the elements
   of that list a vector of indices giving the indices of the samples assigned
   to that cluster. Indices not included in any list are assumed to have not
@@ -106,23 +114,38 @@ Given a \code{n x n} matrix of distances, these functions will
   user-defined clustering functions.
 }
 \details{
-cluster01 is for clustering functions that expect as an input D that
-  takes on 0-1 values (e.g. from subclustering). clusterK is for clustering
-  functions that require an input k, the number of clusters, but arbitrary
-  distance/dissimilarity matrix. cluster01 and clusterK are given as separate
-  functions in order to allow the user to provide different clustering
-  functions that expect different types of input and for us to provide
-  different shared processing of the results that is different for these
-  different types of clustering methods (for example, removing low silhouette
-  values is appropriate for clusterK clustering functions rather than
-  cluster01 functions). It is also generally expected that cluster01
-  algorithms use the 0-1 nature of the input to set criteria as to where to
-  find clusters and therefore do not need a pre-determined 'k'. On the other
-  hand, clusterK functions are assumed to need a predetermined 'k' and are
-  also assumed to cluster all samples to a cluster, and therefore clusterK
-  gives options to exclude poorly clustered samples via silhouette distances.
+To provide a distance matrix via the argument \code{distFunction},
+    the function must be defined to take the distance of the rows of a matrix
+    (internally, the function will call \code{distFunction(t(x))}. This is to
+    be compatible with the input for the \code{dist} function.
+    \code{as.matrix} will be performed on the output of \code{distFunction},
+    so if the object returned has a \code{as.matrix} method that will convert
+    the output into a symmetric matrix of distances, this is fine (for
+    example the class \code{dist} for objects returned by \code{dist} have
+    such a method). If \code{distFunction=NA}, then a default distance will 
+    be calculated based on the type of clustering algorithm of 
+    \code{clusterFunction}. For type "K" the default is to take \code{dist}
+    as the distance function. For type "01", the default is to take the
+    (1-cor(x))/2.
 
-  @details cluster01 required format for input and output for clusterFunction:
+Types of algorithms: cluster01 is for clustering functions that
+  expect as an input D that takes on 0-1 values (e.g. from subclustering).
+  clusterK is for clustering functions that require an input k, the number of
+  clusters, but arbitrary distance/dissimilarity matrix. cluster01 and
+  clusterK are given as separate functions in order to allow the user to
+  provide different clustering functions that expect different types of input
+  and for us to provide different shared processing of the results that is
+  different for these different types of clustering methods (for example,
+  removing low silhouette values is appropriate for clusterK clustering
+  functions rather than cluster01 functions). It is also generally expected
+  that cluster01 algorithms use the 0-1 nature of the input to set criteria
+  as to where to find clusters and therefore do not need a pre-determined
+  'k'. On the other hand, clusterK functions are assumed to need a
+  predetermined 'k' and are also assumed to cluster all samples to a cluster,
+  and therefore clusterK gives options to exclude poorly clustered samples
+  via silhouette distances.
+
+cluster01 required format for input and output for clusterFunction:
   clusterFunction should be a function that takes (as a minimum) an argument
   "D" and "alpha". 0-1 clustering algorithms are expected to use the fact
   that the D input is 0-1 range to find the clusters, rather than a user
@@ -135,7 +158,7 @@ cluster01 is for clustering functions that expect as an input D that
   clusters' (as defined by the clusterFunction), with first being the best
   and last being worst.
 
-  @details cluster01 methods: "tight" method refers to the method of finding 
+cluster01 methods: "tight" method refers to the method of finding 
     clusters from a subsampling matrix given internally in the tight 
     algorithm code of Tsang and Wong. Arguments for the tight method are
     'minSize.core' (default=2), which sets the minimimum number of samples
@@ -144,14 +167,14 @@ cluster01 is for clustering functions that expect as an input D that
     samples with whose summary of the values  is greater than or equal to
     1-alpha. Arguments that can be passed to 'hierarchical' are
     'evalClusterMethod' which determines how to summarize the samples' values
-    of D[samples,samples] for comparison to 1-alpha: "minimum" (default)
-    takes the minimum of D[samples,samples] and requires it to be greater
-    than or equal to 1-alpha; "average" requires that each row mean of
-    D[samples,samples] be greater than or equal to 1-alpha. Arguments of
+    of D[samples,samples] for comparison to 1-alpha: "maximum" (default)
+    takes the minimum of D[samples,samples] and requires it to be less than
+    or equal to 1-alpha; "average" requires that each row mean of
+    D[samples,samples] be less than or equal to 1-alpha. Arguments of
     hclust can also be passed via clusterArgs to control the hierarchical 
     clustering of D.
 
-  @details clusterK required format for input and output for clusterFunction:
+clusterK required format for input and output for clusterFunction:
   clusterFunction should be a function that takes as a minimum an argument
   'D' and 'k'. The output must be a clustering, specified by integer values. 
   The function \code{\link{silhouette}} will be used on the clustering to
@@ -165,19 +188,6 @@ clusterK methods: "pam" performs pam clustering on the input
   and then applies \code{\link{cutree}} with the specified k to obtain
   clusters. Arguments to \code{\link{hclust}} can be passed via
   \code{clusterArgs}.
-  @details To provide a distance matrix via the argument \code{distFunction},
-    the function must be defined to take the distance of the rows of a matrix
-    (internally, the function will call \code{distFunction(t(x))}. This is to
-    be compatible with the input for the \code{dist} function.
-    \code{as.matrix} will be performed on the output of \code{distFunction},
-    so if the object returned has a \code{as.matrix} method that will convert
-    the output into a symmetric matrix of distances, this is fine (for
-    example the class \code{dist} for objects returned by \code{dist} have
-    such a method). If \code{distFunction=NA}, then a default distance will 
-    be calculated based on the type of clustering algorithm of 
-    \code{clusterFunction}. For type "K" the default is to take \code{dist}
-    as the distance function. For type "01", the default is to take the
-    absolute value of the correlation between the samples.
 }
 \examples{
 data(simData)
