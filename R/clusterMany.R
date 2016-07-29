@@ -179,6 +179,7 @@ setMethod(
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
+	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
     origX <- x
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
