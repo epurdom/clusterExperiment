@@ -1,3 +1,12 @@
+Changes in version 0.99.3-9001 (Release date:  )
+==============
+
+Changes:
+
+Bug fixes:
+* add check in clusterMany that non-zero dimensions
+* changed 'warning' to 'note' in combineMany when no clusters specified.
+
 Changes in version 0.99.3 (Release date:  2016-07-26)
 ==============
 
