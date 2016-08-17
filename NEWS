@@ -2,10 +2,12 @@ Changes in version 0.99.3-9001 (Release date:  )
 ==============
 
 Changes:
+* Inverted definition of contrast for one-versus-all so now is X-ave(all but X); this means logFC positive -> cluster X greater than average of rest
 
 Bug fixes:
 * add check in clusterMany that non-zero dimensions
 * changed 'warning' to 'note' in combineMany when no clusters specified.
+* fixed bug in plotDendrogram unable to plot when makeDendrogram used dimReduce="mad"
 
 Changes in version 0.99.3 (Release date:  2016-07-26)
 ==============
