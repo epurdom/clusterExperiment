@@ -80,7 +80,7 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
-This code is adapted from the code of the \code{\link{tightClust}}
+This code is adapted from the code of the tightClust
  package of Tseng and Wong
 
 Each iteration of the algorithm will cluster the current set of
