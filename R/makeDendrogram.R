@@ -305,6 +305,8 @@ setMethod(
       m<-match(cl,leg[,"clusterIds"])
       tip.color<-leg[m,"color"]
     }
+    #browser()
+    if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
     invisible(phyloObj)
     #    labs<-labels(dend)

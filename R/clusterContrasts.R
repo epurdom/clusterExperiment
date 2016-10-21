@@ -107,7 +107,7 @@ setMethod(f = "clusterContrasts",
                 one<-make.names(x)
                 all<-make.names(levs[-which(levs==x)])
                 all<-paste("(",paste(all,collapse="+"),")/",length(all),sep="")
-                contr<-paste(all,"-",one,sep="")
+                contr<-paste(one,"-",all,sep="")
                 return(contr)
               })
               names(contrastNames)<-levs

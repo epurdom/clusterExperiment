@@ -179,6 +179,7 @@ setMethod(
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
+	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
     origX <- x
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
@@ -262,7 +263,7 @@ setMethod(
       typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
-        param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
+        #param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
         
         #if findBestK make sure other arguments make sense:
         whFindBestK <- which(param[,"findBestK"])
@@ -296,6 +297,18 @@ setMethod(
       if(length(whSubsample)>0){
         param[whSubsample,"distFunction"]<-NA
       }
+	  ###Check value alpha, beta values
+      alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
+	  if(length(alpha01)>0){
+		  warning("alpha value must be in (0,1). Input alphas outside that range are ignored")
+		  param[alpha01,"alpha"]<-NA
+	  }
+      beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
+	  if(length(beta01)>0){
+		  warning("beta value must be in (0,1). Input betas outside that range are ignored")
+		  param[beta01,"beta"]<-NA
+	  }
+     
       param <- unique(param)
 
       #####
@@ -307,12 +320,26 @@ setMethod(
         param <- param[-whInvalid,]
       }
 
-      whExtra <- which(!param[,"subsample"] & param[,"sequential"]
+      whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
                        & param[,"findBestK"])
       if(length(whInvalid)>0) {
         param<-param[-whInvalid,]
       }
 
+      whInvalid <- which(param[,"sequential"] & is.na(param[,"beta"]))
+      if(length(whInvalid)>0) {
+        param<-param[-whInvalid,]
+      }
+
+	  #if type K and not findBestK, need to give the k value. 
+      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & param[,"clusterFunction"] %in% c("pam","hierarchicalK") )
+      if(length(whInvalid)>0){
+			param<-param[-whInvalid,]
+		}
+
+      #####
+      #require at least 2 combinations:
+      #####
       if(nrow(param)<=1) {
         stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
       }

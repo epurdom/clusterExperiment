@@ -38,7 +38,7 @@
 #'   \code{\link{clusterD}}(which can include arguments to be passed to
 #'   \code{\link{cluster01}} or \code{\link{clusterK}}).
 #'
-#' @details This code is adapted from the code of the \code{\link{tightClust}}
+#' @details This code is adapted from the code of the tightClust
 #'  package of Tseng and Wong
 #' @details Each iteration of the algorithm will cluster the current set of
 #'   samples. Depending on the method, the number of clusters resulting from
