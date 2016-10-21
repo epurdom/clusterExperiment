@@ -8,6 +8,8 @@ Bug fixes:
 * add check in clusterMany that non-zero dimensions
 * changed 'warning' to 'note' in combineMany when no clusters specified.
 * fixed bug in plotDendrogram unable to plot when makeDendrogram used dimReduce="mad"
+* fixed bug in clusterMany where beta set to NA if clusteringFunction is type K. Added check that beta cannot be NA.
+* Added check that alpha and beta in (0,1)
 
 Changes in version 0.99.3 (Release date:  2016-07-26)
 ==============
