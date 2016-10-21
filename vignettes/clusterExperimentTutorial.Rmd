@@ -1010,5 +1010,12 @@ The user should be careful about questions of multiple comparisons when all of t
 
 As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned *for each contrast*. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
 
+# Session Information
+This vignette was compiled under:
+
+```{r sessionInfo}
+sessionInfo()
+```
+
 
 # References
