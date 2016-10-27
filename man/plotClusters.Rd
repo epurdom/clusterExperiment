@@ -61,14 +61,19 @@ colors from the \code{plotClusters}.}
 \code{orderSamples} slot in the \code{ClusterExperiment} object with the
 new order found.}
 
-\item{sampleData}{If \code{clusters} is a matrix, \code{sampleData} gives a
-matrix of additional cluster/sampleData on the samples to be plotted with
-the clusterings given in clusters. Values in \code{sampleData} will be
-added to the end (bottom) of the plot. If \code{clusters} is a
-\code{ClusterExperiment} object, \code{sampleData} must be either an index
-or a character vector that references a column or column name,
-respectively, of the \code{colData} slot of the \code{ClusterExperiment}
-object.}
+\item{sampleData}{If \code{clusters} is a matrix, \code{sampleData} gives a 
+matrix of additional cluster/sampleData on the samples to be plotted with 
+the clusterings given in clusters. Values in \code{sampleData} will be 
+added to the end (bottom) of the plot. NAs in the \code{sampleData} matrix
+will trigger an error. If \code{clusters} is a \code{ClusterExperiment}
+object, the input in \code{sampleData} refers to columns of the the
+\code{colData} slot of the \code{ClusterExperiment} object to be plotted
+with the clusters. In this case, \code{sampleData} can be TRUE (i.e. all
+columns will be plotted), or an index or a character vector that references
+a column or column name, respectively, of the \code{colData} slot of the
+\code{ClusterExperiment} object. If there are NAs in the \code{colData}
+columns, they will be encoded as 'unassigned' and receive the same color as
+'unassigned' samples in the clustering.}
 
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters
