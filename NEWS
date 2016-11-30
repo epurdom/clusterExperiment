@@ -2,6 +2,11 @@ Changes in version 1.1.1-9001 (Release date:  )
 ==============
 
 Changes:
+* plotClusters can now handle NA values in the colData
+* plotClusters now allows for sampleData=TRUE for plotting all of the sampleData in the colData slot.
+* nPCADims now allows values between 0,1 to allow for keeping proportion of variance explained.
+
+Bug fixes:
 * fixed bug in mergeClusters unable to plot when too big of edge lengths (same as plotDendrogram)
 
 
