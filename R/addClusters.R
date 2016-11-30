@@ -65,8 +65,10 @@ setMethod(
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "numeric"),
-  definition = function(x, y, ...) {
-    addClusters(x,matrix(y,ncol=1),...)
+  definition = function(x, y, clusterLabel=NULL,...) {
+    mat<-matrix(y,ncol=1)
+    if(!is.null(clusterLabel)) colnames(mat)<-clusterLabel
+    addClusters(x,y,...)
   }
 )
 
