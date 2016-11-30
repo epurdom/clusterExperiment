@@ -133,7 +133,10 @@ test_that("removing clusters work as promised",{
 
 test_that("subsetting works as promised",{
 
-
+  expect_equal(clusterMatrix(cc[1:2,1]),clusterMatrix(cc)[1,,drop=FALSE]) 
+  
+  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),]) 
+  
   #test subsetting of genes
   expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),]) 
   expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
