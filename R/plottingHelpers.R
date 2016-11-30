@@ -64,14 +64,17 @@ setMethod(
 
 .convertToAheatmap<-function(clusterLegend, names=FALSE){
     outval<-lapply(clusterLegend,function(x){
-      z<-x[,"color"]
-      if(names) {
-        names(z)<-x[,"name"]
-      } else {
-        names(z)<-x[,"clusterIds"]
+      if(!is.null(dim(x))){
+        z<-x[,"color"]
+        if(names) {
+          names(z)<-x[,"name"]
+        } else {
+          names(z)<-x[,"clusterIds"]
+        }
+        z<-z[order(names(z))]
+        return(z)
       }
-      z<-z[order(names(z))]
-      return(z)
+      else return(x)
     })
     return(outval)
 

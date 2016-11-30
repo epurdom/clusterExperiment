@@ -359,8 +359,11 @@ setMethod(
     userLegend<-"clusterLegend" %in% names(userList)
     if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
       if(userLegend){
-        clLegend<-userList[["clusterLegend"]]
-        wh
+        userClLegend<-userList[["clusterLegend"]]
+        #keep existing clLegend from clusterExperiment object if not conflict with user input:
+        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
+        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
+        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
         userList<-userList[-grep("clusterLegend",names(userList))]
       }
       else{
