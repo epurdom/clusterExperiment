@@ -4,11 +4,13 @@
 #' dimensionality reduction.
 #'
 #' @param x a ClusterExperiment object.
-#' @param nPCADims Numeric vector giving the number of PC dimensions to use in
-#'   PCA dimensionality reduction. If NA no PCA dimensionality reduction is
-#'   done.
-#' @param nVarDims Numeric vector giving the number of features (e.g. genes) to
-#'   keep, based on MAD variability.
+#' @param nPCADims Numeric vector giving the number of PC dimensions to use in 
+#'   PCA dimensionality reduction. If NA no PCA dimensionality reduction is 
+#'   done. nPCADims can also take values between (0,1) to indicate keeping the
+#'   number of PCA dimensions necessary to account for that proportion of the
+#'   variance.
+#' @param nVarDims Numeric (integer) vector giving the number of features (e.g.
+#'   genes) to keep, based on variance/cv/mad variability.
 #' @param dimReduce Character vector specifying the dimensionality reduction to
 #'   perform, any combination of 'none', 'PCA', 'var', 'cv', and 'mad'. See details.
 #' @param ignoreUnassignedVar logical indicating whether dimensionality reduction 
@@ -83,6 +85,7 @@ setMethod(
 # 2nd element is the transformation function
 # The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiment Object)
 # 3rd element is the index of most variable features choosen (if dimReduce="var") and returns a simple matrix otherwise NULL
+# 'clustering' argument is a vector of clustering values; if not null, then the -1 values in the clustering vector are ignored in doing the reduction for the var methods.
 #' @importFrom stats var mad sd prcomp
 .transData<-function(x,transFun=NULL,isCount=FALSE,
                      nPCADims,nVarDims,dimReduce,clustering=NULL)
@@ -106,7 +109,7 @@ setMethod(
     if(any(!dimReduce %in% c("none","PCA",varValues))) stop(paste("invalid options for 'dimReduce' must be one of: 'none','PCA',",paste(varValues,collapse=",")) )
     
     if(any(dimReduce!="none")){
-        ##Check and interpret values given
+        ##Function to check and interpret values given
         checkValues<-function(name){
             ndims<-switch(as.character(name %in% varValues),"TRUE"=nVarDims,"FALSE"=nPCADims)
             red<-dimReduce
@@ -154,7 +157,8 @@ setMethod(
         if("PCA" %in% dimReduce){ 
             ######Check dimensions
             if(max(nPCADims)>NROW(x)) stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
-            if(min(nPCADims)<1) stop("the number of PCA dimensions must be equal to 1 or greater")
+            if(min(nPCADims)<=0) stop("the number of PCA dimensions must be a value greater than 0")
+			pctReturn<-any(nPCADims<1)
             if(max(nPCADims)>100) warning("the number PCA dimensions to be selected is greater than 100. Are you sure you meant to choose to use PCA dimensionality reduction rather than the top most variable features?")
             
             ######Check zero variance genes:
@@ -163,18 +167,33 @@ setMethod(
                 if(all(rowvars==0)) {
                     stop("All features have zero variance.")
                 }
-                warning("Found features with zero variance.\nMost likely these are features with 0 across all samples.\nThey will be removed from PCA.")
+                warning("Found features with zero variance.\nMost likely these are features with 0 across all samples.\nThey will be removed from PCA dimensionality reduction step.")
             }
-            prc<-t(stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)$x)
+			prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
+			prvar<-prcObj$sdev^2 #variance of each component
+			prvar<-prvar/sum(prvar)
+            prc<-t(prcObj$x)
             if(NCOL(prc)!=NCOL(origX)) stop("error in coding of principle components.")
-            if(!listReturn){ #just return single matrix
-                xRet<-prc[1:nPCADims,]
-                
+			if(any(nPCADims<1)) pctReturn<-TRUE
+            if(!listReturn){ #nPCADims length 1; just return single matrix
+		        if(pctReturn) nPCADims<-which(cumsum(prvar)>nPCADims)[1] #pick first pca coordinate with variance > value
+				xRet<-prc[1:nPCADims,]
             }
             else{
-                xPCA<-lapply(nPCADims,function(nn){prc[1:nn,]})
+                if(pctReturn){
+					whPct<-which(nPCADims<1)
+					pctNDims<-sapply(nPCADims[whPct],function(pct){
+						val<-which(cumsum(prvar)>pct)[1] #pick first pca coordinate with variance > value
+						if(length(val)==0) val<-length(prvar) #in case some numerical problem
+						return(val)
+					})
+					if(any(is.na(pctNDims))) browser()
+					nPCADims[whPct]<-pctNDims 
+				}
+				xPCA<-lapply(nPCADims,function(nn){prc[1:nn,]})
                 names(xPCA)<-paste("nPCAFeatures=",nPCADims,sep="")
             }
+	         
         }
         
         ##################

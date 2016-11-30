@@ -12,12 +12,14 @@
 \arguments{
 \item{x}{a ClusterExperiment object.}
 
-\item{nPCADims}{Numeric vector giving the number of PC dimensions to use in
-PCA dimensionality reduction. If NA no PCA dimensionality reduction is
-done.}
+\item{nPCADims}{Numeric vector giving the number of PC dimensions to use in 
+PCA dimensionality reduction. If NA no PCA dimensionality reduction is 
+done. nPCADims can also take values between (0,1) to indicate keeping the
+number of PCA dimensions necessary to account for that proportion of the
+variance.}
 
-\item{nVarDims}{Numeric vector giving the number of features (e.g. genes) to
-keep, based on MAD variability.}
+\item{nVarDims}{Numeric (integer) vector giving the number of features (e.g.
+genes) to keep, based on variance/cv/mad variability.}
 
 \item{dimReduce}{Character vector specifying the dimensionality reduction to
 perform, any combination of 'none', 'PCA', 'var', 'cv', and 'mad'. See details.}
