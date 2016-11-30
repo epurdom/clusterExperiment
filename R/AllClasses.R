@@ -131,6 +131,7 @@ setValidity("ClusterExperiment", function(object) {
   }
 
   ##Check dendrograms
+  #browser()
   if(!is.null(object@dendro_samples)){
     if(nobs(object@dendro_samples) != NCOL(object)) {
       return("dendro_samples must have the same number of leaves as the number of samples")
