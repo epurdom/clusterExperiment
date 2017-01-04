@@ -47,7 +47,7 @@
 \alias{transformation,ClusterExperiment-method}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
-\S4method{[}{ClusterExperiment,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ClusterExperiment}(object)
 

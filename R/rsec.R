@@ -45,19 +45,31 @@ setMethod(
                     clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
     if(run){
-        ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-        if(dendroReduce=="none") dendroNDims<-NA
-        dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
-        if(!inherits(dendroTry,"try-error")){
-          ce<-dendroTry
-          ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
-        }
-        else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+      ce<-.postClusterMany(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount)
 
+#             ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
+#       if(dendroReduce=="none") dendroNDims<-NA
+#       dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+#       if(!inherits(dendroTry,"try-error")){
+#         ce<-dendroTry
+#         ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+#       }
+#       else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+#       return(ce) 
     }
     return(ce)
 })
-
+.postClusterMany<-function(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount){
+  ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
+  if(dendroReduce=="none") dendroNDims<-NA
+  dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+  if(!inherits(dendroTry,"try-error")){
+    ce<-dendroTry
+    ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+  }
+  else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+  return(ce) 
+}
 #' @export
 #' @rdname RSEC
 setMethod(
@@ -75,12 +87,17 @@ setMethod(
 setMethod(
   f = "RSEC",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x, eraseOld=FALSE, ...){
-    newObj <- RSEC(assay(x),  ...)
-    ##Check if pipeline already ran previously and if so increase
-    x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
-    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
-    else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+  definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
+    if(rerunClusterMany){
+      newObj <- RSEC(assay(x),  ...)
+      ##Check if pipeline already ran previously and if so increase
+      x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
+      if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
+      else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+    }
+    else{
+      retval<-.postClusterMany(x)
+    }
     validObject(retval)
 
     return(retval)
