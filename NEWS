@@ -2,6 +2,7 @@ Changes in version 1.1.1-9001 (Release date:  )
 ==============
 
 Changes:
+* setBreaks now has option `makeSymmetric` to provide symmetric breaks around zero with quantile option
 * plotClusters can now handle NA values in the colData
 * plotClusters now allows for sampleData=TRUE for plotting all of the sampleData in the colData slot.
 * nPCADims now allows values between 0,1 to allow for keeping proportion of variance explained.
