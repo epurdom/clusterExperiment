@@ -22,7 +22,7 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
 showBigPalette(wh = NULL)
 
-setBreaks(breaks, data, makeSymmetric = FALSE)
+setBreaks(data, breaks, makeSymmetric = FALSE)
 
 bigPalette
 
