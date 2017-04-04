@@ -102,7 +102,7 @@ test_that("`setBreaks`", {
 	expect_equal(x,setBreaks(smSimData,breaks=0.01,makeSymmetric=TRUE))
 	expect_warning(y<-setBreaks(smSimData,breaks=10))
 	expect_equal(length(y),10)
-}
+})
 test_that("`plotHeatmap` works with matrix objects", {
 
     x1<-plotHeatmap(data=smSimData)
@@ -206,8 +206,9 @@ test_that("`makeBlankData` works", {
   expect_equal(whBlankRows,whBlankNames)
   expect_equal(whBlankRows,4)
 
-  ##call within plotHeatmap
+  ##call within plotHeatmap (serves as test of NA capabilities)
   plotHeatmap(smSimCE,clusterFeaturesData=gps)
+  plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99)
 })
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")

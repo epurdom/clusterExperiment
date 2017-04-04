@@ -69,11 +69,12 @@ setMethod(f = "clusterContrasts",
 setMethod(f = "clusterContrasts",
           signature = "vector",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
-                                dendro=NULL, pairMat=NULL,outputType="limma",removeNegative=TRUE){
+                                dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
             cluster<-.convertToNum(cluster)
            if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
             cl<-factor(cl)
             contrastType<-match.arg(contrastType)
+			outputType<-match.arg(outputType)
             if(contrastType=="Dendro"){
               if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
               ####

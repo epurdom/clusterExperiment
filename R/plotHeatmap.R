@@ -652,8 +652,8 @@ setMethod(
       #############
       # put into aheatmap
       #############
-      breaks<-setBreaks(breaks,heatData)
-    #browser()
+      breaks<-setBreaks(data=heatData,breaks=breaks)
+      #browser()
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
