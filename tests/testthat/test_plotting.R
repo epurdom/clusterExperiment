@@ -94,7 +94,15 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   par(mfrow=c(1,1))
 
 })
-
+test_that("`setBreaks`", {
+	setBreaks(smSimData)
+	setBreaks(smSimData,breaks=0.99)
+	x<-setBreaks(smSimData,breaks=0.99,makeSymmetric=TRUE)
+	expect_equal(max(x),-min(x))
+	expect_equal(x,setBreaks(smSimData,breaks=0.01,makeSymmetric=TRUE))
+	expect_warning(y<-setBreaks(smSimData,breaks=10))
+	expect_equal(length(y),10)
+}
 test_that("`plotHeatmap` works with matrix objects", {
 
     x1<-plotHeatmap(data=smSimData)
