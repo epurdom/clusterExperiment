@@ -3,10 +3,11 @@
 \docType{methods}
 \name{RSEC}
 \alias{RSEC}
-\alias{RSEC,ClusterExperiment-method}
-\alias{RSEC,SummarizedExperiment-method}
-\alias{RSEC,matrix-method}
 \alias{RSEC-methods}
+\alias{RSEC,ClusterExperiment-method}
+\alias{RSEC,matrix-method}
+\alias{RSEC,SummarizedExperiment-method}
+\alias{RSEC,ClusterExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
 \S4method{RSEC}{matrix}(x, isCount = FALSE, transFun = NULL,
@@ -20,7 +21,8 @@
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
-\S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE, ...)
+\S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE,
+  rerunClusterMany = FALSE, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering. Can be: matrix (with genes
@@ -118,6 +120,11 @@ method for signature \code{list}.}
 workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
+
+\item{rerunClusterMany}{logical. If the object is a clusterExperiment object,
+determines whether to rerun the clusterMany step. Useful if want to try
+different parameters for combining clusters after the clusterMany step,
+without the computational costs of the clusterMany step.}
 }
 \description{
 Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
@@ -125,4 +132,3 @@ Clustering) for single cell sequencing data. This is a wrapper function
 around the existing clusterExperiment workflow that results in the output of
 RSEC.
 }
-

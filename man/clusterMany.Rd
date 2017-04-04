@@ -2,11 +2,11 @@
 % Please edit documentation in R/clusterMany.R
 \docType{methods}
 \name{clusterMany,matrix-method}
+\alias{clusterMany,matrix-method}
 \alias{clusterMany}
+\alias{clusterMany,list-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
-\alias{clusterMany,list-method}
-\alias{clusterMany,matrix-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
 \S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
@@ -235,4 +235,3 @@ clusterDArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
 }
 
 }
-

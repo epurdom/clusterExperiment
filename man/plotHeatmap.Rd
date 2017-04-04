@@ -2,12 +2,12 @@
 % Please edit documentation in R/plotHeatmap.R
 \docType{methods}
 \name{plotHeatmap,SummarizedExperiment-method}
-\alias{plotCoClustering}
-\alias{plotCoClustering,ClusterExperiment-method}
+\alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap}
 \alias{plotHeatmap,ClusterExperiment-method}
-\alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,matrix-method}
+\alias{plotCoClustering,ClusterExperiment-method}
+\alias{plotCoClustering}
 \title{Heatmap for showing clustering results and more}
 \usage{
 \S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
@@ -311,4 +311,3 @@ Upper Limit")
 \author{
 Elizabeth Purdom
 }
-

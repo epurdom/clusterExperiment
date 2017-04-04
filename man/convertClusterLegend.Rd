@@ -44,4 +44,3 @@ other useful formats.
 convertClusterLegend pulls out information stored in the
   \code{clusterLegend} slot of the object and returns it in useful format.
 }
-

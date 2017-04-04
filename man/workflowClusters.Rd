@@ -2,16 +2,16 @@
 % Please edit documentation in R/workflowClusters.R
 \docType{methods}
 \name{workflowClusters}
-\alias{setToCurrent}
-\alias{setToCurrent,ClusterExperiment-method}
-\alias{setToFinal}
-\alias{setToFinal,ClusterExperiment-method}
-\alias{workflowClusterDetails}
-\alias{workflowClusterDetails,ClusterExperiment-method}
-\alias{workflowClusterTable}
-\alias{workflowClusterTable,ClusterExperiment-method}
 \alias{workflowClusters}
+\alias{workflowClusterTable}
+\alias{workflowClusterDetails}
 \alias{workflowClusters,ClusterExperiment-method}
+\alias{workflowClusterDetails,ClusterExperiment-method}
+\alias{workflowClusterTable,ClusterExperiment-method}
+\alias{setToCurrent,ClusterExperiment-method}
+\alias{setToCurrent}
+\alias{setToFinal,ClusterExperiment-method}
+\alias{setToFinal}
 \title{Methods for workflow clusters}
 \usage{
 \S4method{workflowClusters}{ClusterExperiment}(x, iteration = 0)
@@ -87,4 +87,3 @@ head(workflowClusters(clMerged))
 workflowClusterDetails(clMerged)
 workflowClusterTable(clMerged)
 }
-

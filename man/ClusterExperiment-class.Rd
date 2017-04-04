@@ -2,14 +2,15 @@
 % Please edit documentation in R/AllClasses.R
 \docType{class}
 \name{ClusterExperiment-class}
-\alias{ClusterExperiment}
 \alias{ClusterExperiment-class}
+\alias{ClusterExperiment}
 \alias{clusterExperiment}
+\alias{clusterExperiment}
+\alias{clusterExperiment,matrix,ANY-method}
+\alias{clusterExperiment,SummarizedExperiment,numeric-method}
 \alias{clusterExperiment,SummarizedExperiment,character-method}
 \alias{clusterExperiment,SummarizedExperiment,factor-method}
 \alias{clusterExperiment,SummarizedExperiment,matrix-method}
-\alias{clusterExperiment,SummarizedExperiment,numeric-method}
-\alias{clusterExperiment,matrix,ANY-method}
 \title{Class ClusterExperiment}
 \usage{
 clusterExperiment(se, clusters, ...)
@@ -150,6 +151,7 @@ following column names: "clusterId" and "color".}
 samples to be used for plotting of samples. Usually set internally by other
 functions.}
 }}
+
 \examples{
 
 se <- matrix(data=rnorm(200), ncol=10)
@@ -159,4 +161,3 @@ cc <- clusterExperiment(se, as.numeric(labels), transformation =
 function(x){x})
 
 }
-

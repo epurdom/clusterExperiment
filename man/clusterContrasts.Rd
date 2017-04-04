@@ -2,8 +2,8 @@
 % Please edit documentation in R/clusterContrasts.R
 \docType{methods}
 \name{clusterContrasts,ClusterExperiment-method}
-\alias{clusterContrasts}
 \alias{clusterContrasts,ClusterExperiment-method}
+\alias{clusterContrasts}
 \alias{clusterContrasts,vector-method}
 \title{Create contrasts for testing DE of a cluster}
 \usage{
@@ -79,4 +79,3 @@ clusterContrasts(cl,contrastType="Pairs")
 \author{
 Elizabeth Purdom
 }
-

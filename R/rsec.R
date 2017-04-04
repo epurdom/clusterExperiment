@@ -11,6 +11,10 @@
 #' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
+#' @param rerunClusterMany logical. If the object is a clusterExperiment object,
+#'   determines whether to rerun the clusterMany step. Useful if want to try
+#'   different parameters for combining clusters after the clusterMany step,
+#'   without the computational costs of the clusterMany step.
 #' @inheritParams clusterMany,matrix-method
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
@@ -59,13 +63,27 @@ setMethod(
     }
     return(ce)
 })
-.postClusterMany<-function(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount){
-  ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-  if(dendroReduce=="none") dendroNDims<-NA
-  dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
+.postClusterMany<-function(ce,...){
+#	function(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount)
+	passedArgs<-list(...)
+	args1<-list()
+	if("combinedProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
+	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"combineMinSize"=passedArgs$combineMinSize)
+  ce<-do.call("combineMany",c(list(x=ce,whichClusters="clusterMany"),args1))
+
+  	args1<-list()
+  	if("dendroReduce" %in% names(passedArgs)){
+		args1<-c(args1,"dimReduce"=passedArgs$dendroReduce)
+		if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
+	}
+  	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"ndims"=passedArgs$dendroNDims)
+  dendroTry<-try(do.call("makeDendrogram",c(list(x=ce,ignoreUnassignedVar=TRUE),args1)),silent=TRUE)
+
   if(!inherits(dendroTry,"try-error")){
     ce<-dendroTry
-    ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
+  	args1<-list()
+	if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+    ce<-do.call(mergeClusters,c(list(x=ce,plotType="none"),args1,passedArgs[c("mergeMethod","isCount")]))
   }
   else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
   return(ce) 
@@ -88,7 +106,7 @@ setMethod(
   f = "RSEC",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
-    if(rerunClusterMany){
+    if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
       newObj <- RSEC(assay(x),  ...)
       ##Check if pipeline already ran previously and if so increase
       x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
@@ -96,7 +114,7 @@ setMethod(
       else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     }
     else{
-      retval<-.postClusterMany(x)
+      retval<-.postClusterMany(x,...)
     }
     validObject(retval)
 

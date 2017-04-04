@@ -2,9 +2,9 @@
 % Please edit documentation in R/mergeClusters.R
 \docType{methods}
 \name{mergeClusters,matrix-method}
+\alias{mergeClusters,matrix-method}
 \alias{mergeClusters}
 \alias{mergeClusters,ClusterExperiment-method}
-\alias{mergeClusters,matrix-method}
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
@@ -126,4 +126,3 @@ mergeMethod="adjP", use.edge.length=FALSE)
 #compare merged to original
 table(primaryCluster(cl), primaryCluster(merged))
 }
-

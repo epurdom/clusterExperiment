@@ -2,10 +2,10 @@
 % Please edit documentation in R/plotClusters.R
 \docType{methods}
 \name{plotClusters,ClusterExperiment,character-method}
-\alias{plotClusters}
 \alias{plotClusters,ClusterExperiment,character-method}
-\alias{plotClusters,ClusterExperiment,missing-method}
+\alias{plotClusters}
 \alias{plotClusters,ClusterExperiment,numeric-method}
+\alias{plotClusters,ClusterExperiment,missing-method}
 \alias{plotClusters,matrix,missing-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
@@ -248,12 +248,11 @@ cl2 <- clusterExperiment(assay(cl), clMatNew,
 transformation=transformation(cl))
 plotClusters(cl2)
 }
+\seealso{
+The \link[ConsensusClusterPlus]{ConsensusClusterPlus} package.
+}
 \author{
 Elizabeth Purdom and Marla Johnson (based on the tracking plot in
   \link[ConsensusClusterPlus]{ConsensusClusterPlus} by Matt Wilkerson and Peter
   Waltman).
 }
-\seealso{
-The \link[ConsensusClusterPlus]{ConsensusClusterPlus} package.
-}
-

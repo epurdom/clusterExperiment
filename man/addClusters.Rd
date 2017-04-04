@@ -2,15 +2,15 @@
 % Please edit documentation in R/addClusters.R
 \docType{methods}
 \name{addClusters,ClusterExperiment,matrix-method}
-\alias{addClusters}
-\alias{addClusters,ClusterExperiment,ClusterExperiment-method}
 \alias{addClusters,ClusterExperiment,matrix-method}
-\alias{addClusters,ClusterExperiment,numeric-method}
+\alias{addClusters}
 \alias{removeClusters}
+\alias{addClusters,ClusterExperiment,ClusterExperiment-method}
+\alias{addClusters,ClusterExperiment,numeric-method}
 \alias{removeClusters,ClusterExperiment,character-method}
 \alias{removeClusters,ClusterExperiment,numeric-method}
-\alias{removeUnclustered}
 \alias{removeUnclustered,ClusterExperiment-method}
+\alias{removeUnclustered}
 \title{Functions to add/remove clusters to ClusterExperiment}
 \usage{
 \S4method{addClusters}{ClusterExperiment,matrix}(x, y, clusterTypes = "User")
@@ -82,4 +82,3 @@ sequential=FALSE, clusterDArgs=list(k=5))
 
 addClusters(cl1, cl2)
 }
-
