@@ -178,6 +178,7 @@ setBreaks<-function(data,breaks,makeSymmetric=FALSE){
 	    	}
         }
     }
+	
     return(breaks)
 
 }
