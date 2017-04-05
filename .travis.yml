@@ -30,12 +30,13 @@ notifications:
     on_failure: change
 
 ## Use patched devtools
-r_github_packages:
-  - hadley/devtools
+# r_github_packages:
+#  - hadley/devtools
 
 ## Code coverage
 r_packages:
   - covr
+  - devtools
 
 ## BiocCheck
 bioc_packages:
