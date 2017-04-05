@@ -11,7 +11,7 @@
 # Validate your .travis.yml file at http://lint.travis-ci.org/
 #----------------------------------------------------------------
 language: r
-cache: packages
+#cache: packages
 
 # R versions to be tested on
 r: 
