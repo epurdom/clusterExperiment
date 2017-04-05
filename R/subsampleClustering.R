@@ -58,7 +58,7 @@
 #' heatmap(subD)
 #' @export
 subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, 
-                              classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,
+                              classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL, largeDataset=FALSE,
                               resamp.num = 100, samp.p = 0.7,ncores=1,... )
 {
   #input<-.checkXDissInput(x,diss)
@@ -83,49 +83,62 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
   N <- dim(x)[2]
   subSize <- round(samp.p * N)
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
-  perSample<-function(ids){
-#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
-#     dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
-    xWithIds<-x[,ids,drop=FALSE]
-    #result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
-    result<-do.call(clusterFunction,c(list(x=xWithIds,k=k),clusterArgs))
-    #if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
-    if(classifyMethod=="All") classX<-classifyFunction(x=x,result)
-    if(classifyMethod=="OutOfSample"){
-      #     xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
-      #     dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
-      xWithoutIds<-x[,-ids,drop=FALSE]
-      #classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
-      classElse<-classifyFunction(x=xWithoutIds, result)
-      classX<-rep(NA,N)
-      classX[-ids]<-classElse
-    }
-    if(classifyMethod=="InSample"){
-      classX<-rep(NA,N)
-      classX[ids]<-result$clustering
-    }
-    D <- outer(classX, classX, function(a, b) a == b)
-    Dinclude<-matrix(1,N,N)
-    whNA<-which(is.na(classX))
-    if(length(whNA)>0){
-      Dinclude[whNA,]<-0 #don't add them to the denominator either
-      Dinclude[,whNA]<-0
-      D[whNA,]<-0 #don't add to sum
-      D[,whNA]<-0
-    }
-    return(list(D=D,Dinclude=Dinclude))
-  }
-  if(ncores==1){
-    DList<-apply(idx,2,perSample)
-  }
-  else{
-    DList<-parallel::mclapply(1:ncol(idx),function(nc){perSample(idx[,nc])},mc.cores=ncores,...)
-  }
-  DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
-  DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-  Dbar = DNum/DDenom
+	perSample<-function(ids){
+	#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
+	#     dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
+	    xWithIds<-x[,ids,drop=FALSE]
+	    #result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
+	    result<-do.call(clusterFunction,c(list(x=xWithIds,k=k),clusterArgs))
+	    #if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
+	    if(classifyMethod=="All") classX<-classifyFunction(x=x,result)
+	    if(classifyMethod=="OutOfSample"){
+	      #     xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
+	      #     dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
+	      xWithoutIds<-x[,-ids,drop=FALSE]
+	      #classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
+	      classElse<-classifyFunction(x=xWithoutIds, result)
+	      classX<-rep(NA,N)
+	      classX[-ids]<-classElse
+	    }
+	    if(classifyMethod=="InSample"){
+	      classX<-rep(NA,N)
+	      classX[ids]<-result$clustering
+	    }
+	    if(!largeDataset){ #current implementation
+		
+		    D <- outer(classX, classX, function(a, b) a == b)
+		    Dinclude<-matrix(1,N,N)
+		    whNA<-which(is.na(classX))
+		    if(length(whNA)>0){
+		      Dinclude[whNA,]<-0 #don't add them to the denominator either
+		      Dinclude[,whNA]<-0
+		      D[whNA,]<-0 #don't add to sum
+		      D[,whNA]<-0
+		    }
+		    return(list(D=D,Dinclude=Dinclude))
+		}
+		else{
+			#instead return indices of observations separated into list based on clusters. 
+			return(tapply(1:N,classX,function(x){x},simplify=FALSE))
+		}
+	}
+	  
+	if(ncores==1){
+		DList<-apply(idx,2,perSample)
+	}
+	else{
+		DList<-parallel::mclapply(1:ncol(idx),function(nc){perSample(idx[,nc])},mc.cores=ncores,...)
+	}
+	if(!largeDataset){
+		DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
+		DNum<-Reduce("+",lapply(DList,function(y){y$D}))
+	    Dbar = DNum/DDenom
+	}
+	else{
+
+	}
 #   if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
 #   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
-  rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+    rownames(Dbar)<-colnames(Dbar)<-colnames(x)
     return(Dbar)
 }
