@@ -2,7 +2,7 @@
 #'
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method
+#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
@@ -11,7 +11,6 @@
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-#' @aliases [,ClusterExperiment,ANY,character,ANY-method
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "character"),
