@@ -38,6 +38,8 @@ values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
+\item{clusterLabel}{label(s) for the clusters being added.}
+
 \item{...}{Passed to signature \code{ClusterExperiment,matrix}.}
 
 \item{whichRemove}{which clusters to remove. Can be numeric or character. If
