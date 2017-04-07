@@ -2,17 +2,19 @@
 % Please edit documentation in R/makeBlankData.R, R/plottingHelpers.R
 \docType{data}
 \name{plottingFunctions}
-\alias{bigPalette}
+\alias{plottingFunctions}
 \alias{makeBlankData}
 \alias{plottingFunctions}
-\alias{seqPal1}
+\alias{showBigPalette}
+\alias{bigPalette}
+\alias{setBreaks}
+\alias{bigPalette}
+\alias{showHeatmapPalettes}
+\alias{seqPal5}
 \alias{seqPal2}
 \alias{seqPal3}
 \alias{seqPal4}
-\alias{seqPal5}
-\alias{setBreaks}
-\alias{showBigPalette}
-\alias{showHeatmapPalettes}
+\alias{seqPal1}
 \title{Various functions useful for plotting}
 \format{An object of class \code{character} of length 60.}
 \usage{
@@ -20,7 +22,7 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
 showBigPalette(wh = NULL)
 
-setBreaks(breaks, data)
+setBreaks(breaks, data, makeSymmetric = FALSE)
 
 bigPalette
 
@@ -52,6 +54,8 @@ between 1 and 62.}
 \item{breaks}{either vector of breaks, or number of breaks (integer) or a
 number between 0 and 1 indicating a quantile, between which evenly spaced
 breaks should be calculated.}
+
+\item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
 }
 \value{
 \code{makeBlankData} returns a list with items
@@ -117,4 +121,3 @@ par(mfrow=c(1,1))
 
 }
 \keyword{datasets}
-

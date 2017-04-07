@@ -16,4 +16,3 @@ the number of features.
 Given an object that describes a dataset or a model, it returns the number of
 features.
 }
-

@@ -2,9 +2,9 @@
 % Please edit documentation in R/getFeatures.R
 \docType{methods}
 \name{getBestFeatures,matrix-method}
+\alias{getBestFeatures,matrix-method}
 \alias{getBestFeatures}
 \alias{getBestFeatures,ClusterExperiment-method}
-\alias{getBestFeatures,matrix-method}
 \title{Function for finding best features associated with clusters}
 \usage{
 \S4method{getBestFeatures}{matrix}(x, cluster, contrastType = c("F", "Dendro",
@@ -178,4 +178,3 @@ plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
 }
-

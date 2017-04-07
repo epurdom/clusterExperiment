@@ -2,8 +2,8 @@
 % Please edit documentation in R/dataCreation.R
 \docType{data}
 \name{simData}
-\alias{simCount}
 \alias{simData}
+\alias{simCount}
 \alias{trueCluster}
 \title{Simulated data for running examples}
 \format{Three objects are loaded, two data frame(s) of simulated data each
@@ -62,4 +62,3 @@ trueCluster<-rep(c(1:3),each=n)
 Elizabeth Purdom \email{epurdom@stat.berkeley.edu}
 }
 \keyword{data}
-

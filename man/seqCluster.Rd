@@ -176,4 +176,3 @@ Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
 \seealso{
 tight.clust
 }
-

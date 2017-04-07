@@ -2,6 +2,7 @@ Changes in version 1.1.1-9001 (Release date:  )
 ==============
 
 Changes:
+* RSEC now has option `rerunClusterMany`, which if FALSE will not rerun the clusterMany step if RSEC is called on an existing clusterExperiment object (assuming of course, clusterMany has been run already)
 * setBreaks now has option `makeSymmetric` to provide symmetric breaks around zero with quantile option
 * plotClusters can now handle NA values in the colData
 * plotClusters now allows for sampleData=TRUE for plotting all of the sampleData in the colData slot.
