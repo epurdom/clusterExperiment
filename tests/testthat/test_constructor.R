@@ -128,6 +128,18 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusters(c4)-2)
   expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
   
+  #When have dendrogram
+  cl1 <- clusterSingle(smSimData, clusterFunction="pam",
+                       subsample=FALSE, sequential=FALSE,
+                       clusterDArgs=list(k=6),isCount=FALSE)
+  leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+  leg[,"name"]<-letters[1:6]
+  clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
+  clustWithDendro <- makeDendrogram(cl1)
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotType="none")
+  removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
+  removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
+  
   
 })
 
