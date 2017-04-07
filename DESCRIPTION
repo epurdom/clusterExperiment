@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare clusterings for single-cell sequencing
-Version: 1.1.1
+Version: 1.1.1-9001
 Description: This package provides functions for running and comparing many
     different clusterings of single-cell sequencing data.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
