@@ -10,7 +10,7 @@
 #' @param subsample logical as to whether to subsample via 
 #'   \code{\link{subsampleClustering}} to get the distance matrix at each 
 #'   iteration; otherwise the distance function will be determined by argument
-#'   \code{distFunction} passed in \code{clusterDArgs}.
+#'   \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).
 #' @param sequential logical whether to use the sequential strategy (see
 #'   details of \code{\link{seqCluster}}).
 #' @param clusterFunction passed to \code{\link{clusterD}} option

@@ -4,50 +4,57 @@
 \name{ClusterExperiment-methods}
 \alias{ClusterExperiment-methods}
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
-\alias{clusterInfo}
-\alias{clusterInfo,ClusterExperiment-method}
-\alias{clusterLabels}
-\alias{clusterLabels,ClusterExperiment-method}
-\alias{clusterLabels<-}
-\alias{clusterLabels<-,ClusterExperiment,character-method}
-\alias{clusterLegend}
-\alias{clusterLegend,ClusterExperiment-method}
-\alias{clusterLegend<-}
-\alias{clusterLegend<-,ClusterExperiment,list-method}
-\alias{clusterMatrix}
-\alias{clusterMatrix,ClusterExperiment-method}
-\alias{clusterMatrixNamed}
+\alias{[,ClusterExperiment,ANY,character,ANY-method}
+\alias{[,ClusterExperiment,ANY,logical,ANY-method}
+\alias{[,ClusterExperiment,ANY,numeric,ANY-method}
+\alias{show,ClusterExperiment-method}
 \alias{clusterMatrixNamed,ClusterExperiment-method}
-\alias{clusterTypes}
-\alias{clusterTypes,ClusterExperiment-method}
-\alias{clusterTypes<-}
-\alias{clusterTypes<-,ClusterExperiment,character-method}
-\alias{coClustering}
-\alias{coClustering,ClusterExperiment-method}
-\alias{coClustering<-}
-\alias{coClustering<-,ClusterExperiment,matrix-method}
-\alias{nClusters}
+\alias{clusterMatrixNamed}
+\alias{primaryClusterNamed,ClusterExperiment-method}
+\alias{primaryClusterNamed}
+\alias{transformation,ClusterExperiment-method}
+\alias{transformation}
 \alias{nClusters,ClusterExperiment-method}
+\alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
 \alias{nSamples,ClusterExperiment-method}
-\alias{orderSamples}
-\alias{orderSamples,ClusterExperiment-method}
-\alias{orderSamples<-}
-\alias{orderSamples<-,ClusterExperiment,numeric-method}
-\alias{primaryCluster}
+\alias{clusterMatrix,ClusterExperiment-method}
+\alias{clusterMatrix}
 \alias{primaryCluster,ClusterExperiment-method}
-\alias{primaryClusterIndex}
+\alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
-\alias{primaryClusterIndex<-}
+\alias{primaryClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
-\alias{primaryClusterNamed}
-\alias{primaryClusterNamed,ClusterExperiment-method}
-\alias{show,ClusterExperiment-method}
-\alias{transformation}
-\alias{transformation,ClusterExperiment-method}
+\alias{primaryClusterIndex<-}
+\alias{coClustering,ClusterExperiment-method}
+\alias{coClustering}
+\alias{coClustering<-,ClusterExperiment,matrix-method}
+\alias{coClustering<-}
+\alias{clusterTypes,ClusterExperiment-method}
+\alias{clusterTypes}
+\alias{clusterInfo,ClusterExperiment-method}
+\alias{clusterInfo}
+\alias{clusterLabels,ClusterExperiment-method}
+\alias{clusterLabels}
+\alias{clusterLabels<-,ClusterExperiment,character-method}
+\alias{clusterLabels<-}
+\alias{clusterLegend,ClusterExperiment-method}
+\alias{clusterLegend}
+\alias{clusterLegend<-,ClusterExperiment,list-method}
+\alias{clusterLegend<-}
+\alias{orderSamples,ClusterExperiment-method}
+\alias{orderSamples}
+\alias{orderSamples<-,ClusterExperiment,numeric-method}
+\alias{orderSamples<-}
+\alias{clusterTypes<-,ClusterExperiment,character-method}
+\alias{clusterTypes<-}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
-\S4method{[}{ClusterExperiment,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ClusterExperiment}(object)
 
@@ -145,4 +152,3 @@ This is a collection of helper methods for the ClusterExperiment class.
 Note that when subsetting the data, the dendrogram information and
 the co-clustering matrix are lost.
 }
-

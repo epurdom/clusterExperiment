@@ -53,25 +53,54 @@
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
-.pullSampleData<-function(ce,wh){
+.pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
+	fixNA<-match.arg(fixNA)
   if(!is.null(wh)){
     sData<-colData(ce)
-    if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sampleData")
-    if(is.character(wh)){
-      if(all(wh=="all")) wh<-1:NCOL(sData)
-      else{
-        if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sampleData (some do not match names of colData)")
-        else wh<-match(wh,colnames(sData))
-      }
-    }
-    else if(is.numeric(wh)){
-      if(!all(wh %in% 1:NCOL(sData))) stop("Invalid indices for for pulling sampleData (some indices are not in 1:NCOL(colData)")
-    }
-    else stop("invalid values for pulling sampleData from colData of object")
-    sData<-as.data.frame(sData[,wh,drop=FALSE])
-    
-  }
+	if(!is.logical(wh)){
+
+	    if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sampleData")
+	    if(is.character(wh)){
+	      if(all(wh=="all")) wh<-1:NCOL(sData)
+	      else{
+	        if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sampleData (some do not match names of colData)")
+	        else wh<-match(wh,colnames(sData))
+	      }
+	    }
+	    else if(is.numeric(wh)){
+	      if(!all(wh %in% 1:NCOL(sData))) stop("Invalid indices for for pulling sampleData (some indices are not in 1:NCOL(colData)")
+	    }
+	    else stop("invalid values for pulling sampleData from colData of object")
+		sData<-as.data.frame(sData[,wh,drop=FALSE])
+	}
+	else{ #if 
+		if(wh) sData<- colData(ce)
+		else sData<-NULL
+	}
+}
   else sData<-NULL
+  if(!is.null(sData) && fixNA!="keepNA"){
+  		newValue<-switch(fixNA,"unassigned"=-1,"missing"=-2)
+  		fixNAFunction<-function(x,newValue){
+  			if(is.factor(x)){ #change to character
+  				waslevels<-levels(x)
+  				wasFactor<-TRUE
+  				x<-as.character(x)
+  			}
+  			else wasFactor<-FALSE
+  			if(is.character(x)){
+  				x[which(is.na(x))]<-as.character(newValue)
+  				if(wasFactor) x<-factor(x,levels=c(waslevels,as.character(newValue))) #keeps order of previous factors
+  			}
+  			else x[which(is.na(x))]<- newValue #assume numeric if not character/factor
+  			return(x)
+  		}
+  		#have to do this; otherwise makes them all characters if use apply...
+  		cnames<-colnames(sData)
+  		sData<-do.call("data.frame",lapply(1:ncol(sData),function(ii){fixNAFunction(sData[,ii],newValue=newValue)}))
+  		colnames(sData)<-cnames
+    	
+      }
   return(sData)
 }
 

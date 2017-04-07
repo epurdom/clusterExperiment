@@ -65,14 +65,16 @@ setMethod(f = "clusterContrasts",
 #' @rdname clusterContrasts
 #' @export
 #' @importFrom limma makeContrasts
+#' @importFrom MAST Hypothesis
 setMethod(f = "clusterContrasts",
           signature = "vector",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
-                                dendro=NULL, pairMat=NULL,outputType="limma",removeNegative=TRUE){
+                                dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
             cluster<-.convertToNum(cluster)
            if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
             cl<-factor(cl)
             contrastType<-match.arg(contrastType)
+			outputType<-match.arg(outputType)
             if(contrastType=="Dendro"){
               if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
               ####
@@ -134,6 +136,10 @@ setMethod(f = "clusterContrasts",
             #         levnames<-levels(factor(cluster[cluster>0]))
             #     }
             levnames<-make.names(levels(cl))
-            if(outputType=="limma") contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)
-            return(list(contrastMatrix=contr.matrix,contrastNames=names(contrastNames)))
+            if(outputType=="limma"){	
+	            contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)
+				return(list(contrastMatrix=contr.matrix,contrastNames=names(contrastNames)))
+			}
+			if(outputType=="MAST") return(MAST::Hypothesis(contrastNames, levnames))
+            
           })

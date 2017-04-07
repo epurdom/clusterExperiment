@@ -79,4 +79,3 @@ clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
 
 heatmap(subD)
 }
-

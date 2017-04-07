@@ -3,13 +3,13 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
-\alias{clusterSingle,ClusterExperiment,missing-method}
-\alias{clusterSingle,ClusterExperiment-method}
-\alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,matrix,missing-method}
-\alias{clusterSingle,matrix-method}
-\alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
 \alias{clusterSingle-methods}
+\alias{clusterSingle,matrix-method}
+\alias{clusterSingle,ClusterExperiment-method}
+\alias{clusterSingle,matrix,missing-method}
+\alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
+\alias{clusterSingle,SummarizedExperiment,missing-method}
+\alias{clusterSingle,ClusterExperiment,missing-method}
 \title{General wrapper method to cluster the data}
 \usage{
 \S4method{clusterSingle}{matrixOrMissing,matrixOrMissing}(x, diss,
@@ -32,7 +32,7 @@ on which to run the clustering (only if \code{subsample=FALSE})}
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs}.}
+\code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
 
 \item{sequential}{logical whether to use the sequential strategy (see
 details of \code{\link{seqCluster}}).}
@@ -108,4 +108,3 @@ subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=3))
 \seealso{
 \code{\link{clusterMany}} to compare multiple choices of parameters.
 }
-

@@ -352,14 +352,23 @@ setMethod(
     }
     clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
     if(length(clLegend)==0) clLegend<-NULL
+    #browser()
     #check user didn't give something different for colors
-    userAlign<-"alignSampleData" %in% names(list(...))
-    userLegend<-"clusterLegend" %in% names(list(...))
+    userList<-list(...)
+    userAlign<-"alignSampleData" %in% names(userList)
+    userLegend<-"clusterLegend" %in% names(userList)
     if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
-      if(userLegend) clLegend<-list(...)[["clusterLegend"]]
+      if(userLegend){
+        userClLegend<-userList[["clusterLegend"]]
+        #keep existing clLegend from clusterExperiment object if not conflict with user input:
+        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
+        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
+        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
+        userList<-userList[-grep("clusterLegend",names(userList))]
+      }
       else{
         if(userAlign){
-          al<-list(...)[["alignSampleData"]]
+          al<-userList[["alignSampleData"]]
           if(al) clLegend<-NULL
         }
       }
@@ -447,13 +456,13 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-    plotHeatmap(data=heatData,
+    do.call("plotHeatmap",c(list(data=heatData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
                 sampleData=sampleData,whSampleDataCont=whSampleDataCont,
                 clusterSamples=clusterSamples,labRow=labRow,
                 clusterLegend=clLegend,clusterFeatures=clusterFeatures,
-                colorScale=colorScale,...)
+                colorScale=colorScale),userList))
 
 
   })
@@ -470,8 +479,7 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,
-                          overRideClusterLimit=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE,...
     ){
 
 
@@ -644,8 +652,8 @@ setMethod(
       #############
       # put into aheatmap
       #############
-      breaks<-setBreaks(breaks,heatData)
-    #browser()
+      breaks<-setBreaks(data=heatData,breaks=breaks)
+      #browser()
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),

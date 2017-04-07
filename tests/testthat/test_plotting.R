@@ -76,16 +76,33 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   par(mfrow=c(1,2))
   x2<-plotClusters(ceSim,sampleData="all",resetColors=TRUE)
   x1<-plotClusters(ceSim,resetColors=TRUE)
+  
+  
+  #check NAs
+  naSim<-ceSim
+  colData(naSim)[sample(10,1:nrow(naSim)),]<-NA
+  plotClusters(naSim,sampleData=c("A","B"))
+
+  #test the new TRUE option
+  plotClusters(naSim,sampleData=TRUE) 
+  
   #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
 #  expect_equal(x1,x2)
-
 #   par(mfrow=c(1,2))
 #   x2<-plotClusters(ceSim,sampleData="all",resetColors=FALSE)
 #   x1<-plotClusters(ceSim,resetColors=FALSE)
   par(mfrow=c(1,1))
 
 })
-
+test_that("`setBreaks`", {
+	setBreaks(smSimData)
+	setBreaks(smSimData,breaks=0.99)
+	x<-setBreaks(smSimData,breaks=0.99,makeSymmetric=TRUE)
+	expect_equal(max(x),-min(x))
+	expect_equal(x,setBreaks(smSimData,breaks=0.01,makeSymmetric=TRUE))
+	expect_warning(y<-setBreaks(smSimData,breaks=10))
+	expect_equal(length(y),10)
+})
 test_that("`plotHeatmap` works with matrix objects", {
 
     x1<-plotHeatmap(data=smSimData)
@@ -138,6 +155,10 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     #check that it pulls the names, not the clusterIds.
     clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
     plotHeatmap(cc)
+    
+    #check user setting clusterLegend
+    plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
+    plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:3]))
     # the following works outside of the test but not inside
     # possibly issue with testthat? Not evaluating for now.
     #plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
@@ -185,8 +206,10 @@ test_that("`makeBlankData` works", {
   expect_equal(whBlankRows,whBlankNames)
   expect_equal(whBlankRows,4)
 
-  ##call within plotHeatmap
+  ##call within plotHeatmap (serves as test of NA capabilities)
   plotHeatmap(smSimCE,clusterFeaturesData=gps)
+  plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99)
+  expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
 })
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")

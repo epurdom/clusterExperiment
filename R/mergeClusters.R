@@ -242,6 +242,8 @@ setMethod(f = "mergeClusters",
             tip.color<-clusterLegendMat[m,"color"]
         }
         else tip.color<-"black"
+		    if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
+			
         ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, tip.color=tip.color,...)
     }
 }

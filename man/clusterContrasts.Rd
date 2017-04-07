@@ -2,8 +2,8 @@
 % Please edit documentation in R/clusterContrasts.R
 \docType{methods}
 \name{clusterContrasts,ClusterExperiment-method}
-\alias{clusterContrasts}
 \alias{clusterContrasts,ClusterExperiment-method}
+\alias{clusterContrasts}
 \alias{clusterContrasts,vector-method}
 \title{Create contrasts for testing DE of a cluster}
 \usage{
@@ -11,7 +11,7 @@
 
 \S4method{clusterContrasts}{vector}(cluster, contrastType = c("Dendro",
   "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  outputType = "limma", removeNegative = TRUE)
+  outputType = c("limma", "MAST"), removeNegative = TRUE)
 }
 \arguments{
 \item{cluster}{Either a vector giving contrasts assignments or a
@@ -79,4 +79,3 @@ clusterContrasts(cl,contrastType="Pairs")
 \author{
 Elizabeth Purdom
 }
-

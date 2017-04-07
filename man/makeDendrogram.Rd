@@ -2,11 +2,11 @@
 % Please edit documentation in R/makeDendrogram.R
 \docType{methods}
 \name{makeDendrogram,ClusterExperiment-method}
-\alias{makeDendrogram}
 \alias{makeDendrogram,ClusterExperiment-method}
+\alias{makeDendrogram}
 \alias{makeDendrogram,matrix-method}
-\alias{plotDendrogram}
 \alias{plotDendrogram,ClusterExperiment-method}
+\alias{plotDendrogram}
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
@@ -109,4 +109,3 @@ plotDendrogram(hcl)
 plotDendrogram(hcl, leaves="samples")
 
 }
-

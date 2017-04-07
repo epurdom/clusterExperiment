@@ -6,6 +6,7 @@
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
+#' @param clusterLabel label(s) for the clusters being added.
 #' @inheritParams clusterExperiment
 #' @details addClusters adds y to x, and is thus not symmetric in the two 
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
@@ -65,8 +66,10 @@ setMethod(
 setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "numeric"),
-  definition = function(x, y, ...) {
-    addClusters(x,matrix(y,ncol=1),...)
+  definition = function(x, y, clusterLabel=NULL,...) {
+    mat<-matrix(y,ncol=1)
+    if(!is.null(clusterLabel)) colnames(mat)<-clusterLabel
+    addClusters(x,mat,...)
   }
 )
 
@@ -108,6 +111,7 @@ setMethod(
       #make it Summarized Experiment
       return(as(x,"SummarizedExperiment"))
     }
+    
     newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
     newClusterInfo<-clusterInfo(x)[-whichRemove]
     newClusterType<-clusterTypes(x)[-whichRemove]
@@ -118,12 +122,16 @@ setMethod(
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
     if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),1:NCOL(clusterMatrix(x))[-whichRemove])
+    else pIndex<-match(primaryClusterIndex(x),(1:NCOL(clusterMatrix(x)))[-whichRemove])
     if(x@dendro_index %in% whichRemove){
         dend_cl<-NULL
         dend_samples<-NULL
         dend_ind<-NA_real_
     }
+    else{
+      dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichRemove])
+    }
+    
     retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),
                               clusterTypes=newClusterType,
                               clusterInfo<-newClusterInfo,
@@ -134,7 +142,7 @@ setMethod(
                             coClustering=coMat,
                             orderSamples=orderSamples
                               )
-    validObject(retval)
+   validObject(retval)
     clusterLegend(retval)<-newClusterColors
     return(retval)
   }

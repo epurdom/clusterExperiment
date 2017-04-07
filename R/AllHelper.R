@@ -2,7 +2,7 @@
 #'
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method
+#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
@@ -11,13 +11,34 @@
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-#'
 setMethod(
   f = "[",
-  signature = c("ClusterExperiment", "ANY", "ANY"),
+  signature = c("ClusterExperiment", "ANY", "character"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-match(j, colnames(x))
+    callGeneric()
+    
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "logical"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-which(j)
+    callGeneric()
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "numeric"),
   definition = function(x, i, j, ..., drop=TRUE) {
     origN<-NCOL(x)
-    out <- callNextMethod()
+    #out <- callNextMethod() #doesn't work once I added the logical and character choices.
+    out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
     #browser()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- NULL
@@ -25,8 +46,9 @@ setMethod(
     out@dendro_clusters <- NULL
     out@dendro_index <- NA_real_
    # browser()
-    out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
-
+    #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
+	out@orderSamples <- rank(x@orderSamples[j])
+	
     #need to convert to consecutive integer valued clusters:
     newMat<-.makeIntegerClusters(out@clusterMatrix)
     colnames(newMat)<-colnames(out@clusterMatrix)
@@ -49,6 +71,7 @@ setMethod(
     })
     out@clusterMatrix<-newMat
     out@clusterLegend<-newClLegend
+    #browser()
     validObject(out)
     return(out)
   }

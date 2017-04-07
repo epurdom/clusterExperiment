@@ -64,14 +64,17 @@ setMethod(
 
 .convertToAheatmap<-function(clusterLegend, names=FALSE){
     outval<-lapply(clusterLegend,function(x){
-      z<-x[,"color"]
-      if(names) {
-        names(z)<-x[,"name"]
-      } else {
-        names(z)<-x[,"clusterIds"]
+      if(!is.null(dim(x))){
+        z<-x[,"color"]
+        if(names) {
+          names(z)<-x[,"name"]
+        } else {
+          names(z)<-x[,"clusterIds"]
+        }
+        z<-z[order(names(z))]
+        return(z)
       }
-      z<-z[order(names(z))]
-      return(z)
+      else return(x)
     })
     return(outval)
 
@@ -118,6 +121,7 @@ showBigPalette<-function(wh=NULL){
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced
 #'   breaks should be calculated.
+#' @param makeSymmetric whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)
 #'
 #' @rdname plottingFunctions
 #'
@@ -128,43 +132,58 @@ showBigPalette<-function(wh=NULL){
 #' @export
 #'
 #' @examples
-#' setBreaks(.9,simData)
-setBreaks<-function(breaks,data){
-  isPositive<-all(data>=0)
-    if(length(breaks)>0 && !is.na(breaks)){
-        #get arround bug in aheatmap
-        #if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
-        #TO DO: might not need any more with updated aheatmap.
+#' setBreaks(data=simData,breaks=.9)
+setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
+	isPositive<-all(na.omit(data)>=0)
+	isNegative<-all(na.omit(data)<=0)
+#	browser()
+    #get arround bug in aheatmap
+    #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
+    #TO DO: might not need any more with updated aheatmap.
+    ncols<-51
+	if(!is.vector(breaks)) stop("breaks argument must be a vector")
+	if(missing(breaks) || is.na(breaks)){
+		if(makeSymmetric & !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=ncols+1)
+		else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
+	}
+	else if(length(breaks)>0 && !is.na(breaks)){
         if(length(breaks)==1){
-            if(breaks<=1){
-                ncols<-51
-                if(breaks<1){
-                  if(breaks<0.5) breaks<-1-breaks
-                  uppQ<-if(isPositive) quantile(data[data>0],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
-                  lowQ<-if(isPositive) min(data) else quantile(data,1-breaks,na.rm=TRUE)
-                  quantMin<-if(isTRUE(all.equal(round(lowQ,5),round(min(data),5)))) TRUE else FALSE
-                  quantMax<-if(isTRUE(all.equal(round(uppQ,5),round(max(data),5)))) TRUE else FALSE
-                  #browser()
-                  if(!quantMin & !quantMax) breaks<-c(min(data),seq(lowQ,uppQ,length=ncols-1),max(data))
-                  else{
-                    if(!quantMin & quantMax) breaks<-c(min(data),seq(lowQ,max(data),length=ncols))
-                    if(quantMin & !quantMax) breaks<-c(seq(min(data),uppQ,length=ncols),max(data))
-                    if(quantMin & quantMax) breaks<-seq(min(data),max(data),length=ncols+1)
-                  }
-#                     if(isPositive){
-#                     breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))
-#                   else breaks<-c(min(data),seq(quantile(data,1-breaks,na.rm=TRUE),quantile(data,breaks,na.rm=TRUE),length=ncols-1),max(data))
-                }
-                else breaks<-seq(min(data),max(data),length=ncols+1)
-            }
-            else{
-                warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used. We don't recommend that you set the breaks to a integer number, but let aheatmap determine the breaks")
-            }
-        }
-        else{
-            if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used")
+			if(breaks<1){
+			  if(breaks<0.5) breaks<-1-breaks
+			#	  browser()
+			  uppQ<-if(isPositive) quantile(data[which(data>0)],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
+			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
+			  #browser()
+			  if(makeSymmetric & !isPositive & !isNegative){
+				  absq<-max(abs(c(lowQ,uppQ)),na.rm=TRUE)
+				  absm<-max(abs(c(min(data,na.rm=TRUE),max(data,na.rm=TRUE))))
+				  #is largest quantile also max of abs(data)?
+				  quantAllMax <- if( isTRUE( all.equal(round(absq,5), round(absm,5)))) TRUE else FALSE
+			      if(!quantAllMax) breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
+				  else breaks <- seq(absm,absm,length=ncols+1)
+			  }
+			  else{
+				  #determine if those quantiles are min/max of data
+			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(min(data,na.rm=TRUE),5)))) TRUE else FALSE
+			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(max(data,na.rm=TRUE),5)))) TRUE else FALSE
+			      if(!quantMin & !quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,uppQ,length=ncols-1), max(data,na.rm=TRUE))
+			      if(!quantMin & quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,max(data,na.rm=TRUE),length=ncols))
+			      if(quantMin & !quantMax) breaks <- c(seq(min(data,na.rm=TRUE),uppQ,length=ncols), max(data,na.rm=TRUE))
+			      if(quantMin & quantMax) breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
+
+			  }
+			}
+	        else{ #breaks is number of breaks
+				if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum of colors will not be used")
+				if(makeSymmetric& !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=breaks)
+				else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=breaks)
+	    	}
         }
     }
+	if(!length(unique(breaks))==length(breaks)){
+		breaks<-sort(unique(breaks))
+		warning("setBreaks did not create unique breaks, and therefore the resulting breaks will not be of exactly the length requested. If you have replicable code that can recreate this warning, we would appreciate submitting it to the issues tracker on github (existing issue: #186)")
+	}
     return(breaks)
 
 }

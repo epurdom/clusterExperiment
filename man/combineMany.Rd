@@ -2,11 +2,11 @@
 % Please edit documentation in R/combineMany.R
 \docType{methods}
 \name{combineMany,matrix,missing-method}
+\alias{combineMany,matrix,missing-method}
 \alias{combineMany}
+\alias{combineMany,ClusterExperiment,numeric-method}
 \alias{combineMany,ClusterExperiment,character-method}
 \alias{combineMany,ClusterExperiment,missing-method}
-\alias{combineMany,ClusterExperiment,numeric-method}
-\alias{combineMany,matrix,missing-method}
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{combineMany}{matrix,missing}(x, whichClusters, proportion = 1,
@@ -125,4 +125,3 @@ plotClusters(clCommon)
 par(oldpar)
 
 }
-
