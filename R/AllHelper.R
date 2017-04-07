@@ -47,8 +47,9 @@ setMethod(
     out@dendro_clusters <- NULL
     out@dendro_index <- NA_real_
    # browser()
-    out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
-
+    #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
+	out@orderSamples <- rank(x@orderSamples[j])
+	
     #need to convert to consecutive integer valued clusters:
     newMat<-.makeIntegerClusters(out@clusterMatrix)
     colnames(newMat)<-colnames(out@clusterMatrix)
