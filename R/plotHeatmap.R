@@ -352,14 +352,20 @@ setMethod(
     }
     clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
     if(length(clLegend)==0) clLegend<-NULL
+    #browser()
     #check user didn't give something different for colors
-    userAlign<-"alignSampleData" %in% names(list(...))
-    userLegend<-"clusterLegend" %in% names(list(...))
+    userList<-list(...)
+    userAlign<-"alignSampleData" %in% names(userList)
+    userLegend<-"clusterLegend" %in% names(userList)
     if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
-      if(userLegend) clLegend<-list(...)[["clusterLegend"]]
+      if(userLegend){
+        clLegend<-userList[["clusterLegend"]]
+        wh
+        userList<-userList[-grep("clusterLegend",names(userList))]
+      }
       else{
         if(userAlign){
-          al<-list(...)[["alignSampleData"]]
+          al<-userList[["alignSampleData"]]
           if(al) clLegend<-NULL
         }
       }
@@ -447,13 +453,13 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-    plotHeatmap(data=heatData,
+    do.call("plotHeatmap",c(list(data=heatData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
                 sampleData=sampleData,whSampleDataCont=whSampleDataCont,
                 clusterSamples=clusterSamples,labRow=labRow,
                 clusterLegend=clLegend,clusterFeatures=clusterFeatures,
-                colorScale=colorScale,...)
+                colorScale=colorScale),userList))
 
 
   })

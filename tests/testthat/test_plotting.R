@@ -146,6 +146,7 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     #check that it pulls the names, not the clusterIds.
     clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
     plotHeatmap(cc)
+    plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
     # the following works outside of the test but not inside
     # possibly issue with testthat? Not evaluating for now.
     #plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
