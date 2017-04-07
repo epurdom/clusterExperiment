@@ -14,10 +14,28 @@
 #'
 setMethod(
   f = "[",
-  signature = c("ClusterExperiment", "ANY", "ANY"),
+  signature = c("ClusterExperiment", "ANY", "character"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-match(j, colnames(x))
+    callGeneric()
+    
+  }
+)
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "logical"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-which(j)
+    callGeneric()
+  }
+)
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "numeric"),
   definition = function(x, i, j, ..., drop=TRUE) {
     origN<-NCOL(x)
-    out <- callNextMethod()
+    #out <- callNextMethod() #doesn't work once I added the logical and character choices.
+    out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
     #browser()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- NULL
@@ -49,6 +67,7 @@ setMethod(
     })
     out@clusterMatrix<-newMat
     out@clusterLegend<-newClLegend
+    #browser()
     validObject(out)
     return(out)
   }
