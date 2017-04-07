@@ -133,51 +133,49 @@ showBigPalette<-function(wh=NULL){
 #'
 #' @examples
 #' setBreaks(.9,simData)
-setBreaks<-function(breaks,data,makeSymmetric=FALSE){
+setBreaks<-function(data,breaks,makeSymmetric=FALSE){
 	isPositive<-all(data>=0)
 	isNegative<-all(data<=0)
-	if(length(breaks)>0 && !is.na(breaks)){
-        #get arround bug in aheatmap
-        #if colors are given, then get back 51, unless give RColorBrewer, in which case get 101! Assume user has to give palette.
-        #TO DO: might not need any more with updated aheatmap.
+	
+    #get arround bug in aheatmap
+    #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
+    #TO DO: might not need any more with updated aheatmap.
+    ncols<-51
+	if(missing(breaks)){
+		if(makeSymmetric& !isPositive & !isNegative) breaks<-seq(-max(abs(data)),max(abs(data)),length=ncols+1)
+		else breaks<-seq(min(data),max(data),length=ncols+1)
+	}
+	else if(length(breaks)>0 && !is.na(breaks)){
         if(length(breaks)==1){
-            if(breaks<=1){
-                ncols<-51
-                if(breaks<1){
-                  if(breaks<0.5) breaks<-1-breaks
-                  uppQ<-if(isPositive) quantile(data[data>0],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
-                  lowQ<-if(isPositive) min(data) else quantile(data,1-breaks,na.rm=TRUE)
-                  #browser()
-				  if(makeSymmetric & !isPositive & !isNegative){
-					  absq<-max(abs(c(lowQ,uppQ)))
-					  absm<-max(abs(c(min(data),max(data))))
-					  #is largest quantile also max of abs(data)?
-					  quantAllMax <- if( isTRUE( all.equal(round(absq,5), round(absm,5)))) TRUE else FALSE
-	                  if(!quantAllMax) breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
-					  else breaks <- seq(absm,absm,length=ncols+1)
-				  }
-				  else{
-					  #determine if those quantiles are min/max of data
-	                  quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(min(data),5)))) TRUE else FALSE
-	                  quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(max(data),5)))) TRUE else FALSE
-	                  if(!quantMin & !quantMax) breaks <- c(min(data), seq(lowQ,uppQ,length=ncols-1), max(data))
-	                  if(!quantMin & quantMax) breaks <- c(min(data), seq(lowQ,max(data),length=ncols))
-	                  if(quantMin & !quantMax) breaks <- c(seq(min(data),uppQ,length=ncols), max(data))
-	                  if(quantMin & quantMax) breaks<-seq(min(data),max(data),length=ncols+1)
-				  	
-				  }
-#                     if(isPositive){
-#                     breaks<-c(seq(min(data),quantile(data[data>0],breaks,na.rm=TRUE),length=ncols),max(data))
-#                   else breaks<-c(min(data),seq(quantile(data,1-breaks,na.rm=TRUE),quantile(data,breaks,na.rm=TRUE),length=ncols-1),max(data))
-                }
-                else breaks<-seq(min(data),max(data),length=ncols+1)
-            }
-            else{
-                warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used. We don't recommend that you set the breaks to a integer number, but let aheatmap determine the breaks")
-            }
-        }
-        else{
-            if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used")
+			if(breaks<1){
+			  if(breaks<0.5) breaks<-1-breaks
+			  uppQ<-if(isPositive) quantile(data[data>0],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
+			  lowQ<-if(isPositive) min(data) else quantile(data,1-breaks,na.rm=TRUE)
+			  #browser()
+			  if(makeSymmetric & !isPositive & !isNegative){
+				  absq<-max(abs(c(lowQ,uppQ)))
+				  absm<-max(abs(c(min(data),max(data))))
+				  #is largest quantile also max of abs(data)?
+				  quantAllMax <- if( isTRUE( all.equal(round(absq,5), round(absm,5)))) TRUE else FALSE
+			      if(!quantAllMax) breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
+				  else breaks <- seq(absm,absm,length=ncols+1)
+			  }
+			  else{
+				  #determine if those quantiles are min/max of data
+			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(min(data),5)))) TRUE else FALSE
+			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(max(data),5)))) TRUE else FALSE
+			      if(!quantMin & !quantMax) breaks <- c(min(data), seq(lowQ,uppQ,length=ncols-1), max(data))
+			      if(!quantMin & quantMax) breaks <- c(min(data), seq(lowQ,max(data),length=ncols))
+			      if(quantMin & !quantMax) breaks <- c(seq(min(data),uppQ,length=ncols), max(data))
+			      if(quantMin & quantMax) breaks<-seq(min(data),max(data),length=ncols+1)
+
+			  }
+			}
+	        else{ #breaks is number of breaks
+				if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum will not be used")
+				if(makeSymmetric& !isPositive & !isNegative) breaks<-seq(-max(abs(data)),max(abs(data)),length=breaks)
+				else breaks<-seq(min(data),max(data),length=breaks)
+	    	}
         }
     }
     return(breaks)
