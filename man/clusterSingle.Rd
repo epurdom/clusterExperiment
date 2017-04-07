@@ -32,7 +32,7 @@ on which to run the clustering (only if \code{subsample=FALSE})}
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs}.}
+\code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
 
 \item{sequential}{logical whether to use the sequential strategy (see
 details of \code{\link{seqCluster}}).}

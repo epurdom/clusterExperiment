@@ -81,7 +81,7 @@ details of \code{\link{seqCluster}}).}
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs}.}
+\code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}

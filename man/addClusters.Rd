@@ -17,7 +17,8 @@
 
 \S4method{addClusters}{ClusterExperiment,ClusterExperiment}(x, y)
 
-\S4method{addClusters}{ClusterExperiment,numeric}(x, y, ...)
+\S4method{addClusters}{ClusterExperiment,numeric}(x, y, clusterLabel = NULL,
+  ...)
 
 \S4method{removeClusters}{ClusterExperiment,character}(x, whichRemove,
   exactMatch = TRUE)
