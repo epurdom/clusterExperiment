@@ -4,6 +4,7 @@
 \name{ClusterExperiment-methods}
 \alias{ClusterExperiment-methods}
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
+\alias{[,ClusterExperiment,ANY,character,ANY-method}
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \alias{show,ClusterExperiment-method}
