@@ -11,7 +11,7 @@
 
 \S4method{clusterContrasts}{vector}(cluster, contrastType = c("Dendro",
   "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  outputType = "limma", removeNegative = TRUE)
+  outputType = c("limma", "MAST"), removeNegative = TRUE)
 }
 \arguments{
 \item{cluster}{Either a vector giving contrasts assignments or a

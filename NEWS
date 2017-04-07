@@ -2,12 +2,13 @@ Changes in version 1.1.1-9001 (Release date:  )
 ==============
 
 Changes:
-* RSEC now has option `rerunClusterMany`, which if FALSE will not rerun the clusterMany step if RSEC is called on an existing clusterExperiment object (assuming of course, clusterMany has been run already)
-* setBreaks now has option `makeSymmetric` to force symmetric breaks around zero when using the quantile option. Also, now breaks can be missing, and setBreaks will automatically find equal-spaced breaks of length 52 filling the range of data.
+* RSEC now has option `rerunClusterMany`, which if FALSE will not rerun the clusterMany step if RSEC is called on an existing clusterExperiment object (assuming of course, clusterMany has been run already on the object)
+* setBreaks now has option `makeSymmetric` to force symmetric breaks around zero when using the quantile option. 
+* setBreaks now has a default for breaks (i.e. for minimal use, the user doesn't have to give the argument, just the data) in which case setBreaks will automatically find equal-spaced breaks of length 52 filling the range of data compatible with aheatmap. The order of the arguments `data` and `breaks` has been switched, however, to better accomodate this usage. 
 * plotClusters can now handle NA values in the colData
-* plotClusters now allows for sampleData=TRUE for plotting all of the sampleData in the colData slot.
-* nPCADims now allows values between 0,1 to allow for keeping proportion of variance explained.
-* addClusters now allows for argument 'clusterLabel' to give clusterLabel when the added cluster is a vector (if matrix, then clusterLabel is just the column names of the matrix of cluster assignments)
+* plotClusters for `clusterExperiment` object now allows for setting `sampleData=TRUE` to indicate the plotting all of the sampleData in the colData slot.
+* nPCADims now allows values between 0,1 to allow for keeping *proportion* of variance explained.
+* addClusters now allows for argument `clusterLabel` to assign a clusterLabel when the added cluster is a vector (if matrix, then clusterLabel is just the column names of the matrix of cluster assignments)
 
 Bug fixes:
 * fixed bug in mergeClusters unable to plot when too big of edge lengths (same as plotDendrogram)

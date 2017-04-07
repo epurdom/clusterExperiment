@@ -11,7 +11,7 @@
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-#'
+#' @aliases [,ClusterExperiment,ANY,character,ANY-method
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "character"),
@@ -21,6 +21,8 @@ setMethod(
     
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @export
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "logical"),
@@ -29,6 +31,8 @@ setMethod(
     callGeneric()
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @export
 setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "numeric"),

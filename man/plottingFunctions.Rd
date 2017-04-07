@@ -22,7 +22,7 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
 showBigPalette(wh = NULL)
 
-setBreaks(data, breaks, makeSymmetric = FALSE)
+setBreaks(data, breaks = NA, makeSymmetric = FALSE)
 
 bigPalette
 
@@ -100,7 +100,7 @@ data(simData)
 x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 34, 25)))
 showBigPalette()
-setBreaks(.9,simData)
+setBreaks(data=simData,breaks=.9)
 
 #show the palette colors
 showHeatmapPalettes()
