@@ -28,9 +28,7 @@
 \alias{coClustering<-,ClusterExperiment,matrix-method}
 \alias{nClusters}
 \alias{nClusters,ClusterExperiment-method}
-\alias{nFeatures}
 \alias{nFeatures,ClusterExperiment-method}
-\alias{nSamples}
 \alias{nSamples,ClusterExperiment-method}
 \alias{orderSamples}
 \alias{orderSamples,ClusterExperiment-method}

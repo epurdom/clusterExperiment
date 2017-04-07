@@ -50,13 +50,13 @@ before clustering.}
 For the other signatures, passed to the method for signature \code{matrix}.
 Not all arguments can be passed to aheatmap effectively, see details.}
 
-\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that
-will be used to in \code{hclust} to define the hiearchical clustering of
-samples (e.g. normalized data) or a pre-existing dendrogram that clusters
+\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that 
+will be used to in \code{hclust} to define the hiearchical clustering of 
+samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
 the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-should be either character or integers. Indicates how (and whether) the
-samples should be clustered (or gives indices of the order for the
-samples). See details.}
+should be either character or integers or logical. Indicates how (and
+whether) the samples should be clustered (or gives indices of the order for
+the samples). See details.}
 
 \item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix that
 will be used in \code{hclust} to define the hiearchical clustering of
