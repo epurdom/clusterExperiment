@@ -479,8 +479,7 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE,
-                          overRideClusterLimit=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE,...
     ){
 
 
