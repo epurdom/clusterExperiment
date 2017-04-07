@@ -1,4 +1,11 @@
-Changes in version 0.99.4 (Release date: 2016-10-14 )
+Changes in version 1.1.1-9001 (Release date:  )
+==============
+
+Changes:
+* fixed bug in mergeClusters unable to plot when too big of edge lengths (same as plotDendrogram)
+
+
+Changes in version 1.1.1 (Release date: 2016-10-14 )
 ==============
 
 Changes:
