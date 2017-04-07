@@ -5,6 +5,7 @@ Changes:
 * plotClusters can now handle NA values in the colData
 * plotClusters now allows for sampleData=TRUE for plotting all of the sampleData in the colData slot.
 * nPCADims now allows values between 0,1 to allow for keeping proportion of variance explained.
+* addClusters now allows for argument 'clusterLabel' to give clusterLabel when the added cluster is a vector (if matrix, then clusterLabel is just the column names of the matrix of cluster assignments)
 
 Bug fixes:
 * fixed bug in mergeClusters unable to plot when too big of edge lengths (same as plotDendrogram)

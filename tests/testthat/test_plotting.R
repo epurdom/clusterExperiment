@@ -77,14 +77,15 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   x2<-plotClusters(ceSim,sampleData="all",resetColors=TRUE)
   x1<-plotClusters(ceSim,resetColors=TRUE)
   
-  #test the new TRUE option
-  plotClusters(naSim,sampleData=TRUE) 
   
   #check NAs
   naSim<-ceSim
   colData(naSim)[sample(10,1:nrow(naSim)),]<-NA
   plotClusters(naSim,sampleData=c("A","B"))
 
+  #test the new TRUE option
+  plotClusters(naSim,sampleData=TRUE) 
+  
   #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
 #  expect_equal(x1,x2)
 #   par(mfrow=c(1,2))
@@ -146,7 +147,10 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     #check that it pulls the names, not the clusterIds.
     clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
     plotHeatmap(cc)
+    
+    #check user setting clusterLegend
     plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
+    plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:3]))
     # the following works outside of the test but not inside
     # possibly issue with testthat? Not evaluating for now.
     #plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
