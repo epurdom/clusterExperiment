@@ -444,7 +444,7 @@ setMethod(
         out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
         nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
         if(length(nErrors)>0) {
-          stop(nErrors,"parameter values hit an error. The first was:\n",out[nErrors[1]])
+          stop(length(nErrors)," parameter values (of ",length(out),") hit an error. The first was:\n",out[nErrors[1]])
         }
       } else {
         out <- lapply(1:nrow(param),FUN=paramFun)

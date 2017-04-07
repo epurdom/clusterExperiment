@@ -213,6 +213,10 @@ test_that("accessing transformed data works as promised",
 #check all of the option handling on the dimensionality reduction arguments
   expect_equal(dim(transform(cc)), dim(assay(cc)))
   expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=3)), c(3,NCOL(assay(cc))))
+  expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=0.5)), c(4,NCOL(assay(cc))))
+
+  expect_equal(dim(transform(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))
+
   expect_equal(dim(transform(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce="cv",nVarDims=3)), c(3,NCOL(assay(cc))))
   expect_equal(dim(transform(cc,dimReduce="mad",nVarDims=3)), c(3,NCOL(assay(cc))))
