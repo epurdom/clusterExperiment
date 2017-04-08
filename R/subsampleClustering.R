@@ -82,6 +82,8 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
   #if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
   N <- dim(x)[2]
   subSize <- round(samp.p * N)
+  
+  ###Large Data Question -- rather than create this big sample, perhaps should do on the fly?
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
 	perSample<-function(ids){
 	#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
@@ -118,8 +120,11 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
 		    return(list(D=D,Dinclude=Dinclude))
 		}
 		else{
-			#instead return indices of observations separated into list based on clusters. 
-			return(tapply(1:N,classX,function(x){x},simplify=FALSE))
+			#instead return one vector of indices and another indicating length of each cluster
+			#vector, where ids in clusters are adjacent
+			clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
+			clusterLengths<-tapply(1:N,classX,length)
+			return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
 		}
 	}
 	  
@@ -129,13 +134,64 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
 	else{
 		DList<-parallel::mclapply(1:ncol(idx),function(nc){perSample(idx[,nc])},mc.cores=ncores,...)
 	}
+	#N large: get rid of these big matrices from memory
+	rm(idx)
+	rm(x)
+	gc()
 	if(!largeDataset){
 		DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
 		DNum<-Reduce("+",lapply(DList,function(y){y$D}))
 	    Dbar = DNum/DDenom
 	}
 	else{
-
+		otherIds<-function(idx,clustVec,clustLeng){
+			m<-which(clustVec==idx)
+			if(length(m)>1) stop("ids clustered in more than one cluster")
+			if(length(m)==0) return(NA) #sample not ever clustered
+			if(length(m)==1){
+				ends<-cumsum(clustLeng)
+				begins<-cumsum(c(1,head(clustLeng,-1)))
+				whCluster<-which(m<=ends & m>=begins)
+				if(length(whCluster)>1 | length(whCluster)==0) stop("error in coding: finding range of clusterids")
+				return(clustVec[seq(begins[whCluster],ends[whCluster],by=1)]) 
+			}
+		}
+		#Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
+		searchForPairs<-function(ii,clusterList){
+			#ii is an index. 
+			# clusterList is a list of all the subsampled returns from the perSample
+			## only search for pairs with index greater than ii
+			
+			whHave<-which(sapply(clusterList,function(ll){ii%in%ll$clusterIds}))
+			clusterWith<-lapply(clusterList[whHave],function(ll){
+				otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
+			})
+			clusterWithTab<-table(unlist(clusterWith))
+			sampledWithTab<-table(unlist(sapply(clusterList[whHave],.subset2,"clusterIds")))
+			#jointNames<-names(sampledWithTab) #if manage to not save NxN matrix, could use this to return only those that actually present
+			jointNames<-as.character(1:N)
+			out<-cbind(idx=as.integer(as.numeric(jointNames)),together=as.integer(clusterWithTab[jointNames]),total=as.integer(sampledWithTab[jointNames]))
+			out<-out[out[,"idx"]<ii,,drop=FALSE] #keep only the lower triangle
+			#out<-out[!is.na(out[,"together"]),,drop=FALSE] #if manage to not save NxN matrix, could use this to return only those that actually present; but then need to not return proportions, but something else.
+			return(out[,"together"]/out[,"total"])
+		}
+		#Test: searchForPairs(5,DList[1:2])
+		
+		if(ncores==1){
+			pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)})
+		}
+		else{
+			pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)},mc.cores=ncores,...)		
+		}
+		rm(x)
+		rm(DList)
+		gc()
+		#Create NxN matrix
+		Dbar<-matrix(0,N,N)
+		Dbar[upper.tri(Dbar, diag = FALSE)]<-unlist(pairList)
+		Dbar<-Dbar+t(Dbar)
+		Dbar[is.na(Dbar)]<-0
+		diag(Dbar)<-1
 	}
 #   if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
 #   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
