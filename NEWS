@@ -4,7 +4,8 @@ Changes:
 * plotHeatmap accepts data.frame values for the data argument (calls `data.matrix` on object and sends to matrix version)
 
 Bug fixes:
-* plotHeatmap now goes through the clusterLegend input and removes levels that do not exist in the sampleData; this was causing incorrect coloring when the clusterLegend had more (or less) levels that it assigned color to than the sampleData did (e.g. if sampleData was subset of larger dataset upon which the original colors were assigned.)
+* plotHeatmap now goes through the clusterLegend input and removes levels that do not exist in the sampleData; this was causing incorrect coloring when the clusterLegend had more (or less) levels that it assigned color to than the sampleData did (e.g. if sampleData was subset of larger dataset upon which the original colors were assigned.) Note that this now has the effect of NOT plotting all values in the clusterLegend, thus changing the previous behavior of plotHeatmap legend.
+* fixed bug in how plotHeatmap checked the dimensions of dendrogram match that of data.
 
 Changes in version 1.2.0 ( Release date:  2017-04-04 )
 ==============

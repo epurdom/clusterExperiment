@@ -551,7 +551,7 @@ setMethod(
     else{
         if(clusterFeatures){
             if(inherits(clusterFeaturesData, "dendrogram")){
-                if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+                if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
                 dendroFeatures<-clusterFeaturesData
             }
             else{
