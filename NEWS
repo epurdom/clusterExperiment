@@ -1,4 +1,4 @@
-Changes in version 1.1.1-9001 (Release date:  )
+Changes in version 1.2.0 ( Release date:  2017-04-04 )
 ==============
 
 Changes:
@@ -11,6 +11,7 @@ Changes:
 * addClusters now allows for argument `clusterLabel` to assign a clusterLabel when the added cluster is a vector (if matrix, then clusterLabel is just the column names of the matrix of cluster assignments)
 
 Bug fixes:
+* fixed bug in clusterExperiment subsetting to deal with orderSamples correctly.
 * fixed bug in mergeClusters unable to plot when too big of edge lengths (same as plotDendrogram)
 * fixed bug in subsetting, where unable to subset samples by character
 * fixed bug in removeClusters so that correctly updates dendro_index and primary_index slots after cluster removed.
