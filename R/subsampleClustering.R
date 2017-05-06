@@ -83,7 +83,7 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
   N <- dim(x)[2]
   subSize <- round(samp.p * N)
   
-  ###Large Data Question -- rather than create this big sample, perhaps should do on the fly?
+  ###Large Data: rather than create this big sample, perhaps should do on the fly?
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
 	perSample<-function(ids){
 	#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
