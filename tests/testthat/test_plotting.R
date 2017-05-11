@@ -227,3 +227,35 @@ test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="matrixNames")
   convertClusterLegend(smSimCE,output="matrixColors")
 })
+
+
+test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
+
+    #test numeric matrix version
+    plotBarplot(clusters=clusterMatrix(ceSim)[,1:2])
+    #test vector version
+    plotBarplot(clusters=clusterMatrix(ceSim)[,1])
+    #check error
+    expect_error(plotBarplot(clusters=clusterMatrix(ceSim)),"clusters must at most 2 clusters")
+    
+    #test CE version with no defaults
+    plotBarplot(ceSim)
+    #test CE version whichClusters arguments
+    plotBarplot(ceSim,whichClusters="workflow")
+    plotBarplot(ceSim,whichClusters="primaryCluster")
+    plotBarplot(ceSim)
+
+    
+    test<-ceSim
+    clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])]
+    #test character matrix version
+    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1:2])
+    #test character vector version
+    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1])
+    #test labels argument
+    plotBarplot(test,whichClusters=1:2,labels="id")
+    plotBarplot(test,whichClusters=1:2,labels="name")
+    #plotBarplot(ceSim,whichClusters="primaryCluster")
+    
+})
+

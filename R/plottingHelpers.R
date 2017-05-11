@@ -46,6 +46,7 @@ setMethod(
         colReturn<-if(output=="matrixNames") "name" else "color"
         return(colMat[m,colReturn])
       }))
+	  colnames(outval)<-clusterLabels(object)
 
     }
     if(output=="plotAndLegend"){

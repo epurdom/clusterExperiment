@@ -18,7 +18,11 @@
 \alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
 \alias{nSamples,ClusterExperiment-method}
-\alias{clusterMatrix,ClusterExperiment-method}
+\alias{clusterMatrix,ClusterExperiment,missing-method}
+\alias{clusterMatrix}
+\alias{clusterMatrix,ClusterExperiment,numeric-method}
+\alias{clusterMatrix}
+\alias{clusterMatrix,ClusterExperiment,character-method}
 \alias{clusterMatrix}
 \alias{primaryCluster,ClusterExperiment-method}
 \alias{primaryCluster}
@@ -70,7 +74,11 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrix}{ClusterExperiment}(x)
+\S4method{clusterMatrix}{ClusterExperiment,missing}(x, whichClusters)
+
+\S4method{clusterMatrix}{ClusterExperiment,numeric}(x, whichClusters)
+
+\S4method{clusterMatrix}{ClusterExperiment,character}(x, whichClusters)
 
 \S4method{primaryCluster}{ClusterExperiment}(x)
 
@@ -125,6 +133,10 @@ clusterMatrix).
 \code{nFeatures} returns the number of features (same as `nrow`).
 
 \code{nSamples} returns the number of samples (same as `ncol`).
+
+\code{clusterMatrix} returns the matrix with all the clusterings.
+
+\code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{clusterMatrix} returns the matrix with all the clusterings.
 

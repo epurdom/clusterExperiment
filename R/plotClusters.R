@@ -321,6 +321,8 @@ setMethod(
               axisLine=0,box=FALSE,...)
 {
   if(!is.matrix(clusters)) stop("clusters must be a matrix")
+	  
+	  
   if(!is.null(orderSamples) && !all(orderSamples %in% 1:nrow(clusters))) stop("invalid values for orderSamples")
   index<-orderSamples #match to old arguments
 

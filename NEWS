@@ -1,11 +1,14 @@
 Changes in version 1.2.0-9001 ( Release date:   )
 ==============
 Changes:
-* plotHeatmap accepts data.frame or ExpressionSet objects for the data argument (calls `data.matrix` or `exprs` on object and sends to matrix version)
+* `plotHeatmap` accepts `data.frame` or `ExpressionSet` objects for the data argument (calls `data.matrix` or `exprs` on object and sends to matrix version)
+* Added `plotBarplot` to plot a barplot for 1 cluster or comparison of 2 clusters along with tests.
+* Added `whichClusters` argument to `clusterMatrix` to return only clusters corresponding to certain clusters. Mainly relevant for using arguments like `workflow` that are used by other commands (otherwise could just index the complete matrix manually...)
 
 Bug fixes:
-* plotHeatmap now goes through the clusterLegend input and removes levels that do not exist in the sampleData; this was causing incorrect coloring when the clusterLegend had more (or less) levels that it assigned color to than the sampleData did (e.g. if sampleData was subset of larger dataset upon which the original colors were assigned.) Note that this now has the effect of NOT plotting all values in the clusterLegend, thus changing the previous behavior of plotHeatmap legend.
-* fixed bug in how plotHeatmap checked the dimensions of dendrogram match that of data.
+* `plotHeatmap` now goes through the `clusterLegend` input and removes levels that do not exist in the sampleData; this was causing incorrect coloring when the `clusterLegend` had more (or less) levels that it assigned color to than the `sampleData` did (e.g. if `sampleData` was a subset of larger dataset upon which the original colors were assigned.) NOTE: that this now has the effect of NOT plotting all values in the clusterLegend if they are not represented in the data, thus changing the previous behavior of `plotHeatmap` legend.
+* fixed bug in how `plotHeatmap` checked that the dimensions of user-supplied dendrogram match that of data (matrix version).
+* fixed `convertClusterLegend` so when `output` is `matrixNames` or `matrixColors`, the resulting matrix has the `colnames` equal to cluster labels, like `clusterMatrix`.
 
 Changes in version 1.2.0 ( Release date:  2017-04-04 )
 ==============
