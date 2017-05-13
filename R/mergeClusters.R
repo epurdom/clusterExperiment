@@ -247,6 +247,21 @@ setMethod(f = "mergeClusters",
         ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, tip.color=tip.color,...)
     }
 }
+# from ape package. 
+# ## use type = "mosaic" on a 30x5 matrix:
+# tr <- rtree(n <- 30)
+# p <- 5
+# x <- matrix(sample(3, size = n*p, replace = TRUE), n, p)
+# dimnames(x) <- list(paste0("t", 1:n), LETTERS[1:p])
+# plot(tr, x.lim = 35, align.tip = TRUE, adj = 1)
+# phydataplot(x, tr, "m", 2)
+# ## change the aspect:
+# plot(tr, x.lim = 35, align.tip = TRUE, adj = 1)
+# phydataplot(x, tr, "m", 2, width = 2, border = "white", lwd = 3, legend = "side")
+# ## user-defined colour:
+# f <- function(n) c("yellow", "blue", "red")
+# phydataplot(x, tr, "m", 18, width = 2, border = "white", lwd = 3,
+#             legend = "side", funcol = f)
 
 #' @rdname mergeClusters
 #' @export
