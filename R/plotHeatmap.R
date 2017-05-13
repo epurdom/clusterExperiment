@@ -608,6 +608,10 @@ setMethod(
                     ###Make sampleData explicitly factors, except for whSampleDataCont
         ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
         #browser()
+		#check that no ordered factors...
+        anyOrdered<-sapply(1:ncol(sampleData),function(ii){is.ordered(sampleData[,ii])})
+		if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
+		
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
         names(tmpDf)<-colnames(sampleData)
         if(!is.null(whSampleDataCont)){

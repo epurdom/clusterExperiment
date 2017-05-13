@@ -198,7 +198,7 @@ setMethod(f = "mergeClusters",
 }
 )
 
-.plotMerge<-function(dendro,mergeOutput,plotType,mergeMethod,clusterLegendMat=NULL,...){
+.plotMerge<-function(dendro,mergeOutput,plotType,mergeMethod,clusterLegendMat=NULL,dendroSamples=NULL,...){
     sigInfo<-mergeOutput$propDE
     whToMerge<-which(sigInfo$Merged)
     nodesToMerge<-sigInfo$Node[whToMerge]
@@ -247,7 +247,7 @@ setMethod(f = "mergeClusters",
         ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, tip.color=tip.color,...)
     }
 }
-# from ape package. 
+## If want to try to add plotCluster information, from example of phydataplot in ape package:
 # ## use type = "mosaic" on a 30x5 matrix:
 # tr <- rtree(n <- 30)
 # p <- 5
@@ -262,6 +262,7 @@ setMethod(f = "mergeClusters",
 # f <- function(n) c("yellow", "blue", "red")
 # phydataplot(x, tr, "m", 18, width = 2, border = "white", lwd = 3,
 #             legend = "side", funcol = f)
+
 
 #' @rdname mergeClusters
 #' @export
