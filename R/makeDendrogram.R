@@ -290,23 +290,26 @@ setMethod(
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-    phylo4Obj <- .makePhylobaseTree(dend, "dendro")
-    phyloObj <- as(phylo4Obj, "phylo")
-    leg<-clusterLegend(x)[[x@dendro_index]]
-    if(leaves=="clusters"){
-      m<-match(phyloObj$tip.label,leg[,"clusterIds"])
-      if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-      phyloObj$tip.label<-leg[m,"name"]
-      tip.color<-leg[m,"color"]
-      
-    }
-    else{
-      cl<-clusterMatrix(x)[,x@dendro_index]
-      m<-match(cl,leg[,"clusterIds"])
-      tip.color<-leg[m,"color"]
-    }
-    #browser()
-    if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
-    ape::plot.phylo(phyloObj, tip.color=tip.color,...)
-    invisible(phyloObj)
+	leg<-clusterLegend(x)[[x@dendro_index]]
+ 
+    invisible(.plotDendro<-function(dendro=dend,plotType=leaves,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,dendroSamples=NULL,...))
+    
+	# phylo4Obj <- .makePhylobaseTree(dend, "dendro")
+	#     phyloObj <- as(phylo4Obj, "phylo")
+	#     if(leaves=="clusters"){
+	#       m<-match(phyloObj$tip.label,leg[,"clusterIds"])
+	#       if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+	#       phyloObj$tip.label<-leg[m,"name"]
+	#       tip.color<-leg[m,"color"]
+	#
+	#     }
+	#     else{
+	#       cl<-clusterMatrix(x)[,x@dendro_index]
+	#       m<-match(cl,leg[,"clusterIds"])
+	#       tip.color<-leg[m,"color"]
+	#     }
+	#     #browser()
+	#     if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
+	#     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
+	#
   })

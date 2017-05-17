@@ -198,21 +198,32 @@ setMethod(f = "mergeClusters",
 }
 )
 
-.plotMerge<-function(dendro,mergeOutput,plotType,mergeMethod,clusterLegendMat=NULL,dendroSamples=NULL,...){
-    sigInfo<-mergeOutput$propDE
-    whToMerge<-which(sigInfo$Merged)
-    nodesToMerge<-sigInfo$Node[whToMerge]
-    methods<-colnames(sigInfo[,-c(1:3)])
-    if(plotType!="none"){
-        # phylobase has bug in plotting! submitted to their github
-        # move to ape package...
-        phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
-        phyloObj <- as(phylo4Obj, "phylo")
-        
+.plotDendro<-function(dendro,plotType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,dendroSamples=NULL,...){
+	
+    phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
+    phyloObj <- as(phylo4Obj, "phylo")
+	plotArgs<-list(...)
+    if(plotType=="clusters"){
+      m<-match(phyloObj$tip.label,leg[,"clusterIds"])
+      if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+      phyloObj$tip.label<-leg[m,"name"]
+      tip.color<-leg[m,"color"]
+      
+    }
+    if(plotType=="samples"){
+      cl<-clusterMatrix(x)[,x@dendro_index]
+      m<-match(cl,leg[,"clusterIds"])
+      tip.color<-leg[m,"color"]
+    }
+	if(plotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
         #####
         #convert names of internal nodes for plotting
         #####
         #match to order of tree
+	    sigInfo<-mergeOutput$propDE
+	    whToMerge<-which(sigInfo$Merged)
+	    nodesToMerge<-sigInfo$Node[whToMerge]
+	    methods<-colnames(sigInfo[,-c(1:3)])
         m <- match(phyloObj$node, sigInfo$Node)
         edgeLty <- rep(1, nrow(phyloObj$edge))
         if(mergeMethod != "none" && length(whToMerge) > 0) {
@@ -232,20 +243,22 @@ setMethod(f = "mergeClusters",
                 paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse=",\n")})
             
         }
-        #browser()
-        ###Add color and name from the object.
-        #browser()
-        if(!is.null(clusterLegendMat)){
-            m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
-            if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-            phyloObj$tip.label<-clusterLegendMat[m,"name"]
-            tip.color<-clusterLegendMat[m,"color"]
-        }
-        else tip.color<-"black"
-		    if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
-			
-        ape::plot.phylo(phyloObj, show.node=TRUE, edge.lty=edgeLty, tip.color=tip.color,...)
+		plotArgs$show.node.label<-TRUE
+		plotArgs$edge.lty<-edgeLty
+	}
+    ###Add color and name from the object.
+    #browser()
+    if(!is.null(clusterLegendMat)){
+        m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
+        if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+        phyloObj$tip.label<-clusterLegendMat[m,"name"]
+        tip.color<-clusterLegendMat[m,"color"]
     }
+    else tip.color<-"black"
+	if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) #otherwise get error
+			
+	do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color),plotArgs))
+	invisible(phyloObj)
 }
 ## If want to try to add plotCluster information, from example of phydataplot in ape package:
 # ## use type = "mosaic" on a 30x5 matrix:
