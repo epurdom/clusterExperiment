@@ -10,10 +10,10 @@
 #'   \code{\link{ClusterExperiment}}.
 #' @param cl A numeric vector with cluster assignments to compare to. ``-1''
 #'   indicates the sample was not assigned to a cluster.
-#' @param dendro dendrogram providing hierarchical clustering of clusters in cl;
-#'   The default for matrix (NULL) is to recalculate it with the given (x, cl)
-#'   pair. If x is a \code{\link{ClusterExperiment}} object, the dendrogram in
-#'   the slot \code{dendro_clusters} will be used. This means that
+#' @param dendro dendrogram providing hierarchical clustering of clusters in cl.
+#'   If x is a matrix, then the default is \code{dendro=NULL} and the function will calculate the dendrogram with the given (x, cl) pair using \code{\link{makeDendrogram}}.
+#'   If x is a \code{\link{ClusterExperiment}} object, the dendrogram in
+#'   the slot \code{dendro_clusters} will be used. In this case, this means that
 #'   \code{\link{makeDendrogram}} needs to be called before
 #'   \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
@@ -24,15 +24,16 @@
 #'   Must be a value between 0, 1, where
 #'   lower values will make it harder to merge clusters.
 #' @param plotType what type of plotting of dendrogram. If 'all', then all the
-#'   estimates of proportion non-null will be plotted; if 'mergeMethod', then
-#'   only the value used in the merging is plotted for each node.
+#'   estimates of proportion non-null will be plotted at each node of the dendrogram; if 'mergeMethod', then
+#'   only the value used in the merging is plotted at each node.
 #' @param isCount logical as to whether input data is a count matrix. See details.
 #' @param doPlot logical as to whether to plot the dendrogram (overrides
 #'   \code{plotType} value). Mainly used for internal coding purposes.
+#' @param dendroSamples If x is a matrix, this is a dendrogram on the samples (unlike \code{dendro} which is a dendrogram on the clusters); this should be a dendrogram that is the same topology as the dendrogram in \code{dendro}, but includes individual entries for the samples (see \code{\link{makeDendrogram}}). This is used ONLY for plotting the clusterings before and after merging (if \code{plotType} is not 'none'). If x is a \code{ClusterExperiment} object, this is passed internally and is not specified by the user. 
 #' @param ... for signature \code{matrix}, arguments passed to the
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
-#'   signature \code{matrix}.
+#'   signature \code{matrix} and then onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany,matrix-method
 #'
 #' @details If  \code{isCount=TRUE}, and the input is a matrix,
@@ -89,7 +90,7 @@
 #' @importFrom phylobase labels descendants ancestors getNode
 #' @importClassesFrom phylobase phylo4
 #' @importFrom graphics plot
-#' @importFrom ape plot.phylo
+#' @importFrom ape plot.phylo phydataplot
 #' @importFrom howmany howmany lowerbound
 #' @importFrom locfdr locfdr
 #' @rdname mergeClusters
@@ -97,9 +98,9 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
-                          plotType=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"),
+                          plotType=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"), 
                           cutoff=0.1, doPlot=TRUE,
-                          isCount=TRUE, ...) {
+                          isCount=TRUE, dendroSamples=NULL, ...) {
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- .convertToNum(cl)
@@ -193,88 +194,29 @@ setMethod(f = "mergeClusters",
   else oldClToNew=table(Original=cl, New=newcl)
   out<-list(clustering=newcl, oldClToNew=oldClToNew,
                  propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
-  if(doPlot) .plotMerge(dendro,mergeOutput=out,plotType=plotType,mergeMethod=mergeMethod,...)
+  if(doPlot){
+	  clMat<-cbind(Original=cl, mergeCluster=newcl)
+	  if(!is.null(dendroSamples)){
+		  if(is.null(names(cl))){
+			 warning("dendroSamples argument will be ignored because cl does not have names to allow for linkage to the dendroSamples values")
+			 dendroSamples<-NULL
+		  } 
+		  else{
+			  rownames(clMat)<-names(cl)	  	
+		  }
+	  }
+	  if(is.null(dendroSamples)){
+		  clMat<-unique(clMat)
+		  rownames(clMat)<-as.character(clMat[,1])
+	  }
+	  #browser()
+	  if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="colorblock",...)
+	 else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="colorblock",...)
+  	
+  }
   invisible(out)
 }
 )
-
-.plotDendro<-function(dendro,plotType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,dendroSamples=NULL,...){
-	
-    phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
-    phyloObj <- as(phylo4Obj, "phylo")
-	plotArgs<-list(...)
-    if(plotType=="clusters"){
-      m<-match(phyloObj$tip.label,leg[,"clusterIds"])
-      if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-      phyloObj$tip.label<-leg[m,"name"]
-      tip.color<-leg[m,"color"]
-      
-    }
-    if(plotType=="samples"){
-      cl<-clusterMatrix(x)[,x@dendro_index]
-      m<-match(cl,leg[,"clusterIds"])
-      tip.color<-leg[m,"color"]
-    }
-	if(plotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
-        #####
-        #convert names of internal nodes for plotting
-        #####
-        #match to order of tree
-	    sigInfo<-mergeOutput$propDE
-	    whToMerge<-which(sigInfo$Merged)
-	    nodesToMerge<-sigInfo$Node[whToMerge]
-	    methods<-colnames(sigInfo[,-c(1:3)])
-        m <- match(phyloObj$node, sigInfo$Node)
-        edgeLty <- rep(1, nrow(phyloObj$edge))
-        if(mergeMethod != "none" && length(whToMerge) > 0) {
-            whMerge <- which(phyloObj$node.label %in% nodesToMerge) #which of nodes merged
-            nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
-            whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
-            edgeLty[whEdge] <- 2
-        }
-        if(plotType == "mergeMethod"){
-            if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
-            phyloObj$node.label <- as.character(signif(sigInfo[m,mergeMethod],2))
-        }
-        if(plotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
-            meth<-if(plotType=="all") methods else methods[methods%in%plotType]
-            phyloObj$node.label <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
-                whKp<-which(!is.na(x))
-                paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse=",\n")})
-            
-        }
-		plotArgs$show.node.label<-TRUE
-		plotArgs$edge.lty<-edgeLty
-	}
-    ###Add color and name from the object.
-    #browser()
-    if(!is.null(clusterLegendMat)){
-        m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
-        if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-        phyloObj$tip.label<-clusterLegendMat[m,"name"]
-        tip.color<-clusterLegendMat[m,"color"]
-    }
-    else tip.color<-"black"
-	if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) #otherwise get error
-			
-	do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color),plotArgs))
-	invisible(phyloObj)
-}
-## If want to try to add plotCluster information, from example of phydataplot in ape package:
-# ## use type = "mosaic" on a 30x5 matrix:
-# tr <- rtree(n <- 30)
-# p <- 5
-# x <- matrix(sample(3, size = n*p, replace = TRUE), n, p)
-# dimnames(x) <- list(paste0("t", 1:n), LETTERS[1:p])
-# plot(tr, x.lim = 35, align.tip = TRUE, adj = 1)
-# phydataplot(x, tr, "m", 2)
-# ## change the aspect:
-# plot(tr, x.lim = 35, align.tip = TRUE, adj = 1)
-# phydataplot(x, tr, "m", 2, width = 2, border = "white", lwd = 3, legend = "side")
-# ## user-defined colour:
-# f <- function(n) c("yellow", "blue", "red")
-# phydataplot(x, tr, "m", 18, width = 2, border = "white", lwd = 3,
-#             legend = "side", funcol = f)
 
 
 #' @rdname mergeClusters
@@ -297,14 +239,12 @@ setMethod(f = "mergeClusters",
   if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
-            #browser()
+  
+###Note, doPlot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
   outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
                            cl=cl,
                            dendro=x@dendro_clusters, plotType=plotType,doPlot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
-  if(plotType!="none"){
-      .plotMerge(x@dendro_clusters,mergeOutput=outlist,plotType=plotType,mergeMethod=mergeMethod,clusterLegendMat=clusterLegend(x)[[x@dendro_index]])
-  }
   
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     #----
@@ -320,13 +260,163 @@ This makes sense only for counts.")
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    invisible(retval)
   }
   else{ #don't do anything, since there was no merging done.
-    invisible(x)
+    retval<-x
   }
+  if(plotType!="none"){
+   .plotDendro(retval@dendro_samples,leafType="samples",mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clusterMatrix(retval,whichCluster=retval@dendro_index),clusterLegendMat=clusterLegend(retval)[[retval@dendro_index]],label="name")
+   # .plotDendro(retval@dendro_clusters,leafType="clusters",mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clusterMatrix(retval,whichCluster=retval@dendro_index),clusterLegendMat=clusterLegend(retval)[[retval@dendro_index]],label="name")
+  }
+  
+  invisible(retval)
 }
 )
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),...){
+	label<-match.arg(label)
+    phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
+    phyloObj <- as(phylo4Obj, "phylo")
+	browser()
+	plotArgs<-list(...)
+	###############
+	### For plotting of dendrogram for the merging
+	### Add information about the merging
+	###############
+	if(!is.null(mergePlotType) && mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
+        #####
+        #convert names of internal nodes for plotting
+        #####
+        #match to order of tree
+		#browser()
+	    sigInfo<-mergeOutput$propDE
+	    whToMerge<-which(sigInfo$Merged)
+	    nodesToMerge<-sigInfo$Node[whToMerge]
+	    methods<-colnames(sigInfo[,-c(1:3)])
+        m <- match( sigInfo$Node,phyloObj$node)
+		if(any(is.na(m))) stop("some nodes in mergeOutput not in the given dendrogram")
+        edgeLty <- rep(1, nrow(phyloObj$edge))
+        if(mergeMethod != "none" && length(whToMerge) > 0) {
+            #which of nodes merged
+			whMerge <- which(phyloObj$node.label %in% nodesToMerge) 
+            nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
+            whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
+            edgeLty[whEdge] <- 2
+        }
+        if(mergePlotType == "mergeMethod"){
+            if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
+            phyloObj$node.label[m] <- as.character(signif(sigInfo[,mergeMethod],2))
+        }
+        if(mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
+            meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
+            phyloObj$node.label 
+			phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
+                whKp<-which(!is.na(x))
+                paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse=",\n")})
+        }
+		phyloObj$node.label[-m]<-""
+		plotArgs$show.node.label<-TRUE
+		plotArgs$edge.lty<-edgeLty
+	}
+	###############
+	### Generic:
+    ### Add color of cluster and cluster/sample name from the object.
+	###############
+	#temporary, do only 1 clustering:
+	if(is.matrix(cl) && ncol(cl)>1) cl<-cl[,1,drop=FALSE]
+	if(label=="colorblock" & is.null(clusterLegendMat)){
+		#create a default color scheme
+		clusterIds<-sort(unique(cl))
+		clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
+	}
+    if(!is.null(clusterLegendMat)){
+		if(leafType=="clusters"){
+			m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
+	        if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+	        phyloObj$tip.label<-clusterLegendMat[m,"name"]
+	        tip.color<-clusterLegendMat[m,"color"]
+			if(label=="colorblock"){
+				#browser()
+				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
+				colorMat<-matrix(as.numeric(clusterLegendMat[,"clusterIds"]),ncol=1)
+				row.names(colorMat)<-clusterLegendMat[,"name"]
+				cols<-clusterLegendMat[,"color"]
+				names(cols)<-clusterLegendMat[,"clusterIds"]
+				
+				#code that actually maps to the colors:
+			    # lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+			    # x <- .matchDataPhylo(x, phy)
+			    # n <- length(phy$tip.label)
+				# one2n <- seq_len(n)
+				# y1 <- lastPP$yy[one2n]
+			    # o <- order(y1)
+	            # x <- if (style == "image") x[o, o]
+	            # else if (is.vector(x)) x[o]
+	            # else x[o, ]
+				#nux <- length(ux <- unique.default(x))
+				#x <- match(x, ux)
+				#co <- funcol(nux)
+				#rect(xl, yb, xr, yt, col = co[x], xpd = TRUE, ...)
+				# so colors need to be in the order of unique.default(x)
+			}
+		
+		}
+		else{
+			m<-match(cl,clusterLegendMat[,"clusterIds"])
+	        tip.color<-clusterLegendMat[m,"color"]		
+			if(label=="colorblock"){
+				colorMat<-matrix(cl,ncol=1)
+				rownames(colorMat)<-names(cl)
+				cols<-tip.color
+				names(cols)<-as.character(cl)
+				
+			}	
+		}
+    }
+    else tip.color<-"black"
+		
+	###############
+	#this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
+	# Divides edge lengths so not too large.
+	###############
+	if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) 
+		
+		
+	
+	#	browser()
+	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color),plotArgs))
+	else{#if colorblock
+		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE),plotArgs))
+
+		#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017.
+		if(ncol(colorMat)==1){
+			colorMat<-cbind(colorMat,colorMat)
+		}
+		
+		
+		#we have to do this to get order for colors to be what we want!
+		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. 
+		#this doesn't work! can't find .PlotPhyloEnv 
+		# added ape:::, perhaps will work. But don't know how I can export it in package???
+		getColFun<-function(x,phy,namedColors){
+			x <- ape:::.matchDataPhylo(x, phy)
+			n <- length(phy$tip.label)
+			one2n <- seq_len(n)
+			lastPP <- get("last_plot.phylo", envir = ape:::.PlotPhyloEnv)
+			y1 <- lastPP$yy[one2n]
+			o <- order(y1)
+			ux<-unique.default(x[o])
+			m<-match(as.character(ux),names(namedColors))
+			function(n){namedColors[m]}
+		}
+		#browser()
+		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=1, width = 2, border = NA, lwd = 3,legend = "side")#, funcol = getColFun(colorMat,phyloObj,cols))
+
+		
+	}
+	
+	invisible(phyloObj)
+}
+
 
 .myTryFunc<-function(FUN,...){
   x<-try(FUN(...),silent=TRUE)

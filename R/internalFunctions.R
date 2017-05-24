@@ -110,6 +110,7 @@
 }
 
 .convertToNum<-function(x){
+	nms<-names(x)
     if(is.factor(x)){
         x<-as.character(x)
     }
@@ -120,9 +121,10 @@
         if(inherits(test,"try-error")) x<-as.numeric(factor(x))
         else x<-test
         options(op)
-        return(x)
+        
     }
-    else return(x)
+	names(x)<-nms
+	return(x)
 }
 ##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
 .makeIntegerClusters<-function(clMat){

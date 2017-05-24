@@ -270,9 +270,7 @@ setMethod(
 #'   it has one per cluster.
 #' @param main passed to the \code{plot} function.
 #' @param sub passed to the \code{plot} function.
-#' @param clusterNames logical. If \code{leaves="clusters"}, then clusters will
-#'   be identified with their 'name' value in legend; otherwise the 'clusterIds'
-#'   value will be used.
+#' @param labelLeaves one of 'name', 'colorblock' or 'id'. If 'Name' then dendrogram will be plotted, and name of cluster or sample (depending on type of value for \code{leaves}) will be plotted next to the leaf of the dendrogram. If 'colorblock', rectangular blocks, corresponding to the color of the cluster will be plotted, along with cluster name legend. If 'id' the internal clusterIds value will be plotted (only appropriate if \code{leaves="clusters"}). 
 #' @aliases plotDendrogram
 #' @details If \code{leaves="clusters"}, the plotting function will work best if
 #'   the clusters in the dendrogram correspond to the primary cluster. This is
@@ -282,17 +280,20 @@ setMethod(
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,leaves=c("clusters","samples" ), clusterNames=TRUE,
-                        main,sub,...)
+  definition = function(x,leaves=c("clusters","samples" ),  labelLeaves=c("name","colorblock","ids"), main,sub,...)
   {
     leaves<-match.arg(leaves)
+	labelLeaves<-match.arg(labelLeaves)
     if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
     dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
 	leg<-clusterLegend(x)[[x@dendro_index]]
- 
-    invisible(.plotDendro<-function(dendro=dend,plotType=leaves,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,dendroSamples=NULL,...))
+    cl<-switch(leaves,"samples"=clusterMatrix(x)[,x@dendro_index],"clusters"=NULL)
+	if(leaves=="samples") names(cl)<-colnames(x)
+    if(labelLeaves=="id") leg[,"name"]<-leg[,"clusterIds"]
+	label<-switch(labelLeaves,"name"="name","colorblock"="colorblock","ids"="name")
+	invisible(.plotDendro(dendro=dend,leafType=leaves,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,dendroSamples=NULL,cl=cl,label=label,...))
     
 	# phylo4Obj <- .makePhylobaseTree(dend, "dendro")
 	#     phyloObj <- as(phylo4Obj, "phylo")

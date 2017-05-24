@@ -1,4 +1,6 @@
 context("Dendrogram")
+library(devtools)
+load_all()
 source("create_objects.R")
 
 test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
@@ -92,4 +94,6 @@ test_that("plotDendrogram works", {
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
+  plotDendrogram(dend,leaves="samples")
+  plotDendrogram(dend,leaves="samples",label="colorblock")
 })
