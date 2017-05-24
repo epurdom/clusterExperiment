@@ -1,38 +1,48 @@
 #' @title Merge clusters based on dendrogram
-#'
-#' @description Takes an input of hierarchical clusterings of clusters and
-#'   returns estimates of number of proportion of non-null and merges those
+#'   
+#' @description Takes an input of hierarchical clusterings of clusters and 
+#'   returns estimates of number of proportion of non-null and merges those 
 #'   below a certain cutoff.
-#'
+#'   
 #' @aliases mergeClusters
-#'
-#' @param x data to perform the test on. It can be a matrix or a
+#'   
+#' @param x data to perform the test on. It can be a matrix or a 
 #'   \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments to compare to. ``-1''
+#' @param cl A numeric vector with cluster assignments to compare to. ``-1'' 
 #'   indicates the sample was not assigned to a cluster.
 #' @param dendro dendrogram providing hierarchical clustering of clusters in cl.
-#'   If x is a matrix, then the default is \code{dendro=NULL} and the function will calculate the dendrogram with the given (x, cl) pair using \code{\link{makeDendrogram}}.
-#'   If x is a \code{\link{ClusterExperiment}} object, the dendrogram in
-#'   the slot \code{dendro_clusters} will be used. In this case, this means that
-#'   \code{\link{makeDendrogram}} needs to be called before
-#'   \code{mergeClusters}.
+#'   If x is a matrix, then the default is \code{dendro=NULL} and the function
+#'   will calculate the dendrogram with the given (x, cl) pair using
+#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}}
+#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In
+#'   this case, this means that \code{\link{makeDendrogram}} needs to be called
+#'   before \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
-#'   used to merge clusters (if 'none', no merging will be done). See details
+#'   used to merge clusters (if 'none', no merging will be done). See details 
 #'   for description of methods.
-#' @param cutoff minimimum value required for NOT merging a cluster, i.e.
-#'   two clusters with the proportion of DE below cutoff will be merged.
-#'   Must be a value between 0, 1, where
-#'   lower values will make it harder to merge clusters.
-#' @param plotType what type of plotting of dendrogram. If 'all', then all the
-#'   estimates of proportion non-null will be plotted at each node of the dendrogram; if 'mergeMethod', then
-#'   only the value used in the merging is plotted at each node.
-#' @param isCount logical as to whether input data is a count matrix. See details.
-#' @param doPlot logical as to whether to plot the dendrogram (overrides
+#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two
+#'   clusters with the proportion of DE below cutoff will be merged. Must be a
+#'   value between 0, 1, where lower values will make it harder to merge
+#'   clusters.
+#' @param plotType what type of plotting of dendrogram. If 'all', then all the 
+#'   estimates of proportion non-null will be plotted at each node of the
+#'   dendrogram; if 'mergeMethod', then only the value used in the merging is
+#'   plotted at each node.
+#' @param isCount logical as to whether input data is a count matrix. See
+#'   details.
+#' @param doPlot logical as to whether to plot the dendrogram (overrides 
 #'   \code{plotType} value). Mainly used for internal coding purposes.
-#' @param dendroSamples If x is a matrix, this is a dendrogram on the samples (unlike \code{dendro} which is a dendrogram on the clusters); this should be a dendrogram that is the same topology as the dendrogram in \code{dendro}, but includes individual entries for the samples (see \code{\link{makeDendrogram}}). This is used ONLY for plotting the clusterings before and after merging (if \code{plotType} is not 'none'). If x is a \code{ClusterExperiment} object, this is passed internally and is not specified by the user. 
-#' @param ... for signature \code{matrix}, arguments passed to the
+#' @param dendroSamples If x is a matrix, this is a dendrogram on the samples
+#'   (unlike \code{dendro} which is a dendrogram on the clusters); this should
+#'   be a dendrogram that is the same topology as the dendrogram in
+#'   \code{dendro}, but includes individual entries for the samples (see
+#'   \code{\link{makeDendrogram}}). This is used ONLY for plotting the
+#'   clusterings before and after merging (if \code{plotType} is not 'none'). If
+#'   x is a \code{ClusterExperiment} object, this is passed internally and is
+#'   not specified by the user.
+#' @param ... for signature \code{matrix}, arguments passed to the 
 #'   \code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
-#'   For signature \code{ClusterExperiment} arguments passed to the method for
+#'   For signature \code{ClusterExperiment} arguments passed to the method for 
 #'   signature \code{matrix} and then onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany,matrix-method
 #'
@@ -81,7 +91,7 @@
 #'
 #' #merge clusters with plotting. Note argument 'use.edge.length' can improve
 #' #readability
-#' merged <- mergeClusters(cl, plot=TRUE, plotType="all",
+#' merged <- mergeClusters(cl, plotType="all",
 #' mergeMethod="adjP", use.edge.length=FALSE)
 #'
 #' #compare merged to original
@@ -210,8 +220,8 @@ setMethod(f = "mergeClusters",
 		  rownames(clMat)<-as.character(clMat[,1])
 	  }
 	  #browser()
-	  if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="colorblock",...)
-	 else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="colorblock",...)
+	  if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="name",outbranch=any(cl<0),...)
+	 else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clMat,label="name",...)
   	
   }
   invisible(out)
@@ -221,14 +231,24 @@ setMethod(f = "mergeClusters",
 
 #' @rdname mergeClusters
 #' @export
-#' @param clusterLabel a string used to describe the type of clustering. By
+#' @param clusterLabel a string used to describe the type of clustering. By 
 #'   default it is equal to "mergeClusters", to indicate that this clustering is
 #'   the result of a call to mergeClusters.
+#' @param labelLeaves if plotting, then whether leaves of dendrogram should be
+#'   labeled by rectangular blocks of color ("colorblock")  or with the names of
+#'   the leaves ("name").
+#' @param leaves if plotting, whether the leaves should be the clusters or the
+#'   samples. Choosing 'samples' allows for visualization of how many samples.
+#' @details Note that \code{leaves='samples'} is currently fragile, in the sense
+#'   that the alignment of the nodes in the cluster dendrogram (which correspond
+#'   to the merge cutoff values) to that of the dendrogram with individual
+#'   sample values is fragile, and may not be correct.
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod="none",plotType="all",clusterLabel="mergeClusters",...) {
-
+                                mergeMethod="none",plotType="all",clusterLabel="mergeClusters",leaves=c("clusters","samples" ),labelLeaves=c("name","colorblock","ids"),...) {
+  labelLeaves<-match.arg(labelLeaves)
+  leaves<-match.arg(leaves)
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
@@ -265,18 +285,34 @@ This makes sense only for counts.")
     retval<-x
   }
   if(plotType!="none"){
-   .plotDendro(retval@dendro_samples,leafType="samples",mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clusterMatrix(retval,whichCluster=retval@dendro_index),clusterLegendMat=clusterLegend(retval)[[retval@dendro_index]],label="name")
-   # .plotDendro(retval@dendro_clusters,leafType="clusters",mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clusterMatrix(retval,whichCluster=retval@dendro_index),clusterLegendMat=clusterLegend(retval)[[retval@dendro_index]],label="name")
+      dend<- switch(leaves,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
+  		leg<-clusterLegend(retval)[[retval@dendro_index]]
+      cl<-switch(leaves,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+  	if(leaves=="samples") names(cl)<-colnames(retval)
+      if(labelLeaves=="id") leg[,"name"]<-leg[,"clusterIds"]
+  	label<-switch(labelLeaves,"name"="name","colorblock"="colorblock","ids"="name")
+  	outbranch<-FALSE
+  	if(leaves=="samples" & any(cl<0)) outbranch<-TRUE
+
+  # outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
+  # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
+  # rownames(cl)<-colnames(retval)
+  # dend<-ifelse(leaves=="samples", retval@dendro_samples,retval@dendro_clusters)
+     .plotDendro(dendro=dend,leafType=leaves,mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch)
+
+ # .plotDendro(retval@dendro_clusters,leafType="clusters",mergeOutput=outlist,mergePlotType=plotType,mergeMethod=mergeMethod,cl=clusterMatrix(retval,whichCluster=retval@dendro_index),clusterLegendMat=clusterLegend(retval)[[retval@dendro_index]],label="colorblock")
   }
   
   invisible(retval)
 }
 )
-.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),...){
+
+
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,...){
 	label<-match.arg(label)
-    phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
+    phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
     phyloObj <- as(phylo4Obj, "phylo")
-	browser()
+	#browser()
 	plotArgs<-list(...)
 	###############
 	### For plotting of dendrogram for the merging
@@ -337,10 +373,10 @@ This makes sense only for counts.")
 			if(label=="colorblock"){
 				#browser()
 				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
-				colorMat<-matrix(as.numeric(clusterLegendMat[,"clusterIds"]),ncol=1)
+				colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
 				row.names(colorMat)<-clusterLegendMat[,"name"]
 				cols<-clusterLegendMat[,"color"]
-				names(cols)<-clusterLegendMat[,"clusterIds"]
+				names(cols)<-clusterLegendMat[,"name"]
 				
 				#code that actually maps to the colors:
 			    # lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
@@ -364,10 +400,10 @@ This makes sense only for counts.")
 			m<-match(cl,clusterLegendMat[,"clusterIds"])
 	        tip.color<-clusterLegendMat[m,"color"]		
 			if(label=="colorblock"){
-				colorMat<-matrix(cl,ncol=1)
+				colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
 				rownames(colorMat)<-names(cl)
 				cols<-tip.color
-				names(cols)<-as.character(cl)
+				names(cols)<-clusterLegendMat[m,"name"]
 				
 			}	
 		}
@@ -385,8 +421,9 @@ This makes sense only for counts.")
 	#	browser()
 	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color),plotArgs))
 	else{#if colorblock
-		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE),plotArgs))
-
+		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE,plot=FALSE),plotArgs))
+		treeWidth<-phyloPlotOut$x.lim[2]
+		do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE,x.lim=treeWidth*1.5),plotArgs))
 		#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017.
 		if(ncol(colorMat)==1){
 			colorMat<-cbind(colorMat,colorMat)
@@ -409,7 +446,7 @@ This makes sense only for counts.")
 			function(n){namedColors[m]}
 		}
 		#browser()
-		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=1, width = 2, border = NA, lwd = 3,legend = "side")#, funcol = getColFun(colorMat,phyloObj,cols))
+		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*.5/16, width = treeWidth*.5/4, border = NA, lwd = 3,legend = "side", funcol = getColFun(colorMat,phyloObj,cols))
 
 		
 	}

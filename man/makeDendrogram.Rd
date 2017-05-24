@@ -18,14 +18,14 @@
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
 
 \S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("clusters",
-  "samples"), clusterNames = TRUE, main, sub, ...)
+  "samples"), labelLeaves = c("name", "colorblock", "ids"), main, sub, ...)
 }
 \arguments{
-\item{x}{data to define the medoids from. Matrix and
+\item{x}{data to define the medoids from. Matrix and 
 \code{\link{ClusterExperiment}} supported.}
 
-\item{whichCluster}{an integer index or character string that identifies
-which cluster should be used to make the dendrogram. Default is
+\item{whichCluster}{an integer index or character string that identifies 
+which cluster should be used to make the dendrogram. Default is 
 primaryCluster.}
 
 \item{dimReduce}{character A character identifying what type of 
@@ -41,23 +41,28 @@ via top feature variability (i.e. 'var','cv','mad') should ignore
 unassigned samples in the primary clustering for calculation of the top 
 features.}
 
-\item{unassignedSamples}{how to handle unassigned samples("-1") ; only relevant
-for sample clustering. See details.}
+\item{unassignedSamples}{how to handle unassigned samples("-1") ; only
+relevant for sample clustering. See details.}
 
-\item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed
-to hclust; if signature \code{ClusterExperiment} passed to the method for
-signature \code{matrix}. For plotDendrogram, passed to \code{\link{plot.dendrogram}}.}
+\item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed 
+to hclust; if signature \code{ClusterExperiment} passed to the method for 
+signature \code{matrix}. For plotDendrogram, passed to
+\code{\link{plot.dendrogram}}.}
 
-\item{cluster}{A numeric vector with cluster assignments. If x is a
-ClusterExperiment object, cluster is automatically the primaryCluster(x).
+\item{cluster}{A numeric vector with cluster assignments. If x is a 
+ClusterExperiment object, cluster is automatically the primaryCluster(x). 
 ``-1'' indicates the sample was not assigned to a cluster.}
 
-\item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise
+\item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise 
 it has one per cluster.}
 
-\item{clusterNames}{logical. If \code{leaves="clusters"}, then clusters will
-be identified with their 'name' value in legend; otherwise the 'clusterIds'
-value will be used.}
+\item{labelLeaves}{one of 'name', 'colorblock' or 'id'. If 'Name' then
+dendrogram will be plotted, and name of cluster or sample (depending on
+type of value for \code{leaves}) will be plotted next to the leaf of the
+dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
+of the cluster will be plotted, along with cluster name legend. If 'id' the
+internal clusterIds value will be plotted (only appropriate if
+\code{leaves="clusters"}).}
 
 \item{main}{passed to the \code{plot} function.}
 
@@ -69,8 +74,8 @@ leaves are clusters and one in which the leaves are samples. If x is a
 ClusterExperiment object, the dendrograms are saved in the appropriate slots.
 }
 \description{
-Makes a dendrogram of a set of clusters based on hclust on the
-medoids of the cluster.
+Makes a dendrogram of a set of clusters based on hclust on the 
+  medoids of the cluster.
 }
 \details{
 The function returns two dendrograms (as a list if x is a matrix or

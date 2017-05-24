@@ -276,7 +276,7 @@
 
 ####
 #Convert to object used by phylobase so can navigate easily 
-.makePhylobaseTree<-function(x,type){
+.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
     type<-match.arg(type,c("hclust","dendro"))
     if(type=="hclust"){
         #first into phylo from ape package
@@ -289,8 +289,25 @@
     }
     phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-    phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-    return(phylo4Obj)
+	#browser()
+	if(isSamples){
+		clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
+		allInternal<-phylobase::getNode(phylo4Obj,type="internal")
+		if(outbranch){#remove root from labeling
+			rootNode<-phylobase::rootNode(phylo4Obj)
+			allInternal<-allInternal[!allInternal%in%rootNode]
+		}
+		trueInternal<-allInternal[!allInternal%in%clusterNodes]
+		
+		#browser()
+		phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
+		#phylobase::nodeLabels(phylo4Obj)[as.character(clusterNodes)]<-paste("Node",(length(trueInternal)+1):length(allInternal),sep="")
+	}
+	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+    
+	return(phylo4Obj)
 }
 
+# clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
+# sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
