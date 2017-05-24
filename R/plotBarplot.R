@@ -5,7 +5,6 @@
 #'
 #' @aliases plotBarplot
 #' @docType methods
-#' @inheritParams plotClusters
 #' @param clusters A matrix of with each column corresponding to a clustering
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. 
 #' @param colPalette a vector of colors used for the different clusters. Must be
@@ -38,6 +37,7 @@
 #'   clusterMany.
 #'
 #' @author Elizabeth Purdom
+#' @inheritParams plotClusters,ClusterExperiment,character-method
 
 #' @export
 #'
