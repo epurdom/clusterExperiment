@@ -30,16 +30,7 @@
 }
 \arguments{
 \item{clusters}{A matrix of with each column corresponding to a clustering
-and each row a sample or a \code{\link{ClusterExperiment}} object. If a
-matrix, the function will plot the clusterings in order of this matrix, and
-their order influences the plot greatly.}
-
-\item{whichClusters}{If numeric, a predefined order for the clusterings in
-the plot. If x is a \code{\link{ClusterExperiment}} object,
-\code{whichClusters} can be a character value identifying the
-\code{clusterTypess} to be used; alternatively \code{whichClusters}
-can be either 'all' or 'workflow' to indicate choosing all clusters or
-choosing all \code{\link{workflowClusters}}.}
+and each row a sample or a \code{\link{ClusterExperiment}} object.}
 
 \item{...}{for \code{plotBarplot} arguments passed either to the method
 of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
@@ -62,13 +53,6 @@ the 1st cluster of clusters matrix}
 
 \item{legend.title}{label for legend. By default or if equal NULL the column
 name of the 2st cluster of clusters matrix}
-
-\item{unassignedColor}{If ``-1'' in \code{clusters}, will be given this color
-(meant for samples not assigned to cluster).}
-
-\item{missingColor}{If ``-2'' in clusters, will be given this color (meant
-for samples that were missing from the clustering, mainly when comparing
-clusterings run on different sets of samples)}
 
 \item{colPalette}{a vector of colors used for the different clusters. Must be
 as long as the maximum number of clusters found in any single

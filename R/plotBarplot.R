@@ -5,21 +5,9 @@
 #'
 #' @aliases plotBarplot
 #' @docType methods
+#' @inheritParams plotClusters
 #' @param clusters A matrix of with each column corresponding to a clustering
-#'   and each row a sample or a \code{\link{ClusterExperiment}} object. If a
-#'   matrix, the function will plot the clusterings in order of this matrix, and
-#'   their order influences the plot greatly.
-#' @param whichClusters If numeric, a predefined order for the clusterings in
-#'   the plot. If x is a \code{\link{ClusterExperiment}} object,
-#'   \code{whichClusters} can be a character value identifying the
-#'   \code{clusterTypess} to be used; alternatively \code{whichClusters}
-#'   can be either 'all' or 'workflow' to indicate choosing all clusters or
-#'   choosing all \code{\link{workflowClusters}}.
-#' @param unassignedColor If ``-1'' in \code{clusters}, will be given this color
-#'   (meant for samples not assigned to cluster).
-#' @param missingColor If ``-2'' in clusters, will be given this color (meant
-#'   for samples that were missing from the clustering, mainly when comparing
-#'   clusterings run on different sets of samples)
+#'   and each row a sample or a \code{\link{ClusterExperiment}} object. 
 #' @param colPalette a vector of colors used for the different clusters. Must be
 #'   as long as the maximum number of clusters found in any single
 #'   clustering/column given in \code{clusters} or will otherwise return an
