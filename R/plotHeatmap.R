@@ -478,6 +478,15 @@ setMethod(
 )
 #' @rdname plotHeatmap
 setMethod(
+  f = "plotHeatmap",
+  signature = signature(data = "ExpressionSet"),
+  definition = function(data,...){
+	  plotHeatmap(exprs(data),...)
+  }
+)
+
+#' @rdname plotHeatmap
+setMethod(
     f = "plotHeatmap",
     signature = signature(data = "matrix"),
     definition = function(data,sampleData=NULL,

@@ -1,7 +1,7 @@
 Changes in version 1.2.0-9001 ( Release date:   )
 ==============
 Changes:
-* plotHeatmap accepts data.frame values for the data argument (calls `data.matrix` on object and sends to matrix version)
+* plotHeatmap accepts data.frame or ExpressionSet objects for the data argument (calls `data.matrix` or `exprs` on object and sends to matrix version)
 
 Bug fixes:
 * plotHeatmap now goes through the clusterLegend input and removes levels that do not exist in the sampleData; this was causing incorrect coloring when the clusterLegend had more (or less) levels that it assigned color to than the sampleData did (e.g. if sampleData was subset of larger dataset upon which the original colors were assigned.) Note that this now has the effect of NOT plotting all values in the clusterLegend, thus changing the previous behavior of plotHeatmap legend.
