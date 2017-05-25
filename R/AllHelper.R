@@ -183,6 +183,15 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
+#' @param whichClusters optional argument that can be either numeric or
+#'   character value. If numeric, gives the indices of the \code{clusterMatrix}
+#'   to return; this can also be used to defined an ordering for the
+#'   clusterings. \code{whichClusters} can be a character value identifying the 
+#'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
+#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either 
+#'   'all' or 'workflow' to indicate choosing all clusters or choosing all 
+#'   \code{\link{workflowClusters}}. If missing, the entire matrix of all
+#'   clusterings is returned.
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
