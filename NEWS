@@ -1,6 +1,8 @@
-Changes in version 1.2.0-9001 ( Release date:  2017-04-04 )
+Changes in version 1.2.0-9001 ( Release date:   )
 ==============
 
+Changes in version 1.2.0 ( Release date:  2017-04-04 )
+==============
 Changes:
 * RSEC now has option `rerunClusterMany`, which if FALSE will not rerun the clusterMany step if RSEC is called on an existing clusterExperiment object (assuming of course, clusterMany has been run already on the object)
 * setBreaks now has option `makeSymmetric` to force symmetric breaks around zero when using the quantile option. 
