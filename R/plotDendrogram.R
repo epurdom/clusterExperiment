@@ -87,6 +87,8 @@ setMethod(
       phyloObj <- as(phylo4Obj, "phylo")
   	#browser()
   	plotArgs<-list(...)
+	dataPct<-0.5
+	offsetDivide<-16
   	###############
   	### For plotting of dendrogram for the merging
   	### Add information about the merging
@@ -114,14 +116,25 @@ setMethod(
           if(mergePlotType == "mergeMethod"){
               if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
               phyloObj$node.label[m] <- as.character(signif(sigInfo[,mergeMethod],2))
+			  offsetDivide<-5
+			  dataPct<-.7		  	
           }
           if(mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
               meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
-              phyloObj$node.label 
-  			phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
-                  whKp<-which(!is.na(x))
-                  paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse=",\n")})
+			  phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
+              whKp<-which(!is.na(x))
+              paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")})
+			  if(mergePlotType!="all"){
+				  offsetDivide<-3
+				  dataPct<-.7
+			  }
+			  else{
+				  offsetDivide<-2.5
+				  dataPct<-.7
+			  	
+			  }
           }
+		  
   		phyloObj$node.label[-m]<-""
   		plotArgs$show.node.label<-TRUE
   		plotArgs$edge.lty<-edgeLty
@@ -196,7 +209,7 @@ setMethod(
   	else{#if colorblock
   		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE,plot=FALSE),plotArgs))
   		treeWidth<-phyloPlotOut$x.lim[2]
-  		do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE,x.lim=treeWidth*1.5),plotArgs))
+  		do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color,show.tip.label=FALSE,x.lim=treeWidth*(1+dataPct)),plotArgs))
   		#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017.
   		if(ncol(colorMat)==1){
   			colorMat<-cbind(colorMat,colorMat)
@@ -219,7 +232,7 @@ setMethod(
   			function(n){namedColors[m]}
   		}
   		#browser()
-  		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*.5/16, width = treeWidth*.5/4, border = NA, lwd = 3,legend = "side", funcol = getColFun(colorMat,phyloObj,cols))
+  		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = "side", funcol = getColFun(colorMat,phyloObj,cols))
 
 		
   	}
