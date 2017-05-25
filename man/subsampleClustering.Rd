@@ -6,8 +6,8 @@
 \usage{
 subsampleClustering(x, k, clusterFunction = "pam", clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"),
-  classifyFunction = NULL, resamp.num = 100, samp.p = 0.7, ncores = 1,
-  ...)
+  classifyFunction = NULL, largeDataset = FALSE, resamp.num = 100,
+  samp.p = 0.7, ncores = 1, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (samples in columns).}

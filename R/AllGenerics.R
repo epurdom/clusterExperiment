@@ -171,6 +171,14 @@ setGeneric(
 )
 
 setGeneric(
+    name="plotBarplot",
+    def=function(clusters, whichClusters,...)
+    {
+        standardGeneric("plotBarplot")
+    }
+)
+
+setGeneric(
   name="plotHeatmap",
   def=function(data,...)
   {
@@ -194,7 +202,7 @@ setGeneric(
 
 setGeneric(
   name = "clusterMatrix",
-  def = function(x) {
+  def = function(x,whichClusters) {
     standardGeneric("clusterMatrix")
   }
 )

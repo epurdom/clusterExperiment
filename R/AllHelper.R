@@ -188,11 +188,35 @@ setMethod(
 #' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
-  signature = "ClusterExperiment",
-  definition = function(x) {
+  signature = c("ClusterExperiment","missing"),
+  definition = function(x,whichClusters) {
     return(x@clusterMatrix)
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
+#' @export
+#' @aliases clusterMatrix
+setMethod(
+  f = "clusterMatrix",
+  signature = c("ClusterExperiment","numeric"),
+  definition = function(x,whichClusters) {
+    return(x@clusterMatrix[,whichClusters,drop=FALSE])
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
+#' @export
+#' @aliases clusterMatrix
+setMethod(
+  f = "clusterMatrix",
+  signature = c("ClusterExperiment","character"),
+  definition = function(x,whichClusters) {
+	  wh<-.TypeIntoIndices(x,whClusters=whichClusters)
+	  return(clusterMatrix(x,whichClusters=wh))
+  }
+)
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{primaryCluster} returns the primary clustering (as numeric).
