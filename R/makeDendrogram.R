@@ -2,9 +2,6 @@
 #'   
 #' @description Makes a dendrogram of a set of clusters based on hclust on the 
 #'   medoids of the cluster.
-#'   
-#' @aliases makeDendrogram
-#'   
 #' @param x data to define the medoids from. Matrix and 
 #'   \code{\link{ClusterExperiment}} supported.
 #' @param cluster A numeric vector with cluster assignments. If x is a 
@@ -265,62 +262,4 @@ setMethod(
 
 
 
-#' @rdname makeDendrogram
-#' @export
-#' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise 
-#'   it has one per cluster.
-#' @param main passed to the \code{plot} function.
-#' @param sub passed to the \code{plot} function.
-#' @param labelLeaves one of 'name', 'colorblock' or 'id'. If 'Name' then
-#'   dendrogram will be plotted, and name of cluster or sample (depending on
-#'   type of value for \code{leaves}) will be plotted next to the leaf of the
-#'   dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
-#'   of the cluster will be plotted, along with cluster name legend. If 'id' the
-#'   internal clusterIds value will be plotted (only appropriate if
-#'   \code{leaves="clusters"}).
-#' @aliases plotDendrogram
-#' @details If \code{leaves="clusters"}, the plotting function will work best if
-#'   the clusters in the dendrogram correspond to the primary cluster. This is
-#'   because the function colors the cluster labels based on the colors of the
-#'   clusterIds of the primaryCluster
-#' @importFrom ape plot.phylo
-setMethod(
-  f = "plotDendrogram",
-  signature = "ClusterExperiment",
-  definition = function(x,leaves=c("clusters","samples" ),  labelLeaves=c("name","colorblock","ids"), main,sub,...)
-  {
-    leaves<-match.arg(leaves)
-	labelLeaves<-match.arg(labelLeaves)
-    if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
-    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
-    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
 
-    dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-	leg<-clusterLegend(x)[[x@dendro_index]]
-    cl<-switch(leaves,"samples"=clusterMatrix(x)[,x@dendro_index],"clusters"=NULL)
-	if(leaves=="samples") names(cl)<-colnames(x)
-    if(labelLeaves=="id") leg[,"name"]<-leg[,"clusterIds"]
-	label<-switch(labelLeaves,"name"="name","colorblock"="colorblock","ids"="name")
-	outbranch<-FALSE
-	if(leaves=="samples" & any(cl<0)) outbranch<-TRUE
-	invisible(.plotDendro(dendro=dend,leafType=leaves,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=outbranch,...))
-    
-	# phylo4Obj <- .makePhylobaseTree(dend, "dendro")
-	#     phyloObj <- as(phylo4Obj, "phylo")
-	#     if(leaves=="clusters"){
-	#       m<-match(phyloObj$tip.label,leg[,"clusterIds"])
-	#       if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-	#       phyloObj$tip.label<-leg[m,"name"]
-	#       tip.color<-leg[m,"color"]
-	#
-	#     }
-	#     else{
-	#       cl<-clusterMatrix(x)[,x@dendro_index]
-	#       m<-match(cl,leg[,"clusterIds"])
-	#       tip.color<-leg[m,"color"]
-	#     }
-	#     #browser()
-	#     if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
-	#     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
-	#
-  })

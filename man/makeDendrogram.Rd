@@ -3,10 +3,7 @@
 \docType{methods}
 \name{makeDendrogram,ClusterExperiment-method}
 \alias{makeDendrogram,ClusterExperiment-method}
-\alias{makeDendrogram}
 \alias{makeDendrogram,matrix-method}
-\alias{plotDendrogram,ClusterExperiment-method}
-\alias{plotDendrogram}
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
@@ -16,9 +13,6 @@
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
-
-\S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("clusters",
-  "samples"), labelLeaves = c("name", "colorblock", "ids"), main, sub, ...)
 }
 \arguments{
 \item{x}{data to define the medoids from. Matrix and 
@@ -52,21 +46,6 @@ signature \code{matrix}. For plotDendrogram, passed to
 \item{cluster}{A numeric vector with cluster assignments. If x is a 
 ClusterExperiment object, cluster is automatically the primaryCluster(x). 
 ``-1'' indicates the sample was not assigned to a cluster.}
-
-\item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise 
-it has one per cluster.}
-
-\item{labelLeaves}{one of 'name', 'colorblock' or 'id'. If 'Name' then
-dendrogram will be plotted, and name of cluster or sample (depending on
-type of value for \code{leaves}) will be plotted next to the leaf of the
-dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
-of the cluster will be plotted, along with cluster name legend. If 'id' the
-internal clusterIds value will be plotted (only appropriate if
-\code{leaves="clusters"}).}
-
-\item{main}{passed to the \code{plot} function.}
-
-\item{sub}{passed to the \code{plot} function.}
 }
 \value{
 If x is a matrix, a list with two dendrograms, one in which the
@@ -95,11 +74,6 @@ that samples with "-1" should be discarded. This is not a permitted option,
 however, when \code{x} is a \code{ClusterExperiment} object, because it would
 return a dendrogram with less samples than \code{NCOL(x)}, which is not
 permitted for the \code{@dendro_samples} slot.
-
-If \code{leaves="clusters"}, the plotting function will work best if
-  the clusters in the dendrogram correspond to the primary cluster. This is
-  because the function colors the cluster labels based on the colors of the
-  clusterIds of the primaryCluster
 }
 \examples{
 data(simData)
