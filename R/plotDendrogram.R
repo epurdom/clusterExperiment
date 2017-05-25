@@ -89,6 +89,7 @@ setMethod(
   	plotArgs<-list(...)
 	dataPct<-0.5
 	offsetDivide<-16
+	if(label=="colorblock" && is.null(cl)) stop("Internal coding error: must provide a clustering if label='colorblock'")
   	###############
   	### For plotting of dendrogram for the merging
   	### Add information about the merging
@@ -140,61 +141,111 @@ setMethod(
   		plotArgs$edge.lty<-edgeLty
   	}
   	###############
-  	### Generic:
-      ### Add color of cluster and cluster/sample name from the object.
+  	### Add color of cluster and cluster/sample name from the object.
   	###############
-  	#temporary, do only 1 clustering:
-  	if(is.matrix(cl) && ncol(cl)>1) cl<-cl[,1,drop=FALSE]
-  	if(label=="colorblock" & is.null(clusterLegendMat)){
-  		#create a default color scheme
-  		clusterIds<-sort(unique(cl))
-  		clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
-  	}
-      if(!is.null(clusterLegendMat)){
-  		if(leafType=="clusters"){
-  			m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
-  	        if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-  	        phyloObj$tip.label<-clusterLegendMat[m,"name"]
-  	        tip.color<-clusterLegendMat[m,"color"]
-  			if(label=="colorblock"){
-  				#browser()
-  				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
-  				colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
-  				row.names(colorMat)<-clusterLegendMat[,"name"]
-  				cols<-clusterLegendMat[,"color"]
-  				names(cols)<-clusterLegendMat[,"name"]
-				
-  				#code that actually maps to the colors:
-  			    # lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
-  			    # x <- .matchDataPhylo(x, phy)
-  			    # n <- length(phy$tip.label)
-  				# one2n <- seq_len(n)
-  				# y1 <- lastPP$yy[one2n]
-  			    # o <- order(y1)
-  	            # x <- if (style == "image") x[o, o]
-  	            # else if (is.vector(x)) x[o]
-  	            # else x[o, ]
-  				#nux <- length(ux <- unique.default(x))
-  				#x <- match(x, ux)
-  				#co <- funcol(nux)
-  				#rect(xl, yb, xr, yt, col = co[x], xpd = TRUE, ...)
-  				# so colors need to be in the order of unique.default(x)
-  			}
-		
+	if(label=="colorblock"){
+		clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
+		if(is.null(clusterLegendMat)){ #make default colors, works for vector or matrix cl
+  			clusterIds<-sort(unique(as.vector(cl)))	  				clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
   		}
-  		else{
-  			m<-match(cl,clusterLegendMat[,"clusterIds"])
-  	        tip.color<-clusterLegendMat[m,"color"]		
-  			if(label=="colorblock"){
-  				colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
-  				rownames(colorMat)<-names(cl)
-  				cols<-tip.color
-  				names(cols)<-clusterLegendMat[m,"name"]
-				
-  			}	
-  		}
-      }
-      else tip.color<-"black"
+		else{
+			if(is.matrix(cl) && ncol(cl)>1){
+			  	#if not provide list of cluster legends, do only 1st clustering provided (temporary while fixing so works for matrix)
+				if(!is.list(clusterLegendMat) ) cl<-cl[,1,drop=FALSE]
+				else{
+					#create one big cl/clusterLegendMat object that will allow for coloring that is okay.
+					nclusters<-ncol(cl)
+					if(length(clusterLegendMat)!=nclusters) stop("Internal coding error -- wrong length of colors for clustering")
+					newClusterLegendMat<-clusterLegendMat[[1]]
+					newCl<-cl[,1]
+					#make it general in case some day want more than just 2 clusterings
+					for(ii in 2:nclusters){
+						currMat<-clusterLegendMat[[ii]]
+						currCl<-cl[,ii]
+						whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
+						
+						if(length(whExistingColor)>0){
+							#find new id to give it
+							matchNew<-match(currMat[whExistingColor,"color"],newClusterLegendMat[,"color"])
+							oldId<-currMat[whExistingColor,"clusterIds"]
+							newId<-newClusterLegendMat[matchNew,"clusterIds"]
+							mexist<-match(currCl,oldId)
+							newFullId<-newId[mexist]
+							currCl[!is.na(mexist)]<-newId[!is.na(mexist)]
+								
+							#change name so combination
+							newClusterLegendMat[matchNew,]<-paste(newClusterLegendMat[matchNew,"name"],currMat[whExistingcolor,"name"],sep="/")
+							#remove from current color scheme
+							currMat<-currMat[-whExistingColor,,drop=FALSE]
+						}
+						if(nrow(currMat)>0){
+							## increase remaing ids 
+							maxNew<-max(as.vector(newCl))
+							oldId2<-currMat[,"clusterIds"]
+							newId2<-seq(from=maxNew+1,by=1,length=length(oldId2))
+							mexist2<-match(currCl,oldId2)
+							newFullId2<-newId2[mexist2]
+							currCl[!is.na(mexist)]<-newId2[!is.na(mexist2)]
+							
+							## change ids in currMat
+							currMat[,"clusterIds"]<-newId2
+							
+							
+							## test correct that no overlap in ids or names or colors:
+							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])) stop("Internal coding error: still overlap in cluster Ids")
+							if(any(currMat[,"color"] %in% newClusterLegendMat[,"color"])) stop("Internal coding error: still overlap in color")
+							
+							## add to new cluster color legend
+							newClusterLegendMat<-rbind(newClusterLegendMat,currMat)
+						}
+						newCl<-cbind(newCl,currCl)
+						
+					}
+					
+
+					colnames(newCl)<-colnames(cl)
+					rownames(newCl)<-rownames(cl)
+					cl<-newCl
+					clusterLegend<-FALSE
+					
+				}
+					
+			}
+		}
+	} 
+	if(!is.null(clusterLegendMat)){
+		if(leafType=="clusters"){
+			m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])
+		    if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+		    phyloObj$tip.label<-clusterLegendMat[m,"name"]
+		    tip.color<-clusterLegendMat[m,"color"]
+			if(label=="colorblock"){
+				#browser()
+				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
+				colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
+				row.names(colorMat)<-clusterLegendMat[,"name"]
+				cols<-clusterLegendMat[,"color"]
+				names(cols)<-clusterLegendMat[,"name"]
+	
+
+			}
+
+		}
+		else{
+			m<-match(cl,clusterLegendMat[,"clusterIds"])
+		    tip.color<-clusterLegendMat[m,"color"]		
+			if(label=="colorblock"){
+				colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
+				rownames(colorMat)<-names(cl)
+				cols<-tip.color
+				names(cols)<-clusterLegendMat[m,"name"]
+	
+			}	
+		}
+	}
+	else tip.color<-"black"
+  	
+
 		
   	###############
   	#this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
@@ -220,6 +271,7 @@ setMethod(
   		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. 
   		#this doesn't work! can't find .PlotPhyloEnv 
   		# added ape:::, perhaps will work. But don't know how I can export it in package???
+		
   		getColFun<-function(x,phy,namedColors){
   			x <- ape:::.matchDataPhylo(x, phy)
   			n <- length(phy$tip.label)
@@ -231,8 +283,23 @@ setMethod(
   			m<-match(as.character(ux),names(namedColors))
   			function(n){namedColors[m]}
   		}
+		#code that actually maps to the colors:
+	    # lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+	    # x <- .matchDataPhylo(x, phy)
+	    # n <- length(phy$tip.label)
+		# one2n <- seq_len(n)
+		# y1 <- lastPP$yy[one2n]
+	    # o <- order(y1)
+        # x <- if (style == "image") x[o, o]
+        # else if (is.vector(x)) x[o]
+        # else x[o, ]
+		#nux <- length(ux <- unique.default(x))
+		#x <- match(x, ux)
+		#co <- funcol(nux)
+		#rect(xl, yb, xr, yt, col = co[x], xpd = TRUE, ...)
+		# so colors need to be in the order of unique.default(x)
   		#browser()
-  		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = "side", funcol = getColFun(colorMat,phyloObj,cols))
+  		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = "below", funcol = getColFun(colorMat,phyloObj,cols))
 
 		
   	}
