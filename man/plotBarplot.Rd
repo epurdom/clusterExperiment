@@ -30,16 +30,15 @@
 }
 \arguments{
 \item{clusters}{A matrix of with each column corresponding to a clustering
-and each row a sample or a \code{\link{ClusterExperiment}} object. If a
-matrix, the function will plot the clusterings in order of this matrix, and
-their order influences the plot greatly.}
+and each row a sample or a \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{If numeric, a predefined order for the clusterings in
-the plot. If x is a \code{\link{ClusterExperiment}} object,
-\code{whichClusters} can be a character value identifying the
-\code{clusterTypess} to be used; alternatively \code{whichClusters}
-can be either 'all' or 'workflow' to indicate choosing all clusters or
-choosing all \code{\link{workflowClusters}}.}
+\item{whichClusters}{If numeric, a predefined order for the clusterings in 
+the plot. If x is a \code{\link{ClusterExperiment}} object, 
+\code{whichClusters} can be a character value identifying the 
+\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
+\code{clusterLabels}; alternatively \code{whichClusters} can be either
+'all' or 'workflow' to indicate choosing all clusters or choosing all
+\code{\link{workflowClusters}}.}
 
 \item{...}{for \code{plotBarplot} arguments passed either to the method
 of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}

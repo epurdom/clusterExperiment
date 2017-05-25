@@ -1,4 +1,10 @@
-Changes in version 1.3.1 ( Release date: 2017-05-13 )
+Changes in version 1.3.0-9001( Release date: )
+==============
+Changes:
+
+Bugs:
+
+Changes in version 1.3.0 ( Release date: 2017-05-24  )
 ==============
 Changes:
 * `plotHeatmap` accepts `data.frame` or `ExpressionSet` objects for the data argument (calls `data.matrix` or `exprs` on object and sends to matrix version)
