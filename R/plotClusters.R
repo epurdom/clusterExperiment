@@ -9,12 +9,13 @@
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 #'   matrix, the function will plot the clusterings in order of this matrix, and
 #'   their order influences the plot greatly.
-#' @param whichClusters If numeric, a predefined order for the clusterings in
-#'   the plot. If x is a \code{\link{ClusterExperiment}} object,
-#'   \code{whichClusters} can be a character value identifying the
-#'   \code{clusterTypess} to be used; alternatively \code{whichClusters}
-#'   can be either 'all' or 'workflow' to indicate choosing all clusters or
-#'   choosing all \code{\link{workflowClusters}}.
+#' @param whichClusters If numeric, a predefined order for the clusterings in 
+#'   the plot. If x is a \code{\link{ClusterExperiment}} object, 
+#'   \code{whichClusters} can be a character value identifying the 
+#'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
+#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either
+#'   'all' or 'workflow' to indicate choosing all clusters or choosing all
+#'   \code{\link{workflowClusters}}.
 #' @param orderSamples A predefined order in which the samples will be plotted.
 #'   Otherwise the order will be found internally by aligning the clusters
 #'   (assuming \code{input="clusters"})
@@ -321,6 +322,8 @@ setMethod(
               axisLine=0,box=FALSE,...)
 {
   if(!is.matrix(clusters)) stop("clusters must be a matrix")
+	  
+	  
   if(!is.null(orderSamples) && !all(orderSamples %in% 1:nrow(clusters))) stop("invalid values for orderSamples")
   index<-orderSamples #match to old arguments
 

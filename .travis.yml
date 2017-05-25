@@ -31,7 +31,7 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - hadley/devtools
+  - hadley/devtools@efa894ffa
 
 ## Code coverage
 r_packages:

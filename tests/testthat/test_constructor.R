@@ -37,7 +37,13 @@ test_that("`clusterExperiment` constructor works with matrix and
             show(ccSE)
  })
 
-
+ test_that("whichClusters works with clusterMatrix",{
+	 x<-dim(clusterMatrix(ceSim))
+	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)
+	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="workflow")),12)
+	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters=1:3)),3)
+	 
+ })
 test_that("adding clusters work as promised",{
   ##########
   #addClusters

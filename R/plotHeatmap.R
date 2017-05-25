@@ -467,6 +467,24 @@ setMethod(
 
   })
 
+
+#' @rdname plotHeatmap
+setMethod(
+  f = "plotHeatmap",
+  signature = signature(data = "data.frame"),
+  definition = function(data,...){
+	  plotHeatmap(data.matrix(data),...)
+  }
+)
+#' @rdname plotHeatmap
+setMethod(
+  f = "plotHeatmap",
+  signature = signature(data = "ExpressionSet"),
+  definition = function(data,...){
+	  plotHeatmap(exprs(data),...)
+  }
+)
+
 #' @rdname plotHeatmap
 setMethod(
     f = "plotHeatmap",
@@ -542,7 +560,7 @@ setMethod(
     else{
         if(clusterFeatures){
             if(inherits(clusterFeaturesData, "dendrogram")){
-                if(nobs(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+                if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
                 dendroFeatures<-clusterFeaturesData
             }
             else{
@@ -590,9 +608,16 @@ setMethod(
                     ###Make sampleData explicitly factors, except for whSampleDataCont
         ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
         #browser()
+		#check that no ordered factors...
+        anyOrdered<-sapply(1:ncol(sampleData),function(ii){is.ordered(sampleData[,ii])})
+		if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
+		
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
         names(tmpDf)<-colnames(sampleData)
-        if(!is.null(whSampleDataCont)) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
+        if(!is.null(whSampleDataCont)){
+        	if(logical(whSampleDataCont)) whSampleDataCont<-which(whSampleDataCont)
+			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
+        } 
         annCol<-tmpDf
         #browser()
         convertNames <- TRUE
@@ -643,6 +668,19 @@ setMethod(
         } else {
           annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
         }
+		#remove any unused level colors to clean up legend and make them in same order as in annCol factor
+		whInAnnColors<-which(names(annColors)%in% colnames(annCol))
+		if(!is.null(whSampleDataCont) & length(whSampleDataCont)>0){
+			whInAnnColors<-setdiff(whInAnnColors,whSampleDataCont)
+		} 
+		prunedList<-lapply(whInAnnColors,function(ii){
+			nam<-names(annColors)[[ii]]
+			x<-annColors[[ii]]
+			levs<-levels(annCol[,nam])
+			x<-x[levs]
+		})
+		names(prunedList)<-names(annColors)[whInAnnColors]
+		annColors[whInAnnColors]<-prunedList
       }
       else{
         annCol<-NA

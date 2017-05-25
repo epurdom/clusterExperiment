@@ -5,6 +5,8 @@
 \alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap}
 \alias{plotHeatmap,ClusterExperiment-method}
+\alias{plotHeatmap,data.frame-method}
+\alias{plotHeatmap,ExpressionSet-method}
 \alias{plotHeatmap,matrix-method}
 \alias{plotCoClustering,ClusterExperiment-method}
 \alias{plotCoClustering}
@@ -19,6 +21,10 @@
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "workflow", "all", "none"),
   sampleData = NULL, clusterFeatures = TRUE, colorScale, ...)
+
+\S4method{plotHeatmap}{data.frame}(data, ...)
+
+\S4method{plotHeatmap}{ExpressionSet}(data, ...)
 
 \S4method{plotHeatmap}{matrix}(data, sampleData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
