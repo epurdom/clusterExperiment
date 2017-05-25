@@ -89,7 +89,7 @@ setMethod(
   	plotArgs<-list(...)
 	dataPct<-0.5
 	offsetDivide<-16
-	if(label=="colorblock" && is.null(cl)) stop("Internal coding error: must provide a clustering if label='colorblock'")
+	if(label=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if label='colorblock'")
   	###############
   	### For plotting of dendrogram for the merging
   	### Add information about the merging
@@ -146,7 +146,8 @@ setMethod(
 	if(label=="colorblock"){
 		clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
 		if(is.null(clusterLegendMat)){ #make default colors, works for vector or matrix cl
-  			clusterIds<-sort(unique(as.vector(cl)))	  				clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
+  			clusterIds<-sort(unique(as.vector(cl)))
+			clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
   		}
 		else{
 			if(is.matrix(cl) && ncol(cl)>1){
@@ -202,7 +203,7 @@ setMethod(
 						
 					}
 					
-
+					clusterLegendMat<-newClusterLegendMat
 					colnames(newCl)<-colnames(cl)
 					rownames(newCl)<-rownames(cl)
 					cl<-newCl
@@ -213,6 +214,7 @@ setMethod(
 			}
 		}
 	} 
+#	browser()
 	if(!is.null(clusterLegendMat)){
 		if(leafType=="clusters"){
 			m<-match(phyloObj$tip.label,clusterLegendMat[,"clusterIds"])

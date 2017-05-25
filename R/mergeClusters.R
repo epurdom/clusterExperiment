@@ -285,10 +285,22 @@ This makes sense only for counts.")
     retval<-x
   }
   if(plotType!="none"){
-      dend<- switch(leaves,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
-  		leg<-clusterLegend(retval)[[retval@dendro_index]]
-      cl<-switch(leaves,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
-  	if(leaves=="samples") names(cl)<-colnames(retval)
+    dend<- switch(leaves,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
+  	# leg<-clusterLegend(retval)[[retval@dendro_index]]
+  	#     cl<-switch(leaves,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+	if(leaves=="samples"){
+		whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
+	  	leg<-clusterLegend(retval)[whClusters]
+	    cl<-clusterMatrix(retval,whichClusters=whClusters)
+		
+	}
+	else{
+	  	leg<-clusterLegend(retval)[[retval@dendro_index]]
+	  	    cl<-switch(leaves,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+		
+	}
+  	#browser()
+	if(leaves=="samples") names(cl)<-colnames(retval)
       if(labelLeaves=="id") leg[,"name"]<-leg[,"clusterIds"]
   	label<-switch(labelLeaves,"name"="name","colorblock"="colorblock","ids"="name")
   	outbranch<-FALSE
