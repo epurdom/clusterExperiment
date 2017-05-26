@@ -12,32 +12,32 @@
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
-\item{leafType}{if "samples" the dendrogram has one leaf per sample, otherwise 
-it has one per cluster.}
+\item{leafType}{if "samples" the dendrogram has one leaf per sample,
+otherwise it has one per cluster.}
 
-\item{labelType}{one of 'name', 'colorblock' or 'id'. If 'Name' then
-dendrogram will be plotted, and name of cluster or sample (depending on
-type of value for \code{leafType}) will be plotted next to the leaf of the
+\item{labelType}{one of 'name', 'colorblock' or 'id'. If 'Name' then 
+dendrogram will be plotted, and name of cluster or sample (depending on 
+type of value for \code{leafType}) will be plotted next to the leaf of the 
 dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
 of the cluster will be plotted, along with cluster name legend. If 'id' the
-internal clusterIds value will be plotted (only appropriate if
+internal clusterIds value will be plotted (only appropriate if 
 \code{leafType="clusters"}).}
 
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
 
-\item{...}{arguments passed to the 
-\code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.}
+\item{...}{arguments passed to the \code{\link{plot.phylo}} function of
+\code{ape} that plots the dendrogram.}
 }
 \description{
 Plots the dendrogram saved in a clusterExperiment object
 }
 \details{
-If \code{leafType="clusters"}, the plotting function will work best if
-  the clusters in the dendrogram correspond to the primary cluster. This is
-  because the function colors the cluster labels based on the colors of the
-  clusterIds of the primaryCluster
+If \code{leafType="clusters"}, the plotting function will work best
+  if the clusters in the dendrogram correspond to the primary cluster. This
+  is because the function colors the cluster labels based on the colors of
+  the clusterIds of the primaryCluster
 }
 \examples{
 data(simData)

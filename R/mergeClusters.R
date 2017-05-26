@@ -11,65 +11,71 @@
 #' @param cl A numeric vector with cluster assignments to compare to. ``-1'' 
 #'   indicates the sample was not assigned to a cluster.
 #' @param dendro dendrogram providing hierarchical clustering of clusters in cl.
-#'   If x is a matrix, then the default is \code{dendro=NULL} and the function
-#'   will calculate the dendrogram with the given (x, cl) pair using
-#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}}
-#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In
-#'   this case, this means that \code{\link{makeDendrogram}} needs to be called
+#'   If x is a matrix, then the default is \code{dendro=NULL} and the function 
+#'   will calculate the dendrogram with the given (x, cl) pair using 
+#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}} 
+#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In 
+#'   this case, this means that \code{\link{makeDendrogram}} needs to be called 
 #'   before \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
 #'   used to merge clusters (if 'none', no merging will be done). See details 
 #'   for description of methods.
-#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two
-#'   clusters with the proportion of DE below cutoff will be merged. Must be a
-#'   value between 0, 1, where lower values will make it harder to merge
+#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two 
+#'   clusters with the proportion of DE below cutoff will be merged. Must be a 
+#'   value between 0, 1, where lower values will make it harder to merge 
 #'   clusters.
-#' @param plotInfo what type of information about the merging will be shown on the dendrogram. If 'all', then all the 
-#'   estimates of proportion non-null will be plotted at each node of the
-#'   dendrogram; if 'mergeMethod', then only the value used in the merging is
-#'   plotted at each node. If 'none', then no proportions will be added to the dendrogram. 'plotInfo' can also be one of the mergeMethod choices (even if that method is not the method chosen in 'mergeMethod' options). 
-#' @param isCount logical as to whether input data is a count matrix. See
+#' @param plotInfo what type of information about the merging will be shown on
+#'   the dendrogram. If 'all', then all the estimates of proportion non-null
+#'   will be plotted at each node of the dendrogram; if 'mergeMethod', then only
+#'   the value used in the merging is plotted at each node. If 'none', then no
+#'   proportions will be added to the dendrogram. 'plotInfo' can also be one of
+#'   the mergeMethod choices (even if that method is not the method chosen in
+#'   'mergeMethod' options).
+#' @param isCount logical as to whether input data is a count matrix. See 
 #'   details.
-#' @param plot logical as to whether to plot the dendrogram with the merge results
+#' @param plot logical as to whether to plot the dendrogram with the merge
+#'   results
 #' @param ... for signature \code{matrix}, arguments passed to the 
-#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
+#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 #'   For signature \code{ClusterExperiment} arguments passed to the method for 
 #'   signature \code{matrix} and then onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany,matrix-method
-#'
-#' @details If  \code{isCount=TRUE}, and the input is a matrix,
-#'   \code{log2(count + 1)} will be used for \code{\link{makeDendrogram}} and the
-#'   original data with voom correction will be used in
-#'   \code{\link{getBestFeatures}}). If input is
-#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also means
-#'   that the log2(1+count) will be used as the transformation, like for
-#'   the matrix case as well as the voom calculation, and will NOT use the
-#'   transformation stored in the object. If FALSE, then transform(x) will be
-#'   given to the input and will be used for both \code{makeDendrogram} and
+#'   
+#' @details If  \code{isCount=TRUE}, and the input is a matrix, \code{log2(count
+#'   + 1)} will be used for \code{\link{makeDendrogram}} and the original data
+#'   with voom correction will be used in \code{\link{getBestFeatures}}). If
+#'   input is \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE}
+#'   also means that the log2(1+count) will be used as the transformation, like
+#'   for the matrix case as well as the voom calculation, and will NOT use the 
+#'   transformation stored in the object. If FALSE, then transform(x) will be 
+#'   given to the input and will be used for both \code{makeDendrogram} and 
 #'   \code{getBestFeatures}, with no voom correction.
-#' @details "JC" refers to the method of Ji and Cai (2007), and implementation
-#'   of "JC" method is copied from code available on Jiashin Ji's website,
-#'   December 16, 2015
+#' @details "JC" refers to the method of Ji and Cai (2007), and implementation 
+#'   of "JC" method is copied from code available on Jiashin Ji's website, 
+#'   December 16, 2015 
 #'   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
-#'   refers to the method of Efron (2004) and is implemented in the package
+#'   refers to the method of Efron (2004) and is implemented in the package 
 #'   \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann
-#'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
+#'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP" 
 #'   refers to the proportion of genes that are found significant based on a FDR
 #'   adjusted p-values (method "BH") and a cutoff of 0.05.
-#'
-#' @details If \code{mergeMethod} is not equal to 'none' then the plotting will
-#'   indicate where the clusters will be merged (assuming \code{plotInfo} is not 'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will cause function to stop, because nothing is asked to be done. If you just want plot of the dendrogram, with no merging performed or demonstrated on the plot, see \code{\link{plotDendrogram}}.
-
-#' @return If `x` is a matrix, it returns (invisibly) a list with elements
-#'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x)
-#'   giving the integer-valued cluster ids for each sample. "-1" indicates the
-#'   sample was not clustered.} \item{\code{oldClToNew}}{ A table of the old
+#'   
+#' @details If \code{mergeMethod} is not equal to 'none' then the plotting will 
+#'   indicate where the clusters will be merged (assuming \code{plotInfo} is not
+#'   'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will
+#'   cause function to stop, because nothing is asked to be done. If you just
+#'   want plot of the dendrogram, with no merging performed or demonstrated on
+#'   the plot, see \code{\link{plotDendrogram}}.
+#' @return If `x` is a matrix, it returns (invisibly) a list with elements 
+#'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x) 
+#'   giving the integer-valued cluster ids for each sample. "-1" indicates the 
+#'   sample was not clustered.} \item{\code{oldClToNew}}{ A table of the old 
 #'   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
-#'   the proportions that are DE on each node.}
-#'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
+#'   the proportions that are DE on each node.} 
+#'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
 #'   was based (based on the original clustering).} }
-#' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new
-#'   \code{ClusterExperiment} object with an additional clustering based on the
+#' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
+#'   \code{ClusterExperiment} object with an additional clustering based on the 
 #'   merging. This becomes the new primary clustering.
 #' @examples
 #' data(simData)
@@ -90,8 +96,8 @@
 #' merged <- mergeClusters(cl, plotInfo="all",
 #' mergeMethod="adjP", use.edge.length=FALSE)
 #'
-#' #Simpler plot with just dendrogram
-#' merged <- mergeClusters(cl, plotInfo="all",
+#' #Simpler plot with just dendrogram and single method
+#' merged <- mergeClusters(cl, plotInfo="mergeMethod",
 #' mergeMethod="adjP", use.edge.length=FALSE,
 #' leafType="clusters",label="name")
 #'

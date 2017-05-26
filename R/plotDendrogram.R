@@ -1,42 +1,41 @@
 #' @title Plot dendrogram of clusterExperiment object
 #'   
 #' @description Plots the dendrogram saved in a clusterExperiment object
-
 #'   
 #' @param x a \code{\link{ClusterExperiment}} object.
-#' @param leafType if "samples" the dendrogram has one leaf per sample, otherwise 
-#'   it has one per cluster.
+#' @param leafType if "samples" the dendrogram has one leaf per sample,
+#'   otherwise it has one per cluster.
 #' @param main passed to the \code{plot.phylo} function to set main title.
 #' @param sub passed to the \code{plot.phylo} function to set subtitle.
-#' @param labelType one of 'name', 'colorblock' or 'id'. If 'Name' then
-#'   dendrogram will be plotted, and name of cluster or sample (depending on
-#'   type of value for \code{leafType}) will be plotted next to the leaf of the
+#' @param labelType one of 'name', 'colorblock' or 'id'. If 'Name' then 
+#'   dendrogram will be plotted, and name of cluster or sample (depending on 
+#'   type of value for \code{leafType}) will be plotted next to the leaf of the 
 #'   dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
 #'   of the cluster will be plotted, along with cluster name legend. If 'id' the
-#'   internal clusterIds value will be plotted (only appropriate if
+#'   internal clusterIds value will be plotted (only appropriate if 
 #'   \code{leafType="clusters"}).
-#' @param ... arguments passed to the 
-#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
+#' @param ... arguments passed to the \code{\link{plot.phylo}} function of
+#'   \code{ape} that plots the dendrogram.
 #' @aliases plotDendrogram
-#' @details If \code{leafType="clusters"}, the plotting function will work best if
-#'   the clusters in the dendrogram correspond to the primary cluster. This is
-#'   because the function colors the cluster labels based on the colors of the
-#'   clusterIds of the primaryCluster
+#' @details If \code{leafType="clusters"}, the plotting function will work best
+#'   if the clusters in the dendrogram correspond to the primary cluster. This
+#'   is because the function colors the cluster labels based on the colors of
+#'   the clusterIds of the primaryCluster
 #' @importFrom ape plot.phylo
 #' @export
-#'
+#' 
 #' @examples
 #' data(simData)
-#'
+#' 
 #' #create a clustering, for 8 clusters (truth was 3)
 #' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))
-#'
+#' 
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
 #' plotDendrogram(hcl)
 #' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
-#'
+#' 
 #' @export
 #' @rdname plotDendrogram
 setMethod(
@@ -234,7 +233,7 @@ setMethod(
 					names(cols)<-clusterLegendMat[,"name"]
 	
 				}
-				
+				tip.color<-"black"
 			}
 			else{
 				clNames<-names(cl)
