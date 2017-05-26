@@ -6,35 +6,35 @@
 \alias{plotDendrogram}
 \title{Plot dendrogram of clusterExperiment object}
 \usage{
-\S4method{plotDendrogram}{ClusterExperiment}(x, leaves = c("clusters",
-  "samples"), labelLeaves = c("name", "colorblock", "ids"), sub, ...)
+\S4method{plotDendrogram}{ClusterExperiment}(x, leafType = c("clusters",
+  "samples"), labelType = c("name", "colorblock", "ids"), main, sub, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
-\item{leaves}{if "samples" the dendrogram has one leaf per sample, otherwise 
+\item{leafType}{if "samples" the dendrogram has one leaf per sample, otherwise 
 it has one per cluster.}
 
-\item{labelLeaves}{one of 'name', 'colorblock' or 'id'. If 'Name' then
+\item{labelType}{one of 'name', 'colorblock' or 'id'. If 'Name' then
 dendrogram will be plotted, and name of cluster or sample (depending on
-type of value for \code{leaves}) will be plotted next to the leaf of the
+type of value for \code{leafType}) will be plotted next to the leaf of the
 dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
 of the cluster will be plotted, along with cluster name legend. If 'id' the
 internal clusterIds value will be plotted (only appropriate if
-\code{leaves="clusters"}).}
+\code{leafType="clusters"}).}
+
+\item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
 
 \item{...}{arguments passed to the 
-\code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.}
-
-\item{main}{passed to the \code{plot.phylo} function to set main title.}
+\code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.}
 }
 \description{
 Plots the dendrogram saved in a clusterExperiment object
 }
 \details{
-If \code{leaves="clusters"}, the plotting function will work best if
+If \code{leafType="clusters"}, the plotting function will work best if
   the clusters in the dendrogram correspond to the primary cluster. This is
   because the function colors the cluster labels based on the colors of the
   clusterIds of the primaryCluster
@@ -49,6 +49,6 @@ sequential=FALSE, clusterDArgs=list(k=8))
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
-plotDendrogram(hcl, leaves="samples",labelLeaves="colorblock")
+plotDendrogram(hcl, leafType="samples",labelType="colorblock")
 
 }

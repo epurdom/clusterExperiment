@@ -68,6 +68,7 @@ setMethod(
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
 #    browser()
     cl<-clusterMatrix(x)[,whCl]
+	#cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
     ########
     ##Transform the data
     ########
@@ -85,7 +86,7 @@ setMethod(
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
     dat <- transObj$x
-    if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
+	if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
     outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
@@ -113,22 +114,25 @@ setMethod(
     if(is.null(colnames(x))) {
       colnames(x) <- as.character(1:ncol(x))
     }
-    if(is.factor(cl)) {
-      warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-      cl<-as.numeric(as.character(cl))
-    }
+	clNum<-.convertToNum(cl)
+  
+    # if(is.factor(cl)) {
+    #   warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+    #   cl<-as.numeric(as.character(cl))
+    # }
     #dat <- t(x) #make like was in old code
 
     #############
     # Cluster dendrogram
     #############
-    whRm <- which(cl >= 0) #remove -1, -2
+    whRm <- which(clNum >= 0) #remove -1, -2
     if(length(whRm) == 0) stop("all samples have clusterIds<0")
     if(length(unique(cl[whRm]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-    clFactor <- factor(cl[whRm])
+	clFactor <- factor(cl[whRm])
     medoids <- do.call("rbind", by(t(x[,whRm]), clFactor, function(z){apply(z, 2, median)}))
     rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
+	#browser()
     clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
     
     #############
@@ -248,6 +252,7 @@ setMethod(
             return(as.dendrogram(stats::hclust(dist(fakeData))))
         }
     }
+#	browser()
     fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
     if(length(whRm) != nrow(dat) && unassigned == "outgroup"){
         #need to get rid of super long outgroup arm

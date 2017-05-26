@@ -13,21 +13,26 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   mergedList <- mergeClusters(x=transform(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="adjP", plotType="mergeMethod")
+                              mergeMethod="adjP", plotInfo="mergeMethod")
 
   
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotType="all")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="adjP")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="locfdr")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotType="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotType="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotType="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="mergeMethod")
-  expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotType="mergeMethod"),"can only plot merge method values if one method is selected")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotType="none")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotInfo="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotInfo="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotInfo="mergeMethod")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod")
+  expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="mergeMethod"),"can only plot 'mergeMethod' results if one method is selected")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
   
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
+
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
 
   expect_error(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
                                cl=primaryCluster(clustWithDendro),plot="none",

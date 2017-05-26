@@ -9,14 +9,13 @@
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
-  plotType = c("none", "all", "mergeMethod", "adjP", "locfdr", "MB", "JC"),
-  cutoff = 0.1, doPlot = TRUE, isCount = TRUE, dendroSamples = NULL,
-  ...)
+  plotInfo = c("none", "all", "mergeMethod", "adjP", "locfdr", "MB", "JC"),
+  cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  isCount = FALSE, mergeMethod = "none", plotType = "all",
-  clusterLabel = "mergeClusters", leaves = c("clusters", "samples"),
-  labelLeaves = c("name", "colorblock", "ids"), ...)
+  isCount = FALSE, mergeMethod = "none", plotInfo = "all",
+  clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
+  labelType = c("colorblock", "name", "ids"), plot = TRUE, ...)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a 
@@ -37,33 +36,23 @@ before \code{mergeClusters}.}
 used to merge clusters (if 'none', no merging will be done). See details 
 for description of methods.}
 
-\item{plotType}{what type of plotting of dendrogram. If 'all', then all the 
+\item{plotInfo}{what type of information about the merging will be shown on the dendrogram. If 'all', then all the 
 estimates of proportion non-null will be plotted at each node of the
 dendrogram; if 'mergeMethod', then only the value used in the merging is
-plotted at each node.}
+plotted at each node. If 'none', then no proportions will be added to the dendrogram. 'plotInfo' can also be one of the mergeMethod choices (even if that method is not the method chosen in 'mergeMethod' options).}
 
 \item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two
 clusters with the proportion of DE below cutoff will be merged. Must be a
 value between 0, 1, where lower values will make it harder to merge
 clusters.}
 
-\item{doPlot}{logical as to whether to plot the dendrogram (overrides 
-\code{plotType} value). Mainly used for internal coding purposes.}
+\item{plot}{logical as to whether to plot the dendrogram with the merge results}
 
 \item{isCount}{logical as to whether input data is a count matrix. See
 details.}
 
-\item{dendroSamples}{If x is a matrix, this is a dendrogram on the samples
-(unlike \code{dendro} which is a dendrogram on the clusters); this should
-be a dendrogram that is the same topology as the dendrogram in
-\code{dendro}, but includes individual entries for the samples (see
-\code{\link{makeDendrogram}}). This is used ONLY for plotting the
-clusterings before and after merging (if \code{plotType} is not 'none'). If
-x is a \code{ClusterExperiment} object, this is passed internally and is
-not specified by the user.}
-
 \item{...}{for signature \code{matrix}, arguments passed to the 
-\code{\link{plot.phylo}} function of \code{ade4} that plots the dendrogram.
+\code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
 For signature \code{ClusterExperiment} arguments passed to the method for 
 signature \code{matrix} and then onto \code{\link{plot.phylo}}.}
 
@@ -76,14 +65,14 @@ clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By 
 default it is equal to "mergeClusters", to indicate that this clustering is
-the result of a call to mergeClusters.}
+the result of a call to mergeClusters (only if x is a ClusterExperiment object)}
 
-\item{leaves}{if plotting, whether the leaves should be the clusters or the
-samples. Choosing 'samples' allows for visualization of how many samples.}
+\item{leafType}{if plotting, whether the leaves should be the clusters or the
+samples. Choosing 'samples' allows for visualization of how many samples are in the merged clusters (only if x is a ClusterExperiment object).}
 
-\item{labelLeaves}{if plotting, then whether leaves of dendrogram should be
+\item{labelType}{if plotting, then whether leaves of dendrogram should be
 labeled by rectangular blocks of color ("colorblock")  or with the names of
-the leaves ("name").}
+the leaves ("name") (only if x is a ClusterExperiment object).}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements
@@ -127,9 +116,9 @@ If  \code{isCount=TRUE}, and the input is a matrix,
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
 If \code{mergeMethod} is not equal to 'none' then the plotting will
-  indicate where the clusters will be merged (assuming \code{plotType} is not 'none').
+  indicate where the clusters will be merged (assuming \code{plotInfo} is not 'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will cause function to stop, because nothing is asked to be done. If you just want plot of the dendrogram, with no merging performed or demonstrated on the plot, see \code{\link{plotDendrogram}}.
 
-Note that \code{leaves='samples'} is currently fragile, in the sense
+Note that \code{leafType='samples'} is currently fragile, in the sense
   that the alignment of the nodes in the cluster dendrogram (which correspond
   to the merge cutoff values) to that of the dendrogram with individual
   sample values is fragile, and may not be correct.
@@ -141,14 +130,24 @@ data(simData)
 cl<-clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 sequential=FALSE, clusterDArgs=list(k=8))
 
+#give more interesting names to clusters:
+newNames<- paste("Cluster",clusterLegend(cl)[[1]][,"name"],sep="")
+clusterLegend(cl)[[1]][,"name"]<-newNames
 #make dendrogram
 cl <- makeDendrogram(cl)
 
-#merge clusters with plotting. Note argument 'use.edge.length' can improve
-#readability
-merged <- mergeClusters(cl, plotType="all",
+#plot showing the before and after clustering
+#(Note argument 'use.edge.length' can improve
+#readability)
+merged <- mergeClusters(cl, plotInfo="all",
 mergeMethod="adjP", use.edge.length=FALSE)
+
+#Simpler plot with just dendrogram
+merged <- mergeClusters(cl, plotInfo="all",
+mergeMethod="adjP", use.edge.length=FALSE,
+leafType="clusters",label="name")
 
 #compare merged to original
 table(primaryCluster(cl), primaryCluster(merged))
+
 }
