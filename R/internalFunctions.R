@@ -306,16 +306,22 @@
 			
 			#######
 			#find the -1/-2 internal node (if it exists)
+			#determine it as the one without 0-length tip edges.
 			#######
 			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-			#find node descendants of these:
-			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="all")
-			rootChildNum<-sapply(rootChildDesc,function(x){length(x[x%in%trueInternal])})
-			outbranchNode<-rootChild[rootChildNum<=1]
+			#find tip descendants of these:
+			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
+			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
+			rootChildNum<-sapply(rootChildLeng,min)
+			outbranchNode<-rootChild[rootChildNum>0]
+			
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE
-				trueInternal<-trueInternal[!trueInternal%in%outbranchNode]
+				outbranchNodeDesc<-phylobase::descendants(phylo4Obj,node=outbranchNode,type="ALL") #includes itself
+				trueInternal<-trueInternal[!trueInternal%in%outbranchNodeDesc]
+				outbranchNodeDesc<-outbranchNodeDesc[outbranchNodeDesc %in% phylobase::getNode(phylo4Obj,type="internal")]
 			}
+			else outbranchIsInternal<-FALSE
 			
 		}
 		#trueInternal<-allInternal[!allInternal%in%clusterNodes]
@@ -324,7 +330,7 @@
 		#add new label for root 
 		if(outbranch){
 			phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
-			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNode)]<-"MissingSamples"
+			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",1:length(outbranchNodeDesc),sep="")
 		}
 	}
 	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
