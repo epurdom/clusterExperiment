@@ -98,4 +98,17 @@ test_that("plotDendrogram works", {
   plotDendrogram(dend,leafType="samples",labelType="colorblock")
   plotDendrogram(dend,leafType="clusters",labelType="colorblock")
   plotDendrogram(dend,leafType="clusters",labelType="name")
+  
+  ## make all -2
+  dend2<-dend
+  mat<-clusterMatrix(dend2)
+  mat[1,1]<- -2
+  dend2@clusterMatrix<-mat
+  leg<-dend2@clusterLegend[[1]]
+  leg<-leg[-which(leg[,"clusterIds"]== -1),]
+  dend2@clusterLegend[[1]]<-leg
+  dend2 <- makeDendrogram(dend2)
+  plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend2,leafType="samples",labelType="colorblock")
+  
 })
