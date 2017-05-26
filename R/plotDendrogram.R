@@ -56,16 +56,17 @@ setMethod(
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
 	outbranch<-FALSE
-	if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
+	if(leafType=="samples" & any(cl<0)) outbranch<-x@dendro_outbranch
 	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=outbranch,main=main,sub=sub,...))
     
   })
   
   
-  .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,...){
+  .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=TRUE,...){
   	label<-match.arg(label)
       phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
-      phyloObj <- as(phylo4Obj, "phylo")
+      #browser()
+	  phyloObj <- as(phylo4Obj, "phylo")
   	#browser()
   	plotArgs<-list(...)
 	dataPct<-0.5

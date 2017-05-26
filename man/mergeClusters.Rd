@@ -124,6 +124,13 @@ If \code{mergeMethod} is not equal to 'none' then the plotting will
   cause function to stop, because nothing is asked to be done. If you just
   want plot of the dendrogram, with no merging performed or demonstrated on
   the plot, see \code{\link{plotDendrogram}}.
+
+If the dendrogram was made with option
+  \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
+  other samples), then you cannot choose the option
+  \code{leafType='samples'}. This is because the current code cannot reliably
+  link up the internal nodes of the sample dendrogram to the internal nodes
+  of the cluster dendrogram when the unassigned samples are intermixed.
 }
 \examples{
 data(simData)
@@ -152,4 +159,7 @@ leafType="clusters",label="name")
 #compare merged to original
 table(primaryCluster(cl), primaryCluster(merged))
 
+}
+\seealso{
+makeDendrogram, plotDendrogram, getBestFeatures
 }

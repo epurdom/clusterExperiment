@@ -66,6 +66,12 @@
 #'   cause function to stop, because nothing is asked to be done. If you just
 #'   want plot of the dendrogram, with no merging performed or demonstrated on
 #'   the plot, see \code{\link{plotDendrogram}}.
+#' @details If the dendrogram was made with option
+#'   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
+#'   other samples), then you cannot choose the option
+#'   \code{leafType='samples'}. This is because the current code cannot reliably
+#'   link up the internal nodes of the sample dendrogram to the internal nodes
+#'   of the cluster dendrogram when the unassigned samples are intermixed. 
 #' @return If `x` is a matrix, it returns (invisibly) a list with elements 
 #'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x) 
 #'   giving the integer-valued cluster ids for each sample. "-1" indicates the 
@@ -77,6 +83,7 @@
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
 #'   \code{ClusterExperiment} object with an additional clustering based on the 
 #'   merging. This becomes the new primary clustering.
+#' @seealso makeDendrogram, plotDendrogram, getBestFeatures
 #' @examples
 #' data(simData)
 #' 
@@ -261,6 +268,10 @@ setMethod(f = "mergeClusters",
   if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
+	if(!x@dendro_outbranch){
+		if(any(cl<0) & leafType=="samples") warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
+		leafType<-"clusters"
+	}
   
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
   outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
@@ -309,7 +320,8 @@ This makes sense only for counts.")
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
   	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
   	outbranch<-FALSE
-  	if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
+  	if(leafType=="samples" & any(cl<0)) outbranch<-retval@dendro_outbranch
+		#if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
 
   # outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)

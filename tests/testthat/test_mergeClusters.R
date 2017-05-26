@@ -64,3 +64,24 @@ test_that("`mergeClusters` preserves the colData and rowData of SE", {
   expect_equal(rowData(cl),rowData(smSimSE))
 
 })
+
+
+test_that("`mergeClusters` works with unassignedSamples", {
+
+  clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup"))
+
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
+
+  clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("cluster"))
+
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
+
+
+})
+

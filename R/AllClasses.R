@@ -52,6 +52,8 @@ setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
+#' @slot dendro_outbranch logical. Whether the dendro_samples dendrogram put 
+#' missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
@@ -85,6 +87,7 @@ setClass(
     dendro_samples = "dendrogramOrNULL",
     dendro_clusters = "dendrogramOrNULL",
     dendro_index = "numeric",
+	dendro_outbranch = "logical",
     coClustering = "matrixOrNULL",
     clusterLegend="list",
     orderSamples="numeric"
@@ -348,6 +351,7 @@ setMethod(
             dendro_samples=NULL,
             dendro_index=NA_real_,
             dendro_clusters=NULL,
+			dendro_outbranch=NULL,
             coClustering=NULL
             ){
     if(NCOL(se) != nrow(clusters)) {

@@ -87,11 +87,11 @@ test_that("`makeDendrogram` with dimReduce options", {
     
 })
 
-test_that("plotDendrogram works", {
+test_that("plotDendrogram works with outgroup", {
+    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+    leg[,"name"]<-letters[1:nrow(leg)]
+    clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
-  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
-  leg[,"name"]<-letters[1:nrow(leg)]
-  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
   plotDendrogram(dend,leafType="samples",labelType="name")
@@ -108,6 +108,33 @@ test_that("plotDendrogram works", {
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg
   dend2 <- makeDendrogram(dend2)
+  plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend2,leafType="samples",labelType="colorblock")
+  
+})
+
+
+test_that("plotDendrogram works with cluster missing", {
+    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+    leg[,"name"]<-letters[1:nrow(leg)]
+    clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+  dend <- makeDendrogram(ccSE,unassignedSamples = c("cluster"))
+  plotDendrogram(dend)
+  plotDendrogram(dend,show.node.label=TRUE)
+  plotDendrogram(dend,leafType="samples",labelType="name")
+  plotDendrogram(dend,leafType="samples",labelType="colorblock")
+  plotDendrogram(dend,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend,leafType="clusters",labelType="name")
+  
+  ## make all -2
+  dend2<-dend
+  mat<-clusterMatrix(dend2)
+  mat[1,1]<- -2
+  dend2@clusterMatrix<-mat
+  leg<-dend2@clusterLegend[[1]]
+  leg<-leg[-which(leg[,"clusterIds"]== -1),]
+  dend2@clusterLegend[[1]]<-leg
+  dend2 <- makeDendrogram(dend2,unassignedSamples = c("cluster"))
   plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
   plotDendrogram(dend2,leafType="samples",labelType="colorblock")
   

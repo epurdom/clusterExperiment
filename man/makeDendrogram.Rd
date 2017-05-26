@@ -85,6 +85,6 @@ sequential=FALSE, clusterDArgs=list(k=8))
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
-plotDendrogram(hcl, leaves="samples")
+plotDendrogram(hcl, leafType="samples",labelType="colorblock")
 
 }

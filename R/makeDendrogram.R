@@ -93,6 +93,7 @@ setMethod(
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
+	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     validObject(x)
     return(x)
   })
@@ -249,11 +250,13 @@ setMethod(
             #add remaining to fake data and let them cluster
             fakeData <- rbind(fakeData,dat[-whRm,,drop=FALSE])
             fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            return(as.dendrogram(stats::hclust(dist(fakeData))))
+            #return(as.dendrogram(stats::hclust(dist(fakeData))))
         }
     }
 #	browser()
-    fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
+	#make sure fakeData in same order as original data so order.dendrogram will work
+	fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
+	fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
     if(length(whRm) != nrow(dat) && unassigned == "outgroup"){
         #need to get rid of super long outgroup arm
         armLength <- max(attributes(fullD[[1]])$height,
