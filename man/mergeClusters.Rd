@@ -117,11 +117,6 @@ If  \code{isCount=TRUE}, and the input is a matrix,
 
 If \code{mergeMethod} is not equal to 'none' then the plotting will
   indicate where the clusters will be merged (assuming \code{plotInfo} is not 'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will cause function to stop, because nothing is asked to be done. If you just want plot of the dendrogram, with no merging performed or demonstrated on the plot, see \code{\link{plotDendrogram}}.
-
-Note that \code{leafType='samples'} is currently fragile, in the sense
-  that the alignment of the nodes in the cluster dendrogram (which correspond
-  to the merge cutoff values) to that of the dendrogram with individual
-  sample values is fragile, and may not be correct.
 }
 \examples{
 data(simData)

@@ -274,6 +274,7 @@
     return(clust.id)
 }
 
+
 ####
 #Convert to object used by phylobase so can navigate easily 
 .makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
@@ -292,7 +293,7 @@
 	#browser()
 	if(isSamples){
 		#NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
-		nonZeroEdges<-edgeLength(phylo4Obj)[which(edgeLength(phylo4Obj)>0)] #doesn't include root
+		nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[which(phylobase::edgeLength(phylo4Obj)>0)] #doesn't include root
 		trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
 		#old way of doing it:
 		#clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))

@@ -99,8 +99,8 @@
 #' table(primaryCluster(cl), primaryCluster(merged))
 #'
 #' @export
-#' @importFrom phylobase labels descendants ancestors getNode
-#' @importClassesFrom phylobase phylo4
+#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes
+#' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
 #' @importFrom howmany howmany lowerbound
