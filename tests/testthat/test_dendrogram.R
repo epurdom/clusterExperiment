@@ -94,7 +94,8 @@ test_that("plotDendrogram works", {
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
-  plotDendrogram(dend,leafType="samples")
-  plotDendrogram(dend,leafType="samples",label="colorblock")
-  plotDendrogram(dend,leafType="clusters",label="colorblock")
+  plotDendrogram(dend,leafType="samples",labelType="name")
+  plotDendrogram(dend,leafType="samples",labelType="colorblock")
+  plotDendrogram(dend,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend,leafType="clusters",labelType="name")
 })

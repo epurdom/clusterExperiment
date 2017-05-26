@@ -291,17 +291,40 @@
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
 	#browser()
 	if(isSamples){
-		clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
-		allInternal<-phylobase::getNode(phylo4Obj,type="internal")
-		if(outbranch){#remove root from labeling
+		#NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
+		nonZeroEdges<-edgeLength(phylo4Obj)[which(edgeLength(phylo4Obj)>0)] #doesn't include root
+		trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
+		#old way of doing it:
+		#clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
+		if(outbranch){#remove root from labeling if -1 outbranch
+			#######
+			#remove root
+			#######
 			rootNode<-phylobase::rootNode(phylo4Obj)
-			allInternal<-allInternal[!allInternal%in%rootNode]
+			trueInternal<-trueInternal[!trueInternal%in%rootNode]
+			
+			#######
+			#find the -1/-2 internal node (if it exists)
+			#######
+			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
+			#find node descendants of these:
+			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="all")
+			rootChildNum<-sapply(rootChildDesc,function(x){length(x[x%in%trueInternal])})
+			outbranchNode<-rootChild[rootChildNum<=1]
+			if(outbranchNode %in% trueInternal){
+				outbranchIsInternal<-TRUE
+				trueInternal<-trueInternal[!trueInternal%in%outbranchNode]
+			}
+			
 		}
-		trueInternal<-allInternal[!allInternal%in%clusterNodes]
+		#trueInternal<-allInternal[!allInternal%in%clusterNodes]
 		
-		#browser()
 		phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
-		#phylobase::nodeLabels(phylo4Obj)[as.character(clusterNodes)]<-paste("Node",(length(trueInternal)+1):length(allInternal),sep="")
+		#add new label for root 
+		if(outbranch){
+			phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
+			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNode)]<-"MissingSamples"
+		}
 	}
 	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
     

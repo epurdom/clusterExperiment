@@ -53,31 +53,13 @@ setMethod(
     dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
 	leg<-clusterLegend(x)[[x@dendro_index]]
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,x@dendro_index],"clusters"=NULL)
-	if(leafType=="samples") names(cl)<-colnames(x)
+	if(leafType=="samples") names(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
 	outbranch<-FALSE
 	if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
 	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=outbranch,main=main,sub=sub,...))
     
-	# phylo4Obj <- .makePhylobaseTree(dend, "dendro")
-	#     phyloObj <- as(phylo4Obj, "phylo")
-	#     if(leafType=="clusters"){
-	#       m<-match(phyloObj$tip.label,leg[,"clusterIds"])
-	#       if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-	#       phyloObj$tip.label<-leg[m,"name"]
-	#       tip.color<-leg[m,"color"]
-	#
-	#     }
-	#     else{
-	#       cl<-clusterMatrix(x)[,x@dendro_index]
-	#       m<-match(cl,leg[,"clusterIds"])
-	#       tip.color<-leg[m,"color"]
-	#     }
-	#     #browser()
-	#     if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
-	#     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
-	#
   })
   
   
@@ -216,6 +198,7 @@ setMethod(
 		}
 	} 
 #	browser()
+	edge.width=1
 	if(!is.null(clusterLegendMat)){
 		if(leafType=="clusters"){
 			#get rid of matching string 
@@ -266,8 +249,15 @@ setMethod(
 				}	
 
 			}
+			if(label=="colorblock"){
+				ntips<-length(phyloObj$tip.label)
+				whClusterNode<-which(!is.na(phyloObj$node.label))+ntips
+				#only edges going to/from these nodes
+				whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
+				edge.width<-rep(0,nrow(phyloObj$edge))
+				edge.width[whEdgePlot]<-1
+			}
 			m<-match(phyloObj$tip.label,clNames)
-			#browser()
 		    if(any(is.na(m))) stop("names of cl do not match dendrogram labels")
 			
 		}
@@ -282,10 +272,11 @@ setMethod(
   	###############
   	if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) 
 		
-		
-	
+	prohibitOptions<-c("tip.color","node.pos","edge.width")
+	if(any(prohibitOptions %in% names(plotArgs))) stop("User cannot set following options to plot.phylo:",paste(prohibitOptions, collapse=","))
+	plotArgs<-c(plotArgs,list(tip.color=tip.color,node.pos=2,edge.width=edge.width))	
   	#	browser()
-  	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj, tip.color=tip.color),plotArgs))
+  	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
   	else{#if colorblock
   		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,plot=FALSE),plotArgs))
   		treeWidth<-phyloPlotOut$x.lim[2]
