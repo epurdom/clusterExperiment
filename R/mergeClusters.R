@@ -269,8 +269,10 @@ setMethod(f = "mergeClusters",
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
 	if(!x@dendro_outbranch){
-		if(any(cl<0) & leafType=="samples") warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
-		leafType<-"clusters"
+		if(any(cl<0) & leafType=="samples"){
+			warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
+			leafType<-"clusters"
+		}
 	}
   
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
@@ -301,6 +303,7 @@ This makes sense only for counts.")
     dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
   	# leg<-clusterLegend(retval)[[retval@dendro_index]]
   	#     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+	#browser()
 	if(leafType=="samples" & mergeMethod!="none" & labelType=="colorblock"){
 		whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
 	  	leg<-clusterLegend(retval)[whClusters]

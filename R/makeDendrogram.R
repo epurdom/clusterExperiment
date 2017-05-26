@@ -93,6 +93,7 @@ setMethod(
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
+	#browser()
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     validObject(x)
     return(x)
