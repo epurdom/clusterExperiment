@@ -77,8 +77,8 @@ test_that("`mergeClusters` works with unassignedSamples", {
 
   clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("cluster"))
 
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
+	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock"))
+	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name"))
 	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
 	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
 
