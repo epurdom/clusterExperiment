@@ -347,15 +347,12 @@ setMethod(
     #Make sampleData based on clusterings and columns of colData
     ######
     #Get clusterings
-    if(is.character(whichClusters)) whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
-    else whCl<-whichClusters
+    whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
     if(length(whCl)>0){
-      if(!is.numeric(whCl)) stop("invalid whichClusters choices")
-      if(!all(whCl %in% 1:nClusters(data))) stop("Indices in whichClusters invalid: not in 1 to nClusters(data)")
       clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
     }
     else{
-      if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
+      if(any( whichClusters!="none")) warning("given whichClusters value does not match any clusters, none will be plotted")
       clusterData<-NULL
     }
     clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs

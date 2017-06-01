@@ -196,7 +196,7 @@
     return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
-##Universal way to change character indication of clusterTypes into indices.
+##Universal way to change character indication of clusterTypes into integer indices.
 .TypeIntoIndices<-function(x,whClusters){
   test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
   if(!inherits(test,"try-error")){
@@ -236,17 +236,6 @@
     #browser()
     if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-#     
-#         if(!any(whClusters %in% clusterTypes(x))){
-#         if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
-#         else{
-#             wh<-which(clusterLabels(x) %in% whClusters)
-#         }
-#     }
-#     else{
-#       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
-#       wh<-which(clusterTypes(x) %in% whClusters)
-#     }
   }
   return(wh)
 }
