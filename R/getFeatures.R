@@ -238,7 +238,7 @@ setMethod(f = "getBestFeatures",
               if(is.null(x@dendro_clusters)) {
                 stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
               } else {
-                if(primaryClusterIndex(x)!= x@dendro_index) stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+                if(primaryClusterIndex(x)!= dendroClusterIndex(x)) stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
                 else dendro <- x@dendro_clusters
               }
             }

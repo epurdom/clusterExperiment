@@ -262,8 +262,8 @@ setMethod(f = "mergeClusters",
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
   }
   else{
-    cl<-clusterMatrix(x)[,x@dendro_index]
-    note("Merging will be done on '",clusterLabels(x)[x@dendro_index],"', with clustering index",x@dendro_index)
+    cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
+    note("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x))
   }
   if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.

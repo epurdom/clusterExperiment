@@ -229,6 +229,12 @@ setGeneric(
 )
 
 setGeneric(
+  name = "dendroClusterIndex",
+  def = function(x) {
+    standardGeneric("dendroClusterIndex")
+  }
+)
+setGeneric(
   name = "coClustering",
   def = function(x) {
     standardGeneric("coClustering")

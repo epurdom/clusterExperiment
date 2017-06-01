@@ -144,8 +144,8 @@ setValidity("ClusterExperiment", function(object) {
     if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
   }
   if(!is.null(object@dendro_clusters)){
-    if(is.na(object@dendro_index)) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
-    dcluster<-clusterMatrix(object)[,object@dendro_index]
+    if(is.na(dendroClusterIndex(object))) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
+    dcluster<-clusterMatrix(object)[,dendroClusterIndex(object)]
     if(nobs(object@dendro_clusters) != max(dcluster)) {
       return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
     }

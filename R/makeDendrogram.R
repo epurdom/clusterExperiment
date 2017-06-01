@@ -92,7 +92,7 @@ setMethod(
     outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
-    x@dendro_index<-whCl
+    dendroClusterIndex(x)<-whCl
 	#browser()
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     validObject(x)

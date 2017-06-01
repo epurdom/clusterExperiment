@@ -47,11 +47,11 @@ setMethod(
 	labelType<-match.arg(labelType)
     if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
-    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
+    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
 
     dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-	leg<-clusterLegend(x)[[x@dendro_index]]
-    cl<-switch(leafType,"samples"=clusterMatrix(x)[,x@dendro_index],"clusters"=NULL)
+	leg<-clusterLegend(x)[[dendroClusterIndex(x)]]
+    cl<-switch(leafType,"samples"=clusterMatrix(x)[,dendroClusterIndex(x)],"clusters"=NULL)
 	if(leafType=="samples") names(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
