@@ -170,7 +170,7 @@
 # clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
 # paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
 # seqArgs=checkParams$seqArgs, clusterDArgs=checkParams$clusterDArgs)
-
+#' @export 
 setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
@@ -522,6 +522,13 @@ setMethod(
       return(outval)
     }
   }
+)
+#' @export
+#' @rdname clusterMany
+setMethod(
+f = "clusterMany",
+signature = signature(x = "data.frame"),
+definition = function(x,...){clusterMany(data.matrix(x),...)}
 )
 
 

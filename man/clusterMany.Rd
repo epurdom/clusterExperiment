@@ -7,6 +7,7 @@
 \alias{clusterMany,list-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
+\alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
 \S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
@@ -24,6 +25,8 @@
 
 \S4method{clusterMany}{SummarizedExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
+
+\S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
 \item{x}{the data on which to run the clustering. Can be: matrix (with genes
