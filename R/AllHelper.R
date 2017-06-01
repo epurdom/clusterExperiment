@@ -261,7 +261,7 @@ setMethod(
   f = "dendroClusterIndex",
   signature = "ClusterExperiment",
   definition = function(x) {
-    return(dendroClusterIndex(x))
+    return(x@dendro_index)
   }
 )
 

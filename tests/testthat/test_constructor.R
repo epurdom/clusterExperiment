@@ -42,7 +42,9 @@ test_that("`clusterExperiment` constructor works with matrix and
 	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="workflow")),12)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters=1:3)),3)
-	 
+	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="dendro")),0)
+	 dend<-makeDendrogram(ceSim)
+	 expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
  })
 test_that("adding clusters work as promised",{
   ##########
