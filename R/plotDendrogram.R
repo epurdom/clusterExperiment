@@ -83,8 +83,16 @@ setMethod(
     
   })
   
-  
-  .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,...){
+
+
+
+########
+# Internal plotting function used by both mergeClusters and plotDendrogram
+#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes subset
+#' @importClassesFrom phylobase phylo4 
+#' @importFrom graphics plot
+#' @importFrom ape plot.phylo phydataplot
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,...){
 	label<-match.arg(label)
 	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
 	#---

@@ -112,10 +112,6 @@
 #' table(primaryCluster(cl), primaryCluster(merged))
 #'
 #' @export
-#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes
-#' @importClassesFrom phylobase phylo4 
-#' @importFrom graphics plot
-#' @importFrom ape plot.phylo phydataplot
 #' @importFrom howmany howmany lowerbound
 #' @importFrom locfdr locfdr
 #' @rdname mergeClusters
@@ -251,7 +247,10 @@ setMethod(f = "mergeClusters",
 #'   labeled by rectangular blocks of color ("colorblock")  or with the names of
 #'   the leaves ("name") (only if x is a ClusterExperiment object). 
 #' @param leafType if plotting, whether the leaves should be the clusters or the
-#'   samples. Choosing 'samples' allows for visualization of how many samples are in the merged clusters (only if x is a ClusterExperiment object). 
+#'   samples. Choosing 'samples' allows for visualization of how many samples 
+#'   are in the merged clusters (only if x is a ClusterExperiment object), which
+#'   is the main difference between choosing "clusters" and "samples",
+#'   particularly if \code{labelType="colorblock"}
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE,
@@ -330,7 +329,7 @@ This makes sense only for counts.")
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
   # rownames(cl)<-colnames(retval)
   # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch)
+     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch)
   }
   
   invisible(retval)
