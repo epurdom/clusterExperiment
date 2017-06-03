@@ -1,4 +1,4 @@
-Changes in version 1.3.0-9002( Release date: )
+Changes in version 1.3.0-9003( Release date: )
 ==============
 Changes:
 * change how plotHeatmap handles visualizeData argument, so not required to have same number of genes as original, only same number of samples. 
@@ -13,6 +13,7 @@ Changes:
 * added ability to give `dendro` as charater option to `whichClusters` argument
 
 Bugs:
+* Fixed bug in RSEC where `combineProportion` argument was being ignored (set to 1)
 
 Changes in version 1.3.0 ( Release date: 2017-05-24  )
 ==============
