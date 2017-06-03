@@ -95,22 +95,54 @@ test_that("plotDendrogram works with outgroup", {
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
   plotDendrogram(dend,leafType="samples",labelType="name")
+  plotDendrogram(dend,leafType="samples",labelType="name",removeOutbranch=FALSE)
   plotDendrogram(dend,leafType="samples",labelType="colorblock")
   plotDendrogram(dend,leafType="clusters",labelType="colorblock")
   plotDendrogram(dend,leafType="clusters",labelType="name")
   
   ## make all -2
-  dend2<-dend
-  mat<-clusterMatrix(dend2)
-  mat[1,1]<- -2
-  dend2@clusterMatrix<-mat
-  leg<-dend2@clusterLegend[[1]]
-  leg<-leg[-which(leg[,"clusterIds"]== -1),]
-  dend2@clusterLegend[[1]]<-leg
+  cl<-clusterMatrix(ccSE)[,1]
+  cl[1]<- -2
+  dend2<-addClusters(ccSE,cl,clusterLabel="newCluster")
+  primaryClusterIndex(dend2)<-3
   dend2 <- makeDendrogram(dend2)
   plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
   plotDendrogram(dend2,leafType="samples",labelType="colorblock")
-  
+  plotDendrogram(dend2,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+
+  ## make only single sample -2
+  cl<-clusterMatrix(ccSE)[,1]
+  cl[1]<-1
+  dend3<-addClusters(ccSE,cl,clusterLabel="newCluster")
+  primaryClusterIndex(dend3)<-3
+  dend3 <- makeDendrogram(dend3)
+  plotDendrogram(dend3,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend3,leafType="samples",labelType="colorblock")
+  plotDendrogram(dend3,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+
+  ## make all -1 but two samples
+  ## can't be only 1 sample because then only 1 cluster so can't make a dendrogram...
+  cl<-rep(-1,length=nSamples(ccSE))
+  cl[1]<-3
+  cl[2]<-1
+  dend4<-addClusters(ccSE,cl,clusterLabel="missingCluster")
+  primaryClusterIndex(dend4)<-3
+  dend4 <- makeDendrogram(dend4)
+  plotDendrogram(dend4,leafType="clusters",labelType="colorblock")
+  plotDendrogram(dend4,leafType="samples",labelType="colorblock")
+  plotDendrogram(dend4,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+
+  ## make all -1 but one sample -- should get error bc only 1 cluster, can't make dendrogram; 
+  ## in case this changes, this test will catch that need to fix plotDendrogram, which makes assumption that not possible.
+  cl<-rep(-1,length=nSamples(ccSE))
+  cl[1]<-3
+  dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
+  primaryClusterIndex(dend5)<-3
+  expect_error(makeDendrogram(dend5),"Only 1 cluster given. Can not make a dendrogram.")
+  expect_error(plotDendrogram(dend5,leafType="clusters",labelType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+
+
+    
 })
 
 test_that("plotDendrogram works with whichClusters", {

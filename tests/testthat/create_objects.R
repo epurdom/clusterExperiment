@@ -1,4 +1,4 @@
-#library(clusterExperiment)
+library(clusterExperiment)
 data(simData)
 if(ncol(simData) != 300) {
   stop("not current version of simData")
