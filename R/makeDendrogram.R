@@ -1,5 +1,7 @@
 #' @title Make hierarchy of set of clusters
 #'   
+#' @aliases makeDendrogram,ClusterExperiment-method
+
 #' @description Makes a dendrogram of a set of clusters based on hclust on the 
 #'   medoids of the cluster.
 #' @param x data to define the medoids from. Matrix and 
@@ -55,6 +57,7 @@
 #' plotDendrogram(hcl)
 #' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
 #'
+#' @name makeDendrogram
 #' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
