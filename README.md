@@ -23,7 +23,14 @@ While we generally try to keep the bioconductor devel version up-to-date with th
 library(devtools)
 install_github("epurdom/clusterExperiment")
 ```
+
+## Development branch:
+
+The `develop` branch is our development branch where we are actively updating features, and may contain bugs. You should not use the `develop` branch unless it passes TravisCI checks and you want to be using a *very* beta version.
+
 ## Status
+
+Below are the status checks. Note that occassionally errors do not appear here immediately. Clicking on the link will give you the most up-to-date status.
 
 | Resource:     |  Travis CI   |
 | ------------- | ------------ |
