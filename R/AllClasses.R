@@ -132,16 +132,19 @@ setValidity("ClusterExperiment", function(object) {
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
-
-  ##Check dendrograms
+  ############
+  ##Check dendrogram slotNames
+  ############
   #browser()
   if(!is.null(object@dendro_samples)){
     if(nobs(object@dendro_samples) != NCOL(object)) {
       return("dendro_samples must have the same number of leaves as the number of samples")
     }
+	if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
   }
   else{
     if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
+	if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
   }
   if(!is.null(object@dendro_clusters)){
     if(is.na(dendroClusterIndex(object))) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
@@ -153,11 +156,13 @@ setValidity("ClusterExperiment", function(object) {
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
   }
+  ## Check co-clustering
   if(!is.null(object@coClustering) &&
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
   }
+  ## If have a cluster matrix
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
     #check primary index
     if(length(object@primaryIndex) != 1) {
@@ -351,7 +356,7 @@ setMethod(
             dendro_samples=NULL,
             dendro_index=NA_real_,
             dendro_clusters=NULL,
-			dendro_outbranch=NULL,
+			dendro_outbranch=NA,
             coClustering=NULL
             ){
     if(NCOL(se) != nrow(clusters)) {
@@ -400,6 +405,7 @@ setMethod(
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
+               dendro_outbranch=dendro_outbranch,
                coClustering=coClustering
     )
     validObject(out)
