@@ -620,8 +620,8 @@ setMethod(
         tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
         names(tmpDf)<-colnames(sampleData)
         if(!is.null(whSampleDataCont)){
-        	if(logical(whSampleDataCont)) whSampleDataCont<-which(whSampleDataCont)
-			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
+        	if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
+    			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
         } 
         annCol<-tmpDf
         #browser()
