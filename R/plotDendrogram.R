@@ -142,39 +142,45 @@ setMethod(
   		#browser()
   	    sigInfo<-mergeOutput$propDE
   	    whToMerge<-which(sigInfo$Merged)
-  	    nodesToMerge<-sigInfo$Node[whToMerge]
+  	    nodesToMerge<-as.character(sigInfo$Node[whToMerge])
   	    methods<-colnames(sigInfo[,-c(1:3)])
-          m <- match( sigInfo$Node,phyloObj$node)
+        m <- match( as.character(sigInfo$Node),phyloObj$node)
   		if(any(is.na(m))) stop("some nodes in mergeOutput not in the given dendrogram")
-          edgeLty <- rep(1, nrow(phyloObj$edge))
-          if(mergeMethod != "none" && length(whToMerge) > 0) {
-              #which of nodes merged
-  			whMerge <- which(phyloObj$node.label %in% nodesToMerge) 
-              nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
-              whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
-              edgeLty[whEdge] <- 2
-          }
-          if(mergePlotType == "mergeMethod"){
-              if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
-              phyloObj$node.label[m] <- as.character(signif(sigInfo[,mergeMethod],2))
+        edgeLty <- rep(1, nrow(phyloObj$edge))
+		if(mergeMethod != "none" && length(whToMerge) > 0){
+		  #which of nodes merged
+		  whMerge <- which(phyloObj$node.label %in% nodesToMerge) 
+		  nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
+		  whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
+		  edgeLty[whEdge] <- 2
+		}
+		if(mergePlotType == "mergeMethod"){
+		  if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
+		  valsNodes<-as.character(signif(sigInfo[,mergeMethod],2))
+		  valsNodes[is.na(valsNodes)]<-"NA" #make them print out as NA -- otherwise doesn't plot
+		  phyloObj$node.label[m] <- valsNodes
+		  # offsetDivide<-3
+		  # dataPct<-.7
+		}
+		if(mergePlotType %in% c("all",.availMergeMethods)) {
+		  	meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
+		  	phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, 
+			  function(x){
+		  		whKp<-which(!is.na(x))
+		  	  	vals<-paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")
+				vals[is.na(vals)]<-"NA"
+				return(vals)
+				})
+			if(mergePlotType!="all"){
 			  # offsetDivide<-3
 			  # dataPct<-.7
-          }
-          if(mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
-              meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
-			  phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
-              whKp<-which(!is.na(x))
-              paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")})
-			  if(mergePlotType!="all"){
-				  # offsetDivide<-3
-				  # dataPct<-.7
-			  }
-			  else{
-				  # offsetDivide<-2.5
-				  # dataPct<-.7
-			  	
-			  }
-          }
+			}
+			else{
+			  # offsetDivide<-2.5
+			  # dataPct<-.7
+
+			}
+		}
 		  
   		phyloObj$node.label[-m]<-""
   		plotArgs$show.node.label<-TRUE
@@ -323,13 +329,11 @@ setMethod(
 					rownames(colorMat)<-names(cl)
 					cols<-tip.color
 					names(cols)<-clusterLegendMat[m,"name"]
-	
 				}	
-
 			}
 			if(label=="colorblock"){
 				ntips<-length(phyloObj$tip.label)
-				whClusterNode<-which(!is.na(phyloObj$node.label))+ntips
+				whClusterNode<-which(!is.na(phyloObj$node.label) & phyloObj$node.label!="")+ ntips
 				#only edges going to/from these nodes
 				whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
 				edge.width<-rep(0,nrow(phyloObj$edge))
