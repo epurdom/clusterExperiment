@@ -1,4 +1,4 @@
-Changes in version 1.3.0-9003( Release date: )
+Changes in version 1.3.0-9008( Release date: )
 ==============
 Changes:
 * change how plotHeatmap handles visualizeData argument, so not required to have same number of genes as original, only same number of samples. 
@@ -11,10 +11,11 @@ Changes:
 	- The option `labelType` in either `plotDendrogram` or `mergeClusters` controls whether names (`name`) or rectangular color blocks corresponding to the cluster (`colorblock`) are put at the tips of the dendrogram to label the clusters/samples. 
 * added `dendroClusterIndex` that behaves similarly to `primaryClusterIndex`
 * added ability to give `dendro` as charater option to `whichClusters` argument
-* added `transformation<-` to be able to assign manually the transformation function 
+* added `transformation<-` to be able to assign manually the transformation slot
 
 Bugs:
 * Fixed bug in RSEC where `combineProportion` argument was being ignored (set to 1)
+* Fixed bug in definition of `transform` so that extends existing generic rather than masking it.
 
 Changes in version 1.3.0 ( Release date: 2017-05-24  )
 ==============
