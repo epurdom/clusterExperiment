@@ -11,6 +11,7 @@ Changes:
 	- The option `labelType` in either `plotDendrogram` or `mergeClusters` controls whether names (`name`) or rectangular color blocks corresponding to the cluster (`colorblock`) are put at the tips of the dendrogram to label the clusters/samples. 
 * added `dendroClusterIndex` that behaves similarly to `primaryClusterIndex`
 * added ability to give `dendro` as charater option to `whichClusters` argument
+* added `transformation<-` to be able to assign manually the transformation function 
 
 Bugs:
 * Fixed bug in RSEC where `combineProportion` argument was being ignored (set to 1)

@@ -192,6 +192,12 @@ setGeneric(
     standardGeneric("transformation")
   }
 )
+setGeneric(
+  name = "transformation<-",
+  def = function(x) {
+    standardGeneric("transformation<-")
+  }
+)
 
 setGeneric(
   name = "transform",
