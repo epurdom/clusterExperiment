@@ -142,9 +142,20 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     expect_warning(plotHeatmap(cc,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
 
     plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
-    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
     expect_warning(plotHeatmap(smSimCE,whichClusters=1:15),"given whichClusters value does not match any clusters")
-
+	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
+    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=FALSE,overRideClusterLimit=TRUE)
+    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
+	expect_warning( plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=TRUE)
+, "More than 10 annotations/clusterings")
+	#create some names to see if keeps names with alignSampleData=TRUE
+	# only can check manually, not with testthat.
+	# BUG!: looses their -1/-2 designation...
+	clLeg<-clusterLegend(smSimCE)
+	clLeg[[1]][,"name"]<-LETTERS[1:nrow(clLeg[[1]])]
+	clusterLegend(smSimCE)<-clLeg
+    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
+ 
     #test sampleData
     expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
 

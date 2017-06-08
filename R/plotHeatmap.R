@@ -23,10 +23,11 @@
 #' @param whSampleDataCont Which of the \code{sampleData} columns are continuous
 #'   and should not be converted to counts. \code{NULL} indicates no additional
 #'   \code{sampleData}.
-#' @param visualizeData either a character string, indicating what form of the
-#'   data should be used for visualizing the data (i.e. for making the
-#'   color-scale), or a data.frame/matrix with same number of samples as
-#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to clusterFeaturesData will be ignored.
+#' @param visualizeData either a character string, indicating what form of the 
+#'   data should be used for visualizing the data (i.e. for making the 
+#'   color-scale), or a data.frame/matrix with same number of samples as 
+#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
+#'   clusterFeaturesData will be ignored.
 #' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
 #'   will be used to in \code{hclust} to define the hiearchical clustering of 
 #'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
@@ -155,6 +156,11 @@
 #'   (this might be a problem for RStudio if you want to pop it out into a large
 #'   window...). Also, plotting to a pdf adds a blank page; see help pages of
 #'   \code{\link[NMF]{aheatmap}} for how to turn this off.
+#' @details If you have a factor with many levels, it is important to note that
+#'   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
+#'   \code{sampleData}, and in fact runs out of colors and the remaining levels
+#'   get the color white. Thus if you have many factors or many levels in those
+#'   factors, you should set their colors via \code{clusterLegend}.
 #' @details Many arguments can be passed on to aheatmap, however, some are set 
 #'   internally by \code{plotHeatmap.} In particular, setting the values of 
 #'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
@@ -265,7 +271,6 @@ setMethod(
     #########
     ##Determine visualization data and default colorScale based on that
     #########
-    #browser()
 	externalData<-FALSE
     visualizeData <- .convertTry(visualizeData,
                                  try(match.arg(visualizeData), silent=TRUE))
@@ -328,7 +333,6 @@ setMethod(
 	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
 	    if(dimReduce%in%"PCA") wh<-1:nFeatures
 	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
-		#browser()
 		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
 	    else{
 			#note, transObj is already been limited to the wh.
@@ -464,12 +468,12 @@ setMethod(
       blankData<-makeBlankData(heatData,groupFeatures)
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
-      #browser()
       clusterFeatures<-FALSE
     }
     else{
       labRow<-rownames(heatData)
     }
+	
     do.call("plotHeatmap",c(list(data=heatData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
@@ -529,7 +533,6 @@ setMethod(
         }
         return(val)
     }  
-    #browser()
     badValues<-c("Rowv","Colv","color","annCol","annColors")
 	replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","sampleData","clusterLegend")
     if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
@@ -556,7 +559,6 @@ setMethod(
               clusterSamplesData<-data.matrix(clusterSamplesData)
               #check valid
               if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-#              browser()
               dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
               
               #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
@@ -638,7 +640,6 @@ setMethod(
     			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
         } 
         annCol<-tmpDf
-        #browser()
         convertNames <- TRUE
 		
         ##########
@@ -661,15 +662,15 @@ setMethod(
             if(alignSampleData){
               #align the clusters and give them colors
               alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-              clusterLegend<-lapply(1:ncol(tmpDfNum),function(ii){
+			  mkLegend<-function(ii){
                 xNum<-tmpDfNum[,ii]
                 xOrig<-tmpDf[,ii]
                 colMat<-alignObj$clusterLegend[[ii]]
                 m<-match(colMat[,"clusterIds"],as.character(xNum))
-                colMat<-cbind(colMat,"name"=as.character(xOrig)[m])
+                colMat<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(xOrig)[m])
                 return(colMat)
-              })
-              #browser()
+              }
+              clusterLegend<-lapply(1:ncol(tmpDfNum),mkLegend)
             }
             else{#give each distinct colors, compared to row before
               maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
@@ -742,7 +743,6 @@ setMethod(
       # put into aheatmap
       #############
       breaks<-setBreaks(data=heatData,breaks=breaks)
-      #browser()
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
