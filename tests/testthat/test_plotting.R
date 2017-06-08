@@ -157,8 +157,18 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     plotHeatmap(cc)
     
     #check user setting clusterLegend
+	x<-palette()[1:7]
+	names(x)<-clusterLegend(cc)$Cluster1[,"name"]
+    plotHeatmap(cc,clusterLegend=list("Cluster1"=x))
+
     plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
-    plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:3]))
+	plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:3]))
+
+	names(x)<-LETTERS[1:7]
+	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"do not cover all levels in the data")
+	x<-palette()[1:6]
+	names(x)<-LETTERS[1:6]
+	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"is less than the number of levels in the data")
     # the following works outside of the test but not inside
     # possibly issue with testthat? Not evaluating for now.
     #plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
@@ -190,7 +200,9 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="PCA",nFeatures=10,clusterSamplesData="hclust")
 
   plotHeatmap(smSimCE,visualizeData="transform",clusterSamplesData="dendrogramValue")
-
+  #test works with outside dataset
+ plotHeatmap(smSimCE,visualizeData=assay(smSimCE)[1:10,])
+ expect_error(plotHeatmap(smSimCE, visualizeData=assay(smSimCE)[,1:5]))
 })
 
 test_that("`makeBlankData` works", {
