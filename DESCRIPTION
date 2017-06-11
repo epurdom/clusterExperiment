@@ -30,7 +30,7 @@ Imports:
     graphics,
     parallel,
 Suggests:
-	MAST
+    MAST,
     BiocStyle,
     knitr,
     diagram,
