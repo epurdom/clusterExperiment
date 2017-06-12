@@ -7,38 +7,41 @@
 \alias{clusterExperiment}
 \alias{clusterExperiment}
 \alias{clusterExperiment,matrix,ANY-method}
-\alias{clusterExperiment,SummarizedExperiment,numeric-method}
-\alias{clusterExperiment,SummarizedExperiment,character-method}
-\alias{clusterExperiment,SummarizedExperiment,factor-method}
-\alias{clusterExperiment,SummarizedExperiment,matrix-method}
+\alias{clusterExperiment,SummarizedExperiment,ANY-method}
+\alias{clusterExperiment,SingleCellExperiment,numeric-method}
+\alias{clusterExperiment,SingleCellExperiment,character-method}
+\alias{clusterExperiment,SingleCellExperiment,factor-method}
+\alias{clusterExperiment,SingleCellExperiment,matrix-method}
 \title{Class ClusterExperiment}
 \usage{
 clusterExperiment(se, clusters, ...)
 
 \S4method{clusterExperiment}{matrix,ANY}(se, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,numeric}(se, clusters, ...)
+\S4method{clusterExperiment}{SummarizedExperiment,ANY}(se, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,character}(se, clusters, ...)
+\S4method{clusterExperiment}{SingleCellExperiment,numeric}(se, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,factor}(se, clusters, ...)
+\S4method{clusterExperiment}{SingleCellExperiment,character}(se, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
+\S4method{clusterExperiment}{SingleCellExperiment,factor}(se, clusters, ...)
+
+\S4method{clusterExperiment}{SingleCellExperiment,matrix}(se, clusters,
   transformation, primaryIndex = 1, clusterTypes = "User",
   clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
   dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
   coClustering = NULL)
 }
 \arguments{
-\item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
-clustered.}
+\item{se}{a matrix, \code{SingleCellExperiment} or \code{SummarizedExperiment}
+containing the data to be clustered.}
 
 \item{clusters}{can be either a numeric or character vector, a factor, or a
 numeric matrix, containing the cluster labels.}
 
 \item{...}{The arguments \code{transformation}, \code{clusterTypes} and
 \code{clusterInfo} to be passed to the constructor for signature
-\code{SummarizedExperiment,matrix}.}
+\code{SingleCellExperiment,matrix}.}
 
 \item{transformation}{function. A function to transform the data before
 performing steps that assume normal-like data (i.e. constant variance), such
@@ -70,10 +73,10 @@ A \code{ClusterExperiment} object.
 }
 \description{
 \code{ClusterExperiment} is a class that extends
-\code{SummarizedExperiment} and is used to store the data
+\code{SingleCellExperiment} and is used to store the data
 and clustering information.
 
-In addition to the slots of the \code{SummarizedExperiment}
+In addition to the slots of the \code{SingleCellExperiment}
 class, the \code{ClusterExperiment} object has the additional slots described
 in the Slots section.
 
@@ -138,7 +141,7 @@ details).}
 \item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
 make the dendrograms. NA_real_ value if no dendrograms are saved.}
 
-\item{\code{dendro_outbranch}}{logical. Whether the dendro_samples dendrogram put 
+\item{\code{dendro_outbranch}}{logical. Whether the dendro_samples dendrogram put
 missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.}
 
 \item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence

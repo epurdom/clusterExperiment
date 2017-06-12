@@ -13,7 +13,8 @@ BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
     R (>= 3.3),
-    SummarizedExperiment
+    SummarizedExperiment,
+    SingleCellExperiment
 Imports:
     methods,
     NMF,
@@ -35,7 +36,9 @@ Suggests:
     knitr,
     diagram,
     testthat,
-	scRNAseq
+	  scRNAseq
+Remotes:
+    drisso/SingleCellExperiment
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 6.0.1

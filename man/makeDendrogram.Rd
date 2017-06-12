@@ -31,9 +31,9 @@ details.}
 \item{ndims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{dimReduce}}
 
-\item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction 
-via top feature variability (i.e. 'var','cv','mad') should ignore 
-unassigned samples in the primary clustering for calculation of the top 
+\item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction
+via top feature variability (i.e. 'var','cv','mad') should ignore
+unassigned samples in the primary clustering for calculation of the top
 features.}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only

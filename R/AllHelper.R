@@ -7,7 +7,7 @@
 #' the co-clustering matrix are lost.
 #' @export
 #' @param ...,i,j,drop Forwarded to the
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -17,7 +17,7 @@ setMethod(
   definition = function(x, i, j, ..., drop=TRUE) {
     j<-match(j, colnames(x))
     callGeneric()
-    
+
   }
 )
 #' @rdname ClusterExperiment-methods
@@ -38,7 +38,7 @@ setMethod(
   definition = function(x, i, j, ..., drop=TRUE) {
     origN<-NCOL(x)
     #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
     #browser()
     out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     out@coClustering <- NULL
@@ -48,7 +48,7 @@ setMethod(
    # browser()
     #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
 	out@orderSamples <- rank(x@orderSamples[j])
-	
+
     #need to convert to consecutive integer valued clusters:
     newMat<-.makeIntegerClusters(out@clusterMatrix)
     colnames(newMat)<-colnames(out@clusterMatrix)
@@ -199,10 +199,10 @@ setMethod(
 #' @param whichClusters optional argument that can be either numeric or
 #'   character value. If numeric, gives the indices of the \code{clusterMatrix}
 #'   to return; this can also be used to defined an ordering for the
-#'   clusterings. \code{whichClusters} can be a character value identifying the 
+#'   clusterings. \code{whichClusters} can be a character value identifying the
 #'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either 
-#'   'all' or 'workflow' to indicate choosing all clusters or choosing all 
+#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either
+#'   'all' or 'workflow' to indicate choosing all clusters or choosing all
 #'   \code{\link{workflowClusters}}. If missing, the entire matrix of all
 #'   clusterings is returned.
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
@@ -266,7 +266,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{dendroClusterIndex} returns/sets the clustering index 
+#' @return \code{dendroClusterIndex} returns/sets the clustering index
 #' of the clusters used to create dendrogram
 #' (i.e., which column of clusterMatrix corresponds to the clustering).
 #' @export

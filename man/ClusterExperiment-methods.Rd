@@ -120,7 +120,7 @@
 \item{x, object}{a ClusterExperiment object.}
 
 \item{..., i, j, drop}{Forwarded to the
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} method.}
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} method.}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
@@ -129,10 +129,10 @@ objects may be passed to these functions.}
 \item{whichClusters}{optional argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
-clusterings. \code{whichClusters} can be a character value identifying the 
+clusterings. \code{whichClusters} can be a character value identifying the
 \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-\code{clusterLabels}; alternatively \code{whichClusters} can be either 
-'all' or 'workflow' to indicate choosing all clusters or choosing all 
+\code{clusterLabels}; alternatively \code{whichClusters} can be either
+'all' or 'workflow' to indicate choosing all clusters or choosing all
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
 }
@@ -163,7 +163,7 @@ clusterMatrix).
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
 
-\code{dendroClusterIndex} returns/sets the clustering index 
+\code{dendroClusterIndex} returns/sets the clustering index
 of the clusters used to create dendrogram
 (i.e., which column of clusterMatrix corresponds to the clustering).
 

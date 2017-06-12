@@ -5,13 +5,13 @@ setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
-#' \code{SummarizedExperiment} and is used to store the data
+#' \code{SingleCellExperiment} and is used to store the data
 #' and clustering information.
 #'
 #' @docType class
 #' @aliases ClusterExperiment ClusterExperiment-class clusterExperiment
 #'
-#' @description In addition to the slots of the \code{SummarizedExperiment}
+#' @description In addition to the slots of the \code{SingleCellExperiment}
 #' class, the \code{ClusterExperiment} object has the additional slots described
 #' in the Slots section.
 #'
@@ -52,7 +52,7 @@ setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot dendro_outbranch logical. Whether the dendro_samples dendrogram put 
+#' @slot dendro_outbranch logical. Whether the dendro_samples dendrogram put
 #' missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
@@ -69,15 +69,15 @@ setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
-#' @import SummarizedExperiment
+#' @import SingleCellExperiment
 #' @import methods
-#' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(
   Class = "ClusterExperiment",
-  contains = "SummarizedExperiment",
+  contains = "SingleCellExperiment",
   slots = list(
     transformation="function",
     clusterMatrix = "matrix",
@@ -98,7 +98,7 @@ setClass(
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
 
 setValidity("ClusterExperiment", function(object) {
-  #browser()
+
   if(length(assays(object)) < 1) {
     return("There must be at least one assay slot.")
   }
@@ -110,8 +110,7 @@ setValidity("ClusterExperiment", function(object) {
   }
   tX <- try(transform(object),silent=TRUE)
   if(inherits(tX, "try-error")){
-    stop(paste("User-supplied `transformation` produces error on the input data
-               matrix:\n",x))
+    stop("User-supplied `transformation` produces error on the input data matrix")
   }
   if(any(is.na(tX))) {
     return("NA values after transforming data matrix are not allowed.")
@@ -265,8 +264,8 @@ setValidity("ClusterExperiment", function(object) {
 #' @description Note that when subsetting the data, the co-clustering and
 #' dendrogram information are lost.
 #'
-#'@param se a matrix or \code{SummarizedExperiment} containing the data to be
-#'clustered.
+#'@param se a matrix, \code{SingleCellExperiment} or \code{SummarizedExperiment}
+#'  containing the data to be clustered.
 #'@param clusters can be either a numeric or character vector, a factor, or a
 #'numeric matrix, containing the cluster labels.
 #'@param transformation function. A function to transform the data before
@@ -274,7 +273,7 @@ setValidity("ClusterExperiment", function(object) {
 #'as the log.
 #'@param ... The arguments \code{transformation}, \code{clusterTypes} and
 #'  \code{clusterInfo} to be passed to the constructor for signature
-#'  \code{SummarizedExperiment,matrix}.
+#'  \code{SingleCellExperiment,matrix}.
 #'
 #'@return A \code{ClusterExperiment} object.
 #'
@@ -300,12 +299,21 @@ setMethod(
   f = "clusterExperiment",
   signature = signature("matrix","ANY"),
   definition = function(se, clusters, ...){
-    clusterExperiment(SummarizedExperiment(se), clusters, ...)
+    clusterExperiment(SingleCellExperiment(se), clusters, ...)
+  })
+#' @rdname ClusterExperiment-class
+#' @export
+setMethod(
+  f = "clusterExperiment",
+  signature = signature("SummarizedExperiment","ANY"),
+  definition = function(se, clusters, ...){
+    se <- as(se, "SingleCellExperiment")
+    clusterExperiment(se, clusters, ...)
   })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment", "numeric"),
+  signature = signature("SingleCellExperiment", "numeric"),
   definition = function(se, clusters, ...){
     if(NCOL(se) != length(clusters)) {
       stop("`clusters` must be a vector of length equal to the number of samples.")
@@ -315,18 +323,19 @@ setMethod(
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","character"),
+  signature = signature("SingleCellExperiment","character"),
   definition = function(se, clusters,...){
     clusterExperiment(se,matrix(clusters,ncol=1),...)
     })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","factor"),
+  signature = signature("SingleCellExperiment","factor"),
   definition = function(se, clusters,...){
     clusters <- as.character(clusters)
     clusterExperiment(se,clusters,...)
   })
+
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
 #'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
@@ -346,7 +355,7 @@ setMethod(
 #'  missing, will assign labels "cluster1","cluster2", etc.
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","matrix"),
+  signature = signature("SingleCellExperiment","matrix"),
   definition = function(se, clusters,
             transformation,
             primaryIndex=1,
