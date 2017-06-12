@@ -288,9 +288,6 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 		passedArgs<-passedArgs[-wh]
 		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
 	}
-	#use to be (when D was similarity matrix):
-	#hDmat<-do.call(stats::hclust,c(list(d=dist(D)),passedArgs))
-#	browser()
 	S<-round(1-D,10)
 	d<-switch(whichHierDist,"dist"=dist(S),"D"=as.dist(D))
 	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
@@ -302,15 +299,6 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 	nodesToCheck<-phylobase::rootNode(phylo4Obj)
 	clusterList<-list()
 
-	#was slower with this code:
-	# allInternal<-phylobase::getNode(phylo4Obj,  type=c("internal"))
-	# allTipsByInternal<-lapply(allInternal,function(currNode){names(phylobase::descendants(phylo4Obj,currNode,"tip"))})
-	# allChecks<-sapply(allTipsByInternal,function(currTips){
-	# 	if(method=="maximum") check<-all(D[currTips,currTips,drop=FALSE]>=(1-alpha))
-	# 	if(method=="average") check<-all(rowMeans(D[currTips,currTips,drop=FALSE])>=(1-alpha))
-	# 		return(check)
-	# })
-#	names(allChecks)<-names(allInternal)
 	while(length(nodesToCheck)>0){
 		currNode<-nodesToCheck[1]
 		nodesToCheck<-nodesToCheck[-1]
@@ -319,9 +307,6 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 			check<-TRUE
 		}
 		else{
-			# wh<-match(currNode,allInternal)
-			# currTips<-allTipsByInternal[[wh]]
-			# check<-allChecks[[wh]]
 			currTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
 			if(method=="maximum") check<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
 			if(method=="average") check<-all(rowMeans(S[currTips,currTips,drop=FALSE])>=(1-alpha))
@@ -335,7 +320,6 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 			nodesToCheck<-c(nodesToCheck,childNodes)
 		}
 	}
-#	browser()
 	clusterListIndices<-lapply(clusterList,function(tipNames){
 		match(tipNames,rownames(D))
 	})

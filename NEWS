@@ -15,6 +15,7 @@ Changes:
 * added `transformation<-` to be able to assign manually the transformation slot
 * Move MAST into 'suggests' pacakge so that not need R 3.4 to run the package. 
 
+
 Bugs:
 * Fixed bug in RSEC where `combineProportion` argument was being ignored (set to 1)
 * Fixed bug in definition of `transform` so that extends existing generic rather than masking it.

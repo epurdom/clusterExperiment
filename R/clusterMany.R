@@ -407,7 +407,7 @@ setMethod(
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }
-      if(!is.null(distFunction)){
+      if(!is.null([distFunction])){
         diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
         clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
                       clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
