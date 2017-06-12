@@ -4,9 +4,6 @@
 \name{ClusterExperiment-methods}
 \alias{ClusterExperiment-methods}
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
-\alias{[,ClusterExperiment,ANY,character,ANY-method}
-\alias{[,ClusterExperiment,ANY,logical,ANY-method}
-\alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \alias{show,ClusterExperiment-method}
 \alias{clusterMatrixNamed,ClusterExperiment-method}
 \alias{clusterMatrixNamed}
@@ -58,11 +55,7 @@
 \alias{clusterTypes<-}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
-\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
-
-\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
-
-\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ClusterExperiment}(object)
 

@@ -2,7 +2,7 @@
 #'
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
+#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
@@ -11,47 +11,29 @@
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "character"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    j<-match(j, colnames(x))
-    callGeneric()
-
-  }
-)
-#' @rdname ClusterExperiment-methods
 #' @export
 setMethod(
   f = "[",
-  signature = c("ClusterExperiment", "ANY", "logical"),
+  signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
-    j<-which(j)
-    callGeneric()
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @export
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "numeric"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    origN<-NCOL(x)
-    #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
     #browser()
-    out@clusterMatrix <- as.matrix(x@clusterMatrix[j, ,drop=FALSE])
+    origN<-NCOL(x)
+    out <- callNextMethod() #doesn't work once I added the logical and character choices.
+    #out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    #browser()
+    out@clusterMatrix <- x@clusterMatrix[j, ,drop=FALSE]
     out@coClustering <- NULL
     out@dendro_samples <- NULL
     out@dendro_clusters <- NULL
     out@dendro_index <- NA_real_
-   # browser()
+    #browser()
     #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
 	out@orderSamples <- rank(x@orderSamples[j])
 
     #need to convert to consecutive integer valued clusters:
     newMat<-.makeIntegerClusters(out@clusterMatrix)
     colnames(newMat)<-colnames(out@clusterMatrix)
+    rownames(newMat)<-colnames(out)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
     newClLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
         colMat<-out@clusterLegend[[ii]]

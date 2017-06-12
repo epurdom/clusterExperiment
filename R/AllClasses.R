@@ -131,6 +131,12 @@ setValidity("ClusterExperiment", function(object) {
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
+
+  if(is.null(rownames(object@clusterMatrix)) |
+             !all(rownames(object@clusterMatrix) == colnames(object))) {
+    return("clusterMatrix must have rownames equal to colnames of object")
+  }
+
   ############
   ##Check dendrogram slotNames
   ############
@@ -401,6 +407,7 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
+    rownames(clustersNum)<-colnames(se)
     #can just give se in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                se,
