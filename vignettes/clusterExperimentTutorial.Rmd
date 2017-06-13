@@ -290,7 +290,7 @@ Now we are ready to actually merge clusters together. We now run `mergeClusters`
 It is useful to first run `mergeClusters` without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 
 ```{r mergeClustersPlot}
-mergeClusters(ce,mergeMethod="adjP",plot="mergeMethod")
+mergeClusters(ce,mergeMethod="adjP",plotInfo="mergeMethod")
 ```
 
 Then we can decide on a cutoff and visualize the resulting clustering. <!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:--->
