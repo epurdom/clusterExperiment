@@ -149,6 +149,19 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases transformation<-
+setReplaceMethod(
+  f = "transformation",
+  signature = signature("ClusterExperiment", "function"),
+  definition = function(object, value) {
+    object@transformation <- value
+    validObject(object)
+    return(object)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
 #' @return \code{nClusters} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
 #' @export

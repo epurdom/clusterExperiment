@@ -192,13 +192,20 @@ setGeneric(
     standardGeneric("transformation")
   }
 )
-
 setGeneric(
-  name = "transform",
-  def = function(x,...) {
-    standardGeneric("transform")
+  name = "transformation<-",
+  def = function(object, value) {
+    standardGeneric("transformation<-")
   }
 )
+# don't need this because a standard generic already exists
+# setGeneric(
+#   name = "transform",
+#   def = function(x,...) {
+#     standardGeneric("transform")
+#   }
+# )
+setGeneric("transform")
 
 setGeneric(
   name = "clusterMatrix",

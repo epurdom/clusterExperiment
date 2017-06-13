@@ -1,3 +1,4 @@
+.availMergeMethods<-c("adjP", "locfdr", "MB", "JC")	
 #' @title Merge clusters based on dendrogram
 #'   
 #' @description Takes an input of hierarchical clusterings of clusters and 
@@ -121,8 +122,7 @@ setMethod(f = "mergeClusters",
                           mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
                           plotInfo=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"), 
                           cutoff=0.1, plot=TRUE,
-                          isCount=TRUE,  ...) {
-							  
+                          isCount=TRUE,  ...) {  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
@@ -146,11 +146,11 @@ setMethod(f = "mergeClusters",
   sigTable <- getBestFeatures(x, cl, contrastType=c("Dendro"), dendro=dendro,
                                contrastAdj=c("All"),
                               number=nrow(x), p.value=1, isCount=isCount)
-
+#browser()
   #divide table into each node.
   whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
-  if(plotInfo=="all") whMethodCalculate<-c("adjP", "locfdr", "MB", "JC")
-  if(plotInfo%in% c("adjP", "locfdr", "MB", "JC")) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
+  if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
+  if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
       mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
       locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
@@ -329,7 +329,7 @@ This makes sense only for counts.")
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
   # rownames(cl)<-colnames(retval)
   # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch)
+     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch,legend="none")
   }
   
   invisible(retval)

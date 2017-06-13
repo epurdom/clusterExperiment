@@ -8,7 +8,7 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("clusters", "samples"), labelType = c("name", "colorblock",
-  "ids"), main, sub, removeOutbranch = TRUE, ...)
+  "ids"), main, sub, removeOutbranch = TRUE, legend = "side", ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
@@ -41,6 +41,11 @@ internal clusterIds value will be plotted (only appropriate if
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
+
+\item{legend}{logical, only applicable if \code{labelType="colorblock"}.
+Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
+used to draw the color values of the clusters/samples next to the
+dendrogram. Options are 'none', 'below', or 'side'}
 
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of
 \code{ape} that plots the dendrogram.}

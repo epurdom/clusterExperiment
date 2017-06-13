@@ -29,6 +29,10 @@
 #'     for the samples was made by putting missing samples in an outbranch. In
 #'     which case, if this parameter is TRUE, the outbranch will not be plotted,
 #'     and if FALSE it will be plotted.
+#' @param legend logical, only applicable if \code{labelType="colorblock"}.
+#'   Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
+#'   used to draw the color values of the clusters/samples next to the
+#'   dendrogram. Options are 'none', 'below', or 'side'
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -56,7 +60,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,removeOutbranch=TRUE,...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,removeOutbranch=TRUE,legend='side',...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -79,7 +83,7 @@ setMethod(
 	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
 	}
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,...))
+	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
     
   })
   
@@ -92,7 +96,7 @@ setMethod(
 #' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
-.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,...){
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",...){
 	label<-match.arg(label)
 	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
 	#---
@@ -142,39 +146,45 @@ setMethod(
   		#browser()
   	    sigInfo<-mergeOutput$propDE
   	    whToMerge<-which(sigInfo$Merged)
-  	    nodesToMerge<-sigInfo$Node[whToMerge]
+  	    nodesToMerge<-as.character(sigInfo$Node[whToMerge])
   	    methods<-colnames(sigInfo[,-c(1:3)])
-          m <- match( sigInfo$Node,phyloObj$node)
+        m <- match( as.character(sigInfo$Node),phyloObj$node)
   		if(any(is.na(m))) stop("some nodes in mergeOutput not in the given dendrogram")
-          edgeLty <- rep(1, nrow(phyloObj$edge))
-          if(mergeMethod != "none" && length(whToMerge) > 0) {
-              #which of nodes merged
-  			whMerge <- which(phyloObj$node.label %in% nodesToMerge) 
-              nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
-              whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
-              edgeLty[whEdge] <- 2
-          }
-          if(mergePlotType == "mergeMethod"){
-              if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
-              phyloObj$node.label[m] <- as.character(signif(sigInfo[,mergeMethod],2))
+        edgeLty <- rep(1, nrow(phyloObj$edge))
+		if(mergeMethod != "none" && length(whToMerge) > 0){
+		  #which of nodes merged
+		  whMerge <- which(phyloObj$node.label %in% nodesToMerge) 
+		  nodeNumbers <- (length(phyloObj$tip) + 1):max(phyloObj$edge)
+		  whEdge <- which(phyloObj$edge[,1] %in% nodeNumbers[whMerge])
+		  edgeLty[whEdge] <- 2
+		}
+		if(mergePlotType == "mergeMethod"){
+		  if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
+		  valsNodes<-as.character(signif(sigInfo[,mergeMethod],2))
+		  valsNodes[is.na(valsNodes)]<-"NA" #make them print out as NA -- otherwise doesn't plot
+		  phyloObj$node.label[m] <- valsNodes
+		  # offsetDivide<-3
+		  # dataPct<-.7
+		}
+		if(mergePlotType %in% c("all",.availMergeMethods)) {
+		  	meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
+		  	phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, 
+			  function(x){
+		  		whKp<-which(!is.na(x))
+		  	  	vals<-paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")
+				vals[is.na(vals)]<-"NA"
+				return(vals)
+				})
+			if(mergePlotType!="all"){
 			  # offsetDivide<-3
 			  # dataPct<-.7
-          }
-          if(mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC")) {
-              meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
-			  phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, function(x){
-              whKp<-which(!is.na(x))
-              paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")})
-			  if(mergePlotType!="all"){
-				  # offsetDivide<-3
-				  # dataPct<-.7
-			  }
-			  else{
-				  # offsetDivide<-2.5
-				  # dataPct<-.7
-			  	
-			  }
-          }
+			}
+			else{
+			  # offsetDivide<-2.5
+			  # dataPct<-.7
+
+			}
+		}
 		  
   		phyloObj$node.label[-m]<-""
   		plotArgs$show.node.label<-TRUE
@@ -323,13 +333,11 @@ setMethod(
 					rownames(colorMat)<-names(cl)
 					cols<-tip.color
 					names(cols)<-clusterLegendMat[m,"name"]
-	
 				}	
-
 			}
 			if(label=="colorblock"){
 				ntips<-length(phyloObj$tip.label)
-				whClusterNode<-which(!is.na(phyloObj$node.label))+ntips
+				whClusterNode<-which(!is.na(phyloObj$node.label) & phyloObj$node.label!="")+ ntips
 				#only edges going to/from these nodes
 				whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
 				edge.width<-rep(0,nrow(phyloObj$edge))
@@ -359,18 +367,16 @@ setMethod(
   		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,plot=FALSE),plotArgs))
   		treeWidth<-phyloPlotOut$x.lim[2]
   		do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,x.lim=treeWidth*(1+dataPct)),plotArgs))
-  		#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017.
+  		
   		nclusters<-ncol(colorMat)
-		if(nclusters==1){
-  			colorMat<-cbind(colorMat,colorMat)
-  		}
-
-		
+		colnames(colorMat)<-NULL		
+		if(nclusters==1 & packageVersion("ape")<'4.1.0.6'){
+			#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017 and now fixed in new version of ape.
+		  			colorMat<-cbind(colorMat,colorMat)
+		  		}
+				
   		#we have to do this to get order for colors to be what we want!
-  		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. 
-  		#this doesn't work! can't find .PlotPhyloEnv 
-  		# added ape:::, perhaps will work. But don't know how I can export it in package???
-		
+  		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. New version of ape fixes this.
   		getColFun<-function(x,phy,namedColors){
   			x <- ape:::.matchDataPhylo(x, phy)
   			n <- length(phy$tip.label)
@@ -381,28 +387,11 @@ setMethod(
 			if(!is.null(ncol(x))) ux<-unique.default(x[o,])
   			else ux<-unique.default(x[o])
   			m<-match(as.character(ux),names(namedColors))
-			#browser()
-  			function(n){namedColors[m]}
+			namedColors[m]
   		}
-		#code that actually maps to the colors:
-	    # lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
-	    # x <- .matchDataPhylo(x, phy)
-	    # n <- length(phy$tip.label)
-		# one2n <- seq_len(n)
-		# y1 <- lastPP$yy[one2n]
-	    # o <- order(y1)
-        # x <- if (style == "image") x[o, o]
-        # else if (is.vector(x)) x[o]
-        # else x[o, ]
-		#nux <- length(ux <- unique.default(x))
-		#x <- match(x, ux)
-		#co <- funcol(nux)
-		#rect(xl, yb, xr, yt, col = co[x], xpd = TRUE, ...)
-		# so colors need to be in the order of unique.default(x)
-  		#browser()
-		colnames(colorMat)<-NULL
-		#browser()
-		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = "below", funcol = getColFun(colorMat,phyloObj,cols))
+  		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
+		colInput<-function(n){cols}
+		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
 			ypos<-par("usr")[4]+0*diff(par("usr")[3:4])

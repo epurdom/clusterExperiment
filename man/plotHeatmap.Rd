@@ -74,10 +74,11 @@ should be used (see details).}
 \item{nFeatures}{integer indicating how many features should be used (if
 \code{clusterFeaturesData} is 'var' or 'PCA').}
 
-\item{visualizeData}{either a character string, indicating what form of the
-data should be used for visualizing the data (i.e. for making the
-color-scale), or a data.frame/matrix with same number of samples as
-\code{assay(data)}. If a new data.frame/matrix, any character arguments to clusterFeaturesData will be ignored.}
+\item{visualizeData}{either a character string, indicating what form of the 
+data should be used for visualizing the data (i.e. for making the 
+color-scale), or a data.frame/matrix with same number of samples as 
+\code{assay(data)}. If a new data.frame/matrix, any character arguments to
+clusterFeaturesData will be ignored.}
 
 \item{whichClusters}{character string, or vector of characters or integers,
 indicating what clusters should be visualized with the heatmap.}
@@ -241,12 +242,19 @@ If \code{breaks} is a numeric value between 0 and 1, then
   0.9 quantile will be absorbed by the upper-most color bin. This can help to
   reduce the visual impact of a few highly expressed genes (features).
 
-Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
-  hood. This allows you to plot multiple heatmaps via
-  \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
-  you change the size of your plot window in an interactive session of R
+Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the 
+  hood. This allows you to plot multiple heatmaps via 
+  \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if 
+  you change the size of your plot window in an interactive session of R 
   (this might be a problem for RStudio if you want to pop it out into a large
-  window...).
+  window...). Also, plotting to a pdf adds a blank page; see help pages of
+  \code{\link[NMF]{aheatmap}} for how to turn this off.
+
+If you have a factor with many levels, it is important to note that
+  \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
+  \code{sampleData}, and in fact runs out of colors and the remaining levels
+  get the color white. Thus if you have many factors or many levels in those
+  factors, you should set their colors via \code{clusterLegend}.
 
 Many arguments can be passed on to aheatmap, however, some are set 
   internally by \code{plotHeatmap.} In particular, setting the values of 
