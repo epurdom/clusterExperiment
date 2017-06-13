@@ -33,12 +33,12 @@
 in rows), a list of datasets overwhich the clusterings should be run, a
 \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
 
-\item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
+\item{dimReduce}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
 details.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep 
+\item{nVarDims}{vector of the number of the most variable features to keep
 (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
 included, then the full dataset will also be included.}
 
@@ -61,14 +61,14 @@ method for signature \code{list}.}
 \item{ks}{the range of k values (see details for meaning for different
 choices).}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques provided by \code{\link{clusterSingle}}, and can not
 be a user-defined function. Current functions are "tight",
 "hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
-type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness
 required in creating clusters from the dissimilarity matrix. Takes on
 values in [0,1]. See \code{\link{clusterD}}.}
 
@@ -81,18 +81,18 @@ details of \code{\link{seqCluster}}).}
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff
 (only used if clusterFunction of type "K")}
 
-\item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
 iteration; otherwise the distance function will be determined by argument
 \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only if removeSil=TRUE).}
 
-\item{distFunction}{a vector of character strings that are the names of 
+\item{distFunction}{a vector of character strings that are the names of
 distance functions found in the global environment. See the help pages of
-\code{\link{clusterD}} for details about the required format of distance 
-functions. Currently, this distance function must be applicable for all 
+\code{\link{clusterD}} for details about the required format of distance
+functions. Currently, this distance function must be applicable for all
 clusterFunction types tried. Therefore, it is not possible to intermix type "K"
 and type "01" algorithms if you also give distances to evaluate via
 \code{distFunction} unless all distances give 0-1 values for the distance
@@ -120,7 +120,7 @@ left unassigned.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+\item{random.seed}{a value to set seed before each run of clusterSingle (so
 that all of the runs are run on the same subsample of the data). Note, if
 'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of

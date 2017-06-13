@@ -29,8 +29,8 @@
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples
 on which to run the clustering (only if \code{subsample=FALSE})}
 
-\item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
 iteration; otherwise the distance function will be determined by argument
 \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
 
@@ -58,8 +58,8 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
+\item{dimReduce}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
 details.}
 

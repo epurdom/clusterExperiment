@@ -132,8 +132,7 @@ setValidity("ClusterExperiment", function(object) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
 
-  if(is.null(rownames(object@clusterMatrix)) |
-             !all(rownames(object@clusterMatrix) == colnames(object))) {
+  if(!all(rownames(object@clusterMatrix) == colnames(object))) {
     return("clusterMatrix must have rownames equal to colnames of object")
   }
 
@@ -390,6 +389,9 @@ setMethod(
     }
     #fix up names of clusters and match
     #browser()
+    if(is.null(rownames(clusters))){
+      rownames(clusters)<-colnames(se)
+    }
     if(is.null(colnames(clusters))){
       colnames(clusters)<-paste("cluster",1:NCOL(clusters),sep="")
     }

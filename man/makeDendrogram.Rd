@@ -23,8 +23,8 @@
 which cluster should be used to make the dendrogram. Default is 
 primaryCluster.}
 
-\item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
+\item{dimReduce}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
 details.}
 

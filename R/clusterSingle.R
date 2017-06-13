@@ -7,8 +7,8 @@
 #' @param x the data on which to run the clustering (features in rows).
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples
 #'   on which to run the clustering (only if \code{subsample=FALSE})
-#' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
+#' @param subsample logical as to whether to subsample via
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each
 #'   iteration; otherwise the distance function will be determined by argument
 #'   \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).
 #' @param sequential logical whether to use the sequential strategy (see
@@ -28,8 +28,8 @@
 #'   function to \code{transFun}.
 #' @param transFun function A function to use to transform the input data matrix
 #'   before clustering.
-#' @param dimReduce character A character identifying what type of 
-#'   dimensionality reduction to perform before clustering. Options are 
+#' @param dimReduce character A character identifying what type of
+#'   dimensionality reduction to perform before clustering. Options are
 #'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
 #'   details.
 #' @param ndims integer An integer identifying how many dimensions to reduce to
@@ -82,6 +82,7 @@ setMethod(
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
       ndims=NA,clusterLabel="clusterSingle") {
+
     if(missing(x)) x<-NULL
     if(missing(diss)) diss<-NULL
     input<-.checkXDissInput(x,diss)
@@ -109,7 +110,7 @@ setMethod(
       }
       transFun <- transObj$transFun #need it later to create clusterExperimentObject
       N <- dim(x)[2]
-      
+
     }
     else{
       mess<-"input to clusterSingle includes the original data matrix x"
@@ -137,7 +138,7 @@ setMethod(
           stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
       }
     }
-    if(subsample){ 
+    if(subsample){
         if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
             warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
             clusterDArgs[["distFunction"]]<-NA
@@ -247,7 +248,7 @@ setMethod(
   definition = function(x, ...) {
 
     outval <- clusterSingle(assay(x),...)
-    
+
     ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
     retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
     return(retval)
@@ -257,7 +258,7 @@ setMethod(
 
 #wrapper that calls the clusterSampling and clusterD routines in reasonable order.
 .clusterWrapper <- function(x, diss, subsample, clusterFunction,clusterDArgs=NULL,
-                            subsampleArgs=NULL,typeAlg) 
+                            subsampleArgs=NULL,typeAlg)
 {
     if(subsample){
         if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
@@ -270,14 +271,14 @@ setMethod(
         }
     }
     if(typeAlg=="K"){
-        findBestK<-FALSE	
+        findBestK<-FALSE
         if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
             findBestK<-clusterDArgs[["findBestK"]]
         }
         if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
     }
-    resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs)) 
-    return(list(results=resList$result,D=resList$D)) 
+    resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs))
+    return(list(results=resList$result,D=resList$D))
 }
 
 
