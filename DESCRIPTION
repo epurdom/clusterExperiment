@@ -30,7 +30,8 @@ Imports:
     matrixStats,
     graphics,
     parallel,
-    MAST
+    MAST,
+    RSpectra
 Suggests:
     BiocStyle,
     knitr,

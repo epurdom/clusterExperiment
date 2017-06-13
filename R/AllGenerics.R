@@ -331,3 +331,17 @@ setGeneric(
     standardGeneric("mergeClusters")
   }
 )
+
+setGeneric(
+  name = "pca",
+  def = function(x, k, center, scale) {
+    standardGeneric("pca")
+  }
+)
+
+setGeneric(
+  name = "dimReduction",
+  def = function(x, methods, k) {
+    standardGeneric("dimReduction")
+  }
+)
