@@ -15,7 +15,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 
             shared1 <- combineMany(clusterMatrix(clustNothing))
             shared2 <- combineMany(clustNothing, "all")
-            expect_equal(shared1$clustering, primaryCluster(shared2))
+            expect_equivalent(shared1$clustering, primaryCluster(shared2))
 
             shared3 <- combineMany(clustNothing, "workflow")
             expect_equal(shared2, shared3)
@@ -57,11 +57,11 @@ test_that("`combineMany` works when multiple runs of workflow", {
 
   shared3 <- combineMany(clustNothing2, "all")
   shared4 <- combineMany(clusterMatrix(clustNothing2))
-  expect_equal(shared4$clustering, primaryCluster(shared3))
+  expect_equivalent(shared4$clustering, primaryCluster(shared3))
 
   shared5 <- combineMany(clustNothing2, "workflow")
   shared6 <- combineMany(clusterMatrix(clustNothing2)[,1:2])
-  expect_equal(shared6$clustering, primaryCluster(shared5))
+  expect_equivalent(shared6$clustering, primaryCluster(shared5))
 
 
   clustNothing3 <- addClusters(clustNothing2, primaryCluster(shared5))
