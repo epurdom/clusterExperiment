@@ -3,7 +3,7 @@
 #' Provides the transformed data (as defined by the object), as well as
 #' dimensionality reduction.
 #'
-#' @param x a ClusterExperiment object.
+#' @param _data a ClusterExperiment object.
 #' @param nPCADims Numeric vector giving the number of PC dimensions to use in
 #'   PCA dimensionality reduction. If NA no PCA dimensionality reduction is
 #'   done. nPCADims can also take values between (0,1) to indicate keeping the
