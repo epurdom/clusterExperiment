@@ -6,11 +6,21 @@
 \alias{plotDendrogram}
 \title{Plot dendrogram of clusterExperiment object}
 \usage{
-\S4method{plotDendrogram}{ClusterExperiment}(x, leafType = c("clusters",
-  "samples"), labelType = c("name", "colorblock", "ids"), main, sub, ...)
+\S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
+  leafType = c("clusters", "samples"), labelType = c("name", "colorblock",
+  "ids"), main, sub, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
+
+\item{whichClusters}{only used if \code{leafType="samples"}). If numeric, an
+index for the clusterings to be plotted with dendrogram. Otherwise, 
+\code{whichClusters} can be a character value identifying the 
+\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
+\code{clusterLabels}; alternatively \code{whichClusters} can be either 
+'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
+or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
+using the clustering that created the dendrogram.}
 
 \item{leafType}{if "samples" the dendrogram has one leaf per sample,
 otherwise it has one per cluster.}
@@ -42,13 +52,15 @@ If \code{leafType="clusters"}, the plotting function will work best
 \examples{
 data(simData)
 
-#create a clustering, for 8 clusters (truth was 3)
-cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
+#create a clustering, for 8 clusters (truth was 3) 
+cl <-clusterSingle(simData, clusterFunction="pam", subsample=FALSE, 
 sequential=FALSE, clusterDArgs=list(k=8))
 
-#create dendrogram of clusters:
-hcl <- makeDendrogram(cl)
-plotDendrogram(hcl)
-plotDendrogram(hcl, leafType="samples",labelType="colorblock")
+#create dendrogram of clusters and then 
+# merge clusters based ondendrogram: 
+cl <- makeDendrogram(cl) 
+cl<-mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
+plotDendrogram(cl) 
+plotDendrogram(cl,leafType="samples",whichClusters="all",labelType="colorblock")
 
 }

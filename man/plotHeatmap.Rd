@@ -76,8 +76,8 @@ should be used (see details).}
 
 \item{visualizeData}{either a character string, indicating what form of the
 data should be used for visualizing the data (i.e. for making the
-color-scale), or a data.frame/matrix with same dimensions of
-\code{assay(data)}.}
+color-scale), or a data.frame/matrix with same number of samples as
+\code{assay(data)}. If a new data.frame/matrix, any character arguments to clusterFeaturesData will be ignored.}
 
 \item{whichClusters}{character string, or vector of characters or integers,
 indicating what clusters should be visualized with the heatmap.}
