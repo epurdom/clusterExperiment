@@ -72,7 +72,10 @@ default it is equal to "mergeClusters", to indicate that this clustering is
 the result of a call to mergeClusters (only if x is a ClusterExperiment object)}
 
 \item{leafType}{if plotting, whether the leaves should be the clusters or the
-samples. Choosing 'samples' allows for visualization of how many samples are in the merged clusters (only if x is a ClusterExperiment object).}
+samples. Choosing 'samples' allows for visualization of how many samples 
+are in the merged clusters (only if x is a ClusterExperiment object), which
+is the main difference between choosing "clusters" and "samples",
+particularly if \code{labelType="colorblock"}}
 
 \item{labelType}{if plotting, then whether leaves of dendrogram should be
 labeled by rectangular blocks of color ("colorblock")  or with the names of
