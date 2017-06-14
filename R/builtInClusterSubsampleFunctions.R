@@ -1,3 +1,9 @@
+### input to clustering:
+# pam : x or dis
+# hier : dis
+# kmeans : x
+# spectral (SamSPECTRAL for flow cytometry; kernlab for standard; kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
+
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
