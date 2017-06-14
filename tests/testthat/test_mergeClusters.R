@@ -48,6 +48,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
   expect_true(!"combineMany.1" %in% clusterTypes(clustMerged2))
   expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
+  removeClusters(clustMerged, whichRemove = "mergeClusters")
 })
 
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
