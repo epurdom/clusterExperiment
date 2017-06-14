@@ -29,7 +29,10 @@
 #'     for the samples was made by putting missing samples in an outbranch. In
 #'     which case, if this parameter is TRUE, the outbranch will not be plotted,
 #'     and if FALSE it will be plotted.
-#' @param legend logical, only applicable if \code{labelType="colorblock"}. Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is used to draw the color values of the clusters/samples next to the dendrogram. Options are 'none', 'below', or 'side'
+#' @param legend logical, only applicable if \code{labelType="colorblock"}.
+#'   Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
+#'   used to draw the color values of the clusters/samples next to the
+#'   dendrogram. Options are 'none', 'below', or 'side'
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
