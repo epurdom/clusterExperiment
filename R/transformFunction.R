@@ -202,8 +202,11 @@ setMethod(
                     k=max(nPCADims))
       }
 
-      if(NCOL(prc) != NCOL(origX))
-        stop("error in coding of principle components.")
+      if(pctReturn & NCOL(prc) != NCOL(origX))
+        stop("error in coding of principal components.")
+
+      if(any(nPCADims > NCOL(prc)))
+        stop("error in coding of principal components.")
 
       if(!listReturn){ #nPCADims length 1; just return single matrix
         if(pctReturn) {
