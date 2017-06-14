@@ -69,8 +69,9 @@
 setMethod(
   f = "transform",
   signature = "ClusterExperiment",
-  definition = function(x,nPCADims=NA,nVarDims=NA,dimReduce="none",ignoreUnassignedVar=FALSE) {
-    fun<-transformation(x)
+  definition = function(`_data`,nPCADims=NA,nVarDims=NA,dimReduce="none",ignoreUnassignedVar=FALSE) {
+	  x<-`_data`
+	fun<-transformation(x)
     dat<-assay(x)
     clustering<-if(ignoreUnassignedVar) primaryCluster(x) else NULL
     return(.transData(dat,transFun=fun,nPCADims=nPCADims,nVarDims=nVarDims,dimReduce=dimReduce,clustering=clustering)$x)

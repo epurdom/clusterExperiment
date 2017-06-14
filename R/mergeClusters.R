@@ -328,7 +328,7 @@ This makes sense only for counts.")
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
   # rownames(cl)<-colnames(retval)
   # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch)
+     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch,legend="none")
   }
   
   invisible(retval)
