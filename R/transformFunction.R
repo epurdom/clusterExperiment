@@ -198,8 +198,8 @@ setMethod(
         prvar<-prvar/sum(prvar)
         prc<-t(prcObj$x)
       } else {
-        prc <- .pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE,
-                    k=max(nPCADims))
+        prc <- t(.pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE,
+                    k=max(nPCADims)))
       }
 
       if(pctReturn & NCOL(prc) != NCOL(origX))
@@ -310,7 +310,7 @@ setMethod(
     xRet<-x
 
   }
-  #browser()
+
 
   if(listReturn) xRet<-c(xNone,xVAR,xPCA)
   return(list(x=xRet,transFun=transFun,whMostVar=whFeatures))
