@@ -253,11 +253,11 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{primaryClusterIndex} returns/sets the clustering index 
+#' @return \code{dendroClusterIndex} returns/sets the clustering index 
 #' of the clusters used to create dendrogram
 #' (i.e., which column of clusterMatrix corresponds to the clustering).
 #' @export
-#' @aliases primaryClusterIndex
+#' @aliases dendroClusterIndex
 setMethod(
   f = "dendroClusterIndex",
   signature = "ClusterExperiment",

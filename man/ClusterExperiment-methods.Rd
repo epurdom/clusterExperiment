@@ -29,7 +29,7 @@
 \alias{primaryClusterIndex,ClusterExperiment-method}
 \alias{primaryClusterIndex}
 \alias{dendroClusterIndex,ClusterExperiment-method}
-\alias{primaryClusterIndex}
+\alias{dendroClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
 \alias{coClustering,ClusterExperiment-method}
@@ -159,7 +159,7 @@ clusterMatrix).
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
 
-\code{primaryClusterIndex} returns/sets the clustering index 
+\code{dendroClusterIndex} returns/sets the clustering index 
 of the clusters used to create dendrogram
 (i.e., which column of clusterMatrix corresponds to the clustering).
 
