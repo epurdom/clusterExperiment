@@ -198,7 +198,7 @@
 
 ##Universal way to change character indication of clusterTypes into indices.
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster")),silent=TRUE)
+  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
   if(!inherits(test,"try-error")){
     if(test=="workflow"){
       ppIndex<-workflowClusterDetails(x)
@@ -216,6 +216,7 @@
     }
     if(test=="none") wh<-vector("integer",length=0)
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
+	if(test=="dendro") wh<-dendroClusterIndex(x)
   }
   else{
     #first match to clusterTypes  
