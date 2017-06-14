@@ -43,44 +43,13 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  expect_equal(dendOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
  
- #now should be the same:
+ #now should be the same, check all objects except dendro_samples because very big:
  mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", cutoff = 0.05,isCount=TRUE)
  expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
- expect_equal(clusterMatrix(rsecOut,whichClusters="mergeClusters"),clusterMatrix(mergeOut,whichClusters="mergeClusters"))
+ expect_equal(mergeOut@dendro_clusters,rsecOut@dendro_clusters)
+ expect_equal(mergeOut@dendro_outbranch,rsecOut@dendro_outbranch)
+ expect_equal(coClustering(mergeOut),coClustering(rsecOut))
+ expect_equal(clusterMatrix(rsecOut,whichClusters="mergeClusters"), clusterMatrix(mergeOut,whichClusters="mergeClusters"))
+ expect_equal(clusterTypes(rsecOut),clusterTypes(mergeOut))
 })
 
-#code in RSEC:
-# ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
-#                 sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
-#                 isCount=isCount,transFun=transFun,
-#                 dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-#                 clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
-#                 seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
-#  RSEC(x, isCount = FALSE, transFun = NULL,
-#    dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), k0s = 4:15,
-#    clusterFunction = c("tight", "hierarchical01"), alphas = c(0.1, 0.2, 0.3),
-#    betas = 0.9, minSizes = 1, combineProportion = 0.7,
-#    combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
-#    mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-#    clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
-#    random.seed = NULL, run = TRUE)
-
-# 	if("combinedProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
-	# if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
-	#   ce<-do.call("combineMany",c(list(x=ce,whichClusters="clusterMany"),args1))
-
-
-			     #test have coClustering object
-	
-			     #test have dendrogram slots
-
-
-#  RSEC(x, isCount = FALSE, transFun = NULL,
-#    dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), k0s = 4:15,
-#    clusterFunction = c("tight", "hierarchical01"), alphas = c(0.1, 0.2, 0.3),
-#    betas = 0.9, minSizes = 1, combineProportion = 0.7,
-#    combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
-#    mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-#    clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
-#    random.seed = NULL, run = TRUE)
-#

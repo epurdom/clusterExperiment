@@ -41,6 +41,19 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
 })
 
+test_that("`makeDendrogram` with dimReduce options", {
+    x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
+    expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
+    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
+    expect_equal(x,x2)
+    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
+    
+})
 test_that("`makeDendrogram` works with whichCluster", {
     x1<-makeDendrogram(ccSE,whichCluster="Cluster2")
     x2<-makeDendrogram(ccSE,whichCluster=2)
@@ -72,19 +85,6 @@ test_that("`makeDendrogram` works with whichCluster", {
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
-})
-test_that("`makeDendrogram` with dimReduce options", {
-    x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
-    expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
-    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
-    expect_equal(x,x2)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
-    
 })
 
 test_that("plotDendrogram works with outgroup", {
