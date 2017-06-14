@@ -148,12 +148,13 @@
 #'   upper quantile of \code{data}, and then all values after the
 #'   0.9 quantile will be absorbed by the upper-most color bin. This can help to
 #'   reduce the visual impact of a few highly expressed genes (features). 
-#' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
-#'   hood. This allows you to plot multiple heatmaps via
-#'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
-#'   you change the size of your plot window in an interactive session of R
+#' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the 
+#'   hood. This allows you to plot multiple heatmaps via 
+#'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if 
+#'   you change the size of your plot window in an interactive session of R 
 #'   (this might be a problem for RStudio if you want to pop it out into a large
-#'   window...).
+#'   window...). Also, plotting to a pdf adds a blank page; see help pages of
+#'   \code{\link[NMF]{aheatmap}} for how to turn this off.
 #' @details Many arguments can be passed on to aheatmap, however, some are set 
 #'   internally by \code{plotHeatmap.} In particular, setting the values of 
 #'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in 

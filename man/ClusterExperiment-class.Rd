@@ -26,8 +26,8 @@ clusterExperiment(se, clusters, ...)
 \S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
   transformation, primaryIndex = 1, clusterTypes = "User",
   clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
-  dendro_index = NA_real_, dendro_clusters = NULL,
-  dendro_outbranch = NULL, coClustering = NULL)
+  dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
+  coClustering = NULL)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
