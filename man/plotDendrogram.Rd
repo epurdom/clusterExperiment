@@ -8,7 +8,7 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("clusters", "samples"), labelType = c("name", "colorblock",
-  "ids"), main, sub, ...)
+  "ids"), main, sub, removeOutbranch = TRUE, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
@@ -20,7 +20,12 @@ index for the clusterings to be plotted with dendrogram. Otherwise,
 \code{clusterLabels}; alternatively \code{whichClusters} can be either 
 'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
 or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
-using the clustering that created the dendrogram.}
+using the clustering that created the dendrogram.
+@param removeOutgroup logical, only applicable if there are missing samples
+  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
+  for the samples was made by putting missing samples in an outbranch. In
+  which case, if this parameter is TRUE, the outbranch will not be plotted,
+  and if FALSE it will be plotted.}
 
 \item{leafType}{if "samples" the dendrogram has one leaf per sample,
 otherwise it has one per cluster.}
@@ -59,7 +64,7 @@ sequential=FALSE, clusterDArgs=list(k=8))
 #create dendrogram of clusters and then 
 # merge clusters based ondendrogram: 
 cl <- makeDendrogram(cl) 
-cl<-mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
+cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
 plotDendrogram(cl) 
 plotDendrogram(cl,leafType="samples",whichClusters="all",labelType="colorblock")
 

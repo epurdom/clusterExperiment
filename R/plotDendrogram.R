@@ -24,6 +24,11 @@
 #'   'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
 #'   or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
 #'   using the clustering that created the dendrogram.
+#'   @param removeOutgroup logical, only applicable if there are missing samples
+#'     (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
+#'     for the samples was made by putting missing samples in an outbranch. In
+#'     which case, if this parameter is TRUE, the outbranch will not be plotted,
+#'     and if FALSE it will be plotted.
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -42,7 +47,7 @@
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
 #' cl <- makeDendrogram(cl) 
-#' cl<-mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
+#' cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
 #' plotDendrogram(cl) 
 #' plotDendrogram(cl,leafType="samples",whichClusters="all",labelType="colorblock")
 #' 
@@ -51,15 +56,15 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,removeOutbranch=TRUE,...)
   {
+    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
 	labelType<-match.arg(labelType)
 	whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
 
     if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
-    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
 	dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
 
@@ -74,24 +79,52 @@ setMethod(
 	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
 	}
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,...))
+	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,...))
     
   })
   
   
-  .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=TRUE,...){
-  	label<-match.arg(label)
-      phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
-      #browser()
-	  phyloObj <- as(phylo4Obj, "phylo")
-  	#browser()
+  .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,...){
+	label<-match.arg(label)
+	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
+	#---
+	#remove the outbranch from the dendrogram and from cl
+	#(note this is using phylo4 obj)
+	#---
+	if(outbranch & removeOutbranch & leafType=="samples"){
+		rootNode<-phylobase::rootNode(phylo4Obj)
+		rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
+		tips<-phylobase::getNode(phylo4Obj,type="tip")
+		whMissingNode<-grep("MissingNode",names(rootChild))
+		if(length(whMissingNode)==0){
+			#check not a single -1 sample from root:
+			if(any(rootChild %in% tips)){
+        #which ever rootChild is in tips must be single missing sample 
+			  #because can't make dendrogram with only 1 cluster so couldn't run plot or mergeClusters. 
+			  clusterNode<-rootChild[!rootChild %in% tips]
+			  #stop("Internal coding error: need to fix .plotDendro to deal with when single missing sample")
+			}
+			else stop("Internal coding error: no outbranch nodes")	
+		} 
+		else clusterNode<-rootChild[-whMissingNode]
+		if(length(clusterNode)!=1) stop("Internal coding error: removing missing node does not leave exactly 1 descendent of root")
+		clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
+		if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
+		namesClusterTips<-names(clusterTips)
+		if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
+		phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)
+		#set outbranch=FALSE because now doesn't exist in tree...
+		outbranch<-FALSE
+	}
+	phyloObj <- as(phylo4Obj, "phylo")
+
   	plotArgs<-list(...)
 	dataPct<-0.5
 	offsetDivide<-16
 	if(label=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if label='colorblock'")
   	###############
   	### For plotting of dendrogram for the merging
-  	### Add information about the merging
+  	### Add information about the merging as node labels and change edge type
   	###############
   	if(!is.null(mergePlotType) && mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
           #####
@@ -140,11 +173,16 @@ setMethod(
   		plotArgs$edge.lty<-edgeLty
   	}
   	###############
-  	### Add color of cluster and cluster/sample name from the object.
+  	### Deal with clusterLegend object: 
+	### - Make default if not provided and 
+	### - If # of clusterings>1 make clusterLegend and cl matrix appropriate
   	###############
 	if(label=="colorblock"){
 		clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
-		if(is.null(clusterLegendMat)){ #make default colors, works for vector or matrix cl
+		if(is.null(clusterLegendMat)){ 
+			#----
+			#make default colors, works for vector or matrix cl
+			#----
   			clusterIds<-sort(unique(as.vector(cl)))
 			clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
   		}
@@ -153,7 +191,9 @@ setMethod(
 			  	#if not provide list of cluster legends, do only 1st clustering provided (temporary while fixing so works for matrix)
 				if(!is.list(clusterLegendMat) ) cl<-cl[,1,drop=FALSE]
 				else{
+					#----
 					#create one big cl/clusterLegendMat object that will allow for coloring that is okay.
+					#----
 					nclusters<-ncol(cl)
 					if(length(clusterLegendMat)!=nclusters) stop("Internal coding error -- wrong length of colors for clustering")
 					newClusterLegendMat<-clusterLegendMat[[1]]
@@ -221,7 +261,11 @@ setMethod(
 			}
 		}
 	} 
-#	browser()
+	###############
+	### Deal with clusterLegend object: 
+	### - Add color of cluster and cluster/sample name to tip labels if labelType=="name"
+	### - Make colorMat matrix if labelType=="colorblock"
+	###############
 	edge.width=1
 	if(!is.null(clusterLegendMat)){
 		if(leafType=="clusters"){
