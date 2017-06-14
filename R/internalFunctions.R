@@ -52,7 +52,7 @@
                             dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
-							primaryIndex=primaryIndex(newObj)
+							primaryIndex=primaryClusterIndex(newObj)
 							)
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
