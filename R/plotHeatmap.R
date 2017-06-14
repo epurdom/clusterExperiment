@@ -801,6 +801,7 @@ setMethod(
                               dendro_samples=data@dendro_samples,
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
+                              dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex
                               
                               
