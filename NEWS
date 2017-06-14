@@ -1,7 +1,8 @@
 Changes in version 1.3.0-9008( Release date: )
 ==============
 Changes:
-* change how plotHeatmap handles visualizeData argument, so not required to have same number of genes as original, only same number of samples. 
+* change how `plotHeatmap` handles visualizeData argument, so not required to have same number of genes as original, only same number of samples. 
+* Now if color of vectors given in `clusterLegend` does not have names, `plotHeatmap` will give them names matching the variable so that they will be used by `aheatmap` (previously would have left all colors white because do not have matching names).
 * Large changes to how dendrograms are plotted by `plotDendrogram` and `mergeClusters`. This includes the ability to see the before and after clusterings along side the mergeClusters result, as well as a new slot added to the clusterExperiment class (`dendro_outbranch`). The names of several arguments to `mergeClusters` and `plotDendrogram` were changed for clarity: 
 	- `leaves` is now `leafType` in `plotDendrogram`. 
 	- `plotType` is now `plotInfo` in `mergeClusters`
