@@ -288,16 +288,16 @@ setMethod(
     ####
     ##Transform data and determine which features to use
     ####
-    if(!externalData){
-		clusterFeaturesData <- .convertTry(clusterFeaturesData,
-                                       try(match.arg(clusterFeaturesData),
-                                           silent=TRUE))
+	clusterFeaturesData <- .convertTry(clusterFeaturesData,
+                                   try(match.arg(clusterFeaturesData),
+                                       silent=TRUE))
 
-	    if(is.list(clusterFeaturesData)){
-	      groupFeatures<-clusterFeaturesData
-	      clusterFeaturesData<-unlist(clusterFeaturesData)
-	    }
-	    else groupFeatures<-NULL
+    if(is.list(clusterFeaturesData)){
+      groupFeatures<-clusterFeaturesData
+      clusterFeaturesData<-unlist(clusterFeaturesData)
+    }
+    else groupFeatures<-NULL
+    if(!externalData){
 	    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
 	        dimReduce=switch(clusterFeaturesData,
 	                         "var"="var",
@@ -327,12 +327,14 @@ setMethod(
 	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
 	    if(dimReduce%in%"PCA") wh<-1:nFeatures
 	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
+		#browser()
 		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
 	    else{
+			#note, transObj is already been limited to the wh.
 			heatData<-switch(visualizeData,
 	                    "original"=assay(data[wh,]),
-	                    "transformed"=transObj$x[wh,],
-	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))[wh,]
+	                    "transformed"=transObj$x,
+	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
 	                    )
 		}
 	}
