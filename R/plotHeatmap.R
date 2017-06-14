@@ -523,7 +523,8 @@ setMethod(
     }  
     #browser()
     badValues<-c("Rowv","Colv","color","annCol","annColors")
-    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","))
+	replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","sampleData","clusterLegend")
+    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
 
     
     
