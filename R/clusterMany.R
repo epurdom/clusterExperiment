@@ -179,7 +179,7 @@ setMethod(
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
-    browser()
+
 	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
     origX <- x
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
