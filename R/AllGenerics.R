@@ -194,7 +194,7 @@ setGeneric(
 )
 setGeneric(
   name = "transformation<-",
-  def = function(x) {
+  def = function(object, value) {
     standardGeneric("transformation<-")
   }
 )
