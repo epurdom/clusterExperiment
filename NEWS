@@ -1,6 +1,7 @@
 Changes in version 1.3.0-9001( Release date: )
 ==============
 Changes:
+* Large changes to how dendrograms are plotted by `plotDendrogram` and `mergeClusters`. This includes the ability to see the before and after clusterings along side the mergeClusters result, as well as a new slot added to the clusterExperiment class (`dendro_outbranch`). 
 
 Bugs:
 
