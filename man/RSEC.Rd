@@ -7,6 +7,7 @@
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
 \alias{RSEC,SummarizedExperiment-method}
+\alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
@@ -20,6 +21,8 @@
   random.seed = NULL, run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
+
+\S4method{RSEC}{data.frame}(x, ...)
 
 \S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE,
   rerunClusterMany = FALSE, ...)

@@ -19,6 +19,7 @@
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
 #' @inheritParams mergeClusters,matrix-method
+
 #' @export
 setMethod(
     f = "RSEC",
@@ -107,6 +108,14 @@ setMethod(
     return(retval)
 
   })
+
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "data.frame"),
+definition = function(x,...){RSEC(data.matrix(x),...)}
+)
 
 #' @export
 #' @rdname RSEC
