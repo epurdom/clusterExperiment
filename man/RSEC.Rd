@@ -45,7 +45,7 @@ dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
 details.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep 
+\item{nVarDims}{vector of the number of the most variable features to keep
 (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
 included, then the full dataset will also be included.}
 
@@ -55,14 +55,14 @@ included.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques provided by \code{\link{clusterSingle}}, and can not
 be a user-defined function. Current functions are "tight",
 "hierarchical01","hierarchicalK", and "pam"}
 
-\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
-type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of
+type '01' (either 'tight' or 'hierarchical01'). Determines tightness
 required in creating clusters from the dissimilarity matrix. Takes on
 values in [0,1]. See \code{\link{clusterD}}.}
 
@@ -100,7 +100,7 @@ left unassigned.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so 
+\item{random.seed}{a value to set seed before each run of clusterSingle (so
 that all of the runs are run on the same subsample of the data). Note, if
 'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of
