@@ -385,7 +385,7 @@ setMethod(
       subsample <- as.logical(gsub(" ","",par["subsample"]))
       findBestK <- as.logical(gsub(" ","",par["findBestK"]))
       clusterFunction <- as.character(par[["clusterFunction"]])
-      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else distFunction<-NULL
+      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
       if(!is.na(par[["k"]])){
         if(sequential) {
           seqArgs[["k0"]] <- par[["k"]]
@@ -440,6 +440,7 @@ setMethod(
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")
       }
+	  #browser()
       if(ncores>1) {
         out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
         nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
