@@ -29,6 +29,7 @@
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
         retval@dendro_samples<-oldObj@dendro_samples
         retval@dendro_clusters<-oldObj@dendro_clusters
+		retval@dendro_outbranch<-oldObj@dendro_outbranch
         retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
     }
     #put back orderSamples, coClustering
@@ -48,8 +49,11 @@
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
+                            dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
-                            dendro_index=newObj@dendro_index)
+                            dendro_index=newObj@dendro_index),
+							primaryIndex=primaryIndex(newObj)
+							)
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
