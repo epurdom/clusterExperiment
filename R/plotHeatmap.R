@@ -25,8 +25,8 @@
 #'   \code{sampleData}.
 #' @param visualizeData either a character string, indicating what form of the
 #'   data should be used for visualizing the data (i.e. for making the
-#'   color-scale), or a data.frame/matrix with same dimensions of
-#'   \code{assay(data)}.
+#'   color-scale), or a data.frame/matrix with same number of samples as
+#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to clusterFeaturesData will be ignored.
 #' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
 #'   will be used to in \code{hclust} to define the hiearchical clustering of 
 #'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
@@ -261,56 +261,21 @@ setMethod(
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
 
-    ####
-    ##Transform data and determine which features to use
-    ####
-    clusterFeaturesData <- .convertTry(clusterFeaturesData,
-                                       try(match.arg(clusterFeaturesData),
-                                           silent=TRUE))
-
-    if(is.list(clusterFeaturesData)){
-      groupFeatures<-clusterFeaturesData
-      clusterFeaturesData<-unlist(clusterFeaturesData)
-    }
-    else groupFeatures<-NULL
-    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
-        dimReduce=switch(clusterFeaturesData,
-                         "var"="var",
-                        "PCA"="PCA",
-                        "all"="none")
-        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
-        wh<-1:NROW(data)
-    }
-    else{
-      if(is.character(clusterFeaturesData)){#gene names
-        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
-        else{
-          wh<-match(clusterFeaturesData,rownames(data))
-          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
-          if(any(is.na(wh))){
-            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
-            wh<-na.omit(wh)
-          }
-        }
-      }
-      else{
-          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
-          wh<-clusterFeaturesData
-      }
-      dimReduce<-"none"
-    }
-    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
-    if(dimReduce%in%"PCA") wh<-1:nFeatures
-    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
     #########
-    ##Assign visualization data and clusterFeaturesData
+    ##Determine visualization data and default colorScale based on that
     #########
     #browser()
+	externalData<-FALSE
     visualizeData <- .convertTry(visualizeData,
                                  try(match.arg(visualizeData), silent=TRUE))
     if(is.character(visualizeData)){
       if(!visualizeData %in% c("transformed","centeredAndScaled","original")) stop("visualizeData value, '",visualizeData,"',is invalid option")
     }
+	else{
+		if(!is.data.frame(visualizeData) && !is.matrix(visualizeData)) stop("if visualizeData is not character, must be either data frame or matrix")
+		externalData<-TRUE
+		if(!ncol(visualizeData)==ncol(assay(data))) stop("if give separate visualizeData, must have same number of sample (columns) as assay(data)")
+	}
     if(missing(colorScale)) {
       colorScale <- seqPal5
       if(is.character(visualizeData)) {
@@ -320,20 +285,61 @@ setMethod(
       }
     }
 
-    if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
-    else{
-        if(!is.data.frame(visualizeData) && !is.matrix(visualizeData)){
-            heatData<-switch(visualizeData,
-                            "original"=assay(data[wh,]),
-                            "transformed"=transObj$x,
-                            "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
-                            )
-        }
-        else{
-            if(!all(dim(visualizeData)==dim(assay(data)))) stop("if give separate visualizeData, must be of same dimensions as assay(data)")
-           heatData<-data.matrix(visualizeData)[wh,] #still use the variables identified above.
-        }
-    }
+    ####
+    ##Transform data and determine which features to use
+    ####
+    if(!externalData){
+		clusterFeaturesData <- .convertTry(clusterFeaturesData,
+                                       try(match.arg(clusterFeaturesData),
+                                           silent=TRUE))
+
+	    if(is.list(clusterFeaturesData)){
+	      groupFeatures<-clusterFeaturesData
+	      clusterFeaturesData<-unlist(clusterFeaturesData)
+	    }
+	    else groupFeatures<-NULL
+	    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
+	        dimReduce=switch(clusterFeaturesData,
+	                         "var"="var",
+	                        "PCA"="PCA",
+	                        "all"="none")
+	        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+	        wh<-1:NROW(data)
+	    }
+	    else{
+	      if(is.character(clusterFeaturesData)){#gene names
+	        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
+	        else{
+	          wh<-match(clusterFeaturesData,rownames(data))
+	          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
+	          if(any(is.na(wh))){
+	            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
+	            wh<-na.omit(wh)
+	          }
+	        }
+	      }
+	      else{
+	          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+	          wh<-clusterFeaturesData
+	      }
+	      dimReduce<-"none"
+	    }
+	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
+	    if(dimReduce%in%"PCA") wh<-1:nFeatures
+	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
+		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
+	    else{
+			heatData<-switch(visualizeData,
+	                    "original"=assay(data[wh,]),
+	                    "transformed"=transObj$x[wh,],
+	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))[wh,]
+	                    )
+		}
+	}
+	else{
+		heatData<-visualizeData
+	}
+ 
 
     ######
     #Make sampleData based on clusterings and columns of colData
