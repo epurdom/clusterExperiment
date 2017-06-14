@@ -159,8 +159,9 @@ clusterMatrix).
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
 
-\code{primaryClusterIndex} returns/sets the primary clustering index
-(i.e., which column of clusterMatrix corresponds to the primary clustering).
+\code{primaryClusterIndex} returns/sets the clustering index 
+of the clusters used to create dendrogram
+(i.e., which column of clusterMatrix corresponds to the clustering).
 
 \code{coClustering} returns/sets the co-clustering matrix.
 
