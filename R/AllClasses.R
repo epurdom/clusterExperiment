@@ -339,6 +339,7 @@ setMethod(
 #'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
 #'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
 #'  Slots).
+#' @param dendro_outbranch logical. Sets the `dendro_outbranch` slot (see Slots)
 #'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
 #'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
 #'@details The \code{clusterExperiment} constructor function gives clusterLabels
