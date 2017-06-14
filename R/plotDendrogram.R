@@ -16,7 +16,7 @@
 #'   \code{leafType="clusters"}).
 #' @param ... arguments passed to the \code{\link{plot.phylo}} function of
 #'   \code{ape} that plots the dendrogram.
-#' @param whichClusters If numeric, an index for the clusterings to be plotted with dendrogram. Otherwise, 
+#' @param whichClusters only used if \code{leafType="samples"}). If numeric, an index for the clusterings to be plotted with dendrogram. Otherwise, 
 #'   \code{whichClusters} can be a character value identifying the 
 #'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
 #'   \code{clusterLabels}; alternatively \code{whichClusters} can be either
@@ -37,10 +37,11 @@
 #' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
 #' sequential=FALSE, clusterDArgs=list(k=8))
 #' 
-#' #create dendrogram of clusters:
-#' hcl <- makeDendrogram(cl)
-#' plotDendrogram(hcl)
-#' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
+#' #create dendrogram of clusters and then also merge of clusters based on dendrogram:
+#' cl <- makeDendrogram(cl)
+#' cl<-mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE)
+#' plotDendrogram(cl)
+#' plotDendrogram(cl, leafType="samples",whichClusters="all",labelType="colorblock")
 #' 
 #' @export
 #' @rdname plotDendrogram
@@ -51,20 +52,26 @@ setMethod(
   {
     leafType<-match.arg(leafType)
 	labelType<-match.arg(labelType)
+	whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
+    if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
+
     if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
-
-    
 	dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-	leg<-clusterLegend(x)[[dendroClusterIndex(x)]]
-    cl<-switch(leafType,"samples"=clusterMatrix(x)[,dendroClusterIndex(x)],"clusters"=NULL)
-	if(leafType=="samples") names(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
-    if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
+
+    cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
+	if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
+	if(length(whCl)==1){
+		leg<-clusterLegend(x)[[whCl]]
+	    if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]		
+	}
+	else{
+		leg<-clusterLegend(x)[whCl]
+	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+	}
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-	outbranch<-FALSE
-	if(leafType=="samples" & any(cl<0)) outbranch<-x@dendro_outbranch
-	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=outbranch,main=main,sub=sub,...))
+	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,...))
     
   })
   
@@ -161,26 +168,33 @@ setMethod(
 							oldId<-currMat[whExistingColor,"clusterIds"]
 							newId<-newClusterLegendMat[matchNew,"clusterIds"]
 							mexist<-match(currCl,oldId)
-							newFullId<-newId[mexist]
+							newFullId<-as.numeric(newId[mexist])
 							currCl[!is.na(mexist)]<-newFullId[!is.na(mexist)]
 								
-							#change name so combination
-							newClusterLegendMat[matchNew,"name"]<-paste(newClusterLegendMat[matchNew,"name"],currMat[whExistingColor,"name"],sep="/")
+							#change name so combination, if not already the same
+							whDiff<-which(newClusterLegendMat[matchNew,"name"]!=currMat[whExistingColor,"name"])
+							if(length(whDiff)>0){
+								combName<-paste(newClusterLegendMat[matchNew,"name"],currMat[whExistingColor,"name"],sep="/")
+								newClusterLegendMat[matchNew[whDiff],"name"]<-combName[whDiff]
+								
+							}
+							
 							#remove from current color scheme
 							currMat<-currMat[-whExistingColor,,drop=FALSE]
 						}
+						#browser()
 						if(nrow(currMat)>0){
 							## increase remaing ids 
 							maxNew<-max(as.vector(newCl))
 							oldId2<-currMat[,"clusterIds"]
-							newId2<-seq(from=maxNew+1,by=1,length=length(oldId2))
-							mexist2<-match(currCl,oldId2)
-							newFullId2<-newFullId2[mexist2]
-							currCl[!is.na(mexist)]<-newId2[!is.na(mexist2)]
+							newId2<-seq(from=maxNew+1,by=1,length=length(oldId2)) #replace with this in legend
+							mexist2<-match(currCl,oldId2) #match old ids to the clusterings vector
+							newFullId2<-as.numeric(newId2[mexist2]) #will get NAs for those that don't match (e.g. have been changed by previous step)
+							currCl[!is.na(mexist2)]<-newFullId2[!is.na(mexist2)]
 							
 							## change ids in currMat
 							currMat[,"clusterIds"]<-newId2
-							
+							#browser()
 							
 							## test correct that no overlap in ids or names or colors:
 							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])) stop("Internal coding error: still overlap in cluster Ids")
@@ -236,14 +250,16 @@ setMethod(
 					})
 					if(any(dim(colorMat)!=dim(cl))) stop("Internal coding error: dimensions of colorMat don't match input")
 					dimnames(colorMat)<-dimnames(cl)
-					m<-match(cl[,1],clusterLegendMat[,"clusterIds"])
+					#m<-match(cl[,1],clusterLegendMat[,"clusterIds"])
 			    	cols<-clusterLegendMat[,"color"]
 					names(cols)<-clusterLegendMat[,"name"]
 	
 				}
 				tip.color<-"black"
+				#browser()
 			}
 			else{
+				if(is.matrix(cl)) cl<-cl[,1]
 				clNames<-names(cl)
 				m<-match(cl,clusterLegendMat[,"clusterIds"])
 			    tip.color<-clusterLegendMat[m,"color"]		
@@ -307,8 +323,10 @@ setMethod(
   			lastPP <- get("last_plot.phylo", envir = ape:::.PlotPhyloEnv)
   			y1 <- lastPP$yy[one2n]
   			o <- order(y1)
-  			ux<-unique.default(x[o])
+			if(!is.null(ncol(x))) ux<-unique.default(x[o,])
+  			else ux<-unique.default(x[o])
   			m<-match(as.character(ux),names(namedColors))
+			#browser()
   			function(n){namedColors[m]}
   		}
 		#code that actually maps to the colors:
@@ -328,6 +346,7 @@ setMethod(
 		# so colors need to be in the order of unique.default(x)
   		#browser()
 		colnames(colorMat)<-NULL
+		#browser()
 		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = "below", funcol = getColFun(colorMat,phyloObj,cols))
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))

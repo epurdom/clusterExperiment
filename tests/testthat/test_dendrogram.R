@@ -113,6 +113,17 @@ test_that("plotDendrogram works with outgroup", {
   
 })
 
+test_that("plotDendrogram works with whichClusters", {
+    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+    leg[,"name"]<-letters[1:nrow(leg)]
+    clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+  dend <- makeDendrogram(ccSE)
+  dend<-mergeClusters(dend)
+  plotDendrogram(dend,whichClusters="all",leafType="samples",label="colorblock")
+  
+  
+})
+
 
 test_that("plotDendrogram works with cluster missing", {
     leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]

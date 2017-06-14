@@ -143,7 +143,7 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
 
     plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
     plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
-    expect_error(plotHeatmap(smSimCE,whichClusters=1:15),"Indices in whichClusters invalid")
+    expect_warning(plotHeatmap(smSimCE,whichClusters=1:15),"given whichClusters value does not match any clusters")
 
     #test sampleData
     expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
