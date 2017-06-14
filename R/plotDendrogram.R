@@ -16,6 +16,12 @@
 #'   \code{leafType="clusters"}).
 #' @param ... arguments passed to the \code{\link{plot.phylo}} function of
 #'   \code{ape} that plots the dendrogram.
+#' @param whichClusters If numeric, an index for the clusterings to be plotted with dendrogram. Otherwise, 
+#'   \code{whichClusters} can be a character value identifying the 
+#'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
+#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either
+#'   'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters or choosing all
+#'   \code{\link{workflowClusters}}. Default 'dendro' indicates using the clustering that created the dendrogram.
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -41,7 +47,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,...)
   {
     leafType<-match.arg(leafType)
 	labelType<-match.arg(labelType)
@@ -49,7 +55,8 @@ setMethod(
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
 
-    dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
+    
+	dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
 	leg<-clusterLegend(x)[[dendroClusterIndex(x)]]
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,dendroClusterIndex(x)],"clusters"=NULL)
 	if(leafType=="samples") names(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))

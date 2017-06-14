@@ -216,7 +216,10 @@
     }
     if(test=="none") wh<-vector("integer",length=0)
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
-	if(test=="dendro") wh<-dendroClusterIndex(x)
+	if(test=="dendro"){
+		wh<-dendroClusterIndex(x)
+		if(is.na(wh)) wh<-vector("integer",length=0)
+	}
   }
   else{
     #first match to clusterTypes  
