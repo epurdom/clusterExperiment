@@ -1,23 +1,21 @@
 #' @title Make hierarchy of set of clusters
-#'
-#' @description Makes a dendrogram of a set of clusters based on hclust on the
-#' medoids of the cluster.
-#'
-#' @aliases makeDendrogram
-#'
-#' @param x data to define the medoids from. Matrix and
-#' \code{\link{ClusterExperiment}} supported.
-#' @param cluster A numeric vector with cluster assignments. If x is a
-#' ClusterExperiment object, cluster is automatically the primaryCluster(x).
-#' ``-1'' indicates the sample was not assigned to a cluster.
-#' @param unassignedSamples how to handle unassigned samples("-1") ; only relevant
-#' for sample clustering. See details.
-#' @param whichCluster an integer index or character string that identifies
-#'   which cluster should be used to make the dendrogram. Default is
+#'   
+#' @description Makes a dendrogram of a set of clusters based on hclust on the 
+#'   medoids of the cluster.
+#' @param x data to define the medoids from. Matrix and 
+#'   \code{\link{ClusterExperiment}} supported.
+#' @param cluster A numeric vector with cluster assignments. If x is a 
+#'   ClusterExperiment object, cluster is automatically the primaryCluster(x). 
+#'   ``-1'' indicates the sample was not assigned to a cluster.
+#' @param unassignedSamples how to handle unassigned samples("-1") ; only
+#'   relevant for sample clustering. See details.
+#' @param whichCluster an integer index or character string that identifies 
+#'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
-#' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
-#'   to hclust; if signature \code{ClusterExperiment} passed to the method for
-#'   signature \code{matrix}. For plotDendrogram, passed to \code{\link{plot.dendrogram}}.
+#' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed 
+#'   to hclust; if signature \code{ClusterExperiment} passed to the method for 
+#'   signature \code{matrix}. For plotDendrogram, passed to
+#'   \code{\link{plot.dendrogram}}.
 #' @inheritParams clusterSingle
 #' @inheritParams transform
 #' @details The function returns two dendrograms (as a list if x is a matrix or
@@ -55,7 +53,7 @@
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
 #' plotDendrogram(hcl)
-#' plotDendrogram(hcl, leaves="samples")
+#' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
 #'
 #' @rdname makeDendrogram
 setMethod(
@@ -70,6 +68,7 @@ setMethod(
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
 #    browser()
     cl<-clusterMatrix(x)[,whCl]
+	#cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
     ########
     ##Transform the data
     ########
@@ -87,13 +86,14 @@ setMethod(
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
     dat <- transObj$x
-    if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
+	if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
       stop("Error in the internal transformation of x")
     }
     outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
+	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     validObject(x)
     return(x)
   })
@@ -115,22 +115,25 @@ setMethod(
     if(is.null(colnames(x))) {
       colnames(x) <- as.character(1:ncol(x))
     }
-    if(is.factor(cl)) {
-      warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-      cl<-as.numeric(as.character(cl))
-    }
+	clNum<-.convertToNum(cl)
+  
+    # if(is.factor(cl)) {
+    #   warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+    #   cl<-as.numeric(as.character(cl))
+    # }
     #dat <- t(x) #make like was in old code
 
     #############
     # Cluster dendrogram
     #############
-    whRm <- which(cl >= 0) #remove -1, -2
+    whRm <- which(clNum >= 0) #remove -1, -2
     if(length(whRm) == 0) stop("all samples have clusterIds<0")
     if(length(unique(cl[whRm]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-    clFactor <- factor(cl[whRm])
+	clFactor <- factor(cl[whRm])
     medoids <- do.call("rbind", by(t(x[,whRm]), clFactor, function(z){apply(z, 2, median)}))
     rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
+	#browser()
     clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
     
     #############
@@ -247,10 +250,13 @@ setMethod(
             #add remaining to fake data and let them cluster
             fakeData <- rbind(fakeData,dat[-whRm,,drop=FALSE])
             fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            return(as.dendrogram(stats::hclust(dist(fakeData))))
+            #return(as.dendrogram(stats::hclust(dist(fakeData))))
         }
     }
-    fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
+#	browser()
+	#make sure fakeData in same order as original data so order.dendrogram will work
+	fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
+	fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
     if(length(whRm) != nrow(dat) && unassigned == "outgroup"){
         #need to get rid of super long outgroup arm
         armLength <- max(attributes(fullD[[1]])$height,
@@ -264,49 +270,4 @@ setMethod(
 
 
 
-#' @rdname makeDendrogram
-#' @export
-#' @param leaves if "samples" the dendrogram has one leaf per sample, otherwise
-#'   it has one per cluster.
-#' @param main passed to the \code{plot} function.
-#' @param sub passed to the \code{plot} function.
-#' @param clusterNames logical. If \code{leaves="clusters"}, then clusters will
-#'   be identified with their 'name' value in legend; otherwise the 'clusterIds'
-#'   value will be used.
-#' @aliases plotDendrogram
-#' @details If \code{leaves="clusters"}, the plotting function will work best if
-#'   the clusters in the dendrogram correspond to the primary cluster. This is
-#'   because the function colors the cluster labels based on the colors of the
-#'   clusterIds of the primaryCluster
-#' @importFrom ape plot.phylo
-setMethod(
-  f = "plotDendrogram",
-  signature = "ClusterExperiment",
-  definition = function(x,leaves=c("clusters","samples" ), clusterNames=TRUE,
-                        main,sub,...)
-  {
-    leaves<-match.arg(leaves)
-    if(missing(main)) main<-ifelse(leaves=="samples","Dendrogram of samples", "Dendrogram of clusters")
-    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
-    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[x@dendro_index],"', cluster index ",x@dendro_index,sep="")
-    dend<- switch(leaves,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-    phylo4Obj <- .makePhylobaseTree(dend, "dendro")
-    phyloObj <- as(phylo4Obj, "phylo")
-    leg<-clusterLegend(x)[[x@dendro_index]]
-    if(leaves=="clusters"){
-      m<-match(phyloObj$tip.label,leg[,"clusterIds"])
-      if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
-      phyloObj$tip.label<-leg[m,"name"]
-      tip.color<-leg[m,"color"]
-      
-    }
-    else{
-      cl<-clusterMatrix(x)[,x@dendro_index]
-      m<-match(cl,leg[,"clusterIds"])
-      tip.color<-leg[m,"color"]
-    }
-    #browser()
-    if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
-    ape::plot.phylo(phyloObj, tip.color=tip.color,...)
-    invisible(phyloObj)
-  })
+

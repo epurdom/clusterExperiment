@@ -110,6 +110,7 @@
 }
 
 .convertToNum<-function(x){
+	nms<-names(x)
     if(is.factor(x)){
         x<-as.character(x)
     }
@@ -120,9 +121,10 @@
         if(inherits(test,"try-error")) x<-as.numeric(factor(x))
         else x<-test
         options(op)
-        return(x)
+        
     }
-    else return(x)
+	names(x)<-nms
+	return(x)
 }
 ##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
 .makeIntegerClusters<-function(clMat){
@@ -272,9 +274,10 @@
     return(clust.id)
 }
 
+
 ####
 #Convert to object used by phylobase so can navigate easily 
-.makePhylobaseTree<-function(x,type){
+.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
     type<-match.arg(type,c("hclust","dendro"))
     if(type=="hclust"){
         #first into phylo from ape package
@@ -287,8 +290,54 @@
     }
     phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-    phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-    return(phylo4Obj)
+	#browser()
+	if(isSamples){
+		#NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
+		nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[which(phylobase::edgeLength(phylo4Obj)>0)] #doesn't include root
+		trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
+		#old way of doing it:
+		#clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
+		if(outbranch){#remove root from labeling if -1 outbranch
+			#######
+			#remove root
+			#######
+			rootNode<-phylobase::rootNode(phylo4Obj)
+			trueInternal<-trueInternal[!trueInternal%in%rootNode]
+			
+			#######
+			#find the -1/-2 internal node (if it exists)
+			#determine it as the one without 0-length tip edges.
+			#######
+			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
+			#find tip descendants of these:
+			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
+			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
+			rootChildNum<-sapply(rootChildLeng,min)
+			outbranchNode<-rootChild[rootChildNum>0]
+			
+			if(outbranchNode %in% trueInternal){
+				outbranchIsInternal<-TRUE
+				outbranchNodeDesc<-phylobase::descendants(phylo4Obj,node=outbranchNode,type="ALL") #includes itself
+				trueInternal<-trueInternal[!trueInternal%in%outbranchNodeDesc]
+				outbranchNodeDesc<-outbranchNodeDesc[outbranchNodeDesc %in% phylobase::getNode(phylo4Obj,type="internal")]
+			}
+			else outbranchIsInternal<-FALSE
+			
+		}
+		#trueInternal<-allInternal[!allInternal%in%clusterNodes]
+		
+		phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
+		#add new label for root 
+		if(outbranch){
+			phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
+			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",1:length(outbranchNodeDesc),sep="")
+		}
+	}
+	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+    
+	return(phylo4Obj)
 }
 
+# clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
+# sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
