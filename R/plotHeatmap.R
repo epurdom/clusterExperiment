@@ -6,23 +6,23 @@
 #' of \code{NMF} package.
 #'
 #' @docType methods
-#' @param sampleData If input is either a \code{\link{ClusterExperiment}} or
+#' @param sampleData If input to \code{data} is either a \code{\link{ClusterExperiment}} or
 #'   \code{SummarizedExperiment} object, then \code{sampleData} must index the
 #'   sampleData stored as a \code{DataFrame} in \code{colData} slot of the
 #'   object. Whether that data is continuous or not will be determined by the
-#'   properties of \code{colData} (no user input is needed). If input is matrix,
+#'   properties of \code{colData} (no user input is needed). If input to \code{data} is matrix,
 #'   \code{sampleData} is a matrix of additional data on the samples to show
-#'   above heatmap. Unless indicated by \code{whSampleDataCont},
+#'   above heatmap. In this case, unless indicated by \code{whSampleDataCont},
 #'   \code{sampleData} will be converted into factors, even if numeric. ``-1''
 #'   indicates the sample was not assigned to a cluster and gets color
 #'   `unassignedColor' and ``-2`` gets the color 'missingColor'.
 #' @param data data to use to determine the heatmap. Can be a matrix,
 #'   \code{\link{ClusterExperiment}} or
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
-#'   interpretation of parameters depends on the type of the input.
+#'   interpretation of parameters depends on the type of the input to \code{data}.
 #' @param whSampleDataCont Which of the \code{sampleData} columns are continuous
 #'   and should not be converted to counts. \code{NULL} indicates no additional
-#'   \code{sampleData}.
+#'   \code{sampleData}. Only used if \code{data} input is matrix.
 #' @param visualizeData either a character string, indicating what form of the 
 #'   data should be used for visualizing the data (i.e. for making the 
 #'   color-scale), or a data.frame/matrix with same number of samples as 
@@ -801,7 +801,6 @@ setMethod(
                               dendro_samples=data@dendro_samples,
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
-                              dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex
                               
                               
