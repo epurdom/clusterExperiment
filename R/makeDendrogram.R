@@ -309,22 +309,4 @@ setMethod(
     if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length<-phyloObj$edge.length/max(phyloObj$edge.length) #otherwise get error
     ape::plot.phylo(phyloObj, tip.color=tip.color,...)
     invisible(phyloObj)
-    #    labs<-labels(dend)
-  #       m<-match(labs,leg[,"clusterIds"])
-#       if(any(is.na(m))) warning("Dendrogram labels do not all match clusterIds of primaryCluster. Dendrogram was not created with current primary cluster, so cannot retreive cluster name or color")
-#       else{
-#         #function to change to labels and colors of a node:
-#         reLabel <- function(n) {
-#           if(is.leaf(n)) {
-#             a <- attributes(n)
-#             m<-match(a$label,leg[,"clusterIds"])
-#             if(clusterNames) attr(n, "label") <- leg[m,"name"]           #  change the node label
-#             attr(n, "nodePar") <- c(a$nodePar, list(lab.col = leg[m,"color"],col=leg[m,"color"],pch=19)) #   change the node color
-#           }
-#           return(n)
-#         }
-#         dend <- dendrapply(dend, reLabel)
-#       }
-#     }
-#     plot(dend,main=main,sub=sub,...)
   })
