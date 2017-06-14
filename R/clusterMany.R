@@ -11,15 +11,15 @@
 #'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
 #' @param ks the range of k values (see details for meaning for different
 #'   choices).
-#' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
-#'   type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
+#' @param alphas values of alpha to be tried. Only used for clusterFunctions of
+#'   type '01' (either 'tight' or 'hierarchical01'). Determines tightness
 #'   required in creating clusters from the dissimilarity matrix. Takes on
 #'   values in [0,1]. See \code{\link{clusterD}}.
 #' @param betas values of \code{beta} to be tried in sequential steps. Only used
 #'   for \code{sequential=TRUE}. Determines the similarity between two clusters
 #'   required in order to deem the cluster stable. Takes on values in [0,1]. See
 #'   \code{\link{seqCluster}}.
-#' @param clusterFunction function used for the clustering. Note that unlike in 
+#' @param clusterFunction function used for the clustering. Note that unlike in
 #'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 #'   clustering techniques provided by \code{\link{clusterSingle}}, and can not
 #'   be a user-defined function. Current functions are "tight",
@@ -27,15 +27,15 @@
 #' @param minSizes the minimimum size required for a cluster (in
 #'   \code{clusterD}). Clusters smaller than this are not kept and samples are
 #'   left unassigned.
-#' @param distFunction a vector of character strings that are the names of 
+#' @param distFunction a vector of character strings that are the names of
 #'     distance functions found in the global environment. See the help pages of
-#'     \code{\link{clusterD}} for details about the required format of distance 
-#'     functions. Currently, this distance function must be applicable for all 
+#'     \code{\link{clusterD}} for details about the required format of distance
+#'     functions. Currently, this distance function must be applicable for all
 #'     clusterFunction types tried. Therefore, it is not possible to intermix type "K"
 #'     and type "01" algorithms if you also give distances to evaluate via
 #'     \code{distFunction} unless all distances give 0-1 values for the distance
 #'     (and hence are possible for both type "01" and "K" algorithms).
-#' @param nVarDims vector of the number of the most variable features to keep 
+#' @param nVarDims vector of the number of the most variable features to keep
 #'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
 #'   included, then the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
@@ -50,7 +50,7 @@
 #' @inheritParams clusterSingle
 #' @inheritParams clusterD
 #' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterSingle (so 
+#' @param random.seed a value to set seed before each run of clusterSingle (so
 #'   that all of the runs are run on the same subsample of the data). Note, if
 #'   'random.seed' is set, argument 'ncores' should NOT be passed via
 #'   subsampleArgs; instead set the argument 'ncores' of
@@ -170,7 +170,7 @@
 # clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
 # paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
 # seqArgs=checkParams$seqArgs, clusterDArgs=checkParams$clusterDArgs)
-
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
@@ -179,6 +179,7 @@ setMethod(
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
+
 	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
     origX <- x
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
@@ -249,7 +250,7 @@ setMethod(
     dataList<-data
     dataName <- names(dataList)
     if(is.null(paramMatrix)){
-      param <- expand.grid(dataset=dataName, 
+      param <- expand.grid(dataset=dataName,
                          k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSize=minSizes,
                          sequential=sequential, distFunction=distFunction,
                          removeSil=removeSil, subsample=subsample,
@@ -264,7 +265,7 @@ setMethod(
       if(length(typeK)>0){
         param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
         #param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
-        
+
         #if findBestK make sure other arguments make sense:
         whFindBestK <- which(param[,"findBestK"])
         if(length(whFindBestK)>0){
@@ -308,7 +309,7 @@ setMethod(
 		  warning("beta value must be in (0,1). Input betas outside that range are ignored")
 		  param[beta01,"beta"]<-NA
 	  }
-     
+
       param <- unique(param)
 
       #####
@@ -331,7 +332,7 @@ setMethod(
         param<-param[-whInvalid,]
       }
 
-	  #if type K and not findBestK, need to give the k value. 
+	  #if type K and not findBestK, need to give the k value.
       whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & param[,"clusterFunction"] %in% c("pam","hierarchicalK") )
       if(length(whInvalid)>0){
 			param<-param[-whInvalid,]
@@ -385,7 +386,7 @@ setMethod(
       subsample <- as.logical(gsub(" ","",par["subsample"]))
       findBestK <- as.logical(gsub(" ","",par["findBestK"]))
       clusterFunction <- as.character(par[["clusterFunction"]])
-      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else distFunction<-NULL
+      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
       if(!is.na(par[["k"]])){
         if(sequential) {
           seqArgs[["k0"]] <- par[["k"]]
@@ -434,12 +435,13 @@ setMethod(
             return(distMat)
           })
         names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
-        
+
       }
-      
+
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")
       }
+	  #browser()
       if(ncores>1) {
         out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
         nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
@@ -490,8 +492,8 @@ setMethod(
       #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
-     
-      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep. 
+
+      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
       else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
       validObject(retval)
       return(retval)
@@ -522,6 +524,13 @@ setMethod(
       return(outval)
     }
   }
+)
+#' @export
+#' @rdname clusterMany
+setMethod(
+f = "clusterMany",
+signature = signature(x = "data.frame"),
+definition = function(x,...){clusterMany(data.matrix(x),...)}
 )
 
 

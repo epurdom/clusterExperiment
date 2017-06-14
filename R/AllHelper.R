@@ -91,7 +91,7 @@ setMethod(
     cat("Table of clusters (of primary clustering):")
     print(table(primaryClusterNamed(object)))
     cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
-    if(!is.na(object@dendro_index) ) cat("Dendrogram run on '",clusterLabels(object)[object@dendro_index],"' (cluster index: ", object@dendro_index,")\n",sep="") else cat("No dendrogram present\n")
+    if(!is.na(dendroClusterIndex(object)) ) cat("Dendrogram run on '",clusterLabels(object)[dendroClusterIndex(object)],"' (cluster index: ", dendroClusterIndex(object),")\n",sep="") else cat("No dendrogram present\n")
     cat("-----------\n")
     cat("Workflow progress:\n")
     typeTab<-names(table(clusterTypes(object)))
@@ -145,6 +145,19 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     return(x@transformation)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases transformation<-
+setReplaceMethod(
+  f = "transformation",
+  signature = signature("ClusterExperiment", "function"),
+  definition = function(object, value) {
+    object@transformation <- value
+    validObject(object)
+    return(object)
   }
 )
 
@@ -249,6 +262,20 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     return(x@primaryIndex)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{dendroClusterIndex} returns/sets the clustering index 
+#' of the clusters used to create dendrogram
+#' (i.e., which column of clusterMatrix corresponds to the clustering).
+#' @export
+#' @aliases dendroClusterIndex
+setMethod(
+  f = "dendroClusterIndex",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(x@dendro_index)
   }
 )
 

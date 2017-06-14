@@ -6,6 +6,10 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction=c("pam","hierarchicalK","hierarchical01","tight"),
                                        subsample=FALSE, sequential=FALSE,
                                        isCount=FALSE,verbose=FALSE)
+			clustDF <- clusterMany(data.frame(mat), ks=c(3,4),clusterFunction=c("pam","hierarchicalK","hierarchical01","tight"),
+						                                          subsample=FALSE, sequential=FALSE,
+						                                          isCount=FALSE,verbose=FALSE)
+				   
             expect_is(clustNothing, "ClusterExperiment")
             expect_is(clustNothing, "SummarizedExperiment")
  

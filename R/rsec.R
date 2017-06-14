@@ -19,6 +19,7 @@
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
 #' @inheritParams mergeClusters,matrix-method
+
 #' @export
 setMethod(
     f = "RSEC",
@@ -48,18 +49,9 @@ setMethod(
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                     clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
+					#browser()
     if(run){
       ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,isCount=isCount)
-
-#             ce<-combineMany(ce,whichClusters="clusterMany",proportion=combineProportion,minSize=combineMinSize)
-#       if(dendroReduce=="none") dendroNDims<-NA
-#       dendroTry<-try(makeDendrogram(ce,dimReduce=dendroReduce,ndims=dendroNDims,ignoreUnassignedVar=TRUE),silent=TRUE)
-#       if(!inherits(dendroTry,"try-error")){
-#         ce<-dendroTry
-#         ce<-mergeClusters(ce,mergeMethod=mergeMethod,cutoff=mergeCutoff,plotType="none",isCount=isCount)
-#       }
-#       else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
-#       return(ce) 
     }
     return(ce)
 })
@@ -69,10 +61,10 @@ setMethod(
 	
 	###CombineMany
 	args1<-list()
-	if("combinedProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
+	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
 	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
   ce<-do.call("combineMany",c(list(x=ce,whichClusters="clusterMany"),args1))
-
+#browser()
 	##makeDendrogram
   	args1<-list()
   	if("dendroReduce" %in% names(passedArgs)){
@@ -107,6 +99,14 @@ setMethod(
     return(retval)
 
   })
+
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "data.frame"),
+definition = function(x,...){RSEC(data.matrix(x),...)}
+)
 
 #' @export
 #' @rdname RSEC

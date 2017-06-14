@@ -118,15 +118,17 @@ setMethod(
     newClusterColors<-clusterLegend(x)[-whichRemove]
     dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
-    dend_ind<-x@dendro_index
+    dend_ind<-dendroClusterIndex(x)
+    dend_out<-x@dendro_outbranch
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
     if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
     else pIndex<-match(primaryClusterIndex(x),(1:NCOL(clusterMatrix(x)))[-whichRemove])
-    if(x@dendro_index %in% whichRemove){
+    if(dendroClusterIndex(x) %in% whichRemove){
         dend_cl<-NULL
         dend_samples<-NULL
         dend_ind<-NA_real_
+        dend_out<-NA
     }
     else{
       dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichRemove])
@@ -139,6 +141,7 @@ setMethod(
                               dendro_samples=dend_samples,
                               dendro_clusters=dend_cl,
                             dendro_index=dend_ind,
+                            dendro_outbranch=dend_out,
                             coClustering=coMat,
                             orderSamples=orderSamples
                               )

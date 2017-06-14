@@ -14,6 +14,8 @@
 \alias{primaryClusterNamed}
 \alias{transformation,ClusterExperiment-method}
 \alias{transformation}
+\alias{transformation<-,ClusterExperiment,function-method}
+\alias{transformation<-}
 \alias{nClusters,ClusterExperiment-method}
 \alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
@@ -28,6 +30,8 @@
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
 \alias{primaryClusterIndex}
+\alias{dendroClusterIndex,ClusterExperiment-method}
+\alias{dendroClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
 \alias{coClustering,ClusterExperiment-method}
@@ -68,6 +72,8 @@
 
 \S4method{transformation}{ClusterExperiment}(x)
 
+\S4method{transformation}{ClusterExperiment,`function`}(object) <- value
+
 \S4method{nClusters}{ClusterExperiment}(x)
 
 \S4method{nFeatures}{ClusterExperiment}(x)
@@ -83,6 +89,8 @@
 \S4method{primaryCluster}{ClusterExperiment}(x)
 
 \S4method{primaryClusterIndex}{ClusterExperiment}(x)
+
+\S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
 \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
 
@@ -114,6 +122,10 @@
 \item{..., i, j, drop}{Forwarded to the
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.}
 
+\item{value}{The value to be substituted in the corresponding slot. See the
+slot descriptions in \code{\link{ClusterExperiment}} for details on what
+objects may be passed to these functions.}
+
 \item{whichClusters}{optional argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
@@ -123,10 +135,6 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
-
-\item{value}{The value to be substituted in the corresponding slot. See the
-slot descriptions in \code{\link{ClusterExperiment}} for details on what
-objects may be passed to these functions.}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
@@ -154,6 +162,10 @@ clusterMatrix).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{dendroClusterIndex} returns/sets the clustering index 
+of the clusters used to create dendrogram
+(i.e., which column of clusterMatrix corresponds to the clustering).
 
 \code{coClustering} returns/sets the co-clustering matrix.
 

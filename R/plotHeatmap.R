@@ -6,27 +6,28 @@
 #' of \code{NMF} package.
 #'
 #' @docType methods
-#' @param sampleData If input is either a \code{\link{ClusterExperiment}} or
+#' @param sampleData If input to \code{data} is either a \code{\link{ClusterExperiment}} or
 #'   \code{SummarizedExperiment} object, then \code{sampleData} must index the
 #'   sampleData stored as a \code{DataFrame} in \code{colData} slot of the
 #'   object. Whether that data is continuous or not will be determined by the
-#'   properties of \code{colData} (no user input is needed). If input is matrix,
+#'   properties of \code{colData} (no user input is needed). If input to \code{data} is matrix,
 #'   \code{sampleData} is a matrix of additional data on the samples to show
-#'   above heatmap. Unless indicated by \code{whSampleDataCont},
+#'   above heatmap. In this case, unless indicated by \code{whSampleDataCont},
 #'   \code{sampleData} will be converted into factors, even if numeric. ``-1''
 #'   indicates the sample was not assigned to a cluster and gets color
 #'   `unassignedColor' and ``-2`` gets the color 'missingColor'.
 #' @param data data to use to determine the heatmap. Can be a matrix,
 #'   \code{\link{ClusterExperiment}} or
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
-#'   interpretation of parameters depends on the type of the input.
+#'   interpretation of parameters depends on the type of the input to \code{data}.
 #' @param whSampleDataCont Which of the \code{sampleData} columns are continuous
 #'   and should not be converted to counts. \code{NULL} indicates no additional
-#'   \code{sampleData}.
-#' @param visualizeData either a character string, indicating what form of the
-#'   data should be used for visualizing the data (i.e. for making the
-#'   color-scale), or a data.frame/matrix with same dimensions of
-#'   \code{assay(data)}.
+#'   \code{sampleData}. Only used if \code{data} input is matrix.
+#' @param visualizeData either a character string, indicating what form of the 
+#'   data should be used for visualizing the data (i.e. for making the 
+#'   color-scale), or a data.frame/matrix with same number of samples as 
+#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
+#'   clusterFeaturesData will be ignored.
 #' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
 #'   will be used to in \code{hclust} to define the hiearchical clustering of 
 #'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
@@ -148,12 +149,18 @@
 #'   upper quantile of \code{data}, and then all values after the
 #'   0.9 quantile will be absorbed by the upper-most color bin. This can help to
 #'   reduce the visual impact of a few highly expressed genes (features). 
-#' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
-#'   hood. This allows you to plot multiple heatmaps via
-#'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
-#'   you change the size of your plot window in an interactive session of R
+#' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the 
+#'   hood. This allows you to plot multiple heatmaps via 
+#'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if 
+#'   you change the size of your plot window in an interactive session of R 
 #'   (this might be a problem for RStudio if you want to pop it out into a large
-#'   window...).
+#'   window...). Also, plotting to a pdf adds a blank page; see help pages of
+#'   \code{\link[NMF]{aheatmap}} for how to turn this off.
+#' @details If you have a factor with many levels, it is important to note that
+#'   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
+#'   \code{sampleData}, and in fact runs out of colors and the remaining levels
+#'   get the color white. Thus if you have many factors or many levels in those
+#'   factors, you should set their colors via \code{clusterLegend}.
 #' @details Many arguments can be passed on to aheatmap, however, some are set 
 #'   internally by \code{plotHeatmap.} In particular, setting the values of 
 #'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
@@ -261,56 +268,20 @@ setMethod(
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
 
-    ####
-    ##Transform data and determine which features to use
-    ####
-    clusterFeaturesData <- .convertTry(clusterFeaturesData,
-                                       try(match.arg(clusterFeaturesData),
-                                           silent=TRUE))
-
-    if(is.list(clusterFeaturesData)){
-      groupFeatures<-clusterFeaturesData
-      clusterFeaturesData<-unlist(clusterFeaturesData)
-    }
-    else groupFeatures<-NULL
-    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
-        dimReduce=switch(clusterFeaturesData,
-                         "var"="var",
-                        "PCA"="PCA",
-                        "all"="none")
-        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
-        wh<-1:NROW(data)
-    }
-    else{
-      if(is.character(clusterFeaturesData)){#gene names
-        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
-        else{
-          wh<-match(clusterFeaturesData,rownames(data))
-          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
-          if(any(is.na(wh))){
-            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
-            wh<-na.omit(wh)
-          }
-        }
-      }
-      else{
-          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
-          wh<-clusterFeaturesData
-      }
-      dimReduce<-"none"
-    }
-    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
-    if(dimReduce%in%"PCA") wh<-1:nFeatures
-    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
     #########
-    ##Assign visualization data and clusterFeaturesData
+    ##Determine visualization data and default colorScale based on that
     #########
-    #browser()
+	externalData<-FALSE
     visualizeData <- .convertTry(visualizeData,
                                  try(match.arg(visualizeData), silent=TRUE))
     if(is.character(visualizeData)){
       if(!visualizeData %in% c("transformed","centeredAndScaled","original")) stop("visualizeData value, '",visualizeData,"',is invalid option")
     }
+	else{
+		if(!is.data.frame(visualizeData) && !is.matrix(visualizeData)) stop("if visualizeData is not character, must be either data frame or matrix")
+		externalData<-TRUE
+		if(!ncol(visualizeData)==ncol(assay(data))) stop("if give separate visualizeData, must have same number of sample (columns) as assay(data)")
+	}
     if(missing(colorScale)) {
       colorScale <- seqPal5
       if(is.character(visualizeData)) {
@@ -320,61 +291,80 @@ setMethod(
       }
     }
 
-    if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
-    else{
-        if(!is.data.frame(visualizeData) && !is.matrix(visualizeData)){
-            heatData<-switch(visualizeData,
-                            "original"=assay(data[wh,]),
-                            "transformed"=transObj$x,
-                            "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
-                            )
-        }
-        else{
-            if(!all(dim(visualizeData)==dim(assay(data)))) stop("if give separate visualizeData, must be of same dimensions as assay(data)")
-           heatData<-data.matrix(visualizeData)[wh,] #still use the variables identified above.
-        }
+    ####
+    ##Transform data and determine which features to use
+    ####
+	clusterFeaturesData <- .convertTry(clusterFeaturesData,
+                                   try(match.arg(clusterFeaturesData),
+                                       silent=TRUE))
+
+    if(is.list(clusterFeaturesData)){
+      groupFeatures<-clusterFeaturesData
+      clusterFeaturesData<-unlist(clusterFeaturesData)
     }
+    else groupFeatures<-NULL
+    if(!externalData){
+	    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
+	        dimReduce=switch(clusterFeaturesData,
+	                         "var"="var",
+	                        "PCA"="PCA",
+	                        "all"="none")
+	        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+	        wh<-1:NROW(data)
+	    }
+	    else{
+	      if(is.character(clusterFeaturesData)){#gene names
+	        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
+	        else{
+	          wh<-match(clusterFeaturesData,rownames(data))
+	          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
+	          if(any(is.na(wh))){
+	            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
+	            wh<-na.omit(wh)
+	          }
+	        }
+	      }
+	      else{
+	          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+	          wh<-clusterFeaturesData
+	      }
+	      dimReduce<-"none"
+	    }
+	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
+	    if(dimReduce%in%"PCA") wh<-1:nFeatures
+	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
+		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
+	    else{
+			#note, transObj is already been limited to the wh.
+			heatData<-switch(visualizeData,
+	                    "original"=assay(data[wh,]),
+	                    "transformed"=transObj$x,
+	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
+	                    )
+		}
+	}
+	else{
+		heatData<-visualizeData
+	}
+ 
 
     ######
     #Make sampleData based on clusterings and columns of colData
     ######
+	#---
     #Get clusterings
-    if(is.character(whichClusters)) whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
-    else whCl<-whichClusters
+	#---
+    whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
     if(length(whCl)>0){
-      if(!is.numeric(whCl)) stop("invalid whichClusters choices")
-      if(!all(whCl %in% 1:nClusters(data))) stop("Indices in whichClusters invalid: not in 1 to nClusters(data)")
       clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
     }
     else{
-      if(whichClusters!="none") warning("given whichClusters value does not match any clusters")
+      if(any( whichClusters!="none")) warning("given whichClusters value does not match any clusters, none will be plotted")
       clusterData<-NULL
     }
-    clLegend<-clusterLegend(data)[whCl] #note, this gives names even though not stored internally so will match, which plotHeatmap needs
-    if(length(clLegend)==0) clLegend<-NULL
-    #browser()
-    #check user didn't give something different for colors
-    userList<-list(...)
-    userAlign<-"alignSampleData" %in% names(userList)
-    userLegend<-"clusterLegend" %in% names(userList)
-    if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
-      if(userLegend){
-        userClLegend<-userList[["clusterLegend"]]
-        #keep existing clLegend from clusterExperiment object if not conflict with user input:
-        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
-        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
-        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
-        userList<-userList[-grep("clusterLegend",names(userList))]
-      }
-      else{
-        if(userAlign){
-          al<-userList[["alignSampleData"]]
-          if(al) clLegend<-NULL
-        }
-      }
-    }
-
-    #get colData values
+	#---
+    #get colData values and subset to those asked for by user
+	#---
     sData<-.pullSampleData(data,sampleData)
     #identify which numeric
     if(!is.null(sData)) whCont<-which(sapply(1:ncol(sData),function(ii){is.numeric(sData[,ii])}))
@@ -393,16 +383,44 @@ setMethod(
       if(is.null(sData) & is.null(clusterData)) sampleData<-NULL
     }
     
-    
+    #------
+    #check user didn't give something different for colors
+    #------
+    clLegend<-clusterLegend(data)[whCl] #note, clusterLegend gives names even though not stored internally with @clusterLegend so will match, which plotHeatmap needs
+    if(length(clLegend)==0) clLegend<-NULL
+
+
+    userList<-list(...)
+    userAlign<-"alignSampleData" %in% names(userList)
+    userLegend<-"clusterLegend" %in% names(userList)
+	if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
+      if(userLegend){
+        userClLegend<-userList[["clusterLegend"]]
+		userClLegend<-userClLegend[names(userClLegend) %in% colnames(sampleData)]
+		if(length(userClLegend)==0) warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
+		else{
+	        #keep existing clLegend from clusterExperiment object if not conflict with user input:
+	        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
+	        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
+	        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
+	        userList<-userList[-grep("clusterLegend",names(userList))]			
+		}
+      }
+      else{
+        if(userAlign){
+          al<-userList[["alignSampleData"]]
+          if(al) clLegend<-NULL
+        }
+      }
+    }
+	
     ######
     #Create clusterSamplesData
     ######
     clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
-    #browser()
     if(is.logical(clusterSamplesData)) clusterSamples<-clusterSamplesData
     else {
       clusterSamples<-TRUE
-      #browser()
       if(is.numeric(clusterSamplesData)){
           heatData<-heatData[,clusterSamplesData,drop=FALSE]
           if(!is.null(sampleData)) sampleData<-sampleData[clusterSamplesData,,drop=FALSE]
@@ -450,12 +468,12 @@ setMethod(
       blankData<-makeBlankData(heatData,groupFeatures)
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
-      #browser()
       clusterFeatures<-FALSE
     }
     else{
       labRow<-rownames(heatData)
     }
+	
     do.call("plotHeatmap",c(list(data=heatData,
                 clusterSamplesData=clusterSamplesData,
                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
@@ -515,13 +533,15 @@ setMethod(
         }
         return(val)
     }  
-    #browser()
     badValues<-c("Rowv","Colv","color","annCol","annColors")
-    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","))
+	replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","sampleData","clusterLegend")
+    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
 
     
     
-      ###Create the clustering dendrogram:
+      ##########
+      ###Create the clustering dendrogram (samples):
+      ##########
 
     if(clusterSamples){
       if(inherits(clusterSamplesData, "dendrogram")){
@@ -539,7 +559,6 @@ setMethod(
               clusterSamplesData<-data.matrix(clusterSamplesData)
               #check valid
               if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-#              browser()
               dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
               
               #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
@@ -553,6 +572,9 @@ setMethod(
     if(!is.na(clusterSamples) && clusterSamples && is.null(dendroSamples)) Colv<-TRUE #then just pass the data
     else Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
     
+        ##########
+        ###Create the clustering dendrogram (features):
+        ##########
     if(isSymmetric){
         Rowv<-Colv
         Colv<-"Rowv"
@@ -589,8 +611,6 @@ setMethod(
         
         
     }
-      #browser()
-
 
 
       ##########
@@ -605,41 +625,52 @@ setMethod(
             if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
             else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
         }
-                    ###Make sampleData explicitly factors, except for whSampleDataCont
-        ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
-        #browser()
-		#check that no ordered factors...
+        #-------------------
+		###Make sampleData explicitly factors, except for whSampleDataCont
+        #-------------------
+		
+		#--- check that no ordered factors...
         anyOrdered<-sapply(1:ncol(sampleData),function(ii){is.ordered(sampleData[,ii])})
 		if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
-		
-        tmpDf<-do.call("data.frame",lapply(1:ncol(sampleData),function(ii){factor(sampleData[,ii])}))
+	        ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
+        tmpDf<-do.call("data.frame", lapply(1:ncol(sampleData), function(ii){ factor(sampleData[,ii]) }))
         names(tmpDf)<-colnames(sampleData)
         if(!is.null(whSampleDataCont)){
-        	if(logical(whSampleDataCont)) whSampleDataCont<-which(whSampleDataCont)
-			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
+        	if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
+    			if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
         } 
         annCol<-tmpDf
-        #browser()
         convertNames <- TRUE
-        if(is.null(clusterLegend)){ #assign default colors
+		
+        ##########
+        ##Deal with colors ...
+        ##########
+		#-----
+		#assign default colors
+		#-----
+        if(is.null(clusterLegend)){ 
           convertNames <- TRUE
-          if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ #if not all continuous
-            #Pull out the factors to assign clusters
+		  #------
+		  #if not all continuous, assign default colors from palette
+		  #------
+          if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){ 
+			#Pull out those that are factors to assign clusters
             if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
-            tmpDfNum<-do.call("cbind",lapply(1:ncol(tmpDf),function(ii){.convertToNum(tmpDf[,ii])}))
+			#make numeric
+            tmpDfNum<-do.call("cbind", lapply(1:ncol(tmpDf), function(ii){ .convertToNum(tmpDf[,ii]) }))
             colnames(tmpDfNum)<-colnames(tmpDf)
             if(alignSampleData){
               #align the clusters and give them colors
               alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-              clusterLegend<-lapply(1:ncol(tmpDfNum),function(ii){
+			  mkLegend<-function(ii){
                 xNum<-tmpDfNum[,ii]
                 xOrig<-tmpDf[,ii]
                 colMat<-alignObj$clusterLegend[[ii]]
                 m<-match(colMat[,"clusterIds"],as.character(xNum))
-                colMat<-cbind(colMat,"name"=as.character(xOrig)[m])
+                colMat<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(xOrig)[m])
                 return(colMat)
-              })
-              #browser()
+              }
+              clusterLegend<-lapply(1:ncol(tmpDfNum),mkLegend)
             }
             else{#give each distinct colors, compared to row before
               maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
@@ -662,27 +693,48 @@ setMethod(
 
           }
         }
-        #browser()
-        if(!any(sapply(clusterLegend,function(x){is.null(dim(x))}))) {
+		#-----
+		# Convert to aheatmap format, if needed
+		#-----
+        if( any(sapply(clusterLegend,function(x){!is.null(dim(x))}))) {
           annColors<-.convertToAheatmap(clusterLegend, names=convertNames)
         } else {
-          annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with
+          annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with; actually .convertToAheatmap would probably handle this fine too. Not clear we need catch.
         }
-		#remove any unused level colors to clean up legend and make them in same order as in annCol factor
+		#-----
+		# remove any unused level colors to clean up legend, 
+		# give names to colors if not given, and 
+		# make them in same order as in annCol factor
+		#-----
 		whInAnnColors<-which(names(annColors)%in% colnames(annCol))
 		if(!is.null(whSampleDataCont) & length(whSampleDataCont)>0){
 			whInAnnColors<-setdiff(whInAnnColors,whSampleDataCont)
 		} 
 		prunedList<-lapply(whInAnnColors,function(ii){
-			nam<-names(annColors)[[ii]]
-			x<-annColors[[ii]]
+			nam<-names(annColors)[[ii]] #the name of variable
+			x<-annColors[[ii]] 
 			levs<-levels(annCol[,nam])
-			x<-x[levs]
+			if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
+			if(is.null(names(x))){
+				#if user didn't give names to colors, assign them in order of levels
+				x<-x[1:length(levs)] #shorten if needed
+				names(x)<-levs
+			}
+			else{
+				if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
+				x<-x[levs]
+			}
+			return(x)
 		})
 		names(prunedList)<-names(annColors)[whInAnnColors]
 		annColors[whInAnnColors]<-prunedList
+		
+		#-----
+		# Give default colors to any that are missing (because aheatmap runs out of colors...)
+		#-----
+		
       }
-      else{
+      else{ #no sampleData provided -- just a heatmap with no annotation
         annCol<-NA
         annColors<-NA
       }
@@ -691,7 +743,6 @@ setMethod(
       # put into aheatmap
       #############
       breaks<-setBreaks(data=heatData,breaks=breaks)
-      #browser()
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
@@ -750,6 +801,7 @@ setMethod(
                               dendro_samples=data@dendro_samples,
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
+                              dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex
                               
                               

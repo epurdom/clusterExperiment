@@ -13,6 +13,7 @@ vignette: >
 %\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
+
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
 fig.width=6,fig.height=6,autodep=TRUE,out.width="600px",out.height="600px",
@@ -129,7 +130,6 @@ assays(se) <- list(normalized_counts=fq)
 Here is our call to `clusterMany`:
 
 ```{r clusterMany}
-options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
 library(clusterExperiment)
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10,
       isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
@@ -290,10 +290,13 @@ Now we are ready to actually merge clusters together. We now run `mergeClusters`
 It is useful to first run `mergeClusters` without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 
 ```{r mergeClustersPlot}
-mergeClusters(ce,mergeMethod="adjP",plot="mergeMethod")
+mergeClusters(ce,mergeMethod="adjP",plotInfo="mergeMethod")
 ```
 
-Then we can decide on a cutoff and visualize the resulting clustering. <!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:--->
+Then we can decide on a cutoff and visualize the resulting clustering. 
+
+<!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:
+-->
 
 ```{r mergeClusters}
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.01)

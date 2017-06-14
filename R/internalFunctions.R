@@ -29,6 +29,7 @@
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
         retval@dendro_samples<-oldObj@dendro_samples
         retval@dendro_clusters<-oldObj@dendro_clusters
+		retval@dendro_outbranch<-oldObj@dendro_outbranch
         retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
     }
     #put back orderSamples, coClustering
@@ -48,8 +49,11 @@
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
+                            dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
-                            dendro_index=newObj@dendro_index)
+                            dendro_index=newObj@dendro_index,
+							primaryIndex=primaryClusterIndex(newObj)
+							)
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
@@ -110,6 +114,7 @@
 }
 
 .convertToNum<-function(x){
+	nms<-names(x)
     if(is.factor(x)){
         x<-as.character(x)
     }
@@ -120,9 +125,10 @@
         if(inherits(test,"try-error")) x<-as.numeric(factor(x))
         else x<-test
         options(op)
-        return(x)
+        
     }
-    else return(x)
+	names(x)<-nms
+	return(x)
 }
 ##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
 .makeIntegerClusters<-function(clMat){
@@ -194,9 +200,9 @@
     return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
-##Universal way to change character indication of clusterTypes into indices.
+##Universal way to change character indication of clusterTypes into integer indices.
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster")),silent=TRUE)
+  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
   if(!inherits(test,"try-error")){
     if(test=="workflow"){
       ppIndex<-workflowClusterDetails(x)
@@ -214,6 +220,10 @@
     }
     if(test=="none") wh<-vector("integer",length=0)
     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
+	if(test=="dendro"){
+		wh<-dendroClusterIndex(x)
+		if(is.na(wh)) wh<-vector("integer",length=0)
+	}
   }
   else{
     #first match to clusterTypes  
@@ -230,17 +240,6 @@
     #browser()
     if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-#     
-#         if(!any(whClusters %in% clusterTypes(x))){
-#         if(!any(whClusters %in% clusterLabels(x))) wh<-vector("integer",length=0)
-#         else{
-#             wh<-which(clusterLabels(x) %in% whClusters)
-#         }
-#     }
-#     else{
-#       #if(!all(whClusters %in% clusterTypes(x))) warning("not all indicated clusters match a clusterTypes")
-#       wh<-which(clusterTypes(x) %in% whClusters)
-#     }
   }
   return(wh)
 }
@@ -272,9 +271,10 @@
     return(clust.id)
 }
 
+
 ####
 #Convert to object used by phylobase so can navigate easily 
-.makePhylobaseTree<-function(x,type){
+.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
     type<-match.arg(type,c("hclust","dendro"))
     if(type=="hclust"){
         #first into phylo from ape package
@@ -287,8 +287,54 @@
     }
     phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-    phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-    return(phylo4Obj)
+	#browser()
+	if(isSamples){
+		#NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
+		nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[which(phylobase::edgeLength(phylo4Obj)>0)] #doesn't include root
+		trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
+		#old way of doing it:
+		#clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
+		if(outbranch){#remove root from labeling if -1 outbranch
+			#######
+			#remove root
+			#######
+			rootNode<-phylobase::rootNode(phylo4Obj)
+			trueInternal<-trueInternal[!trueInternal%in%rootNode]
+			
+			#######
+			#find the -1/-2 internal node (if it exists)
+			#determine it as the one without 0-length tip edges.
+			#######
+			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
+			#find tip descendants of these:
+			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
+			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
+			rootChildNum<-sapply(rootChildLeng,min)
+			outbranchNode<-rootChild[rootChildNum>0]
+			
+			if(outbranchNode %in% trueInternal){
+				outbranchIsInternal<-TRUE
+				outbranchNodeDesc<-phylobase::descendants(phylo4Obj,node=outbranchNode,type="ALL") #includes itself
+				trueInternal<-trueInternal[!trueInternal%in%outbranchNodeDesc]
+				outbranchNodeDesc<-outbranchNodeDesc[outbranchNodeDesc %in% phylobase::getNode(phylo4Obj,type="internal")]
+			}
+			else outbranchIsInternal<-FALSE
+			
+		}
+		#trueInternal<-allInternal[!allInternal%in%clusterNodes]
+		
+		phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
+		#add new label for root 
+		if(outbranch){
+			phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
+			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",1:length(outbranchNodeDesc),sep="")
+		}
+	}
+	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+    
+	return(phylo4Obj)
 }
 
+# clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
+# sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
