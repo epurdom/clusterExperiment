@@ -2,6 +2,7 @@ setOldClass("dendrogram")
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
+setClassUnion("functionOrNULL",members=c("function", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -411,3 +412,90 @@ setMethod(
     validObject(out)
     return(out)
   })
+
+
+  ################ clusterFunction class
+  
+  #' @title Class ClusterFunction
+  #'
+  #' @description \code{ClusterFunction} is a class ...
+  #'
+  #' @docType class
+  #' @aliases ClusterFunction ClusterFunction-class clusterFunction
+
+  #' @name ClusterFunction-class
+  #' @aliases ClusterFunction
+  #' @rdname ClusterFunction-class
+  #' @export
+  #'
+setClass(
+	Class = "ClusterFunction",
+	slots = list(
+  	  	FUN="function",
+  		inputType = "character",
+  		algorithmType = "character",
+		classifyFUN="function"
+  	)
+)
+.inputTypes<-c("X","Distance","Either")
+.algTypes<-c("01","K")
+setValidity("ClusterFunction", function(object) {
+    #browser()
+    if(is.na(inputType))) {
+      return("Must define inputType.")
+    }
+	if(!inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
+	if(is.na(algorithmType)) return("Must define algorithmType")
+	if(!algorithmType%in%.algTypes) return(paste("algorithmType must be one of",paste(.algTypes,collapse=",")))
+	###Need to add checks that functions return format expected by giving them toy data??
+	###Some functions might have issue with small data?
+    return(TRUE)
+  })
+
+#' @description The constructor \code{clusterFunction} creates an object of
+#' the class \code{ClusterFunction}. 
+#'
+#'@param FUN a function that clusters data
+#'@param clusters can be either a numeric or character vector, a factor, or a
+#'numeric matrix, containing the cluster labels.
+#'@param transformation function. A function to transform the data before
+#'performing steps that assume normal-like data (i.e. constant variance), such
+#'as the log.
+#'@param ... The arguments \code{transformation}, \code{clusterTypes} and
+#'  \code{clusterInfo} to be passed to the constructor for signature
+#'  \code{SummarizedExperiment,matrix}.
+#'
+#'@return A \code{ClusterExperiment} object.
+#'
+#'@examples
+#'
+#'se <- matrix(data=rnorm(200), ncol=10)
+#'labels <- gl(5, 2)
+#'
+#'cc <- clusterExperiment(se, as.numeric(labels), transformation =
+#'function(x){x})
+#'
+#' @rdname ClusterFunction-class
+#' @export
+setGeneric(
+	name = "clusterFunction",
+	def = function(FUN,...) {
+	  standardGeneric("clusterFunction")
+	}
+)
+#' @rdname ClusterFunction-class
+#' @export
+setMethod(
+	f = "clusterFunction",
+	signature = signature("function"),
+	definition = function(FUN, inputType,algorithmType,classifyFunction=NULL){
+		out <- new("ClusterFunction",
+	         FUN=FUN,
+	         inputType=inputType,
+	         algorithmType = algorithmType,
+			 classifyFunction=classifyFunction
+			 )
+		validObject(out)
+		return(out)
+	}
+)
