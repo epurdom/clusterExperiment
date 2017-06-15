@@ -7,8 +7,7 @@
 #' @param x the data on which to run the clustering (samples in columns).
 #' @param k number of clusters to find for each clustering of a subsample
 #'   (passed to clusterFunction).
-#' @param clusterFunction a function that clusters a \code{p x n} matrix of
-#'   data. Can also be given character values 'pam' or 'kmeans' to indicate use
+#' @param clusterFunction a \code{\link{ClusterFunction}} object that clusters defines clustering routine. Can also be given character values to indicate use
 #'   of internal wrapper functions. Must accept arguments 'x' and 'k' (whether
 #'   uses them or not). See Details for format of what must return.
 #' @param clusterArgs a list of parameter arguments to be passed to
@@ -52,51 +51,70 @@
 #' @examples
 #' data(simData)
 #'
-#' subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
+#' subD <- subsampleClustering(t(simData), clusterArgs=list(k=3), clusterFunction="kmeans",
 #' clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
 #'
 #' heatmap(subD)
 #' @export
-subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, 
-                              classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,
-                              resamp.num = 100, samp.p = 0.7,ncores=1,... )
+setMethod(
+  f = "subsampleClustering",
+  signature = signature(clusterFunction = "character"),
+  definition = function(clusterFunction,...){
+  	subsampleClustering(getBuiltInClusterFunction(clusterFunction),...)
+	  
+  }
+ )
+ 
+#' @rdname subsampleClustering
+#' @export
+setMethod(
+   f = "subsampleClustering",
+   signature = signature(clusterFunction = "ClusterFunction"),
+definition=function(clusterFunction, x,diss,clusterArgs=NULL, 
+                              classifyMethod=c("InSample","OutOfSample","All"),
+                              resamp.num = 100, samp.p = 0.7,ncores=1,checkDiss=TRUE,... )
 {
-  #input<-.checkXDissInput(x,diss)
-  if(!is.function(clusterFunction)){
-    if(clusterFunction%in%c("pam","kmeans")){
-      if(clusterFunction=="pam"){
-        clusterFunction<-.pamCluster
-        classifyFunction<-.pamClassify
-      }
-      else if(clusterFunction=="kmeans"){
-        clusterFunction<-.kmeansCluster
-        classifyFunction<-.kmeansClassify
-      }
-    }
-    else stop("clusterFunction must define a function")
-  }
+	#-----
+	# Checks
+	#-----
   classifyMethod<-match.arg(classifyMethod)
-  if(classifyMethod %in% c("All","OutOfSample") && missing(classifyFunction)){
-    stop("Must provide a classification function for the 'All' or 'OutOfSample' options")
+  input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+  if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
+    classifyMethod<-"InSample" #silently change it...
   }
-  #if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-  N <- dim(x)[2]
+  else{
+	  inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=checkDiss)  	
+  }
+  reqArgs<-requiredArgs(clusterFunction)
+  if(!all(reqArgs %in% clusterArgs)) stop("For this clusterFunction algorithm type (",algorithmType(clusterFunction),") must supply arguments",reqArgs,"as list in 'clusterArgs'")
+  
+#-----
+# Basic parameters, subsamples
+#-----
+  if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
   subSize <- round(samp.p * N)
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
+  #-----
+  # Function that calls the clustering for each subsample
+  #-----
   perSample<-function(ids){
-#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
-#     dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
-    xWithIds<-x[,ids,drop=FALSE]
-    #result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
-    result<-do.call(clusterFunction,c(list(x=xWithIds,k=k),clusterArgs))
-    #if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
-    if(classifyMethod=="All") classX<-classifyFunction(x=x,result)
+	  ##----
+	  ##Cluster part of subsample
+	  ##----
+	 argsClusterList<-switch(input,"X"=list(x=x[,ids,drop=FALSE]), "diss"=list(diss=diss[ids,ids,drop=FALSE]))
+	 argsClusterList<-c(argsClusterList,list("checkArgs"=TRUE,"cluster.only"=FALSE))
+    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+
+	  ##----
+	  ##Classify part of subsample
+	  ##----
+    if(classifyMethod=="All"){
+	    argsClassifyList<-switch(inputClassify,"X"=list(x=x), "diss"=list(diss=diss))
+		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(result=result)))
+	}
     if(classifyMethod=="OutOfSample"){
-      #     xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
-      #     dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
-      xWithoutIds<-x[,-ids,drop=FALSE]
-      #classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
-      classElse<-classifyFunction(x=xWithoutIds, result)
+	    argsClassifyList<-switch(inputClassify,"X"=list(x=x[,-ids,drop=FALSE]), "diss"=list(diss=diss[-ids,-ids,drop=FALSE]))
+		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(result=result)))
       classX<-rep(NA,N)
       classX[-ids]<-classElse
     }
@@ -119,13 +137,13 @@ subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL,
     DList<-apply(idx,2,perSample)
   }
   else{
-    DList<-parallel::mclapply(1:ncol(idx),function(nc){perSample(idx[,nc])},mc.cores=ncores,...)
+    DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
   }
   DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
   DNum<-Reduce("+",lapply(DList,function(y){y$D}))
   Dbar = DNum/DDenom
-#   if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
-#   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
+  if(input %in% c("X")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+  else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
   rownames(Dbar)<-colnames(Dbar)<-colnames(x)
-    return(Dbar)
+  return(Dbar)
 }

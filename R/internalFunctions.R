@@ -1,19 +1,3 @@
-.checkXDissInput<-function(x,diss){
-  if(is.null(x) & is.null(diss)) stop("must give either x or diss argument")
-  #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
-  if(!is.null(x) & is.null(diss)) input<-"X"
-  if(!is.null(x) & !is.null(diss)) input<-"both"
-  if(is.null(x) & !is.null(diss)) input<-"diss"
-  if(input %in% c("diss","both")) .checkDistFunction(diss)
-  if(input == "both" && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss then must have compatible dimensions.") 
-  return(input)
-}
-.checkDistFunction<-function(D){
-  if(any(is.na(as.vector(D)))) stop("NA values found in D (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-  if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("D matrix contains either NAs, NANs or Infinite values.")
-  if(any(D<0)) stop("distance function must give strictly positive values")
-  if(any(diag(D)!=0)) stop("distance function must have zero values on the diagonal of the distance matrix")
-}
 
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
     ceLegend<-clusterLegend(ceObj)[[whCluster]]
@@ -244,32 +228,6 @@
   return(wh)
 }
 
-#######
-#Internal algorithms for clustering
-#######
-#check what type
-.checkAlgType<-function(clusterFunction){
-	##These return lists of indices of clusters satisifying alpha criteria
-	if(clusterFunction=="tight") type<-"01"
-	if(clusterFunction=="hierarchical01") type<-"01"
-	if(clusterFunction=="hierarchicalK") type<-"K"
-	if(clusterFunction=="pam") type<-"K"
-	return(type)
-}
-
-
-
-#convert list output into cluster vector.
-.convertClusterListToVector<-function(clusterList,N)
-{
-    clust.id <- rep(-1, N)
-    nfound<-length(clusterList)
-    if(nfound>0){
-        #make cluster ids in order of when found
-        for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i 
-    }
-    return(clust.id)
-}
 
 
 ####

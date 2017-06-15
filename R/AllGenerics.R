@@ -4,7 +4,12 @@ setGeneric(
         standardGeneric("RSEC")
     }
 )
-
+setGeneric(
+  name = "subsampleClustering",
+  def = function(clusterFunction, ...) {
+    standardGeneric("clusterSingle")
+  }
+)
 setGeneric(
   name = "clusterSingle",
   def = function(x, diss,  ...) {

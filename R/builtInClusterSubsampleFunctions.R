@@ -3,17 +3,22 @@
 # hier : dis
 # kmeans : x
 # spectral (SamSPECTRAL for flow cytometry; kernlab for standard; kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
-
+###what rdname should this be? Not S4 methods...
+#' @rdname ClusterFunction-methods
+#' @export
+.builtInClusterFunctions<-c("pam"=pamObj,"kmeans"=kmeansObj)
+builtInClusterFunctions<-names(.builtInClusterFunctions)
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
+kmeansObj<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify,inputType="X",inputClassifyType="X",algorithmType="K")
 
 ###Kmeans
-.kmeansCluster <- function(x,k, ...) { 
-  out<-stats::kmeans(t(x),centers=k,...)
-  out<-.kmeansPartitionObject(x,out) #make it a partition object like pam.
-  #out$clustering<-out$cluster #stupid difference in naming...
-  return(out)
+.kmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
+    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...),checkArgs=checkArgs)
+	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs)
+  if(cluster.only) return(out$cluster)
+  else return(.kmeansPartitionObject(x,out)) 
 } 
 .kmeansClassify <- function(x, clusterResult) { 
   centers <- clusterResult$mediods
@@ -24,27 +29,35 @@
   dissE<-(cluster::daisy(t(x)))^2
   silObj<-cluster::silhouette(kmeansObj$cl,dissE^2)
   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
-  return(list(mediods=kmeansObj$centers,clustering=kmeansObj$cluster,call=NA,silinfo=silinfo,objective=NA,diss=dissE,data=x))
+  return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }
 
 ###Pam
-.pamCluster <- function(x,k, ...) { cluster::pam(x=t(x),k=k,...) }  #x p x n matrix
-.pamClassify <- function(x, clusterResult) { #x p x n matrix
-  center<-clusterResult$medoids
-  innerProd<-tcrossprod(t(x),center) #a n x k matrix of inner-products between them
-  distMat<-as.matrix(dist(rbind(t(x),center)))
-  distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
-  apply(distMat,1,which.min)
-} 
+pamObj<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify,inputType="either",inputClassifyType="X",algorithmType="K")
 
+.pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
+      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...),checkArgs=checkArgs)
+	  input<-.checkXDissInput(x,diss,checkDiss=FALSE){
+	  if(input=="X") return(do.call(cluster::pam, c(list(x=x,k=k, cluster.only=cluster.only), passedArgs)))
+      if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=D,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+    }
+.pamClassify <- function(x, clusterResult) { #x p x n matrix
+  .genericClassify(x,clusterResult$medoids)
+} 
+.genericClassify<-function(x,centers){
+    innerProd<-tcrossprod(t(x),centers) #a n x k matrix of inner-products between them
+    distMat<-as.matrix(dist(rbind(t(x),centers)))
+    distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
+    apply(distMat,1,which.min)	
+}
 # .hierCluster<-function(x,k,...){
 # 	argList<-list(...)
 # 	hout<-do.call("hclust",c(list(dist(x)),argList))
 # 	stats::cutree(tree, k = k)
-# 	
+#
 # }
 # .hierClassify<-function(x,clusterResult){
-# 	
+#
 # }
 
 

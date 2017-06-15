@@ -414,39 +414,130 @@ setMethod(
   })
 
 
-  ################ clusterFunction class
-  
-  #' @title Class ClusterFunction
-  #'
-  #' @description \code{ClusterFunction} is a class ...
-  #'
-  #' @docType class
-  #' @aliases ClusterFunction ClusterFunction-class clusterFunction
+################ clusterFunction class
 
-  #' @name ClusterFunction-class
-  #' @aliases ClusterFunction
-  #' @rdname ClusterFunction-class
-  #' @export
-  #'
+#' @title Class ClusterFunction
+#'
+#' @description \code{ClusterFunction} is a class ...
+#'
+#' @docType class
+#' @aliases ClusterFunction ClusterFunction-class clusterFunction
+#' @slot clusterFUN a function defining the clustering function. See details for required arguments. 
+#' @slot inputType a character defining what type of input \code{clusterFUN} takes. Must be one of either "D","X", or "Either"
+#' @slot algorithmType a character defining what type of clustering algorithm \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN} must take the corresponding required arguments. 
+#' @slot classifyFUN a function that takes as input new data and the output of \code{clusterFUN} and results in cluster assignments of the new data. Used in subsampling clustering. If \code{NULL} then subsampling can only be \code{"InSample"}, see \code{\link{subsampleClustering}}. 
+#' @details Required arguments for \code{clusterFUN}:
+#' \itemize{
+#'  \item{"x or diss"}{either \code{x} and/or \code{diss} depending on \code{inputType}. If \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like assay(CEObj) would give)}
+#'  \item{"checkArgs"}{logical argument. If \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments passed in \code{...} are valid and return an error if not; otherwise, no error will be given, but the check should be done and only valid arguments in \code{...} passed along. This is necessary for the function to work with \code{clusterMany} which passes all arguments to all functions without checking. }
+#' \item{"cluster.only"}{logical argument. If \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the vector of cluster assignments; the vector should be in the same order as the original input of the data, with integers identifying them to different clusters; samples that are not assigned to any cluster should be given a '-1' value. If \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named list where one of the elements entitled \code{clustering} contains the vector described above; anything needed by the \code{classifyFUN} to classify new data should be contained in the list as well. \code{cluster.only} is set internally depending on whether \code{classifyFUN} will be used by subsampling or only for clustering the final product.}
+#' \item{"..."}{Any additional arguments specific to the algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT passed via arguments to \code{clusterFUN}}
+#' \item{"Other required arguments"}{\code{clusterFUN} must also accept arguments required for its \code{algorithmType} (see Details below).}
+#' }
+#' @details \code{algorithmType}: "01" is for clustering functions that
+#'   expect as an input a dissimilarity matrix D that takes on 0-1 values (e.g. from subclustering). "01" types must have \code{inputType} equal to \code{"diss"}
+#'   "K" is for clustering functions that require an argument \code{k} (the number of
+#'   clusters), but arbitrary \code{inputType}. It is also generally expected
+#'   that "01" algorithms use the 0-1 nature of the input to set criteria
+#'   as to where to find clusters and therefore do not need a pre-determined
+#'   'k'. On the other hand, "K" algorithms are assumed to need a
+#'   predetermined 'k' and are also assumed to cluster all samples to a cluster,
+#'   and therefore clusterK gives options to exclude poorly clustered samples
+#'   via silhouette distances.
+#'
+#' @details cluster01 required format for input and output for clusterFunction:
+#'   clusterFunction should be a function that takes (as a minimum) an argument
+#'   "diss" (D) and "alpha". 0-1 clustering algorithms are expected to use the fact
+#'   that the D input is 0-1 range to find the clusters, rather than a user
+#'   defined number of clusters; "alpha" is the parameter that tunes the finding
+#'   of such clusters. For example, a candidate block of samples might be
+#'   considered a cluster if all values of D are greater than or equal to
+#'   1-alpha. The output is a list with each element corresponding to a cluster
+#'   and the elements of the list corresponding to the indices of the samples
+#'   that are in the cluster. The list is expected to be in order of 'best
+#'   clusters' (as defined by the clusterFunction), with first being the best
+#'   and last being worst.
+#'
+#' @details Available "01" methods: "tight" method refers to the method of finding 
+#'     clusters from a subsampling matrix given internally in the tight 
+#'     algorithm code of Tsang and Wong. Arguments for the tight method are
+#'     'minSize.core' (default=2), which sets the minimimum number of samples
+#'     that form a core cluster. "hierarchical01" refers to running the hclust
+#'     algorithm on D and transversing down the tree until getting a block of
+#'     samples with whose summary of the values  is greater than or equal to
+#'     1-alpha. Arguments that can be passed to 'hierarchical' are
+#'     'evalClusterMethod' which determines how to summarize the samples' values
+#'     of D[samples,samples] for comparison to 1-alpha: "maximum" (default)
+#'     takes the minimum of D[samples,samples] and requires it to be less than
+#'     or equal to 1-alpha; "average" requires that each row mean of
+#'     D[samples,samples] be less than or equal to 1-alpha. Arguments of
+#'     hclust can also be passed via clusterArgs to control the hierarchical 
+#'     clustering of D.
+#'
+#' @details "K" algorithms required format for input and output for clusterFunction:
+#'   clusterFunction should be a function that takes as a minimum an argument
+#'   'k', in addition to input \code{x} or \code{diss} depending on \code{inputType}. 
+#'
+#' @details clusterK methods: "pam" performs pam clustering on the input 
+#'   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
+#'   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
+#'   arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
+#'   performs hierarchical clustering on the input via the \code{\link{hclust}}
+#'   and then applies \code{\link{cutree}} with the specified k to obtain
+#'   clusters. Arguments to \code{\link{hclust}} can be passed via
+#'   \code{clusterArgs}.
+#' @name ClusterFunction-class
+#' @aliases ClusterFunction
+#' @rdname ClusterFunction-class
+#' @export
+#'
 setClass(
 	Class = "ClusterFunction",
 	slots = list(
-  	  	FUN="function",
+  	  	clusterFUN="function",
   		inputType = "character",
   		algorithmType = "character",
-		classifyFUN="function"
+  		inputClassifyType = "character",
+		classifyFUN="functionOrNULL"
+		requiredArgs= "character"
   	)
 )
-.inputTypes<-c("X","Distance","Either")
+.inputTypes<-c("X","diss","either")
 .algTypes<-c("01","K")
+.required01Args<-c("alpha")
+.requiredKArgs<-c("k")
+
 setValidity("ClusterFunction", function(object) {
-    #browser()
+    #----
+	# inputType
+	#----
     if(is.na(inputType))) {
       return("Must define inputType.")
     }
 	if(!inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
+	if(is.null(classifyFUN)& !is.na(inputClassifyType)) return("should not define inputClassifyType if classifyFUN is not defined")
+    if(!is.null(classifyFUN) & is.na(inputClassifyType))) {
+      return("Must define inputClassifyType if define classifyFUN.")
+    }
+	if(!inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+    #----
+	# algorithmType
+	#----
 	if(is.na(algorithmType)) return("Must define algorithmType")
 	if(!algorithmType%in%.algTypes) return(paste("algorithmType must be one of",paste(.algTypes,collapse=",")))
+	### Add additional checks that 'k' and '01' work as expected... in particular that take particular arguments, etc. that 'k' and '01' are expected to take. 
+		
+		
+	#----
+	# function arguments are as needed
+	#----
+	if(inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to clusterFunction doesn't contain 'x'")
+		if(inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")
+	
+	if(algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs=.requiredKArgs)) return("algorithmType is "K" but arguments to clusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
+	if(algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFunction, requiredArgs=.required01Args)) return("algorithmType is "01" but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
+	
+	
 	###Need to add checks that functions return format expected by giving them toy data??
 	###Some functions might have issue with small data?
     return(TRUE)
@@ -455,31 +546,19 @@ setValidity("ClusterFunction", function(object) {
 #' @description The constructor \code{clusterFunction} creates an object of
 #' the class \code{ClusterFunction}. 
 #'
-#'@param FUN a function that clusters data
-#'@param clusters can be either a numeric or character vector, a factor, or a
-#'numeric matrix, containing the cluster labels.
-#'@param transformation function. A function to transform the data before
-#'performing steps that assume normal-like data (i.e. constant variance), such
-#'as the log.
-#'@param ... The arguments \code{transformation}, \code{clusterTypes} and
-#'  \code{clusterInfo} to be passed to the constructor for signature
-#'  \code{SummarizedExperiment,matrix}.
+#'@param clusterFUN a function that clusters data
+#'@param inputType character
+#'@param algorithmType character
+#'@param classifyFUN function that classifies new data based on cluster results of FUN
 #'
-#'@return A \code{ClusterExperiment} object.
+#'@return A \code{ClusterFunction} object.
 #'
-#'@examples
-#'
-#'se <- matrix(data=rnorm(200), ncol=10)
-#'labels <- gl(5, 2)
-#'
-#'cc <- clusterExperiment(se, as.numeric(labels), transformation =
-#'function(x){x})
 #'
 #' @rdname ClusterFunction-class
 #' @export
 setGeneric(
 	name = "clusterFunction",
-	def = function(FUN,...) {
+	def = function(clusterFUN,...) {
 	  standardGeneric("clusterFunction")
 	}
 )
@@ -488,12 +567,14 @@ setGeneric(
 setMethod(
 	f = "clusterFunction",
 	signature = signature("function"),
-	definition = function(FUN, inputType,algorithmType,classifyFunction=NULL){
+	definition = function(clusterFUN, inputType,algorithmType,inputClassifyType,requiredArgs=NA_character,classifyFUN=NULL){
 		out <- new("ClusterFunction",
-	         FUN=FUN,
+	         clusterFUN=clusterFUN,
 	         inputType=inputType,
 	         algorithmType = algorithmType,
-			 classifyFunction=classifyFunction
+			 inputClassifyType=inputClassifyType
+			 classifyFUN=classifyFUN,
+			 requiredArgs=requiredArgs
 			 )
 		validObject(out)
 		return(out)

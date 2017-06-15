@@ -75,67 +75,13 @@
 #'     as the distance function. For type "01", the default is to take the
 #'     (1-cor(x))/2.
 #'
-#' @details Types of algorithms: cluster01 is for clustering functions that
-#'   expect as an input D that takes on 0-1 values (e.g. from subclustering).
-#'   clusterK is for clustering functions that require an input k, the number of
-#'   clusters, but arbitrary distance/dissimilarity matrix. cluster01 and
+#' @details cluster01 and
 #'   clusterK are given as separate functions in order to allow the user to
 #'   provide different clustering functions that expect different types of input
 #'   and for us to provide different shared processing of the results that is
 #'   different for these different types of clustering methods (for example,
 #'   removing low silhouette values is appropriate for clusterK clustering
-#'   functions rather than cluster01 functions). It is also generally expected
-#'   that cluster01 algorithms use the 0-1 nature of the input to set criteria
-#'   as to where to find clusters and therefore do not need a pre-determined
-#'   'k'. On the other hand, clusterK functions are assumed to need a
-#'   predetermined 'k' and are also assumed to cluster all samples to a cluster,
-#'   and therefore clusterK gives options to exclude poorly clustered samples
-#'   via silhouette distances.
-#'
-#' @details cluster01 required format for input and output for clusterFunction:
-#'   clusterFunction should be a function that takes (as a minimum) an argument
-#'   "D" and "alpha". 0-1 clustering algorithms are expected to use the fact
-#'   that the D input is 0-1 range to find the clusters, rather than a user
-#'   defined number of clusters; "alpha" is the parameter that tunes the finding
-#'   of such clusters. For example, a candidate block of samples might be
-#'   considered a cluster if all values of D are greater than or equal to
-#'   1-alpha. The output is a list with each element corresponding to a cluster
-#'   and the elements of the list corresponding to the indices of the samples
-#'   that are in the cluster. The list is expected to be in order of 'best
-#'   clusters' (as defined by the clusterFunction), with first being the best
-#'   and last being worst.
-#'
-#' @details cluster01 methods: "tight" method refers to the method of finding 
-#'     clusters from a subsampling matrix given internally in the tight 
-#'     algorithm code of Tsang and Wong. Arguments for the tight method are
-#'     'minSize.core' (default=2), which sets the minimimum number of samples
-#'     that form a core cluster. "hierarchical01" refers to running the hclust
-#'     algorithm on D and transversing down the tree until getting a block of
-#'     samples with whose summary of the values  is greater than or equal to
-#'     1-alpha. Arguments that can be passed to 'hierarchical' are
-#'     'evalClusterMethod' which determines how to summarize the samples' values
-#'     of D[samples,samples] for comparison to 1-alpha: "maximum" (default)
-#'     takes the minimum of D[samples,samples] and requires it to be less than
-#'     or equal to 1-alpha; "average" requires that each row mean of
-#'     D[samples,samples] be less than or equal to 1-alpha. Arguments of
-#'     hclust can also be passed via clusterArgs to control the hierarchical 
-#'     clustering of D.
-#'
-#' @details clusterK required format for input and output for clusterFunction:
-#'   clusterFunction should be a function that takes as a minimum an argument
-#'   'D' and 'k'. The output must be a clustering, specified by integer values. 
-#'   The function \code{\link{silhouette}} will be used on the clustering to
-#'   calculate silhouette scores for each observation.
-#'
-#' @details clusterK methods: "pam" performs pam clustering on the input 
-#'   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
-#'   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
-#'   arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
-#'   performs hierarchical clustering on the input via the \code{\link{hclust}}
-#'   and then applies \code{\link{cutree}} with the specified k to obtain
-#'   clusters. Arguments to \code{\link{hclust}} can be passed via
-#'   \code{clusterArgs}.
-#'
+#'   functions rather than cluster01 functions). 
 #' @return clusterD returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
 #'   than minSize are removed. If orderBy="size" the clusters are reordered by
@@ -276,6 +222,7 @@ cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1
 	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
 	return(res)
 }
+##Need to update this code so converts vector result into lists of indices ...
 .hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("dist","D"),checkArgs,...)
 {
     whichHierDist<-match.arg(whichHierDist)
@@ -414,7 +361,6 @@ clusterK<-function(diss,  clusterFunction=c("pam","hierarchicalK"),findBestK=FAL
       if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
     }
   }
-  ##These return lists of indices of clusters satisifying alpha criteria
   if(!is.function(clusterFunction)){
     method<-match.arg(clusterFunction)
     if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
