@@ -498,7 +498,7 @@ setClass(
   		inputType = "character",
   		algorithmType = "character",
   		inputClassifyType = "character",
-		classifyFUN="functionOrNULL"
+		classifyFUN="functionOrNULL",
 		requiredArgs= "character"
   	)
 )
@@ -506,36 +506,38 @@ setClass(
 .algTypes<-c("01","K")
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
-
+.checkHasArgs<-function(FUN,requiredArgs){
+    funArgs<-names(as.list(args(FUN)))
+	all(requiredArgs %in% funArgs)
+}
 setValidity("ClusterFunction", function(object) {
     #----
 	# inputType
 	#----
-    if(is.na(inputType))) {
+    if(is.na(object@inputType)) {
       return("Must define inputType.")
     }
-	if(!inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
-	if(is.null(classifyFUN)& !is.na(inputClassifyType)) return("should not define inputClassifyType if classifyFUN is not defined")
-    if(!is.null(classifyFUN) & is.na(inputClassifyType))) {
+	if(!object@inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
+	if(is.null(object@classifyFUN)& !is.na(object@inputClassifyType)) return("should not define inputClassifyType if classifyFUN is not defined")
+    if(!is.null(object@classifyFUN) & is.na(object@inputClassifyType)) {
       return("Must define inputClassifyType if define classifyFUN.")
     }
-	if(!inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+	if(!object@inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
     #----
 	# algorithmType
 	#----
-	if(is.na(algorithmType)) return("Must define algorithmType")
-	if(!algorithmType%in%.algTypes) return(paste("algorithmType must be one of",paste(.algTypes,collapse=",")))
+	if(is.na(object@algorithmType)) return("Must define algorithmType")
+	if(!object@algorithmType%in%.algTypes) return(paste("algorithmType must be one of",paste(.algTypes,collapse=",")))
 	### Add additional checks that 'k' and '01' work as expected... in particular that take particular arguments, etc. that 'k' and '01' are expected to take. 
 		
 		
 	#----
 	# function arguments are as needed
 	#----
-	if(inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to clusterFunction doesn't contain 'x'")
-		if(inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")
-	
-	if(algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFunction,requiredArgs=.requiredKArgs)) return("algorithmType is "K" but arguments to clusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
-	if(algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFunction, requiredArgs=.required01Args)) return("algorithmType is "01" but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
+	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to clusterFunction doesn't contain 'x'")
+		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")	
+	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to clusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
+	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
 	
 	
 	###Need to add checks that functions return format expected by giving them toy data??
@@ -567,12 +569,12 @@ setGeneric(
 setMethod(
 	f = "clusterFunction",
 	signature = signature("function"),
-	definition = function(clusterFUN, inputType,algorithmType,inputClassifyType,requiredArgs=NA_character,classifyFUN=NULL){
+	definition = function(clusterFUN, inputType,algorithmType,inputClassifyType,requiredArgs=NA_character_,classifyFUN=NULL){
 		out <- new("ClusterFunction",
 	         clusterFUN=clusterFUN,
 	         inputType=inputType,
 	         algorithmType = algorithmType,
-			 inputClassifyType=inputClassifyType
+			 inputClassifyType=inputClassifyType,
 			 classifyFUN=classifyFUN,
 			 requiredArgs=requiredArgs
 			 )

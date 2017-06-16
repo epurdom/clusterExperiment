@@ -7,7 +7,7 @@ setGeneric(
 setGeneric(
   name = "subsampleClustering",
   def = function(clusterFunction, ...) {
-    standardGeneric("clusterSingle")
+    standardGeneric("subsampleClustering")
   }
 )
 setGeneric(
@@ -334,5 +334,23 @@ setGeneric(
   name = "mergeClusters",
   def = function(x, ...) {
     standardGeneric("mergeClusters")
+  }
+)
+setGeneric(
+  name = "getBuiltInClusterFunction",
+  def = function(clusterFunction, ...) {
+    standardGeneric("getBuiltInClusterFunction")
+  }
+)
+setGeneric(
+  name = "requiredArgs",
+  def = function(clusterFunction, ...) {
+    standardGeneric("requiredArgs")
+  }
+)
+setGeneric(
+  name = "algorithmType",
+  def = function(clusterFunction, ...) {
+    standardGeneric("algorithmType")
   }
 )

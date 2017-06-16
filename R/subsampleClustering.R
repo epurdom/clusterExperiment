@@ -97,42 +97,42 @@ definition=function(clusterFunction, x,diss,clusterArgs=NULL,
   #-----
   # Function that calls the clustering for each subsample
   #-----
-  perSample<-function(ids){
+	  perSample<-function(ids){
 	  ##----
 	  ##Cluster part of subsample
 	  ##----
 	 argsClusterList<-switch(input,"X"=list(x=x[,ids,drop=FALSE]), "diss"=list(diss=diss[ids,ids,drop=FALSE]))
 	 argsClusterList<-c(argsClusterList,list("checkArgs"=TRUE,"cluster.only"=FALSE))
-    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+	    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
 
 	  ##----
 	  ##Classify part of subsample
 	  ##----
-    if(classifyMethod=="All"){
+	    if(classifyMethod=="All"){
 	    argsClassifyList<-switch(inputClassify,"X"=list(x=x), "diss"=list(diss=diss))
 		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(result=result)))
 	}
-    if(classifyMethod=="OutOfSample"){
+	    if(classifyMethod=="OutOfSample"){
 	    argsClassifyList<-switch(inputClassify,"X"=list(x=x[,-ids,drop=FALSE]), "diss"=list(diss=diss[-ids,-ids,drop=FALSE]))
 		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(result=result)))
-      classX<-rep(NA,N)
-      classX[-ids]<-classElse
-    }
-    if(classifyMethod=="InSample"){
-      classX<-rep(NA,N)
-      classX[ids]<-result$clustering
-    }
-    D <- outer(classX, classX, function(a, b) a == b)
-    Dinclude<-matrix(1,N,N)
-    whNA<-which(is.na(classX))
-    if(length(whNA)>0){
-      Dinclude[whNA,]<-0 #don't add them to the denominator either
-      Dinclude[,whNA]<-0
-      D[whNA,]<-0 #don't add to sum
-      D[,whNA]<-0
-    }
-    return(list(D=D,Dinclude=Dinclude))
-  }
+	      classX<-rep(NA,N)
+	      classX[-ids]<-classElse
+	    }
+	    if(classifyMethod=="InSample"){
+	      classX<-rep(NA,N)
+	      classX[ids]<-result$clustering
+	    }
+	    D <- outer(classX, classX, function(a, b) a == b)
+	    Dinclude<-matrix(1,N,N)
+	    whNA<-which(is.na(classX))
+	    if(length(whNA)>0){
+	      Dinclude[whNA,]<-0 #don't add them to the denominator either
+	      Dinclude[,whNA]<-0
+	      D[whNA,]<-0 #don't add to sum
+	      D[,whNA]<-0
+	    }
+	    return(list(D=D,Dinclude=Dinclude))
+	  }
   if(ncores==1){
     DList<-apply(idx,2,perSample)
   }
@@ -141,9 +141,9 @@ definition=function(clusterFunction, x,diss,clusterArgs=NULL,
   }
   DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
   DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-  Dbar = DNum/DDenom
+  Dbar <- DNum/DDenom
   if(input %in% c("X")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
   rownames(Dbar)<-colnames(Dbar)<-colnames(x)
   return(Dbar)
-}
+})

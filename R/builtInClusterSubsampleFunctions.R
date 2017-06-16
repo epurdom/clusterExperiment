@@ -4,19 +4,14 @@
 # kmeans : x
 # spectral (SamSPECTRAL for flow cytometry; kernlab for standard; kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
 ###what rdname should this be? Not S4 methods...
-#' @rdname ClusterFunction-methods
-#' @export
-.builtInClusterFunctions<-c("pam"=pamObj,"kmeans"=kmeansObj)
-builtInClusterFunctions<-names(.builtInClusterFunctions)
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
-kmeansObj<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify,inputType="X",inputClassifyType="X",algorithmType="K")
 
 ###Kmeans
 .kmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
     passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...),checkArgs=checkArgs)
-	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs)
+	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
   if(cluster.only) return(out$cluster)
   else return(.kmeansPartitionObject(x,out)) 
 } 
@@ -33,11 +28,10 @@ kmeansObj<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassif
 }
 
 ###Pam
-pamObj<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify,inputType="either",inputClassifyType="X",algorithmType="K")
 
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
       passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...),checkArgs=checkArgs)
-	  input<-.checkXDissInput(x,diss,checkDiss=FALSE){
+	  input<-.checkXDissInput(x,diss,checkDiss=FALSE)
 	  if(input=="X") return(do.call(cluster::pam, c(list(x=x,k=k, cluster.only=cluster.only), passedArgs)))
       if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=D,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     }
@@ -60,4 +54,13 @@ pamObj<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify,inputTy
 #
 # }
 
+#########
+## Put them together
+#########
+.kmeansCF<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify,inputType="X",inputClassifyType="X",algorithmType="K")
+.pamCF<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify,inputType="either",inputClassifyType="X",algorithmType="K")
+.builtInClusterFunctions<-c("pam"=.pamCF,"kmeans"=.kmeansCF)
 
+#' @rdname ClusterFunction-methods
+#' @export
+builtInClusterFunctions<-names(.builtInClusterFunctions)
