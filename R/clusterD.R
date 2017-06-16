@@ -128,9 +128,23 @@
 #' minSize=5, removeSil=TRUE)
 #' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' clusterArgs=list(evalClusterMethod="average"))
-#' @export
 #' @importFrom cluster daisy silhouette pam
-clusterD<-function(x=NULL, diss=NULL,clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+#' @export
+setMethod(
+  f = "clusterD",
+  signature = signature(clusterFunction = "character"),
+  definition = function(clusterFunction,...){
+  	clusterD(getBuiltInClusterFunction(clusterFunction),...)
+	  
+  }
+ )
+# clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
+#' @rdname subsampleClustering
+#' @export
+setMethod(
+   f = "clusterD",
+   signature = signature(clusterFunction = "ClusterFunction"),
+definition=function(clusterFunction,x=NULL, diss=NULL,
                    typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
                    format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
 	input<-.checkXDissInput(x,diss)

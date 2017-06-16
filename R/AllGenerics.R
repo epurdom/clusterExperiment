@@ -338,19 +338,19 @@ setGeneric(
 )
 setGeneric(
   name = "getBuiltInClusterFunction",
-  def = function(clusterFunction, ...) {
+  def = function(object, ...) {
     standardGeneric("getBuiltInClusterFunction")
   }
 )
 setGeneric(
   name = "requiredArgs",
-  def = function(clusterFunction, ...) {
+  def = function(object, ...) {
     standardGeneric("requiredArgs")
   }
 )
 setGeneric(
   name = "algorithmType",
-  def = function(clusterFunction, ...) {
+  def = function(object, ...) {
     standardGeneric("algorithmType")
   }
 )

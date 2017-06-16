@@ -434,6 +434,24 @@ setMethod(
 #' \item{"..."}{Any additional arguments specific to the algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT passed via arguments to \code{clusterFUN}}
 #' \item{"Other required arguments"}{\code{clusterFUN} must also accept arguments required for its \code{algorithmType} (see Details below).}
 #' }
+#' @details The \code{clusterFunction} must be a function that takes as an
+#'   argument 'x' which is a \code{p x n} matrix  of data and integer 'k'. It
+#'   minimally must return a list with element named 'clustering' giving the
+#'   vector of cluster ids. To be incorporated with the larger hierarchy, it
+#'   should be list with elements of a partition object, just as is returned by
+#'   \code{\link[cluster]{pam}}. Generally, the user will need to write a
+#'   wrapper function to do this. In the case of pam or kmeans, the user can
+#'   identify clusterFunction as "pam" or "kmeans", and the package functions
+#'   will use internally written wrappers for the clusterFunction and
+#'   classifyFunction arguments. Additional arguments should be supplied via
+#'   clusterArgs.
+#'
+#' @details The classifyFunction should take as an object a data matrix 'x' with
+#'   samples on the columns, and the output of the clusterFunction. Note that the
+#'   function should assume that the input 'x' is not the same samples that were
+#'   input to the clusterFunction (but can assume that it is the same number of
+#'   features/columns).
+#'
 #' @details \code{algorithmType}: "01" is for clustering functions that
 #'   expect as an input a dissimilarity matrix D that takes on 0-1 values (e.g. from subclustering). "01" types must have \code{inputType} equal to \code{"diss"}
 #'   "K" is for clustering functions that require an argument \code{k} (the number of

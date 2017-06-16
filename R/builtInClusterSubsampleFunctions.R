@@ -10,7 +10,8 @@
 
 ###Kmeans
 .kmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
-    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...),checkArgs=checkArgs)
+	passedArgs<-list(...)
+    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=passedArgs,checkArgs=checkArgs)
 	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
   if(cluster.only) return(out$cluster)
   else return(.kmeansPartitionObject(x,out)) 
@@ -30,7 +31,8 @@
 ###Pam
 
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
-      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...),checkArgs=checkArgs)
+	passedArgs<-list(...)
+      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=passedArgs,checkArgs=checkArgs)
 	  input<-.checkXDissInput(x,diss,checkDiss=FALSE)
 	  if(input=="X") return(do.call(cluster::pam, c(list(x=x,k=k, cluster.only=cluster.only), passedArgs)))
       if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=D,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
@@ -57,10 +59,10 @@
 #########
 ## Put them together
 #########
-.kmeansCF<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify,inputType="X",inputClassifyType="X",algorithmType="K")
-.pamCF<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify,inputType="either",inputClassifyType="X",algorithmType="K")
-.builtInClusterFunctions<-c("pam"=.pamCF,"kmeans"=.kmeansCF)
+.kmeansCF<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K")
+.pamCF<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K")
+.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF)
 
 #' @rdname ClusterFunction-methods
 #' @export
-builtInClusterFunctions<-names(.builtInClusterFunctions)
+builtInClusterFunctions<-names(.builtInClusterObjects)
