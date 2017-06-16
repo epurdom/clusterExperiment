@@ -51,19 +51,27 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
                               classifyMethod=c("All","InSample","OutOfSample"),
                               resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,... )
 {
-	#-----
-	# Checks
-	#-----
-  classifyMethod<-match.arg(classifyMethod)
-  input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
-  if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
-    classifyMethod<-"InSample" #silently change it...
-  }
-  else{
-	  inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=checkDiss)  	
-  }
+	#######################
+	### Check both types of inputs and create diss if needed, and check it.
+	#######################
+	input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+	classifyMethod<-match.arg(classifyMethod)
+	if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
+    	classifyMethod<-"InSample" #silently change it...
+  	}
+	else{
+		inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!  	
+  	}
+	if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
+		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+		if(input=="X") input<-"diss"
+		if(inputClassify=="X") inputClassify<-"diss"
+	}
+  #-----
+  # Other Checks
+  #-----
   reqArgs<-requiredArgs(clusterFunction)
-  if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type (",algorithmType(clusterFunction),") must supply arguments",reqArgs,"as element of the list of 'clusterArgs'"))
+  if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
   
 #-----
 # Basic parameters, subsamples

@@ -517,6 +517,7 @@ setClass(
   		algorithmType = "character",
   		inputClassifyType = "character",
 		classifyFUN="functionOrNULL",
+		outputType = "character",
 		requiredArgs= "character"
   	)
 )
@@ -524,11 +525,17 @@ setClass(
 .algTypes<-c("01","K")
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
+.outputTypes<-c("vector","list")
+
 .checkHasArgs<-function(FUN,requiredArgs){
     funArgs<-names(as.list(args(FUN)))
 	all(requiredArgs %in% funArgs)
 }
 setValidity("ClusterFunction", function(object) {
+    if(is.na(object@outputType)) {
+      return("Must define outputType.")
+    }
+	if(!object@outputType%in%.outputTypes) return(paste("outputType must be one of",paste(.outputTypes,collapse=",")))
     #----
 	# inputType
 	#----
@@ -587,13 +594,14 @@ setGeneric(
 setMethod(
 	f = "clusterFunction",
 	signature = signature("function"),
-	definition = function(clusterFUN, inputType,algorithmType,inputClassifyType,requiredArgs=NA_character_,classifyFUN=NULL){
+	definition = function(clusterFUN, inputType,outputType,algorithmType,inputClassifyType,requiredArgs=NA_character_,classifyFUN=NULL){
 		out <- new("ClusterFunction",
 	         clusterFUN=clusterFUN,
 	         inputType=inputType,
 	         algorithmType = algorithmType,
 			 inputClassifyType=inputClassifyType,
 			 classifyFUN=classifyFUN,
+			 outputType=outputType,
 			 requiredArgs=requiredArgs
 			 )
 		validObject(out)

@@ -7,8 +7,6 @@
 #'   expected to be called directly by the user, except for ease in debugging
 #'   user-defined clustering functions.
 #'
-#' @aliases cluster01
-#' @aliases clusterK
 #'
 #' @param x \code{p x n} data matrix on which to run the clustering (samples in
 #'   columns).
@@ -55,7 +53,7 @@
 #' @param checkArgs logical as to whether should give warning if arguments given
 #'   that don't match clustering choices given. Otherwise, inapplicable
 #'   arguments will be ignored without warning.
-#' @param returnD logical as to whether to return the D matrix in output.
+#' @param returnData logical as to whether to return the D matrix in output.
 #' @param ... arguments given to clusterD to be passed to cluster01 or clusterK
 #'   (depending on the value of typeAlg). Examples include 'k' for clusterK or
 #'   'alpha' for cluster01. These should not be the arguments needed by
@@ -138,236 +136,103 @@ setMethod(
 	  
   }
  )
-# clusterFunction=c("hierarchical01","tight","pam","hierarchicalK"),
-#' @rdname subsampleClustering
+#' @rdname clusterD
 #' @export
 setMethod(
    f = "clusterD",
    signature = signature(clusterFunction = "ClusterFunction"),
 definition=function(clusterFunction,x=NULL, diss=NULL,
-                   typeAlg=c("01","K"),distFunction=NA,minSize=1, orderBy=c("size","best"),
-                   format=c("vector","list"),clusterArgs=NULL,checkArgs=TRUE,returnD=FALSE,...){
-	input<-.checkXDissInput(x,diss)
-  passedArgs<-list(...)
+                   distFunction=NA,clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
+                   format=c("vector","list"),checkArgs=TRUE,checkDiss=TRUE,returnData=FALSE,...){
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
-	clusterFunction<-match.arg(clusterFunction)
-	if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
-	if(length(passedArgs)>0){
-		#get rid of wrong args passed because of user confusion between the two
-		whRightArgs<-which(names(passedArgs) %in% switch(typeAlg,"01"=.args01,"K"=.argsK))
-		if(length(whRightArgs)!=length(passedArgs) & checkArgs) warning("Some arguments passed via '...' do not match the choice of typeAlg")
-		if(length(whRightArgs)>0) passedArgs<-passedArgs[whRightArgs]
-		else passedArgs<-NULL
+	postProcessArgs<-list(...)
+	if(length(postProcessArgs)>0){
+	#get rid of wrong args passed because of user confusion between the two
+		whRightArgs<-which(names(postProcessArgs) %in% getPostProcessingArgs(clusterFunction))
+		if(length(whRightArgs)!=length(postProcessArgs) & checkArgs) warning("Some arguments passed via '...' in clusterD do not match the algorithmType of the given ClusterFunction object")
+		if(length(whRightArgs)>0) postProcessArgs<-postProcessArgs[whRightArgs]
+		else postProcessArgs<-NULL
 	}
 	#######################
-	### Create distance if needed, and check it.
+	### Check input and Create distance if needed, and check it.
 	#######################
-	#browser()
-	#browser()
-	if(input=="X"){
-	  if(!is.function(distFunction) && is.na(distFunction)){
-	    distFunction<-switch(typeAlg,"01"=function(x){(1-cor(t(x)))/2},"K"=function(x){dist(x)})
-	  }
-	  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
-	  if(inherits(D,"try-error")) stop("input distance gives error when applied to x")
-	  if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
-	  if(!all(D==t(D))) stop("distance function must result in a symmetric matrix")
-	  
+	input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,algType=clusterFunction@algorithmType,checkDiss=checkDiss)
+	if(input=="X" & clusterFunction@inputType=="diss"){
+		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+		input<-"diss"
 	}
-	else D<-diss
-	.checkDistFunction(D)	
+	#-----
+	# Other Checks
+	#-----
+	 reqArgs<-requiredArgs(clusterFunction)
+	 #remove required args not needed if certain postProcessArgs are given:
+	 if(algorithmType(clusterFunction)=="K" & "findBestK" %in% names(postProcessArgs)){
+		 if(postProcessArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
+	 }
+	 if(length(reqArgs)>0 & !all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
+	 if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
+	
 	#######################
 	####Run clustering:
 	#######################
-	if(typeAlg=="01") {
-	  if(any(D>1)) stop("distance function must give values between 0 and 1 for clusterFunction", clusterFunction)
-		res<-do.call("cluster01",c(list(diss=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
+	
+	if(algorithmType(clusterFunction)=="01") {
+	 	argsClusterList<-switch(input,"X"=list(x=x), "diss"=list(diss=diss))
+	 	argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=TRUE))
+	    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
 	}
-	if(typeAlg=="K") {
-		res<-do.call("clusterK",c(list(diss=D,clusterFunction=clusterFunction,clusterArgs=clusterArgs,checkArgs=checkArgs),passedArgs))
+	if(algorithmType(clusterFunction)=="K") {
+	 	argsClusterList<-switch(input,"X"=list(x=x), "diss"=list(diss=diss))
+	 	argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=TRUE))
+		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy),passedArgs))
+		###Note to self: .postProcessClusterK returns clusters in list form.
 	}
 
 	#######################
-	#Now format into desired output
+	#Now format into desired output, order
 	#######################
-	N<-nrow(D)
+	#this is perhaps not efficient. For now will do this, then consider going back and only converting when, where needed.
+	if(clusterFunction@outputType=="vector" & algorithmType(clusterFunction)!="K"){
+		res<-.clusterVectorToList(res)
+	}
 	clusterSize<-sapply(res, length)
     if(length(res)>0) res <- res[clusterSize>=minSize]
-	if(length(res)==0){ #No clusters pass
-# 		if(format=="list") return(res)
-# 		else return(rep(-1,nrow(D)))
-	    if(format=="vector") res<-rep(-1,nrow(D))
-	}
-	else{
-		#now reorders final groups by size
-		if(orderBy=="size"){
-		  clusterSize<-sapply(res, length) #redo because dropped!
+	if(length(res)!=0 & orderBy=="size"){ #i.e. there exist clusters found that passed minSize
+		  clusterSize<-sapply(res, length) #redo because dropped small clusters earlier
 		  res <- res[order(clusterSize,decreasing=TRUE)]
-		}
-		names(res)<-as.character(1:length(res))
-
-		#if(format=="list") return(res)
-		if(format=="vector"){
-
-			valMat<-do.call("rbind",mapply(res,names(res),FUN=function(ind,val){cbind(ind,rep(as.numeric(val),length=length(ind)))},SIMPLIFY=FALSE))
-			clusterVec<-rep("-1",length=N)
-			clusterVec[valMat[,1]]<-valMat[,2]
-			clusterVec<-as.numeric(clusterVec)
-			names(clusterVec)<-rownames(D)
-		    res<-clusterVec #return(clusterVec)
-		}
 	}
-	if(!returnD) return(res)
-	else return(list(result=res,D=D))
+	if(format=="vector"){
+			res<-.clusterListToVector(res,N)
+			names(res)<-if(input=="X") colnames(X) else rownames(diss)
+	}
+	if(!returnData) return(res)
+	else return(list(result=res,diss=diss,x=x))
 }
 
-.args01<-c("alpha")
+
+
 #' @rdname clusterD
-cluster01<-function(diss, clusterFunction=c("hierarchical01","tight"), alpha=0.1, clusterArgs=NULL,checkArgs)
+#' @aliases getPostProcessingArgs
+#' @export
+setMethod(
+  f = "getPostProcessingArgs",
+  signature = c("character"),
+  definition = function(clusterFunction) {
+  	switch(algorithmType(clusterFunction),"01"=.argsPostCluster01,"K"=.argsPostClusterK)
+)
+
+.argsPostCluster01<-c("")
+.argsPostClusterK<-c("findBestK","kRange","removeSil","silCutoff")
+
+.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy)
 {
+  k<-clusterArgs[["k"]]
   D<-diss
-	if(!is.function(clusterFunction)){
-		method<-match.arg(clusterFunction)
-		##These return lists of indices of clusters satisifying alpha criteria
-		if(method=="tight") clusterFunction<-.tightClusterDMat
-		if(method=="hierarchical01") clusterFunction<-.hier01ClusterDMat
-	}
-	res<-do.call(clusterFunction,c(list(D=D,alpha=alpha,checkArgs=checkArgs),clusterArgs))
-	return(res)
-}
-##Need to update this code so converts vector result into lists of indices ...
-.hier01ClusterDMat<-function(D,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("dist","D"),checkArgs,...)
-{
-    whichHierDist<-match.arg(whichHierDist)
-	evalClusterMethod<-match.arg(evalClusterMethod)
-	if(is.null(rownames(D))) rownames(D)<-colnames(D)<-as.character(1:nrow(D))
-	passedArgs<-list(...)
-	hclustArgs<-names(as.list(args(stats::hclust)))
-	if(any(!names(passedArgs) %in% hclustArgs)){
-	  wh<-which(!names(passedArgs) %in% hclustArgs)
-		passedArgs<-passedArgs[-wh]
-		if(checkArgs) warning("arguments passed via clusterArgs to hierarchical clustering method not all applicable (should only be arguments to hclust). Will be ignored")
-	}
-	S<-round(1-D,10)
-	d<-switch(whichHierDist,"dist"=dist(S),"D"=as.dist(D))
-	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
-	
-	method<-evalClusterMethod
-	phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
-	allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
-	#each internal node (including root) calculate whether passes value of alpha or not
-	nodesToCheck<-phylobase::rootNode(phylo4Obj)
-	clusterList<-list()
-
-	while(length(nodesToCheck)>0){
-		currNode<-nodesToCheck[1]
-		nodesToCheck<-nodesToCheck[-1]
-		if(currNode%in%allTips){ #block of size 1!
-			currTips<-names(currNode)
-			check<-TRUE
-		}
-		else{
-			currTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
-			if(method=="maximum") check<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
-			if(method=="average") check<-all(rowMeans(S[currTips,currTips,drop=FALSE])>=(1-alpha))
-
-		}
-		if(check){ #found a block that satisfies
-			clusterList<-c(clusterList,list(currTips))
-		}
-		else{ #not satisfy
-			childNodes<-phylobase::descendants(phylo4Obj,currNode,"children")
-			nodesToCheck<-c(nodesToCheck,childNodes)
-		}
-	}
-	clusterListIndices<-lapply(clusterList,function(tipNames){
-		match(tipNames,rownames(D))
-	})
-	clusterListIndices<-.orderByAlpha(clusterListIndices,S)
-	return(clusterListIndices)
-}
-.orderByAlpha<-function(res,S)
-{
-	if(length(res)>0){
-		alphaMax<-unlist(lapply(res, function(x){
-			vals<-lower.tri(S[x,x]) #don't grab diag
-			1-min(vals) #max(alpha)=1-min(S)
-		}))
-	    res <- res[order(alphaMax, decreasing=TRUE)]
-
-	}
-	else return(res)
-}
-.tightClusterDMat <- function(D, alpha, minSize.core=2,checkArgs,...)
-{
-    #previously, D was similarity matrix. To make it match in clusterD, I need it to be D=1-similarity
-    #so now convert it back
-    S<-1-D #now is similarity matrix...
-    if(length(list(...))>0 & checkArgs) 	warning("some arguments passed via clusterArgs to tight clustering method are not applicable")
-	find.candidates.one <- function(x) {
-        tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
-		#what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is.
-		if(all(tmp<minSize.core)){ #i.e. only core size groups less than minSize.core (default is 1)
-			return(NULL)
-		}
-		whMax<-which(tmp == max(tmp))
-		return(which(x[, whMax[1]] >= 1)) # assumes x is symmetric. Takes largest in size, but arbitrarily picks between them.
-    }
-    extend.candidate <- function(S, can, alpha ) {
-        can.ex <- which(apply(as.matrix(S[, can] >= 1 - alpha), 1, all)) #find those that are close to those core with 1
-        S.temp <- S[can.ex, can.ex]
-        if (!is.matrix(S.temp)) {
-            S.temp <- as.matrix(S.temp)
-            colnames(S.temp) <- names(can.ex)
-        }
-        S.bad <- apply(as.matrix(S.temp < 1 - alpha), 1,sum)
-        while (sum(S.bad) > 0) {
-            index <- which(S.bad == max(S.bad))[1]
-            S.temp <- S.temp[-index, -index]
-            S.bad <- apply(as.matrix(S.temp < 1 - alpha),
-              1, sum)
-        }
-        return(can.ex[colnames(S.temp)])
-    }
-	if(is.null(dim(S)) || dim(S)[1]!=dim(S)[2] || any(t(S)!=S)) stop("S must be a symmetric matrix")
-	N<-nrow(S)
-	colnames(S) <- 1:N
-	rownames(S) <- 1:N
-    i = 1
-    S.temp <- S
-    res <- list()
-    while (!is.null(dim(S.temp)) && !is.null(dim(S.temp)) && nrow(S.temp) > 0 & any(S.temp[lower.tri(S.temp)]>1-alpha) & any(S.temp[lower.tri(S.temp)]==1)) {
-		#first find those that are always together (resampling =1); pick the largest such group (and if more than 1 of same size will arbitrarily pick one)
-        candidate.one <- find.candidates.one(S.temp)
-		if(is.null(candidate.one)){#no more candidates with core always together
-			#for now just stop if no core group
-        	break
-		}
-		#add more on the group if always resamples with the core members >alpha proportion of the time
-		candidate <- extend.candidate(S.temp, candidate.one, alpha = alpha)
-        S.temp <- S.temp[-candidate, -candidate]
-        res[[i]] <- names(candidate)
-        mode(res[[i]]) <- "numeric"
-        i = i + 1
-    }
-	res<-.orderByAlpha(res,S)
-	return(res)
-
-}
-
-
-
-
-.argsK<-c("findBestK","k","kRange","removeSil","silCutoff")
-#' @rdname clusterD
-clusterK<-function(diss,  clusterFunction=c("pam","hierarchicalK"),findBestK=FALSE, k, kRange,removeSil=FALSE,silCutoff=0,clusterArgs=NULL,checkArgs)
-{
-  D<-diss
-  if(!findBestK && missing(k)) stop("If findBestK=FALSE, must provide k")
+  if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
   if(findBestK){
     if(missing(kRange)){
-      if(!missing(k)) kRange<-(k-2):(k+20)
+      if(!is.null(k)) kRange<-(k-2):(k+20)
       else kRange<-2:20
     }
     if(any(kRange<2)){
@@ -375,36 +240,13 @@ clusterK<-function(diss,  clusterFunction=c("pam","hierarchicalK"),findBestK=FAL
       if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
     }
   }
-  if(!is.function(clusterFunction)){
-    method<-match.arg(clusterFunction)
-    if(method =="pam") clusterFunction<-function(D,k,checkArgs,...){
-      passedArgs<-list(...)
-      pamArgs<-names(as.list(args(cluster::pam)))
-      if(any(wh<-!names(passedArgs) %in% pamArgs)){
-        passedArgs<-passedArgs[-which(wh)]
-        if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
-      }
-      do.call(cluster::pam,c(list(x=D,k=k,diss=TRUE,cluster.only=TRUE),passedArgs))
-      
-    }
-    if(method =="hierarchicalK") clusterFunction<-function(D,k,checkArgs,...){
-      passedArgs<-list(...)
-      hierArgs<-names(as.list(args(stats::hclust)))
-      if(any(wh<-!names(passedArgs) %in% hierArgs)){
-        passedArgs<-passedArgs[-which(wh)]
-        if(checkArgs) warning("arguments passed via clusterArgs to pam not all applicable (should only be arguments to pam). Will be ignored")
-      }
-#      browser()
-      hclustOut<-do.call(stats::hclust,c(list(d=as.dist(D)),passedArgs))
-      cutree(hclustOut,k)
-    }
-  }
-
-
   if(findBestK) ks<-kRange else ks<-k
   if(any(ks>= nrow(D))) ks<-ks[ks<nrow(D)]
-  #browser()
-  clusters<-lapply(ks,FUN=function(currk){do.call(clusterFunction,c(list(D=D,k=currk,checkArgs=checkArgs),clusterArgs))})
+  	clusters<-lapply(ks,FUN=function(currk){
+		cl<-do.call(clusterFunction@clusterFUN,c(list(k=currk),clusterArgs))
+		if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
+		return(cl)
+	})
   silClusters<-lapply(clusters,function(cl){
     silhouette(cl,dmatrix=D)
   })
@@ -429,9 +271,10 @@ clusterK<-function(diss,  clusterFunction=c("pam","hierarchicalK"),findBestK=FAL
   
   #make list of indices and put in order of silhouette width (of positive)
   clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
-  clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
-  clList[order(clAveWidth,decreasing=TRUE)]
-  
+  if(orderBy=="best"){
+	  clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
+	  clList[order(clAveWidth,decreasing=TRUE)]
+  }
   #remove -1 group
   if(removeSil){
     whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))

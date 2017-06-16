@@ -428,9 +428,10 @@ setMethod(
           allDist<-lapply(1:nrow(distParam),function(ii){
             distFun<-as.character(distParam[ii,"distFunction"])
             dataName<-as.character(distParam[ii,"dataset"])
-            fun<-get(distFun,envir=globalenv())
-            distMat<-as.matrix(fun(t(dataList[[dataName]])))
-            .checkDistFunction(distMat) #check it here!
+            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE)
+			# fun<-get(distFun,envir=globalenv())
+			#             distMat<-as.matrix(fun(t(dataList[[dataName]])))
+			#             .checkDistFunction(distMat) #check it here!
             return(distMat)
           })
         names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
