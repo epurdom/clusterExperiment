@@ -527,8 +527,8 @@ setClass(
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
 .outputTypes<-c("vector","list")
-#' @rdname 
-#' @export ClusterFunction-class
+#' @rdname ClusterFunction-class
+#' @export 
 internalFunctionCheck<-function(FUN,inputType,algType,outputType){
 	N<-20
 	set.seed(2851)
@@ -596,7 +596,7 @@ setValidity("ClusterFunction", function(object) {
 	
 	
 	if(object@checkFunctions){ #user can skip the check.
-		internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
+#		internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
 		
 	}
 	return(TRUE)

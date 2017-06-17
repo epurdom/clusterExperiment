@@ -6,7 +6,8 @@
 #'   two functions for easier user interface. cluster01 and clusterK are not
 #'   expected to be called directly by the user, except for ease in debugging
 #'   user-defined clustering functions.
-#'
+#' @name clusterD
+#' @aliases clusterD-character-method
 #'
 #' @param x \code{p x n} data matrix on which to run the clustering (samples in
 #'   columns).
