@@ -86,7 +86,8 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	  ##----
 	  ##Cluster part of subsample
 	  ##----
-	 argsClusterList<-switch(input,"X"=list(x=x[,ids,drop=FALSE]), "diss"=list(diss=diss[ids,ids,drop=FALSE]))
+	  	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType,xData=x[,ids,drop=FALSE],dissData=diss[ids,ids,drop=FALSE])
+	 
 	 argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=FALSE))
 	    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
 
@@ -94,11 +95,11 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	  ##Classify part of subsample
 	  ##----
 	    if(classifyMethod=="All"){
-	    argsClassifyList<-switch(inputClassify,"X"=list(x=x), "diss"=list(diss=diss))
+		argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)	 
 		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(result=result)))
 	}
 	    if(classifyMethod=="OutOfSample"){
-	    argsClassifyList<-switch(inputClassify,"X"=list(x=x[,-ids,drop=FALSE]), "diss"=list(diss=diss[-ids,-ids,drop=FALSE]))
+			argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 
 		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(result=result)))
 	      classX<-rep(NA,N)
 	      classX[-ids]<-classElse

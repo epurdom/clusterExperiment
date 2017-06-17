@@ -354,3 +354,15 @@ setGeneric(
     standardGeneric("algorithmType")
   }
 )
+setGeneric(
+  name = "getPostProcessingArgs",
+  def = function(clusterFunction, ...) {
+    standardGeneric("getPostProcessingArgs")
+  }
+)
+setGeneric(
+  name = "clusterD",
+  def = function(clusterFunction, ...) {
+    standardGeneric("clusterD")
+  }
+)

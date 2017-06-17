@@ -97,7 +97,7 @@
 #'
 #' @examples
 #' data(simData)
-#' cl1<-clusterD(simData,clusterFunction="pam",k=3)
+#' cl1<-clusterD(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
 #' cl2<-clusterD(simData,clusterFunction="hierarchical01")
 #' cl3<-clusterD(simData,clusterFunction="tight")
 #' #change distance to manhattan distance
@@ -126,7 +126,6 @@
 #' minSize=5, removeSil=TRUE)
 #' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight", alpha=0.1,
 #' clusterArgs=list(evalClusterMethod="average"))
-#' @importFrom cluster daisy silhouette pam
 #' @export
 setMethod(
   f = "clusterD",
@@ -162,11 +161,13 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
 		input<-"diss"
 	}
+	
 	#-----
 	# Other Checks
 	#-----
 	 reqArgs<-requiredArgs(clusterFunction)
 	 #remove required args not needed if certain postProcessArgs are given:
+	 # don't need define 'k' if choose 'findBestK=TRUE'
 	 if(algorithmType(clusterFunction)=="K" & "findBestK" %in% names(postProcessArgs)){
 		 if(postProcessArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
 	 }
@@ -177,15 +178,13 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	####Run clustering:
 	#######################
 	
+	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss)
+	argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
 	if(algorithmType(clusterFunction)=="01") {
-	 	argsClusterList<-switch(input,"X"=list(x=x), "diss"=list(diss=diss))
-	 	argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=TRUE))
-	    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+	    result<-do.call(clusterFunction@clusterFUN,argsClusterList)
 	}
 	if(algorithmType(clusterFunction)=="K") {
-	 	argsClusterList<-switch(input,"X"=list(x=x), "diss"=list(diss=diss))
-	 	argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=TRUE))
-		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy),passedArgs))
+		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy,diss=diss),postProcessArgs))
 		###Note to self: .postProcessClusterK returns clusters in list form.
 	}
 
@@ -204,11 +203,12 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	}
 	if(format=="vector"){
 			res<-.clusterListToVector(res,N)
-			names(res)<-if(input=="X") colnames(X) else rownames(diss)
+			names(res)<-if(input=="X") colnames(x) else rownames(diss)
 	}
 	if(!returnData) return(res)
 	else return(list(result=res,diss=diss,x=x))
 }
+)
 
 
 
@@ -220,16 +220,19 @@ setMethod(
   signature = c("character"),
   definition = function(clusterFunction) {
   	switch(algorithmType(clusterFunction),"01"=.argsPostCluster01,"K"=.argsPostClusterK)
+}
 )
 
 .argsPostCluster01<-c("")
 .argsPostClusterK<-c("findBestK","kRange","removeSil","silCutoff")
 
-.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy)
+#' @importFrom cluster silhouette
+.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
 {
+  doPostProcess<-findBestK | removeSil #whether will calculate silhouette or not; if not, speeds up the function... 
   k<-clusterArgs[["k"]]
-  D<-diss
   if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
+  if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
   if(findBestK){
     if(missing(kRange)){
       if(!is.null(k)) kRange<-(k-2):(k+20)
@@ -239,48 +242,58 @@ setMethod(
       kRange<-kRange[kRange>=2]
       if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
     }
+	ks<-kRange 
   }
-  if(findBestK) ks<-kRange else ks<-k
-  if(any(ks>= nrow(D))) ks<-ks[ks<nrow(D)]
-  	clusters<-lapply(ks,FUN=function(currk){
+  else ks<-k
+  if(any(ks>= N)) ks<-ks[ks<N]
+  clusters<-lapply(ks,FUN=function(currk){
 		cl<-do.call(clusterFunction@clusterFUN,c(list(k=currk),clusterArgs))
 		if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
 		return(cl)
 	})
-  silClusters<-lapply(clusters,function(cl){
-    silhouette(cl,dmatrix=D)
-  })
-  if(length(ks)>1){
-    whichBest<-which.max(sapply(silClusters, mean))
-    finalCluster<-clusters[[whichBest]]
-    sil<-silClusters[[whichBest]][,"sil_width"]
-  }
-  else{
-    finalCluster<-clusters[[1]]
-    sil<-silClusters[[1]][,"sil_width"]
-  }
-  if(removeSil){
-    cl<-as.numeric(sil>silCutoff)
-    cl[cl==0]<- -1
-    cl[cl>0]<-finalCluster[cl>0]
-    sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
-  }
-  else{
-    cl<-finalCluster
-  }
+	if(doPostProcess){
+	    silClusters<-lapply(clusters,function(cl){
+	      cluster::silhouette(cl,dmatrix=diss)
+	    })
+	    if(length(ks)>1){
+	      whichBest<-which.max(sapply(silClusters, mean))
+	      finalCluster<-clusters[[whichBest]]
+	      sil<-silClusters[[whichBest]][,"sil_width"]
+	    }
+	    else{
+	      finalCluster<-clusters[[1]]
+	      sil<-silClusters[[1]][,"sil_width"]
+	    }
+	    if(removeSil){
+	      cl<-as.numeric(sil>silCutoff)
+	      cl[cl==0]<- -1
+	      cl[cl>0]<-finalCluster[cl>0]
+	      sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
+	    }
+	    else{
+	      cl<-finalCluster
+	    }
+	}
+	else{
+		cl<-clusters[[1]]
+	}
+  
   
   #make list of indices and put in order of silhouette width (of positive)
   clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
-  if(orderBy=="best"){
-	  clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
-	  clList[order(clAveWidth,decreasing=TRUE)]
+  if(doPostProcess){
+	  if(orderBy=="best"){
+		  clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
+		  clList[order(clAveWidth,decreasing=TRUE)]
+	  }
+	  #remove -1 group
+	  if(removeSil){
+	    whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
+	    if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
+	    if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
+	  }
   }
-  #remove -1 group
-  if(removeSil){
-    whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
-    if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
-    if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
-  }
+
   return(clList)
   
 }

@@ -1,3 +1,5 @@
+#' @include internalFunctions.r
+
 ### input to clustering:
 # pam : x or dis
 # hier : dis
@@ -14,13 +16,22 @@
     distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
     apply(distMat,1,which.min)	
 }
+.getPassedArgs<-function(FUN,passedArgs,checkArgs){
+    funArgs<-names(as.list(args(FUN)))
+	funName<-tail(as.character(substitute(FUN)),1)
+    if(any(wh<-!names(passedArgs) %in% funArgs)){
+      passedArgs<-passedArgs[-which(wh)]
+      if(checkArgs) warning(paste("arguments passed via to clustering function",funName,"not all applicable (should only be arguments to,", funName,"). Extra arguments will be ignored"))
+    }
+	return(passedArgs)
+}
 
 ##---------
 ##Kmeans
 ##---------
+#' @importFrom stats kmeans
 .kmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
-	passedArgs<-list(...)
-    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=passedArgs,checkArgs=checkArgs)
+    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
 	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
   if(cluster.only) return(out$cluster)
   else return(.kmeansPartitionObject(x,out)) 
@@ -30,6 +41,7 @@
   suppressWarnings(stats::kmeans(t(x), centers, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
 } 
 #make partition object same form as pam output
+#' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
   dissE<-(cluster::daisy(t(x)))^2
   silObj<-cluster::silhouette(kmeansObj$cl,dissE^2)
@@ -42,11 +54,11 @@
 ##PAM
 ##---------
 
+#' @importFrom cluster pam
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
-	passedArgs<-list(...)
-      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=passedArgs,checkArgs=checkArgs)
+      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
 	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
-	  if(input=="X") return(do.call(cluster::pam, c(list(x=x,k=k, cluster.only=cluster.only), passedArgs)))
+	  if(input=="X") return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
       if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=D,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     }
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
@@ -58,13 +70,15 @@
 ##Hiearchical01
 ##---------
 
+#' @importFrom stats hclust 
+#' @importFrom phylobase rootNode getNode descendants
 .hier01Cluster<-function(diss,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
 {
 	if(!cluster.only) stop("Internal Coding Error: .hier01Cluster doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
     whichHierDist<-match.arg(whichHierDist)
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(diss))) rownames(diss)<-colnames(diss)<-as.character(1:nrow(diss))
-	passedArgs<-list(...)     	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,checkArgs=checkArgs)
+	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
 	S<-round(1-diss,10)
 	d<-switch(whichHierDist,"dist"=dist(S),"as.dist"=as.dist(diss))
 	hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))
@@ -110,11 +124,12 @@
 ##---------
 ##hiearchicalK
 ##---------
+#' @importFrom stats hclust cutree
 .hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
 	if(!cluster.only) stop("Internal Coding Error: .hierarchicalK doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
-	passedArgs<-list(...)     	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,checkArgs=checkArgs)
+	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
     hclustOut<-do.call(stats::hclust,c(list(d=as.dist(D)),passedArgs))
-    cutree(hclustOut,k)
+    stats::cutree(hclustOut,k)
 }
 .hierKCF<-clusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
 

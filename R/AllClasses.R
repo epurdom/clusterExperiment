@@ -518,7 +518,8 @@ setClass(
   		inputClassifyType = "character",
 		classifyFUN="functionOrNULL",
 		outputType = "character",
-		requiredArgs= "character"
+		requiredArgs= "character",
+		checkFunctions="logical"
   	)
 )
 .inputTypes<-c("X","diss","either")
@@ -526,6 +527,35 @@ setClass(
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
 .outputTypes<-c("vector","list")
+#' @rdname 
+#' @export ClusterFunction-class
+internalFunctionCheck<-function(FUN,inputType,algType,outputType){
+	N<-20
+	set.seed(2851)
+	x<-matrix(rnorm(N*3),ncol=N,nrow=3)
+	set.seed(2851)
+	diss<-matrix(runif(N^2,min=0,max=0.5),ncol=N,nrow=N)
+	diss<-diss + t(diss)
+	diag(diss)<-0
+	if(algType=="01") argList<-list(alpha=.5)	
+	if(algType=="K") argList<-list(k=2)	
+	argList<-c(argList,list(cluster.only=TRUE,checkArgs=FALSE))
+	if(inputType %in% c("X")){
+		test<-do.call(FUN,c(list(x=x),argList))
+	}
+	if(inputType %in% c("diss")){
+		test<-do.call(FUN,c(list(diss=diss),argList))
+	}
+	if(outputType=="vector"){
+		if(length(test)!=length(N)) return("clusterFUN does not return a vector equal to the number of observations")
+	}
+	if(inputType %in% c("either")){
+		test1<-do.call(FUN,c(list(x=x,diss=NULL),argList))
+		test2<-do.call(FUN,c(list(x=NULL,diss=diss),argList))
+		test3<-do.call(FUN,c(list(x=x,diss=diss),argList))
+		if(outputType=="vector" & length(test1)!=length(N) || length(test2)!=length(N) || length(test3)!=length(N)) return("clusterFUN does not return a vector equal to the number of observations")
+	}
+}
 
 .checkHasArgs<-function(FUN,requiredArgs){
     funArgs<-names(as.list(args(FUN)))
@@ -547,7 +577,7 @@ setValidity("ClusterFunction", function(object) {
     if(!is.null(object@classifyFUN) & is.na(object@inputClassifyType)) {
       return("Must define inputClassifyType if define classifyFUN.")
     }
-	if(!object@inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+	if(!is.null(object@classifyFUN) & !object@inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
     #----
 	# algorithmType
 	#----
@@ -565,9 +595,11 @@ setValidity("ClusterFunction", function(object) {
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
 	
 	
-	###Need to add checks that functions return format expected by giving them toy data??
-	###Some functions might have issue with small data?
-    return(TRUE)
+	if(object@checkFunctions){ #user can skip the check.
+		internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
+		
+	}
+	return(TRUE)
   })
 
 #' @description The constructor \code{clusterFunction} creates an object of
@@ -594,7 +626,7 @@ setGeneric(
 setMethod(
 	f = "clusterFunction",
 	signature = signature("function"),
-	definition = function(clusterFUN, inputType,outputType,algorithmType,inputClassifyType,requiredArgs=NA_character_,classifyFUN=NULL){
+	definition = function(clusterFUN, inputType,outputType,algorithmType,inputClassifyType=NA_character_,requiredArgs=NA_character_,classifyFUN=NULL,checkFunctions=TRUE){
 		out <- new("ClusterFunction",
 	         clusterFUN=clusterFUN,
 	         inputType=inputType,
@@ -602,7 +634,8 @@ setMethod(
 			 inputClassifyType=inputClassifyType,
 			 classifyFUN=classifyFUN,
 			 outputType=outputType,
-			 requiredArgs=requiredArgs
+			 requiredArgs=requiredArgs,
+			 checkFunctions=checkFunctions
 			 )
 		validObject(out)
 		return(out)
