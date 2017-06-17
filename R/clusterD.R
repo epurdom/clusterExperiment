@@ -1,11 +1,8 @@
 #' @title Cluster distance matrix from subsampling
 #'
-#' @description Given a \code{n x n} matrix of distances, these functions will
-#'   try to find the clusters based on the given clustering function. cluster01
-#'   and clusterK are internal functions and clusterD is a wrapper around these
-#'   two functions for easier user interface. cluster01 and clusterK are not
-#'   expected to be called directly by the user, except for ease in debugging
-#'   user-defined clustering functions.
+#' @description Given input data, this function will
+#'   try to find the clusters based on the given ClusterFunction object. 
+
 #' @name clusterD
 #' @aliases clusterD-character-method
 #'
@@ -13,53 +10,25 @@
 #'   columns).
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples
 #'   on which to run the clustering
-##' @param clusterFunction clusterFunction a function that clusters a nxn matrix
-#'   of dissimilarities/distances. Can also be given character values to
-#'   indicate use of internal wrapper functions for default methods. See Details
-#'   for the format of what the function must take as arguments and what format
-#'   the function must return.
-#' @param typeAlg character value of either '01' or 'K' determining whether the
-#'   function given in clusterFunction should be called by clusterK or
-#'   cluster01. Only used if clusterFunction is a user-defined function.
-#'   Otherwise, for methods provided by the package (i.e. by user setting
-#'   clusterFunction to a character value) clusterD will determine the
-#'   appropriate input for 'typeAlg' and will ignore user input.
 #' @param distFunction a distance function to be applied to \code{D}. Only relevant if
 #'   input \code{D} is a matrix of data, rather than a distance. See details.
 #' @param minSize the minimum number of samples in a cluster. Clusters found
 #'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
 #' @param orderBy how to order the cluster (either by size or by maximum alpha
-#'   value).
+#'   value). If orderBy="size" the numbering of the clusters are reordered by
+#'   the size of the cluster, instead of by the internal ordering of the
+#'   \code{clusterFUN} defined in the \code{ClusterFunction} object (an internal ordering is only possible if slot \code{outputType} of the \code{ClusterFunction} is \code{"list"}).
 #' @param format whether to return a list of indices in a cluster or a vector of
 #'   clustering assignments. List is mainly for compatibility with sequential
 #'   part.
-#' @param clusterArgs arguments to be passed directly to the clusterFunction,
-#'   beyond the required input.
-#' @param alpha a cutoff value of how much similarity needed for drawing blocks
-#'   (lower values more strict).
-#' @param findBestK logical, whether should find best K based on average
-#'   silhouette width (only used if clusterFunction of type "K").
-#' @param k single value to be used to determine how many clusters to find, if
-#'   findBestK=FALSE (only used if clusterFunction of type "K").
-#' @param kRange vector of integers. If findBestK=TRUE, this gives the range of
-#'   k's to look over. Default is k-2 to k+20, subject to those values being
-#'   greater than 2. Note that default values depend on the input k, so running
-#'   for different choices of k and findBestK=TRUE can give different answers
-#'   unless kRange is set to be the same.
-#' @param silCutoff Requirement on minimum silhouette width to be included in
-#'   cluster (only if removeSil=TRUE).
-#' @param removeSil logical as to whether remove when silhouette < silCutoff
-#'   (only used if clusterFunction of type "K")
+#' @param clusterArgs arguments to be passed directly to the \code{clusterFUN} slot of the \code{ClusterFunction} object
 #' @param checkArgs logical as to whether should give warning if arguments given
 #'   that don't match clustering choices given. Otherwise, inapplicable
 #'   arguments will be ignored without warning.
-#' @param returnData logical as to whether to return the D matrix in output.
-#' @param ... arguments given to clusterD to be passed to cluster01 or clusterK
-#'   (depending on the value of typeAlg). Examples include 'k' for clusterK or
-#'   'alpha' for cluster01. These should not be the arguments needed by
-#'   clusterFunction (which should be passed via the argument 'clusterArgs') but
-#'   the actual arguments of cluster01 or clusterK.
+#' @param returnData logical as to whether to return the \code{diss} or \code{x} matrix in the output. If \code{FALSE} only the clustering vector is returned.
+#' @param ... arguments passed to the post-processing steps of the clustering. The available post-processing arguments for a \code{ClusterFunction} object depend on it's algorithm type and can be found by calling \code{getPostProcessingArgs}. See details below for documentation.
+#' @inherits subsampleClustering
 #' @details To provide a distance matrix via the argument \code{distFunction},
 #'     the function must be defined to take the distance of the rows of a matrix
 #'     (internally, the function will call \code{distFunction(t(x))}. This is to
@@ -74,27 +43,9 @@
 #'     as the distance function. For type "01", the default is to take the
 #'     (1-cor(x))/2.
 #'
-#' @details cluster01 and
-#'   clusterK are given as separate functions in order to allow the user to
-#'   provide different clustering functions that expect different types of input
-#'   and for us to provide different shared processing of the results that is
-#'   different for these different types of clustering methods (for example,
-#'   removing low silhouette values is appropriate for clusterK clustering
-#'   functions rather than cluster01 functions). 
 #' @return clusterD returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
-#'   than minSize are removed. If orderBy="size" the clusters are reordered by
-#'   the size of the cluster, instead of by the internal ordering of the
-#'   clusterFunction.
-#'
-#' @return cluster01 and clusterK return a list of indices of the clusters found,
-#'   which each element of the list corresponding to a cluster and the elements
-#'   of that list a vector of indices giving the indices of the samples assigned
-#'   to that cluster. Indices not included in any list are assumed to have not
-#'   been clustered. The list is assumed to be ordered in terms of the `best'
-#'   cluster (as defined by the clusterFunction for cluster01 or by average
-#'   silhoute for clusterK), for example in terms of most internal similarity of
-#'   the elements, or average silhouette width.
+#'   than minSize are removed. 
 #'
 #' @examples
 #' data(simData)
@@ -215,6 +166,18 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 
 #' @rdname clusterD
 #' @aliases getPostProcessingArgs
+#' @details Post-processing Arguments: For post-processing the clustering, currently only type 'K' algorithms have a defined post-processing. Specifically
+#' \itemize{
+#'  \item{"findBestK"}{logical, whether should find best K based on average
+#'   silhouette width (only used if clusterFunction of type "K").}
+#'  \item{"kRange"}{vector of integers to try for k values if findBestK=TRUE. If \code{k} is given in \code{clusterArgs}, then default is k-2 to k+20, subject to those values being
+#'   greater than 2; if not the default is \code{2:20}. Note that default values depend on the input k, so running
+#'   for different choices of k and findBestK=TRUE can give different answers
+#'   unless kRange is set to be the same.}
+#'  \item{"removeSil"}{logical as to whether remove the assignment of a sample to a cluster when the sample's silhouette value is less than \code{silCutoff}}
+#'  \item{"silCutoff"}{Cutoff on the minimum silhouette width to be included in
+#'   cluster (only used if removeSil=TRUE).}
+#' }
 #' @export
 setMethod(
   f = "getPostProcessingArgs",

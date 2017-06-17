@@ -1,6 +1,6 @@
 #' Cluster subsamples of the data
 #'
-#' Given a data matrix, this function will subsample the samples, cluster the subsamples, and return a \code{n x n} matrix with the
+#' Given input data, this function will subsample the samples, cluster the subsamples, and return a \code{n x n} matrix with the
 #' probability of co-occurance.
 #' @name subsampleClustering
 #' @aliases subsampleClustering-character-method

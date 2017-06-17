@@ -205,7 +205,7 @@
 #########
 ## Put them together so user/code can access easily
 #########
-.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hiearchical01"=.hier01CF,"hiearchicalK"=.hierKCF,"tight"=.tightCF)
+.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF)
 
 #' @title Built in ClusterFunction options 
 #' @description Documents the built-in clustering options that are available in the clusterExperiment package. 
