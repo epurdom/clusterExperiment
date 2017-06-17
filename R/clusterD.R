@@ -50,34 +50,34 @@
 #' @examples
 #' data(simData)
 #' cl1<-clusterD(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
-#' cl2<-clusterD(simData,clusterFunction="hierarchical01")
-#' cl3<-clusterD(simData,clusterFunction="tight")
+#' cl2<-clusterD(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
+#' cl3<-clusterD(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
 #' #change distance to manhattan distance
-#' cl4<-clusterD(simData,clusterFunction="pam",k=3,
+#' cl4<-clusterD(simData,clusterFunction="pam",clusterArgs=list(k=3),
 #'      distFunction=function(x){dist(x,method="manhattan")})
 #' 
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
-#' clustSubHier <- clusterD(simData, clusterFunction="hierarchical01", alpha=0.1,
-#' minSize=5, clusterArgs=list(evalClusterMethod="average", method="single"))
+#' clustSubHier <- clusterD(simData, clusterFunction="hierarchical01",
+#' minSize=5, clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
 #'
 #' #do tight
-#' clustSubTight <- clusterD(simData, clusterFunction="tight", alpha=0.1,
+#' clustSubTight <- clusterD(simData, clusterFunction="tight", clusterArgs=list(alpha=0.1),
 #' minSize=5)
 #'
 #' #two twists to pam
 #' clustSubPamK <- clusterD(simData, clusterFunction="pam", silCutoff=0, minSize=5,
-#' removeSil=TRUE, k=3)
+#' removeSil=TRUE, clusterArgs=list(k=3))
 #' clustSubPamBestK <- clusterD(simData, clusterFunction="pam", silCutoff=0,
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
 #' # note that passing the wrong arguments for an algorithm results in warnings
 #' # (which can be turned off with checkArgs=FALSE)
-#' clustSubTight_test <- clusterD(simData, clusterFunction="tight", alpha=0.1,
-#' minSize=5, removeSil=TRUE)
-#' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight", alpha=0.1,
-#' clusterArgs=list(evalClusterMethod="average"))
+#' clustSubTight_test <- clusterD(simData, clusterFunction="tight",
+#' clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
+#' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight",
+#' clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
 #' @export
 setMethod(
   f = "clusterD",
@@ -133,7 +133,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss)
 	argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
 	if(algorithmType(clusterFunction)=="01") {
-	    result<-do.call(clusterFunction@clusterFUN,argsClusterList)
+	    res<-do.call(clusterFunction@clusterFUN,argsClusterList)
 	}
 	if(algorithmType(clusterFunction)=="K") {
 		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy,diss=diss),postProcessArgs))
@@ -181,7 +181,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 #' @export
 setMethod(
   f = "getPostProcessingArgs",
-  signature = c("character"),
+  signature = c("ClusterFunction"),
   definition = function(clusterFunction) {
   	switch(algorithmType(clusterFunction),"01"=.argsPostCluster01,"K"=.argsPostClusterK)
 }

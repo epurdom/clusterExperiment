@@ -42,7 +42,7 @@ be called.}
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with [i,j] entries equal to the percentage of subsamples where the ith and jth sample were clustered into the same cluster. The percentage is only out of those subsamples where the ith and jth samples were both assigned to a clustering. If \code{classifyMethod=="All"}, this is all subsamples for all i,j pairs. But if \code{classifyMethod=="InSample"} or \code{classifyMethod=="OutOfSample"}, then the percentage is only taken on those subsamples where the ith and jth sample were both in or out of sample, respectively, relative to the subsample.
 }
 \description{
-Given a data matrix, this function will subsample the samples, cluster the subsamples, and return a \code{n x n} matrix with the
+Given input data, this function will subsample the samples, cluster the subsamples, and return a \code{n x n} matrix with the
 probability of co-occurance.
 }
 \details{

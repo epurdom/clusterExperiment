@@ -72,22 +72,13 @@ type '01' (either 'tight' or 'hierarchical01'). Determines tightness
 required in creating clusters from the dissimilarity matrix. Takes on
 values in [0,1]. See \code{\link{clusterD}}.}
 
-\item{findBestK}{logical, whether should find best K based on average
-silhouette width (only used if clusterFunction of type "K").}
-
 \item{sequential}{logical whether to use the sequential strategy (see
 details of \code{\link{seqCluster}}).}
-
-\item{removeSil}{logical as to whether remove when silhouette < silCutoff
-(only used if clusterFunction of type "K")}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance function will be determined by argument
 \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
-
-\item{silCutoff}{Requirement on minimum silhouette width to be included in
-cluster (only if removeSil=TRUE).}
 
 \item{distFunction}{a vector of character strings that are the names of 
 distance functions found in the global environment. See the help pages of
