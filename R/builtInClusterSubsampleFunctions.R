@@ -31,10 +31,10 @@
 ##---------
 #' @importFrom stats kmeans
 .kmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
-    passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
-	  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
+  passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
+  out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
   if(cluster.only) return(out$cluster)
-  else return(.kmeansPartitionObject(x,out)) 
+  else return(.kmeansPartitionObject(t(x),out)) 
 } 
 .kmeansClassify <- function(x, clusterResult) { 
   centers <- clusterResult$mediods
@@ -49,6 +49,7 @@
   return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }
 .kmeansCF<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+#internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
 
 ##---------
 ##PAM
@@ -59,12 +60,14 @@
       passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
 	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
 	  if(input=="X") return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
-      if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=D,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+      if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     }
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
   .genericClassify(x,clusterResult$medoids)
 } 
 .pamCF<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
+
+#internalFunctionCheck(.pamCluster,inputType="either",algType="K",outputType="vector")
 
 ##---------
 ##Hiearchical01
@@ -128,10 +131,12 @@
 .hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
 	if(!cluster.only) stop("Internal Coding Error: .hierarchicalK doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
 	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
-    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(D)),passedArgs))
+    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
     stats::cutree(hclustOut,k)
 }
 .hierKCF<-clusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
+
+#internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
 
 ##---------

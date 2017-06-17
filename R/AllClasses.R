@@ -527,9 +527,28 @@ setClass(
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
 .outputTypes<-c("vector","list")
+# setGeneric(
+#   name = "internalFunctionCheck",
+#   def = function(FUN, ...) {
+#     standardGeneric("internalFunctionCheck")
+#   }
+# )
+# #' @rdname ClusterFunction-class
+# #' @export
+# setMethod(
+#   f = "internalFunctionCheck",
+#   signature = c("function"),
+#   definition =
+
 #' @rdname ClusterFunction-class
-#' @export 
+#' @export
+#' @examples
+#' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){pam(x=t(x),k=k)}
+#' internalFunctionCheck(goodFUN,inputType="either",algType="K",outputType="vector")
+#' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){pam(x=x,k=k)}
+#' internalFunctionCheck(badFUN,inputType="either",algType="K",outputType="vector")
 internalFunctionCheck<-function(FUN,inputType,algType,outputType){
+	#--- Make small data
 	N<-20
 	set.seed(2851)
 	x<-matrix(rnorm(N*3),ncol=N,nrow=3)
@@ -537,25 +556,37 @@ internalFunctionCheck<-function(FUN,inputType,algType,outputType){
 	diss<-matrix(runif(N^2,min=0,max=0.5),ncol=N,nrow=N)
 	diss<-diss + t(diss)
 	diag(diss)<-0
+	#--- Set parameters
 	if(algType=="01") argList<-list(alpha=.5)	
 	if(algType=="K") argList<-list(k=2)	
 	argList<-c(argList,list(cluster.only=TRUE,checkArgs=FALSE))
+	#--- Run function on small data
 	if(inputType %in% c("X")){
-		test<-do.call(FUN,c(list(x=x),argList))
+		test<-try(do.call(FUN,c(list(x=x),argList)),silent=TRUE)
+		if(inherits(test,"try-error")) return(paste("function test fails with input X",test[1]))
 	}
 	if(inputType %in% c("diss")){
-		test<-do.call(FUN,c(list(diss=diss),argList))
-	}
-	if(outputType=="vector"){
-		if(length(test)!=length(N)) return("clusterFUN does not return a vector equal to the number of observations")
+		test<-try(do.call(FUN,c(list(diss=diss),argList)),silent=TRUE)
+		if(inherits(test,"try-error")) return(paste("function test fails with input diss",test[1]))
 	}
 	if(inputType %in% c("either")){
-		test1<-do.call(FUN,c(list(x=x,diss=NULL),argList))
-		test2<-do.call(FUN,c(list(x=NULL,diss=diss),argList))
-		test3<-do.call(FUN,c(list(x=x,diss=diss),argList))
-		if(outputType=="vector" & length(test1)!=length(N) || length(test2)!=length(N) || length(test3)!=length(N)) return("clusterFUN does not return a vector equal to the number of observations")
+		test1<-try(do.call(FUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
+		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss",test1[1]))
+		test2<-try(do.call(FUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
+		if(inherits(test2,"try-error")) return(paste("function test fails with input diss and NULL x",test2[1]))
+		test3<-try(do.call(FUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
+		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input",test3[1]))
+		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("FUN does not return a vector equal to the number of observations")
 	}
+	else{
+		if(outputType=="vector"){
+			if(length(test)!=N) return("FUN does not return a vector equal to the number of observations")
+		}
+	}
+	return(TRUE)
 }
+
+#)
 
 .checkHasArgs<-function(FUN,requiredArgs){
     funArgs<-names(as.list(args(FUN)))
@@ -596,7 +627,8 @@ setValidity("ClusterFunction", function(object) {
 	
 	
 	if(object@checkFunctions){ #user can skip the check.
-#		internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
+		out<-internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
+		if(!is.logical(out) || !out) return(out)
 		
 	}
 	return(TRUE)

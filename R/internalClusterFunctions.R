@@ -21,6 +21,7 @@
     }
     return(clust.id)
 }
+#Note, only returns 'both' if inputType is not given...otherwise picks
 .checkXDissInput<-function(x,diss,inputType=NA,algType,checkDiss=TRUE){
   if(is.null(x) & is.null(diss)) stop("must give either x or diss argument")
   #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
