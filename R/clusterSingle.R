@@ -69,23 +69,79 @@
 #' #use clusterSingle to do just clustering k=3 with no subsampling
 #' clustNothing <- clusterSingle(simData, clusterFunction="pam",
 #' subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=3))
-#' @export
 #' @aliases clusterSingle clusterSingle-methods clusterSingle,matrix-method
 #'   clusterSingle,ClusterExperiment-method clusterSingle,matrix,missing-method
 #'   clusterSingle,matrixOrMissing,matrixOrMissing-method
 #' @rdname clusterSingle
+#' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing"),
-  definition = function(x, diss,subsample=TRUE, sequential=FALSE,
-      clusterFunction=c("tight", "hierarchical01", "pam","hierarchicalK"),
-      clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
+  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing",clusterFunction="character"),
+  definition = function(x, diss,clusterFunction,...) {
+    	clusterSingle(x=x,diss=diss,clusterFunction=getBuiltInClusterFunction(clusterFunction),...)
+ 
+})
+  
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "SummarizedExperiment", diss="missing"),
+  definition = function(x, ...) {
+    outval <- clusterSingle(assay(x),  ...)
+    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
+    return(retval)
+  }
+)
+
+
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "ClusterExperiment", diss="missing"),
+  definition = function(x, ...) {
+
+    outval <- clusterSingle(assay(x),...)
+    
+    ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
+    retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
+    return(retval)
+  }
+)
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing",clusterFunction="ClusterFuntion"),
+  definition = function(x, diss,clusterFunction,subsample=TRUE, sequential=FALSE,
+      clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
-      ndims=NA,clusterLabel="clusterSingle") {
+      ndims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
     if(missing(x)) x<-NULL
     if(missing(diss)) diss<-NULL
-    input<-.checkXDissInput(x,diss)
-    if(input %in% c("X","both")){
+	#Following input commands will return only X or Diss because gave the inputType argument...
+	input<-.checkXDissInput(x,diss,inputType=inputType(clusterFunction),algType=algorithmType(clusterFunction),checkDiss=checkDiss)
+    algType<-algorithmType(clusterFunction)
+	
+	#check if clusterFunction given by subsampleClustering args
+	if(subsample){
+		if("clusterFunction" %in% names(subsampleArgs)){
+			subsampleCF<-subsampleArgs[["clusterFunction"]
+	    	subsampleAlgType<-algorithmType(subsampleCF)
+		
+			inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
+			diffSubsampleCF<-TRUE
+		}
+		else subsampleCF<-NULL
+		# else{
+		# 	subsampleCF<-clusterFunction
+		# 	inputSubsample<-input
+		# 	diffSubsampleCF<-FALSE
+		# }
+	
+	}
+    if(input %in% c("X")){
       origX <- x #ngenes x nsamples
       ##########
       ##transformation to data x that will be input to clustering
@@ -103,7 +159,6 @@ setMethod(
                              dimReduce=dimReduce, transFun=transFun,
                              isCount=isCount)
       x <- transObj$x
-      #browser()
       if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
         stop("Error in the internal transformation of x")
       }
@@ -112,44 +167,92 @@ setMethod(
       
     }
     else{
-      mess<-"input to clusterSingle includes the original data matrix x"
-      if(subsample) stop("subsampling can only be done if",mess)
-      if(dimReduce!="none") stop("dimReduce only applies when",mess)
+      if(dimReduce!="none") stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
+	  N<-nrow(diss)
     }
     if(input %in% c("both","diss") && !is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs)){
         if(!is.na(clusterDArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in clusterDArgs")
     }
+	
     ##########
-    ##Checks that arguments make sense:
+    ##Checks arguments and set defaults as needed:
     ##########
-    if(!is.function(clusterFunction)){
-      clusterFunction <- match.arg(clusterFunction)
-      typeAlg <- .checkAlgType(clusterFunction)
-    }
-    else{
-      if(is.null(clusterDArgs) || (! "typeAlg" %in% names(clusterDArgs)))
-        stop("if you provide your own clustering algorithm to be passed to  clusterD, then you must specify 'typeAlg' in clusterDArgs")
-      else typeAlg <- clusterDArgs[["typeAlg"]]
-    }
-    if(typeAlg == "K"){
+    if(algType == "K"){
       if("findBestK" %in% names(clusterDArgs) & !subsample & sequential){
         if(clusterDArgs[["findBestK"]])
           stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
       }
+    }
+    if(sequential){
+	  #if sequential, will run seqCluster
+      if(is.null(seqArgs)) {
+		  ##To DO:
+		  #Question: if missing seqArgs, should we grab k0 from subsampleArgs?
+        stop("if sequential=TRUE, must give seqArgs so as to identify k0")
+      }
+      if(!"k0"%in%names(seqArgs)) {
+        stop("seqArgs must contain element 'k0'")
     }
     if(subsample){ 
         if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
             warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
             clusterDArgs[["distFunction"]]<-NA
         }
+		##------
+		##Check generic required args to determine whether should 'borrow' those args from clusterDArgs.
+		## only if not sequential because sequential sets k for the subsampling via k0
+		##------
+		if(!sequential & "clusterArgs" %in% names(clusterDArgs)){
+			clusterDReqArgs<-requiredArgs(clusterFunction)
+			clusterDReqArgs<-clusterDReqArgs[clusterDReqArgs%in%clusterDArgs[["clusterArgs"]]]
+			#find required args, either from subsampleCF if exists or clusterFunction
+			if(!is.null(subsampleCF) && algorithmType(subsampleCF)==algorithmType(clusterFunction)){
+				subPassedReqArgs<-requiredArgs(subsampleCF) 
+			}
+			else{ 
+				subPassedReqArgs<-requiredArgs(clusterFunction)
+			}
+			if(!is.null(subsampleArgs) && "clusterArgs" %in% names(subsampleArgs)){
+				#check if existing clusterArgs has required names already
+				#if not, give them those of clusterD if exist.
+				if(!all(subPassedReqArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
+					missingArgs<-subPassedReqArgs[!subPassedReqArgs%in%names(subsampleArgs[["clusterArgs"]])]
+					missingArgs<-missingArgs[missingArgs%in%clusterDReqArgs]
+    				subsampleArgs[["clusterArgs"]][missingArgs]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
+			    }
+			} 	
+			else{
+				subsampleArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
+			}
+		}
+
+		##To DO:
+		# #Need to consider whether to include these type of warnings or let them be caught later:
+		# Messages will be confusing if not done here
+		#                             warning("did not give 'k' in 'subsampleArgs'.
+		#                     Set to 'k' argument in 'clusterDArgs'")
+		#             stop("if not sequential and do subsampling,
+		#                  must pass 'k' in subsampleArgs")
+		#
+		
     }
+	##To DO:
+	# Similarly, consider whether should do these checks previously had, or just let internal functions.
+	# Messages will be confusing if not done here. Maybe best is to make those be good messages!
+    # else if(algType=="K" && !is.null(clusterDArgs) && !"k" %in% names(clusterDArgs)){
+    #   #if don't specify k, then must have findBestK=TRUE in clusterDArgs;
+    #   #is by default, so only need to check that if specified it,
+    #   #set it to TRUE
+    #   if("findBestK" %in% names(clusterDArgs) && !clusterDArgs[["findBestK"]])
+    #     stop("if not sequential and clusterFunction is of type 'K' (e.g. pam)
+    #          and findBestK=FALSE in clusterDArgs, must pass 'k' via
+    #          clusterDArgs list")
+    # }
+	
+	##########
+	## Start running clustering
+	##########
     if(sequential){
-      if(is.null(seqArgs)) {
-        stop("must give seqArgs so as to identify k0")
-      }
-      if(!"k0"%in%names(seqArgs)) {
-        stop("seqArgs must contain element 'k0'")
-      }
       outlist <- do.call("seqCluster",
                         c(list(x=x, diss=diss,subsample=subsample,
                                subsampleArgs=subsampleArgs,
@@ -157,39 +260,13 @@ setMethod(
                                clusterFunction=clusterFunction), seqArgs))
     }
     else{
-      if(subsample){
-        if(is.null(subsampleArgs) || !("k" %in% names(subsampleArgs))){
-          if(!is.null(clusterDArgs) && ("k" %in% names(clusterDArgs))){
-            #give by default the clusterDArgs to subsampling.
-            warning("did not give 'k' in 'subsampleArgs'.
-                    Set to 'k' argument in 'clusterDArgs'")
-            if(is.null(subsampleArgs))
-              subsampleArgs <- list("k"=clusterDArgs[["k"]])
-            else
-              subsampleArgs[["k"]] <- clusterDArgs[["k"]]
-          }
-          else
-            stop("if not sequential and do subsampling,
-                 must pass 'k' in subsampleArgs")
-        }
-      }
-      else if(typeAlg=="K" && !is.null(clusterDArgs) && !"k" %in% names(clusterDArgs)){
-        #if don't specify k, then must have findBestK=TRUE in clusterDArgs;
-        #is by default, so only need to check that if specified it,
-        #set it to TRUE
-        if("findBestK" %in% names(clusterDArgs) && !clusterDArgs[["findBestK"]])
-          stop("if not sequential and clusterFunction is of type 'K' (e.g. pam)
-               and findBestK=FALSE in clusterDArgs, must pass 'k' via
-               clusterDArgs list")
-      }
       ##########
-      ##Actually run the clustering. .clusterWrapper just deciphers choices and makes clustering.
+      ##.clusterWrapper just deciphers choices and makes clustering.
       ##########
       finalClusterList <- .clusterWrapper(x=x, diss=diss, clusterFunction=clusterFunction,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
-                                          clusterDArgs=clusterDArgs,
-                                          typeAlg=typeAlg)
+                                          clusterDArgs=clusterDArgs)
       outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$results, N))
 
     }
@@ -225,42 +302,15 @@ setMethod(
 
   }
 )
-
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
-  signature = signature(x = "SummarizedExperiment", diss="missing"),
-  definition = function(x, ...) {
-    outval <- clusterSingle(assay(x),  ...)
-    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
-    return(retval)
-  }
-)
-
-
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
-  signature = signature(x = "ClusterExperiment", diss="missing"),
-  definition = function(x, ...) {
-
-    outval <- clusterSingle(assay(x),...)
-    
-    ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
-    retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
-    return(retval)
-  }
-)
-
-
 #wrapper that calls the clusterSampling and clusterD routines in reasonable order.
+#called by both seqCluster and clusterSingle
 .clusterWrapper <- function(x, diss, subsample, clusterFunction,clusterDArgs=NULL,
-                            subsampleArgs=NULL,typeAlg) 
+                            subsampleArgs=NULL) 
 {
     if(subsample){
-        if(is.null(subsampleArgs) || !"k" %in% names(subsampleArgs)) stop("must provide k in 'subsampleArgs' (or if sequential should have been set by sequential strategy)")
+		# ##To DO: Need to revisit why this was here.
+		# #not clear why need this check...
+		#         if(is.null(subsampleArgs) || is.null(subsampleArgs[["clusterArgs"]]) || !"k" %in% names(subsampleArgs[["clusterArgs"]])) stop("must provide k in 'subsampleArgs' via the 'clusterArgs' argument (or if sequential should have been set by sequential strategy)")
         Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
         diss<-1-Dbar #make it a distance.
         x<-NULL
@@ -269,15 +319,23 @@ setMethod(
             else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         }
     }
-    if(typeAlg=="K"){
-        findBestK<-FALSE	
-        if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-            findBestK<-clusterDArgs[["findBestK"]]
-        }
-        if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
-    }
-    resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", clusterFunction=clusterFunction,returnD=TRUE),clusterDArgs)) 
-    return(list(results=resList$result,D=resList$D)) 
+	####To DO:Need to revisit why this was here. 
+		#     if(typeAlg=="K"){
+		# ###Why is this here??? why does findBestK have to be set? Why can't it just be missing???
+		# ###Is this simply so I can check that 'k' is defined in clusterDArgs??
+		#         findBestK<-FALSE
+		#         if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
+		#             findBestK<-clusterDArgs[["findBestK"]]
+		#         }
+		# ###Ditto. Why is this here??? Aren't there already existing checks??
+		#         if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
+		#     }
+    resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", clusterFunction=clusterFunction,returnData=TRUE),clusterDArgs)) 
+    return(resList) 
 }
+
+
+
+
 
 

@@ -12,7 +12,7 @@ setGeneric(
 )
 setGeneric(
   name = "clusterSingle",
-  def = function(x, diss,  ...) {
+  def = function(x, diss, clusterFunction, ...) {
     standardGeneric("clusterSingle")
   }
 )

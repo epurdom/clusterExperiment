@@ -7,7 +7,7 @@
 #' @param x the data on which to run the clustering (samples in columns).
 #' @param diss a dissimilarity matrix on which to run the clustering.
 #' @param clusterFunction a \code{\link{ClusterFunction}} object that defines the clustering routine. See \code{\link{ClusterFunction}} for required format of user-defined clustering routines. User can also give a character value to the argument \code{clusterFunction} to indicate the use
-#'   of clustering routines provided in package. Type \code{\link{builtInClusterFunctions}} at command prompt to see the built-in clustering routines. 
+#'   of clustering routines provided in package. Type \code{\link{builtInClusterFunctions}} at command prompt to see the built-in clustering routines. If \code{clusterFunction} is missing, the default is set to "pam".
 #' @param clusterArgs a list of parameter arguments to be passed to
 #'   the function defined in the \code{clusterFunction} slot of the \code{ClusterFunction} object. For any given \code{\link{ClusterFunction}} object, use function \code{\link{requiredArgs}} to get a list of required arguments for the object. 
 #' @param resamp.num the number of subsamples to draw.
@@ -42,6 +42,16 @@ setMethod(
 	  
   }
  )
+
+#' @rdname subsampleClustering
+#' @export
+setMethod(
+f = "subsampleClustering",
+signature = signature(clusterFunction = "missing"),
+definition = function(clusterFunction,...){
+	subsampleClustering(clusterFunction="pam",...)
+}
+)
  
 #' @rdname subsampleClustering
 #' @export

@@ -15,16 +15,23 @@ setMethod(
 )
 
 #' @rdname ClusterFunction-methods
+#' @param genericOnly logical If TRUE, return only the generic required arguments (i.e. those required by the algorithm type) and not the arguments specific to that clustering found in the slot \code{requiredArgs}. If FALSE both sets of arguments are returned.
 #' @export
 setMethod(
   f = "requiredArgs",
   signature = c("ClusterFunction"),
-  definition = function(object) {
-	  if(!is.na(object@requiredArgs)) reqArgs<-object@requiredArgs
+  definition = function(object,genericOnly=FALSE) {
+  	  algType<-algorithmType(object)
+  	  if(!onlyGeneric){
+		  if(!is.na(object@requiredArgs)) reqArgs<-object@requiredArgs
 		  else reqArgs<-NULL
-	  algType<-algorithmType(object)
-	  if(algType=="01") return(unique(sort(c(reqArgs,.required01Args))))
-	  if(algType=="K") return(unique(sort(c(reqArgs,.requiredKArgs))))
+	  	  if(algType=="01") return(unique(sort(c(reqArgs,.required01Args))))
+	      if(algType=="K") return(unique(sort(c(reqArgs,.requiredKArgs))))
+	  }
+	  else{
+	  	  if(algType=="01") return(unique(sort(.required01Args)))
+	      if(algType=="K") return(unique(sort(.requiredKArgs)))	  	
+	  }
   }
 )
 #' @rdname ClusterFunction-methods

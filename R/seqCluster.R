@@ -146,26 +146,58 @@
 #' clusterDArgs=list(minSize=5))
 #' }
 #' @export
-seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"), 
-                      subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 3, 
-                      k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL)
+setMethod(
+  f = "seqCluster",
+  signature = signature(clusterFunction = "character"),
+  definition = function(clusterFunction,...){
+  	seqCluster(getBuiltInClusterFunction(clusterFunction),...)
+	  
+  }
+ )
+#' @rdname clusterD
+#' @export
+setMethod(
+   f = "seqCluster",
+   signature = signature(clusterFunction = "ClusterFunction"),
+definition=function(clusterFunction,x=NULL, diss=NULL, k0,  
+     subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 3, 
+     k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL,checkDiss=TRUE)
 {
-  input<-.checkXDissInput(x,diss)
-    #for now, if use pam for subsampleClusterMethod, just use given k.
-  if(!is.function(clusterFunction)){
-    clusterFunction<-match.arg(clusterFunction)
-    if(!is.function(clusterFunction)) typeAlg<-.checkAlgType(clusterFunction)
+  ########
+  ####Checks
+  ########
+  input<-.checkXDissInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
+  #Reason: seqCluster requires subsampling cluster function to be of type "K"
+  if("clusterFunction" %in% names(subsampleArgs)){
+	  subsampleCF<-subsampleArgs[["clusterFunction"]]
+	  if(is.character(subsampleCF)) subsampleCF<-getBuiltInClusterFunction(subsampleCF)
+	  if(algorithmType(subsampleCF)!="K"){
+		  warning("sequentical clustering can only be implemented with a clusterFunction with algorithmType 'K'. See documentation of seqCluster. Will ignore this argument of subsampleArgs")
+		  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]
+	  }
   }
-  else{
-    if(! "typeAlg" %in% clusterDArgs) stop("if you provide your own clustering algorithm to be passed to clusterD, then you must specify 'typeAlg' in clusterDArgs")
-    else typeAlg<-clusterDArgs[["typeAlg"]]
-  }
-  if(typeAlg == "K"){
+  #Reason: can't do sequential clustering with subsample=FALSE and findBestK=TRUE because need to remove cluster based on testing many k and finding stable, and if not doing it over subsample, then do it over actual clustering
+  if(algorithmType(clusterFunction) == "K"){
     if("findBestK" %in% names(clusterDArgs) & !subsample){
       if(clusterDArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
     }
-    
   }
+  #Reason: if subsampling, sequential goes over different k values, so user can't set k
+  if(subsample & "clusterArgs" %in% names(subsampleArgs) && "k" %in% names(subsampleArgs[["clusterArgs"]])){
+    #remove predefined versions of k from both.
+    whK<-which(names(subsampleArgs[["clusterArgs"]])=="k")
+    warning("Setting 'k' in subsampleArgs when the seqCluster is called will have no effect.")
+    subsampleArgs[["clusterArgs"]]<-subsampleArgs[["clusterArgs"]][-whK]
+  }
+  #Reason: unclear. why is this here? why can't set 'k'? Does it have to be a 01 cluster function for sequential??
+  # I don't think so. 
+  if("clusterArgs" %in% names(clusterDArgs) && "k" %in% names(clusterDArgs[["clusterArgs"]]) ){
+      #remove predefined versions of k from both.
+      whK<-which(names(clusterDArgs[["clusterArgs"]])=="k")
+      warning("Setting 'k' in clusterDArgs when the seqCluster is called will have no effect.")
+      clusterDArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][-whK]
+  }
+  
   ################
   ################
   ###The following is legacy of tight.clust. They originally had programmed ability to look across more than 2 at each step to determing the stability of a cluster. This was not what they described in paper, and function is hard-coded at 2, but I have left code here in case we ever wanted to reconsider this issue.
@@ -180,23 +212,14 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
   whReturn<-switch(kReturn,"last"=seq.num,"first"=1) #way to index which one gets returned.
   ################
   ################
-  if(input %in% c("X","both")) N <- dim(x)[2]
+  if(input %in% c("X")) N <- dim(x)[2]
   if(input=="diss") N<-dim(diss)[2]
   if(verbose){
-    if(input %in% c("X","both")) cat(paste("Number of points:", N, "\tDimension:", dim(x)[1], "\n"))
+    if(input %in% c("X")) cat(paste("Number of points:", N, "\tDimension:", dim(x)[1], "\n"))
     else cat(paste("Number of points:", N,"\n"))
   }
-#   if(input %in% c("X","both")){
-#     original.data <- x
-#     colnames(x) <- as.character(1:N)
-#     id <- colnames(x)
-#   }
-#   else{
-#     original.data <- diss
-#     id<-colnames(diss)
-#   }
-  if(input %in% c("X","both"))  colnames(x) <- as.character(1:N)
-  if(input %in% c("diss","both")) colnames(diss)<-rownames(diss)<-as.character(1:N)
+  if(input %in% c("X"))  colnames(x) <- as.character(1:N)
+  if(input %in% c("diss")) colnames(diss)<-rownames(diss)<-as.character(1:N)
   
   #iterative setup
   remain <- N #keep track of how many samples not yet clustered (stop when less than remain.n)
@@ -210,17 +233,6 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
   kstart<-c() #the starting k for the cluster
   kend<-c() #the ending k for the cluster
   whyStop<-NULL
-  if("k" %in% names(subsampleArgs)){
-    #remove predefined versions of k from both.
-    whK<-which(names(subsampleArgs)=="k")
-    warning("Setting 'k' in subsampleArgs when the seqCluster is called will have no effect.")
-    subsampleArgs<-subsampleArgs[-whK]
-  }
-  if("k" %in% names(clusterDArgs)){
-    whK<-which(names(clusterDArgs)=="k")
-    warning("Setting 'k' in clusterDArgs when the seqCluster is called will have no effect.")
-    clusterDArgs<-clusterDArgs[-whK]
-  }
   while (remain >= remain.n && (found || k <= k.max)) {
     if (found) { #i.e. start finding new cluster
       if(verbose) cat(paste("Looking for cluster", nfound + 1, "...\n"))
@@ -232,11 +244,11 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
         if(verbose) cat(paste("k =", k + i - 1,"\n"))
         if(subsample){
           tempArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
-          res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+          res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
         }
         else{
           tempArgs<-c(list(k=k + i - 1),clusterDArgs) #set k
-          res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+          res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
           
         }
         # if(length(res)==0) {
@@ -253,11 +265,11 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
       #add new k (because always list o)
       if(subsample){
         tempArgs<-c(list(k=k + seq.num - 1),subsampleArgs)  #set k
-        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs,typeAlg=typeAlg)$results
+        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
       }
       else{
         tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k
-        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs,typeAlg=typeAlg)$results
+        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
         
       }
       if(length(res)>0) res <- res[1:min(top.can,length(res))]
@@ -273,7 +285,6 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
       #all invalid -- probably means that for some k there were no candidates found. So should stop.
       if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
       whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+i-1,"and previous clusters not similar enough.")
-      #browser()
       break
     }
     if(length(whInvalid)>0){
@@ -333,7 +344,6 @@ seqCluster<-function (x=NULL, diss=NULL, k0, clusterFunction=c("tight","hierarch
     if(remain< remain.n) whyStop<-"Ran out of samples"
     if(!found & k>k.max) whyStop<-paste("Went past k.max=",k.max,"in looking for cluster with similarity to previous.")
   }
-  #browser()
   clusterVector<-.convertClusterListToVector(tclust,N)
   if(all(clusterVector==-1) & length(tclust)>0) stop("coding error")
   if(nfound>0){
