@@ -96,24 +96,26 @@ setMethod(
 
 
 #' @rdname clusterSingle
+#' @param replaceCoClustering logical. If TRUE, the co-clustering resulting from subsampling is returned in the coClustering object and replaces any existing coClustering object in the slot \code{coClustering}. 
 #' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "ClusterExperiment", diss="missing"),
-  definition = function(x, ...) {
+  definition = function(x, replaceCoClustering=FALSE,...) {
 
-    outval <- clusterSingle(assay(x),...)
-    
-    ## eap: I think we should add it, so I changed it here. You might try a couple of versions.
-    retval<-addClusters(outval, x) #should keep primary cluster as most recent, so outval first
-    return(retval)
+    outval <- clusterSingle(assay(x),transFun=transformation(x),...)
+    retval<-addClusters(x,outval)
+	#make most recent clustering the primary cluster
+	primaryCluster(retval)<-nClusters(retval)
+	if(replaceCoClustering & !is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
+	return(retval)
   }
 )
 #' @rdname clusterSingle
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing",clusterFunction="ClusterFuntion"),
+  signature = signature(x = "matrixOrMissing",diss="matrixOrMissing",clusterFunction="ClusterFunction"),
   definition = function(x, diss,clusterFunction,subsample=TRUE, sequential=FALSE,
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
@@ -127,14 +129,14 @@ setMethod(
 	#check if clusterFunction given by subsampleClustering args
 	if(subsample){
 		if("clusterFunction" %in% names(subsampleArgs)){
-			subsampleCF<-subsampleArgs[["clusterFunction"]
+			subsampleCF<-subsampleArgs[["clusterFunction"]]
 	    	subsampleAlgType<-algorithmType(subsampleCF)
 		
 			inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
 			diffSubsampleCF<-TRUE
 		}
 		else subsampleCF<-NULL
-		# else{
+		# else{ #this would have made default to be same as 
 		# 	subsampleCF<-clusterFunction
 		# 	inputSubsample<-input
 		# 	diffSubsampleCF<-FALSE
@@ -142,6 +144,7 @@ setMethod(
 	
 	}
     if(input %in% c("X")){
+      N <- dim(x)[2]
       origX <- x #ngenes x nsamples
       ##########
       ##transformation to data x that will be input to clustering
@@ -163,7 +166,6 @@ setMethod(
         stop("Error in the internal transformation of x")
       }
       transFun <- transObj$transFun #need it later to create clusterExperimentObject
-      N <- dim(x)[2]
       
     }
     else{
@@ -192,6 +194,7 @@ setMethod(
       }
       if(!"k0"%in%names(seqArgs)) {
         stop("seqArgs must contain element 'k0'")
+      }
     }
     if(subsample){ 
         if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
@@ -284,20 +287,20 @@ setMethod(
     ##########
     ## Convert to clusterExperiment Object
     ##########
-    if(input %in% c("X","both")){
+    if(input %in% c("X")){
       retval <- clusterExperiment(origX, outlist$clustering,
                                   transformation=transFun,
                                   clusterInfo=clInfo,
                                   clusterTypes="clusterSingle")
       clusterLabels(retval)<-clusterLabel
-      if(!sequential) {
-        retval@coClustering<-finalClusterList$D
+      if(!sequential & subsample) {
+        retval@coClustering<-1-finalClusterList$diss
       }
       validObject(retval)
       return(retval)
     }
     else{
-      out<-list(clustering=outlist$clustering,clusterInfo=clInfo)
+      out<-list(clustering=outlist$clustering,clusterInfo=clInfo,diss=outlist$diss)
     }
 
   }

@@ -1,7 +1,14 @@
 Changes in version feature/unifyCluster( Release date: )
 ==============
+Changes:
 * add ClusterFunction class
 * hiearchical01 now has default to apply `as.dist` to the input `diss` to get a `dist` object, rather than `dist(1-diss)` which was previously default (controlled by argument `whichHierDist`)
+* clusterSingle now only returns dissimilarity in coClustering slot if the subsample=TRUE in the call.
+
+
+Bugs:
+* Fixed error so that if clusterSingle is called on existing clusterExperiment object, will pass on the transformation function. 
+* Fixed error so that if clusterSingle is called on existing clusterExperiment object, will not overwrite the information of the existing clusterExperiment object. 
 
 Changes in version 1.3.0-9008( Release date: )
 ==============

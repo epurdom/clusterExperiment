@@ -358,4 +358,4 @@ definition=function(clusterFunction,x=NULL, diss=NULL, k0,
     return(list(clustering = clusterVector, whyStop=whyStop))
   }
   
-}
+})

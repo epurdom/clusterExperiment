@@ -11,6 +11,18 @@ setGeneric(
   }
 )
 setGeneric(
+  name = "clusterD",
+  def = function(clusterFunction, ...) {
+    standardGeneric("clusterD")
+  }
+)
+setGeneric(
+  name = "seqCluster",
+  def = function(clusterFunction, ...) {
+    standardGeneric("seqCluster")
+  }
+)
+setGeneric(
   name = "clusterSingle",
   def = function(x, diss, clusterFunction, ...) {
     standardGeneric("clusterSingle")
@@ -358,11 +370,5 @@ setGeneric(
   name = "getPostProcessingArgs",
   def = function(clusterFunction, ...) {
     standardGeneric("getPostProcessingArgs")
-  }
-)
-setGeneric(
-  name = "clusterD",
-  def = function(clusterFunction, ...) {
-    standardGeneric("clusterD")
   }
 )
