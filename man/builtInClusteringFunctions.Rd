@@ -5,12 +5,27 @@
 \alias{builtInClusterFunctions}
 \alias{getBuiltInClusterFunction,character-method}
 \alias{getBuiltInClusterFunction}
+\alias{getBuiltInAlgorithmType,character-method}
+\alias{getBuiltInAlgorithmType}
+\alias{getBuiltInAlgorithmType,factor-method}
+\alias{getBuiltInTypeK,ANY-method}
+\alias{getBuiltInTypeK}
+\alias{getBuiltInType01,ANY-method}
+\alias{getBuiltInType01}
 \title{Built in ClusterFunction options}
 \format{An object of class \code{character} of length 5.}
 \usage{
 builtInClusterFunctions
 
 \\S4method{getBuiltInClusterFunction}{character}(object)
+
+\\S4method{getBuiltInAlgorithmType}{character}(object)
+
+\\S4method{getBuiltInAlgorithmType}{factor}(object)
+
+\\S4method{getBuiltInTypeK}{ANY}(object)
+
+\\S4method{getBuiltInType01}{ANY}(object)
 }
 \description{
 Documents the built-in clustering options that are available in the clusterExperiment package.

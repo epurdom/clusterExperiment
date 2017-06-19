@@ -21,17 +21,16 @@
 #'   \code{\link{seqCluster}}.
 #' @param clusterFunction function used for the clustering. Note that unlike in 
 #'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-#'   clustering techniques provided by \code{\link{clusterSingle}}, and can not
-#'   be a user-defined function. Current functions are "tight",
-#'   "hierarchical01","hierarchicalK", and "pam"
+#'   clustering techniques, and can not
+#'   be a user-defined function. Current functions can be found by typing \code{builtInClusterFunctions} into the command-line. 
 #' @param minSizes the minimimum size required for a cluster (in
 #'   \code{clusterD}). Clusters smaller than this are not kept and samples are
-#'   left unassigned.
+#'   left unassigned. 
 #' @param distFunction a vector of character strings that are the names of 
 #'     distance functions found in the global environment. See the help pages of
 #'     \code{\link{clusterD}} for details about the required format of distance 
 #'     functions. Currently, this distance function must be applicable for all 
-#'     clusterFunction types tried. Therefore, it is not possible to intermix type "K"
+#'     clusterFunction types tried. Therefore, it is not possible in \code{clusterMany} to intermix type "K"
 #'     and type "01" algorithms if you also give distances to evaluate via
 #'     \code{distFunction} unless all distances give 0-1 values for the distance
 #'     (and hence are possible for both type "01" and "K" algorithms).
@@ -68,7 +67,7 @@
 #' @details While the function allows for multiple values of clusterFunction,
 #'   the code does not reuse the same subsampling matrix and try different
 #'   clusterFunctions on it. If sequential=TRUE, different
-#'   subsampleclusterFunctions will create different sets of data to subsample
+#'   subsample clusterFunctions will create different sets of data to subsample
 #'   so it is not possible; if sequential=FALSE, we have not implemented
 #'   functionality for this reuse. Setting the \code{random.seed} value,
 #'   however, should mean that the subsampled matrix is the same for each, but
@@ -229,7 +228,7 @@ setMethod(
                         ...
   )
   {
-      paramMatrix<-NULL
+    paramMatrix<-NULL
     data <- x
     if(!is.null(random.seed)){
         if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
@@ -239,7 +238,7 @@ setMethod(
     if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
       stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
     }
-    #check all same number of observations:
+    #check all same number of observations: Why do we have this check?? Why does it matter??
     if(!length(unique(sapply(data,NCOL)))==1) {
       stop("All data sets must have the same number of observations")
     }
@@ -260,39 +259,41 @@ setMethod(
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
       ###########
-      typeK <- which(param[,"clusterFunction"] %in% c("pam","hierarchicalK"))
+	  paramAlgTypes<-getBuiltInAlgorithmType(param[,"clusterFunction"])
+	  if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
+      typeK <- which( paramAlgTypes=="K")
       if(length(typeK)>0){
-        param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
-        #param[typeK,"beta"] <- NA #just a nothing value, because doesn't mean anything here
-        
-        #if findBestK make sure other arguments make sense:
+        param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here        
+        #--------
+		#if findBestK make sure other arguments make sense:
+        #--------
         whFindBestK <- which(param[,"findBestK"])
         if(length(whFindBestK)>0){
           #by default make kRange in clusterD equal to the ks. Note this will be true of ALL
           if(!"kRange" %in% names(clusterDArgs)) {
             clusterDArgs[["kRange"]]<-ks
           }
-
           #if findBestK=TRUE, and sequential=FALSE, then need to set 'k'=NA
           whNoSeq <- which(!param[,"sequential"])
           if(length(intersect(whFindBestK,whNoSeq))>0){
             param[intersect(whFindBestK,whNoSeq),"k"] <- NA
           }
-
-          #and if subsample=TRUE, then user needs to set k via subsampleArgs
+		  #and if subsample=TRUE, then user needs to set k via subsampleArgs
+		  ##Might could handle this better by call to .checkSubsampleClusterDArgs
           whNoSeqSub <- which(!param[,"sequential"] & param[,"subsample"])
           if(length(intersect(whFindBestK,whNoSeqSub))>0 &
-             is.null(subsampleArgs[["k"]])) {
-            stop("must provide k in subsampleArgs because there are combinations of findBestK=TRUE, sequential=FALSE and subsample=TRUE. (Note this will set 'k' for all that subsample, even for other parameter combinations)")
+             is.null(subsampleArgs[["clusterArgs"]]) && is.null(subsampleArgs[["clusterArgs"]][["k"]])){
+            stop("must provide k in 'clusterArgs' element of 'subsampleArgs' because there are combinations of findBestK=TRUE, sequential=FALSE and subsample=TRUE. (Note this will set 'k' for all combinations that subsample, not just this parameter combinations)")
           }
         }
       }
-      type01 <- which(param[,"clusterFunction"] %in% c("hierarchical01","tight"))
+      type01 <- which( paramAlgTypes=="01")
       if(length(type01)>0){
         param[type01,"findBestK"] <- FALSE
         param[type01,"removeSil"] <- FALSE
         param[type01,"silCutoff"] <- 0
       }
+	  ##Turn off distFunction for those that subsample, because will use that of co-occurance
       whSubsample<-which(param[,"subsample"])
       if(length(whSubsample)>0){
         param[whSubsample,"distFunction"]<-NA
@@ -313,7 +314,9 @@ setMethod(
 
       #####
       #deal with those that are invalid combinations:
-      #####
+	  # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
+	  # Also, if ever reinstate param option, then should apply these checks to that param
+      ######
       whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
                          & param[,"findBestK"])
       if(length(whInvalid)>0) {
@@ -332,7 +335,7 @@ setMethod(
       }
 
 	  #if type K and not findBestK, need to give the k value. 
-      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & param[,"clusterFunction"] %in% c("pam","hierarchicalK") )
+      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & getBuiltInAlgorithmType(param[,"clusterFunction"])=="K" )
       if(length(whInvalid)>0){
 			param<-param[-whInvalid,]
 		}
@@ -352,13 +355,11 @@ setMethod(
       } else {
         stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
       }
-
       cnames <- gsub("dataset=","",cnames)
       cnames <- gsub("= ","=",cnames)
-      cnames[param[,"sequential"]] <- gsub("k=", "k0=",
-                                           cnames[param[,"sequential"]])
+      cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
       rownames(param) <- cnames
-    } else{
+  } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
       if(!run) {
         stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
       }
@@ -370,7 +371,7 @@ setMethod(
         stop("input paramMatrix must have row names")
       }
       cnames<-rownames(paramMatrix)
-    }
+  }
 
     if(verbose) {
       cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
@@ -391,18 +392,19 @@ setMethod(
           seqArgs[["k0"]] <- par[["k"]]
         } else{
           #to be safe, set both in case user set one.
-          subsampleArgs[["k"]] <- par[["k"]]
-          clusterDArgs[["k"]] <- par[["k"]]
+          subsampleArgs[["clusterArgs"]][["k"]] <- par[["k"]]
+          clusterDArgs[["clusterArgs"]][["k"]] <- par[["k"]]
         }
       }
       #browser()
-      clusterDArgs[["alpha"]] <- par[["alpha"]]
+      clusterDArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
       seqArgs[["beta"]] <- par[["beta"]]
       clusterDArgs[["minSize"]] <- par[["minSize"]]
       clusterDArgs[["findBestK"]] <- findBestK
       clusterDArgs[["removeSil"]] <- removeSil
       clusterDArgs[["silCutoff"]] <- par[["silCutoff"]]
       clusterDArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
+	  clusterDArgs[["clusterFunction"]]<-clusterFunction
       seqArgs[["verbose"]]<-FALSE
       if(!is.null(random.seed)) {
         set.seed(random.seed)
@@ -410,12 +412,12 @@ setMethod(
       if(!is.null(distFunction)){
         diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
         clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
-                      clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
+                      clusterDArgs=clusterDArgs,
                       subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                       sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
       }
       else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
-                 clusterFunction=clusterFunction, clusterDArgs=clusterDArgs,
+                 clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
                  sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
     }

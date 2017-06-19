@@ -18,6 +18,7 @@
 #' @param ncores integer giving the number of cores. If ncores>1, mclapply will
 #'   be called.
 #' @param ... arguments passed to mclapply (if ncores>1).
+#' @inheritParams clusterD
 #'
 #' @details \code{subsampleClustering} is not usually called directly by the user. It is only an exported function so as to be able to clearly document the arguments for \code{subsampleClustering}  which can be passed via the argument \code{subsampleArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 #' @details \code{requiredArgs:} The choice of "All" or "OutOfSample" for \code{requiredArgs}

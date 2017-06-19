@@ -94,7 +94,9 @@ Given input data, \code{\link{SummarizedExperiment}}, or
 based on a single specification of parameters.
 }
 \details{
-\code{clusterSingle} is an 'expert-oriented' function, intended to be used when a user wants to run a single clustering and/or have a great deal of control over the clustering parameters. Most users will find \code{\link{clusterMany}} more relevant. Unlike \code{\link{clusterMany}} most of the relevant arguments for clustering are passed to the relevant steps via the arguments \code{clusterDArgs}, \code{subsampleArgs}, and \code{seqArgs}. These arguments should be named lists with parameters that match their corresponding functions: \code{\link{clusterD}},\code{\link{subsampleClustering}}, and \code{\link{seqCluster}}.
+\code{clusterSingle} is an 'expert-oriented' function, intended to be used when a user wants to run a single clustering and/or have a great deal of control over the clustering parameters. Most users will find \code{\link{clusterMany}} more relevant. However, \code{\link{clusterMany}} makes certain assumptions about the intention of certain combinations of parameters that might not match the user's intent; similarly \code{\link{clusterMany}} does not directly take a dissimilarity matrix but only a matrix of values \code{x} (though a user can define a distance function to be applied to \code{x} in \code{\link{clusterMany}}).
+
+Unlike \code{\link{clusterMany}}, most of the relevant arguments for the actual clustering algorithms in \code{clusterSingle} are passed to the relevant steps via the arguments \code{clusterDArgs}, \code{subsampleArgs}, and \code{seqArgs}. These arguments should be named lists with parameters that match their corresponding functions: \code{\link{clusterD}},\code{\link{subsampleClustering}}, and \code{\link{seqCluster}}.
 
 Only certain combinations of parameters are possible for certain choices of \code{sequential} and \code{subsample}. These restrictions are documented below.
 \itemize{

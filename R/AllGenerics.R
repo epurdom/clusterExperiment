@@ -355,6 +355,29 @@ setGeneric(
   }
 )
 setGeneric(
+  name = "getBuiltInAlgorithmType",
+  def = function(object,...) {
+	  standardGeneric("getBuiltInAlgorithmType")
+  }
+	  
+)
+setGeneric(
+  name = "getBuiltInTypeK",
+  def = function(object,...) {
+	  standardGeneric("getBuiltInTypeK")
+  }
+	  
+)
+
+setGeneric(
+  name = "getBuiltInType01",
+  def = function(object,...) {
+	  standardGeneric("getBuiltInType01")
+  }
+	  
+)
+ 
+setGeneric(
   name = "requiredArgs",
   def = function(object, ...) {
     standardGeneric("requiredArgs")

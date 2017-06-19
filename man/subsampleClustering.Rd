@@ -27,6 +27,9 @@ of clustering routines provided in package. Type \code{\link{builtInClusterFunct
 
 \item{diss}{a dissimilarity matrix on which to run the clustering.}
 
+\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
+input \code{D} is a matrix of data, rather than a distance. See details.}
+
 \item{clusterArgs}{a list of parameter arguments to be passed to
 the function defined in the \code{clusterFunction} slot of the \code{ClusterFunction} object. For any given \code{\link{ClusterFunction}} object, use function \code{\link{requiredArgs}} to get a list of required arguments for the object.}
 
@@ -40,6 +43,10 @@ subsampled, and "InSample"=those in the subsample.  See details for explanation.
 
 \item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
 be called.}
+
+\item{checkArgs}{logical as to whether should give warning if arguments given
+that don't match clustering choices given. Otherwise, inapplicable
+arguments will be ignored without warning.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with [i,j] entries equal to the percentage of subsamples where the ith and jth sample were clustered into the same cluster. The percentage is only out of those subsamples where the ith and jth samples were both assigned to a clustering. If \code{classifyMethod=="All"}, this is all subsamples for all i,j pairs. But if \code{classifyMethod=="InSample"} or \code{classifyMethod=="OutOfSample"}, then the percentage is only taken on those subsamples where the ith and jth sample were both in or out of sample, respectively, relative to the subsample.

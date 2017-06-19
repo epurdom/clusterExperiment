@@ -57,9 +57,8 @@ included.}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-clustering techniques provided by \code{\link{clusterSingle}}, and can not
-be a user-defined function. Current functions are "tight",
-"hierarchical01","hierarchicalK", and "pam"}
+clustering techniques, and can not
+be a user-defined function. Current functions can be found by typing \code{builtInClusterFunctions} into the command-line.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
 type '01' (either 'tight' or 'hierarchical01'). Determines tightness 

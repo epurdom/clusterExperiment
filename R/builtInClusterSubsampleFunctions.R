@@ -231,9 +231,55 @@ setMethod(
   f = "getBuiltInClusterFunction",
   signature = c("character"),
   definition = function(object) {
-  	if(!object%in%builtInClusterFunctions) stop("if give character value for 'object' must be one of",paste(builtInClusterFunctions,collapse=","))
+  	if(!all(object%in%builtInClusterFunctions)) stop("if give character value for 'object' must be one of",paste(builtInClusterFunctions,collapse=","))
   	    m<-match(object,names(.builtInClusterObjects))
-  		.builtInClusterObjects[[m]]
+  		if(length(m)>1) .builtInClusterObjects[m]
+			else .builtInClusterObjects[[m]]
+		
     
 	    }
+)
+#' @rdname builtInClusteringFunctions
+#' @aliases getBuiltInAlgorithmType
+#' @export
+setMethod(
+  f = "getBuiltInAlgorithmType",
+  signature = c("character"),
+  definition = function(object) {
+	  clObjects<-getBuiltInClusterFunction(object)
+	  if(length(clObjects)>1) return(sapply(clObjects,algorithmType))
+		  else return(algorithmType(clObjects))
+  }
+)
+#' @rdname builtInClusteringFunctions
+#' @export
+setMethod(
+  f = "getBuiltInAlgorithmType",
+  signature = c("factor"),
+  definition = function(object) {
+	  getBuiltInAlgorithmType(as.character(object))
+  }
+)
+#' @rdname builtInClusteringFunctions
+#' @aliases getBuiltInTypeK
+#' @export
+setMethod(
+  f = "getBuiltInTypeK",
+  signature = c("ANY"),
+  definition = function(object) {
+	  allBuiltInTypes<-getBuiltInAlgorithmType(builtInClusterFunctions)
+	  return(names(allBuiltInTypes)[allBuiltInTypes=="K"])
+  }
+)
+#' @rdname builtInClusteringFunctions
+#' @aliases getBuiltInType01
+#' @export
+setMethod(
+  f = "getBuiltInType01",
+  signature = c("ANY"),
+  definition = function(object) {
+	  allBuiltInTypes<-getBuiltInAlgorithmType(builtInClusterFunctions)
+	  return(names(allBuiltInTypes)[allBuiltInTypes=="01"])
+  }
+	  
 )

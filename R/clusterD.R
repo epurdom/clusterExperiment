@@ -11,7 +11,7 @@
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples
 #'   on which to run the clustering
 #' @param distFunction a distance function to be applied to \code{D}. Only relevant if
-#'   input \code{D} is a matrix of data, rather than a distance. See details.
+#'   input is only \code{x} (a matrix of data), and \code{diss=NULL}. See details of \code{\link{clusterD}} for the required format of the distance function.
 #' @param minSize the minimum number of samples in a cluster. Clusters found
 #'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
@@ -110,7 +110,13 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	### Check input and Create distance if needed, and check it.
 	#######################
 	input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,algType=clusterFunction@algorithmType,checkDiss=checkDiss)
-	if(input=="X" & clusterFunction@inputType=="diss"){
+	#K-post processing requires diss for the silhouette.
+	doKPostProcess<-FALSE
+	if(clusterFunction@algorithmType=="K"){
+		if("findBestK"  %in% names(postProcessArgs) && postProcessArgs[["findBestK"]]) doKPostProcess<-TRUE
+		if("removeSil"  %in% names(postProcessArgs) && postProcessArgs[["removeSil"]]) doKPostProcess<-TRUE
+	}
+	if(input=="X" & (clusterFunction@inputType=="diss" || doKPostProcess)){
 		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
 		input<-"diss"
 	}
@@ -195,7 +201,7 @@ setMethod(
 #' @importFrom cluster silhouette
 .postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
 {
-  doPostProcess<-findBestK | removeSil #whether will calculate silhouette or not; if not, speeds up the function... 
+  doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
   k<-clusterArgs[["k"]]
   if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
   if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]

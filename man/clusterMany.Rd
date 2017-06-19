@@ -63,9 +63,8 @@ choices).}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-clustering techniques provided by \code{\link{clusterSingle}}, and can not
-be a user-defined function. Current functions are "tight",
-"hierarchical01","hierarchicalK", and "pam"}
+clustering techniques, and can not
+be a user-defined function. Current functions can be found by typing \code{builtInClusterFunctions} into the command-line.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
 type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
@@ -82,7 +81,7 @@ details of \code{\link{seqCluster}}). Can be used in combination with \code{subs
 distance functions found in the global environment. See the help pages of
 \code{\link{clusterD}} for details about the required format of distance 
 functions. Currently, this distance function must be applicable for all 
-clusterFunction types tried. Therefore, it is not possible to intermix type "K"
+clusterFunction types tried. Therefore, it is not possible in \code{clusterMany} to intermix type "K"
 and type "01" algorithms if you also give distances to evaluate via
 \code{distFunction} unless all distances give 0-1 values for the distance
 (and hence are possible for both type "01" and "K" algorithms).}
@@ -165,7 +164,7 @@ clustering of the samples across the range, which can be passed to
 While the function allows for multiple values of clusterFunction,
   the code does not reuse the same subsampling matrix and try different
   clusterFunctions on it. If sequential=TRUE, different
-  subsampleclusterFunctions will create different sets of data to subsample
+  subsample clusterFunctions will create different sets of data to subsample
   so it is not possible; if sequential=FALSE, we have not implemented
   functionality for this reuse. Setting the \code{random.seed} value,
   however, should mean that the subsampled matrix is the same for each, but
