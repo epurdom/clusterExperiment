@@ -118,8 +118,9 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	}
 	if(input=="X" & (clusterFunction@inputType=="diss" || doKPostProcess)){
 		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
-		input<-"diss"
+		if(clusterFunction@inputType=="diss") input<-"diss"
 	}
+	
 	
 	#-----
 	# Other Checks

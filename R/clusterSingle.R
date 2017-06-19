@@ -136,7 +136,7 @@ setMethod(
     outval <- clusterSingle(assay(x),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
-	primaryCluster(retval)<-nClusters(retval)
+	primaryClusterIndex(retval)<-nClusters(retval)
 	if(replaceCoClustering & !is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
 	return(retval)
   }
@@ -161,13 +161,16 @@ setMethod(
 		subsampleArgs<-checkOut$subsampleArgs
 		input<-checkOut$inputClusterD
 	}
-    if(sequential){
+	if(sequential){
       if(is.null(seqArgs)) {
 		  ##To DO: Question: if missing seqArgs, should we grab k0 from subsampleArgs?
-        stop("if sequential=TRUE, must give seqArgs so as to identify k0")
+        stop("if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
       }
       if(!"k0"%in%names(seqArgs)) {
         stop("seqArgs must contain element 'k0'")
+      }
+      if(!"beta"%in%names(seqArgs)) {
+        stop("seqArgs must contain element 'beta'")
       }
     }
 	##########

@@ -21,11 +21,11 @@
 	funName<-tail(as.character(substitute(FUN)),1)
     if(any(wh<-!names(passedArgs) %in% funArgs)){
       passedArgs<-passedArgs[-which(wh)]
-      if(checkArgs) warning(paste("arguments passed via to clustering function",funName,"not all applicable (should only be arguments to,", funName,"). Extra arguments will be ignored"))
+      if(checkArgs) warning(.wrongArgsWarning(funName))
     }
 	return(passedArgs)
 }
-
+.wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
 ##---------
 ##Kmeans
 ##---------
@@ -77,7 +77,6 @@
 #' @importFrom phylobase rootNode getNode descendants
 .hier01Cluster<-function(diss,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
 {
-	if(!cluster.only) stop("Internal Coding Error: .hier01Cluster doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
     whichHierDist<-match.arg(whichHierDist)
 	evalClusterMethod<-match.arg(evalClusterMethod)
 	if(is.null(rownames(diss))) rownames(diss)<-colnames(diss)<-as.character(1:nrow(diss))
@@ -129,7 +128,6 @@
 ##---------
 #' @importFrom stats hclust cutree
 .hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
-	if(!cluster.only) stop("Internal Coding Error: .hierarchicalK doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
 	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
     hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
     stats::cutree(hclustOut,k)
@@ -144,10 +142,9 @@
 ##---------
 .tightCluster <- function(diss, alpha, minSize.core=2,checkArgs,cluster.only,...)
 {
-	if(!cluster.only) stop("Internal Coding Error: .tightCluster doesn't have a classify method, and therefore ignores the 'cluster.only' argument")
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
     S<-1-diss #now is similarity matrix...
-    if(length(list(...))>0 & checkArgs) 	warning("some arguments passed via clusterArgs to tight clustering method are not applicable")
+    if(length(list(...))>0 & checkArgs) 	warning(.wrongArgsWarning("tight"))
 	find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
 		#what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is.

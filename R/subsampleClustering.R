@@ -45,15 +45,15 @@ setMethod(
   }
  )
 
-#' @rdname subsampleClustering
-#' @export
-setMethod(
-f = "subsampleClustering",
-signature = signature(clusterFunction = "missing"),
-definition = function(clusterFunction,...){
-	subsampleClustering(clusterFunction="pam",...)
-}
-)
+# #' @rdname subsampleClustering
+# #' @export
+# setMethod(
+# f = "subsampleClustering",
+# signature = signature(clusterFunction = "missing"),
+# definition = function(clusterFunction,...){
+# 	subsampleClustering(clusterFunction="pam",...)
+# }
+# )
  
 #' @rdname subsampleClustering
 #' @export
@@ -113,13 +113,29 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	}
 	    if(classifyMethod=="OutOfSample"){
 			argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 
-		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(result=result)))
+		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(clusterResult=result)))
 	      classX<-rep(NA,N)
 	      classX[-ids]<-classElse
 	    }
 	    if(classifyMethod=="InSample"){
 	      classX<-rep(NA,N)
-	      classX[ids]<-result$clustering
+		  #methods that do not have 
+		  if(is.list(result)){
+			  if("clustering" %in% names(result)){
+			  	classX[ids]<-result$clustering
+			  }
+		  	  else{
+				  if(clusterFunction@outputType=="list"){
+					resultVec  <-.convertClusterListToVector(result,N=length(ids))
+					classX[ids]<-resultVec
+				  }
+				  else stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
+			  }
+		  }
+		  else{
+		      classX[ids]<-result
+		  	
+		  }
 	    }
 	    D <- outer(classX, classX, function(a, b) a == b)
 	    Dinclude<-matrix(1,N,N)
