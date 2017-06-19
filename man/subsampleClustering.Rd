@@ -4,10 +4,13 @@
 \name{subsampleClustering}
 \alias{subsampleClustering}
 \alias{subsampleClustering-character-method}
+\alias{subsampleClustering,missing-method}
 \alias{subsampleClustering,ClusterFunction-method}
 \title{Cluster subsamples of the data}
 \usage{
 \S4method{subsampleClustering}{character}(clusterFunction, ...)
+
+\S4method{subsampleClustering}{missing}(clusterFunction, ...)
 
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction, x = NULL,
   diss = NULL, distFunction = NA, clusterArgs = NULL,
@@ -16,7 +19,7 @@
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines the clustering routine. See \code{\link{ClusterFunction}} for required format of user-defined clustering routines. User can also give a character value to the argument \code{clusterFunction} to indicate the use
-of clustering routines provided in package. Type \code{\link{builtInClusterFunctions}} at command prompt to see the built-in clustering routines.}
+of clustering routines provided in package. Type \code{\link{builtInClusterFunctions}} at command prompt to see the built-in clustering routines. If \code{clusterFunction} is missing, the default is set to "pam".}
 
 \item{...}{arguments passed to mclapply (if ncores>1).}
 

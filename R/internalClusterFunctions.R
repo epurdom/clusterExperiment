@@ -137,14 +137,28 @@
     }
 	#this check is done in clusterD, but want to do this check before run subsampling...also can give message that clearer that it refers to clusterD.
  	reqArgs<-requiredArgs(clusterFunction)
+	if(sequential & length(reqArgs)>0) reqArgs<- reqArgs[-which(reqArgs=="k")]
 	#remove required args not needed if certain postProcessArgs are given:
 	# don't need define 'k' if choose 'findBestK=TRUE'
-	if(algorithmType(clusterFunction)=="K" & "findBestK" %in% names(clusterDArgs)){
+	if(length(reqArgs)>0 & algorithmType(clusterFunction)=="K" & "findBestK" %in% names(clusterDArgs)){
 		if(clusterDArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
 	}
 	if(length(reqArgs)>0){
 		if(("clusterArgs"%in% names(clusterDArgs) & !all(reqArgs %in% names(clusterDArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(clusterDArgs))) return(paste("For the clusterFunction algorithm type ('",algorithmType(clusterFunction),"') given in 'clusterDArgs', must supply arguments:",reqArgs,"These must be supplied as elements of the list of 'clusterArgs' given in 'clusterDArgs'"))
 	} 
+    if(sequential){
+		#Reason, if subsample=FALSE, then need to change k of the clusterD step for sequential. If subsample=TRUE, similarly set the k of clusterD step to match that used in subsample. Either way, can't be predefined by user
+    	  if("clusterArgs" %in% names(clusterDArgs)){
+			  if("k" %in% names(clusterDArgs[["clusterArgs"]]) ){
+          	#remove predefined versions of k from both.
+          	whK<-which(names(clusterDArgs[["clusterArgs"]])=="k")
+          	warning("Setting 'k' in clusterDArgs when sequential clustering is requested will have no effect.")
+          	clusterDArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][-whK]
+    			}
+		}else{
+			clusterDArgs[["clusterArgs"]]<-NULL #make it exist... not sure if I need this.
+		}
+	}
 	#########
 	# Checks related to subsample=TRUE
 	#########
@@ -170,7 +184,6 @@
 	  	# 	diffSubsampleCF<-FALSE
 	  	# }
 	  #Reason: check subsampleArgs has required arguments for function, repeated from subsamplingClustering, but want it here before do calculations... if not, see if can borrow from clusterDArgs
-	  
 	##------
 	##Check have required args for subsample. If missing, 'borrow' those args from clusterDArgs.
 	##------
@@ -183,7 +196,7 @@
 		reqSubArgs<-c()
 	}
 	#Reason: sequential sets k for the subsampling via k0
-	if(sequential & length(reqSubArgs)>0) reqSubArgs<-reqSubArgs[-which(reqSubArgs=="k")]
+	if(sequential & length(reqSubArgs)>0) reqSubArgs<- reqSubArgs[-which(reqSubArgs=="k")]
 	if(length(reqSubArgs)>0){
 		#check if can borrow...
 		if("clusterArgs" %in% names(clusterDArgs)){
@@ -223,16 +236,9 @@
 	  	  }				 
 		}
 	}
-	else{
+	else{ #not subsample
 	    if(sequential){
-			#Reason, if subsample=FALSE, then need to change k of the clusterD step, can't be predefined by user.
-	    	  if("clusterArgs" %in% names(clusterDArgs) && "k" %in% names(clusterDArgs[["clusterArgs"]]) ){
-	          	#remove predefined versions of k from both.
-	          	whK<-which(names(clusterDArgs[["clusterArgs"]])=="k")
-	          	warning("Setting 'k' in clusterDArgs when the seqCluster is called will have no effect.")
-	          	clusterDArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][-whK]
-	      	}
-			#Reason: if subsample=FALSE, and sequential then need to adjust K in the clusterD step
+			#Reason: if subsample=FALSE, and sequential then need to adjust K in the clusterD step, so need algorithm of type K
 	    	  if(algorithmType(clusterFunction) != "K"){
 	    		  return("if subsample=FALSE, sequentical clustering can only be implemented with a clusterFunction with algorithmType 'K'. See documentation of seqCluster.")
 	    		  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]	

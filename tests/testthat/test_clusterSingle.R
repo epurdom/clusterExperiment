@@ -54,6 +54,20 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 
           })
 
+
+		  # > clustSeqHier_v2 <- clusterSingle(simData,
+		  # + sequential=FALSE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
+		  # + clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+		  # + seqArgs=list(beta=0.8, k0=5), clusterDArgs=list(minSize=5,clusterFunction="hierarchical01"))
+		  # Error in .local(x, diss, ...) :
+		  #   For the clusterFunction algorithm type (' 01 ') given in 'clusterDArgs', must supply arguments: alpha These must be supplied as elements of the list of 'clusterArgs' given in 'clusterDArgs'
+		  # > set.seed(44261)
+		  # > clustSeqHier_v2 <- clusterSingle(simData,
+		  # + sequential=FALSE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
+		  # + clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+		  # + seqArgs=list(beta=0.8, k0=5), clusterDArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+
+
 test_that("Different options algorithms of `clusterD` ", {
   #check algorithms
   clusterSingle(mat, clusterFunction="tight",

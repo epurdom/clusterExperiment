@@ -73,12 +73,10 @@ required in creating clusters from the dissimilarity matrix. Takes on
 values in [0,1]. See \code{\link{clusterD}}.}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-details of \code{\link{seqCluster}}).}
+details of \code{\link{seqCluster}}). Can be used in combination with \code{subsample=TRUE} or \code{FALSE}.}
 
 \item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
-iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
+\code{\link{subsampleClustering}}. If TRUE, clustering in clusterD step is done on the co-occurance between clusterings in the subsampled clustering results.  If FALSE, the clusterD step will be run directly on \code{x}/\code{diss}}
 
 \item{distFunction}{a vector of character strings that are the names of 
 distance functions found in the global environment. See the help pages of
@@ -100,13 +98,13 @@ left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{clusterDArgs}{list of additional arguments to be passed to
+\item{clusterDArgs}{list of arguments to be passed for the clusterD step, see help pages of 
 \code{\link{clusterD}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step (if \code{subsample=TRUE}), see help pages of 
 \code{\link{subsampleClustering}}.}
 
-\item{seqArgs}{list of additional arguments to be passed to
+\item{seqArgs}{list of arguments to be passed to
 \code{\link{seqCluster}}.}
 
 \item{ncores}{the number of threads}

@@ -8,46 +8,52 @@
 \alias{clusterSingle,ClusterExperiment-method}
 \alias{clusterSingle,matrix,missing-method}
 \alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
+\alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
+\alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
-\S4method{clusterSingle}{matrixOrMissing,matrixOrMissing}(x, diss,
-  subsample = TRUE, sequential = FALSE, clusterFunction = c("tight",
-  "hierarchical01", "pam", "hierarchicalK"), clusterDArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
-  transFun = NULL, dimReduce = c("none", "PCA", "var", "cv", "mad"),
-  ndims = NA, clusterLabel = "clusterSingle")
+\S4method{clusterSingle}{missing,matrixOrNULL}(x, diss, ...)
+
+\S4method{clusterSingle}{matrixOrNULL,missing}(x, diss, ...)
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
+\S4method{clusterSingle}{ClusterExperiment,missing}(x,
+  replaceCoClustering = FALSE, ...)
+
+\S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
+  sequential = FALSE, clusterDArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, isCount = FALSE, transFun = NULL,
+  dimReduce = c("none", "PCA", "var", "cv", "mad"), ndims = NA,
+  clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (features in rows).}
+\item{x}{the data on which to run the clustering (features in rows), or a \code{\link{SummarizedExperiment}}, or
+\code{\link{ClusterExperiment}} object.}
 
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering (only if \code{subsample=FALSE})}
+on which to run the clustering.}
+
+\item{...}{arguments to be passed on to the method for signature
+\code{matrix}.}
+
+\item{replaceCoClustering}{logical. Applicable if \code{x} is a \code{ClusterExperiment} object. If TRUE, the co-clustering resulting from subsampling is returned in the coClustering object and replaces any existing coClustering object in the slot \code{coClustering}.}
 
 \item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
-iteration; otherwise the distance function will be determined by argument
-\code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).}
+\code{\link{subsampleClustering}}. If TRUE, clustering in clusterD step is done on the co-occurance between clusterings in the subsampled clustering results.  If FALSE, the clusterD step will be run directly on \code{x}/\code{diss}}
 
 \item{sequential}{logical whether to use the sequential strategy (see
-details of \code{\link{seqCluster}}).}
+details of \code{\link{seqCluster}}). Can be used in combination with \code{subsample=TRUE} or \code{FALSE}.}
 
-\item{clusterFunction}{passed to \code{\link{clusterD}} option
-'clusterFunction' to indicate method of clustering, see
+\item{clusterDArgs}{list of arguments to be passed for the clusterD step, see help pages of 
 \code{\link{clusterD}}.}
 
-\item{clusterDArgs}{list of additional arguments to be passed to
-\code{\link{clusterD}}.}
-
-\item{subsampleArgs}{list of arguments to be passed to
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step (if \code{subsample=TRUE}), see help pages of 
 \code{\link{subsampleClustering}}.}
 
-\item{seqArgs}{list of additional arguments to be passed to
+\item{seqArgs}{list of arguments to be passed to
 \code{\link{seqCluster}}.}
 
 \item{isCount}{logical. Whether the data are in counts, in which case the
@@ -70,14 +76,20 @@ in the reduction specified by \code{dimReduce}}
 default it is equal to "clusterSingle", to indicate that this clustering is
 the result of a call to \code{clusterSingle}.}
 
-\item{...}{arguments to be passed on to the method for signature
-\code{matrix}.}
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is valid.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object.
+A \code{\link{ClusterExperiment}} object if input was \code{x} a matrix (or \code{assay} of a \code{ClusterExperiment} or \code{SummarizedExperiment} object).
+
+If input was \code{diss}, then the result is a list with values
+\itemize{
+ \item{clustering}{The vector of clustering results}     
+ \item{clusterInfo}{A list with information about the parameters run in the clustering}
+\item{diss}{The dissimilarity matrix used in the clustering}
+}
 }
 \description{
-Given a data matrix, \code{\link{SummarizedExperiment}}, or
+Given input data, \code{\link{SummarizedExperiment}}, or
 \code{\link{ClusterExperiment}} object, this function will find clusters,
 based on a single specification of parameters.
 }
@@ -94,16 +106,13 @@ data(simData)
 #following code takes some time.
 #use clusterSingle to do sequential clustering
 #(same as example in seqCluster only using clusterSingle ...)
-set.seed(44261)
-clustSeqHier_v2 <- clusterSingle(simData, clusterFunction="hierarchical01",
-sequential=TRUE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
-clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-seqArgs=list(beta=0.8, k0=5), clusterDArgs=list(minSize=5))
 }
 
 #use clusterSingle to do just clustering k=3 with no subsampling
-clustNothing <- clusterSingle(simData, clusterFunction="pam",
-subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=3))
+clustNothing <- clusterSingle(simData, 
+subsample=FALSE, sequential=FALSE, clusterDArgs=list(clusterFunction="pam",clusterArgs=list(k=3)))
+#compare to standard pam
+cluster::pam(t(simData),k=3,cluster.only=TRUE)
 }
 \seealso{
 \code{\link{clusterMany}} to compare multiple choices of parameters.

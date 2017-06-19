@@ -1,23 +1,22 @@
 #' General wrapper method to cluster the data
 #'
-#' Given a data matrix, \code{\link{SummarizedExperiment}}, or
+#' Given input data, \code{\link{SummarizedExperiment}}, or
 #' \code{\link{ClusterExperiment}} object, this function will find clusters,
 #' based on a single specification of parameters.
 #'
-#' @param x the data on which to run the clustering (features in rows).
+#' @param x the data on which to run the clustering (features in rows), or a \code{\link{SummarizedExperiment}}, or
+#' \code{\link{ClusterExperiment}} object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples
-#'   on which to run the clustering (only if \code{subsample=FALSE})
+#'   on which to run the clustering.
 #' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
-#'   iteration; otherwise the distance function will be determined by argument
-#'   \code{distFunction} passed in \code{clusterDArgs} (if input a data matrix).
+#'   \code{\link{subsampleClustering}}. If TRUE, clustering in clusterD step is done on the co-occurance between clusterings in the subsampled clustering results.  If FALSE, the clusterD step will be run directly on \code{x}/\code{diss}
 #' @param sequential logical whether to use the sequential strategy (see
-#'   details of \code{\link{seqCluster}}).
-#' @param clusterDArgs list of additional arguments to be passed to
+#'   details of \code{\link{seqCluster}}). Can be used in combination with \code{subsample=TRUE} or \code{FALSE}.
+#' @param clusterDArgs list of arguments to be passed for the clusterD step, see help pages of 
 #'   \code{\link{clusterD}}.
-#' @param subsampleArgs list of arguments to be passed to
+#' @param subsampleArgs list of arguments to be passed to the subsampling step (if \code{subsample=TRUE}), see help pages of 
 #'   \code{\link{subsampleClustering}}.
-#' @param seqArgs list of additional arguments to be passed to
+#' @param seqArgs list of arguments to be passed to
 #'   \code{\link{seqCluster}}.
 #' @param isCount logical. Whether the data are in counts, in which case the
 #'   default \code{transFun} argument is set as log2(x+1). This is simply a
@@ -34,7 +33,7 @@
 #' @param clusterLabel a string used to describe the clustering. By
 #'   default it is equal to "clusterSingle", to indicate that this clustering is
 #'   the result of a call to \code{clusterSingle}.
-
+#' @param checkDiss logical. Whether to check whether the input \code{diss} is valid. 
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #'
@@ -43,7 +42,14 @@
 #'   clusterDArgs or subsampleArgs will not do anything and will produce a
 #'   warning to that effect.
 #'
-#' @return A \code{\link{ClusterExperiment}} object.
+#' @return A \code{\link{ClusterExperiment}} object if input was \code{x} a matrix (or \code{assay} of a \code{ClusterExperiment} or \code{SummarizedExperiment} object). 
+#' @return If input was \code{diss}, then the result is a list with values
+#' \itemize{
+#'  \item{clustering}{The vector of clustering results}     
+#'  \item{clusterInfo}{A list with information about the parameters run in the clustering}
+#' \item{diss}{The dissimilarity matrix used in the clustering}
+#' }
+
 #'
 #' @seealso \code{\link{clusterMany}} to compare multiple choices of parameters.
 #'
@@ -105,7 +111,7 @@ setMethod(
 
 
 #' @rdname clusterSingle
-#' @param replaceCoClustering logical. If TRUE, the co-clustering resulting from subsampling is returned in the coClustering object and replaces any existing coClustering object in the slot \code{coClustering}. 
+#' @param replaceCoClustering logical. Applicable if \code{x} is a \code{ClusterExperiment} object. If TRUE, the co-clustering resulting from subsampling is returned in the coClustering object and replaces any existing coClustering object in the slot \code{coClustering}.
 #' @export
 setMethod(
   f = "clusterSingle",
@@ -129,21 +135,17 @@ setMethod(
       clusterDArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
       ndims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
-	# if(missing(x)) x<-NULL
-	# if(missing(diss)) diss<-NULL
-
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
     ##########
-    	checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=sequential,clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+ 	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, subsample=subsample, sequential=sequential, clusterDArgs=clusterDArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss)
 	if(is.character(checkOut)) stop(checkOut)
 	else {
 		clusterDArgs<-checkOut$clusterDArgs
 		subsampleArgs<-checkOut$subsampleArgs
 		input<-checkOut$inputClusterD
 	}
-
     if(sequential){
       if(is.null(seqArgs)) {
 		  ##To DO: Question: if missing seqArgs, should we grab k0 from subsampleArgs?
@@ -249,29 +251,16 @@ setMethod(
 .clusterWrapper <- function(x, diss, subsample, clusterDArgs=NULL, subsampleArgs=NULL) 
 {
     if(subsample){
-		# ##To DO: Need to revisit why this was here and if add to .checkSubsampleClusterDArgs
-		# #not clear why need this check...
-		#         if(is.null(subsampleArgs) || is.null(subsampleArgs[["clusterArgs"]]) || !"k" %in% names(subsampleArgs[["clusterArgs"]])) stop("must provide k in 'subsampleArgs' via the 'clusterArgs' argument (or if sequential should have been set by sequential strategy)")
         Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
         diss<-1-Dbar #make it a distance.
         x<-NULL
-		##To Do: revisit why this is here and if add to .checkSubsampleClusterDArgs
+
+		##This was to make it automatic so if subsample and didn't give 'k' to clusterD, would do the same for clusterD. Now have added this directly to sequential, and then by default if missing from subsampling should pull from clusterD (i.e. should happen the other way).
         # if(typeAlg=="K"){
         #     if(is.null(clusterDArgs)) clusterDArgs<-list(k=subsampleArgs[["k"]])
         #     else if(!"k" %in% names(clusterDArgs)) clusterDArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         # }
     }
-	####To DO:Need to revisit why this was here and if add to .checkSubsampleClusterDArgs
-		#     if(typeAlg=="K"){
-		# ###Why is this here??? why does findBestK have to be set? Why can't it just be missing???
-		# ###Is this simply so I can check that 'k' is defined in clusterDArgs??
-		#         findBestK<-FALSE
-		#         if(!is.null(clusterDArgs) && "findBestK" %in% names(clusterDArgs)){
-		#             findBestK<-clusterDArgs[["findBestK"]]
-		#         }
-		# ###Ditto. Why is this here??? Aren't there already existing checks??
-		#         if(is.null(clusterDArgs) || (!"k" %in% names(clusterDArgs) && !findBestK)) stop("if not type 'K' algorithm, must give k in 'clusterDArgs' (or if sequential should have been set by sequential strategy)")
-		#     }
     resList<-do.call("clusterD",c(list(x=x,diss=diss,format="list", returnData=TRUE),clusterDArgs)) 
     return(resList) 
 }
