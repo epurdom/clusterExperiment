@@ -31,7 +31,7 @@ columns).}
 on which to run the clustering}
 
 \item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input \code{D} is a matrix of data, rather than a distance. See details.}
+input is only \code{x} (a matrix of data), and \code{diss=NULL}. See details of \code{\link{clusterD}} for the required format of the distance function.}
 
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN} slot of the \code{ClusterFunction} object}
 

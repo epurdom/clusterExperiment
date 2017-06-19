@@ -4,13 +4,10 @@
 \name{subsampleClustering}
 \alias{subsampleClustering}
 \alias{subsampleClustering-character-method}
-\alias{subsampleClustering,missing-method}
 \alias{subsampleClustering,ClusterFunction-method}
 \title{Cluster subsamples of the data}
 \usage{
 \S4method{subsampleClustering}{character}(clusterFunction, ...)
-
-\S4method{subsampleClustering}{missing}(clusterFunction, ...)
 
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction, x = NULL,
   diss = NULL, distFunction = NA, clusterArgs = NULL,
@@ -28,7 +25,7 @@ of clustering routines provided in package. Type \code{\link{builtInClusterFunct
 \item{diss}{a dissimilarity matrix on which to run the clustering.}
 
 \item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input \code{D} is a matrix of data, rather than a distance. See details.}
+input is only \code{x} (a matrix of data), and \code{diss=NULL}. See details of \code{\link{clusterD}} for the required format of the distance function.}
 
 \item{clusterArgs}{a list of parameter arguments to be passed to
 the function defined in the \code{clusterFunction} slot of the \code{ClusterFunction} object. For any given \code{\link{ClusterFunction}} object, use function \code{\link{requiredArgs}} to get a list of required arguments for the object.}

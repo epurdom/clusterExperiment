@@ -4,7 +4,7 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta = 0.7,
+seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
   top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL,
   checkDiss = TRUE)
