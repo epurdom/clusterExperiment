@@ -158,7 +158,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 			names(res)<-if(input=="X") colnames(x) else rownames(diss)
 	}
 	if(!returnData) return(res)
-	else return(list(result=res,diss=diss,x=x))
+	else return(list(results=res,diss=diss,x=x))
 }
 )
 

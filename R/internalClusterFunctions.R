@@ -119,6 +119,7 @@
 }
 
 ###This function checks the clusterDArgs and subsampleArgs to make sure make sense with combination of sequential, subsample, x, and diss given by the user. If error, returns a character string describing error, otherwise returns list with necessary information.
+## To DO: add checks that have right arguments here, so will run BEFORE do subsampling and save time.
 .checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,clusterDArgs,subsampleArgs,checkDiss){
     ########
     ####Checks
