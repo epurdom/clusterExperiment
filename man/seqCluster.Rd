@@ -50,8 +50,7 @@ progress.}
 \code{\link{subsampleClustering}}.}
 
 \item{clusterDArgs}{list of arguments to be passed to
-\code{\link{clusterD}}(which can include arguments to be passed to
-\code{\link{cluster01}} or \code{\link{clusterK}}).}
+\code{\link{clusterD}}).}
 }
 \value{
 A list with values
@@ -77,12 +76,14 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
-This code is adapted from the code of the tightClust
+\code{seqCluster} is not meant to be called by the user. It is only an exported function so as to be able to clearly document the arguments for \code{seqCluster} which can be passed via the argument \code{seqArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
+
+This code is adapted from the sequential protion of the code of the tightClust
  package of Tseng and Wong. At each iteration of the algorithm it finds a set of samples that constitute a homogeneous cluster and remove them, and iterate again to find the next set of samples that form a cluster.
 
 In each iteration, to determine the next set of homogeneous set of samples, the algorithm will iteratively cluster the current set of samples for a series of increasing values of the parameter $K$, starting at a value \code{kinit} and increasing by 1 at each iteration, until a sufficiently homogeneous set of clusters is found. For the first set of homogeneous samples, \code{kinit} is set to the argument $k0$, and for iteration, \code{kinit} is increased internally.
 
-Depending on the value of \code{subsample} how the value of $K$ is used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the cluster function \code{\clusterFunction} sent to  \code{\link{subsamplingCluster}} via \code{subsampleArgs}; then \code{\link{clusterD}} is run on the result of the co-occurance matrix from \code{\link{subsamplingCluster}} with the \code{ClusterFunction} object defined in the argument \code{clusterFunction} set via \code{clusterDArgs}. The number of clusters actually resulting from this run of \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering done in \code{\link{subsamplingCluster}}. If \code{subsample=FALSE}, \code{\link{clusterD}} is called directly on the data to determine the clusters and $K$ set by \code{seqCluster} for this iteration determines the parameter of the clustering done by \code{\link{clusterD}}. Specifically, the argument \code{clusterFunction} defines the clustering of the \code{\link{clusterD}} step and \code{k} is sent to that \code{ClusterFunction} object. This means that if \code{subsample=FALSE}, the \code{clusterFunction} must be of \code{algorithmType} "K". 
+Depending on the value of \code{subsample} how the value of $K$ is used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the cluster function \code{clusterFunction} sent to  \code{\link{subsamplingCluster}} via \code{subsampleArgs}; then \code{\link{clusterD}} is run on the result of the co-occurance matrix from \code{\link{subsamplingCluster}} with the \code{ClusterFunction} object defined in the argument \code{clusterFunction} set via \code{clusterDArgs}. The number of clusters actually resulting from this run of \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering done in \code{\link{subsamplingCluster}}. If \code{subsample=FALSE}, \code{\link{clusterD}} is called directly on the data to determine the clusters and $K$ set by \code{seqCluster} for this iteration determines the parameter of the clustering done by \code{\link{clusterD}}. Specifically, the argument \code{clusterFunction} defines the clustering of the \code{\link{clusterD}} step and \code{k} is sent to that \code{ClusterFunction} object. This means that if \code{subsample=FALSE}, the \code{clusterFunction} must be of \code{algorithmType} "K". 
   @details In either setting of \code{subsample}, the resulting clusters from \code{\link{clusterD}} for a particular $K$ will be compared to
   clusters found in the previous iteration of $K-1$. For computational (and other?) convenience, only the
   first \code{top.can} clusters of each iteration will be compared to the first
@@ -108,36 +109,7 @@ If there are less than \code{remain.n} samples left after finding a cluster
   algorithm will stop. Any samples not found as part of a homogenous set of clusters at that point will be classified as unclustered (given a value
   of -1)
 
-Required format for clustering functions: The choice of 'subsample' also controls what type of clustering functions can be used in subsampling and in the clusterD steps. If \code{subsample=TRUE} the \code{ClusterFunction} object given to \code{subsamplingArgs} must be of type 'K' (and if missing uses the default for \code{\link{subsamplingClustering}}, currently "pam"); the resulting co-clustering matrix is given to \code{diss} (specificaly 1-coclustering values) of \code{\link{clusterD}} and so the \code{ClusterFunction} object given to \code{\link{clusterD}} via the argument \code{clusterFunction} of \code{seqCluster} must take input of the form of a dissimilarity. If subsample=FALSE, then \code{\link{clusterD}} is run on the input (either \code{x} or \code{diss}) and the \code{clusterFunction} must define a \code{ClusterFunction} object with \code{algorithmType} 'K'.
-
-If clusterFunction is of type 'K' (e.g. "pam", see
-  \code{\link{clusterD}}) the 'k' argument of \code{\link{clusterK}} called
-  by \code{\link{clusterD}} is set to the current iteration of K by the
-  sequential iteration, so setting 'k=' in the list given to clusterDArgs
-  will not do anything and will produce a warning to that effect.
-
-Similarly, the current K of the iteration also determines the 'k'
-  argument passed to \code{\link{subsampleClustering}}  so setting 'k=' in
-  the list given to the subsampleArgs will not do anything and will produce a
-  warning to that effect.
-
-If subsample=FALSE and 'findBestK=FALSE' is passed to clusterDArgs,
-  then each iteration will run the clustering given by clusterFunction on
-  dist(x) iterating over k. However, if subsample=FALSE, you should not set
-  'findBestK=TRUE' (otherwise clustering dist(x) will be essentially the same
-  for iterating over different k and there is no method implemented to change
-  the choice of how to remove a cluster other than similarity as you change
-  k); an error message will be given if this combination of options are set.
-
-However, if clusterFunction="pam" (or is of type 'K') and
-  subsample=TRUE passing either 'findBestK=TRUE' or 'findBestK=FALSE' will
-  function as expected. In particular, the iteration over K will set the
-  number of clusters for clustering of each subsample. If findBestK=FALSE,
-  that same K will be used for clustering of DMat. If findBestK=TRUE, then
-  \code{\link{clusterD}} will search for best k; note that the default
-  'kRange' over which \code{\link{clusterD}} searches when findBestK=TRUE
-  depends on the input value of 'k' (you can change this to a fixed set of
-  values by setting 'kRange' explicitly in the clusterDArgs list).
+Certain combinations of inputs to \code{clusterDArgs} and \code{subsampleArgs} are not allowed. See \code{\link{clusterSingle}} for these explanations.
 }
 \examples{
 \dontrun{
@@ -156,5 +128,5 @@ Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
   61:10-16.
 }
 \seealso{
-tight.clust
+tight.clust, \code{\link{clusterSingle}},\code{\link{clusterD}},\code{\link{subsampleClustering}}
 }

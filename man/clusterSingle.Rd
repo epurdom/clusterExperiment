@@ -83,9 +83,9 @@ A \code{\link{ClusterExperiment}} object if input was \code{x} a matrix (or \cod
 
 If input was \code{diss}, then the result is a list with values
 \itemize{
- \item{clustering}{The vector of clustering results}     
- \item{clusterInfo}{A list with information about the parameters run in the clustering}
-\item{diss}{The dissimilarity matrix used in the clustering}
+ \item{clustering: }{The vector of clustering results}     
+ \item{clusterInfo: }{A list with information about the parameters run in the clustering}
+\item{diss: }{The dissimilarity matrix used in the clustering}
 }
 }
 \description{
@@ -94,10 +94,27 @@ Given input data, \code{\link{SummarizedExperiment}}, or
 based on a single specification of parameters.
 }
 \details{
-If sequential=TRUE, the sequential clustering controls the 'k'
-  argument of the underlying clustering so setting 'k=' in the list given to
-  clusterDArgs or subsampleArgs will not do anything and will produce a
-  warning to that effect.
+\code{clusterSingle} is an 'expert-oriented' function, intended to be used when a user wants to run a single clustering and/or have a great deal of control over the clustering parameters. Most users will find \code{\link{clusterMany}} more relevant. Unlike \code{\link{clusterMany}} most of the relevant arguments for clustering are passed to the relevant steps via the arguments \code{clusterDArgs}, \code{subsampleArgs}, and \code{seqArgs}. These arguments should be named lists with parameters that match their corresponding functions: \code{\link{clusterD}},\code{\link{subsampleClustering}}, and \code{\link{seqCluster}}.
+
+Only certain combinations of parameters are possible for certain choices of \code{sequential} and \code{subsample}. These restrictions are documented below.
+\itemize{
+ \item{\code{clusterFunction} for \code{clusterDArgs}: }{The choice of \code{subsample=TRUE} also controls what algorithm type of clustering functions can be used in the clusterD step. When \code{subsample=TRUE}, then resulting co-clustering matrix  from subsampling is converted to a dissimilarity (specificaly 1-coclustering values) and is passed to \code{diss} of \code{\link{clusterD}}. For this reason, the \code{ClusterFunction} object given to \code{\link{clusterD}} via the argument \code{clusterDArgs} must take input of the form of a dissimilarity. When \code{subsample=FALSE} and \code{sequential=TRUE}, the \code{clusterFunction} passed in \code{clusterArgs} element of \code{clusterDArgs} must define a \code{ClusterFunction} object with \code{algorithmType} 'K'.  When \code{subsample=FALSE} and \code{sequential=FALSE}, then there are no restrictions on the \code{ClusterFunction} and that clustering is applied directly to the input data. 
+}     
+ \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the \code{ClusterFunction} object given to the \code{clusterArgs} of \code{subsamplingArgs} is missing the algorithm will use the default for \code{\link{subsamplingClustering}} (currently "pam"). If \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type 'K'. }
+\item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE} and \code{sequential=TRUE}, the current K of the sequential iteration determines the 'k'
+  argument passed to \code{\link{subsampleClustering}}  so setting 'k=' in
+  the list given to the subsampleArgs will not do anything and will produce a
+  warning to that effect (see documentation of \code{\link{seqCluster}}).}
+\item{Setting \code{k} for clusterD step: }{If \code{sequential=TRUE} then the user should not set \code{k} in the \code{clusterArgs} argument of \code{clusterDArgs} because it must be set by the sequential code, which has a iterative reseting of the parameters. Specifically if \code{subsample=FALSE}, then the sequential method iterates over choices of \code{k} to cluster the input data. And if \code{subsample=TRUE}, then the \code{k} in the clustering of clusterD step (assuming the clustering function is of type 'K') will use the \code{k} used in the subsampling step to make sure that the \code{k} used in the clusterD step is reasonable. } 
+\item{Setting \code{findBestK} in \code{clusterDArgs}: }{If \code{sequential=TRUE} and \code{subsample=FALSE}, the user should not set
+  'findBestK=TRUE' in \code{clusterDArgs}. This is because in this case the sequential method changes \code{k}; an error message will be given if this combination of options are set. However, if \code{sequential=TRUE} and \code{subsample=TRUE}, then passing either 'findBestK=TRUE' or 'findBestK=FALSE' via \code{clusterDArgs} will
+  function as expected (assuming the \code{clusterFunction} argument passed to \code{clusterDArgs} is of type 'K'). In particular, the sequential step will set the
+  number of clusters \code{k} for clustering of each subsample. If findBestK=FALSE,
+  that same \code{k} will be used for clusterD step that clusters the resulting co-occurance matrix after subsampling. If findBestK=TRUE, then
+  \code{\link{clusterD}} will search for best k. Note that the default
+  'kRange' over which \code{\link{clusterD}} searches when findBestK=TRUE
+  depends on the input value of \code{k} which is set by the sequential method if \code{sequential=TRUE}), see above. The user can change \code{kRange} to not depend on \code{k} and to be fixed across all of the sequential steps by setting \code{kRange} explicitly in the \code{clusterDArgs} list.}
+}
 }
 \examples{
 data(simData)
@@ -115,5 +132,5 @@ subsample=FALSE, sequential=FALSE, clusterDArgs=list(clusterFunction="pam",clust
 cluster::pam(t(simData),k=3,cluster.only=TRUE)
 }
 \seealso{
-\code{\link{clusterMany}} to compare multiple choices of parameters.
+\code{\link{clusterMany}} to compare multiple choices of parameters, and \code{\link{clusterD}},\code{\link{subsampleClustering}}, and \code{\link{seqCluster}} for the underlying functions called by \code{clusterSingle}.
 }

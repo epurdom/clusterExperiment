@@ -214,8 +214,8 @@
 #' \itemize{
 #'  \item{"pam"}{Based on \code{\link{pam}} in \code{cluster} package. Arguments to that function can be passed via \code{clusterArgs}. }
 #'  \item{"kmeans"}{Based on \code{\link{kmeans}} in \code{stats} package. Arguments to that function can be passed via \code{clusterArgs} except for \code{centers} which is reencoded here to be the argument 'k'}
-#'  \item{"hiearchical01"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering. Arguments to that function can be passed via \code{clusterArgs}. The \code{\hiearchical01} cuts the hiearchical tree based on the parameter \code{alpha}. It does not use the \code{cutree} function, but instead ... [documentation still needed]   }
-#'  \item{"hiearchicalK"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering and \code{\link{cutree}} is used to cut the tree into \code{k} clusters.}
+#'  \item{"hierarchical01"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering. Arguments to that function can be passed via \code{clusterArgs}. The \code{hierarchical01} cuts the hiearchical tree based on the parameter \code{alpha}. It does not use the \code{cutree} function, but instead ... [documentation still needed]   }
+#'  \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering and \code{\link{cutree}} is used to cut the tree into \code{k} clusters.}
 #'  \item{"tight"}{Based on the algorithm in Tsang and Wong, specifically their method of picking clusters from a co-occurance matrix after subsampling. The clustering encoded here is not the entire tight clustering algorithm, only that single piece that identifies clusters from the co-occurance matrix.  }
 #' }
 #' @examples
@@ -225,6 +225,7 @@
 builtInClusterFunctions<-names(.builtInClusterObjects)
 
 #' @rdname builtInClusteringFunctions
+#' @aliases getBuiltInClusterFunction
 #' @export
 setMethod(
   f = "getBuiltInClusterFunction",

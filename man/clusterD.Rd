@@ -64,6 +64,8 @@ Given input data, this function will
   try to find the clusters based on the given ClusterFunction object.
 }
 \details{
+\code{clusterD} is not meant to be called by the user. It is only an exported function so as to be able to clearly document the arguments for \code{clusterD} which can be passed via the argument \code{clusterDArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
+
 To provide a distance matrix via the argument \code{distFunction},
     the function must be defined to take the distance of the rows of a matrix
     (internally, the function will call \code{distFunction(t(x))}. This is to

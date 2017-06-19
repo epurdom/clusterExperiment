@@ -29,6 +29,7 @@
 #' @param returnData logical as to whether to return the \code{diss} or \code{x} matrix in the output. If \code{FALSE} only the clustering vector is returned.
 #' @param ... arguments passed to the post-processing steps of the clustering. The available post-processing arguments for a \code{ClusterFunction} object depend on it's algorithm type and can be found by calling \code{getPostProcessingArgs}. See details below for documentation.
 #' @inheritParams subsampleClustering
+#' @details \code{clusterD} is not meant to be called by the user. It is only an exported function so as to be able to clearly document the arguments for \code{clusterD} which can be passed via the argument \code{clusterDArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 #' @details To provide a distance matrix via the argument \code{distFunction},
 #'     the function must be defined to take the distance of the rows of a matrix
 #'     (internally, the function will call \code{distFunction(t(x))}. This is to

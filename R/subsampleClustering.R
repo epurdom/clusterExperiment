@@ -19,6 +19,7 @@
 #'   be called.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #'
+#' @details \code{subsampleClustering} is not usually called directly by the user. It is only an exported function so as to be able to clearly document the arguments for \code{subsampleClustering}  which can be passed via the argument \code{subsampleArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 #' @details \code{requiredArgs:} The choice of "All" or "OutOfSample" for \code{requiredArgs}
 #'   require the classification of arbitrary samples not originally in the clustering to clusters; this is done via the classifyFUN provided in the \code{\link{ClusterFunction}} object. If the \code{\link{ClusterFunction}} object does not have such a function to define how to classify into a cluster
 #'   samples not in the subsample that created the clustering then \code{classifyMethod} must be \code{"InSample"}. Note that if "All" is chosen, all
