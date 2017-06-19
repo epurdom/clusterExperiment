@@ -119,12 +119,11 @@
 }
 
 ###This function checks the clusterDArgs and subsampleArgs to make sure make sense with combination of sequential, subsample, x, and diss given by the user. If error, returns a character string describing error, otherwise returns list with necessary information.
-## To DO: add checks that have right arguments here, so will run BEFORE do subsampling and save time.
 .checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,clusterDArgs,subsampleArgs,checkDiss){
     ########
-    ####Checks
+ 	#checks for clusterD stuff
     ########
-    if("clusterFunction" %in% names(clusterDArgs)){
+     if("clusterFunction" %in% names(clusterDArgs)){
       #get clusterFunction for cluster D
   	  clusterFunction<-clusterDArgs[["clusterFunction"]]
   	  if(is.character(clusterFunction)) clusterFunction<-getBuiltInClusterFunction(clusterFunction)
@@ -136,6 +135,19 @@
     else{
   	  return("Must provide 'clusterFunction' for the clusterD step to be able to run (give 'clusterFunction' argument via 'clusterDArgs')")
     }
+	#this check is done in clusterD, but want to do this check before run subsampling...also can give message that clearer that it refers to clusterD.
+ 	reqArgs<-requiredArgs(clusterFunction)
+	#remove required args not needed if certain postProcessArgs are given:
+	# don't need define 'k' if choose 'findBestK=TRUE'
+	if(algorithmType(clusterFunction)=="K" & "findBestK" %in% names(clusterDArgs)){
+		if(clusterDArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
+	}
+	if(length(reqArgs)>0){
+		if(("clusterArgs"%in% names(clusterDArgs) & !all(reqArgs %in% names(clusterDArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(clusterDArgs))) return(paste("For the clusterFunction algorithm type ('",algorithmType(clusterFunction),"') given in 'clusterDArgs', must supply arguments:",reqArgs,"These must be supplied as elements of the list of 'clusterArgs' given in 'clusterDArgs'"))
+	} 
+	#########
+	# Checks related to subsample=TRUE
+	#########
     if(subsample){
     	#Reason: if subsampling, then the D from subsampling sent to the clusterFunction.
     	if(inputType(clusterFunction)=="X") return("If choosing subsample=TRUE, the clusterFunction used in the clusterD step must take input that is dissimilarity.")
@@ -150,69 +162,66 @@
 		  }
   		  inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
   		  diffSubsampleCF<-TRUE
-  		}
-  		else subsampleCF<-NULL
-	  	# else{ #this would have made default to be same as 
+		}
+  		else subsampleCF<-NULL 
+	  	# else{ #this would have made default to be same as clusterD
 	  	# 	subsampleCF<-clusterFunction
 	  	# 	inputSubsample<-input
 	  	# 	diffSubsampleCF<-FALSE
 	  	# }
+	  #Reason: check subsampleArgs has required arguments for function, repeated from subsamplingClustering, but want it here before do calculations... if not, see if can borrow from clusterDArgs
+	  
+	##------
+	##Check have required args for subsample. If missing, 'borrow' those args from clusterDArgs.
+	##------
+  	if(!is.null(subsampleCF)){
+		reqSubArgs<-requiredArgs(subsampleCF)
+  	}
+	else{ 
+		#if not specified, go ahead and send arguments from clusterD?
+		#reqSubArgs<-requiredArgs(clusterFunction)
+		reqSubArgs<-c()
+	}
+	#Reason: sequential sets k for the subsampling via k0
+	if(sequential & length(reqSubArgs)>0) reqSubArgs<-reqSubArgs[-which(reqSubArgs=="k")]
+	if(length(reqSubArgs)>0){
+		#check if can borrow...
+		if("clusterArgs" %in% names(clusterDArgs)){
+			clusterDReqArgs<-requiredArgs(clusterFunction)
+			clusterDReqArgs<-clusterDReqArgs[clusterDReqArgs%in%clusterDArgs[["clusterArgs"]]]
+			if(!is.null(subsampleArgs) && "clusterArgs" %in% names(subsampleArgs)){
+				#check if existing clusterArgs has required names already
+				#if not, give them those of clusterD if exist.
+				if(!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
+					missingArgs<-reqSubArgs[!reqSubArgs%in%names(subsampleArgs[["clusterArgs"]])]
+					missingArgs<-missingArgs[missingArgs%in%clusterDReqArgs]
+					subsampleArgs[["clusterArgs"]][missingArgs]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
+			    }
+			} 	
+			else{
+				subsampleArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
+			}
+		}
+		#now check if got everything needed...
+		if(("clusterArgs" %in% names(subsampleArgs) & !all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(subsampleArgs))) 					return(paste("For the clusterFunction algorithm type ('",algorithmType(subsampleCF),"') given in 'subsampleArgs', must supply arguments:",reqSubArgs,". These must be supplied as elements of the list of 'clusterArgs' given in 'subsampleArgs'"))	
+  	  }
+	  #Reason, if subsample=TRUE, user can't set distance function because use diss from subsampling.
 	    if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
 	        warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
 	        clusterDArgs[["distFunction"]]<-NA
 	    }
 		if(sequential){
 		  #Reason: if subsampling, sequential goes over different k values, so user can't set k
-	  	  if("clusterArgs" %in% names(subsampleArgs) && "k" %in% names(subsampleArgs[["clusterArgs"]])){
+		   if("clusterArgs" %in% names(subsampleArgs) && "k" %in% names(subsampleArgs[["clusterArgs"]])){
 	  	      #remove predefined versions of k from both.
 	  	      whK<-which(names(subsampleArgs[["clusterArgs"]])=="k")
 	  	      warning("Setting 'k' in subsampleArgs when sequential=TRUE is called will have no effect.")
 	  	      subsampleArgs[["clusterArgs"]]<-subsampleArgs[["clusterArgs"]][-whK]
-	  	    }
+		  	}
 	  	  if(!"clusterArgs" %in% names(subsampleArgs) ){
 	  	  	  subsampleArgs[["clusterArgs"]]<-list() #make it if doesn't exist
-	  	  }				
-		  
+	  	  }				 
 		}
-		else{
-			##------
-			##Check generic required args to determine whether should 'borrow' those args from clusterDArgs.
-			## only if not sequential because sequential sets k for the subsampling via k0
-			##------
-			if("clusterArgs" %in% names(clusterDArgs)){
-				clusterDReqArgs<-requiredArgs(clusterFunction)
-				clusterDReqArgs<-clusterDReqArgs[clusterDReqArgs%in%clusterDArgs[["clusterArgs"]]]
-				#find required args, either from subsampleCF if exists or clusterFunction
-				if(!is.null(subsampleCF) && algorithmType(subsampleCF)==algorithmType(clusterFunction)){
-					subPassedReqArgs<-requiredArgs(subsampleCF) 
-				}
-				else{ 
-					subPassedReqArgs<-requiredArgs(clusterFunction)
-				}
-				if(!is.null(subsampleArgs) && "clusterArgs" %in% names(subsampleArgs)){
-					#check if existing clusterArgs has required names already
-					#if not, give them those of clusterD if exist.
-					if(!all(subPassedReqArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
-						missingArgs<-subPassedReqArgs[!subPassedReqArgs%in%names(subsampleArgs[["clusterArgs"]])]
-						missingArgs<-missingArgs[missingArgs%in%clusterDReqArgs]
-						subsampleArgs[["clusterArgs"]][missingArgs]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
-				    }
-				} 	
-				else{
-					subsampleArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][clusterDReqArgs]
-				}
-			}
-			##To DO:
-			# #Need to consider whether to include these type of warnings or let them be caught later:
-			# Messages will be confusing if not done here
-			#                             warning("did not give 'k' in 'subsampleArgs'.
-			#                     Set to 'k' argument in 'clusterDArgs'")
-			#             return("if not sequential and do subsampling,
-			#                  must pass 'k' in subsampleArgs")
-			#
-			
-		}
-
 	}
 	else{
 	    if(sequential){
@@ -237,18 +246,7 @@
 	    }
 
 	}
-	##To DO:
-	# Similarly, consider whether should do these checks previously had, or just let internal functions.
-	# Messages will be confusing if not done here. Maybe best is to make those be good messages!
-	# else if(algType=="K" && !is.null(clusterDArgs) && !"k" %in% names(clusterDArgs)){
-	#   #if don't specify k, then must have findBestK=TRUE in clusterDArgs;
-	#   #is by default, so only need to check that if specified it,
-	#   #set it to TRUE
-	#   if("findBestK" %in% names(clusterDArgs) && !clusterDArgs[["findBestK"]])
-	#     return("if not sequential and clusterFunction is of type 'K' (e.g. pam)
-	#          and findBestK=FALSE in clusterDArgs, must pass 'k' via
-	#          clusterDArgs list")
-	# }
+
     return(list(inputClusterD=input,clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs))
   
 }

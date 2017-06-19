@@ -124,11 +124,12 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 		 if(postProcessArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
 	 }
 	 if(length(reqArgs)>0 & !all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
-	 if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-	
+	 
+	 
 	#######################
 	####Run clustering:
 	#######################
+	if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
 	
 	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss)
 	argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
