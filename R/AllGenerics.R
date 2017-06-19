@@ -24,7 +24,7 @@ setGeneric(
 )
 setGeneric(
   name = "clusterSingle",
-  def = function(x, diss, clusterFunction, ...) {
+  def = function(x, diss, ...) {
     standardGeneric("clusterSingle")
   }
 )
@@ -364,6 +364,12 @@ setGeneric(
   name = "algorithmType",
   def = function(object, ...) {
     standardGeneric("algorithmType")
+  }
+)
+setGeneric(
+  name = "inputType",
+  def = function(object, ...) {
+    standardGeneric("inputType")
   }
 )
 setGeneric(

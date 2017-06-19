@@ -107,7 +107,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	  ##----
 	    if(classifyMethod=="All"){
 		argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)	 
-		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(result=result)))
+		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(clusterResult=result)))
 	}
 	    if(classifyMethod=="OutOfSample"){
 			argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 

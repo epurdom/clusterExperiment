@@ -34,7 +34,7 @@
   passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
   out<-do.call(stats::kmeans,c(list(x=t(x),centers=k),passedArgs))
   if(cluster.only) return(out$cluster)
-  else return(.kmeansPartitionObject(t(x),out)) 
+  else return(.kmeansPartitionObject(x,out)) 
 } 
 .kmeansClassify <- function(x, clusterResult) { 
   centers <- clusterResult$mediods
@@ -44,7 +44,7 @@
 #' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
   dissE<-(cluster::daisy(t(x)))^2
-  silObj<-cluster::silhouette(kmeansObj$cl,dissE^2)
+  silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE))
   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
   return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }

@@ -22,7 +22,7 @@ setMethod(
   signature = c("ClusterFunction"),
   definition = function(object,genericOnly=FALSE) {
   	  algType<-algorithmType(object)
-  	  if(!onlyGeneric){
+  	  if(!genericOnly){
 		  if(!is.na(object@requiredArgs)) reqArgs<-object@requiredArgs
 		  else reqArgs<-NULL
 	  	  if(algType=="01") return(unique(sort(c(reqArgs,.required01Args))))
@@ -50,6 +50,15 @@ setMethod(
   signature = c("ClusterFunction"),
   definition = function(object) {
 	  object@algorithmType
+	    }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "inputType",
+  signature = c("ClusterFunction"),
+  definition = function(object) {
+	  object@inputType
 	    }
 )
 

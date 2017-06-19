@@ -10,8 +10,6 @@
 #'   on which to run the clustering
 #' @param k0 the value of K at the first iteration of sequential algorithm, see
 #'   details below or vignette.
-#' @param clusterFunction passed to clusterDMat option 'clusterFunction' to
-#'   indicate method of clustering, see \code{\link{clusterD}}.
 #' @param subsample logical as to whether to subsample via 
 #'   \code{\link{subsampleClustering}} to get the distance matrix at each 
 #'   iteration; otherwise the distance matrix is set by arguments to
@@ -39,50 +37,36 @@
 #'   \code{\link{cluster01}} or \code{\link{clusterK}}).
 #'
 #' @details This code is adapted from the code of the tightClust
-#'  package of Tseng and Wong
-#' @details Each iteration of the algorithm will cluster the current set of
-#'   samples. Depending on the method, the number of clusters resulting from
-#'   \code{\link{clusterD}} may not be equal to the K used in the clustering of
-#'   the (subsampled) data. The resulting clusters will then be compared to
-#'   clusters found in the previous iteration that set the subsampling
-#'   clustering to K-1. For computational (and other?) convenience, only the
-#'   first top.can clusters of each iteration will be compared to the first
-#'   top.can clusters of previous iteration for similarity (where top.can
-#'   currently refers to ordering by size, so first top.can largest clusters).
+#'  package of Tseng and Wong. At each iteration of the algorithm it finds a set of samples that constitute a homogeneous cluster and remove them, and iterate again to find the next set of samples that form a cluster.
+#' @details In each iteration, to determine the next set of homogeneous set of samples, the algorithm will iteratively cluster the current set of samples for a series of increasing values of the parameter $K$, starting at a value \code{kinit} and increasing by 1 at each iteration, until a sufficiently homogeneous set of clusters is found. For the first set of homogeneous samples, \code{kinit} is set to the argument $k0$, and for iteration, \code{kinit} is increased internally.   
+#' @details Depending on the value of \code{subsample} how the value of $K$ is used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the cluster function \code{\clusterFunction} sent to  \code{\link{subsamplingCluster}} via \code{subsampleArgs}; then \code{\link{clusterD}} is run on the result of the co-occurance matrix from \code{\link{subsamplingCluster}} with the \code{ClusterFunction} object defined in the argument \code{clusterFunction} set via \code{clusterDArgs}. The number of clusters actually resulting from this run of \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering done in \code{\link{subsamplingCluster}}. If \code{subsample=FALSE}, \code{\link{clusterD}} is called directly on the data to determine the clusters and $K$ set by \code{seqCluster} for this iteration determines the parameter of the clustering done by \code{\link{clusterD}}. Specifically, the argument \code{clusterFunction} defines the clustering of the \code{\link{clusterD}} step and \code{k} is sent to that \code{ClusterFunction} object. This means that if \code{subsample=FALSE}, the \code{clusterFunction} must be of \code{algorithmType} "K". 
+
+#'   @details In either setting of \code{subsample}, the resulting clusters from \code{\link{clusterD}} for a particular $K$ will be compared to
+#'   clusters found in the previous iteration of $K-1$. For computational (and other?) convenience, only the
+#'   first \code{top.can} clusters of each iteration will be compared to the first
+#'   \code{top.can} clusters of previous iteration for similarity (where \code{top.can}
+#'   currently refers to ordering by size, so first \code{top.can} largest clusters.
+#' @details If there is no cluster of the first \code{top.can} in the current iteration $K$
+#'   that has overlap similarity > \code{beta} to any in the previous iteration, then
+#'   the algorithm will move to the next iteration, increasing to $K+1$.
 #'
-#' @details If there is a cluster in the current iteration that has overlap
-#'   similarity > beta to a cluster in the previous iteration, then the cluster
-#'   with the largest such similarity will be identified as a 'final' cluster
-#'   and the samples in it will be removed for future iterations. The algorithm
-#'   will then continue to the next iteration, but without these samples.
-#'   Furthermore, in this case K for the next iteration will NOT be set to K+1,
-#'   but will be reset to kinit-1, where kinit was the first K used after the
-#'   previous 'final' cluster was removed. If kinit-1<k.min, then K will be set
-#'   to k.min.
+#' @details If, however, of these clusters there is a cluster in the current iteration $K$ that has overlap
+#'   similarity > beta to a cluster in the previous iteration $K-1$, then the cluster
+#'   with the largest such similarity will be identified as a homogenous set of samples
+#'   and the samples in it will be removed and designated as such. The algorithm
+#'   will then start again to determine the next set of homogenous samples, but without these samples.
+#'   Furthermore, in this case (i.e. a cluster was found and removed), the value of \code{kinit} will be be reset to \code{kinit-1}; i.e. the range of increasing $K$ that will be iterated over to find a set of homogenous samples will start off one value less than was the case for the previous set of homogeneous samples. If \code{kinit-1}<\code{k.min}, then \code{kinit} will be set
+#'   to \code{k.min}.
 #'
-#' @details If there is no cluster of the first top.can in the current iteration
-#'   that has overlap similarity > beta to any in the previous iteration, then
-#'   the algorithm will move to the next iteration (i.e. redo after increasing K
-#'   to K+1).
 #'
-#' @details If there are less than remain.n samples left after finding a cluster
+#' @details If there are less than \code{remain.n} samples left after finding a cluster
 #'   and removing its samples, the algorithm will stop, as subsampling is deamed
-#'   to no longer be appropriate. If the K has to be increased to beyond k.max
+#'   to no longer be appropriate. If the K has to be increased to beyond \code{k.max}
 #'   without finding any pair of clusters with overlap > beta, then the
-#'   algorithm will stop. Any samples not found as part of a 'final' cluster
-#'   after the algorithm stops, will be classified as unclustered (given a value
+#'   algorithm will stop. Any samples not found as part of a homogenous set of clusters at that point will be classified as unclustered (given a value
 #'   of -1)
 #'
-#' @details 'subsample' controls what is the D (distance) matrix used for
-#'   clustering at each iteration. If subsample=TRUE, D is given via
-#'   \code{\link{subsampleClustering}} function with k=K (with additional
-#'   arguments passed via subsampleArgs). If subsample=FALSE, D is dist(x), for
-#'   the samples currently considered in the iteration and clusterFunction must
-#'   be of the 'K' type (e.g. "pam", see \code{\link{clusterD}}) or an error
-#'   will be produced. The nsample x nsample matrix D is then clustered via
-#'   \code{\link{clusterD}} to find clusters. The option 'clusterFunction' is
-#'   passed to the argument 'clusterFunction' of \code{\link{clusterD}} to
-#'   control what method is used to cluster D.
+#' @details Required format for clustering functions: The choice of 'subsample' also controls what type of clustering functions can be used in subsampling and in the clusterD steps. If \code{subsample=TRUE} the \code{ClusterFunction} object given to \code{subsamplingArgs} must be of type 'K' (and if missing uses the default for \code{\link{subsamplingClustering}}, currently "pam"); the resulting co-clustering matrix is given to \code{diss} (specificaly 1-coclustering values) of \code{\link{clusterD}} and so the \code{ClusterFunction} object given to \code{\link{clusterD}} via the argument \code{clusterFunction} of \code{seqCluster} must take input of the form of a dissimilarity. If subsample=FALSE, then \code{\link{clusterD}} is run on the input (either \code{x} or \code{diss}) and the \code{clusterFunction} must define a \code{ClusterFunction} object with \code{algorithmType} 'K'. 
 #'
 #' @details If clusterFunction is of type 'K' (e.g. "pam", see
 #'   \code{\link{clusterD}}) the 'k' argument of \code{\link{clusterK}} called
@@ -140,63 +124,28 @@
 #'
 #' set.seed(12908)
 #'
-#' clustSeqHier <- seqCluster(t(simData), k0=5, subsample=TRUE,
-#' clusterFunction="hierarchical01", beta=0.8, subsampleArgs=list(resamp.n=100,
+#' clustSeqHier <- seqCluster(simData, k0=5, subsample=TRUE,
+#' beta=0.8, subsampleArgs=list(resamp.n=100,
 #' samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-#' clusterDArgs=list(minSize=5))
+#' clusterDArgs=list(minSize=5,clusterFunction="hierarchical01"))
 #' }
 #' @export
-setMethod(
-  f = "seqCluster",
-  signature = signature(clusterFunction = "character"),
-  definition = function(clusterFunction,...){
-  	seqCluster(getBuiltInClusterFunction(clusterFunction),...)
-	  
-  }
- )
 #' @rdname clusterD
 #' @export
-setMethod(
-   f = "seqCluster",
-   signature = signature(clusterFunction = "ClusterFunction"),
-definition=function(clusterFunction,x=NULL, diss=NULL, k0,  
+seqCluster<-function(x=NULL, diss=NULL, k0,  
      subsample=TRUE,beta = 0.7, top.can = 15, remain.n = 30, k.min = 3, 
      k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,clusterDArgs=NULL,checkDiss=TRUE)
 {
   ########
   ####Checks
   ########
-  input<-.checkXDissInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
-  #Reason: seqCluster requires subsampling cluster function to be of type "K"
-  if("clusterFunction" %in% names(subsampleArgs)){
-	  subsampleCF<-subsampleArgs[["clusterFunction"]]
-	  if(is.character(subsampleCF)) subsampleCF<-getBuiltInClusterFunction(subsampleCF)
-	  if(algorithmType(subsampleCF)!="K"){
-		  warning("sequentical clustering can only be implemented with a clusterFunction with algorithmType 'K'. See documentation of seqCluster. Will ignore this argument of subsampleArgs")
-		  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]
-	  }
-  }
-  #Reason: can't do sequential clustering with subsample=FALSE and findBestK=TRUE because need to remove cluster based on testing many k and finding stable, and if not doing it over subsample, then do it over actual clustering
-  if(algorithmType(clusterFunction) == "K"){
-    if("findBestK" %in% names(clusterDArgs) & !subsample){
-      if(clusterDArgs[["findBestK"]]) stop("Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed via clusterDArgs. See help documentation.")
-    }
-  }
-  #Reason: if subsampling, sequential goes over different k values, so user can't set k
-  if(subsample & "clusterArgs" %in% names(subsampleArgs) && "k" %in% names(subsampleArgs[["clusterArgs"]])){
-    #remove predefined versions of k from both.
-    whK<-which(names(subsampleArgs[["clusterArgs"]])=="k")
-    warning("Setting 'k' in subsampleArgs when the seqCluster is called will have no effect.")
-    subsampleArgs[["clusterArgs"]]<-subsampleArgs[["clusterArgs"]][-whK]
-  }
-  #Reason: unclear. why is this here? why can't set 'k'? Does it have to be a 01 cluster function for sequential??
-  # I don't think so. 
-  if("clusterArgs" %in% names(clusterDArgs) && "k" %in% names(clusterDArgs[["clusterArgs"]]) ){
-      #remove predefined versions of k from both.
-      whK<-which(names(clusterDArgs[["clusterArgs"]])=="k")
-      warning("Setting 'k' in clusterDArgs when the seqCluster is called will have no effect.")
-      clusterDArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][-whK]
-  }
+    	checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=TRUE,clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+		if(is.character(checkOut)) stop(checkOut)
+else {
+	clusterDArgs<-checkOut$clusterDArgs
+	subsampleArgs<-checkOut$subsampleArgs
+	input<-checkOut$inputClusterD
+}		
   
   ################
   ################
@@ -243,12 +192,14 @@ definition=function(clusterFunction,x=NULL, diss=NULL, k0,
       for (i in 1:seq.num) {
         if(verbose) cat(paste("k =", k + i - 1,"\n"))
         if(subsample){
-          tempArgs<-c(list(k=k + i - 1),subsampleArgs) #set k
-          res <- .clusterWrapper(x=x, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
+          tempArgs<-subsampleArgs
+		  tempArgs[["clusterArgs"]]<-c(list(k=k + i - 1),subsampleArgs[["clusterArgs"]]) #set k
+          res <- .clusterWrapper(x=x, subsample=subsample,  subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
         }
         else{
-          tempArgs<-c(list(k=k + i - 1),clusterDArgs) #set k
-          res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
+            tempArgs<-clusterDArgs
+  		  tempArgs[["clusterArgs"]]<-c(list(k=k + i - 1),clusterDArgs[["clusterArgs"]]) #set k
+          res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
           
         }
         # if(length(res)==0) {
@@ -264,12 +215,14 @@ definition=function(clusterFunction,x=NULL, diss=NULL, k0,
       if(verbose) cat(paste("k =", k + seq.num - 1, "\n"))
       #add new k (because always list o)
       if(subsample){
-        tempArgs<-c(list(k=k + seq.num - 1),subsampleArgs)  #set k
-        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
+          tempArgs<-subsampleArgs
+		  tempArgs[["clusterArgs"]]<-c(list(k=k + seq.num - 1),subsampleArgs[["clusterArgs"]]) #set k
+        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=tempArgs, clusterDArgs=clusterDArgs)$results
       }
       else{
-        tempArgs<-c(list(k=k + seq.num - 1),clusterDArgs) #set k
-        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample, clusterFunction=clusterFunction, subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
+          tempArgs<-clusterDArgs
+		  tempArgs[["clusterArgs"]]<-c(list(k=k + seq.num - 1),clusterDArgs[["clusterArgs"]]) #set k
+        res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=subsampleArgs, clusterDArgs=tempArgs)$results
         
       }
       if(length(res)>0) res <- res[1:min(top.can,length(res))]
@@ -325,11 +278,11 @@ definition=function(clusterFunction,x=NULL, diss=NULL, k0,
       found.temp <- candidates[[whReturn]][[tempIndex[which.max(beta.temp)[1], whReturn]]]
       kend[[nfound]]<-k+seq.num-1 #just assuming returning last here!
       kstart[[nfound]]<-currentStart
-      if(input %in% c("X","both")) tclust[[nfound]] <- colnames(x)[found.temp] #need to do rownames, because remove rows from x
+      if(input %in% c("X")) tclust[[nfound]] <- colnames(x)[found.temp] #need to do rownames, because remove rows from x
       else tclust[[nfound]] <- colnames(diss)[found.temp] #need to do rownames, because remove rows from x
       mode(tclust[[nfound]]) <- "numeric"
-      if(input %in% c("X","both")) x <- x[,-found.temp] 
-      if(input %in% c("diss","both")) diss<-diss[-found.temp,-found.temp]
+      if(input %in% c("X")) x <- x[,-found.temp] 
+      if(input %in% c("diss")) diss<-diss[-found.temp,-found.temp]
       remain <- remain - length(tclust[[nfound]])
       if(verbose) cat(paste("Cluster size:", length(tclust[[nfound]]),
                             "\tRemaining number of points:", remain, "\n"),
@@ -358,4 +311,4 @@ definition=function(clusterFunction,x=NULL, diss=NULL, k0,
     return(list(clustering = clusterVector, whyStop=whyStop))
   }
   
-})
+}
