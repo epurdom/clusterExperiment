@@ -376,7 +376,8 @@ setMethod(
     if(verbose) {
       cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
     }
-
+	if(is.null(clusterDArgs)) clusterDArgs<-list(clusterArgs=list())
+	if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
     paramFun <- function(i){
       par <- param[i,]
       #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
@@ -396,7 +397,6 @@ setMethod(
           clusterDArgs[["clusterArgs"]][["k"]] <- par[["k"]]
         }
       }
-      #browser()
       clusterDArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
       seqArgs[["beta"]] <- par[["beta"]]
       clusterDArgs[["minSize"]] <- par[["minSize"]]
