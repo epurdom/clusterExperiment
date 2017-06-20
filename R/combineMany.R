@@ -88,7 +88,7 @@
 setMethod(
   f = "combineMany",
   signature = signature(x = "matrix", whichClusters = "missing"),
-  definition = function(x, whichClusters, proportion=1,
+  definition = function(x, whichClusters, proportion,
                         clusterFunction="hierarchical01",
                         propUnassigned=.5, minSize=5) {
 
@@ -104,12 +104,12 @@ setMethod(
     cl[is.na(cl)] <- -1
     sharedPerct<-NULL
   } else{
-    if(is.character(clusterFunction)){
-      typeAlg <- .checkAlgType(clusterFunction)
+    	if(is.character(clusterFunction)) typeAlg <- getBuiltInAlgorithmType(clusterFunction)
+		else if(class(clusterFunction)=="ClusterFunction") typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
       if(typeAlg!="01") {
-        stop("combineMany is only implemented for '01' type clustering functions (see help of clusterD)")
+        stop("combineMany is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
-    }
+    
     ##Make clusterMat character, just in case
     clusterMat <- apply(clusterMat, 2, as.character)
     clusterMat[clusterMat == "-1"] <- NA
@@ -119,8 +119,8 @@ setMethod(
     diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
     sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
     cl <- clusterD(diss=1-sharedPerct, clusterFunction=clusterFunction,
-                   alpha=1-proportion, minSize=minSize, format="vector",
-                   clusterArgs=list(evalClusterMethod=c("average")))
+                   minSize=minSize, format="vector",
+                   clusterArgs=list(alpha=1-proportion,  evalClusterMethod=c("average")))
 
     if(is.character(cl)) {
       stop("coding error -- clusterD should return numeric vector")

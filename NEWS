@@ -6,7 +6,7 @@ Changes:
 	- `clusterD` and `subsampleClustering` no longer take `k` as a direct argument. It needs to be passed to the clustering function (if appropriate to the clustering) via `clusterArgs`. 
 * hiearchical01 now has default to apply `as.dist` to the input `diss` to get a `dist` object, rather than `dist(1-diss)` which was previously default (controlled by argument `whichHierDist`)
 * clusterSingle now only returns dissimilarity in coClustering slot if the subsample=TRUE in the call.
-
+* Removed default value for argument `proportion` in `combineMany`. Previous default was `proportion=1` but didn't match most common use cases.
 
 Bugs:
 * Fixed error so that if clusterSingle is called on existing clusterExperiment object, will pass on the transformation function. 

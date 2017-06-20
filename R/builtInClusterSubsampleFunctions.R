@@ -251,7 +251,7 @@ setMethod(
   f = "getBuiltInClusterFunction",
   signature = c("character"),
   definition = function(object) {
-  	if(!all(object%in%builtInClusterFunctions)) stop("if give character value for 'object' must be one of",paste(builtInClusterFunctions,collapse=","))
+  	if(!all(object%in%builtInClusterFunctions)) stop("if give character value for a clusterFunction object must be one of",paste(builtInClusterFunctions,collapse=","))
   	    m<-match(object,names(.builtInClusterObjects))
   		if(length(m)>1) .builtInClusterObjects[m]
 			else .builtInClusterObjects[[m]]

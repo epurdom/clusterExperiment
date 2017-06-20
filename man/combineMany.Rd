@@ -9,7 +9,7 @@
 \alias{combineMany,ClusterExperiment,missing-method}
 \title{Find sets of samples that stay together across clusterings}
 \usage{
-\S4method{combineMany}{matrix,missing}(x, whichClusters, proportion = 1,
+\S4method{combineMany}{matrix,missing}(x, whichClusters, proportion,
   clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5)
 
 \S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
