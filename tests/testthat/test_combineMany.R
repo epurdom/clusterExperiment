@@ -9,8 +9,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             x2<-combineMany(clustNothing)
             expect_equal(x1,x2)
             expect_error(combineMany(clusterSingle(mat, subsample=FALSE,
-                                                   clusterFunction="pam",
-                                                   clusterDArgs=list(k=3))),
+				clusterDArgs=list(clusterFunction="pam",clusterArgs=list(k=3)))),
                          "no clusters specified")
 
             shared1 <- combineMany(clusterMatrix(clustNothing))

@@ -76,11 +76,10 @@ addClusters adds y to x, and is thus not symmetric in the two
 \examples{
 data(simData)
 
-cl1 <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=3))
-
-cl2 <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=5))
+cl1 <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+cl2 <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, clusterDArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
 
 addClusters(cl1, cl2)
 }

@@ -137,9 +137,7 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
   
   #When have dendrogram
-  cl1 <- clusterSingle(smSimData, clusterFunction="pam",
-                       subsample=FALSE, sequential=FALSE,
-                       clusterDArgs=list(k=6),isCount=FALSE)
+  cl1 <- clusterSingle(smSimData, subsample=FALSE, sequential=FALSE, clusterDArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
   leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
   leg[,"name"]<-letters[1:6]
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg

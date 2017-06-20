@@ -613,7 +613,7 @@ We will also compare using different algorithms for clustering. Since we chose d
 **Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values $\alpha$ for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with  high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). We show an example of the $D$ matrix from subsampling; we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly, which gives the output $D$ from the sampling in the "coClustering" slot of `ce`. Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,clusterFunction="hierarchical01",subsampleArgs=list(k=8),clusterLabel="subsamplingCluster",clusterDArgs=list(minSize=5))
+ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",clusterDArgs=list(clusterFunction="hierarchical01",minSize=5))
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 

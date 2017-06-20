@@ -100,8 +100,8 @@
 #' data(simData)
 #'
 #' #create a clustering, for 8 clusters (truth was 4)
-#' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl <- clusterSingle(simData, subsample=FALSE,
+#' sequential=FALSE, clusterDArgs=list(clusterFunction="pam", clusterArgs(k=8)))
 #'
 #' #basic F test, return all, even if not significant:
 #' testF <- getBestFeatures(cl, contrastType="F", number=nrow(simData),
