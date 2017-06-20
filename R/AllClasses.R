@@ -481,10 +481,13 @@ setClass(
 #' @examples
 #' #Use internalFunctionCheck to check possible function
 #' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=t(x),k=k)}
-#' internalFunctionCheck(goodFUN,inputType="either",algorithmType="K",outputType="vector")
-#' myCF<-clusterFunction(clusterFUN=goodFUN,inputType="either",algorithmType="K",outputType="vector")
+#' #passes internal check
+#' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
+#' #Note it doesn't pass if inputType="either" because no catches for x=NULL
+#' internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
+ #' myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 #' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
-#' internalFunctionCheck(badFUN,inputType="either",algType="K",outputType="vector")
+#' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
 #' @details \code{internalFunctionCheck} is the function that is called by the validity check of the \code{clusterFunction} constructor (if \code{checkFunctions=TRUE}). It is available as an S3 function for the user to be able to test their functions and debug them, which is difficult to do with a S4 validity function. 
 internalFunctionCheck<-function(FUN,inputType,algorithmType,outputType){
 	#--- Make small data
@@ -512,7 +515,9 @@ internalFunctionCheck<-function(FUN,inputType,algorithmType,outputType){
 		test1<-try(do.call(FUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
 		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss",test1[1]))
 		test2<-try(do.call(FUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
-		if(inherits(test2,"try-error")) return(paste("function test fails with input diss and NULL x",test2[1]))
+		if(inherits(test2,"try-error")){
+			return(paste("function test fails with input diss and NULL x",test2[1]))
+		}
 		test3<-try(do.call(FUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
 		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input",test3[1]))
 		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("FUN does not return a vector equal to the number of observations")
