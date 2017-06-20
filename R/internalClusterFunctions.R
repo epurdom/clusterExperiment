@@ -119,8 +119,9 @@
 }
 
 ###This function checks the clusterDArgs and subsampleArgs to make sure make sense with combination of sequential, subsample, x, and diss given by the user. If error, returns a character string describing error, otherwise returns list with necessary information.
-.checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,clusterDArgs,subsampleArgs,checkDiss){
-    ########
+.checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,clusterDArgs,subsampleArgs,checkDiss,warn=checkDiss){
+	
+	########
  	#checks for clusterD stuff
     ########
      if("clusterFunction" %in% names(clusterDArgs)){
@@ -152,7 +153,7 @@
 			  if("k" %in% names(clusterDArgs[["clusterArgs"]]) ){
           	#remove predefined versions of k from both.
           	whK<-which(names(clusterDArgs[["clusterArgs"]])=="k")
-          	warning("Setting 'k' in clusterDArgs when sequential clustering is requested will have no effect.")
+          	if(warn) warning("Setting 'k' in clusterDArgs when sequential clustering is requested will have no effect.")
           	clusterDArgs[["clusterArgs"]]<-clusterDArgs[["clusterArgs"]][-whK]
     			}
 		}else{
@@ -171,8 +172,8 @@
 		  subsampleAlgType<-algorithmType(subsampleCF)
 		  #Reason: seqCluster requires subsampling cluster function to be of type "K"
 		  if(sequential & algorithmType(subsampleCF)!="K"){
-			  warning("If subsample=TRUE, sequentical clustering can only be implemented with a clusterFunction for subsampling that has algorithmType 'K'. See documentation of seqCluster. Will ignore this argument of subsampleArgs and use the default clustering function.")
-			  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]
+			  if(warn) warning("If subsample=TRUE, sequentical clustering can only be implemented with a clusterFunction for subsampling that has algorithmType 'K'. See documentation of seqCluster. Will ignore this argument of subsampleArgs and set to default of 'pam'")
+			  subsampleArgs[["clusterFunction"]]<-"pam"
 		  }
   		  inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
   		  diffSubsampleCF<-TRUE
@@ -180,11 +181,20 @@
 #  		else stop("must provide clusterFunction to subsampleArgs if subsample=TRUE")
 		#this makes default to be same as clusterD
 	  	else{
-			warning("a clusterFunction was not set for subsampleClustering -- set to be the same as the clusterD step.")
-			subsampleArgs[["clusterFunction"]]<-clusterFunction
-	  		subsampleCF<-clusterFunction
-	  		inputSubsample<-input
-	  		diffSubsampleCF<-FALSE
+			if(!sequential || algorithmType(clusterFunction)=="K"){
+				if(warn) warning("a clusterFunction was not set for subsampleClustering -- set to be the same as the clusterD step.")
+				subsampleArgs[["clusterFunction"]]<-clusterFunction
+		  		subsampleCF<-clusterFunction
+		  		inputSubsample<-input
+		  		diffSubsampleCF<-FALSE
+			}
+			else{
+  			  if(warn) warning("a clusterFunction was not set for subsampleClustering and sequential=TRUE means that it must be of type 'K' so cannot be set to that of clusterD step. The clusterFunction was set to the default of 'pam'")
+  			  subsampleArgs[["clusterFunction"]]<-"pam"
+	  		  subsampleCF<-getBuiltInClusterFunction("pam")
+	  		  inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
+	  		  diffSubsampleCF<-TRUE
+			}
 	  	}
 		if(is.null(subsampleCF@classifyFUN)){
 			if("classifyMethod" %in% names(subsampleArgs) && subsampleArgs[["classifyMethod"]]!="InSample") stop("Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot")
@@ -218,7 +228,7 @@
 				}
 				if(length(missingArgs)>0){
 					subsampleArgs[["clusterArgs"]][missingArgs]<-clusterDArgs[["clusterArgs"]][missingArgs]
-					warning("missing arguments ",missingArgs," provided from those in 'clusterDArgs'")
+					if(warn) warning("missing arguments ",missingArgs," provided from those in 'clusterDArgs'")
 				}
 			}
 			#now check if got everything needed...
@@ -226,7 +236,7 @@
 	  	  }
 		  #Reason, if subsample=TRUE, user can't set distance function because use diss from subsampling.
 		    if(!is.null(clusterDArgs) && "distFunction" %in% names(clusterDArgs) && !is.na(clusterDArgs[["distFunction"]])){
-		        warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
+		        if(warn) warning("if 'subsample=TRUE', 'distFunction' argument in clusterDArgs is ignored.")
 		        clusterDArgs[["distFunction"]]<-NA
 		    }
 			if(sequential){
@@ -234,7 +244,7 @@
 			   if("clusterArgs" %in% names(subsampleArgs) && "k" %in% names(subsampleArgs[["clusterArgs"]])){
 		  	      #remove predefined versions of k from both.
 		  	      whK<-which(names(subsampleArgs[["clusterArgs"]])=="k")
-		  	      warning("Setting 'k' in subsampleArgs when sequential=TRUE is called will have no effect.")
+		  	      if(warn) warning("Setting 'k' in subsampleArgs when sequential=TRUE is called will have no effect.")
 		  	      subsampleArgs[["clusterArgs"]]<-subsampleArgs[["clusterArgs"]][-whK]
 			  	}
 		  	  if(!"clusterArgs" %in% names(subsampleArgs) ){

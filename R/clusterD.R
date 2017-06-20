@@ -79,6 +79,7 @@
 #' clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
 #' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight",
 #' clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
+#' @rdname clusterD
 #' @export
 setMethod(
   f = "clusterD",

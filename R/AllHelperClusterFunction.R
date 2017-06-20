@@ -35,6 +35,7 @@ setMethod(
   }
 )
 #' @rdname ClusterFunction-methods
+#' @aliases requiredArgs
 #' @export
 setMethod(
   f = "requiredArgs",
@@ -44,6 +45,7 @@ setMethod(
   }
 )
 #' @rdname ClusterFunction-methods
+#' @aliases algorithmType
 #' @export
 setMethod(
   f = "algorithmType",
@@ -53,6 +55,7 @@ setMethod(
 	    }
 )
 #' @rdname ClusterFunction-methods
+#' @aliases inputType
 #' @export
 setMethod(
   f = "inputType",

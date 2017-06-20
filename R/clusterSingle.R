@@ -42,7 +42,7 @@
 #' \itemize{
 #'  \item{\code{clusterFunction} for \code{clusterDArgs}: }{The choice of \code{subsample=TRUE} also controls what algorithm type of clustering functions can be used in the clusterD step. When \code{subsample=TRUE}, then resulting co-clustering matrix  from subsampling is converted to a dissimilarity (specificaly 1-coclustering values) and is passed to \code{diss} of \code{\link{clusterD}}. For this reason, the \code{ClusterFunction} object given to \code{\link{clusterD}} via the argument \code{clusterDArgs} must take input of the form of a dissimilarity. When \code{subsample=FALSE} and \code{sequential=TRUE}, the \code{clusterFunction} passed in \code{clusterArgs} element of \code{clusterDArgs} must define a \code{ClusterFunction} object with \code{algorithmType} 'K'.  When \code{subsample=FALSE} and \code{sequential=FALSE}, then there are no restrictions on the \code{ClusterFunction} and that clustering is applied directly to the input data. 
 #' }     
-#'  \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the \code{ClusterFunction} object given to the \code{clusterArgs} of \code{subsamplingArgs} is missing the algorithm will use the default for \code{\link{subsamplingClustering}} (currently "pam"). If \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type 'K'. }
+#'  \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the \code{ClusterFunction} object given to the \code{clusterArgs} of \code{subsamplingArgs} is missing the algorithm will use the default for \code{\link{subsampleClustering}} (currently "pam"). If \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type 'K'. }
 #' \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE} and \code{sequential=TRUE}, the current K of the sequential iteration determines the 'k'
 #'   argument passed to \code{\link{subsampleClustering}}  so setting 'k=' in
 #'   the list given to the subsampleArgs will not do anything and will produce a
@@ -215,7 +215,7 @@ setMethod(
 	## Start running clustering
 	##########
     if(sequential){
-      outlist <- do.call("seqCluster",
+		outlist <- do.call("seqCluster",
                         c(list(x=x, diss=diss,subsample=subsample,
                                subsampleArgs=subsampleArgs,
                                clusterDArgs=clusterDArgs), seqArgs))

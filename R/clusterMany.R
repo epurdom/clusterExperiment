@@ -76,10 +76,10 @@
 #'
 #' @details The argument 'ks' is interpreted differently for different choices
 #'   of the other parameters. When/if sequential=TRUE, ks defines the argument
-#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both
-#'   subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to
+#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are the \code{k} values for \strong{both} the clusterD and subsampling step (i.e. assigned to the  
+#'   \code{subsampleArgs} and \code{clusterDArgs} that are passed to
 #'   \code{\link{clusterD}} and \code{\link{subsampleClustering}}. This passing
-#'   of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
+#'   of these arguments via \code{subsampleArgs} will only have an effect
 #'   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
 #'   will only have an effect when the clusterFunction argument includes a
 #'   clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
@@ -409,17 +409,18 @@ setMethod(
       if(!is.null(random.seed)) {
         set.seed(random.seed)
       }
+	  ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
       if(!is.null(distFunction)){
         diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
         clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
                       clusterDArgs=clusterDArgs,
                       subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                      sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
+                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE) #dimReduce=dimReduce,ndims=ndims,
       }
       else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
                  clusterDArgs=clusterDArgs,
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                 sequential=sequential, transFun=function(x){x}) #dimReduce=dimReduce,ndims=ndims,
+                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) #dimReduce=dimReduce,ndims=ndims,
     }
     if(run){
       ##Calculate distances necessary only once

@@ -55,10 +55,27 @@ setMethod(
     }
     return(ce)
 })
+.methodFormals <- function(f, signature = character()) {
+	#to find defaults of RSEC
+	#from this conversation:
+	#http://r.789695.n4.nabble.com/Q-Get-formal-arguments-of-my-implemented-S4-method-td4702420.html
+    fdef <- getGeneric(f)
+    method <- selectMethod(fdef, signature)
+    genFormals <- base::formals(fdef)
+    b <- body(method)
+    if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+        local <- eval(b[[2]][[3]])
+        if(is.function(local))
+            return(formals(local))
+        warning("Expected a .local assignment to be a function. Corrupted method?")
+    }
+    genFormals
+}
 .postClusterMany<-function(ce,...){
-#	function(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount)
+    defaultArgs<-.methodFormals("RSEC",signature="matrix")
 	passedArgs<-list(...)
-	
+	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
+	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
 	###CombineMany
 	args1<-list()
 	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
