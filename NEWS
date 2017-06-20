@@ -11,6 +11,7 @@ Changes:
 Bugs:
 * Fixed error so that if clusterSingle is called on existing clusterExperiment object, will pass on the transformation function. 
 * Fixed error so that if clusterSingle is called on existing clusterExperiment object, will not overwrite the information of the existing clusterExperiment object. 
+* Fixed RSEC so now if rerun on existing clusterExperiment object, will grab defaults from the matrix version (previously defaults were those of the underlying function, which were not always the same, e.g. combineProportion became default of 1)
 
 Changes in version 1.3.0-9008( Release date: )
 ==============
