@@ -22,11 +22,11 @@ test_that("`RSEC` works with matrix, clusterExperiment, summarizedExperiment",{
   
 test_that("`RSEC` works through whole series of steps",{
 #bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
-expect_silent(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
+rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
               betas=0.9,dendroReduce="none",minSizes=1,
        subsampleArgs=list(resamp.num=5),random.seed=495
-  ))
+  )
   ##check same as individual steps
  expect_silent(ceOut<-clusterMany(x=assay(seSimCount),ks=4:5,clusterFunction="tight",alphas=0.1,betas=0.9,minSizes=1,
   isCount=TRUE, dimReduce="none", transFun = NULL,
@@ -36,8 +36,8 @@ expect_silent(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
  ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
-
- expect_silent(combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5))
+	#gives 'note', can't use expect_silent
+ combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5)
  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
  
@@ -46,7 +46,7 @@ expect_silent(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
  
  #now should be the same, check all objects except dendro_samples because very big:
- expect_silent(mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", cutoff = 0.05,isCount=TRUE))
+ mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", cutoff = 0.05,isCount=TRUE)
  expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
  expect_equal(mergeOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(mergeOut@dendro_outbranch,rsecOut@dendro_outbranch)
