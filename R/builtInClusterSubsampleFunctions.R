@@ -215,6 +215,29 @@
 #'  \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering and \code{\link{cutree}} is used to cut the tree into \code{k} clusters.}
 #'  \item{"tight"}{Based on the algorithm in Tsang and Wong, specifically their method of picking clusters from a co-occurance matrix after subsampling. The clustering encoded here is not the entire tight clustering algorithm, only that single piece that identifies clusters from the co-occurance matrix.  }
 #' }
+#' @details Available "01" methods: "tight" method refers to the method of finding 
+#'     clusters from a subsampling matrix given internally in the tight 
+#'     algorithm code of Tsang and Wong. Arguments for the tight method are
+#'     'minSize.core' (default=2), which sets the minimimum number of samples
+#'     that form a core cluster. "hierarchical01" refers to running the hclust
+#'     algorithm on D and transversing down the tree until getting a block of
+#'     samples with whose summary of the values  is greater than or equal to
+#'     1-alpha. Arguments that can be passed to 'hierarchical' are
+#'     'evalClusterMethod' which determines how to summarize the samples' values
+#'     of D[samples,samples] for comparison to 1-alpha: "maximum" (default)
+#'     takes the minimum of D[samples,samples] and requires it to be less than
+#'     or equal to 1-alpha; "average" requires that each row mean of
+#'     D[samples,samples] be less than or equal to 1-alpha. Arguments of
+#'     hclust can also be passed via clusterArgs to control the hierarchical 
+#'     clustering of D.
+#' @details clusterK methods: "pam" performs pam clustering on the input 
+#'   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
+#'   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
+#'   arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
+#'   performs hierarchical clustering on the input via the \code{\link{hclust}}
+#'   and then applies \code{\link{cutree}} with the specified k to obtain
+#'   clusters. Arguments to \code{\link{hclust}} can be passed via
+#'   \code{clusterArgs}.
 #' @examples
 #' builtInClusterFunctions
 #' getBuiltInClusterFunction("kmeans")
