@@ -29,8 +29,8 @@ Imports:
     matrixStats,
     graphics,
     parallel,
+	MAST
 Suggests:
-	MAST,
     BiocStyle,
     knitr,
     diagram,
