@@ -5,8 +5,11 @@
 \alias{ClusterFunction-methods}
 \alias{requiredArgs,ClusterFunction-method}
 \alias{requiredArgs,character-method}
+\alias{requiredArgs}
 \alias{algorithmType,ClusterFunction-method}
+\alias{algorithmType}
 \alias{inputType,ClusterFunction-method}
+\alias{inputType}
 \title{Helper methods for the ClusterFunction class}
 \usage{
 \S4method{requiredArgs}{character}(object)

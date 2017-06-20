@@ -173,10 +173,10 @@ While the function allows for multiple values of clusterFunction,
 
 The argument 'ks' is interpreted differently for different choices
   of the other parameters. When/if sequential=TRUE, ks defines the argument
-  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are set in both
-  subsampleArgs[["k"]] and clusterDArgs[["k"]] that are passed to
+  k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are the \code{k} values for \strong{both} the clusterD and subsampling step (i.e. assigned to the  
+  \code{subsampleArgs} and \code{clusterDArgs} that are passed to
   \code{\link{clusterD}} and \code{\link{subsampleClustering}}. This passing
-  of these arguments via \code{subsampleArgs[["k"]]} will only have an effect
+  of these arguments via \code{subsampleArgs} will only have an effect
   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
   will only have an effect when the clusterFunction argument includes a
   clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
