@@ -89,9 +89,12 @@ features/columns). Used in subsampling clustering. If given value \code{NULL} th
 
 \examples{
 #Use internalFunctionCheck to check possible function
-goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=t(x),k=k)}
-internalFunctionCheck(goodFUN,inputType="either",algorithmType="K",outputType="vector")
-myCF<-clusterFunction(clusterFUN=goodFUN,inputType="either",algorithmType="K",outputType="vector")
+goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=t(x),k=k,cluster.only=cluster.only)}
+#passes internal check
+internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
+#Note it doesn't pass if inputType="either" because no catches for x=NULL
+internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
+myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
-internalFunctionCheck(badFUN,inputType="either",algType="K",outputType="vector")
+internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
 }
