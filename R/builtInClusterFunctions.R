@@ -203,6 +203,7 @@
 ## Put them together so user/code can access easily
 #########
 .builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF)
+.builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
 #' @description Documents the built-in clustering options that are available in
@@ -210,71 +211,82 @@
 #' @rdname builtInClusteringFunctions
 #' @details \code{builtInClusteringFunctions} will return the character names of
 #'   the built-in clustering functions available.
-#' @details \code{getBuiltInClusterFunction} will return the
+#' @details \code{getBuiltInFunction} will return the
 #'   \code{ClusterFunction} object of a character value that corresponds to a
 #'   built-in function.
-#' @details \code{getBuiltInAlgorithmType} will return the algorithmType of the
-#'   built-in cluster Function corresponding to the character value.
-#' @details \code{getBuiltInTypeK} returns the names of the built-in functions
+#' @details \code{\link{algorithmType}} and \code{\link{inputType}} will 
+#' return the \code{algorithmType} and \code{inputType} of the
+#'   built-in clusterFunction corresponding to the character value.
+#' @details \code{listBuiltInTypeK} returns the names of the built-in functions
 #'   that have type 'K'
-#' @details \code{getBuiltInType01} returns the names of the built-in functions
+#' @details \code{listBuiltInType01} returns the names of the built-in functions
 #'   that have type '01'
 #' @details Built-in clustering methods: The built-in clustering methods, the
-#'   names of which can be accessed by \code{builtInClusterFunctions} are the
-#'   following: \itemize{ \item{"pam"}{Based on \code{\link{pam}} in
+#'   names of which can be accessed by \code{listBuiltInFunctions()} are the
+#'   following: 
+#' \itemize{ 
+#' \item{"pam"}{Based on \code{\link{pam}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
-#'   \code{clusterArgs}. } \item{"kmeans"}{Based on \code{\link{kmeans}} in
+#'   \code{clusterArgs}. 
+#' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+#' \item{"kmeans"}{Based on \code{\link{kmeans}} in
 #'   \code{stats} package. Arguments to that function can be passed via
 #'   \code{clusterArgs} except for \code{centers} which is reencoded here to be
-#'   the argument 'k'} \item{"hierarchical01"}{\code{\link{hclust}} in
+#'   the argument 'k' 
+#' Input is \code{"X"}; algorithm type is "K"} 
+#' \item{"hierarchical01"}{\code{\link{hclust}} in
 #'   \code{stats} package is used to build hiearchical clustering. Arguments to
 #'   that function can be passed via \code{clusterArgs}. The
 #'   \code{hierarchical01} cuts the hiearchical tree based on the parameter
-#'   \code{alpha}. It does not use the \code{cutree} function, but instead ...
-#'   [documentation still needed]   } 
-#'   \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used
-#'   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
-#'   tree into \code{k} clusters.} \item{"tight"}{Based on the algorithm in
-#'   Tsang and Wong, specifically their method of picking clusters from a
-#'   co-occurance matrix after subsampling. The clustering encoded here is not
-#'   the entire tight clustering algorithm, only that single piece that
-#'   identifies clusters from the co-occurance matrix.  } }
-#' @details Available "01" methods: "tight" method refers to the method of
-#'   finding clusters from a subsampling matrix given internally in the tight 
-#'   algorithm code of Tsang and Wong. Arguments for the tight method are 
-#'   'minSize.core' (default=2), which sets the minimimum number of samples that
-#'   form a core cluster. "hierarchical01" refers to running the hclust 
-#'   algorithm on D and transversing down the tree until getting a block of 
+#'   \code{alpha}. It does not use the \code{cutree} function, but instead 
+#'  transversing down the tree until getting a block of 
 #'   samples with whose summary of the values  is greater than or equal to 
-#'   1-alpha. Arguments that can be passed to 'hierarchical' are 
+#'   1-alpha. Arguments that can be passed to 'hierarchical01' are 
 #'   'evalClusterMethod' which determines how to summarize the samples' values 
 #'   of D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes
 #'   the minimum of D[samples,samples] and requires it to be less than or equal
 #'   to 1-alpha; "average" requires that each row mean of D[samples,samples] be
-#'   less than or equal to 1-alpha. Arguments of hclust can also be passed via
-#'   clusterArgs to control the hierarchical clustering of D.
-#' @details clusterK methods: "pam" performs pam clustering on the input 
-#'   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
-#'   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
-#'   arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK" 
-#'   performs hierarchical clustering on the input via the \code{\link{hclust}} 
-#'   and then applies \code{\link{cutree}} with the specified k to obtain 
-#'   clusters. Arguments to \code{\link{hclust}} can be passed via 
-#'   \code{clusterArgs}.
+#'   less than or equal to 1-alpha. Additional arguments of hclust can also be passed via
+#'   clusterArgs to control the hierarchical clustering of D.  
+#' Input is \code{"diss"}; algorithm type is "01"}  
+#' \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used
+#'   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
+#'   tree into \code{k} clusters.
+#' Input is \code{"diss"}; algorithm type is "K"}   
+#' \item{"tight"}{Based on the algorithm in
+#'   Tsang and Wong, specifically their method of picking clusters from a
+#'   co-occurance matrix after subsampling. The clustering encoded here is not
+#'   the entire tight clustering algorithm, only that single piece that
+#'   identifies clusters from the co-occurance matrix.  
+#' Arguments for the tight method are 
+#'   'minSize.core' (default=2), which sets the minimimum number of samples that
+#'   form a core cluster.
+#' Input is \code{"diss"}; algorithm type is "01"}  
+#' }
 #' @examples
-#' builtInClusterFunctions
-#' getBuiltInClusterFunction("kmeans")
-#' @export
-builtInClusterFunctions<-names(.builtInClusterObjects)
-
+#' listBuiltInFunctions()
+#' algorithmType(c("kmeans","pam","hierarchical01"))
+#' inputType(c("kmeans","pam","hierarchical01"))
+#' listBuitInTypeK()
+#' listBuitInType01()
 #' @rdname builtInClusteringFunctions
-#' @aliases getBuiltInClusterFunction
 #' @export
 setMethod(
-  f = "getBuiltInClusterFunction",
+  f = "listBuiltInFunctions",
+  signature = c("ANY"),
+  definition = function(object) {
+	  .builtInClusterNames
+
+  }
+)
+#' @rdname builtInClusteringFunctions
+#' @aliases getBuiltInFunction
+#' @export
+setMethod(
+  f = "getBuiltInFunction",
   signature = c("character"),
   definition = function(object) {
-  	if(!all(object%in%builtInClusterFunctions)) stop("if give character value for a clusterFunction object must be one of",paste(builtInClusterFunctions,collapse=","))
+  	if(!all(object%in%.builtInClusterNames)) stop("if give character value for a clusterFunction object must be one of",paste(.builtInClusterNames,collapse=","))
   	    m<-match(object,names(.builtInClusterObjects))
   		if(length(m)>1) .builtInClusterObjects[m]
 			else .builtInClusterObjects[[m]]
@@ -282,46 +294,26 @@ setMethod(
     
 	    }
 )
+
 #' @rdname builtInClusteringFunctions
-#' @aliases getBuiltInAlgorithmType
+#' @aliases listBuiltInTypeK
 #' @export
 setMethod(
-  f = "getBuiltInAlgorithmType",
-  signature = c("character"),
-  definition = function(object) {
-	  clObjects<-getBuiltInClusterFunction(object)
-	  if(length(clObjects)>1) return(sapply(clObjects,algorithmType))
-		  else return(algorithmType(clObjects))
-  }
-)
-#' @rdname builtInClusteringFunctions
-#' @export
-setMethod(
-  f = "getBuiltInAlgorithmType",
-  signature = c("factor"),
-  definition = function(object) {
-	  getBuiltInAlgorithmType(as.character(object))
-  }
-)
-#' @rdname builtInClusteringFunctions
-#' @aliases getBuiltInTypeK
-#' @export
-setMethod(
-  f = "getBuiltInTypeK",
+  f = "listBuiltInTypeK",
   signature = c("ANY"),
   definition = function(object) {
-	  allBuiltInTypes<-getBuiltInAlgorithmType(builtInClusterFunctions)
+	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="K"])
   }
 )
 #' @rdname builtInClusteringFunctions
-#' @aliases getBuiltInType01
+#' @aliases listBuiltInType01
 #' @export
 setMethod(
-  f = "getBuiltInType01",
+  f = "listBuiltInType01",
   signature = c("ANY"),
   definition = function(object) {
-	  allBuiltInTypes<-getBuiltInAlgorithmType(builtInClusterFunctions)
+	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="01"])
   }
 	  

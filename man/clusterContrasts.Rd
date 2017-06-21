@@ -36,8 +36,8 @@ to be compared and must match the names of the clusters in the vector
 \code{cluster}.}
 
 \item{outputType}{character string. Gives format for the resulting contrast
-matrix. Currently the only option is the format appropriate for
-\code{\link{limma}} package, but we anticipate adding more.}
+matrix. Currently the two options are the format appropriate for
+\code{\link{limma}} and \code{\link{MAST}} package.}
 
 \item{removeNegative}{logical, whether to remove negative valued clusters 
 from the design matrix. Appropriate to pick TRUE (default) if design will
@@ -75,6 +75,11 @@ clusterContrasts(cl,contrastType="Pairs")
 #Dendrogram
 cl<-makeDendrogram(cl)
 clusterContrasts(cl,contrastType="Pairs")
+}
+\references{
+Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and Smyth, GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47. http://nar.oxfordjournals.org/content/43/7/e47
+
+Finak, et al. MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data. Genome Biology (2015).
 }
 \author{
 Elizabeth Purdom

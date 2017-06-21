@@ -84,7 +84,7 @@ setMethod(
   f = "mainClustering",
   signature = signature(clusterFunction = "character"),
   definition = function(clusterFunction,...){
-  	mainClustering(getBuiltInClusterFunction(clusterFunction),...)
+  	mainClustering(getBuiltInFunction(clusterFunction),...)
 	  
   }
  )

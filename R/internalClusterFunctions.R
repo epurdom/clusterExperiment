@@ -127,7 +127,7 @@
      if("clusterFunction" %in% names(mainClusterArgs)){
       #get clusterFunction for cluster D
   	  clusterFunction<-mainClusterArgs[["clusterFunction"]]
-  	  if(is.character(clusterFunction)) clusterFunction<-getBuiltInClusterFunction(clusterFunction)
+  	  if(is.character(clusterFunction)) clusterFunction<-getBuiltInFunction(clusterFunction)
   	  
 	  #Following input commands will return only X or Diss because gave the inputType argument...
   	  input<-.checkXDissInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
@@ -168,7 +168,7 @@
     	if(inputType(clusterFunction)=="X") return("If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is dissimilarity.")
      	if("clusterFunction" %in% names(subsampleArgs)){	    
 		  subsampleCF<-subsampleArgs[["clusterFunction"]]
-		  if(is.character(subsampleCF)) subsampleCF<-getBuiltInClusterFunction(subsampleCF)
+		  if(is.character(subsampleCF)) subsampleCF<-getBuiltInFunction(subsampleCF)
 		  subsampleAlgType<-algorithmType(subsampleCF)
 		  #Reason: seqCluster requires subsampling cluster function to be of type "K"
 		  if(sequential & algorithmType(subsampleCF)!="K"){
@@ -191,7 +191,7 @@
 			else{
   			  if(warn) warning("a clusterFunction was not set for subsampleClustering and sequential=TRUE means that it must be of type 'K' so cannot be set to that of mainClustering step. The clusterFunction was set to the default of 'pam'")
   			  subsampleArgs[["clusterFunction"]]<-"pam"
-	  		  subsampleCF<-getBuiltInClusterFunction("pam")
+	  		  subsampleCF<-getBuiltInFunction("pam")
 	  		  inputSubsample<-.checkXDissInput(x,diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) #if algorithm on one is 01 and other isn't, need to check diss again.
 	  		  diffSubsampleCF<-TRUE
 			}

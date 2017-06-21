@@ -64,7 +64,7 @@ different choices of other parameters).}
 \item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques, and can not be a user-defined function. Current
-functions can be found by typing \code{builtInClusterFunctions} into the
+functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 

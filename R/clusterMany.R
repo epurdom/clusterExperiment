@@ -22,7 +22,7 @@
 #' @param clusterFunction function used for the clustering. Note that unlike in 
 #'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 #'   clustering techniques, and can not be a user-defined function. Current
-#'   functions can be found by typing \code{builtInClusterFunctions} into the
+#'   functions can be found by typing \code{listBuiltInFunctions()} into the
 #'   command-line.
 #' @param minSizes the minimimum size required for a cluster (in the 
 #'   \code{mainClustering} step). Clusters smaller than this are not kept and samples
@@ -268,7 +268,7 @@ setMethod(
       #code sets to single value and then will do unique
       #also deals with just in case the user gave duplicated values of something by mistake.
       ###########
-	  paramAlgTypes<-getBuiltInAlgorithmType(param[,"clusterFunction"])
+	  paramAlgTypes<-algorithmType(param[,"clusterFunction"])
 	  if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
       typeK <- which( paramAlgTypes=="K")
       if(length(typeK)>0){
@@ -344,7 +344,7 @@ setMethod(
       }
 
 	  #if type K and not findBestK, need to give the k value. 
-      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & getBuiltInAlgorithmType(param[,"clusterFunction"])=="K" )
+      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
       if(length(whInvalid)>0){
 			param<-param[-whInvalid,]
 		}

@@ -69,7 +69,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 
 test_that("Different options algorithms of `mainClustering` ", {
   #check builtIn algorithms
-  kMethods<-getBuiltInTypeK()
+  kMethods<-listBuiltInTypeK()
 	for(cf in kMethods){
 	    expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
 	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
@@ -78,7 +78,7 @@ test_that("Different options algorithms of `mainClustering` ", {
 		expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), subsample=FALSE, sequential=FALSE,isCount=FALSE))
 	  
 	  }
-      aMethods<-getBuiltInType01()
+      aMethods<-listBuiltInType01()
   	for(cf in aMethods){
   	  expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction=cf),
                      subsample=FALSE, sequential=FALSE,isCount=FALSE))
@@ -160,11 +160,11 @@ test_that("Different options of subsampling",{
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
 
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
-    kMethods<-getBuiltInTypeK()
+    kMethods<-listBuiltInTypeK()
 	for(cf in kMethods){
 		set.seed(1045)
 	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))
-       if(!is.null(getBuiltInClusterFunction(cf)@classifyFUN)){
+       if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
    		set.seed(1045)
 	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="All"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))
 		set.seed(1045)
@@ -172,12 +172,12 @@ test_that("Different options of subsampling",{
        	
        }
 	}
-    aMethods<-getBuiltInType01()
+    aMethods<-listBuiltInType01()
 	for(cf in aMethods){
 		
 		set.seed(1045)
 	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(alpha=0.1),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),isCount=FALSE))
-        if(!is.null(getBuiltInClusterFunction(cf)@classifyFUN)){
+        if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
 			##Check outofsample/all
 			set.seed(1045)
 	    	expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(alpha=0.1),clusterFunction=cf,classifyMethod="All"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(k=3)),isCount=FALSE))
@@ -227,14 +227,14 @@ test_that("Different options of seqCluster",{
 							  								  "Setting 'k' in mainClusterArgs when sequential clustering is requested will have no effect.")
 															  
 	#check all algorithms
-    kMethods<-getBuiltInTypeK()
+    kMethods<-listBuiltInTypeK()
 	for(cf in kMethods){
 		#check if no subsampling
 		expect_silent(clusterSingle(mat, mainClusterArgs=list(clusterFunction=cf),
 	                              subsample=FALSE, sequential=TRUE,
 	                              isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
 	}
-	kMethods<-getBuiltInType01()
+	kMethods<-listBuiltInType01()
 	for(cf in kMethods){
 		#check if no subsampling
 		expect_silent(clusterSingle(mat, mainClusterArgs=list(clusterFunction=cf),

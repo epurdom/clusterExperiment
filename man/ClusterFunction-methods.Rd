@@ -6,10 +6,16 @@
 \alias{requiredArgs,ClusterFunction-method}
 \alias{requiredArgs,character-method}
 \alias{requiredArgs}
+\alias{requiredArgs,character-method}
+\alias{requiredArgs,factor-method}
 \alias{algorithmType,ClusterFunction-method}
 \alias{algorithmType}
+\alias{algorithmType,character-method}
+\alias{algorithmType,factor-method}
 \alias{inputType,ClusterFunction-method}
 \alias{inputType}
+\alias{inputType,character-method}
+\alias{inputType,factor-method}
 \title{Helper methods for the ClusterFunction class}
 \usage{
 \S4method{requiredArgs}{character}(object)
@@ -18,9 +24,21 @@
 
 \S4method{requiredArgs}{character}(object)
 
+\S4method{requiredArgs}{character}(object)
+
+\S4method{requiredArgs}{factor}(object)
+
 \S4method{algorithmType}{ClusterFunction}(object)
 
+\S4method{algorithmType}{character}(object)
+
+\S4method{algorithmType}{factor}(object)
+
 \S4method{inputType}{ClusterFunction}(object)
+
+\S4method{inputType}{character}(object)
+
+\S4method{inputType}{factor}(object)
 }
 \arguments{
 \item{genericOnly}{logical If TRUE, return only the generic required arguments (i.e. those required by the algorithm type) and not the arguments specific to that clustering found in the slot \code{requiredArgs}. If FALSE both sets of arguments are returned.}

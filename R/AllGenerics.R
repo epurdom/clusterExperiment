@@ -349,30 +349,30 @@ setGeneric(
   }
 )
 setGeneric(
-  name = "getBuiltInClusterFunction",
+  name = "getBuiltInFunction",
   def = function(object, ...) {
-    standardGeneric("getBuiltInClusterFunction")
+    standardGeneric("getBuiltInFunction")
   }
 )
 setGeneric(
-  name = "getBuiltInAlgorithmType",
+  name = "listBuiltInFunctions",
   def = function(object,...) {
-	  standardGeneric("getBuiltInAlgorithmType")
+	  standardGeneric("listBuiltInFunctions")
   }
 	  
 )
 setGeneric(
-  name = "getBuiltInTypeK",
+  name = "listBuiltInTypeK",
   def = function(object,...) {
-	  standardGeneric("getBuiltInTypeK")
+	  standardGeneric("listBuiltInTypeK")
   }
 	  
 )
 
 setGeneric(
-  name = "getBuiltInType01",
+  name = "listBuiltInType01",
   def = function(object,...) {
-	  standardGeneric("getBuiltInType01")
+	  standardGeneric("listBuiltInType01")
   }
 	  
 )

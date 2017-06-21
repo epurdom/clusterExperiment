@@ -10,7 +10,7 @@ setMethod(
   f = "requiredArgs",
   signature = c("character"),
   definition = function(object) {
-	  requiredArgs(getBuiltInClusterFunction(object))    
+	  requiredArgs(getBuiltInFunction(object))    
   }
 )
 
@@ -41,9 +41,30 @@ setMethod(
   f = "requiredArgs",
   signature = c("character"),
   definition = function(object) {
-	  requiredArgs(getBuiltInClusterFunction(object))
+	  requiredArgs(getBuiltInFunction(object))
   }
 )
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "requiredArgs",
+  signature = c("character"),
+  definition = function(object) {
+	  clObjects<-getBuiltInFunction(object)
+	  if(length(clObjects)>1) return(lapply(clObjects,requiredArgs))
+		  else return(requiredArgs(clObjects))
+  }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "requiredArgs",
+  signature = c("factor"),
+  definition = function(object) {
+	  requiredArgs(as.character(object))
+  }
+)
+
 #' @rdname ClusterFunction-methods
 #' @aliases algorithmType
 #' @export
@@ -55,6 +76,28 @@ setMethod(
 	    }
 )
 #' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "algorithmType",
+  signature = c("character"),
+  definition = function(object) {
+	  clObjects<-getBuiltInFunction(object)
+	  if(length(clObjects)>1) return(sapply(clObjects,algorithmType))
+		  else return(algorithmType(clObjects))
+  }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "algorithmType",
+  signature = c("factor"),
+  definition = function(object) {
+	  algorithmType(as.character(object))
+  }
+)
+
+
+#' @rdname ClusterFunction-methods
 #' @aliases inputType
 #' @export
 setMethod(
@@ -64,4 +107,23 @@ setMethod(
 	  object@inputType
 	    }
 )
-
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "inputType",
+  signature = c("character"),
+  definition = function(object) {
+	  clObjects<-getBuiltInFunction(object)
+	  if(length(clObjects)>1) return(sapply(clObjects,inputType))
+		  else return(inputType(clObjects))
+  }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "inputType",
+  signature = c("factor"),
+  definition = function(object) {
+	  getBuiltInInputType(as.character(object))
+  }
+)

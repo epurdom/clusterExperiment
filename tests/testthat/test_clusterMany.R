@@ -4,10 +4,10 @@ source("create_objects.R")
 test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {
 			  #check all builtin methods
-            expect_silent(clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction=builtInClusterFunctions,
+            expect_silent(clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction=listBuiltInFunctions(),
                                        subsample=FALSE, sequential=FALSE,
                                        isCount=FALSE,verbose=FALSE))
-			expect_silent(clustDF <- clusterMany(data.frame(mat), ks=c(3,4),clusterFunction=builtInClusterFunctions,
+			expect_silent(clustDF <- clusterMany(data.frame(mat), ks=c(3,4),clusterFunction=listBuiltInFunctions(),
 						                                          subsample=FALSE, sequential=FALSE,
 						                                          isCount=FALSE,verbose=FALSE))
 				   

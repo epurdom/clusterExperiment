@@ -104,7 +104,7 @@ setMethod(
     cl[is.na(cl)] <- -1
     sharedPerct<-NULL
   } else{
-    	if(is.character(clusterFunction)) typeAlg <- getBuiltInAlgorithmType(clusterFunction)
+    	if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
 		else if(class(clusterFunction)=="ClusterFunction") typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
       if(typeAlg!="01") {
         stop("combineMany is only implemented for '01' type clustering functions (see ?ClusterFunction)")
