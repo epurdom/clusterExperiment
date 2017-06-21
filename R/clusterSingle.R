@@ -216,7 +216,7 @@ setMethod(
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusters(retval)
-	if(replaceCoClustering & !is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
+	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
 	return(retval)
   }
 )
