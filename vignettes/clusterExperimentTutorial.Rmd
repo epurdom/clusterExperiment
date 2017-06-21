@@ -867,7 +867,7 @@ show(ce)
 ### Merging clusters with little differential expression {#mergeClusters}
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
-Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate threshold (using the Benjamini-Hochberg procedure). However, other methods are also implemented (see the help of `mergeClusters`). 
+Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate threshold (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see the help of `mergeClusters`). 
 
 Notice that `mergeClusters` will always run based on the clustering that made the currently existing dendrogram. So it is always good to check that it is what we expect. 
 
@@ -896,6 +896,8 @@ ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB",
                   clusterLabel="mergeClusters,v3")
 ce
 ```
+
+Note, we can turn off plotting completely by setting `plot=FALSE`.
 
 ## Keeping track of and rerunning elements of the workflow {#rerun}
 
@@ -956,7 +958,7 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 The clustering workflow described so far is a generalization of our RSEC algorithm for single-cell sequencing data. The RSEC algorithm is particularly oriented around using subsampling and sequential discovery of clusters to find very robust signals. 
 
-In particular, `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE`. Furthermore, the only clustering functions that are allowed are the "01" types ("hierarchical01" and "tight"). This removes a number of options from clusterMany, making for a slightly reduced set of commands. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all arguments available to be set. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
+In particular, `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE`. Furthermore, the only clustering functions that are allowed are the "01" types (currently "hierarchical01" and "tight"). This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all arguments available to be set. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
 
 We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
 
@@ -989,7 +991,7 @@ tabl <- "
 -  | ignoreUnassignedVar=TRUE | dendroReduce      | dimReduce | 
 -  | unassignedSamples= *(default)* | dendroNDims       | ndims |  
 *mergeClusters*  | |  | |
--  | plotInfo='none' | mergeMethod     | | 
+-  | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 
 -  |  | isCount | | used for both mergeMethod and clusterMany 
 "
@@ -1094,7 +1096,7 @@ Unlike edgeR or DESeq, the voom correction does not explicitly require a count m
 
 ## Piping into other DE routines
 
-Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq or MAST [@Finak:2015id] for single-cell sequencing. 
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
 
 Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
 

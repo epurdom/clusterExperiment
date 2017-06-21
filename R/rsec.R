@@ -27,7 +27,7 @@ setMethod(
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nVarDims=NA,
         nPCADims=c(50), k0s=4:15,
-        clusterFunction=c("tight","hierarchical01"),
+        clusterFunction=listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
@@ -98,7 +98,7 @@ setMethod(
 	if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
 	if("mergeMethod" %in% names(passedArgs)){
 		args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
-      	ce <- do.call( mergeClusters,c(list(x=ce,plotType="none"), args1, passedArgs[c("isCount")]))
+      	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
 	}
 	else note("clusters will not be merged unless argument 'mergeMethod' is given")
   }
