@@ -32,7 +32,7 @@ setMethod(
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
         mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
-        clusterDArgs=NULL,
+        mainClusterArgs=NULL,
         subsampleArgs=NULL,
         seqArgs=NULL,
         ncores=1, random.seed=NULL, run=TRUE
@@ -47,7 +47,7 @@ setMethod(
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-                    clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
+                    mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					#browser()
     if(run){

@@ -246,7 +246,7 @@ bigPalette<-.thisPal
 #'
 #' #compare the palettes on heatmap
 #' cl <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #'
 #' \dontrun{
 #' par(mfrow=c(2,3))

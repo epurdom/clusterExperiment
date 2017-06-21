@@ -50,7 +50,7 @@
 #'
 #' #create a clustering, for 8 clusters (truth was 3)
 #' cl <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #'
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)

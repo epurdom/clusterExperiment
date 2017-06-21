@@ -13,6 +13,7 @@ vignette: >
 %\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
+
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
 fig.width=6,fig.height=6,autodep=TRUE,out.width="600px",out.height="600px",
@@ -36,7 +37,7 @@ Although this package was developed with (single-cell) RNA-seq data in mind, its
 
 ## The clustering workflow 
 
-The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouette width, sequential clustering procedures, and so forth. It also provides novel strategies that we developed as part of the RSEC algorithm. 
+The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouette width, sequential clustering procedures, and so forth. It also provides novel strategies and that we developed as part of the RSEC algorithm. 
 
 As mentioned above, RSEC is a specific algorithm for creating a clustering that follows these basic steps:
 
@@ -533,9 +534,9 @@ We will now go into more detail about important options for the main parts of th
 ### Overview of the implemented clustering procedures
 In the quick start section we picked some simple and familiar clustering options that would run quickly and needed little explanation. However, our workflow generally assumes more complex options and more parameter variations are tried. Before getting into the specific options of `clusterMany`, let us first describe some of these more complicated setups, since many of the arguments of `clusterMany` depend on understanding them. 
 
-**Clustering Algorithms (`clusterD`):** Clustering algorithms generally start with a particular predefined distance or dissimilarity between the samples, usually encoded in a $n x n$ matrix, $D$. In our package, we consider only such clustering algorithms. The input could also be similarities, though we will continue to call such a matrix $D$. 
+**Clustering Algorithms (`mainClustering`):** Clustering algorithms generally start with a particular predefined distance or dissimilarity between the samples, usually encoded in a $n x n$ matrix, $D$. In our package, we consider only such clustering algorithms. The input could also be similarities, though we will continue to call such a matrix $D$. 
 
-The simplest scenario is a simple calculation of $D$ and then a clustering of $D$, usually dependent on particular parameters.  In this package we try to group together algorithms that cluster $D$ based on common parameters and operations that can be done. Currently there are two "types" of algorithms we consider, which we call type "K" and "01". The help page of `clusterD` documents these choices more fully, but we give an overview here. Many of the parameters that are allowed to vary in `clusterMany` refer to parameters for the clustering of the $D$ matrix, either for "K" or "01" type algorithms.
+The simplest scenario is a simple calculation of $D$ and then a clustering of $D$, usually dependent on particular parameters.  In this package we try to group together algorithms that cluster $D$ based on common parameters and operations that can be done. Currently there are two "types" of algorithms we consider, which we call type "K" and "01". The help page of `mainClustering` documents these choices more fully, but we give an overview here. Many of the parameters that are allowed to vary in `clusterMany` refer to parameters for the clustering of the $D$ matrix, either for "K" or "01" type algorithms.
 
  The "K" algorithms are so called because their main parameter requirement is that the user specifies the number of clusters ($K$) to be created. They assume the input $D$ are dissimilarities, and depending on the algorithm, may have additional expectations. "pam" and "kmeans" are examples of such types of algorithms. 
 
@@ -558,7 +559,7 @@ Now that we've explained the underlying architecture of the clustering provided 
     * `nVarDims`
     * `nPCADims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the `dist` function, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
-* `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `clusterD` part of clustering). 
+* `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `mainClustering` part of clustering). 
 * `alphas` These are the $\alpha$ parameters for "01" clustering techniques; these values are only relevant if one of the `clusterFunction` values is a "01" clustering algorithm. The values given to `alphas` should be between 0 and 1, with smaller values indicating greater similarity required between the clusters. 
 * `betas` These are the $\beta$ parameters for sequential clustering; these values are only relevant if `sequential=TRUE` and determine the level of stability required between changes in the parameters to determine that a cluster is stable.
 * `findBestK` This option is for "K" clustering techniques, and indicates that $K$ should be chosen automatically as the $K$ that gives the largest silhouette distance between clusters.
@@ -568,7 +569,7 @@ Now that we've explained the underlying architecture of the clustering provided 
 `clusterMany` tries to have generally simple interface, and for this reason makes choices about what is meant by certain combinations. For example, in combinations where `findBestK=TRUE`, `ks=2:10` is taken to mean that the clustering should find the best $k$ out of the range of 2-10. However, in other combinations `ks` might indicate the specific number of clusters, $k$, that should be found. For parameter combinations that are not what is desired, the user should consider making direct calls to `clusterSingle` where all of these options (and many more) can be explicitly called. 
 
 
-Other parameters for the clustering are kept fixed. As described above, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `clusterDArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the clustering of $D$, the creation of $D$ via subsampling, and the sequential clustering process, respectively). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
+Other parameters for the clustering are kept fixed. As described above, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `mainClusterArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the clustering of $D$, the creation of $D$ via subsampling, and the sequential clustering process, respectively). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
 
 
 ```{r tableArguments, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
@@ -577,19 +578,19 @@ tabl <- "
 Argument| Dependencies |  Passed to | Argument passed to
 ---------------|-----------------|:-------------:|------:|
 ks             | sequential=TRUE |  seqCluster   |  k0 
--    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | clusterD | k
+-    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | mainClustering | k
 -              | sequential=FALSE, findBestK=FALSE, subsample=TRUE | subsampleClustering | k
--               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | clusterD | kRange
+-               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | mainClustering | kRange
 dimReduce      | none            | transform     | dimReduce
 nVarDims       | dimReduce in 'mad','cv','var' | transform | nVarDims
 nPCADims       | dimReduce='PCA' | transform     | nPCADims
-clusterFunction| none            | clusterD      | clusterFunction    
-minSizes       | none            | clusterD      | minSize
-distFunction   | subsample=FALSE | clusterD      | distFunction
-alphas         | clusterFunction of type '01'| clusterD | alpha
-findBestK      | clusterFunction of type 'K' | clusterD | findBestK
-removeSil      | clusterFunction of type 'K' | clusterD | removeSil
-silCutoff      | clusterFunction of type 'K' | clusterD | silCutoff
+clusterFunction| none            | mainClustering      | clusterFunction    
+minSizes       | none            | mainClustering      | minSize
+distFunction   | subsample=FALSE | mainClustering      | distFunction
+alphas         | clusterFunction of type '01'| mainClustering | alpha
+findBestK      | clusterFunction of type 'K' | mainClustering | findBestK
+removeSil      | clusterFunction of type 'K' | mainClustering | removeSil
+silCutoff      | clusterFunction of type 'K' | mainClustering | silCutoff
 betas          | sequential=TRUE | seqCluster    | beta
 "
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
@@ -613,7 +614,7 @@ We will also compare using different algorithms for clustering. Since we chose d
 **Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values $\alpha$ for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with  high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). We show an example of the $D$ matrix from subsampling; we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly, which gives the output $D$ from the sampling in the "coClustering" slot of `ce`. Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",clusterDArgs=list(clusterFunction="hierarchical01",minSize=5))
+ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",minSize=5))
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
@@ -671,11 +672,11 @@ We can set `ncores` argument to have these clusterings done in parallel. If `nco
 We can now run this, either by giving the information in `checkParam$paramMatrix` to clusterMany argument `paramMatrix`, or by recalling the function from scratch. If the user has not changed `paramMatrix`, there's no advantage in giving `paramMatrix` to `clusterMany` rather than just recalling `clusterMany`, but we'll do it here just to show how it is done. 
 
 ```{r clusterManyCheckParam2,eval=FALSE}
-# ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, clusterDArgs=checkParam$clusterDArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
+# ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, mainClusterArgs=checkParam$mainClusterArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
 ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
 
-Note that we also provided in the above call the additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
+Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
 -->
 
 ## Create a unified cluster from many clusters with `combineMany` {#combineMany}
@@ -878,7 +879,7 @@ tabl <- "
 - |  | alphas | |
 - |  | betas | |
 - |  | minSizes | |
--  | | clusterDArgs | |
+-  | | mainClusterArgs | |
 -  | | subsampleArgs | |
 - |  | seqArgs | |
 - |  | run | |

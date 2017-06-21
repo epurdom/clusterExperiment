@@ -9,11 +9,11 @@
 #' @param whichClusters a numeric or character vector that specifies which
 #'   clusters to compare (missing if x is a matrix)
 #' @param clusterFunction the clustering to use (passed to
-#'   \code{\link{clusterD}}); currently must be of type '01'.
+#'   \code{\link{mainClustering}}); currently must be of type '01'.
 #' @param minSize minimum size required for a set of samples to be considered in
-#'   a cluster because of shared clustering, passed to \code{\link{clusterD}}
+#'   a cluster because of shared clustering, passed to \code{\link{mainClustering}}
 #' @param proportion The proportion of times that two sets of samples should be
-#'   together in order to be grouped into a cluster (if <1, passed to clusterD
+#'   together in order to be grouped into a cluster (if <1, passed to mainClustering
 #'   via alpha = 1 - proportion)
 #' @param propUnassigned samples with greater than this proportion of
 #'   assignments equal to '-1' are assigned a '-1' cluster value as a last step
@@ -24,17 +24,17 @@
 #' @details The function tries to find a consensus cluster across many different
 #'   clusterings of the same samples. It does so by creating a \code{nSamples} x
 #'   \code{nSamples} matrix of the percentage of co-occurance of each sample and
-#'   then calling clusterD to cluster the co-occurance matrix. The function
+#'   then calling mainClustering to cluster the co-occurance matrix. The function
 #'   assumes that '-1' labels indicate clusters that are not assigned to a
 #'   cluster. Co-occurance with the unassigned cluster is treated differently
 #'   than other clusters. The percent co-occurance is taken only with respect to
 #'   those clusterings where both samples were assigned. Then samples with more
 #'   than \code{propUnassigned} values that are '-1' across all of the
 #'   clusterings are assigned a '-1' regardless of their cluster assignment.
-#'@details The method calls \code{\link{clusterD}} on the proportion matrix with
+#'@details The method calls \code{\link{mainClustering}} on the proportion matrix with
 #' \code{clusterFunction} as the 01 clustering algorithm, \code{alpha=1-proportion},
 #' \code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of
-#' \code{\link{clusterD}} for more details.
+#' \code{\link{mainClustering}} for more details.
 #' @return If x is a matrix, a list with values
 #' \itemize{
 #'   \item{\code{clustering}}{ vector of cluster assignments, with "-1" implying
@@ -45,7 +45,7 @@
 #'   out of those not '-1'} \item{\code{noUnassignedCorrection}{ a vector of
 #'   cluster assignments before samples were converted to '-1' because had
 #'   >\code{propUnassigned} '-1' values (i.e. the direct output of the
-#'   \code{clusterD} output.)}}
+#'   \code{mainClustering} output.)}}
 #' }
 #'
 #' @return If x is a \code{\link{ClusterExperiment}}, a
@@ -118,12 +118,12 @@ setMethod(
     #fix those pairs that have no clusterings for which they are both not '-1'
     diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
     sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
-    cl <- clusterD(diss=1-sharedPerct, clusterFunction=clusterFunction,
+    cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
                    minSize=minSize, format="vector",
                    clusterArgs=list(alpha=1-proportion,  evalClusterMethod=c("average")))
 
     if(is.character(cl)) {
-      stop("coding error -- clusterD should return numeric vector")
+      stop("coding error -- mainClustering should return numeric vector")
     }
   }
   ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat

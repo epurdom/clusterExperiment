@@ -450,7 +450,7 @@ setMethod(
 #'   Any indices not in any of the list elements are assumed to be -1. The main
 #'   advantage of "list" is that it can preserve the order of the clusters if
 #'   the \code{clusterFUN} desires to do so. In which case the \code{orderBy}
-#'   argument of \code{\link{clusterD}} can preserve this ordering (default is
+#'   argument of \code{\link{mainClustering}} can preserve this ordering (default is
 #'   to order by size).
 #' @slot requiredArgs Any additional required arguments for \code{clusterFUN}
 #'   (beyond those required of all \code{clusterFUN}, described in details).
@@ -494,7 +494,7 @@ setMethod(
 #'   functions that require an argument \code{k} (the number of clusters), but
 #'   arbitrary \code{inputType}.  On the other hand, "K" algorithms are assumed
 #'   to need a predetermined 'k' and are also assumed to cluster all samples to
-#'   a cluster. If not, the post-processing steps in \code{\link{clusterD}} such
+#'   a cluster. If not, the post-processing steps in \code{\link{mainClustering}} such
 #'   as \code{findBestK} and \code{removeSil} may not operate correctly since
 #'   they rely on silhouette distances.
 #' @name ClusterFunction-class

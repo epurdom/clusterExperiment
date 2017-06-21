@@ -9,7 +9,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             x2<-combineMany(clustNothing,proportion=1)
             expect_equal(x1,x2)
 			ceObj<-clusterSingle(mat, subsample=FALSE,
-				clusterDArgs=list(clusterFunction="pam",clusterArgs=list(k=3)))
+				mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)))
             expect_error(combineMany(ceObj,proportion=1),
                          "no clusters specified")
 			expect_error(combineMany(ceObj,whichCluster="clusterSingle"),

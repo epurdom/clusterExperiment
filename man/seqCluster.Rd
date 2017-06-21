@@ -6,7 +6,7 @@
 \usage{
 seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
   top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
-  verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL,
+  verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
   checkDiss = TRUE)
 }
 \arguments{
@@ -22,13 +22,13 @@ details below or vignette.}
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance matrix is set by arguments to
-\code{\link{clusterD}}.}
+\code{\link{mainClustering}}.}
 
 \item{beta}{value between 0 and 1 to decide how stable clustership membership
 has to be before 'finding' and removing the cluster.}
 
-\item{top.can}{only the top.can clusters from \code{\link{clusterD}} (ranked
-by 'orderBy' argument given to \code{\link{clusterD}}) will be compared
+\item{top.can}{only the top.can clusters from \code{\link{mainClustering}} (ranked
+by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
 pairwise for stability. Making this very big will effectively remove this
 parameter and all pairwise comparisons of all clusters found will be
 considered. This might result in smaller clusters being found. Current
@@ -49,8 +49,8 @@ progress.}
 \item{subsampleArgs}{list of arguments to be passed to
 \code{\link{subsampleClustering}}.}
 
-\item{clusterDArgs}{list of arguments to be passed to
-\code{\link{clusterD}}).}
+\item{mainClusterArgs}{list of arguments to be passed to
+\code{\link{mainClustering}}).}
 }
 \value{
 A list with values
@@ -99,22 +99,22 @@ Depending on the value of \code{subsample} how the value of $K$ is
   used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the
   cluster function \code{clusterFunction} sent to 
   \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
-  \code{\link{clusterD}} is run on the result of the co-occurance matrix from
+  \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
   \code{\link{subsampeClustering}} with the \code{ClusterFunction} object
-  defined in the argument \code{clusterFunction} set via \code{clusterDArgs}.
+  defined in the argument \code{clusterFunction} set via \code{mainClusterArgs}.
   The number of clusters actually resulting from this run of
-  \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering
+  \code{\link{mainClustering}} may not be equal to the $K$ sent to  the clustering
   done in \code{\link{subsampleClustering}}. If \code{subsample=FALSE},
-  \code{\link{clusterD}} is called directly on the data to determine the
+  \code{\link{mainClustering}} is called directly on the data to determine the
   clusters and $K$ set by \code{seqCluster} for this iteration determines the
-  parameter of the clustering done by \code{\link{clusterD}}. Specifically,
+  parameter of the clustering done by \code{\link{mainClustering}}. Specifically,
   the argument \code{clusterFunction} defines the clustering of the
-  \code{\link{clusterD}} step and \code{k} is sent to that
+  \code{\link{mainClustering}} step and \code{k} is sent to that
   \code{ClusterFunction} object. This means that if \code{subsample=FALSE},
   the \code{clusterFunction} must be of \code{algorithmType} "K".
 
 In either setting of \code{subsample}, the resulting clusters from
-  \code{\link{clusterD}} for a particular $K$ will be compared to clusters
+  \code{\link{mainClustering}} for a particular $K$ will be compared to clusters
   found in the previous iteration of $K-1$. For computational (and other?)
   convenience, only the first \code{top.can} clusters of each iteration will
   be compared to the first \code{top.can} clusters of previous iteration for
@@ -147,7 +147,7 @@ If there are less than \code{remain.n} samples left after finding a
   homogenous set of clusters at that point will be classified as unclustered
   (given a value of -1)
 
-Certain combinations of inputs to \code{clusterDArgs} and
+Certain combinations of inputs to \code{mainClusterArgs} and
   \code{subsampleArgs} are not allowed. See \code{\link{clusterSingle}} for
   these explanations.
 }
@@ -159,7 +159,7 @@ set.seed(12908)
 clustSeqHier <- seqCluster(simData, k0=5, subsample=TRUE,
 beta=0.8, subsampleArgs=list(resamp.n=100,
 samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-clusterDArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
 }
 }
 \references{
@@ -169,5 +169,5 @@ Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
 }
 \seealso{
 tight.clust,
-  \code{\link{clusterSingle}},\code{\link{clusterD}},\code{\link{subsampleClustering}}
+  \code{\link{clusterSingle}},\code{\link{mainClustering}},\code{\link{subsampleClustering}}
 }

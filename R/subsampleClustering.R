@@ -29,7 +29,7 @@
 #' @param ncores integer giving the number of cores. If ncores>1, mclapply will 
 #'   be called.
 #' @param ... arguments passed to mclapply (if ncores>1).
-#' @inheritParams clusterD
+#' @inheritParams mainClustering
 #'   
 #' @details \code{subsampleClustering} is not usually called directly by the
 #'   user. It is only an exported function so as to be able to clearly document
@@ -50,7 +50,7 @@
 #'   depending on the classification function. If you do not choose 'All',it is
 #'   possible to get NAs in resulting S matrix (particularly if when not enough
 #'   subsamples are taken) which can cause errors if you then pass the resulting
-#'   D=1-S matrix to \code{\link{clusterD}}. For this reason the default is
+#'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth

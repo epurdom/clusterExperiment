@@ -16,7 +16,7 @@
 \S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
-  minSizes = 1, verbose = FALSE, clusterDArgs = NULL,
+  minSizes = 1, verbose = FALSE, mainClusterArgs = NULL,
   subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
   run = TRUE, ...)
 
@@ -77,9 +77,9 @@ of \code{\link{seqCluster}}). Can be used in combination with
 \code{subsample=TRUE} or \code{FALSE}.}
 
 \item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}}. If TRUE, clustering in clusterD step is
+\code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
 done on the co-occurance between clusterings in the subsampled clustering
-results.  If FALSE, the clusterD step will be run directly on
+results.  If FALSE, the mainClustering step will be run directly on
 \code{x}/\code{diss}}
 
 \item{distFunction}{a vector of character strings that are the names of 
@@ -98,13 +98,13 @@ required in order to deem the cluster stable. Takes on values in [0,1]. See
 documentation of \code{\link{seqCluster}}.}
 
 \item{minSizes}{the minimimum size required for a cluster (in the 
-\code{clusterD} step). Clusters smaller than this are not kept and samples
+\code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{clusterDArgs}{list of arguments to be passed for the clusterD step, see
-help pages of \code{\link{clusterD}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
+help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
 (if \code{subsample=TRUE}), see help pages of 
@@ -152,8 +152,8 @@ If \code{run=TRUE} and the input is a list of data sets, a list with
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
   clustering, where each column is a possible parameter set by the user and 
   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
-  corresponds to a clustering in \code{clMat}} \item{\code{clusterDArgs}}{ a 
-  list of (possibly modified) arguments to clusterDArgs} 
+  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{ a 
+  list of (possibly modified) arguments to mainClusterArgs} 
   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
   arguments to subsampleArgs} }
@@ -184,19 +184,19 @@ While the function allows for multiple values of clusterFunction,
 The argument \code{ks} is interpreted differently for different
   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
-  values are the \code{k} values for \strong{both} the clusterD and
+  values are the \code{k} values for \strong{both} the mainClustering and
   subsampling step (i.e. assigned to the \code{subsampleArgs} and
-  \code{clusterDArgs} that are passed to \code{\link{clusterD}} and
+  \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and
   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
   \code{subsampleArgs}. The passing of these arguments via
   \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
-  Similarly, the passing of \code{clusterDArgs[["k"]]} will only have an
+  Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an
   effect when the clusterFunction argument includes a clustering algorithm of
   type "K". When/if "findBestK=TRUE", \code{ks} also defines the
-  \code{kRange} argument of \code{\link{clusterD}} unless \code{kRange} is
-  specified by the user via the \code{clusterDArgs}; note this means that the
+  \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange} is
+  specified by the user via the \code{mainClusterArgs}; note this means that the
   default option of setting \code{kRange} that depends on the input \code{k}
-  (see \code{\link{clusterD}}) is not available in \code{clusterMany}, only
+  (see \code{\link{mainClustering}}) is not available in \code{clusterMany}, only
   in \code{\link{clusterSingle}}.
 
 If the input is a \code{ClusterExperiment} object, current
@@ -236,7 +236,7 @@ plotClusters(clMat, axisLine=-2)
 system.time(clusterTrack <- clusterMany(simData, ks=2:15,
 alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
 subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam",
-clusterDArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
+mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
 }
 
 }

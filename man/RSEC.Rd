@@ -17,8 +17,8 @@
   betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
-  random.seed = NULL, run = TRUE)
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  ncores = 1, random.seed = NULL, run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
@@ -72,7 +72,7 @@ required in order to deem the cluster stable. Takes on values in [0,1]. See
 documentation of \code{\link{seqCluster}}.}
 
 \item{minSizes}{the minimimum size required for a cluster (in the 
-\code{clusterD} step). Clusters smaller than this are not kept and samples
+\code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
 \item{combineProportion}{passed to \code{proportion} in \code{\link{combineMany}}}
@@ -89,8 +89,8 @@ are left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{clusterDArgs}{list of arguments to be passed for the clusterD step, see
-help pages of \code{\link{clusterD}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
+help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
 (if \code{subsample=TRUE}), see help pages of 

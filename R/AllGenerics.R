@@ -11,9 +11,9 @@ setGeneric(
   }
 )
 setGeneric(
-  name = "clusterD",
+  name = "mainClustering",
   def = function(clusterFunction, ...) {
-    standardGeneric("clusterD")
+    standardGeneric("mainClustering")
   }
 )
 setGeneric(

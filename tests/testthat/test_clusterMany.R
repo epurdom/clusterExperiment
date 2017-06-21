@@ -37,7 +37,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             expect_equal(metadata(clustNothing3),metadata(ccSE))
             expect_equal(rowData(clustNothing3),rowData(ccSE))
             
-            expect_silent(test <- clusterSingle(se,  subsample=FALSE, sequential=FALSE, clusterDArgs=list(clusterFunction="pam",clusterArgs=list(k=4)),isCount=FALSE))
+            expect_silent(test <- clusterSingle(se,  subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=4)),isCount=FALSE))
             expect_silent(clustNothing3<- clusterMany(test, ks=c(3,4),clusterFunction="pam",
                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
                                            isCount=FALSE))
@@ -68,7 +68,7 @@ test_that("`clusterMany` works changing parameters", {
                        isCount=FALSE))
   #             cc2 <- clusterMany(mat, ks=c(3,4),nVarDim=c(10, 15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
   #                                            subsample=FALSE, sequential=FALSE,verbose=FALSE,
-  #                                            isCount=FALSE,paramMatrix=param$paramMatrix,clusterDArgs=param$clusterDArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
+  #                                            isCount=FALSE,paramMatrix=param$paramMatrix,mainClusterArgs=param$mainClusterArgs,seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
   #             expect_equal(cc,cc2)
   
 #   #check giving distance -- this still doesn't work. 
@@ -79,18 +79,18 @@ test_that("`clusterMany` works changing parameters", {
 #                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
 #                     isCount=FALSE)
   
-  #check doesn't spit out warnings because alphas/clusterD args not match 
+  #check doesn't spit out warnings because alphas/mainClustering args not match 
   expect_silent(clusterMany(mat, clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
                     alphas=c(0.1,0.2),
                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
+                    mainClusterArgs=list(clusterArgs=list(evalClusterMethod="average")),
                     isCount=FALSE))
   
-  #check doesn't spit out warnings because alphas/clusterD args not match 
+  #check doesn't spit out warnings because alphas/mainClustering args not match 
   expect_silent(clusterMany(mat, clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
                             betas=c(.7,.9), minSizes=c(3,5),
                             subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                            clusterDArgs=list(clusterArgs=list(evalClusterMethod="average")),
+                            mainClusterArgs=list(clusterArgs=list(evalClusterMethod="average")),
                             isCount=FALSE))
 })
 

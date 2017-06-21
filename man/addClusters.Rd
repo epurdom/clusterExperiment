@@ -77,9 +77,9 @@ addClusters adds y to x, and is thus not symmetric in the two
 data(simData)
 
 cl1 <- clusterSingle(simData, subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
 cl2 <- clusterSingle(simData, subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
 
 addClusters(cl1, cl2)
 }

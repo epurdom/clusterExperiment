@@ -32,7 +32,7 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
   isCount=TRUE, dimReduce="none", transFun = NULL,
  sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                  nVarDims=NA,nPCADims=NA,
-                 clusterDArgs=NULL,subsampleArgs=list(resamp.num=5),
+                 mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
  ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))

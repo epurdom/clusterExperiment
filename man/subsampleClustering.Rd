@@ -94,7 +94,7 @@ co-occurance.
   depending on the classification function. If you do not choose 'All',it is
   possible to get NAs in resulting S matrix (particularly if when not enough
   subsamples are taken) which can cause errors if you then pass the resulting
-  D=1-S matrix to \code{\link{clusterD}}. For this reason the default is
+  D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
   "All".
 }
 \examples{

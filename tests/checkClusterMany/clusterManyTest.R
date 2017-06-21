@@ -30,11 +30,11 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                                               clusterFunction="kmeans",
 #                                               clusterArgs=list(nstart=1)),
 #                  seqArgs=list(beta=0.9,k.min=3,verbose=FALSE),
-#                  clusterDArgs=list(minSize=5, verbose=FALSE),
+#                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
-                 beta=0.9, minSize=5, clusterDArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
+                 beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
                  ncores=ncores, subsampleArgs=list(resamp.num=20,
                                                    clusterFunction="kmeans",

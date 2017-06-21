@@ -2,8 +2,8 @@
 #'   
 #' @description Given input data, this function will try to find the clusters
 #'   based on the given ClusterFunction object.
-#' @name clusterD
-#' @aliases clusterD-character-method
+#' @name mainClustering
+#' @aliases mainClustering-character-method
 #'   
 #' @param x \code{p x n} data matrix on which to run the clustering (samples in 
 #'   columns).
@@ -38,60 +38,60 @@
 #'   depend on it's algorithm type and can be found by calling
 #'   \code{getPostProcessingArgs}. See details below for documentation.
 #' @inheritParams subsampleClustering
-#' @details \code{clusterD} is not meant to be called by the user. It is only an
+#' @details \code{mainClustering} is not meant to be called by the user. It is only an
 #'   exported function so as to be able to clearly document the arguments for
-#'   \code{clusterD} which can be passed via the argument \code{clusterDArgs} in
+#'   \code{mainClustering} which can be passed via the argument \code{mainClusterArgs} in
 #'   functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 #'   
-#' @return clusterD returns a vector of cluster assignments (if format="vector")
+#' @return mainClustering returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
 #'   than minSize are removed. 
 #'
 #' @examples
 #' data(simData)
-#' cl1<-clusterD(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
-#' cl2<-clusterD(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
-#' cl3<-clusterD(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
+#' cl1<-mainClustering(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
+#' cl2<-mainClustering(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
+#' cl3<-mainClustering(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
 #' #change distance to manhattan distance
-#' cl4<-clusterD(simData,clusterFunction="pam",clusterArgs=list(k=3),
+#' cl4<-mainClustering(simData,clusterFunction="pam",clusterArgs=list(k=3),
 #'      distFunction=function(x){dist(x,method="manhattan")})
 #' 
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
-#' clustSubHier <- clusterD(simData, clusterFunction="hierarchical01",
+#' clustSubHier <- mainClustering(simData, clusterFunction="hierarchical01",
 #' minSize=5, clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
 #'
 #' #do tight
-#' clustSubTight <- clusterD(simData, clusterFunction="tight", clusterArgs=list(alpha=0.1),
+#' clustSubTight <- mainClustering(simData, clusterFunction="tight", clusterArgs=list(alpha=0.1),
 #' minSize=5)
 #'
 #' #two twists to pam
-#' clustSubPamK <- clusterD(simData, clusterFunction="pam", silCutoff=0, minSize=5,
+#' clustSubPamK <- mainClustering(simData, clusterFunction="pam", silCutoff=0, minSize=5,
 #' removeSil=TRUE, clusterArgs=list(k=3))
-#' clustSubPamBestK <- clusterD(simData, clusterFunction="pam", silCutoff=0,
+#' clustSubPamBestK <- mainClustering(simData, clusterFunction="pam", silCutoff=0,
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
 #' # note that passing the wrong arguments for an algorithm results in warnings
 #' # (which can be turned off with checkArgs=FALSE)
-#' clustSubTight_test <- clusterD(simData, clusterFunction="tight",
+#' clustSubTight_test <- mainClustering(simData, clusterFunction="tight",
 #' clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
-#' clustSubTight_test2 <- clusterD(simData, clusterFunction="tight",
+#' clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",
 #' clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
-#' @rdname clusterD
+#' @rdname mainClustering
 #' @export
 setMethod(
-  f = "clusterD",
+  f = "mainClustering",
   signature = signature(clusterFunction = "character"),
   definition = function(clusterFunction,...){
-  	clusterD(getBuiltInClusterFunction(clusterFunction),...)
+  	mainClustering(getBuiltInClusterFunction(clusterFunction),...)
 	  
   }
  )
-#' @rdname clusterD
+#' @rdname mainClustering
 #' @export
 setMethod(
-   f = "clusterD",
+   f = "mainClustering",
    signature = signature(clusterFunction = "ClusterFunction"),
 definition=function(clusterFunction,x=NULL, diss=NULL,
                    distFunction=NA,clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
@@ -102,7 +102,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	if(length(postProcessArgs)>0){
 	#get rid of wrong args passed because of user confusion between the two
 		whRightArgs<-which(names(postProcessArgs) %in% getPostProcessingArgs(clusterFunction))
-		if(length(whRightArgs)!=length(postProcessArgs) & checkArgs) warning("Some arguments passed via '...' in clusterD do not match the algorithmType of the given ClusterFunction object")
+		if(length(whRightArgs)!=length(postProcessArgs) & checkArgs) warning("Some arguments passed via '...' in mainClustering do not match the algorithmType of the given ClusterFunction object")
 		if(length(whRightArgs)>0) postProcessArgs<-postProcessArgs[whRightArgs]
 		else postProcessArgs<-NULL
 	}
@@ -173,7 +173,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 
 
 
-#' @rdname clusterD
+#' @rdname mainClustering
 #' @aliases getPostProcessingArgs
 #' @details Post-processing Arguments: For post-processing the clustering,
 #'   currently only type 'K' algorithms have a defined post-processing.
