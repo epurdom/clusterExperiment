@@ -191,6 +191,26 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters=ord, sampleData=
 
 We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
+We can examine sizes of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
+
+```{r plotBarplot1}
+plotBarplot(ce)
+```
+
+We can also pick a particular cluster.
+
+```{r plotBarplot1.2}
+plotBarplot(ce,whichClusters=c("nPCAFeatures=15,k=6" ))
+```
+
+
+We can also compare two specific clusters with a simple barplot using `plotBarplot`. Here we compare the above clusering (PCA with 15 dimensions and k=6), with changing to k=8:
+
+```{r plotBarplot2}
+plotBarplot(ce,whichClusters=c("nPCAFeatures=15,k=6" ,"nPCAFeatures=15,k=8"))
+```
+
+
 ### The output 
 
 The output of `clusterMany` is a `ClusterExperiment` object. This is a class built for this package and explained in the section on [ClusterExperiment Objects](#ceobjects). In the object `ce` the clusters are stored, names and colors for each cluster within a clustering are assigned, and other information about the clusterings is recorded. Furthermore, all of the information in the original `SummarizedExperiment` is retained. 
@@ -280,6 +300,14 @@ plotDendrogram(ce)
 
 We can see that clusters 1 and 3 are most closely related, at least in the top 500 most variable genes. 
 
+We can see the relative size of the clusters by setting some options in `plotDendrogram`:
+
+```{r makeDendrogram2}
+plotDendrogram(ce,labelType="colorblock",leafType="sample")
+```
+
+
+Notice I don't need to make the dendrogram again, because it's saved in `ce`.
 If we look at the summary of `ce`, it now has 'makeDendrogram' marked as 'Yes'. 
 
 ```{r makeDendrogram_show}
@@ -711,7 +739,7 @@ We will also compare using different algorithms for clustering. Currently, `clus
 To illustrate this point, we show an example of the $D$ matrix from subsampling. To do this we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly; it gives the output $D$ from the sampling in the "coClustering" slot of `ce` when we set `replaceCoCluster=TRUE` (and therefore we save it as a separate object, so that it doesn't write over the existing "coClustering" slot in `ce`). Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
+ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
@@ -743,7 +771,7 @@ par(mar=c(1.1,15.1,1.1,1.1))
 plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 ```
 
-Notice that using the "01" methods did not give relevant results
+Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
 ### Dealing with large numbers of clusterings
 
@@ -845,11 +873,12 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
+To vary the display, we'll show the display where we put blocks of color instead of names (`labelType="colorblock"`) and we also decide to show the leaves as the individual samples instead of the clusters (`leafType="sample"`); the combination of which gives us color blocks equal to the size of the clusterings. 
 
 ```{r remakeMakeDendrogram}
 ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
                    whichCluster="combineMany,final")
-plotDendrogram(ce)
+plotDendrogram(ce,leafType="sample",labelType="colorblock")
 ```
 
 Note that the clusterType of this clustering is not "combineMany", but "combineMany.x", where "x" indicates what iteration it was:

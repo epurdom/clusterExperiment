@@ -58,7 +58,7 @@ setMethod(
   signature = signature(clusters = "ClusterExperiment",whichClusters="character"),
   definition = function(clusters, whichClusters,...)
   {
-    wh<-head(.TypeIntoIndices(clusters,whClusters=whichClusters),2)
+    wh<-head(.TypeIntoIndices(clusters,whClusters=whichClusters),min(2,length(whichClusters)))
     return(plotBarplot(clusters,whichClusters=wh,...))
 
   })
