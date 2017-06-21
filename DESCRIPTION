@@ -29,12 +29,8 @@ Imports:
     matrixStats,
     graphics,
     parallel,
-<<<<<<< HEAD
     MAST,
     RSpectra
-=======
-	MAST
->>>>>>> feature/unifyCluster
 Suggests:
     BiocStyle,
     knitr,

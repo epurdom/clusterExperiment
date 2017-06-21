@@ -63,9 +63,11 @@ Slots).}
 \item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
 Slots).}
 
-\item{dendro_outbranch}{logical. Sets the dendro_outbranch slot (see Slots).}
+\item{dendro_outbranch}{logical. Sets the `dendro_outbranch` slot (see Slots)}
 
 \item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
+
+\item{dendro_outbranch}{logical. Sets the dendro_outbranch slot (see Slots).}
 }
 \value{
 A \code{ClusterExperiment} object.

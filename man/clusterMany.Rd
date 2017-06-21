@@ -61,7 +61,7 @@ method for signature \code{list}.}
 \item{ks}{the range of k values (see details for the meaning of \code{k} for
 different choices of other parameters).}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
@@ -81,7 +81,6 @@ of \code{\link{seqCluster}}). Can be used in combination with
 done on the co-occurance between clusterings in the subsampled clustering
 results.  If FALSE, the mainClustering step will be run directly on
 \code{x}/\code{diss}}
-
 
 \item{distFunction}{a vector of character strings that are the names of 
 distance functions found in the global environment. See the help pages of 

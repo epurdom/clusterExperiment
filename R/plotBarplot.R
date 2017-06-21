@@ -60,7 +60,7 @@ setMethod(
   {
 	wh<-.TypeIntoIndices(clusters,whClusters=whichClusters)
 	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-	wh<-head(wh,2)) #limit it to 2
+	wh<-head(wh,2) #limit it to 2
     return(plotBarplot(clusters,whichClusters=wh,...))
 
   })

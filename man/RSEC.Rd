@@ -55,7 +55,7 @@ included.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
+\item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
