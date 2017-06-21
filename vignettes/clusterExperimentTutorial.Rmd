@@ -200,14 +200,14 @@ plotBarplot(ce)
 We can also pick a particular cluster.
 
 ```{r plotBarplot1.2}
-plotBarplot(ce,whichClusters=c("nPCAFeatures=15,k=6" ))
+plotBarplot(ce,whichClusters=c("nPCA=15,k=6" ))
 ```
 
 
 We can also compare two specific clusters with a simple barplot using `plotBarplot`. Here we compare the above clusering (PCA with 15 dimensions and k=6), with changing to k=8:
 
 ```{r plotBarplot2}
-plotBarplot(ce,whichClusters=c("nPCAFeatures=15,k=6" ,"nPCAFeatures=15,k=8"))
+plotBarplot(ce,whichClusters=c("nPCA=15,k=6" ,"nPCA=15,k=8"))
 ```
 
 
