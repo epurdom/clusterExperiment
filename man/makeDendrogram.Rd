@@ -25,10 +25,10 @@ primaryCluster.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 details.}
 
-\item{ndims}{integer An integer identifying how many dimensions to reduce to
+\item{ndims}{integer An integer identifying how many dimensions to reduce to 
 in the reduction specified by \code{dimReduce}}
 
 \item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction 

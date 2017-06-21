@@ -1,16 +1,18 @@
 Changes in version feature/unifyCluster( Release date: )
 ==============
 Changes:
-* add ClusterFunction class and update all functions to work on this. All built in cluster functions are now given ClusterFunction Objects, so all built in clustering functions can now work for either `subsampleClustering` or `clusterD`.  
-	- `seqCluster` and `clusterSingle` now does not take the argument `clusterFunction`. `clusterFunction` must be given to either `clusterD` or `subsamplingCluster` via `clusterDArgs` and `subsampleArgs` respectively. Only the upper function `clusterMany` takes this directly as an argument.
-	- `clusterD` and `subsampleClustering` no longer take `k` as a direct argument. It needs to be passed to the clustering function (if appropriate to the clustering) via `clusterArgs`. 
-* hiearchical01 now has default to apply `as.dist` to the input `diss` to get a `dist` object, rather than `dist(1-diss)` which was previously default (controlled by argument `whichHierDist`)
+* add ClusterFunction class and update all functions to work on this. All built in cluster functions are now given ClusterFunction Objects, so all built in clustering functions can now work for either `subsampleClustering` or `clusterD`. This will also make it easier for a user to define their own ClusterFunction object and have it be used by functions like `clusterSingle`. This is a major change in how some of the underlying functions work, but should not impact common functions like `clusterMany` and `RSEC`. Some of the more notable changes in the arguments for programmers are:
+	- `seqCluster` and `clusterSingle` no longer take the argument `clusterFunction`. `clusterFunction` must be given to either `clusterD` or `subsamplingCluster` via `clusterDArgs` and `subsampleArgs` respectively. Only the upper-level function `clusterMany` takes this directly as an argument.
+	- `clusterD` and `subsampleClustering` no longer take `k` as a direct argument, nor `alpha`. All arguments used directly by the cluster function now need to be passed to the clustering function via `clusterArgs`. 
+	- Built-in clustering routines provided by the package can now be accessed via `builtInClusterFunctions` and accompanying functions (see ?builtInClusterFunctions). The functions that are used for these functions are now available to the user via their ClusterFunction object that the user can access with the function `getBuiltInClusterFunction`. 
+* `hiearchical01` clustering now has a different default, namely to apply `as.dist` to the input `diss` in order to get a `dist` object, rather than `dist(1-diss)` which was previously the default for historical reasons. This is controlled by argument `whichHierDist`, and can be set to the previous version by passing `whichHierDist="dist"` to the `clusterArgs` argument in either `subsampleArgs` or `clusterDArgs`, depending on where `hierarchical01` is being used.
 * clusterSingle now only returns dissimilarity in coClustering slot if the subsample=TRUE in the call.
-* Removed default value for argument `proportion` in `combineMany`. Previous default was `proportion=1` but didn't match most common use cases.
+* Removed default value for argument `proportion` in `combineMany`. The previous default was `proportion=1` but didn't match most common use cases and was accidentally called by upper functions like RSEC. 
+* If the clusterFunction of `subsampleArgs` is not given by the user explicitly, and the clusterFunction of `clusterDArgs` is appropriate, it will be used for `subsampleClustering`; if the `clusterFunction` in `clusterDArgs` is not appropriate (e.g. subsampleClustering needs a type K because sequential=TRUE), then the default for the subsampleClustering will be 'pam'. This changes the previous behavior of `subsampleClustering` where the default was 'pam' in all cases where not explicitly given by the user. This change should have no impact on RSEC: since the clusterFunction for the clusterD terms is a '01' in RSEC and and the subsampleClustering has to be type 'K', it will revert to the default "pam" as before. 
 
 Bugs:
-* Fixed error so that if clusterSingle is called on existing clusterExperiment object, will pass on the transformation function. 
-* Fixed error so that if clusterSingle is called on existing clusterExperiment object, will not overwrite the information of the existing clusterExperiment object. 
+* Fixed error so where if clusterSingle was called on existing clusterExperiment object, wouldn't pass on the transformation function. 
+* Fixed error so where if clusterSingle is called on existing clusterExperiment object would overwrite the information of the existing clusterExperiment object. 
 * Fixed RSEC so now if rerun on existing clusterExperiment object, will grab defaults from the matrix version (previously defaults were those of the underlying function, which were not always the same, e.g. combineProportion became default of 1)
 
 Changes in version 1.3.0-9008( Release date: )

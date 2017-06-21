@@ -1,6 +1,6 @@
-#' Resampling-based Sequential Ensemble Clustering
+#' @title Resampling-based Sequential Ensemble Clustering
 #'
-#' Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
+#' @description Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 #' Clustering) for single cell sequencing data. This is a wrapper function
 #' around the existing clusterExperiment workflow that results in the output of
 #' RSEC.

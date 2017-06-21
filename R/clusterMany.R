@@ -1,118 +1,127 @@
 #' Create a matrix of clustering across values of parameters
-#'
-#' Given a range of parameters, this funciton will return a matrix with the
-#' clustering of the samples across the range, which can be passed to
+#' 
+#' Given a range of parameters, this function will return a matrix with the 
+#' clustering of the samples across the range, which can be passed to 
 #' \code{plotClusters} for visualization.
-#'
+#' 
 #' @aliases clusterMany
-#'
-#' @param x the data on which to run the clustering. Can be: matrix (with genes
-#'   in rows), a list of datasets overwhich the clusterings should be run, a
-#'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
-#' @param ks the range of k values (see details for meaning for different
-#'   choices).
+#'   
+#' @param x the data matrix on which to run the clustering. Can be: matrix (with
+#'   genes in rows), a list of datasets overwhich the clusterings should be run,
+#'   a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
+#' @param ks the range of k values (see details for the meaning of \code{k} for
+#'   different choices of other parameters).
 #' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
-#'   type '01' (either 'tight' or 'hierarchical01'). Determines tightness 
-#'   required in creating clusters from the dissimilarity matrix. Takes on
-#'   values in [0,1]. See \code{\link{clusterD}}.
+#'   type '01'. Determines tightness required in creating clusters from the
+#'   dissimilarity matrix. Takes on values in [0,1]. See documentation of
+#'   \code{\link{ClusterFunction}}.
 #' @param betas values of \code{beta} to be tried in sequential steps. Only used
-#'   for \code{sequential=TRUE}. Determines the similarity between two clusters
+#'   for \code{sequential=TRUE}. Determines the similarity between two clusters 
 #'   required in order to deem the cluster stable. Takes on values in [0,1]. See
-#'   \code{\link{seqCluster}}.
+#'   documentation of \code{\link{seqCluster}}.
 #' @param clusterFunction function used for the clustering. Note that unlike in 
 #'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-#'   clustering techniques, and can not
-#'   be a user-defined function. Current functions can be found by typing \code{builtInClusterFunctions} into the command-line. 
-#' @param minSizes the minimimum size required for a cluster (in
-#'   \code{clusterD}). Clusters smaller than this are not kept and samples are
-#'   left unassigned. 
+#'   clustering techniques, and can not be a user-defined function. Current
+#'   functions can be found by typing \code{builtInClusterFunctions} into the
+#'   command-line.
+#' @param minSizes the minimimum size required for a cluster (in the 
+#'   \code{clusterD} step). Clusters smaller than this are not kept and samples
+#'   are left unassigned.
 #' @param distFunction a vector of character strings that are the names of 
-#'     distance functions found in the global environment. See the help pages of
-#'     \code{\link{clusterD}} for details about the required format of distance 
-#'     functions. Currently, this distance function must be applicable for all 
-#'     clusterFunction types tried. Therefore, it is not possible in \code{clusterMany} to intermix type "K"
-#'     and type "01" algorithms if you also give distances to evaluate via
-#'     \code{distFunction} unless all distances give 0-1 values for the distance
-#'     (and hence are possible for both type "01" and "K" algorithms).
+#'   distance functions found in the global environment. See the help pages of 
+#'   \code{\link{clusterSingle}} for details about the required format of
+#'   distance functions. Currently, this distance function must be applicable
+#'   for all clusterFunction types tried. Therefore, it is not possible in
+#'   \code{clusterMany} to intermix type "K" and type "01" algorithms if you
+#'   also give distances to evaluate via \code{distFunction} unless all
+#'   distances give 0-1 values for the distance (and hence are possible for both
+#'   type "01" and "K" algorithms).
 #' @param nVarDims vector of the number of the most variable features to keep 
-#'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is
+#'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
 #'   included, then the full dataset will also be included.
-#' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified
+#' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified 
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be
 #'   included.
-#' @param eraseOld logical. Only relevant if input \code{x} is of class
-#'   \code{ClusterExperiment}. If TRUE, will erase existing workflow results
-#'   (clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-#'   workflow results will have "\code{_i}" added to the clusterTypes value,
-#'   where \code{i} is one more than the largest such existing workflow
+#' @param eraseOld logical. Only relevant if input \code{x} is of class 
+#'   \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
+#'   (clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
+#'   workflow results will have "\code{_i}" added to the clusterTypes value, 
+#'   where \code{i} is one more than the largest such existing workflow 
 #'   clusterTypes.
 #' @inheritParams clusterSingle
 #' @inheritParams clusterD
 #' @param ncores the number of threads
 #' @param random.seed a value to set seed before each run of clusterSingle (so 
-#'   that all of the runs are run on the same subsample of the data). Note, if
-#'   'random.seed' is set, argument 'ncores' should NOT be passed via
-#'   subsampleArgs; instead set the argument 'ncores' of
-#'   clusterMany directly (which is preferred for improving speed anyway).
+#'   that all of the runs are run on the same subsample of the data). Note, if 
+#'   'random.seed' is set, argument 'ncores' should NOT be passed via 
+#'   subsampleArgs; instead set the argument 'ncores' of clusterMany directly
+#'   (which is preferred for improving speed anyway).
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
-#'   rownames equal to the names of the resulting column names of clMat object
-#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
+#'   rownames equal to the names of the resulting column names of clMat object 
+#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
 #'   however, the function will create the dimensionality reductions of the data
 #'   indicated by the user input.
-#' @param ... For signature \code{list}, arguments to be passed on to mclapply
-#'   (if ncores>1). For all the other signatures, arguments to be passed to the
+#' @param ... For signature \code{list}, arguments to be passed on to mclapply 
+#'   (if ncores>1). For all the other signatures, arguments to be passed to the 
 #'   method for signature \code{list}.
 #' @param verbose logical. If TRUE it will print informative messages.
-#' @details While the function allows for multiple values of clusterFunction,
-#'   the code does not reuse the same subsampling matrix and try different
-#'   clusterFunctions on it. If sequential=TRUE, different
-#'   subsample clusterFunctions will create different sets of data to subsample
-#'   so it is not possible; if sequential=FALSE, we have not implemented
-#'   functionality for this reuse. Setting the \code{random.seed} value,
-#'   however, should mean that the subsampled matrix is the same for each, but
-#'   there is no gain in computational complexity (i.e. each subsampled
+#' @details Some combinations of these parameters are not feasible. See the
+#'   documentation of \code{\link{clusterSingle}} for important information on
+#'   how these parameter choices interact.
+#' @details While the function allows for multiple values of clusterFunction, 
+#'   the code does not reuse the same subsampling matrix and try different 
+#'   clusterFunctions on it. This is because if sequential=TRUE, different 
+#'   subsample clusterFunctions will create different sets of data to subsample 
+#'   so it is not possible; if sequential=FALSE, we have not implemented 
+#'   functionality for this reuse. Setting the \code{random.seed} value, 
+#'   however, should mean that the subsampled matrix is the same for each, but 
+#'   there is no gain in computational complexity (i.e. each subsampled 
 #'   co-occurence matrix is recalculated for each set of parameters).
-#'
-#' @details The argument 'ks' is interpreted differently for different choices
-#'   of the other parameters. When/if sequential=TRUE, ks defines the argument
-#'   k0 of \code{\link{seqCluster}}. Otherwise, 'ks' values are the \code{k} values for \strong{both} the clusterD and subsampling step (i.e. assigned to the  
-#'   \code{subsampleArgs} and \code{clusterDArgs} that are passed to
-#'   \code{\link{clusterD}} and \code{\link{subsampleClustering}}. This passing
-#'   of these arguments via \code{subsampleArgs} will only have an effect
-#'   if `subsample=TRUE`. Similarly, the passing of \code{clusterDArgs[["k"]]}
-#'   will only have an effect when the clusterFunction argument includes a
-#'   clustering algorithm of type "K". When/if "findBestK=TRUE", ks also defines
-#'   the kRange argument of \code{\link{clusterD}} unless kRange is specified by
-#'   the user via the clusterDArgs; note this means that the default option of
-#'   setting kRange that depends on the input k (see \code{\link{clusterD}}) is
-#'   not available in clusterMany.
-#' @details If the input is a \code{ClusterExperiment} object, currently
-#'   existing \code{orderSamples},\code{coClustering} or dendrogram slots will
-#'   be retained.
-#' @return If \code{run=TRUE} and the input is either a matrix, a
-#'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object,
+#'   
+#' @details The argument \code{ks} is interpreted differently for different
+#'   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
+#'   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
+#'   values are the \code{k} values for \strong{both} the clusterD and
+#'   subsampling step (i.e. assigned to the \code{subsampleArgs} and
+#'   \code{clusterDArgs} that are passed to \code{\link{clusterD}} and
+#'   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
+#'   \code{subsampleArgs}. The passing of these arguments via
+#'   \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
+#'   Similarly, the passing of \code{clusterDArgs[["k"]]} will only have an
+#'   effect when the clusterFunction argument includes a clustering algorithm of
+#'   type "K". When/if "findBestK=TRUE", \code{ks} also defines the
+#'   \code{kRange} argument of \code{\link{clusterD}} unless \code{kRange} is
+#'   specified by the user via the \code{clusterDArgs}; note this means that the
+#'   default option of setting \code{kRange} that depends on the input \code{k}
+#'   (see \code{\link{clusterD}}) is not available in \code{clusterMany}, only
+#'   in \code{\link{clusterSingle}}.
+#' @details If the input is a \code{ClusterExperiment} object, current
+#'   implementation is that existing \code{orderSamples},\code{coClustering} or
+#'   the many dendrogram slots will be retained.
+#' @return If \code{run=TRUE} and the input is either a matrix, a 
+#'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, 
 #'   will return a \code{ClusterExperiment} object, where the results are stored
-#'   as clusterings with clusterTypes \code{clusterMany}. Depending on
-#'   \code{eraseOld} argument above, this will either delete existing such
-#'   objects, or change the clusterTypes of existing objects. See argument
-#'   \code{eraseOld} above. Arbitrarily the first clustering is set as the
+#'   as clusterings with clusterTypes \code{clusterMany}. Depending on 
+#'   \code{eraseOld} argument above, this will either delete existing such 
+#'   objects, or change the clusterTypes of existing objects. See argument 
+#'   \code{eraseOld} above. Arbitrarily the first clustering is set as the 
 #'   primaryClusteringIndex.
-#'
-#' @return If \code{run=TRUE} and the input is a list of data sets, a list with
-#'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-#'   column corresponding to a clustering and each row to a sample.}
-#'   \item{\code{clusterInfo}}{ a list with information regarding clustering
+#'   
+#' @return If \code{run=TRUE} and the input is a list of data sets, a list with 
+#'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each 
+#'   column corresponding to a clustering and each row to a sample.} 
+#'   \item{\code{clusterInfo}}{ a list with information regarding clustering 
 #'   results (only relevant entries for those clusterings with sequential=TRUE)}
-#'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
-#'   clustering, where each column is a possible parameter set by the user and
-#'   passed to \code{\link{clusterSingle}} and each row of paramMatrix
-#'   corresponds to a clustering in \code{clMat}} \item{\code{clusterDArgs}}{ a
-#'   list of (possibly modified) arguments to clusterDArgs}
-#'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
-#'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified)
+#'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
+#'   clustering, where each column is a possible parameter set by the user and 
+#'   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
+#'   corresponds to a clustering in \code{clMat}} \item{\code{clusterDArgs}}{ a 
+#'   list of (possibly modified) arguments to clusterDArgs} 
+#'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
+#'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
 #'   arguments to subsampleArgs} }
-#' @return If \code{run=FALSE} a list similar to that described above, but
+#' @return If \code{run=FALSE} a list similar to that described above, but 
 #'   without the clustering results.
 #'
 #' @examples

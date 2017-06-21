@@ -76,40 +76,80 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
-\code{seqCluster} is not meant to be called by the user. It is only an exported function so as to be able to clearly document the arguments for \code{seqCluster} which can be passed via the argument \code{seqArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
+\code{seqCluster} is not meant to be called by the user. It is only
+  an exported function so as to be able to clearly document the arguments for
+  \code{seqCluster} which can be passed via the argument \code{seqArgs} in
+  functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 
-This code is adapted from the sequential protion of the code of the tightClust
- package of Tseng and Wong. At each iteration of the algorithm it finds a set of samples that constitute a homogeneous cluster and remove them, and iterate again to find the next set of samples that form a cluster.
+This code is adapted from the sequential protion of the code of the
+  tightClust package of Tseng and Wong. At each iteration of the algorithm it
+  finds a set of samples that constitute a homogeneous cluster and remove
+  them, and iterate again to find the next set of samples that form a
+  cluster.
 
-In each iteration, to determine the next set of homogeneous set of samples, the algorithm will iteratively cluster the current set of samples for a series of increasing values of the parameter $K$, starting at a value \code{kinit} and increasing by 1 at each iteration, until a sufficiently homogeneous set of clusters is found. For the first set of homogeneous samples, \code{kinit} is set to the argument $k0$, and for iteration, \code{kinit} is increased internally.
+In each iteration, to determine the next set of homogeneous set of
+  samples, the algorithm will iteratively cluster the current set of samples
+  for a series of increasing values of the parameter $K$, starting at a value
+  \code{kinit} and increasing by 1 at each iteration, until a sufficiently
+  homogeneous set of clusters is found. For the first set of homogeneous
+  samples, \code{kinit} is set to the argument $k0$, and for iteration,
+  \code{kinit} is increased internally.
 
-Depending on the value of \code{subsample} how the value of $K$ is used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the cluster function \code{clusterFunction} sent to  \code{\link{subsampleClustering}} via \code{subsampleArgs}; then \code{\link{clusterD}} is run on the result of the co-occurance matrix from \code{\link{subsampeClustering}} with the \code{ClusterFunction} object defined in the argument \code{clusterFunction} set via \code{clusterDArgs}. The number of clusters actually resulting from this run of \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering done in \code{\link{subsampleClustering}}. If \code{subsample=FALSE}, \code{\link{clusterD}} is called directly on the data to determine the clusters and $K$ set by \code{seqCluster} for this iteration determines the parameter of the clustering done by \code{\link{clusterD}}. Specifically, the argument \code{clusterFunction} defines the clustering of the \code{\link{clusterD}} step and \code{k} is sent to that \code{ClusterFunction} object. This means that if \code{subsample=FALSE}, the \code{clusterFunction} must be of \code{algorithmType} "K". 
-  @details In either setting of \code{subsample}, the resulting clusters from \code{\link{clusterD}} for a particular $K$ will be compared to
-  clusters found in the previous iteration of $K-1$. For computational (and other?) convenience, only the
-  first \code{top.can} clusters of each iteration will be compared to the first
-  \code{top.can} clusters of previous iteration for similarity (where \code{top.can}
-  currently refers to ordering by size, so first \code{top.can} largest clusters.
+Depending on the value of \code{subsample} how the value of $K$ is
+  used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the
+  cluster function \code{clusterFunction} sent to 
+  \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
+  \code{\link{clusterD}} is run on the result of the co-occurance matrix from
+  \code{\link{subsampeClustering}} with the \code{ClusterFunction} object
+  defined in the argument \code{clusterFunction} set via \code{clusterDArgs}.
+  The number of clusters actually resulting from this run of
+  \code{\link{clusterD}} may not be equal to the $K$ sent to  the clustering
+  done in \code{\link{subsampleClustering}}. If \code{subsample=FALSE},
+  \code{\link{clusterD}} is called directly on the data to determine the
+  clusters and $K$ set by \code{seqCluster} for this iteration determines the
+  parameter of the clustering done by \code{\link{clusterD}}. Specifically,
+  the argument \code{clusterFunction} defines the clustering of the
+  \code{\link{clusterD}} step and \code{k} is sent to that
+  \code{ClusterFunction} object. This means that if \code{subsample=FALSE},
+  the \code{clusterFunction} must be of \code{algorithmType} "K".
 
-If there is no cluster of the first \code{top.can} in the current iteration $K$
-  that has overlap similarity > \code{beta} to any in the previous iteration, then
-  the algorithm will move to the next iteration, increasing to $K+1$.
+In either setting of \code{subsample}, the resulting clusters from
+  \code{\link{clusterD}} for a particular $K$ will be compared to clusters
+  found in the previous iteration of $K-1$. For computational (and other?)
+  convenience, only the first \code{top.can} clusters of each iteration will
+  be compared to the first \code{top.can} clusters of previous iteration for
+  similarity (where \code{top.can} currently refers to ordering by size, so
+  first \code{top.can} largest clusters.
 
-If, however, of these clusters there is a cluster in the current iteration $K$ that has overlap
-  similarity > beta to a cluster in the previous iteration $K-1$, then the cluster
-  with the largest such similarity will be identified as a homogenous set of samples
-  and the samples in it will be removed and designated as such. The algorithm
-  will then start again to determine the next set of homogenous samples, but without these samples.
-  Furthermore, in this case (i.e. a cluster was found and removed), the value of \code{kinit} will be be reset to \code{kinit-1}; i.e. the range of increasing $K$ that will be iterated over to find a set of homogenous samples will start off one value less than was the case for the previous set of homogeneous samples. If \code{kinit-1}<\code{k.min}, then \code{kinit} will be set
-  to \code{k.min}.
+If there is no cluster of the first \code{top.can} in the current
+  iteration $K$ that has overlap similarity > \code{beta} to any in the
+  previous iteration, then the algorithm will move to the next iteration,
+  increasing to $K+1$.
 
-If there are less than \code{remain.n} samples left after finding a cluster
-  and removing its samples, the algorithm will stop, as subsampling is deamed
-  to no longer be appropriate. If the K has to be increased to beyond \code{k.max}
-  without finding any pair of clusters with overlap > beta, then the
-  algorithm will stop. Any samples not found as part of a homogenous set of clusters at that point will be classified as unclustered (given a value
-  of -1)
+If, however, of these clusters there is a cluster in the current
+  iteration $K$ that has overlap similarity > beta to a cluster in the
+  previous iteration $K-1$, then the cluster with the largest such similarity
+  will be identified as a homogenous set of samples and the samples in it
+  will be removed and designated as such. The algorithm will then start again
+  to determine the next set of homogenous samples, but without these samples.
+  Furthermore, in this case (i.e. a cluster was found and removed), the value
+  of \code{kinit} will be be reset to \code{kinit-1}; i.e. the range of
+  increasing $K$ that will be iterated over to find a set of homogenous
+  samples will start off one value less than was the case for the previous
+  set of homogeneous samples. If \code{kinit-1}<\code{k.min}, then
+  \code{kinit} will be set to \code{k.min}.
 
-Certain combinations of inputs to \code{clusterDArgs} and \code{subsampleArgs} are not allowed. See \code{\link{clusterSingle}} for these explanations.
+If there are less than \code{remain.n} samples left after finding a
+  cluster and removing its samples, the algorithm will stop, as subsampling
+  is deamed to no longer be appropriate. If the K has to be increased to
+  beyond \code{k.max} without finding any pair of clusters with overlap >
+  beta, then the algorithm will stop. Any samples not found as part of a
+  homogenous set of clusters at that point will be classified as unclustered
+  (given a value of -1)
+
+Certain combinations of inputs to \code{clusterDArgs} and
+  \code{subsampleArgs} are not allowed. See \code{\link{clusterSingle}} for
+  these explanations.
 }
 \examples{
 \dontrun{
@@ -128,5 +168,6 @@ Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
   61:10-16.
 }
 \seealso{
-tight.clust, \code{\link{clusterSingle}},\code{\link{clusterD}},\code{\link{subsampleClustering}}
+tight.clust,
+  \code{\link{clusterSingle}},\code{\link{clusterD}},\code{\link{subsampleClustering}}
 }

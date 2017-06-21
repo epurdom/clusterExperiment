@@ -33,58 +33,110 @@ clusterFunction(clusterFUN, ...)
 
 \item{classifyFUN}{function for slot \code{classifyFUN}}
 
-\item{checkFunctions}{logical for whether to check the input functions with \code{internalFunctionsCheck}}
+\item{checkFunctions}{logical for whether to check the input functions with
+\code{internalFunctionsCheck}}
 }
 \value{
 A \code{ClusterFunction} object.
 }
 \description{
-\code{ClusterFunction} is a class ...
+\code{ClusterFunction} is a class for holding functions that can
+  be used for clustering in the clustering algorithms in this package.
 
-The constructor \code{clusterFunction} creates an object of
-the class \code{ClusterFunction}.
+The constructor \code{clusterFunction} creates an object of the
+ class \code{ClusterFunction}.
 }
 \details{
-Required arguments for \code{clusterFUN}:
-\itemize{
- \item{"x or diss"}{either \code{x} and/or \code{diss} depending on \code{inputType}. If \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like assay(CEObj) would give)}
- \item{"checkArgs"}{logical argument. If \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments passed in \code{...} are valid and return an error if not; otherwise, no error will be given, but the check should be done and only valid arguments in \code{...} passed along. This is necessary for the function to work with \code{clusterMany} which passes all arguments to all functions without checking. }
-\item{"cluster.only"}{logical argument. If \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the vector of cluster assignments (or list if \code{outputType="list"}). If \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named list where one of the elements entitled \code{clustering} contains the vector described above (no list!); anything else needed by the \code{classifyFUN} to classify new data should be contained in the output list as well. \code{cluster.only} is set internally depending on whether \code{classifyFUN} will be used by subsampling or only for clustering the final product.}
-\item{"..."}{Any additional arguments specific to the algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT passed via arguments to \code{clusterFUN}}
-\item{"Other required arguments"}{\code{clusterFUN} must also accept arguments required for its \code{algorithmType} (see Details below).}
-}
+Required arguments for \code{clusterFUN}: \itemize{ \item{"x or
+  diss"}{either \code{x} and/or \code{diss} depending on \code{inputType}. If
+  \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
+  assay(CEObj) would give)} \item{"checkArgs"}{logical argument. If
+  \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
+  passed in \code{...} are valid and return an error if not; otherwise, no
+  error will be given, but the check should be done and only valid arguments
+  in \code{...} passed along. This is necessary for the function to work with
+  \code{clusterMany} which passes all arguments to all functions without
+  checking. } \item{"cluster.only"}{logical argument. If
+  \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the
+  vector of cluster assignments (or list if \code{outputType="list"}). If
+  \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named
+  list where one of the elements entitled \code{clustering} contains the
+  vector described above (no list!); anything else needed by the
+  \code{classifyFUN} to classify new data should be contained in the output
+  list as well. \code{cluster.only} is set internally depending on whether
+  \code{classifyFUN} will be used by subsampling or only for clustering the
+  final product.} \item{"..."}{Any additional arguments specific to the
+  algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT
+  passed via arguments to \code{clusterFUN}} \item{"Other required
+  arguments"}{\code{clusterFUN} must also accept arguments required for its
+  \code{algorithmType} (see Details below).} }
 
-\code{algorithmType}: Type "01" is for clustering functions that
-  expect as an input a dissimilarity matrix that takes on 0-1 values (e.g. from subclustering) with 1 indicating more dissimilarity between samples. "01" algorithm types must also have \code{inputType} equal to \code{"diss"}. It is also generally expected
-  that "01" algorithms use the 0-1 nature of the input to set criteria
-  as to where to find clusters. "01" functions must take as an argument \code{alpha} between 0 and 1 to determine the clusters, where larger values of \code{alpha} require less similarity between samples in the same cluster.
-  "K" is for clustering functions that require an argument \code{k} (the number of
-  clusters), but arbitrary \code{inputType}.  On the other hand, "K" algorithms are assumed to need a
-  predetermined 'k' and are also assumed to cluster all samples to a cluster. If not, the post-processing steps in \code{\link{clusterD}} such as \code{findBestK} and \code{removeSil} may not operate correctly since they rely on silhouette distances.
+\code{algorithmType}: Type "01" is for clustering functions that 
+  expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
+  from subclustering) with 1 indicating more dissimilarity between samples.
+  "01" algorithm types must also have \code{inputType} equal to
+  \code{"diss"}. It is also generally expected that "01" algorithms use the
+  0-1 nature of the input to set criteria as to where to find clusters. "01"
+  functions must take as an argument \code{alpha} between 0 and 1 to
+  determine the clusters, where larger values of \code{alpha} require less
+  similarity between samples in the same cluster. "K" is for clustering
+  functions that require an argument \code{k} (the number of clusters), but
+  arbitrary \code{inputType}.  On the other hand, "K" algorithms are assumed
+  to need a predetermined 'k' and are also assumed to cluster all samples to
+  a cluster. If not, the post-processing steps in \code{\link{clusterD}} such
+  as \code{findBestK} and \code{removeSil} may not operate correctly since
+  they rely on silhouette distances.
 
-\code{internalFunctionCheck} is the function that is called by the validity check of the \code{clusterFunction} constructor (if \code{checkFunctions=TRUE}). It is available as an S3 function for the user to be able to test their functions and debug them, which is difficult to do with a S4 validity function.
+\code{internalFunctionCheck} is the function that is called by the 
+  validity check of the \code{clusterFunction} constructor (if 
+  \code{checkFunctions=TRUE}). It is available as an S3 function for the user
+  to be able to test their functions and debug them, which is difficult to do
+  with a S4 validity function.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{clusterFUN}}{a function defining the clustering function. See details for required arguments.}
+\item{\code{clusterFUN}}{a function defining the clustering function. See details for
+required arguments.}
 
-\item{\code{inputType}}{a character defining what type of input \code{clusterFUN} takes. Must be one of either "diss","X", or "either"}
+\item{\code{inputType}}{a character defining what type of input \code{clusterFUN}
+takes. Must be one of either "diss","X", or "either"}
 
-\item{\code{algorithmType}}{a character defining what type of clustering algorithm \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN} must take the corresponding required arguments (see details below).}
+\item{\code{algorithmType}}{a character defining what type of clustering algorithm
+\code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
+must take the corresponding required arguments (see details below).}
 
-\item{\code{classifyFUN}}{a function that takes as input new data and the output of \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster assignments of the new data.  Note that the
-function should assume that the input 'x' is not the same samples that were
-input to the clusterFunction (but can assume that it is the same number of
-features/columns). Used in subsampling clustering. If given value \code{NULL} then subsampling can only be \code{"InSample"}, see \code{\link{subsampleClustering}}.}
+\item{\code{classifyFUN}}{a function that takes as input new data and the output of
+\code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster
+assignments of the new data.  Note that the function should assume that the
+input 'x' is not the same samples that were input to the clusterFunction
+(but can assume that it is the same number of features/columns). Used in
+subsampling clustering. If given value \code{NULL} then subsampling can
+only be \code{"InSample"}, see \code{\link{subsampleClustering}}.}
 
-\item{\code{inputClassifyType}}{the input type for the classification function (if not NULL); like \code{inputType}, must be one of "diss","X", or "either"}
+\item{\code{inputClassifyType}}{the input type for the classification function (if
+not NULL); like \code{inputType}, must be one of "diss","X", or "either"}
 
-\item{\code{outputType}}{the type of output given by \code{clusterFUN}. Must either be "vector" or "list". If "vector" then the output should be a vector of length equal to the number of observations   with integer-valued elements identifying them to different clusters; the vector assignments should be in the same order as the original input of the data. Samples that are not assigned to any cluster should be given a '-1' value.  If "list", then it must be a list equal to the length of the number of clusters, and the elements of the list contain the indices of the samples in that cluster. Any indices not in any of the list elements are assumed to be -1. The main advantage of "list" is that it can preserve the order of the clusters if the \code{clusterFUN} desires to do so. In which case the \code{orderBy} argument of \code{\link{clusterD}} can preserve this ordering (default is to order by size).}
+\item{\code{outputType}}{the type of output given by \code{clusterFUN}. Must either
+be "vector" or "list". If "vector" then the output should be a vector of
+length equal to the number of observations   with integer-valued elements
+identifying them to different clusters; the vector assignments should be in
+the same order as the original input of the data. Samples that are not
+assigned to any cluster should be given a '-1' value.  If "list", then it
+must be a list equal to the length of the number of clusters, and the
+elements of the list contain the indices of the samples in that cluster.
+Any indices not in any of the list elements are assumed to be -1. The main
+advantage of "list" is that it can preserve the order of the clusters if
+the \code{clusterFUN} desires to do so. In which case the \code{orderBy}
+argument of \code{\link{clusterD}} can preserve this ordering (default is
+to order by size).}
 
-\item{\code{requiredArgs}}{Any additional required arguments for \code{clusterFUN} (beyond those required of all \code{clusterFUN}, described in details).}
+\item{\code{requiredArgs}}{Any additional required arguments for \code{clusterFUN}
+(beyond those required of all \code{clusterFUN}, described in details).}
 
-\item{\code{checkFunctions}}{logical. If TRUE, the validity check of the \code{ClusterFunction} object will check the \code{clusterFUN} with simple toy data using the function \code{internalFunctionCheck}.}
+\item{\code{checkFunctions}}{logical. If TRUE, the validity check of the
+\code{ClusterFunction} object will check the \code{clusterFUN} with simple
+toy data using the function \code{internalFunctionCheck}.}
 }}
 
 \examples{

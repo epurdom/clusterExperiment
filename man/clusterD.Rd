@@ -19,40 +19,56 @@
 \S4method{getPostProcessingArgs}{ClusterFunction}(clusterFunction)
 }
 \arguments{
-\item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines the clustering routine. See \code{\link{ClusterFunction}} for required format of user-defined clustering routines. User can also give a character value to the argument \code{clusterFunction} to indicate the use
-of clustering routines provided in package. Type \code{\link{builtInClusterFunctions}} at command prompt to see the built-in clustering routines. If \code{clusterFunction} is missing, the default is set to "pam".}
+\item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
+the clustering routine. See \code{\link{ClusterFunction}} for required
+format of user-defined clustering routines. User can also give a character
+value to the argument \code{clusterFunction} to indicate the use of
+clustering routines provided in package. Type
+\code{\link{builtInClusterFunctions}} at command prompt to see the built-in
+clustering routines. If \code{clusterFunction} is missing, the default is
+set to "pam".}
 
-\item{...}{arguments passed to the post-processing steps of the clustering. The available post-processing arguments for a \code{ClusterFunction} object depend on it's algorithm type and can be found by calling \code{getPostProcessingArgs}. See details below for documentation.}
+\item{...}{arguments passed to the post-processing steps of the clustering.
+The available post-processing arguments for a \code{ClusterFunction} object
+depend on it's algorithm type and can be found by calling
+\code{getPostProcessingArgs}. See details below for documentation.}
 
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
 columns).}
 
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
 on which to run the clustering}
 
-\item{distFunction}{a distance function to be applied to \code{D}. Only relevant if
-input is only \code{x} (a matrix of data), and \code{diss=NULL}. See details of \code{\link{clusterD}} for the required format of the distance function.}
+\item{distFunction}{a distance function to be applied to \code{D}. Only
+relevant if input is only \code{x} (a matrix of data), and
+\code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
+required format of the distance function.}
 
-\item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN} slot of the \code{ClusterFunction} object}
+\item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
+slot of the \code{ClusterFunction} object}
 
-\item{minSize}{the minimum number of samples in a cluster. Clusters found
-below this size will be discarded and samples in the cluster will be given
+\item{minSize}{the minimum number of samples in a cluster. Clusters found 
+below this size will be discarded and samples in the cluster will be given 
 a cluster assignment of "-1" to indicate that they were not clustered.}
 
-\item{orderBy}{how to order the cluster (either by size or by maximum alpha
-value). If orderBy="size" the numbering of the clusters are reordered by
-the size of the cluster, instead of by the internal ordering of the
-\code{clusterFUN} defined in the \code{ClusterFunction} object (an internal ordering is only possible if slot \code{outputType} of the \code{ClusterFunction} is \code{"list"}).}
+\item{orderBy}{how to order the cluster (either by size or by maximum alpha 
+value). If orderBy="size" the numbering of the clusters are reordered by 
+the size of the cluster, instead of by the internal ordering of the 
+\code{clusterFUN} defined in the \code{ClusterFunction} object (an internal
+ordering is only possible if slot \code{outputType} of the
+\code{ClusterFunction} is \code{"list"}).}
 
 \item{format}{whether to return a list of indices in a cluster or a vector of
-clustering assignments. List is mainly for compatibility with sequential
+clustering assignments. List is mainly for compatibility with sequential 
 part.}
 
 \item{checkArgs}{logical as to whether should give warning if arguments given
-that don't match clustering choices given. Otherwise, inapplicable
+that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
 
-\item{returnData}{logical as to whether to return the \code{diss} or \code{x} matrix in the output. If \code{FALSE} only the clustering vector is returned.}
+\item{returnData}{logical as to whether to return the \code{diss} or \code{x}
+matrix in the output. If \code{FALSE} only the clustering vector is
+returned.}
 }
 \value{
 clusterD returns a vector of cluster assignments (if format="vector")
@@ -60,35 +76,30 @@ clusterD returns a vector of cluster assignments (if format="vector")
   than minSize are removed.
 }
 \description{
-Given input data, this function will
-  try to find the clusters based on the given ClusterFunction object.
+Given input data, this function will try to find the clusters
+  based on the given ClusterFunction object.
 }
 \details{
-\code{clusterD} is not meant to be called by the user. It is only an exported function so as to be able to clearly document the arguments for \code{clusterD} which can be passed via the argument \code{clusterDArgs} in functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
+\code{clusterD} is not meant to be called by the user. It is only an
+  exported function so as to be able to clearly document the arguments for
+  \code{clusterD} which can be passed via the argument \code{clusterDArgs} in
+  functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 
-To provide a distance matrix via the argument \code{distFunction},
-    the function must be defined to take the distance of the rows of a matrix
-    (internally, the function will call \code{distFunction(t(x))}. This is to
-    be compatible with the input for the \code{dist} function.
-    \code{as.matrix} will be performed on the output of \code{distFunction},
-    so if the object returned has a \code{as.matrix} method that will convert
-    the output into a symmetric matrix of distances, this is fine (for
-    example the class \code{dist} for objects returned by \code{dist} have
-    such a method). If \code{distFunction=NA}, then a default distance will 
-    be calculated based on the type of clustering algorithm of 
-    \code{clusterFunction}. For type "K" the default is to take \code{dist}
-    as the distance function. For type "01", the default is to take the
-    (1-cor(x))/2.
-
-Post-processing Arguments: For post-processing the clustering, currently only type 'K' algorithms have a defined post-processing. Specifically
+Post-processing Arguments: For post-processing the clustering,
+  currently only type 'K' algorithms have a defined post-processing.
+  Specifically
 \itemize{
  \item{"findBestK"}{logical, whether should find best K based on average
   silhouette width (only used if clusterFunction of type "K").}
- \item{"kRange"}{vector of integers to try for k values if findBestK=TRUE. If \code{k} is given in \code{clusterArgs}, then default is k-2 to k+20, subject to those values being
-  greater than 2; if not the default is \code{2:20}. Note that default values depend on the input k, so running
-  for different choices of k and findBestK=TRUE can give different answers
-  unless kRange is set to be the same.}
- \item{"removeSil"}{logical as to whether remove the assignment of a sample to a cluster when the sample's silhouette value is less than \code{silCutoff}}
+ \item{"kRange"}{vector of integers to try for k values if findBestK=TRUE. If
+ \code{k} is given in \code{clusterArgs}, then default is k-2 to k+20,
+ subject to those values being greater than 2; if not the default is
+ \code{2:20}. Note that default values depend on the input k, so running for
+ different choices of k and findBestK=TRUE can give different answers unless
+ kRange is set to be the same.}
+ \item{"removeSil"}{logical as to whether remove the assignment of a sample
+ to a cluster when the sample's silhouette value is less than
+ \code{silCutoff}}
  \item{"silCutoff"}{Cutoff on the minimum silhouette width to be included in
   cluster (only used if removeSil=TRUE).}
 }

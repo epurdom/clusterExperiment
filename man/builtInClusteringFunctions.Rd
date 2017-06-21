@@ -28,41 +28,69 @@ builtInClusterFunctions
 \\S4method{getBuiltInType01}{ANY}(object)
 }
 \description{
-Documents the built-in clustering options that are available in the clusterExperiment package.
+Documents the built-in clustering options that are available in
+  the clusterExperiment package.
 }
 \details{
-Built-in clustering methods: The built-in clustering methods, the names of which can be accessed by \code{builtInClusterFunctions} are the following:
-\itemize{
- \item{"pam"}{Based on \code{\link{pam}} in \code{cluster} package. Arguments to that function can be passed via \code{clusterArgs}. }
- \item{"kmeans"}{Based on \code{\link{kmeans}} in \code{stats} package. Arguments to that function can be passed via \code{clusterArgs} except for \code{centers} which is reencoded here to be the argument 'k'}
- \item{"hierarchical01"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering. Arguments to that function can be passed via \code{clusterArgs}. The \code{hierarchical01} cuts the hiearchical tree based on the parameter \code{alpha}. It does not use the \code{cutree} function, but instead ... [documentation still needed]   }
- \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used to build hiearchical clustering and \code{\link{cutree}} is used to cut the tree into \code{k} clusters.}
- \item{"tight"}{Based on the algorithm in Tsang and Wong, specifically their method of picking clusters from a co-occurance matrix after subsampling. The clustering encoded here is not the entire tight clustering algorithm, only that single piece that identifies clusters from the co-occurance matrix.  }
-}
+\code{builtInClusteringFunctions} will return the character names of
+  the built-in clustering functions available.
 
-Available "01" methods: "tight" method refers to the method of finding 
-    clusters from a subsampling matrix given internally in the tight 
-    algorithm code of Tsang and Wong. Arguments for the tight method are
-    'minSize.core' (default=2), which sets the minimimum number of samples
-    that form a core cluster. "hierarchical01" refers to running the hclust
-    algorithm on D and transversing down the tree until getting a block of
-    samples with whose summary of the values  is greater than or equal to
-    1-alpha. Arguments that can be passed to 'hierarchical' are
-    'evalClusterMethod' which determines how to summarize the samples' values
-    of D[samples,samples] for comparison to 1-alpha: "maximum" (default)
-    takes the minimum of D[samples,samples] and requires it to be less than
-    or equal to 1-alpha; "average" requires that each row mean of
-    D[samples,samples] be less than or equal to 1-alpha. Arguments of
-    hclust can also be passed via clusterArgs to control the hierarchical 
-    clustering of D.
+\code{getBuiltInClusterFunction} will return the
+  \code{ClusterFunction} object of a character value that corresponds to a
+  built-in function.
+
+\code{getBuiltInAlgorithmType} will return the algorithmType of the
+  built-in cluster Function corresponding to the character value.
+
+\code{getBuiltInTypeK} returns the names of the built-in functions
+  that have type 'K'
+
+\code{getBuiltInType01} returns the names of the built-in functions
+  that have type '01'
+
+Built-in clustering methods: The built-in clustering methods, the
+  names of which can be accessed by \code{builtInClusterFunctions} are the
+  following: \itemize{ \item{"pam"}{Based on \code{\link{pam}} in
+  \code{cluster} package. Arguments to that function can be passed via
+  \code{clusterArgs}. } \item{"kmeans"}{Based on \code{\link{kmeans}} in
+  \code{stats} package. Arguments to that function can be passed via
+  \code{clusterArgs} except for \code{centers} which is reencoded here to be
+  the argument 'k'} \item{"hierarchical01"}{\code{\link{hclust}} in
+  \code{stats} package is used to build hiearchical clustering. Arguments to
+  that function can be passed via \code{clusterArgs}. The
+  \code{hierarchical01} cuts the hiearchical tree based on the parameter
+  \code{alpha}. It does not use the \code{cutree} function, but instead ...
+  [documentation still needed]   } 
+  \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used
+  to build hiearchical clustering and \code{\link{cutree}} is used to cut the
+  tree into \code{k} clusters.} \item{"tight"}{Based on the algorithm in
+  Tsang and Wong, specifically their method of picking clusters from a
+  co-occurance matrix after subsampling. The clustering encoded here is not
+  the entire tight clustering algorithm, only that single piece that
+  identifies clusters from the co-occurance matrix.  } }
+
+Available "01" methods: "tight" method refers to the method of
+  finding clusters from a subsampling matrix given internally in the tight 
+  algorithm code of Tsang and Wong. Arguments for the tight method are 
+  'minSize.core' (default=2), which sets the minimimum number of samples that
+  form a core cluster. "hierarchical01" refers to running the hclust 
+  algorithm on D and transversing down the tree until getting a block of 
+  samples with whose summary of the values  is greater than or equal to 
+  1-alpha. Arguments that can be passed to 'hierarchical' are 
+  'evalClusterMethod' which determines how to summarize the samples' values 
+  of D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes
+  the minimum of D[samples,samples] and requires it to be less than or equal
+  to 1-alpha; "average" requires that each row mean of D[samples,samples] be
+  less than or equal to 1-alpha. Arguments of hclust can also be passed via
+  clusterArgs to control the hierarchical clustering of D.
 
 clusterK methods: "pam" performs pam clustering on the input 
   \code{D} matrix using \code{\link{pam}} in the cluster package. Arguments 
   to \code{\link{pam}} can be passed via 'clusterArgs', except for the 
-  arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK"
-  performs hierarchical clustering on the input via the \code{\link{hclust}}
-  and then applies \code{\link{cutree}} with the specified k to obtain
-  clusters. Arguments to \code{\link{hclust}} can be passed via
+  arguments 'x' and 'k' which are given by D and k directly. "hierarchicalK" 
+  performs hierarchical clustering on the input via the \code{\link{hclust}} 
+  and then applies \code{\link{cutree}} with the specified k to obtain 
+  clusters. Arguments to \code{\link{hclust}} can be passed via 
   \code{clusterArgs}.
 }
 \examples{
