@@ -10,7 +10,7 @@
 \alias{clusterFunction,function-method}
 \title{Class ClusterFunction}
 \usage{
-internalFunctionCheck(FUN, inputType, algorithmType, outputType)
+internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
 
 clusterFunction(clusterFUN, ...)
 
@@ -19,13 +19,13 @@ clusterFunction(clusterFUN, ...)
   requiredArgs = NA_character_, classifyFUN = NULL, checkFunctions = TRUE)
 }
 \arguments{
+\item{clusterFUN}{function bassed to slot \code{clusterFUN}.}
+
 \item{inputType}{character for slot \code{inputType}}
 
 \item{algorithmType}{character for slot \code{inputType}}
 
 \item{outputType}{character for slot \code{outputType}}
-
-\item{clusterFUN}{function bassed to slot \code{clusterFUN}.}
 
 \item{inputClassifyType}{character for slot \code{inputClassifyType}}
 

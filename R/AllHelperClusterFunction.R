@@ -3,6 +3,7 @@
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterFunction-methods
 #' @aliases ClusterFunction-methods
+#' @param object input to the method, usually either a \code{ClusterFunction} class or a character describing a built-in \code{ClusterFunction} object.
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export

@@ -354,28 +354,7 @@ setGeneric(
     standardGeneric("getBuiltInFunction")
   }
 )
-setGeneric(
-  name = "listBuiltInFunctions",
-  def = function(object,...) {
-	  standardGeneric("listBuiltInFunctions")
-  }
-	  
-)
-setGeneric(
-  name = "listBuiltInTypeK",
-  def = function(object,...) {
-	  standardGeneric("listBuiltInTypeK")
-  }
-	  
-)
 
-setGeneric(
-  name = "listBuiltInType01",
-  def = function(object,...) {
-	  standardGeneric("listBuiltInType01")
-  }
-	  
-)
  
 setGeneric(
   name = "requiredArgs",

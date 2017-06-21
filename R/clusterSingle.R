@@ -282,8 +282,9 @@ setMethod(
       
     }
     else{
-      if(dimReduce!="none") stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
+      if(any(dimReduce!="none")) stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
 	  N<-nrow(diss)
+	  if(!is.null(x)) origX<-x
     }
     if(input %in% c("both","diss") && !is.null(mainClusterArgs) && "distFunction" %in% names(mainClusterArgs)){
         if(!is.na(mainClusterArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in mainClusterArgs")
@@ -324,7 +325,7 @@ setMethod(
     ##########
     ## Convert to clusterExperiment Object
     ##########
-    if(input %in% c("X")){
+    if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
       retval <- clusterExperiment(origX, outlist$clustering,
                                   transformation=transFun,
                                   clusterInfo=clInfo,

@@ -421,16 +421,15 @@ setMethod(
 	  ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
       if(!is.null(distFunction)){
         diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
-        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample,
+        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample, dimReduce="none",
                       mainClusterArgs=mainClusterArgs,
                       subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE) #dimReduce=dimReduce,ndims=ndims,
-      }
+                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE)       }
       else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
-                 mainClusterArgs=mainClusterArgs,
+                 mainClusterArgs=mainClusterArgs, dimReduce="none",
                  subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) #dimReduce=dimReduce,ndims=ndims,
-    }
+                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) 
+	    }
     if(run){
       ##Calculate distances necessary only once
       if(any(!is.na(param[,"distFunction"]))){
@@ -440,7 +439,8 @@ setMethod(
           allDist<-lapply(1:nrow(distParam),function(ii){
             distFun<-as.character(distParam[ii,"distFunction"])
             dataName<-as.character(distParam[ii,"dataset"])
-            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE)
+			algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" #be conservative and check for the 01 type if any of clusterFunctions are 01.
+            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE,algType=algCheckType)
 			# fun<-get(distFun,envir=globalenv())
 			#             distMat<-as.matrix(fun(t(dataList[[dataName]])))
 			#             .checkDistFunction(distMat) #check it here!

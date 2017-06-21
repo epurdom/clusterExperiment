@@ -206,6 +206,7 @@
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
+#' @param object unneeded argument. 
 #' @description Documents the built-in clustering options that are available in
 #'   the clusterExperiment package.
 #' @rdname builtInClusteringFunctions
@@ -270,15 +271,12 @@
 #' listBuiltInTypeK()
 #' listBuiltInType01()
 #' @rdname builtInClusteringFunctions
+#' @aliases listBuiltInFunctions
 #' @export
-setMethod(
-  f = "listBuiltInFunctions",
-  signature = c("ANY"),
-  definition = function(object) {
+listBuiltInFunctions<-function() {
 	  .builtInClusterNames
 
   }
-)
 #' @rdname builtInClusteringFunctions
 #' @aliases getBuiltInFunction
 #' @export
@@ -298,23 +296,16 @@ setMethod(
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInTypeK
 #' @export
-setMethod(
-  f = "listBuiltInTypeK",
-  signature = c("ANY"),
-  definition = function(object) {
+listBuiltInTypeK<-function(object) {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="K"])
   }
-)
+
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInType01
 #' @export
-setMethod(
-  f = "listBuiltInType01",
-  signature = c("ANY"),
-  definition = function(object) {
+listBuiltInType01<-function(object) {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="01"])
   }
 	  
-)

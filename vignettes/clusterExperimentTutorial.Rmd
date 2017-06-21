@@ -574,13 +574,13 @@ There are some important features of any clustering algorithm that are encoded i
 **`inputType`** The type of input the algorithm expects, which can be either an $p x n$ matrix of features, in which case the argument `x` gives that data, or a $n x n$ matrix of dissimilarities, in which case the argument `diss`. Some algorithms can accept either type. To determine the `inputType` of an algorithm(s),
 
 ```{r getInputType}
-inputType(c("kmeans","pam","hiearchicalK"))
+inputType(c("kmeans","pam","hierarchicalK"))
 ```
 
 **`algorithmType`** we group together algorithms that cluster based on common strategies that affect how we can use them in our workflow. Currently there are two "types" of algorithms we consider, which we call type "K" and "01". We can determine the type of a builtin function by the following:
 
 ```{r getAlgorithmType}
-algorithmType(c("kmeans","hiearchicalK","hierarchical01"))
+algorithmType(c("kmeans","hierarchicalK","hierarchical01"))
 ```
 
 The "K" algorithms are so called because their main parameter requirement is that the user specifies the number of clusters ($K$) to be created and require an input of `k` to the clustering function. Built in 'K' algorithms are:
@@ -706,16 +706,18 @@ These distances are defined so as to give distance of 0 between samples with cor
 
 We will also compare using different algorithms for clustering. Currently, `clusterMany` requires that the distances work with all of the `clusterFunction` choices given. Since some of the `clusterFunction` algorithms require a distance matrix between 0-1, this means we can only compare all of the algorithms when the distance is a 0-1 distance. (Future versions may try to create a work around so that the algorithm just skips algorithms that don't match the distance). Since the distances we defined are between 0-1, however, we can use any algorithm that takes dissimilarities as input. 
 
-**Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values $\alpha$ for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with  high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). We show an example of the $D$ matrix from subsampling; we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly, which gives the output $D$ from the sampling in the "coClustering" slot of `ce`. Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
+**Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values of $\alpha$ in `clusterMany` and `RSEC` for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). 
+
+To illustrate this point, we show an example of the $D$ matrix from subsampling. To do this we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly; it gives the output $D$ from the sampling in the "coClustering" slot of `ce` when we set `replaceCoCluster=TRUE` (and therefore we save it as a separate object, so that it doesn't write over the existing "coClustering" slot in `ce`). Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",minSize=5))
+ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
-We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (with size greater than 5).
+We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (at leastwith size greater than 5).
 
-The distances based on correlation calculated directly on the data, such as we created above, are often used for clustering expression data. But they are unlikely to have distances as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
+However, the distances based on correlation calculated directly on the data, such as we created above, are also often used for clustering expression data directly (i.e. without the subsampling step). But they are unlikely to have dissimilarities as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
 
 ```{r visualizeSpearmanDist}
 dSp<-spearDist(t(transform(ce,dimReduce="mad",nVarDims=1000)))

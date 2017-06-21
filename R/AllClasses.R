@@ -341,6 +341,7 @@ setMethod(
 #'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
 #'  Slots).
 #'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
+#' @param dendro_outbranch logical. Sets the dendro_outbranch slot (see Slots).
 #'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
 #'@details The \code{clusterExperiment} constructor function gives clusterLabels
 #'  based on the column names of the input matrix/SummarizedExperiment. If
@@ -539,7 +540,7 @@ setClass(
 #'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
 #'   to be able to test their functions and debug them, which is difficult to do
 #'   with a S4 validity function.
-internalFunctionCheck<-function(FUN,inputType,algorithmType,outputType){
+internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
 	#--- Make small data
 	N<-20
 	set.seed(2851)
@@ -554,27 +555,27 @@ internalFunctionCheck<-function(FUN,inputType,algorithmType,outputType){
 	argList<-c(argList,list(cluster.only=TRUE,checkArgs=FALSE))
 	#--- Run function on small data
 	if(inputType %in% c("X")){
-		test<-try(do.call(FUN,c(list(x=x),argList)),silent=TRUE)
+		test<-try(do.call(clusterFUN,c(list(x=x),argList)),silent=TRUE)
 		if(inherits(test,"try-error")) return(paste("function test fails with input X",test[1]))
 	}
 	if(inputType %in% c("diss")){
-		test<-try(do.call(FUN,c(list(diss=diss),argList)),silent=TRUE)
+		test<-try(do.call(clusterFUN,c(list(diss=diss),argList)),silent=TRUE)
 		if(inherits(test,"try-error")) return(paste("function test fails with input diss",test[1]))
 	}
 	if(inputType %in% c("either")){
-		test1<-try(do.call(FUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
+		test1<-try(do.call(clusterFUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
 		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss",test1[1]))
-		test2<-try(do.call(FUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
+		test2<-try(do.call(clusterFUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
 		if(inherits(test2,"try-error")){
 			return(paste("function test fails with input diss and NULL x",test2[1]))
 		}
-		test3<-try(do.call(FUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
+		test3<-try(do.call(clusterFUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
 		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input",test3[1]))
-		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("FUN does not return a vector equal to the number of observations")
+		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("clusterFUN does not return a vector equal to the number of observations")
 	}
 	else{
 		if(outputType=="vector"){
-			if(length(test)!=N) return("FUN does not return a vector equal to the number of observations")
+			if(length(test)!=N) return("clusterFUN does not return a vector equal to the number of observations")
 		}
 	}
 	return(TRUE)
