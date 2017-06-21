@@ -58,7 +58,9 @@ setMethod(
   signature = signature(clusters = "ClusterExperiment",whichClusters="character"),
   definition = function(clusters, whichClusters,...)
   {
-    wh<-head(.TypeIntoIndices(clusters,whClusters=whichClusters),2)
+	wh<-.TypeIntoIndices(clusters,whClusters=whichClusters)
+	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
+	wh<-head(wh,2)) #limit it to 2
     return(plotBarplot(clusters,whichClusters=wh,...))
 
   })

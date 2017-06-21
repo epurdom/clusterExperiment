@@ -64,8 +64,8 @@ If \code{leafType="clusters"}, the plotting function will work best
 data(simData)
 
 #create a clustering, for 8 clusters (truth was 3) 
-cl <-clusterSingle(simData, clusterFunction="pam", subsample=FALSE, 
-sequential=FALSE, clusterDArgs=list(k=8))
+cl <-clusterSingle(simData, subsample=FALSE, 
+sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 #create dendrogram of clusters and then 
 # merge clusters based ondendrogram: 

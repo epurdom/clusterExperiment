@@ -44,9 +44,9 @@
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
 interpretation of parameters depends on the type of the input to \code{data}.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the
-default \code{transFun} argument is set as log2(x+1). This is simply a
-convenience to the user, and can be overridden by giving an explicit
+\item{isCount}{logical. Whether the data are in counts, in which case the 
+default \code{transFun} argument is set as log2(x+1). This is simply a 
+convenience to the user, and can be overridden by giving an explicit 
 function to \code{transFun}.}
 
 \item{transFun}{function A function to use to transform the input data matrix

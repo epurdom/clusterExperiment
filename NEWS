@@ -1,5 +1,24 @@
-Changes in version 1.3.1 ( Release date: 2017-06-14 )
+Changes in version 1.3.1-9002( Release date: )
 ==============
+Changes:
+* add ClusterFunction class and update all functions to work on this. All built in cluster functions are now given ClusterFunction Objects, so all built in clustering functions can now work for either `subsampleClustering` or `mainClustering`. This will also make it easier for a user to define their own ClusterFunction object and have it be used by functions like `clusterSingle`. This is a major change in how some of the underlying functions work, but should not impact common functions like `clusterMany` and `RSEC`. Some of the more notable changes in the arguments for programmers are:
+	- `clusterD` and `clusterDArgs` have been changed to `mainClustering` and `mainClusterArgs`. This change was made to make these arguments more clear as to their role in the clustering workflow (and because the clusterD refered to clustering a dissimilarity but it has clustered either x or D for many versions now. )
+	- `seqCluster` and `clusterSingle` no longer take the argument `clusterFunction`. `clusterFunction` must be given via `mainClusterArgs` and `subsampleArgs` to be passed to `mainClustering` or `subsamplingCluster`, respectively. Now only the upper-level function `clusterMany` takes `clusterFunction` directly as an argument.
+	- `mainClustering` (previously `clusterD`) and `subsampleClustering` no longer take `k` nor `alpha` as a direct argument. These arguments, like all arguments used directly by the cluster function, now need to be passed to the clustering function in a list via `clusterArgs`. 
+	- The list of available built-in clustering routines provided by the package can now be accessed via `listBuiltInFunctions()`. The functions that are used for these functions are now available to the user via their ClusterFunction object that the user can access with the function `getBuiltInFunction`. (see ?listBuiltInFunctions)
+* `hiearchical01` clustering now has a different default, namely to apply `as.dist` to the input `diss` in order to get a `dist` object, rather than `dist(1-diss)` which was previously the default for historical reasons. This is controlled by argument `whichHierDist`, and can be set to the previous version by passing `whichHierDist="dist"` to the `clusterArgs` argument in either `subsampleArgs` or `mainClusterArgs`, depending on where `hierarchical01` is being used.
+* `clusterSingle` now only returns the dissimilarity matrix in the `coClustering` slot if `subsample=TRUE` in the call. Furthermore, for the resulting dissimilarity to replace an existing `coClustering` slot value, the user must request it by setting `replaceCoClustering=TRUE` in the call to `clusterSingle`. 
+* Removed default value for argument `proportion` in `combineMany`. The previous default was `proportion=1` but didn't match most common use cases and was accidentally called by upper functions like RSEC. 
+* If the `clusterFunction` argument is not given to `subsampleArgs` by the user explicitly, and the `clusterFunction` of `mainClusterArgs` is appropriate, it will be used for `subsampleClustering`; if the `clusterFunction` in `mainClusterArgs` is not appropriate (e.g. `subsampleClustering` needs a type `K` because `sequential=TRUE`), then the default for the `subsampleClustering` will be `'pam'`. This changes the previous behavior of `subsampleClustering` where the default was 'pam' in all cases where not explicitly given by the user. This change should have no impact on RSEC: since the `clusterFunction` for the `mainClustering` terms is a `'01'` type in RSEC and the `subsampleClustering` has to be type `'K'` when `sequential=TRUE`, it will revert to the default `"pam"` as before. 
+
+Bugs:
+* Fixed error so where if `clusterSingle` was called on existing clusterExperiment object it would overwrite the information of the existing `clusterExperiment` object. 
+* Fixed `RSEC` so now if rerun on existing `clusterExperiment` object, it will grab defaults from the matrix version (previously defaults were those of the underlying function, which were not always the same, e.g. `combineProportion` default was previously 1)
+* Fixed `clusterMany` so now it explicitly sets `dimReduce="none"` in call to `clusterSingle`. Before, might have been calling all of the `dimReduce` defaults (i.e. all of them!). 
+* Fixed so gives error if whichClusters in `plotBarplot` doesn't match anything.
+
+Changes in version 1.3.1 ( Release date: 2017-06-14 )
+=======
 Changes:
 * change how `plotHeatmap` handles visualizeData argument, so not required to have same number of genes as original, only same number of samples. 
 * Now if color of vectors given in `clusterLegend` does not have names, `plotHeatmap` will give them names matching the variable so that they will be used by `aheatmap` (previously would have left all colors white because do not have matching names).
@@ -15,6 +34,7 @@ Changes:
 * added `transformation<-` to be able to assign manually the transformation slot
 * Move MAST into 'suggests' pacakge so that not need R 3.4 to run the package. 
 * Change calculation of PCA dimensionality reduction to use `svds` from `RSpectra` package to improve speed
+
 
 Bugs:
 * Fixed bug in RSEC where `combineProportion` argument was being ignored (set to 1)

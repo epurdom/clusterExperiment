@@ -21,8 +21,8 @@
 #'   from the design matrix. Appropriate to pick TRUE (default) if design will
 #'   be input into linear model on samples that excludes -1.
 #' @param outputType character string. Gives format for the resulting contrast
-#'   matrix. Currently the only option is the format appropriate for
-#'   \code{\link{limma}} package, but we anticipate adding more.
+#'   matrix. Currently the two options are the format appropriate for
+#'   \code{\link{limma}} and \code{\link{MAST}} package.
 #' @param ... arguments that are passed to from the \code{ClusterExperiment}
 #'   version to the most basic numeric version.
 #' @details The input vector must be numeric clusters, but the external commands
@@ -40,6 +40,8 @@
 #'   \item{\code{contrastNames}}{A vector of names for each of the contrasts. NULL if no such additional names.}
 #'   }
 #' @author Elizabeth Purdom
+#' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and Smyth, GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47. http://nar.oxfordjournals.org/content/43/7/e47
+#' @references Finak, et al. MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data. Genome Biology (2015).
 #' @examples 
 #' data(simData)
 #' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
