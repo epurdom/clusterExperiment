@@ -538,13 +538,13 @@ For this reason, the argument `breaks` in `plotHeatmap` allows for a value betwe
 Here 
 
 
-```{r plotHeatmap_primaryCluster}
+```{r plotHeatmap_break99}
 plotHeatmap(ce,clusterSamplesData="primaryCluster",
             whichClusters="primaryCluster", breaks=0.99,
             main="Heatmap with clusterMany, breaks=0.99",annLegend=FALSE)
 ```
 
-```{r plotHeatmap_primaryCluster}
+```{r plotHeatmap_break95}
 plotHeatmap(ce,clusterSamplesData="primaryCluster",
             whichClusters="primaryCluster", breaks=0.95,
             main="Heatmap with clusterMany, breaks=0.95",annLegend=FALSE)

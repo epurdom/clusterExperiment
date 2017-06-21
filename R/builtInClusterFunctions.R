@@ -267,8 +267,8 @@
 #' listBuiltInFunctions()
 #' algorithmType(c("kmeans","pam","hierarchical01"))
 #' inputType(c("kmeans","pam","hierarchical01"))
-#' listBuitInTypeK()
-#' listBuitInType01()
+#' listBuiltInTypeK()
+#' listBuiltInType01()
 #' @rdname builtInClusteringFunctions
 #' @export
 setMethod(

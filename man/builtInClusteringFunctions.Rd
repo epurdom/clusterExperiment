@@ -88,6 +88,6 @@ Input is \code{"diss"}; algorithm type is "01"}
 listBuiltInFunctions()
 algorithmType(c("kmeans","pam","hierarchical01"))
 inputType(c("kmeans","pam","hierarchical01"))
-listBuitInTypeK()
-listBuitInType01()
+listBuiltInTypeK()
+listBuiltInType01()
 }
