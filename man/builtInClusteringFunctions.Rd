@@ -31,8 +31,9 @@ Documents the built-in clustering options that are available in
   \code{ClusterFunction} object of a character value that corresponds to a
   built-in function.
 
-\code{getBuiltInAlgorithmType} will return the algorithmType of the
-  built-in cluster Function corresponding to the character value.
+\code{\link{algorithmType}} and \code{\link{inputType}} will 
+return the \code{algorithmType} and \code{inputType} of the
+  built-in clusterFunction corresponding to the character value.
 
 \code{listBuiltInTypeK} returns the names of the built-in functions
   that have type 'K'
