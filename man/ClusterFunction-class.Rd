@@ -27,6 +27,8 @@ clusterFunction(clusterFUN, ...)
 
 \item{outputType}{character for slot \code{outputType}}
 
+\item{...}{arguments passed to different methods of \code{clusterFunction}}
+
 \item{inputClassifyType}{character for slot \code{inputClassifyType}}
 
 \item{requiredArgs}{character for slot \code{requiredArgs}}

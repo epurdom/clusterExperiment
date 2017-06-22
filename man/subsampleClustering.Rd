@@ -3,7 +3,7 @@
 \docType{methods}
 \name{subsampleClustering}
 \alias{subsampleClustering}
-\alias{subsampleClustering-character-method}
+\alias{subsampleClustering,character-method}
 \alias{subsampleClustering,ClusterFunction-method}
 \title{Cluster subsamples of the data}
 \usage{
@@ -56,6 +56,9 @@ be called.}
 \item{checkArgs}{logical as to whether should give warning if arguments given
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
+
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
+valid.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with

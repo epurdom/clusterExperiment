@@ -72,15 +72,24 @@ type '01'. Determines tightness required in creating clusters from the
 dissimilarity matrix. Takes on values in [0,1]. See documentation of
 \code{\link{ClusterFunction}}.}
 
+\item{findBestK}{logical, whether should find best K based on average
+silhouette width (only used when clusterFunction of type "K").}
+
 \item{sequential}{logical whether to use the sequential strategy (see details
 of \code{\link{seqCluster}}). Can be used in combination with
 \code{subsample=TRUE} or \code{FALSE}.}
+
+\item{removeSil}{logical as to whether remove when silhouette < silCutoff
+(only used if clusterFunction of type "K")}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
 done on the co-occurance between clusterings in the subsampled clustering
 results.  If FALSE, the mainClustering step will be run directly on
 \code{x}/\code{diss}}
+
+\item{silCutoff}{Requirement on minimum silhouette width to be included in
+cluster (only for combinations where removeSil=TRUE).}
 
 \item{distFunction}{a vector of character strings that are the names of 
 distance functions found in the global environment. See the help pages of 

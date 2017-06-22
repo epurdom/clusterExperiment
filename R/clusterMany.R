@@ -48,6 +48,12 @@
 #'   workflow results will have "\code{_i}" added to the clusterTypes value, 
 #'   where \code{i} is one more than the largest such existing workflow 
 #'   clusterTypes.
+#' @param findBestK logical, whether should find best K based on average
+#'   silhouette width (only used when clusterFunction of type "K").
+#' @param silCutoff Requirement on minimum silhouette width to be included in
+#'   cluster (only for combinations where removeSil=TRUE).
+#' @param removeSil logical as to whether remove when silhouette < silCutoff
+#'   (only used if clusterFunction of type "K")
 #' @inheritParams clusterSingle
 #' @inheritParams mainClustering
 #' @param ncores the number of threads

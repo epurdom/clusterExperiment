@@ -38,6 +38,7 @@
 #'   depend on it's algorithm type and can be found by calling
 #'   \code{getPostProcessingArgs}. See details below for documentation.
 #' @inheritParams subsampleClustering
+#' @inheritParams clusterSingle
 #' @details \code{mainClustering} is not meant to be called by the user. It is only an
 #'   exported function so as to be able to clearly document the arguments for
 #'   \code{mainClustering} which can be passed via the argument \code{mainClusterArgs} in

@@ -84,7 +84,10 @@ Arguments for the tight method are
   form a core cluster.
 Input is \code{"diss"}; algorithm type is "01"} 
 \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
-is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".}
+is used to perform spectral clustering. Note that spectral clustering can 
+produce errors if the number of clusters (K) is not sufficiently smaller than 
+the number of samples (N). K < N is not always sufficient. 
+Input is \code{"X"}; algorithm type is "K".}
 }
 }
 \examples{

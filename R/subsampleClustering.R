@@ -29,6 +29,7 @@
 #'   be called.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
+#' @inheritParams clusterSingle
 #'   
 #' @details \code{subsampleClustering} is not usually called directly by the
 #'   user. It is only an exported function so as to be able to clearly document
