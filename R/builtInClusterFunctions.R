@@ -33,8 +33,8 @@
 #' @importFrom kernlab specc
 .speccCluster<-function(x,k,checkArgs,cluster.only,...){
 	passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
-    out<-do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs))
-#	if(inherits(out,"try-error")) browser()
+    out<-try(do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs)))
+	if(inherits(out,"try-error"))stop("Spectral clustering failed because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
@@ -279,7 +279,10 @@
 #'   form a core cluster.
 #' Input is \code{"diss"}; algorithm type is "01"} 
 #' \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
-#' is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".}
+#' is used to perform spectral clustering. Note that spectral clustering can 
+#' produce errors if the number of clusters (K) is not sufficiently smaller than 
+#' the number of samples (N). K < N is not always sufficient. 
+#' Input is \code{"X"}; algorithm type is "K".}
 #' }
 #' @examples
 #' listBuiltInFunctions()
