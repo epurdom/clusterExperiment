@@ -30,7 +30,8 @@ Imports:
     graphics,
     parallel,
     MAST,
-    RSpectra
+    RSpectra,
+	kernlab
 Suggests:
     BiocStyle,
     knitr,

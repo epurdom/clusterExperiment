@@ -4,8 +4,6 @@
 # pam : x or dis
 # hier : dis
 # kmeans : x
-# spectral (SamSPECTRAL for flow cytometry; kernlab for standard; kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
-###what rdname should this be? Not S4 methods...
 
 ################
 ##Internal wrapper functions for kmeans and pam
@@ -26,6 +24,22 @@
 	return(passedArgs)
 }
 .wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
+
+##---------
+##Spectral
+##---------
+
+# spectral (SamSPECTRAL for flow cytometry (function SamSPECTRAL); kernlab for standard ('specc'); kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
+#' @importFrom kernlab specc
+.speccCluster<-function(x,k,checkArgs,cluster.only,...){
+    passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
+    out<-do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs))
+    if(cluster.only) return(out@.Data)
+    else return(out) 
+}
+.speccCF<-clusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector")
+
+
 ##---------
 ##Kmeans
 ##---------
@@ -202,7 +216,7 @@
 #########
 ## Put them together so user/code can access easily
 #########
-.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF)
+.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF)
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
@@ -226,16 +240,16 @@
 #'   names of which can be accessed by \code{listBuiltInFunctions()} are the
 #'   following: 
 #' \itemize{ 
-#' \item{"pam"}{Based on \code{\link{pam}} in
+#' \item{"pam"}{Based on \code{\link[cluster]{pam}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
 #'   \code{clusterArgs}. 
 #' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
-#' \item{"kmeans"}{Based on \code{\link{kmeans}} in
+#' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
 #'   \code{stats} package. Arguments to that function can be passed via
 #'   \code{clusterArgs} except for \code{centers} which is reencoded here to be
 #'   the argument 'k' 
 #' Input is \code{"X"}; algorithm type is "K"} 
-#' \item{"hierarchical01"}{\code{\link{hclust}} in
+#' \item{"hierarchical01"}{\code{\link[stats]{hclust}} in
 #'   \code{stats} package is used to build hiearchical clustering. Arguments to
 #'   that function can be passed via \code{clusterArgs}. The
 #'   \code{hierarchical01} cuts the hiearchical tree based on the parameter
@@ -250,7 +264,7 @@
 #'   less than or equal to 1-alpha. Additional arguments of hclust can also be passed via
 #'   clusterArgs to control the hierarchical clustering of D.  
 #' Input is \code{"diss"}; algorithm type is "01"}  
-#' \item{"hierarchicalK"}{\code{\link{hclust}} in \code{stats} package is used
+#' \item{"hierarchicalK"}{\code{\link[stats]{hclust}} in \code{stats} package is used
 #'   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
 #'   tree into \code{k} clusters.
 #' Input is \code{"diss"}; algorithm type is "K"}   
@@ -262,7 +276,9 @@
 #' Arguments for the tight method are 
 #'   'minSize.core' (default=2), which sets the minimimum number of samples that
 #'   form a core cluster.
-#' Input is \code{"diss"}; algorithm type is "01"}  
+#' Input is \code{"diss"}; algorithm type is "01"} 
+#' \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
+#' is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".
 #' }
 #' @examples
 #' listBuiltInFunctions()
