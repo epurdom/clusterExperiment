@@ -69,13 +69,18 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 
 test_that("Different options algorithms of `mainClustering` ", {
   #check builtIn algorithms
+  #bigger matrix so not kill spectral
+  set.seed(3325)
+  biggerMat<-matrix(data=rnorm(20*50), ncol=50)
+
   kMethods<-listBuiltInTypeK()
 	for(cf in kMethods){
 	    expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
 	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
 				)
 		#post-processing arguments for type 'K'
-		expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), subsample=FALSE, sequential=FALSE,isCount=FALSE))
+		#Upped
+		expect_silent(clusterSingle(biggerMat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), subsample=FALSE, sequential=FALSE,isCount=FALSE))
 	  
 	  }
       aMethods<-listBuiltInType01()

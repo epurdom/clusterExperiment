@@ -41,6 +41,51 @@ return the \code{algorithmType} and \code{inputType} of the
 
 \code{listBuiltInType01} returns the names of the built-in functions
   that have type '01'
+
+Built-in clustering methods: The built-in clustering methods, the
+  names of which can be accessed by \code{listBuiltInFunctions()} are the
+  following: 
+\itemize{ 
+\item{"pam"}{Based on \code{\link[cluster]{pam}} in
+  \code{cluster} package. Arguments to that function can be passed via
+  \code{clusterArgs}. 
+Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+\item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
+  \code{stats} package. Arguments to that function can be passed via
+  \code{clusterArgs} except for \code{centers} which is reencoded here to be
+  the argument 'k' 
+Input is \code{"X"}; algorithm type is "K"} 
+\item{"hierarchical01"}{\code{\link[stats]{hclust}} in
+  \code{stats} package is used to build hiearchical clustering. Arguments to
+  that function can be passed via \code{clusterArgs}. The
+  \code{hierarchical01} cuts the hiearchical tree based on the parameter
+  \code{alpha}. It does not use the \code{cutree} function, but instead 
+ transversing down the tree until getting a block of 
+  samples with whose summary of the values  is greater than or equal to 
+  1-alpha. Arguments that can be passed to 'hierarchical01' are 
+  'evalClusterMethod' which determines how to summarize the samples' values 
+  of D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes
+  the minimum of D[samples,samples] and requires it to be less than or equal
+  to 1-alpha; "average" requires that each row mean of D[samples,samples] be
+  less than or equal to 1-alpha. Additional arguments of hclust can also be passed via
+  clusterArgs to control the hierarchical clustering of D.  
+Input is \code{"diss"}; algorithm type is "01"}  
+\item{"hierarchicalK"}{\code{\link[stats]{hclust}} in \code{stats} package is used
+  to build hiearchical clustering and \code{\link{cutree}} is used to cut the
+  tree into \code{k} clusters.
+Input is \code{"diss"}; algorithm type is "K"}   
+\item{"tight"}{Based on the algorithm in
+  Tsang and Wong, specifically their method of picking clusters from a
+  co-occurance matrix after subsampling. The clustering encoded here is not
+  the entire tight clustering algorithm, only that single piece that
+  identifies clusters from the co-occurance matrix.  
+Arguments for the tight method are 
+  'minSize.core' (default=2), which sets the minimimum number of samples that
+  form a core cluster.
+Input is \code{"diss"}; algorithm type is "01"} 
+\item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
+is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".}
+}
 }
 \examples{
 listBuiltInFunctions()

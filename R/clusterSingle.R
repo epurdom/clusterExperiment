@@ -169,6 +169,7 @@
 #'   clusterSingle,ClusterExperiment-method clusterSingle,matrix,missing-method
 #'   clusterSingle,matrixOrMissing,matrixOrMissing-method
 #' @rdname clusterSingle
+#' @aliases clusterSingle,missing,matrixOrNULL-method
 #' @export
 setMethod(
   f = "clusterSingle",

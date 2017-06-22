@@ -340,7 +340,6 @@ setMethod(
 #'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
 #'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
 #'  Slots).
-#' @param dendro_outbranch logical. Sets the `dendro_outbranch` slot (see Slots)
 #'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
 #' @param dendro_outbranch logical. Sets the dendro_outbranch slot (see Slots).
 #'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
@@ -641,7 +640,7 @@ setValidity("ClusterFunction", function(object) {
 #'@param requiredArgs character for slot \code{requiredArgs}
 #'@param checkFunctions logical for whether to check the input functions with
 #'  \code{internalFunctionsCheck}
-#'  
+#'@param ... arguments passed to different methods of \code{clusterFunction}  
 #'@return A \code{ClusterFunction} object.
 #'
 #' @aliases clusterFunction

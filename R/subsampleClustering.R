@@ -4,7 +4,6 @@
 #' subsamples, and return a \code{n x n} matrix with the probability of
 #' co-occurance.
 #' @name subsampleClustering
-#' @aliases subsampleClustering-character-method
 #' @param x the data on which to run the clustering (samples in columns).
 #' @param diss a dissimilarity matrix on which to run the clustering.
 #' @param clusterFunction a \code{\link{ClusterFunction}} object that defines
@@ -69,6 +68,7 @@
 #'
 #' #visualize the resulting co-occurance matrix
 #' plotHeatmap(coOccur)
+#' @aliases subsampleClustering,character-method
 #' @export
 setMethod(
   f = "subsampleClustering",

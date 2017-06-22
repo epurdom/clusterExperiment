@@ -29,11 +29,12 @@
 ##Spectral
 ##---------
 
-# spectral (SamSPECTRAL for flow cytometry (function SamSPECTRAL); kernlab for standard ('specc'); kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
+# spectral options (SamSPECTRAL for flow cytometry (function SamSPECTRAL); kernlab for standard ('specc'); kknn for similarity based on knn rather than kmeans): kernlab is either x or a kernel function
 #' @importFrom kernlab specc
 .speccCluster<-function(x,k,checkArgs,cluster.only,...){
-    passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
+	passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
     out<-do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs))
+#	if(inherits(out,"try-error")) browser()
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
@@ -278,7 +279,7 @@
 #'   form a core cluster.
 #' Input is \code{"diss"}; algorithm type is "01"} 
 #' \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
-#' is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".
+#' is used to perform spectral clustering. Input is \code{"X"}; algorithm type is "K".}
 #' }
 #' @examples
 #' listBuiltInFunctions()
