@@ -165,10 +165,12 @@ test_that("Different options of subsampling",{
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
 
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
+    set.seed(3325)
+    biggerMat<-matrix(data=rnorm(20*100), ncol=100)
     kMethods<-listBuiltInTypeK()
 	for(cf in kMethods){
 		set.seed(1045)
-	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))
+	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.3)),isCount=FALSE))
        if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
    		set.seed(1045)
 	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="All"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))

@@ -34,7 +34,7 @@
 .speccCluster<-function(x,k,checkArgs,cluster.only,...){
 	passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
     out<-try(do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs)))
-	if(inherits(out,"try-error"))stop("Spectral clustering failed because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
+	if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
