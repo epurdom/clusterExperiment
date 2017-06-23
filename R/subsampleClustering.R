@@ -134,10 +134,11 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	  ##----
 	  ##Cluster part of subsample
 	  ##----
-	  	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType,xData=x[,ids,drop=FALSE],dissData=diss[ids,ids,drop=FALSE])
+	  argsClusterList<-.makeDataArgs(dataInput=input, funInput=clusterFunction@inputType, xData=x[,ids,drop=FALSE], dissData=diss[ids,ids,drop=FALSE])
 	 
-	 argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"=FALSE))
-	    result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+	  #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
+	  argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"= (classifyMethod=="InSample") ))
+	  result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
 
 	  ##----
 	  ##Classify part of subsample
@@ -156,16 +157,17 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	      classX<-rep(NA,N)
 		  #methods that do not have 
 		  if(is.list(result)){
-			  if("clustering" %in% names(result)){
-			  	classX[ids]<-result$clustering
+			  #the next shouldn't happen any more because should be cluster.only=TRUE
+			  # if("clustering" %in% names(result)){ 
+			  # 	classX[ids]<-result$clustering
+			  # }
+			  # 		  	  else{
+			  if(clusterFunction@outputType=="list"){
+				resultVec  <-.convertClusterListToVector(result,N=length(ids))
+				classX[ids]<-resultVec
 			  }
-		  	  else{
-				  if(clusterFunction@outputType=="list"){
-					resultVec  <-.convertClusterListToVector(result,N=length(ids))
-					classX[ids]<-resultVec
-				  }
-				  else stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
-			  }
+			  else stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
+#			  }
 		  }
 		  else{
 		      classX[ids]<-result

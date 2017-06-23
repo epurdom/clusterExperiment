@@ -85,6 +85,23 @@
 #internalFunctionCheck(.pamCluster,inputType="either",algType="K",outputType="vector")
 
 ##---------
+##clara
+##---------
+
+#' @importFrom cluster pam
+.claraCluster<-function(x,diss,k,checkArgs,cluster.only,samples=50,keep.data=FALSE,rngR=TRUE,pamLike=TRUE,correct.d=TRUE,...){
+      passedArgs<-.getPassedArgs(FUN=cluster::clara,passedArgs=list(...) ,checkArgs=checkArgs)
+	  passedArgs<-c(passedArgs, list(samples=samples, keep.data=keep.data, rngR=rngR, pamLike=pamLike, correct.d=correct.d))
+	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
+	  if(input=="X") return(do.call(cluster::clara, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
+      if(input=="diss" | input=="both") return(do.call(cluster::clara, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+    }
+
+.claraCF<-clusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
+
+
+
+##---------
 ##Hiearchical01
 ##---------
 
@@ -217,7 +234,7 @@
 #########
 ## Put them together so user/code can access easily
 #########
-.builtInClusterObjects<-list("pam"=.pamCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF)
+.builtInClusterObjects<-list("pam"=.pamCF,"clara"=.claraCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF)
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
@@ -245,6 +262,15 @@
 #'   \code{cluster} package. Arguments to that function can be passed via
 #'   \code{clusterArgs}. 
 #' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+#' \item{"clara"}{Based on \code{\link[cluster]{clara}} in
+#'   \code{cluster} package. Arguments to that function can be passed via
+#'   \code{clusterArgs}. Note that we have changed the default arguments of 
+#'   that function to match the recommendations in the documentation of
+#'  \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
+#'  settings for back-compatiability). Specifically, the following defaults 
+#'  are implemented \code{samples=50}, \code{keep.data=FALSE}, \code{rngR=TRUE},
+#'  \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
+#' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K".} 
 #' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
 #'   \code{stats} package. Arguments to that function can be passed via
 #'   \code{clusterArgs} except for \code{centers} which is reencoded here to be
