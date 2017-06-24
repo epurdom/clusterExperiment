@@ -50,6 +50,15 @@ Built-in clustering methods: The built-in clustering methods, the
   \code{cluster} package. Arguments to that function can be passed via
   \code{clusterArgs}. 
 Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+\item{"clara"}{Based on \code{\link[cluster]{clara}} in
+  \code{cluster} package. Arguments to that function can be passed via
+  \code{clusterArgs}. Note that we have changed the default arguments of 
+  that function to match the recommendations in the documentation of
+ \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
+ settings for back-compatiability). Specifically, the following defaults 
+ are implemented \code{samples=50}, \code{keep.data=FALSE}, \code{rngR=TRUE},
+ \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
+Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K".} 
 \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
   \code{stats} package. Arguments to that function can be passed via
   \code{clusterArgs} except for \code{centers} which is reencoded here to be

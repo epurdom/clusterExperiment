@@ -31,7 +31,7 @@ has to be before 'finding' and removing the cluster.}
 by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
 pairwise for stability. Making this very big will effectively remove this
 parameter and all pairwise comparisons of all clusters found will be
-considered. This might result in smaller clusters being found. Current
+considered. This might result in smaller clusters being found. The current
 default is fairly large, so probably will have little effect.}
 
 \item{remain.n}{when only this number of samples are left (i.e. not yet
