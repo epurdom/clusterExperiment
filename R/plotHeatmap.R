@@ -70,7 +70,7 @@
 #' @param missingColor color assigned to cluster values of '-2' ("missing").
 #' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}. 
 #'   For the other signatures, passed to the method for signature \code{matrix}.
-#'   Not all arguments can be passed to aheatmap effectively, see details.
+#'   Not all arguments can be passed to \code{aheatmap} effectively, see details.
 #' @param nFeatures integer indicating how many features should be used (if
 #'   \code{clusterFeaturesData} is 'var' or 'PCA').
 #' @param isSymmetric logical. if TRUE indicates that the input matrix is
@@ -78,8 +78,8 @@
 #'   sample matrices (e.g., correlation).
 #' @param overRideClusterLimit logical. Whether to override the internal limit 
 #'   that only allows 10 clusterings/annotations. If overridden, may result in 
-#'   incomprehensible errors from aheatmap. Only override this if you have a
-#'   very large plotting device and want to see if aheatmap can render it.
+#'   incomprehensible errors from \code{aheatmap}. Only override this if you have a
+#'   very large plotting device and want to see if \code{aheatmap} can render it.
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -161,7 +161,7 @@
 #'   \code{sampleData}, and in fact runs out of colors and the remaining levels
 #'   get the color white. Thus if you have many factors or many levels in those
 #'   factors, you should set their colors via \code{clusterLegend}.
-#' @details Many arguments can be passed on to aheatmap, however, some are set 
+#' @details Many arguments can be passed on to \code{aheatmap}, however, some are set 
 #'   internally by \code{plotHeatmap.} In particular, setting the values of 
 #'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
 #'   \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
@@ -184,7 +184,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#'
+#' @seealso \code{\link[NMF]{aheatmap}}
 #' @export
 #'
 #' @examples

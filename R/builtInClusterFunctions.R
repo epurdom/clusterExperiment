@@ -238,23 +238,23 @@
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
-#' @param object unneeded argument. 
+#' @param object name of built in function. 
 #' @description Documents the built-in clustering options that are available in
 #'   the clusterExperiment package.
 #' @rdname builtInClusteringFunctions
-#' @details \code{builtInClusteringFunctions} will return the character names of
+#' @details \code{listBuiltInFunctions} will return the character names of
 #'   the built-in clustering functions available.
+#' @details \code{listBuiltInTypeK} returns the names of the built-in functions
+#'   that have type 'K'
+#' @details \code{listBuiltInType01} returns the names of the built-in functions
+#'   that have type '01'
 #' @details \code{getBuiltInFunction} will return the
 #'   \code{ClusterFunction} object of a character value that corresponds to a
 #'   built-in function.
 #' @details \code{\link{algorithmType}} and \code{\link{inputType}} will 
 #' return the \code{algorithmType} and \code{inputType} of the
 #'   built-in clusterFunction corresponding to the character value.
-#' @details \code{listBuiltInTypeK} returns the names of the built-in functions
-#'   that have type 'K'
-#' @details \code{listBuiltInType01} returns the names of the built-in functions
-#'   that have type '01'
-#' @details Built-in clustering methods: The built-in clustering methods, the
+#' @details \strong{Built-in clustering methods:} The built-in clustering methods, the
 #'   names of which can be accessed by \code{listBuiltInFunctions()} are the
 #'   following: 
 #' \itemize{ 
@@ -268,9 +268,10 @@
 #'   that function to match the recommendations in the documentation of
 #'  \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
 #'  settings for back-compatiability). Specifically, the following defaults 
-#'  are implemented \code{samples=50}, \code{keep.data=FALSE}, \code{rngR=TRUE},
+#'  are implemented \code{samples=50}, \code{keep.data=FALSE}, 
+#' \code{mediods.x=FALSE},\code{rngR=TRUE},
 #'  \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
-#' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K".} 
+#' Input is \code{"X"}; algorithm type is "K".} 
 #' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
 #'   \code{stats} package. Arguments to that function can be passed via
 #'   \code{clusterArgs} except for \code{centers} which is reencoded here to be
@@ -310,6 +311,7 @@
 #' the number of samples (N). K < N is not always sufficient. 
 #' Input is \code{"X"}; algorithm type is "K".}
 #' }
+#' @seealso \code{\link{ClusterFunction}}, \code{\link{algorithmType}}, \code{\link{inputType}}
 #' @examples
 #' listBuiltInFunctions()
 #' algorithmType(c("kmeans","pam","hierarchical01"))
@@ -342,7 +344,7 @@ setMethod(
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInTypeK
 #' @export
-listBuiltInTypeK<-function(object) {
+listBuiltInTypeK<-function() {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="K"])
   }
@@ -350,7 +352,7 @@ listBuiltInTypeK<-function(object) {
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInType01
 #' @export
-listBuiltInType01<-function(object) {
+listBuiltInType01<-function() {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
 	  return(names(allBuiltInTypes)[allBuiltInTypes=="01"])
   }

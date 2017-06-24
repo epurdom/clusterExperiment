@@ -13,20 +13,26 @@ listBuiltInFunctions()
 
 \S4method{getBuiltInFunction}{character}(object)
 
-listBuiltInTypeK(object)
+listBuiltInTypeK()
 
-listBuiltInType01(object)
+listBuiltInType01()
 }
 \arguments{
-\item{object}{unneeded argument.}
+\item{object}{name of built in function.}
 }
 \description{
 Documents the built-in clustering options that are available in
   the clusterExperiment package.
 }
 \details{
-\code{builtInClusteringFunctions} will return the character names of
+\code{listBuiltInFunctions} will return the character names of
   the built-in clustering functions available.
+
+\code{listBuiltInTypeK} returns the names of the built-in functions
+  that have type 'K'
+
+\code{listBuiltInType01} returns the names of the built-in functions
+  that have type '01'
 
 \code{getBuiltInFunction} will return the
   \code{ClusterFunction} object of a character value that corresponds to a
@@ -36,13 +42,7 @@ Documents the built-in clustering options that are available in
 return the \code{algorithmType} and \code{inputType} of the
   built-in clusterFunction corresponding to the character value.
 
-\code{listBuiltInTypeK} returns the names of the built-in functions
-  that have type 'K'
-
-\code{listBuiltInType01} returns the names of the built-in functions
-  that have type '01'
-
-Built-in clustering methods: The built-in clustering methods, the
+\strong{Built-in clustering methods:} The built-in clustering methods, the
   names of which can be accessed by \code{listBuiltInFunctions()} are the
   following: 
 \itemize{ 
@@ -56,9 +56,10 @@ Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"}
   that function to match the recommendations in the documentation of
  \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
  settings for back-compatiability). Specifically, the following defaults 
- are implemented \code{samples=50}, \code{keep.data=FALSE}, \code{rngR=TRUE},
+ are implemented \code{samples=50}, \code{keep.data=FALSE}, 
+\code{mediods.x=FALSE},\code{rngR=TRUE},
  \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
-Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K".} 
+Input is \code{"X"}; algorithm type is "K".} 
 \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
   \code{stats} package. Arguments to that function can be passed via
   \code{clusterArgs} except for \code{centers} which is reencoded here to be
@@ -105,4 +106,7 @@ algorithmType(c("kmeans","pam","hierarchical01"))
 inputType(c("kmeans","pam","hierarchical01"))
 listBuiltInTypeK()
 listBuiltInType01()
+}
+\seealso{
+\code{\link{ClusterFunction}}, \code{\link{algorithmType}}, \code{\link{inputType}}
 }
