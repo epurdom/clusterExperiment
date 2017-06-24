@@ -89,15 +89,15 @@
 ##---------
 
 #' @importFrom cluster pam
-.claraCluster<-function(x,diss,k,checkArgs,cluster.only,samples=50,keep.data=FALSE,rngR=TRUE,pamLike=TRUE,correct.d=TRUE,...){
+.claraCluster<-function(x,k,checkArgs,cluster.only,samples=50,keep.data=FALSE,rngR=TRUE,pamLike=TRUE,correct.d=TRUE,medoids.x=FALSE,...){
       passedArgs<-.getPassedArgs(FUN=cluster::clara,passedArgs=list(...) ,checkArgs=checkArgs)
 	  passedArgs<-c(passedArgs, list(samples=samples, keep.data=keep.data, rngR=rngR, pamLike=pamLike, correct.d=correct.d))
-	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
-	  if(input=="X") return(do.call(cluster::clara, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
-      if(input=="diss" | input=="both") return(do.call(cluster::clara, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+	  out<-(do.call(cluster::clara, c(list(x=t(x),k=k), passedArgs)))
+	  if(cluster.only) return(out$clustering) else return(out)
+			  
     }
 
-.claraCF<-clusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
+.claraCF<-clusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
 
 

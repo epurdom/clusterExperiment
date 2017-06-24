@@ -556,22 +556,22 @@ internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
 	#--- Run function on small data
 	if(inputType %in% c("X")){
 		test<-try(do.call(clusterFUN,c(list(x=x),argList)),silent=TRUE)
-		if(inherits(test,"try-error")) return(paste("function test fails with input X",test[1]))
+		if(inherits(test,"try-error")) return(paste("function test fails with input X. ",test[1]))
 	}
 	if(inputType %in% c("diss")){
 		test<-try(do.call(clusterFUN,c(list(diss=diss),argList)),silent=TRUE)
-		if(inherits(test,"try-error")) return(paste("function test fails with input diss",test[1]))
+		if(inherits(test,"try-error")) return(paste("function test fails with input diss.",test[1]))
 	}
 	if(inputType %in% c("either")){
 		test1<-try(do.call(clusterFUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
-		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss",test1[1]))
+		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss.",test1[1]))
 		test2<-try(do.call(clusterFUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
 		if(inherits(test2,"try-error")){
-			return(paste("function test fails with input diss and NULL x",test2[1]))
+			return(paste("function test fails with input diss and NULL x.",test2[1]))
 		}
 		test3<-try(do.call(clusterFUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
-		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input",test3[1]))
-		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("clusterFUN does not return a vector equal to the number of observations")
+		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input.",test3[1]))
+		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("clusterFUN does not return a vector equal to the number of observations.")
 	}
 	else{
 		if(outputType=="vector"){
