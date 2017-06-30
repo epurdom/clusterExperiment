@@ -5,7 +5,7 @@
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
 seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
-  top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
+  top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
   checkDiss = TRUE)
 }

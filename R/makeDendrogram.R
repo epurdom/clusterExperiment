@@ -63,7 +63,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var","cv","mad"),
-                        ndims=NA,ignoreUnassignedVar=FALSE,unassignedSamples=c("outgroup", "cluster"),...)
+                        ndims=NA,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster

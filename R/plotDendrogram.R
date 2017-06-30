@@ -138,7 +138,7 @@ setMethod(
   	### For plotting of dendrogram for the merging
   	### Add information about the merging as node labels and change edge type
   	###############
-  	if(!is.null(mergePlotType) && mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
+  	if(!is.null(mergePlotType) && mergePlotType %in% c("all",.availMergeMethods,"mergeMethod")){
           #####
           #convert names of internal nodes for plotting
           #####
