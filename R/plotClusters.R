@@ -116,7 +116,7 @@
 #'   Waltman).
 #'
 #' @seealso The \code{\link[ConsensusClusterPlus]{ConsensusClusterPlus}} package.
-#'
+#' @references Wilkerson, D. M, Hayes and Neil D (2010). “ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking.” Bioinformatics, 26(12), pp. 1572-1573. 
 #' @export
 #'
 #' @examples
