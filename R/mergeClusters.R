@@ -359,15 +359,17 @@ This makes sense only for counts.")
   else return(NA)
 }
 
-#functions for estimating m1/m, the proportion of non-null
+#functions for estimating m1/m, the proportion of **non-null**
 .m1_Storey<-function(pvalues,lambda=0.5){
 	m<-length(pvalues)
 	num<-length(which(pvalues>lambda))
-	return(num/(1-lambda)/m)
+	pi0<-num/(1-lambda)/m
+	return(1-pi0)
 
 }
 .m1_PC<-function(pvalues){
-	return(2*mean(pvalues))
+	pi0<-2*mean(pvalues)
+	return(1-pi0)
 
 }
 
