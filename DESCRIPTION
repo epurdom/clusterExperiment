@@ -29,7 +29,6 @@ Imports:
     matrixStats,
     graphics,
     parallel,
-    MAST,
     RSpectra,
 	kernlab
 Suggests:
@@ -37,7 +36,8 @@ Suggests:
     knitr,
     diagram,
     testthat,
-	scRNAseq
+	scRNAseq,
+    MAST
 VignetteBuilder: knitr
 LazyData: true
 RoxygenNote: 6.0.1

@@ -67,12 +67,13 @@ setMethod(f = "clusterContrasts",
 #' @rdname clusterContrasts
 #' @export
 #' @importFrom limma makeContrasts
-#' @importFrom MAST Hypothesis
 setMethod(f = "clusterContrasts",
           signature = "vector",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
-            cluster<-.convertToNum(cluster)
+		   if(outputType=="MAST" & !requireNamespace("MAST", quietly = TRUE)) stop("for outputType 'MAST' have package 'MAST' from Bioconductor installed.")
+		   
+		   cluster<-.convertToNum(cluster)
            if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
             cl<-factor(cl)
             contrastType<-match.arg(contrastType)
