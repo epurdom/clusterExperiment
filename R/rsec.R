@@ -1,6 +1,6 @@
-#' Resampling-based Sequential Ensemble Clustering
+#' @title Resampling-based Sequential Ensemble Clustering
 #'
-#' Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
+#' @description Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 #' Clustering) for single cell sequencing data. This is a wrapper function
 #' around the existing clusterExperiment workflow that results in the output of
 #' RSEC.
@@ -27,12 +27,12 @@ setMethod(
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nVarDims=NA,
         nPCADims=c(50), k0s=4:15,
-        clusterFunction=c("tight","hierarchical01"),
+        clusterFunction=listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
         mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
-        clusterDArgs=NULL,
+        mainClusterArgs=NULL,
         subsampleArgs=NULL,
         seqArgs=NULL,
         ncores=1, random.seed=NULL, run=TRUE
@@ -47,7 +47,7 @@ setMethod(
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
-                    clusterDArgs=clusterDArgs,subsampleArgs=subsampleArgs,
+                    mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					#browser()
     if(run){
@@ -55,10 +55,27 @@ setMethod(
     }
     return(ce)
 })
+.methodFormals <- function(f, signature = character()) {
+	#to find defaults of RSEC
+	#from this conversation:
+	#http://r.789695.n4.nabble.com/Q-Get-formal-arguments-of-my-implemented-S4-method-td4702420.html
+    fdef <- getGeneric(f)
+    method <- selectMethod(fdef, signature)
+    genFormals <- base::formals(fdef)
+    b <- body(method)
+    if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
+        local <- eval(b[[2]][[3]])
+        if(is.function(local))
+            return(formals(local))
+        warning("Expected a .local assignment to be a function. Corrupted method?")
+    }
+    genFormals
+}
 .postClusterMany<-function(ce,...){
-#	function(ce,combineProportion,combineMinSize,dendroReduce,dendroNDims,mergeMethod,mergeCutoff,isCount)
+    defaultArgs<-.methodFormals("RSEC",signature="matrix")
 	passedArgs<-list(...)
-	
+	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
+	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
 	###CombineMany
 	args1<-list()
 	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
@@ -81,7 +98,7 @@ setMethod(
 	if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
 	if("mergeMethod" %in% names(passedArgs)){
 		args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
-      	ce <- do.call( mergeClusters,c(list(x=ce,plotType="none"), args1, passedArgs[c("isCount")]))
+      	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
 	}
 	else note("clusters will not be merged unless argument 'mergeMethod' is given")
   }

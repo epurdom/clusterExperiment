@@ -250,7 +250,7 @@ transformation=transformation(cl))
 plotClusters(cl2)
 }
 \seealso{
-The \link[ConsensusClusterPlus]{ConsensusClusterPlus} package.
+The \code{\link[ConsensusClusterPlus]{ConsensusClusterPlus}} package.
 }
 \author{
 Elizabeth Purdom and Marla Johnson (based on the tracking plot in

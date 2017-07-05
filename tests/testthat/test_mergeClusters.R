@@ -2,9 +2,9 @@ context("mergeCLusters")
 source("create_objects.R")
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
-  cl1 <- clusterSingle(smSimData, clusterFunction="pam",
+  cl1 <- clusterSingle(smSimData, 
                        subsample=FALSE, sequential=FALSE,
-                       clusterDArgs=list(k=6),isCount=FALSE)
+                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
   leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
   leg[,"name"]<-letters[1:6]
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
@@ -53,9 +53,9 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 
-  cl <- clusterSingle(smSimSE, clusterFunction="pam",
+  cl <- clusterSingle(smSimSE, 
                        subsample=FALSE, sequential=FALSE,
-                       clusterDArgs=list(k=6),isCount=FALSE)
+                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
   cl <- makeDendrogram(cl)
   cl <- mergeClusters(cl, mergeMethod = "adjP")
   expect_equal(colData(cl),colData(smSimSE))

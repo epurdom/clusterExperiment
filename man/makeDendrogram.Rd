@@ -25,10 +25,10 @@ primaryCluster.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 details.}
 
-\item{ndims}{integer An integer identifying how many dimensions to reduce to
+\item{ndims}{integer An integer identifying how many dimensions to reduce to 
 in the reduction specified by \code{dimReduce}}
 
 \item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction
@@ -80,8 +80,8 @@ permitted for the \code{@dendro_samples} slot.
 data(simData)
 
 #create a clustering, for 8 clusters (truth was 3)
-cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=8))
+cl <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)

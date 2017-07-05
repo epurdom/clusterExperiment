@@ -67,7 +67,7 @@ There are three main choices that the user needs to make for `clusterSingle`:
 
 The `clusterSingle` calls underlying functions for each of these tasks, each of which can take many arguments. For simplicity in syntax, the user passes arguments to each of these underlying functions as lists of arguments. 
 
-* Clustering is done via `clusterD` and arguments to `clusterD` are passed as a list via the argument `clusterDArgs`. See Section XXX below on `clusterD` function for more details about possible arguments.
+* Clustering is done via `clusterD` and arguments to `clusterD` are passed as a list via the argument `mainClusterArgs`. See Section XXX below on `clusterD` function for more details about possible arguments.
 * `subsample=TRUE` : if subsampling, `subsampleClustering` is called and arguments to `subsampleClustering` are passed as a list via the argument `subsampleArgs`. See Section XXX below on `subsampleClustering`. 
 * `sequential=TRUE` : if sequential method, `seqCluster` is called, and arguments to `seqCluster` are passed as a list via the argument `seqArgs`. See Section XXX below on `seqCluster`.
 
@@ -86,11 +86,11 @@ There are two parts to the basic clustering sequence:
   * `k` the number of clusters to fit in the subsampled data. This must be passed by the user via `subsampleArgs` (unless `sequential=TRUE`, see below, where it is set internally)
   * `clusterFunction` the function to use to cluster the subsampled data. The default is `pam` from the `cluster` package but can also be user-defined. The argument `clusterFunction` of `clusterSingle` is *not* passed to this argument -- `clusterSingle` by default uses the `pam` function -- so the user must pass this *via `subsampleArgs`* if they want a different function.
 
-* Clustering an input $D$ matrix `clusterD`, which can be either the co-occurance matrix from `subsampleClustering` or otherwise is calculated as `dist(x)`. The arguments passed to `clusterD` are via the argument `clusterDArgs` in `clusterSingle`. The most important arguments are:
+* Clustering an input $D$ matrix `clusterD`, which can be either the co-occurance matrix from `subsampleClustering` or otherwise is calculated as `dist(x)`. The arguments passed to `clusterD` are via the argument `mainClusterArgs` in `clusterSingle`. The most important arguments are:
   * `D` the $n\times n$ matrix of dissimilarities
   * `clusterFunction` the type of clustering to do on the dissimilarity matrix.
   * Note that both of the above options are direct arguments of `clusterSingle` (i.e. do not need to be passed with a list of arguments for). Therefore `clusterFunction` argument of `clusterSingle` is passed to `clusterD` (and not to `subsampleClustering`)
-  * Depending on the choice of `clusterFunction` some other arguments may be necessary to pass via a list of arguments to `clusterDArgs` (e.g. if "pam", must also pass an argument `k` or `findBestK=TRUE`)
+  * Depending on the choice of `clusterFunction` some other arguments may be necessary to pass via a list of arguments to `mainClusterArgs` (e.g. if "pam", must also pass an argument `k` or `findBestK=TRUE`)
 
 We will load some simulated data that comes with the package with four underlying clusters. First we will do just basic clustering of the data for 4 clusters using `pam` on the standard distance matrix. 
 
@@ -98,7 +98,7 @@ We will load some simulated data that comes with the package with four underlyin
 library(clusterExperiment)
 data(simData)
 simpleCluster<-clusterSingle(simData, subsample=FALSE, 
-                          sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
+                          sequential=FALSE, clusterFunction="pam",mainClusterArgs=list('k'=4))
 #compare to direct call of pam
 library(cluster)
 pamCluster<-pam(dist(simData),4)
@@ -110,7 +110,7 @@ Of course, this is not the best use case, since the pam object from `pam` has mu
 ```{r basicSubsampling}
 #library(clusterPackage)
 subsampleCluster<-clusterSingle(simData, subsample=TRUE, 
-                             sequential=FALSE, clusterFunction="pam",clusterDArgs=list('k'=4))
+                             sequential=FALSE, clusterFunction="pam",mainClusterArgs=list('k'=4))
 table(pamCluster$clustering,subsampleCluster$clustering)
 ```
 
@@ -118,7 +118,7 @@ Notice that we got a warning. This is because we *could* have chosen to cluster 
 
 ```{r basicSubsampling2}
 subsampleCluster2<-clusterSingle(simData, subsample=TRUE, sequential=FALSE,
-                              clusterFunction="pam",clusterDArgs=list('k'=4),
+                              clusterFunction="pam",mainClusterArgs=list('k'=4),
                               subsampleArgs=list("k"=2, clusterFunction="kmeans"))
 table(subsampleCluster2$clustering,subsampleCluster$clustering)
 ```
@@ -320,7 +320,7 @@ Users can also change the parameters and try to construct their own combinations
 
 ## Limitations of `clusterMany`
 
-However, there can be sets of parameter choices that are not realizable using `clusterMany`, even with defining your own `paramMatrix`. `clusterMany` makes some choices and interpretations of the parameters that the user cannot override. A current example is varying the $K$ used for clustering the subsampled data when `subsample=TRUE`. Individual calls to `clusterSingle` can set this $K$ via the `subsampleArgs=list("k"=...)` (assuming that `sequential=FALSE`). However, `clusterMany` has for simplicity a single argument `ks` that means different parameters in different contexts. In cases where `sequential=TRUE`, `ks` defines `k0` argument of `seqCluster`, which therefore also sets the $K$ for clustering subsampled data when `subsample=TRUE`. In cases where `findBestK=TRUE` (for the clusterD algorithm) then `ks` also defines `kRanges`, if `kRanges` is not already defined by the user in `clusterDArgs`. For cases where `findBestK=TRUE` and `sequential=FALSE` and `subsample=TRUE`, then $K$ for clustering of subsampled data MUST be passed via the argument `subsampleArgs`. And if `findBestK=FALSE`, then the `ks` argument defines both the $K$ for clustering of subsampled data and the $K$ used for clustering the resulting co-ocurrance matrix $D$ (overriding any user specification of either of those parameters via `clusterDArgs` or `subsampleArgs`). 
+However, there can be sets of parameter choices that are not realizable using `clusterMany`, even with defining your own `paramMatrix`. `clusterMany` makes some choices and interpretations of the parameters that the user cannot override. A current example is varying the $K$ used for clustering the subsampled data when `subsample=TRUE`. Individual calls to `clusterSingle` can set this $K$ via the `subsampleArgs=list("k"=...)` (assuming that `sequential=FALSE`). However, `clusterMany` has for simplicity a single argument `ks` that means different parameters in different contexts. In cases where `sequential=TRUE`, `ks` defines `k0` argument of `seqCluster`, which therefore also sets the $K$ for clustering subsampled data when `subsample=TRUE`. In cases where `findBestK=TRUE` (for the clusterD algorithm) then `ks` also defines `kRanges`, if `kRanges` is not already defined by the user in `mainClusterArgs`. For cases where `findBestK=TRUE` and `sequential=FALSE` and `subsample=TRUE`, then $K$ for clustering of subsampled data MUST be passed via the argument `subsampleArgs`. And if `findBestK=FALSE`, then the `ks` argument defines both the $K$ for clustering of subsampled data and the $K$ used for clustering the resulting co-ocurrance matrix $D$ (overriding any user specification of either of those parameters via `mainClusterArgs` or `subsampleArgs`). 
 
 As the above example makes clear, `clusterMany` is a convenience wrapper that chooses simplicity in the input parameters over fine specification by the users, and in doing so makes subtle choices for the user that are deemed reasonable. It is intended to let the user explore parameters painlessly, but for finer control the user needs to write their own wrapper around `clusterSingle`.
 

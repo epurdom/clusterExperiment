@@ -1,21 +1,23 @@
 context("RSEC")
 source("create_objects.R")
 test_that("`RSEC` works with matrix, clusterExperiment, summarizedExperiment",{
-  ##these examples don't do dendrogram/merge because all -1 after combineMany
-  ##only tests clusterMany, combineMany parts.
-  RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+	##these examples don't do dendrogram/merge because all -1 after combineMany
+	##only tests clusterMany, combineMany parts.
+	##so can't do expect_silent, because returns NOTE about that issue.
+	rsecOut1<-RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495
   )
-  rsecOut<-RSEC(x=cc, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+   rsecOut2<-RSEC(x=cc, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495
   )
-  RSEC(x=ccSE,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+  rsecOut3<-RSEC(x=ccSE,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495)
-  RSEC(x=se,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+   rsecOut4<-RSEC(x=se,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495)
 #test rerunClusterMany argument:
-	   RSEC(rsecOut,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=TRUE,subsampleArgs=list(resamp.num=5),random.seed=495)
-	   RSEC(rsecOut,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,subsampleArgs=list(resamp.num=5),random.seed=495)
+	    rsecOut5<-RSEC(rsecOut2,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=TRUE,subsampleArgs=list(resamp.num=5),random.seed=495)
+	   #makes dendrogram so important have here so has to catch defaults of RSEC...
+	    rsecOut6<-RSEC(rsecOut2,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,subsampleArgs=list(resamp.num=5),random.seed=495)
    })
   
 test_that("`RSEC` works through whole series of steps",{
@@ -26,20 +28,20 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495
   )
   ##check same as individual steps
- ceOut<-clusterMany(x=assay(seSimCount),ks=4:5,clusterFunction="tight",alphas=0.1,betas=0.9,minSizes=1,
+ expect_silent(ceOut<-clusterMany(x=assay(seSimCount),ks=4:5,clusterFunction="tight",alphas=0.1,betas=0.9,minSizes=1,
   isCount=TRUE, dimReduce="none", transFun = NULL,
  sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                  nVarDims=NA,nPCADims=NA,
-                 clusterDArgs=NULL,subsampleArgs=list(resamp.num=5),
+                 mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
- )
+ ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
-
+	#gives 'note', can't use expect_silent
  combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5)
  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
  
- dendOut<-makeDendrogram(combOut,dimReduce="none",ndims=NA)
+ expect_silent(dendOut<-makeDendrogram(combOut,dimReduce="none",ndims=NA))
  expect_equal(dendOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
  

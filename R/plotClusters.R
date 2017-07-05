@@ -115,7 +115,7 @@
 #'   \link[ConsensusClusterPlus]{ConsensusClusterPlus} by Matt Wilkerson and Peter
 #'   Waltman).
 #'
-#' @seealso The \link[ConsensusClusterPlus]{ConsensusClusterPlus} package.
+#' @seealso The \code{\link[ConsensusClusterPlus]{ConsensusClusterPlus}} package.
 #'
 #' @export
 #'

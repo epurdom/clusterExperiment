@@ -32,8 +32,8 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 	Layer1Names<-c("clusterFunction","subsample", "sequential")
 	Layer1Options<-list("clusterFunction"=c("tight", "hierarchical01", "pam", "kmeans"), "subsample"=c("subsample.FALSE","subsample.TRUE"), "sequential"=c("sequential.FALSE","sequential.TRUE"))
 	
-	Layer2Names<-c("clusterDArgs","subsampleArgs","seqArgs")
-	Layer2NamesSimple<-c("clusterDArgs","subsampleArgs","seqArgs")
+	Layer2Names<-c("mainClusterArgs","subsampleArgs","seqArgs")
+	Layer2NamesSimple<-c("mainClusterArgs","subsampleArgs","seqArgs")
 	#x,y,box.size,box.prop,box.type
 	makeDf<-function(x,y,box.size,box.prop,box.type){data.frame(x=x,y=y,box.size=box.size,box.prop=box.prop,box.type=box.type,stringsAsFactors =FALSE)}
 	posMatrix<-makeDf(x=0.5,y=0.95,box.size=0.06,box.prop=0.4,box.type="diamond")
@@ -49,7 +49,7 @@ drawClusterAll <- function(highlight=NULL, Layer2Options=NULL,plotOptions=TRUE,L
 		"subsample"=list("subsample.FALSE"=makeDf(0.45, 0.59,0.03,0.4,values),"subsample.TRUE"=makeDf(0.55, 0.59,0.03,0.4,values)), 
 		"sequential"=list("sequential.FALSE"=makeDf(0.77, 0.59,0.03,0.4,values),"sequential.TRUE"=makeDf(0.88, 0.59,0.03,0.4,values))
 		)
-	Layer2Pos<-list("clusterDArgs"=makeDf(0.2,0.44,boxRadx(Layer2Names[1]),0.4,options), 
+	Layer2Pos<-list("mainClusterArgs"=makeDf(0.2,0.44,boxRadx(Layer2Names[1]),0.4,options), 
 		"subsampleArgs"=makeDf(0.5,.44,boxRadx(Layer2Names[2]),0.4,options), 
 		"seqArgs"=makeDf(0.825, 0.44,boxRadx(Layer2Names[3]),0.4,options))
 	
@@ -207,7 +207,7 @@ The arguments of `clusterSingle` indicate which of these tasks should be perform
 
 Here are the argument calls for `clusterSingle`:
 ```{r clusterSingleArgs, eval=FALSE}
-clusterSingle(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"), clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
+clusterSingle(x, subsample = TRUE, sequential = FALSE, clusterFunction = c("tight", "hierarchical01", "pam", "kmeans"), mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL)
 ```
 
 The primary arguments `clusterFunction`,`subsample`, and `sequential` govern each of these tasks:
@@ -218,7 +218,7 @@ We can visualize arguments and the values they can take on as a diagram:
 drawClusterAll()
 ```
 
-The remaining  arguments (`clusterDArgs`, `subsampleArgs`, and `seqArgs`) are for passing additional options to each of these tasks, and we will show examples of how they are used. 
+The remaining  arguments (`mainClusterArgs`, `subsampleArgs`, and `seqArgs`) are for passing additional options to each of these tasks, and we will show examples of how they are used. 
 
 ## Example: PAM Clustering
 
@@ -237,12 +237,12 @@ simpleCluster = clusterSingle(expressions, subsample=FALSE, sequential=FALSE, cl
 
 This is because even to perform simple PAM, the PAM algorithm needs additional parameters to be set, namely 'k', the number of groups. 
 
-However, there is no argument in `clusterSingle` for this. Because it is specific to a particular choice of clustering function, we don't want to clutter up `clusterSingle` with all the possible options that might be needed downstream for a particularly task. Instead, `clusterSingle` lets you pass such arguments to the function that actually does the task of clustering a distance matrix, `clusterD` via the `clusterDArgs` option. So the user doesn't need to call `clusterD` explicitly, but often will need to pass an argument to `clusterD`.  
+However, there is no argument in `clusterSingle` for this. Because it is specific to a particular choice of clustering function, we don't want to clutter up `clusterSingle` with all the possible options that might be needed downstream for a particularly task. Instead, `clusterSingle` lets you pass such arguments to the function that actually does the task of clustering a distance matrix, `clusterD` via the `mainClusterArgs` option. So the user doesn't need to call `clusterD` explicitly, but often will need to pass an argument to `clusterD`.  
 
 In this case we need to pass the argument 'k'. Specifically, we need to create a list with an element of name "k" that takes on the value, say 5, for our k.
 
 ```{r visualizePamArgs, echo=FALSE}
-drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("clusterDArgs"="k"),plotOptions=TRUE)
+drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("mainClusterArgs"="k"),plotOptions=TRUE)
 ```
 
 ```{r clusterSinglePam, warning=FALSE, message=FALSE}
@@ -250,7 +250,7 @@ library(clusterExperiment)
 library(cluster)
 #load("data/expressions.Rda")
 expression = expressions[, 1:3]
-simpleCluster = clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list('k'=5))
+simpleCluster = clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", mainClusterArgs=list('k'=5))
 table(simpleCluster$clustering)
 ```
 
@@ -277,11 +277,11 @@ There are other options we can pick to change the clustering of the distance mat
 We can pass these arguments to `clusterD`, again as a list:
 
 ```{r visualizeArgsClusterD, echo=FALSE}
-drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("clusterDArgs"=c("k","findBestK","removeSil","kRange")),plotOptions=TRUE)
+drawClusterAll(highlight = c("pam", "subsample.FALSE", "sequential.FALSE"),Layer2Options=list("mainClusterArgs"=c("k","findBestK","removeSil","kRange")),plotOptions=TRUE)
 ```
 
 ```{r clusterD}
-Cluster<-clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", clusterDArgs=list(findBestK=TRUE, removeSil=TRUE, kRange=2:10))
+Cluster<-clusterSingle(expression, subsample=FALSE, sequential=FALSE, clusterFunction="pam", mainClusterArgs=list(findBestK=TRUE, removeSil=TRUE, kRange=2:10))
 
 table(true=expressions$cluster, PAM=Cluster$clustering)
 ```
@@ -352,7 +352,7 @@ In this demonstration, clustering will first be performed with basic PAM with k=
 
 ```{r getBestFeatures}
 data(simData)
-cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, mainClusterArgs=list(k=4,removeSil=TRUE))
 pairsAll<-getBestFeatures(cl$clustering,simData,type="Pairs")
 
 head(pairsAll)
@@ -364,7 +364,7 @@ The column `Contrast` in the output signifies the pairwise difference (or contra
 
 ```{r getBestFeaturesAllSig}
 data(simData)
-cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, clusterDArgs=list(k=4,removeSil=TRUE))
+cl = clusterSingle(simData, clusterFunction="pam", subsample=FALSE, sequential=FALSE, mainClusterArgs=list(k=4,removeSil=TRUE))
 pairsAll2<-getBestFeatures(cl$clustering,simData,type="Pairs",p.value=0.05,number=ncol(simData))
 table(pairsAll2$Contrast)
 ```
