@@ -96,11 +96,11 @@ setMethod(
     ce<-dendroTry
   	args1<-list()
 	if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
-	if("mergeMethod" %in% names(passedArgs)){
+	if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
 		args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
       	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
 	}
-	else note("clusters will not be merged unless argument 'mergeMethod' is given")
+	else note("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
   }
   else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
   return(ce) 
