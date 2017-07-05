@@ -132,7 +132,7 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC"), 
+                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), 
                           cutoff=0.1, plot=TRUE,
                           isCount=TRUE,  ...) {  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
