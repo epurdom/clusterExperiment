@@ -22,7 +22,7 @@
 #'   be input into linear model on samples that excludes -1.
 #' @param outputType character string. Gives format for the resulting contrast
 #'   matrix. Currently the two options are the format appropriate for
-#'   \code{\link{limma}} and \code{\link{MAST}} package.
+#'   \code{\link[limma]{limma}} and \code{\link[MAST]{MAST}} package.
 #' @param ... arguments that are passed to from the \code{ClusterExperiment}
 #'   version to the most basic numeric version.
 #' @details The input vector must be numeric clusters, but the external commands
