@@ -2,9 +2,9 @@ context("mergeCLusters")
 source("create_objects.R")
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
-  cl1 <- clusterSingle(smSimData, clusterFunction="pam",
+  cl1 <- clusterSingle(smSimData, 
                        subsample=FALSE, sequential=FALSE,
-                       clusterDArgs=list(k=6),isCount=FALSE)
+                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
   leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
   leg[,"name"]<-letters[1:6]
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
@@ -15,16 +15,17 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotInfo="mergeMethod")
 
-  
+	#check plotting types:
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="adjP")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="locfdr", plotInfo="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="MB", plotInfo="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="JC", plotInfo="mergeMethod")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod")
   expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="mergeMethod"),"can only plot 'mergeMethod' results if one method is selected")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
+
+  #check all methods run
+  for(method in clusterExperiment:::.availMergeMethods){
+	  clustMerged <- mergeClusters(clustWithDendro, mergeMethod=method, plotInfo="mergeMethod")
+  }
   
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
@@ -53,9 +54,9 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 
-  cl <- clusterSingle(smSimSE, clusterFunction="pam",
+  cl <- clusterSingle(smSimSE, 
                        subsample=FALSE, sequential=FALSE,
-                       clusterDArgs=list(k=6),isCount=FALSE)
+                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
   cl <- makeDendrogram(cl)
   cl <- mergeClusters(cl, mergeMethod = "adjP")
   expect_equal(colData(cl),colData(smSimSE))

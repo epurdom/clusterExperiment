@@ -106,8 +106,8 @@ setBreaks(data=simData,breaks=.9)
 showHeatmapPalettes()
 
 #compare the palettes on heatmap
-cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=8))
+cl <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 \dontrun{
 par(mfrow=c(2,3))

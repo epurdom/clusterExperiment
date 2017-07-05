@@ -45,8 +45,8 @@
 #' data(simData)
 #' 
 #' #create a clustering, for 8 clusters (truth was 3) 
-#' cl <-clusterSingle(simData, clusterFunction="pam", subsample=FALSE, 
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl <-clusterSingle(simData, subsample=FALSE, 
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #' 
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
@@ -138,7 +138,7 @@ setMethod(
   	### For plotting of dendrogram for the merging
   	### Add information about the merging as node labels and change edge type
   	###############
-  	if(!is.null(mergePlotType) && mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
+  	if(!is.null(mergePlotType) && mergePlotType %in% c("all",.availMergeMethods,"mergeMethod")){
           #####
           #convert names of internal nodes for plotting
           #####

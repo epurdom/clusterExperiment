@@ -5,22 +5,24 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                                         subsample=FALSE, sequential=FALSE,
                                         isCount=FALSE,verbose=FALSE)
-            x1<-combineMany(clustNothing,whichClusters = "clusterMany")
-            x2<-combineMany(clustNothing)
+            x1<-combineMany(clustNothing,proportion=1,whichClusters = "clusterMany")
+            x2<-combineMany(clustNothing,proportion=1)
             expect_equal(x1,x2)
-            expect_error(combineMany(clusterSingle(mat, subsample=FALSE,
-                                                   clusterFunction="pam",
-                                                   clusterDArgs=list(k=3))),
+			ceObj<-clusterSingle(mat, subsample=FALSE,
+				mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)))
+            expect_error(combineMany(ceObj,proportion=1),
                          "no clusters specified")
+			expect_error(combineMany(ceObj,whichCluster="clusterSingle"),
+			                          'argument "proportion" is missing, with no default')
 
-            shared1 <- combineMany(clusterMatrix(clustNothing))
-            shared2 <- combineMany(clustNothing, "all")
+            shared1 <- combineMany(clusterMatrix(clustNothing),proportion=1)
+            shared2 <- combineMany(clustNothing, "all",proportion=1)
             expect_equal(shared1$clustering, primaryCluster(shared2))
 
-            shared3 <- combineMany(clustNothing, "workflow")
+            shared3 <- combineMany(clustNothing, "workflow",proportion=1)
             expect_equal(shared2, shared3)
 
-            shared4 <- combineMany(clustNothing, 1:nClusters(clustNothing))
+            shared4 <- combineMany(clustNothing, 1:nClusters(clustNothing),proportion=1)
             expect_equal(shared3, shared4)
 
             shared5 <- combineMany(clustNothing, "workflow",
@@ -44,8 +46,8 @@ test_that("`combineMany` works when multiple runs of workflow", {
                               subsample=FALSE, sequential=FALSE,
                               isCount=FALSE,verbose=FALSE)
 
-  shared1 <- combineMany(clustNothing, "all")
-  shared2<-combineMany(shared1,"all")
+  shared1 <- combineMany(clustNothing, "all",proportion=1)
+  shared2<-combineMany(shared1,"all",proportion=1)
   expect_true("combineMany.1" %in% clusterTypes(shared2))
 
   clustNothing2 <- clusterMany(shared2, ks=c(5,6), clusterFunction="pam",
@@ -55,18 +57,18 @@ test_that("`combineMany` works when multiple runs of workflow", {
   expect_true("clusterMany.2" %in% clusterTypes(clustNothing2))
   expect_true("combineMany.2" %in% clusterTypes(clustNothing2))
 
-  shared3 <- combineMany(clustNothing2, "all")
-  shared4 <- combineMany(clusterMatrix(clustNothing2))
+  shared3 <- combineMany(clustNothing2, "all",proportion=1)
+  shared4 <- combineMany(clusterMatrix(clustNothing2),proportion=1)
   expect_equal(shared4$clustering, primaryCluster(shared3))
 
-  shared5 <- combineMany(clustNothing2, "workflow")
-  shared6 <- combineMany(clusterMatrix(clustNothing2)[,1:2])
+  shared5 <- combineMany(clustNothing2, "workflow",proportion=1)
+  shared6 <- combineMany(clusterMatrix(clustNothing2)[,1:2],proportion=1)
   expect_equal(shared6$clustering, primaryCluster(shared5))
 
 
   clustNothing3 <- addClusters(clustNothing2, primaryCluster(shared5))
-  shared7 <- combineMany(clustNothing3, "all")
-  shared8 <- combineMany(clustNothing3, "workflow")
+  shared7 <- combineMany(clustNothing3, "all",proportion=1)
+  shared8 <- combineMany(clustNothing3, "workflow",proportion=1)
 })
 
 test_that("`combineMany` preserves the colData and rowData of SE", {
