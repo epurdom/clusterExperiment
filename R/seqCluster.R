@@ -34,7 +34,7 @@
 #'   \code{\link{subsampleClustering}}.
 #' @param mainClusterArgs list of arguments to be passed to
 #'   \code{\link{mainClustering}}).
-#'
+#' @inheritParams clusterSingle
 #' @details \code{seqCluster} is not meant to be called by the user. It is only
 #'   an exported function so as to be able to clearly document the arguments for
 #'   \code{seqCluster} which can be passed via the argument \code{seqArgs} in
@@ -56,7 +56,7 @@
 #'   cluster function \code{clusterFunction} sent to 
 #'   \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
 #'   \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
-#'   \code{\link{subsampeClustering}} with the \code{ClusterFunction} object
+#'   \code{\link{subsampleClustering}} with the \code{ClusterFunction} object
 #'   defined in the argument \code{clusterFunction} set via \code{mainClusterArgs}.
 #'   The number of clusters actually resulting from this run of
 #'   \code{\link{mainClustering}} may not be equal to the $K$ sent to  the clustering

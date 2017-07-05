@@ -9,8 +9,8 @@
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
-  plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
-  cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
+  plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC",
+  "mergeMethod"), cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",

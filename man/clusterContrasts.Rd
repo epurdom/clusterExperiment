@@ -37,7 +37,7 @@ to be compared and must match the names of the clusters in the vector
 
 \item{outputType}{character string. Gives format for the resulting contrast
 matrix. Currently the two options are the format appropriate for
-\code{\link{limma}} and \code{\link{MAST}} package.}
+\code{\link[limma]{limma}} and \code{\link[MAST]{MAST}} package.}
 
 \item{removeNegative}{logical, whether to remove negative valued clusters 
 from the design matrix. Appropriate to pick TRUE (default) if design will

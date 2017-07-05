@@ -51,6 +51,9 @@ progress.}
 
 \item{mainClusterArgs}{list of arguments to be passed to
 \code{\link{mainClustering}}).}
+
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
+valid.}
 }
 \value{
 A list with values
@@ -100,7 +103,7 @@ Depending on the value of \code{subsample} how the value of $K$ is
   cluster function \code{clusterFunction} sent to 
   \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
   \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
-  \code{\link{subsampeClustering}} with the \code{ClusterFunction} object
+  \code{\link{subsampleClustering}} with the \code{ClusterFunction} object
   defined in the argument \code{clusterFunction} set via \code{mainClusterArgs}.
   The number of clusters actually resulting from this run of
   \code{\link{mainClustering}} may not be equal to the $K$ sent to  the clustering

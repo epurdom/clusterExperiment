@@ -165,11 +165,8 @@
 #'     clusterArgs=list(k=3)))
 #' #compare to standard pam
 #' cluster::pam(t(simData),k=3,cluster.only=TRUE)
-#' @aliases clusterSingle clusterSingle-methods clusterSingle,matrix-method
-#'   clusterSingle,ClusterExperiment-method clusterSingle,matrix,missing-method
-#'   clusterSingle,matrixOrMissing,matrixOrMissing-method
-#' @rdname clusterSingle
 #' @aliases clusterSingle,missing,matrixOrNULL-method
+#' @rdname clusterSingle
 #' @export
 setMethod(
   f = "clusterSingle",

@@ -35,6 +35,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
+				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
                  ncores=ncores, subsampleArgs=list(resamp.num=20,
                                                    clusterFunction="kmeans",

@@ -3,7 +3,6 @@
 #' @description Given input data, this function will try to find the clusters
 #'   based on the given ClusterFunction object.
 #' @name mainClustering
-#' @aliases mainClustering-character-method
 #'   
 #' @param x \code{p x n} data matrix on which to run the clustering (samples in 
 #'   columns).
@@ -80,6 +79,7 @@
 #' clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",
 #' clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
 #' @rdname mainClustering
+#' @aliases mainClustering,character-method
 #' @export
 setMethod(
   f = "mainClustering",
