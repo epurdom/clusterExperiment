@@ -8,7 +8,7 @@
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
-  mergeMethod = c("none", "adjP", "locfdr", "MB", "JC"),
+  mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = c("none", "all", "mergeMethod", "adjP", "locfdr", "MB", "JC"),
   cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
 
@@ -111,7 +111,9 @@ If  \code{isCount=TRUE}, and the input is a matrix, \code{log2(count
   given to the input and will be used for both \code{makeDendrogram} and 
   \code{getBestFeatures}, with no voom correction.
 
-"JC" refers to the method of Ji and Cai (2007), and implementation 
+"Storey" refers to the method of Storey (2002). "PC" refers to the 
+method of Pounds and Cheng (2004). "JC" refers to the method of 
+Ji and Cai (2007), and implementation 
   of "JC" method is copied from code available on Jiashin Ji's website, 
   December 16, 2015 
   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
@@ -162,6 +164,21 @@ leafType="clusters",label="name")
 #compare merged to original
 table(primaryCluster(cl), primaryCluster(merged))
 
+}
+\references{
+Ji and Cai (2007), "Estimating the Null and the Proportion 
+of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
+
+Efron (2004) “Large-scale simultaneous hypothesis testing: 
+the choice of a null hypothesis,” JASA, 99: 96–104.
+
+Meinshausen and Buhlmann (2005) "Lower bounds for the 
+number of false null hypotheses for multiple testing of associations", 
+Biometrika 92(4): 893-907.
+
+Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479–498.
+
+Pounds and Cheng (2004). "Improving false discovery rate estimation." Bioinformatics 20(11): 1737-1745.
 }
 \seealso{
 makeDendrogram, plotDendrogram, getBestFeatures
