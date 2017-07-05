@@ -527,7 +527,9 @@ setClass(
 #' @aliases internalFunctionCheck
 #' @examples
 #' #Use internalFunctionCheck to check possible function
-#' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=t(x),k=k,cluster.only=cluster.only)}
+#' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){
+#'	cluster::pam(x=t(x),k=k,cluster.only=cluster.only)
+#' }
 #' #passes internal check
 #' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
 #' #Note it doesn't pass if inputType="either" because no catches for x=NULL

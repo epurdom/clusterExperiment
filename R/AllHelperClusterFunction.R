@@ -125,6 +125,6 @@ setMethod(
   f = "inputType",
   signature = c("factor"),
   definition = function(object) {
-	  getBuiltInInputType(as.character(object))
+	  inputType(as.character(object))
   }
 )
