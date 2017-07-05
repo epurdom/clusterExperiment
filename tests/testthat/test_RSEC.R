@@ -19,7 +19,7 @@ test_that("`RSEC` works with matrix, clusterExperiment, summarizedExperiment",{
 	   #makes dendrogram so important have here so has to catch defaults of RSEC...
 	    rsecOut6<-RSEC(rsecOut2,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,subsampleArgs=list(resamp.num=5),random.seed=495)
    })
-  
+
 test_that("`RSEC` works through whole series of steps",{
 #bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
 rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
@@ -40,11 +40,11 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5)
  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
- 
+
  expect_silent(dendOut<-makeDendrogram(combOut,dimReduce="none",ndims=NA))
  expect_equal(dendOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
- 
+
  #now should be the same, check all objects except dendro_samples because very big:
  mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", cutoff = 0.05,isCount=TRUE)
  expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
@@ -55,3 +55,11 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  expect_equal(clusterTypes(rsecOut),clusterTypes(mergeOut))
 })
 
+test_that("`RSEC` works with no merging",{
+  #bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
+  rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
+                k0s=4:5,clusterFunction="tight", alphas=0.1,
+                betas=0.9,dendroReduce="none",minSizes=1,
+                subsampleArgs=list(resamp.num=5),random.seed=495,
+                mergeMethod="none")
+})
