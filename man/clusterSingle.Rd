@@ -3,11 +3,7 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
-\alias{clusterSingle-methods}
-\alias{clusterSingle,matrix-method}
-\alias{clusterSingle,ClusterExperiment-method}
-\alias{clusterSingle,matrix,missing-method}
-\alias{clusterSingle,matrixOrMissing,matrixOrMissing-method}
+\alias{clusterSingle,missing,matrixOrNULL-method}
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}

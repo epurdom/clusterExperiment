@@ -3,7 +3,7 @@
 \docType{methods}
 \name{mainClustering}
 \alias{mainClustering}
-\alias{mainClustering-character-method}
+\alias{mainClustering,character-method}
 \alias{mainClustering,ClusterFunction-method}
 \alias{getPostProcessingArgs,ClusterFunction-method}
 \alias{getPostProcessingArgs}
