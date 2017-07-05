@@ -9,7 +9,7 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var", "cv",
-  "mad"), ndims = NA, ignoreUnassignedVar = FALSE,
+  "mad"), ndims = NA, ignoreUnassignedVar = TRUE,
   unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,

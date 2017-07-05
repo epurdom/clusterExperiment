@@ -1,6 +1,7 @@
-Changes in version 1.3.1-9002( Release date: )
+Changes in version 1.3.1-9003( Release date: )
 ==============
 Changes:
+* makeDendrogram now has the default argument `ignoreUnassignedVar=TRUE` like in RSEC
 * add ClusterFunction class and update all functions to work on this. All built in cluster functions are now given ClusterFunction Objects, so all built in clustering functions can now work for either `subsampleClustering` or `mainClustering`. This will also make it easier for a user to define their own ClusterFunction object and have it be used by functions like `clusterSingle`. This is a major change in how some of the underlying functions work, but should not impact common functions like `clusterMany` and `RSEC`. Some of the more notable changes in the arguments for programmers are:
 	- `clusterD` and `clusterDArgs` have been changed to `mainClustering` and `mainClusterArgs`. This change was made to make these arguments more clear as to their role in the clustering workflow (and because the clusterD refered to clustering a dissimilarity but it has clustered either x or D for many versions now. )
 	- `seqCluster` and `clusterSingle` no longer take the argument `clusterFunction`. `clusterFunction` must be given via `mainClusterArgs` and `subsampleArgs` to be passed to `mainClustering` or `subsamplingCluster`, respectively. Now only the upper-level function `clusterMany` takes `clusterFunction` directly as an argument.
