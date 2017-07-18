@@ -60,11 +60,11 @@ details.}
 For signature \code{ClusterExperiment} arguments passed to the method for 
 signature \code{matrix} and then onto \code{\link{plot.phylo}}.}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By 
@@ -169,14 +169,14 @@ table(primaryCluster(cl), primaryCluster(merged))
 Ji and Cai (2007), "Estimating the Null and the Proportion 
 of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
 
-Efron (2004) “Large-scale simultaneous hypothesis testing: 
-the choice of a null hypothesis,” JASA, 99: 96–104.
+Efron (2004) "Large-scale simultaneous hypothesis testing: 
+the choice of a null hypothesis," JASA, 99: 96-104.
 
 Meinshausen and Buhlmann (2005) "Lower bounds for the 
 number of false null hypotheses for multiple testing of associations", 
 Biometrika 92(4): 893-907.
 
-Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479–498.
+Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479-498.
 
 Pounds and Cheng (2004). "Improving false discovery rate estimation." Bioinformatics 20(11): 1737-1745.
 }
