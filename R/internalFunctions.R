@@ -39,6 +39,7 @@
 							primaryIndex=primaryClusterIndex(newObj)
 							)
   clusterLegend(retval)<-clusterLegend(newObj)
+
   return(retval)
 }
 .pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
@@ -61,7 +62,7 @@
 	    else stop("invalid values for pulling sampleData from colData of object")
 		sData<-as.data.frame(sData[,wh,drop=FALSE])
 	}
-	else{ #if 
+	else{ #if
 		if(wh) sData<- colData(ce)
 		else sData<-NULL
 	}
@@ -87,7 +88,7 @@
   		cnames<-colnames(sData)
   		sData<-do.call("data.frame",lapply(1:ncol(sData),function(ii){fixNAFunction(sData[,ii],newValue=newValue)}))
   		colnames(sData)<-cnames
-    	
+
       }
   return(sData)
 }
@@ -109,7 +110,7 @@
         if(inherits(test,"try-error")) x<-as.numeric(factor(x))
         else x<-test
         options(op)
-        
+
     }
 	names(x)<-nms
 	return(x)
@@ -134,7 +135,7 @@
         x<-apply(clMat,2,fun)
         if(is.null(dim(x))) x<-matrix(x,nrow=1) #in case clMat was matrix with 1 row
         return(x  )
-    } 
+    }
     else{
         if(is.matrix(clMat)) clMat<-clMat[,1]
         return(matrix(fun(clMat),ncol=1))
@@ -147,7 +148,7 @@
     cNames<-colnames(clMat)
     origClMat<-clMat
     if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from some plots where very carefully already chosen
-    
+
     if(ncol(clMat)>1){
         colorMat<-apply(clMat,2,function(x){
             y<-vector("character",length(x))
@@ -210,9 +211,9 @@
 	}
   }
   else{
-    #first match to clusterTypes  
-    mClType<-match(whClusters,clusterTypes(x))  
-    mClLabel<-match(whClusters,clusterLabels(x))  
+    #first match to clusterTypes
+    mClType<-match(whClusters,clusterTypes(x))
+    mClLabel<-match(whClusters,clusterLabels(x))
     totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
         if(is.na(type) & !is.na(lab)) return(lab)
         if(is.na(type) & is.na(lab)) return(NA)
@@ -231,7 +232,7 @@
 
 
 ####
-#Convert to object used by phylobase so can navigate easily 
+#Convert to object used by phylobase so can navigate easily
 .makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
     type<-match.arg(type,c("hclust","dendro"))
     if(type=="hclust"){
@@ -243,7 +244,7 @@
         tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
         if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class with the methods of 'dendextend' package. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
     }
-    phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
+    phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE)
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
 	#browser()
 	if(isSamples){
@@ -258,7 +259,7 @@
 			#######
 			rootNode<-phylobase::rootNode(phylo4Obj)
 			trueInternal<-trueInternal[!trueInternal%in%rootNode]
-			
+
 			#######
 			#find the -1/-2 internal node (if it exists)
 			#determine it as the one without 0-length tip edges.
@@ -269,7 +270,7 @@
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
 			rootChildNum<-sapply(rootChildLeng,min)
 			outbranchNode<-rootChild[rootChildNum>0]
-			
+
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE
 				outbranchNodeDesc<-phylobase::descendants(phylo4Obj,node=outbranchNode,type="ALL") #includes itself
@@ -277,19 +278,19 @@
 				outbranchNodeDesc<-outbranchNodeDesc[outbranchNodeDesc %in% phylobase::getNode(phylo4Obj,type="internal")]
 			}
 			else outbranchIsInternal<-FALSE
-			
+
 		}
 		#trueInternal<-allInternal[!allInternal%in%clusterNodes]
-		
+
 		phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
-		#add new label for root 
+		#add new label for root
 		if(outbranch){
 			phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
 			if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",1:length(outbranchNodeDesc),sep="")
 		}
 	}
 	else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
-    
+
 	return(phylo4Obj)
 }
 

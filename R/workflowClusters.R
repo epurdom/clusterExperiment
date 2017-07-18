@@ -160,7 +160,7 @@ setMethod(
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(x,eraseOld,newToAdd){
-    #browser()
+
     ppIndex<-workflowClusterDetails(x)
     if(!any(newToAdd %in% .workflowValues[-1])) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
     whNew<-max(match(newToAdd, .workflowValues))
