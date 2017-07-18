@@ -24,7 +24,7 @@
 #'   'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
 #'   or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
 #'   using the clustering that created the dendrogram.
-#'   @param removeOutgroup logical, only applicable if there are missing samples
+#' @param removeOutbranch logical, only applicable if there are missing samples
 #'     (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
 #'     for the samples was made by putting missing samples in an outbranch. In
 #'     which case, if this parameter is TRUE, the outbranch will not be plotted,
@@ -45,8 +45,8 @@
 #' data(simData)
 #' 
 #' #create a clustering, for 8 clusters (truth was 3) 
-#' cl <-clusterSingle(simData, clusterFunction="pam", subsample=FALSE, 
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl <-clusterSingle(simData, subsample=FALSE, 
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #' 
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
@@ -138,7 +138,7 @@ setMethod(
   	### For plotting of dendrogram for the merging
   	### Add information about the merging as node labels and change edge type
   	###############
-  	if(!is.null(mergePlotType) && mergePlotType %in% c("all","adjP", "locfdr", "MB", "JC","mergeMethod")){
+  	if(!is.null(mergePlotType) && mergePlotType %in% c("all",.availMergeMethods,"mergeMethod")){
           #####
           #convert names of internal nodes for plotting
           #####

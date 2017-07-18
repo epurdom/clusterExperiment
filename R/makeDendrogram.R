@@ -49,8 +49,8 @@
 #' data(simData)
 #'
 #' #create a clustering, for 8 clusters (truth was 3)
-#' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl <- clusterSingle(simData, subsample=FALSE,
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #'
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
@@ -63,7 +63,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var","cv","mad"),
-                        ndims=NA,ignoreUnassignedVar=FALSE,unassignedSamples=c("outgroup", "cluster"),...)
+                        ndims=NA,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
@@ -85,7 +85,7 @@ setMethod(
     origX <- assay(x)
     nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
     nVarDims <- ifelse(dimReduce=="var", ndims, NA)
-    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #if else doesn't work with NULL
+    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #ifelse doesn't work with NULL
     transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
     dat <- transObj$x

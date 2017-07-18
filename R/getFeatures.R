@@ -18,9 +18,9 @@
 #' @param isCount logical as to whether input data is count data, in which
 #'   case to perform voom correction to data. See details.
 #' @param ... options to pass to \code{\link{topTable}} or
-#'   \code{\link{topTableF}} (see \code{\link{limma}} package)
-#' @param normalize.method character value, passed to \code{\link{voom}} in
-#'   \code{\link{limma}} package. Only used if \code{countData=TRUE}.
+#'   \code{\link[limma]{topTableF}} (see \code{\link[limma]{limma}} package)
+#' @param normalize.method character value, passed to \code{\link[limma]{voom}} in
+#'   \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the
 #'   default value of \code{\link{voom}}.
 #' @inheritParams clusterContrasts,ClusterExperiment-method
@@ -68,8 +68,8 @@
 #'   should be the default for RNA-Seq data. If the input data is a
 #'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
 #'   to ignore the internally stored transformation function and instead use
-#'   voom with log2(x+0.5). Alternatively, `isCount=FALSE` for a
-#'   `ClusterExperiment` object will cause the DE to be performed with `limma`
+#'   voom with log2(x+0.5). Alternatively, \code{isCount=FALSE} for a
+#'   \code{ClusterExperiment} object will cause the DE to be performed with \code{limma}
 #'   after transforming the data with the stored transformation. Although some
 #'   writing about "voom" seem to suggest that it would be appropriate for
 #'   arbitrary transformations, the authors have cautioned against using it for
@@ -96,12 +96,15 @@
 #' the dendrogram.}
 #' }
 #'
+#' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and Smyth, GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47. http://nar.oxfordjournals.org/content/43/7/e47
+#' @references Law, CW, Chen, Y, Shi, W, and Smyth, GK (2014). Voom: precision weights unlock linear model analysis tools for RNA-seq read counts. Genome Biology 15, R29. http://genomebiology.com/2014/15/2/R29
+#' @references Smyth, G. K. (2004). Linear models and empirical Bayes methods for assessing differential expression in microarray experiments. Statistical Applications in Genetics and Molecular Biology, Volume 3, Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
 #' @examples
 #' data(simData)
 #'
 #' #create a clustering, for 8 clusters (truth was 4)
-#' cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl <- clusterSingle(simData, subsample=FALSE,
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #'
 #' #basic F test, return all, even if not significant:
 #' testF <- getBestFeatures(cl, contrastType="F", number=nrow(simData),

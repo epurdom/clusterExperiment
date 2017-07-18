@@ -10,6 +10,8 @@
   nVarDims = NA, dimReduce = "none", ignoreUnassignedVar = FALSE)
 }
 \arguments{
+\item{_data}{a ClusterExperiment object.}
+
 \item{nPCADims}{Numeric vector giving the number of PC dimensions to use in
 PCA dimensionality reduction. If NA no PCA dimensionality reduction is
 done. nPCADims can also take values between (0,1) to indicate keeping the
@@ -26,8 +28,6 @@ perform, any combination of 'none', 'PCA', 'var', 'cv', and 'mad'. See details.}
 via top feature variability (i.e. 'var','cv','mad') should ignore
 unassigned samples in the primary clustering for calculation of the top
 features.}
-
-\item{x}{a ClusterExperiment object.}
 }
 \value{
 If \code{dimReduce}, \code{nPCADims}, \code{nVarDims} are all of

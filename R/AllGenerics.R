@@ -4,10 +4,27 @@ setGeneric(
         standardGeneric("RSEC")
     }
 )
-
+setGeneric(
+  name = "subsampleClustering",
+  def = function(clusterFunction, ...) {
+    standardGeneric("subsampleClustering")
+  }
+)
+setGeneric(
+  name = "mainClustering",
+  def = function(clusterFunction, ...) {
+    standardGeneric("mainClustering")
+  }
+)
+setGeneric(
+  name = "seqCluster",
+  def = function(clusterFunction, ...) {
+    standardGeneric("seqCluster")
+  }
+)
 setGeneric(
   name = "clusterSingle",
-  def = function(x, diss,  ...) {
+  def = function(x, diss, ...) {
     standardGeneric("clusterSingle")
   }
 )
@@ -343,5 +360,38 @@ setGeneric(
   name = "dimReduction",
   def = function(x, methods, k) {
     standardGeneric("dimReduction")
+  }
+)
+
+setGeneric(
+  name = "getBuiltInFunction",
+  def = function(object, ...) {
+    standardGeneric("getBuiltInFunction")
+  }
+)
+
+
+setGeneric(
+  name = "requiredArgs",
+  def = function(object, ...) {
+    standardGeneric("requiredArgs")
+  }
+)
+setGeneric(
+  name = "algorithmType",
+  def = function(object, ...) {
+    standardGeneric("algorithmType")
+  }
+)
+setGeneric(
+  name = "inputType",
+  def = function(object, ...) {
+    standardGeneric("inputType")
+  }
+)
+setGeneric(
+  name = "getPostProcessingArgs",
+  def = function(clusterFunction, ...) {
+    standardGeneric("getPostProcessingArgs")
   }
 )

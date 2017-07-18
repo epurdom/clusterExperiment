@@ -9,7 +9,7 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var", "cv",
-  "mad"), ndims = NA, ignoreUnassignedVar = FALSE,
+  "mad"), ndims = NA, ignoreUnassignedVar = TRUE,
   unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
@@ -80,8 +80,8 @@ permitted for the \code{@dendro_samples} slot.
 data(simData)
 
 #create a clustering, for 8 clusters (truth was 3)
-cl <- clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-sequential=FALSE, clusterDArgs=list(k=8))
+cl <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)

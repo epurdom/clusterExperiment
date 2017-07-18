@@ -13,6 +13,7 @@ vignette: >
 %\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{clusterExperiment Vignette}
 -->
+
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "clusterExperimentTutorial_cache/", fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
 fig.width=6,fig.height=6,autodep=TRUE,out.width="600px",out.height="600px",
@@ -24,17 +25,17 @@ message=FALSE)
 
 # Introduction {#Intro}
 
-The goal of this package is to encourage the user to try many different clustering algorithms in one package structure. We give tools for running many different clusterings and choices of parameters. We also provide visualization to compare many different clusterings and algorithm tools to find common shared clustering patterns. We implement common post-processing steps unrelated to the specific clustering algorithm (e.g. subsampling the data for stability, finding cluster-specific markers via differential expression, etc). 
+The goal of this package is to encourage the user to try many different clustering algorithms in one package structure, and we provide strategies for creating a unified clustering from these many clustering resutls. We give tools for running many different clusterings and choices of parameters. We also provide visualization to compare many different clusterings and algorithm tools to find common shared clustering patterns. We implement common post-processing steps unrelated to the specific clustering algorithm (e.g. subsampling the data for stability, finding cluster-specific markers via differential expression, etc). 
 
-The other main goal of this package is to implement strategies that we have developed for finding a single robust clustering based on the many clusterings that the user might create by perturbing various parameters of a clustering algorithm. There are several steps to these strategies that we call our standard clustering workflow. Our RSEC algorithm (Resampling-based Sequential Ensemble Clustering) is our preferred realization of this workflow that depends on subsampling on and other ensembl methods to provide robust clusterings, particularly for single-cell sequencing experiments and other large mRNA-Seq experiments.
+The other main goal of this package is to implement strategies that we have developed in the RSEC algorithm (Resampling-based Sequential Ensemble Clustering) for finding a single robust clustering based on the many clusterings that the user might create by perturbing various parameters of a clustering algorithm. There are several steps to these strategies that we call our standard clustering workflow. The `RSEC` function is our preferred realization of this workflow that depends on subsampling on and other ensemble methods to provide robust clusterings, particularly for single-cell sequencing experiments and other large mRNA-Seq experiments.
 
-We also provide a class `clusterExperiment` that inherits from `SummarizedExperiment` to store the many clusterings and related information.  
+We also provide a class `ClusterExperiment` that inherits from `SummarizedExperiment` to store the many clusterings and related information, and a class `ClusterFunction` that encodes a clustering routine in a standardized way so that it can interact with our clustering workflow algorithms.
 
-All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We do not discuss these barebone versions in this tutorial. Instead, we focus on using `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object. See the help pages of each method for more on how to allow for matrix input.
+All of our methods also have a barebones version that allows input of matrices and greater control. This comes at the expense of the user having to manage and keep track of the clusters, input data, transformation of the data, etc. We do not discuss these barebone versions in this tutorial. Instead, we focus on using the `SummarizedExperiment` object as the input and working with the resulting `ClusterExperiment` object. See the help pages of each method for more on how to allow for matrix input.
 
 Although this package was developed with (single-cell) RNA-seq data in mind, its use is not limited to RNA-seq or even to gene expression data. Any dataset characterized by high dimensionality could benefit from the methods implemented here.
 
-## The clustering workflow 
+## The RSEC clustering workflow 
 
 The package encodes many common practices that are shared across clustering algorithms, like subsampling the data, computing silhouette width, sequential clustering procedures, and so forth. It also provides novel strategies that we developed as part of the RSEC algorithm. 
 
@@ -48,19 +49,19 @@ As mentioned above, RSEC is a specific algorithm for creating a clustering that 
 
 The basic premise of RSEC is to find small, robust clusters of samples, and then merge them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of too few clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
 
-RSEC makes many specific choices in this basic workflow, and many steps of this workflow are useful separately from RSEC. For this reason, the `clusterExperiment` package generalizes this workflow so that the user can use these tools with their own choices. We call this generalization the clustering workflow, as oppose to the specific choices set in RSEC. We will introduce this workflow in its general setting, and only ing specific sections devoted to the `RSEC` function will discussed the RSEC algorithm. For this reason, the examples shown here use simple clustering choices in the workflow to save on computational overhead; RSEC uses extensive subsampling techniques and takes much longer to run than is practical for a vignette.
+RSEC makes many specific choices in this basic workflow, while many steps of this workflow are useful for users separately from RSEC. For this reason, the `clusterExperiment` package generalizes this workflow so that the user can follow this workflow with their own choices. We call this generalization the clustering workflow, as oppose to the specific choices set in RSEC. We will introduce this workflow in its general setting, and only in specific sections devoted to the `RSEC` function will discussed the RSEC algorithm. For this reason, the examples shown here use simple clustering choices in the workflow to save on computational overhead; our preferred choices encoded in `RSEC` uses extensive subsampling techniques and takes much longer to run than is practical for a vignette.
 
 Users can also run or add their own clusters to this workflow at different stages. Additional functionality for clustering is available in the `clusterSingle` function, and the user should see the documentation in the help page of that function. <!---The more technical documentation in XXX also describes in more detail additional functionality that is available that allows the user to specify the underlying clustering algorithm and greater control of the underlying parameters. --> However, there is special functionality to ease in quickly visualizing and managing the results of this workflow.
 
 ### The RSEC Routine
 
-The RSEC algorithm (Resampling-based Sequential Ensemble Clustering) was developed specifically for finding robust clusters in single cell sequencing data. It follows our above suggested workflow, but makes specific choices along the way that we find to be advantageous in clustering large mRNA expression datasets, like those of single cell sequencing. It is implemented in the function `RSEC`. This vignette serves to show how the pieces of the workflow operate, and use choices that are shown are not those recommended by RSEC. This is both to show the flexibility of the functions and because RSEC is computationally more time-intensive, since it is based on both resampling, and sequential discovery of clusters. 
+The RSEC algorithm (Resampling-based Sequential Ensemble Clustering) was developed specifically for finding robust clusters in single cell sequencing data. It follows our above suggested workflow, but makes specific choices along the way that we find to be advantageous in clustering large mRNA expression datasets, like those of single cell sequencing. It is implemented in the function `RSEC`. This vignette serves to show how the pieces of the workflow operate, and use choices that are shown are not those recommended by RSEC. We choose to show alternatives to the choices in RSEC  both to show the flexibility of the functions and because RSEC is computationally more time-intensive, since it is based on both resampling, and sequential iteration of subsampling routines to discover. 
 
 ## Finding related features/genes
 
 A common practice after determining clusters is to perform differential gene expression analysis in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are not valid, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters and to perform differential expression analysis.
 
-Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. The `getBestFeatures` function uses the DE analysis provided by the `limma` package. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. 
+Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. The `getBestFeatures` function uses the DE analysis provided by the `limma` package. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package to account for the mean-variance relationship that is common in count data. The tests performed by `getBestFeatures` are specific contrasts between clustering groups; these contrasts can be retrieved without performing the tests using `clusterContrasts`, including in a format appropriate for the `MAST` algorithm.
 
 ## Visualization Tools
 
@@ -68,7 +69,7 @@ We provide a visualization to compare many clusterings of the same data in the f
 
 # Quickstart {#quickstart}
 
-We will go quickly through the standard steps of clustering using the  `clusterExperiment` package, before turning to more details. The standard workflow we envision is the following:
+We will go quickly through the standard workflow steps of clustering using the  `clusterExperiment` package, before turning to more details. The standard workflow we envision is the following:
 
 * `clusterMany` -- run desired clusterings
 * `combineMany` -- get a unified clustering
@@ -76,6 +77,7 @@ We will go quickly through the standard steps of clustering using the  `clusterE
 * `mergeClusters` -- merge together clusters with little DE between their genes.
 * `getBestFeatures` -- Find Features that are differential between the final clustering.
 
+The first four steps (the clustering steps) are done in one function call by `RSEC`, which is the preferred usage. However, to understand the parameters available in `RSEC` it is useful to go through the steps first. 
 
 ## Data example {#data}
 
@@ -124,14 +126,14 @@ assays(se) <- list(normalized_counts=fq)
 
 ## Step 1: Clustering with `clusterMany` {#step1}
 
-`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to designate which options to vary is to give multiple values to an argument. Due to a bug in R, we need to set `getClass.msg=FALSE` or otherwise a slew of annoying warnings will spit out at every call; this should be fixed in the next patch to R. 
+`clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to designate which options to vary is to give multiple values to an argument. 
+<!-- Due to a bug in R, we need to set `getClass.msg=FALSE` or otherwise a slew of annoying warnings will spit out at every call; this should be fixed in the next patch to R.  -->
 
 Here is our call to `clusterMany`:
 
 ```{r clusterMany}
-options(getClass.msg=FALSE) #get rid of annoying messages about cache until fixed internally in R
 library(clusterExperiment)
-ce<-clusterMany(se, clusterFunction="pam",ks=5:10,
+ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
       isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 ```
@@ -146,11 +148,11 @@ In this call to `clusterMany` we made the follow choices about what to vary:
 By giving only a single value to the relative argument, we keep the other possible options fixed, for example: 
 
 * we used 'pam' for all clustering (`clusterFunction`) 
-* we left the default of `minSize` which requires clusters to be of size at least 5; smaller clusters will be ignored and samples assigned to them given the unassigned value of -1.
+* we set `minSizes=5`. This is an argument that allows the user to set a minimum required size  and clusters of size less than that value will be ignored and samples assigned to them given the unassigned value of -1. The default of `1` would mean that this option is not used.
 
 We also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `identity`). 
 
-We can visualize the resulting clusterings using the `plotClusters` command. It is also useful to change the amount of space to allow for the labels of the clusterings, so we will reset the `mar` option in `par` (we also change `axisLine` argument for this reason).
+We can visualize the resulting clusterings using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
 
 ```{r plotClusterEx1}
 defaultMar<-par("mar")
@@ -161,15 +163,15 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", samp
 
 This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been chosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
 
-Notice that we also added the `sampleData` argument in our call, indicating that we also want to visualize some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We chose the columns "Biological_Condition" and "Cluster2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. These are shown at the bottom of the plot.
+Notice that we also added the `sampleData` argument in our call, indicating that we also want to visualize some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We chose the columns "Biological_Condition" and "Cluster2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. The data from `sampleData` are always shown at the bottom of the plot.
 
 Notice that some samples are white. This indicates that they have the value -1, meaning they were not clustered. This is from our choices to require at least 5 samples to make a cluster. 
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
 
-We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow.
+We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow. `whichClusters` can be set to limit to specific clusterings or specific steps in the workflow (so far we only have the 1 step, which is the `clusterMany` step).
 
-The labels shown are those given by `clusterMany` but can be a bit much for plotting. We can assign new labels if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (note we are permanently changing the labels here within the `ClusterExperiment` object). We choose to remove "Features" as being too wordy:
+The labels shown are those given automatically by `clusterMany` but can be a bit much for plotting. We can assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (note we are permanently changing the labels here within the `ClusterExperiment` object). We choose to remove "Features" as being too wordy:
 
 ```{r plotCluster_newLabels}
 cl<-clusterLabels(ce)
@@ -177,7 +179,7 @@ cl<-gsub("Features","",cl)
 clusterLabels(ce)<-cl
 ```
 
-We will also show the clusters in a different order, which corresponds to varying the number of dimensions, rather than k. 
+We will also give to the `whichClusters` argument indices of clusters stored in the `ClusterExperiment` object, which can allow us to show the clusters in a different order. Here we'll pick an order which corresponds to varying the number of dimensions, rather than k. We do this by parsing the labels of the clusters, which we can get with the `clusterLabels` command. 
 
 ```{r plotCluster_newOrder}
 cl<-clusterLabels(ce)
@@ -188,6 +190,26 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters=ord, sampleData=
 ```
 
 We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
+
+We can examine sizes of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
+
+```{r plotBarplot1}
+plotBarplot(ce)
+```
+
+We can also pick a particular cluster.
+
+```{r plotBarplot1.2}
+plotBarplot(ce,whichClusters=c("nPCA=15,k=6" ))
+```
+
+
+We can also compare two specific clusters with a simple barplot using `plotBarplot`. Here we compare the above clusering (PCA with 15 dimensions and k=6), with changing to k=8:
+
+```{r plotBarplot2}
+plotBarplot(ce,whichClusters=c("nPCA=15,k=6" ,"nPCA=15,k=8"))
+```
+
 
 ### The output 
 
@@ -201,21 +223,21 @@ For right now we will only mention the most basic such function that retrieves t
 head(clusterMatrix(ce)[,1:3])
 ```
 
-Because we have changed `clusterLabels` above, these new cluster labels are shown here. Notice that some of the samples are assigned the value of -1. -1 has the significance of encoding samples that are not assigned to any cluster. Why certain samples are not clustered depends on the underlying choices of the clustering routine. In this case, the default in `clusterMany` set the minimum size of a cluster to be 5, which resulted in -1 assignments.
+Because we have changed `clusterLabels` above, these new cluster labels are shown here. Notice that some of the samples are assigned the value of `-1`. `-1` has the significance of encoding samples that are not assigned to any cluster. Why certain samples are not clustered depends on the underlying choices of the clustering routine. In this case, we set  `minSizes=5` in `clusterMany` requiring the minimum size of a cluster to be 5, which resulted in -1 assignments.
 
-Another special value is -2 discussed in the section on [ClusterExperiment objects](#ceobjects)
+Another special value is `-2` discussed in the section on [ClusterExperiment objects](#ceobjects)
 
 ## Step 2: Find a consensus with `combineMany` {#step2}
 
 To find a consensus clustering across the many different clusterings created by `clusterMany` the function `combineMany` can be used next. 
 
 ```{r}
-ce<-combineMany(ce)
+ce<-combineMany(ce,proportion=1)
 ```
 
-Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those from the `clusterMany` call. 
+The `proportion` argument indicates the minimum proportion of times samples should be with other samples in the cluster they are assigned to in order to be clustered together in the final assignment. Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those from the `clusterMany` call. 
 
-If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of the functions in this package. Any clustering that is created is added to existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
+If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of all of these functions in this package. Any clustering function that is applied to an existing `ClusterExperiment` object adds the new clustering to the set of existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
 
 We can again run `plotClusters`, which will now also show the result of `combineMany`:
 
@@ -226,13 +248,13 @@ plotClusters(ce,whichClusters="workflow")
 
 ```
 
-The default result of `combineMany` is not usually a great choice, and certainly isn't helpful here. The clustering from the default `combineMany` leaves most samples unassigned (white in the above plot). This is because the default way of combining is very conservative -- it requires samples to be in the same cluster in *every clustering* to be assigned a cluster. This is quite stringent. We can vary this by setting the `proportion` argument to indicate the minimum proportion of times they should be together with other samples in the cluster they are assigned to.  Explicit details on how `combineMany` makes these clusters are discussed  in the section on [combineMany](#combineMany).
+The choices of `proportion=1` in `combineMany` is not usually a great choice, and certainly isn't helpful here. The clustering from the default `combineMany` leaves most samples unassigned (white in the above plot). This is because we requires samples to be in the same cluster in *every clustering* in order to be assigned to a cluster together. This is quite stringent. We can vary this by setting the `proportion` argument to be lower.  Explicit details on how `combineMany` makes these clusters are discussed  in the section on [combineMany](#combineMany).
 
-So let's label the one we found "combineMany, default" and then create a new one. (Making an informative label will make it easier to keep track of this particular clustering later, particularly if we make multiple calls to the workflow). 
+So let's label the one we found as "combineMany,1" and then create a new one. (Making or changing the label to an informative label will make it easier to keep track of this particular clustering later, particularly if we make multiple calls to the workflow). 
 
 ```{r combineMany_changeLabel}
 wh<-which(clusterLabels(ce)=="combineMany")
-if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,default"
+if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,1"
 ```
 
 Now we'll rerun `combineMany` with `proportion=0.7`. This time, we will give it an informative label upfront in our call to `combineMany`.
@@ -253,7 +275,7 @@ plotClusters(ce,whichClusters="workflow",main="Min. Size=3")
 ```
 
 
-We can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called `combineMany` as long as `proportion` value is <1):
+We can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called `combineMany` provided that `proportion` argument is <1):
 
 ```{r plotCoClustering_quickstart}
 plotCoClustering(ce)
@@ -263,13 +285,13 @@ This visualization can help in determining whether to change the value of `propo
 
 ## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
 
-It is not uncommon in practice to create forty or more clusterings with `clusterMany`, in which case the results of `combineMany` can often still result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
+Once you start varying the parameters, is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case the results of `combineMany` can often result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters, for example with a heatmap, and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
 
-For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `combineMany`. We often display and use both sets of clusters side-by-side (that from `combineMany` and that from `mergeClusters`).
+For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `combineMany`. This is done by the function `mergeClusters`. We often display and use both sets of clusters side-by-side (that from `combineMany` and that from `mergeClusters`).
 
-`mergeClusters` needs a hierarchical clustering of the clusters; it then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the medoids of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it internally. This is because different options in `makeDendrogram` can affect how the clusters are hierarchically ordered, and we want to encourage the user make these choices.
+`mergeClusters` needs a hierarchical clustering of the clusters in order to merge clusters; it then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the medoids of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it automatically internally. This is because different options in `makeDendrogram` can affect how the clusters are hierarchically ordered, and we want to encourage the user make these choices.
 
-As an example, here we use the 500 most variable genes to make the cluster hierarchy.
+As an example, here we use the 500 most variable genes to make the cluster hierarchy (note we can make different choices here than we did in the clustering).
 
 ```{r makeDendrogram}
 ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
@@ -278,22 +300,31 @@ plotDendrogram(ce)
 
 We can see that clusters 1 and 3 are most closely related, at least in the top 500 most variable genes. 
 
+We can see the relative size of the clusters by setting some options in `plotDendrogram`:
+
+```{r makeDendrogram2}
+plotDendrogram(ce,labelType="colorblock",leafType="sample")
+```
+
+
+Notice I don't need to make the dendrogram again, because it's saved in `ce`.
 If we look at the summary of `ce`, it now has 'makeDendrogram' marked as 'Yes'. 
 
 ```{r makeDendrogram_show}
 ce
 ```
 
-
-Now we are ready to actually merge clusters together. We now run `mergeClusters` that will go up this hierarchy and compare the level of differential expression (DE) in each pair. In other words, if we focus on the left side of the tree, DE tests are run, between 1 and 3, and between 6 and 8. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 1 and 3 and/or 6 and 8 will be merged. And so on up the tree.
+Now we are ready to actually merge clusters together. We run `mergeClusters` that will go up this hierarchy and compare the level of differential expression (DE) in each pair. In other words, if we focus on the left side of the tree, DE tests are run, between 1 and 3, and between 6 and 8. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 1 and 3 and/or 6 and 8 will be merged. And so on up the tree.
 
 It is useful to first run `mergeClusters` without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 
 ```{r mergeClustersPlot}
-mergeClusters(ce,mergeMethod="adjP",plot="mergeMethod")
+mergeClusters(ce,mergeMethod="adjP",plotInfo="mergeMethod")
 ```
 
-Then we can decide on a cutoff and visualize the resulting clustering. <!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:--->
+Then we can decide on a cutoff and visualize the resulting clustering. 
+<!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:
+-->
 
 ```{r mergeClusters}
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.01)
@@ -316,7 +347,7 @@ By choosing "dendrogramValue" for the clustering of the samples, we will be show
 
 ## Step 4: Finding Features related to the clusters {#step4}
 
-The last step is to then find features that are different between these clusters, as a start to understanding biological differences in the samples. The function `getBestFeatures` performs tests for differential expression (i.e. different mean levels) between the clusters for each feature. It relies on `limma` to run the differential expression analysis, with `voom` correction if the data are indicated by the user to be counts.
+The last step is to then find features that are different between these clusters, as a start to understanding biological differences in the samples. The function `getBestFeatures` performs tests for differential expression (i.e. different mean levels) between the clusters for each feature. It relies on `limma` [@Smyth:2004gh, @Ritchie:2015fa] to run the differential expression analysis, with `voom` [@Law:2014ff] correction if the data are indicated by the user to be counts.
 
 There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
 
@@ -332,7 +363,7 @@ We can visualize only these significantly different pair-wise features with `plo
 length(pairsAll$Feature)==length(unique(pairsAll$Feature))
 ```
 
-In this case they are not unique. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
+In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
 
 ```{r getBestFeatures_heatmap}
 plotHeatmap(ce, clusterSamplesData="dendrogramValue",
@@ -341,7 +372,7 @@ plotHeatmap(ce, clusterSamplesData="dendrogramValue",
             breaks=.99)
 ```
 
-Notice that the samples clustered into the -1 cluster (i.e. not assigned) are clustered as an outgroup. They can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
+Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram was made with `makeDendrogram`. These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
 
 # ClusterExperiment Objects {#ceobjects}
 
@@ -353,7 +384,7 @@ Typing the name at the control prompt results in a quick summary of the object.
 ce
 ```
 
-This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`.
+This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`. Often, if a function is not given a specific clustering (usually via an option `whichCluster` or `whichClusters`) the "primary" cluster is taken by default. 
 
 There are also additional commands to access the clusterings and their related information (type `help("ClusterExperiment-methods")` for more).
 
@@ -368,13 +399,15 @@ Remember that we made multiple calls to `combineMany`: only the last such call w
 
 **Negative Valued Cluster Assignments** The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. '-2' is for samples that were not included in the original input to the clustering. This is useful if, for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
 
-`clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name (or allow the user to set them). Clusterings might also have no specific label if the user created them. As we've seen, the user can also change these labels.
+`clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name (or allow the user to set them). 
 
 ```{r CEHelperCommands2}
 head(clusterLabels(ce),10)
 ```
 
-`clusterTypes` on the other hand indicates what call made the clustering. Unlike the labels, it is wise to not change the values of `clusterTypes` lightly. 
+As we've seen, the user can also change these labels.
+
+`clusterTypes` on the other hand indicates what call made the clustering. Unlike the labels, it is wise to not change the values of `clusterTypes` unless you are sure of what you are doing. 
 
 ```{r CEHelperCommands3}
 head(clusterTypes(ce),10)
@@ -386,14 +419,14 @@ The information that was in the original `fluidigm` object has also been preserv
 colData(ce)[,1:5]
 ```
 
-Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column or clustering of `clusterMatrix`. 
+Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column or clustering of `clusterMatrix`, that gives colors and names to each cluster within a clustering. 
 
 ```{r CEClusterLengend}
 length(clusterLegend(ce))
 clusterLegend(ce)[1:2]
 ```
 
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. 
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. 
 
 
 # Visualizing the data {#visual}
@@ -460,7 +493,7 @@ plotClusters(ce_temp, sampleData=c("Biological_Condition","Cluster2"),
 ```
 
 ## Heatmap with the clusters {#plotHeatmap}
-There is also a default heatmap command for a ClusterExperiment object that we used in the Quick Start. By default it clusters on the most variable features (after transforming the data) and shows the primaryCluster alongside the data. The primaryCluster now that we've run the workflow will be set as that from the mergeClusters step. 
+There is also a default heatmap command for a `ClusterExperiment` object that we used in the Quick Start. By default it clusters on the most variable features (after transforming the data) and shows the `primaryCluster` alongside the data. The `primaryCluster`, now that we've run the workflow, has been set as that from the last mergeClusters step. 
 
 ```{r plotHeatmap_Ex1}
 par(mfrow=c(1,1))
@@ -473,6 +506,7 @@ The `plotHeatmap` command has numerous options, in addition to those of `aheatma
 * Easy inclusion of clustering information or sample information, based on the ClusterExperiment object.
 * Additional methods for ordering/clustering the samples that makes use of the clustering information.
 * Use of separate input data for clustering and for visualization.
+* Setting the breaks for better visualization
 
 ### Displaying clustering or sample information
 
@@ -523,52 +557,142 @@ While count data is a common type of data, it is also common that the input data
 
 In this case, it can be convenient to have the *visualization* of the data (i.e. the color scale), be based on a count scale that is interpretable, even while the clustering is done based on the normalized data. This is possible by giving a new matrix of values to the argument `visualizeData`. In this case, the color scale (and clustering of the features) is based on the input `visualizeData` matrix, but all clustering of the samples is done on the internal data in the `ClusterExperiment` object. 
 
+### Setting the breaks
+
+Usually, the breaks that determine the colors of the heatmap are evenly spaced across the range of the data in the entire matrix. When there are a few outlier samples or genes, they can dominate the color and make it impossible to visualize the bulk of the data. 
+
+For this reason, the argument `breaks` in `plotHeatmap` allows for a value between 0 and 1, to indicate that the range of colors should be chosen as equally spaced between certain quantiles of the data. For example, if `breaks=0.99`, the range of equally spaced breaks will stop at the top 0.99 quantile of the data and anything above that value gets assigned the single extreme color. If there is negative data in the matrix, then it also will use the lower quantile of the data to stop the range of equally spaced breaks (see `?setBreaks`)
+
+Here 
+
+
+```{r plotHeatmap_break99}
+plotHeatmap(ce,clusterSamplesData="primaryCluster",
+            whichClusters="primaryCluster", breaks=0.99,
+            main="Heatmap with clusterMany, breaks=0.99",annLegend=FALSE)
+```
+
+```{r plotHeatmap_break95}
+plotHeatmap(ce,clusterSamplesData="primaryCluster",
+            whichClusters="primaryCluster", breaks=0.95,
+            main="Heatmap with clusterMany, breaks=0.95",annLegend=FALSE)
+```
+
+The function `setBreaks` which is called internally by `plotHeatmap`  is also a stand-alone function that the user can call directly to have greater flexibility in getting breaks for the heatmap. For example it allows the user to specify that the breaks should be symmetric around 0. We also provide some default color spectrum that can be better for different settings or symmetric data around 0 -- see `?showHeatmapPalettes`
 
 # The clustering workflow {#workflow}
 
 We will now go into more detail about important options for the main parts of the clustering workflow.
 
 ## clusterMany {#clusterMany}
-
-### Overview of the implemented clustering procedures
 In the quick start section we picked some simple and familiar clustering options that would run quickly and needed little explanation. However, our workflow generally assumes more complex options and more parameter variations are tried. Before getting into the specific options of `clusterMany`, let us first describe some of these more complicated setups, since many of the arguments of `clusterMany` depend on understanding them. 
 
-**Clustering Algorithms (`clusterD`):** Clustering algorithms generally start with a particular predefined distance or dissimilarity between the samples, usually encoded in a $n x n$ matrix, $D$. In our package, we consider only such clustering algorithms. The input could also be similarities, though we will continue to call such a matrix $D$. 
+### Base clustering algorithms and the  `ClusterFunction` class 
 
-The simplest scenario is a simple calculation of $D$ and then a clustering of $D$, usually dependent on particular parameters.  In this package we try to group together algorithms that cluster $D$ based on common parameters and operations that can be done. Currently there are two "types" of algorithms we consider, which we call type "K" and "01". The help page of `clusterD` documents these choices more fully, but we give an overview here. Many of the parameters that are allowed to vary in `clusterMany` refer to parameters for the clustering of the $D$ matrix, either for "K" or "01" type algorithms.
+This package is meant to be able to use and compare different clustering routines. However, the required input, arguments, etc. of different clustering algorithms varies greatly. We create the `ClusterFunction` class so that we can take ensure that the necessary information to fit into our workflow is well defined, and otherwise the other details of the algorithm can be ignored. In general, the user will not need to know the details of this class, since they will use built-in functions provided by the package which can be accessed by character values. To see the set of character values that correspond to built in functions, 
 
- The "K" algorithms are so called because their main parameter requirement is that the user specifies the number of clusters ($K$) to be created. They assume the input $D$ are dissimilarities, and depending on the algorithm, may have additional expectations. "pam" and "kmeans" are examples of such types of algorithms. 
+```{r builtInFunctions}
+listBuiltInFunctions()
+```
 
-The "01" algorithms are so named because the algorithm assumes that the input $D$ consists of *similarities* between samples and that the similarities encoded in $D$ are on a scale of 0-1. They use this fact to make the primary user-specified parameter be not the number of final clusters, but a measure $\alpha$ of how dissimilar samples in the same cluster can be (on a scale of 0-1). Given $\alpha$, the algorithm then implements a method to then determine the clusters (so $\alpha$ implicitly determines $K$). These methods rely on the assumption that because the 0-1 scale has special significance, the user will be able to make an determination more easily as to the level of dissimilarity allowed in a true cluster, rather than predetermine the number of clusters $K$. The current 01 methods are "tight", "hierarchical01" and "pam". 
+If you are interested in implementing your own `ClusterFunction` object see the documentation of the `ClusterFunction` class.
+
+There are some important features of any clustering algorithm that are encoded in the `ClusterFunction` object for which it is important to understand because they affect  which algorithms can be used when. 
+
+**`inputType`** The type of input the algorithm expects, which can be either an $p x n$ matrix of features, in which case the argument `x` gives that data, or a $n x n$ matrix of dissimilarities, in which case the argument `diss`. Some algorithms can accept either type. To determine the `inputType` of an algorithm(s),
+
+```{r getInputType}
+inputType(c("kmeans","pam","hierarchicalK"))
+```
+
+**`algorithmType`** we group together algorithms that cluster based on common strategies that affect how we can use them in our workflow. Currently there are two "types" of algorithms we consider, which we call type "K" and "01". We can determine the type of a builtin function by the following:
+
+```{r getAlgorithmType}
+algorithmType(c("kmeans","hierarchicalK","hierarchical01"))
+```
+
+The "K" algorithms are so called because their main parameter requirement is that the user specifies the number of clusters ($K$) to be created and require an input of `k` to the clustering function. Built in 'K' algorithms are:
+
+```{r builtInKFunctions}
+listBuiltInTypeK()
+```
+ The "01" algorithms are so named because the algorithm assumes that the input is a *disimilarities* between samples and that the similarities encoded in $D$ are on a scale of 0-1. The clustering functions should use this fact to make the primary user-specified parameter be not the number of final clusters, but a measure $\alpha$ of how dissimilar samples in the same cluster can be (on a scale of 0-1). Given $\alpha$, the algorithm then implements a method to then determine the clusters (so $\alpha$ implicitly determines $K$). These methods rely on the assumption that because the 0-1 scale has special significance, the user will be able to make an determination more easily as to the level of dissimilarity allowed in a true cluster, rather than predetermine the number of clusters $K$. The current 01 methods are:
+ 
+```{r builtIn01Functions}
+listBuiltInType01()
+```
+
+**`requiredArgs` The different algorithm types correspond to requiring different input types (`k` versus `alpha`). This is usually sorted out by `clusterMany`, which will only dispatch the appropriate one. Clustering functions can also have additional required arguments. See below for more discussion about how these arguments can be passed along to `clusterMany` or `RSEC`. 
+
+To see all of the required arguments of a function,
+
+```{r requiredArgs}
+requiredArgs(c("hierarchical01","hierarchicalK"))
+```
 
 
+### Internal clustering procedures
+`clusterMany` iteratively calls a function `clusterSingle` over the collection of parameters. `clusterSingle` is the clustering workhorse, and may be used by the user who wants more fine-grained control, see documentation of `clusterSingle`.
 
-**Subsampling** In addition to the basic clustering algorithms on a matrix $D$, we also implement many other common cluster processing steps that are relevant to the result of the clustering. We have already seen such an example with dimensionality reduction, where the input $D$ is determined based on different input data. A more significant processing that we perform is calculation of a dissimilarity matrix $D$ not by a distance on the vector of data, but by subsampling and clustering of the subsampled data. The resulting $D$ matrix is a matrix of co-clustering percentages. Each entry is a percentage of subsamples where the two samples shared a clustering over the many subsamplings of the data (there are slight variations as how this  can be calculated, see help pages of `subsampleClustering` ). Note that this implies there actually two different clustering algorithms (and sets of corresponding parameters) -- one for the clustering on the subsampled data, and one for the clustering of the resulting $D$ of the percentage of coClustering of samples. `clusterMany` focuses on varying parameters related to the clustering of $D$, and generally assumes that the underlying clustering on the subsampled data is simple (e.g. "pam"). (The underlying clustering machinery in our package is performed by a function `clusterSingle` which is not discussed in this tutorial, but can be called explicitly for fine-grained control over all of the features ). The subsampling option is computationally expensive, and when coupled with comparing many parameters, does result in a lengthy evaluation of `clusterMany`. However, we recommend it as one of the most useful methods for getting stable clustering results.
+Within each call of `clusterSingle`, there are three possible steps, depending on the value of `subsample` and `sequential`. If these are both false, then just a basic clustering routine is done on the input data (called the "main" clustering). If `subsample=TRUE`, there is first a step that subsamples and clusters the subsamples to calculate a co-occurance matrix, and that is used as the input for the main clustering step. If `sequential=TRUE` this process is iterated over and over again to iteratively select the best clusters (see `?seqCluster` for a detailed description). Each of these steps has a function that goes with it, but that should not generally be called by the user. However, the documentation of these functions can be useful. 
 
-**Sequential Detection of Clusters** Another complicated addition to the clustering that requires additional explanation is the implementation of sequential clustering. This refers to clustering of the data, then removing the "best" cluster, and then re-clustering the remaining samples, and then continuing this iteration until all samples are clustered (or the algorithm in some other way calls a stop). Such sequential clustering can often be convenient when there is very dominant cluster, for example, that is far away from the other mass of data. Removing samples in these clusters and resampling can sometimes be more productive and result in results more robust to the choice of samples. A particular implementation of such a sequential method, based upon [@tseng2005], is implemented in the `clusterExperiment` package. Because of the iterative nature of this process, there are many possible parameters (see `help(seqCluster)`). `clusterMany` does not allow variation of very many of these parameters, but instead just has the choice of running the sequential clustering or not. Sequential clustering can also be quite computationally expensive, particularly when paired with subsampling to determine $D$ at each step of the iteration.
+In particular, arguments to these functions that are not set by `clusterMany` can be passed via *named* lists: `subsampleArgs`, `mainClusterArgs`, and `seqArgs`. Some of the arguments to these steps can be varied in `clusterMany`, but more esoteric ones should be sent to these arguments of `clusterMany` (and they will be fixed for parameter combinations tried in `clusterMany`).
+
+**Main Clustering Step** (`mainClustering`) The main clustering step described above is done by the function `mainClustering`.  In addition to the basic clustering algorithms on the input data, we also implement many other common cluster processing steps that are relevant to the result of the clustering. We have already seen such an example with dimensionality reduction, where the input $D$ is determined based on different input data. Many of the arguments to `mainClustering` are arguments to `clusterMany` as well so that `mainClusterArgs` is usually not needed. The main exception would be to send more esoteric arguments to the underlying clustering function called in the main clustering step. The syntax for this would be to give a nested list to the argument `mainClusterArgs`
+
+```{r mainClusterArgsSyntax,eval=FALSE}
+clusterMany(x,clusterFunction="hierarchicalK", ... , mainClusterArgs=list(clusterArgs=list(method="single") )) 
+```
+Here we change the argument `method` in the clustering function `hclust`  called by the `hierarchicalK` function to `single`. 
+
+**Subsampling** (`subsampleClustering`)  A more significant processing that can be coupled with any clustering algorithm is to continually by subsample the data  and cluster the subsampled data. This creates a $n x n$ matrix $S$ that is a matrix of co-clustering percentages -- how many times two samples co-clustered together over the subsamples (there are slight variations as how this  can be calculated, see help pages of `subsampleClustering` ). This does not itself give a clustering, but the resulting $S$ matrix can then form the basis for clustering the samples. Specifically, the matrix $D=1-S$ is then given as input to the main clustering step described above. The subsampling option is computationally expensive, and when coupled with comparing many parameters, does result in a lengthy evaluation of `clusterMany`. However, we recommend it as one of the most useful methods for getting stable clustering results.
+
+Note that the juxtaposition of these two steps (the subsampling and then feeding the results to the main clustering function) implies there actually two different possible clustering algorithms (and sets of corresponding parameters) -- one for the clustering on the subsampled data, and one for the clustering of the resulting $D$ based on the percentage of coClustering of samples. This brings up a restriction on the clustering function in the main clustering step -- it needs to be able to handle input that is a dissimilarity (`inputType` is either `diss` or `either`).  Furthermore, the user might want to set  clustering function and corresponding parameters separately for the two steps. The way that `clusterMany` handles this is that the main arguments of `clusterMany` focus on varying the parameters related to the main clustering step (the clustering of $D$ after subsampling). For this reason, the argument `clusterFunction` varies the clustering function used by the main clustering step, not the subsampling step. The clustering function of the subsampling step can be specified by the user via `subsampleArgs`, but in this case it is set for *all* calls of `clusterMany` and does not vary. Alternatively, if the user doesn't specify the `clusterFunction` in `subsampleArgs` then the default is to use `clusterFunction` of the main clustering step along with any required arguments given by the user for that function (there are some cases where using the `clusterFunction` of the main step is not possible for the subsampling step, in which case the default is to use "pam").   
+
+More generally, since few of the arguments to `subsampleClustering` are allowed to be varied by the direct arguments to  `clusterMany`,  it is also more common to want to change these arguments via the argument `subsampleArgs`. Examples might be `resamp.num` (the number of subsamples to draw) or `samp.p` (the proportion of samples to draw in each subsample) -- see `?subsampleClustering` for a full documentation of the possible arguments. In addition, there are arguments to be passed to the underlying clustering function; like for `mainClustering`, these arguments would be a nested list to the argument `subsampleArgs`. 
+
+An example of a syntax that sets the arguments for `subsampleClustering` would be:
+
+```{r subsampleArgsSyntax,eval=FALSE}
+clusterMany(x,..., subsampleArgs=list(resamp.num=100,samp.p=0.5,clusterFunction="hiearchicalK", clusterArgs=list(method="single") )) 
+```
+
+
+**Sequential Detection of Clusters** Another complicated addition that can be added to the main clustering step  is the implementation of sequential clustering. This refers to clustering of the data, then removing the "best" cluster, and then re-clustering the remaining samples, and then continuing this iteration until all samples are clustered (or the algorithm in some other way calls a stop).  Such sequential clustering can often be convenient when there is very dominant cluster, for example, that is far away from the other mass of data. Removing samples in these clusters and resampling can sometimes be more productive and result in a clustering more robust to the choice of samples. A particular implementation of such a sequential method, based upon [@tseng2005], is implemented in the `clusterExperiment` package when the option `sequential=TRUE` is chosen (see `?seqCluster` for documentation of how the iteration is done). Sequential clustering can also be quite computationally expensive, particularly when paired with subsampling to determine $D$ at each step of the iteration.
+
+ Because of the iterative nature of the sequential step, there are many possible parameters (see `?seqCluster`).   Like subsample clustering, `clusterMany` does not allow variation of very many of these parameters, but they can be set via passing arguments in a named list to `seqArgs`. An example of a syntax that sets the arguments for `seqCluster` would be:
+
+```{r seqArgsSyntax,eval=FALSE}
+clusterMany(x,..., seqArgs=list( remain.n=10)) 
+```
+
+This code changes the `remain.n` option of the sequential step, which governs when the sequential step stops because there are not enough samples remaining.
+
 
 ### Arguments of `clusterMany`
-Now that we've explained the underlying architecture of the clustering provided in the package, we discuss the parameters that can be varied in `clusterMany`. There are additional arguments available for `clusterMany` but right now we focus on only the ones that can be given multiple options. Recall that arguments in `clusterMany` that take on multiple values mean that the combinations of all the multiple valued arguments will be given as input for a clustering routine. 
+Now that we've explained the underlying architecture of the clustering provided in the package, and how to set the arguments that can't be varied, we discuss the parameters that *can* be varied in `clusterMany`. (There are a few additional arguments available for `clusterMany` that govern how `clusterMany` works, but right now we focus on only the ones that can be given multiple options). 
+
+Recall that arguments in `clusterMany` that take on multiple values mean that the combinations of all the multiple valued arguments will be given as input for a clustering routine. 
 
 * `sequential` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the sequential strategy should be implemented or not. 
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
-* `clusterFunction` The clustering functions to be tried. If `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the co-clustering matrix $D$ created from subsampling the data (where pam clustering is used on the subsampled data). Otherwise, `clusterFunction` is the clustering method that will be used on  `dist(t(x))`
-* `ks` The argument 'ks' is interpreted differently for different choices of the other parameters. If `sequential=TRUE` is part of the combination, `ks` defines the argument `k0` of sequential clustering (see `help(seqCluster)`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set $K$ of both the clustering of subsampled data and the actual clustering of the data (if a $K$ needs to be set, i.e. a type "K" algorithm). When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in `help(clusterMany)` for more).
-* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "var", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values as we have seen):
+* `clusterFunction` The clustering functions to be tried in the *main clustering step*. Recall if `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the matrix $D$ created from subsampling the data. Otherwise, `clusterFunction` is the clustering method that will be used directly on the data. 
+* `ks` The argument 'ks' is interpreted differently for different choices of the other parameters *and can differ from between parameter combinations!*. If `sequential=TRUE` is part of the parameter combination, `ks` defines the argument `k0` of sequential clustering (see `?seqCluster`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set `k` of both the main clustering step (and by default that of the subsampled data), and is only relevant if `clusterFunction` is of type "K". When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in the documentation of `clusterMany` for more).
+* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "var", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
     * `nVarDims`
     * `nPCADims`
-* `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the `dist` function, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
-* `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `clusterD` part of clustering). 
+* `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the standard R function `dist`, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
+* `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `mainClustering` part of clustering). 
 * `alphas` These are the $\alpha$ parameters for "01" clustering techniques; these values are only relevant if one of the `clusterFunction` values is a "01" clustering algorithm. The values given to `alphas` should be between 0 and 1, with smaller values indicating greater similarity required between the clusters. 
 * `betas` These are the $\beta$ parameters for sequential clustering; these values are only relevant if `sequential=TRUE` and determine the level of stability required between changes in the parameters to determine that a cluster is stable.
 * `findBestK` This option is for "K" clustering techniques, and indicates that $K$ should be chosen automatically as the $K$ that gives the largest silhouette distance between clusters.
-* `removeSil` A logical value as to whether samples with small silhouette distance to their assigned cluster are "removed", in the sense that they are not given their original cluster assignment but instead assigned -1. This option is for "K" clustering techniques as a method of removing poorly clustered samples (the "01" techniques used by `clusterMany` generally do this intrinsically as part of the algorithm). 
+* `removeSil` A logical value as to whether samples with small silhouette distance to their assigned cluster are "removed", in the sense that they are not given their original cluster assignment but instead assigned -1. This option is for "K" clustering techniques as a method of removing poorly clustered samples. 
   * `silCutoff` If `removeSil` is TRUE, then `silCutoff` determines the cutoff on silhouette distance for unassigning the sample. 
 
-`clusterMany` tries to have generally simple interface, and for this reason makes choices about what is meant by certain combinations. For example, in combinations where `findBestK=TRUE`, `ks=2:10` is taken to mean that the clustering should find the best $k$ out of the range of 2-10. However, in other combinations `ks` might indicate the specific number of clusters, $k$, that should be found. For parameter combinations that are not what is desired, the user should consider making direct calls to `clusterSingle` where all of these options (and many more) can be explicitly called. 
+`clusterMany` tries to have generally simple interface, and for this reason makes choices about what is meant by certain combinations of parameters. For example, in combinations where `findBestK=TRUE`, `ks=2:10` is taken to mean that the clustering should find the best $k$ out of the range of 2-10. However, in other parameter combinations where `findBestK=FALSE` the same `ks` might indicate the specific number of clusters, $K$, that should be found. To see the parameter choices that will be run, the user can set `run=FALSE` and the output will be a matrix of the parameter values indicated by the choices of the user. For parameter combinations that are not what is desired, the user should consider making direct calls to `clusterSingle` where all of these options combinations (and many more) can be explicitly called. 
 
 
-Other parameters for the clustering are kept fixed. As described above, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `clusterDArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the clustering of $D$, the creation of $D$ via subsampling, and the sequential clustering process, respectively). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
+Other parameters for the clustering are kept fixed. As described above, there are many more possible parameters in play than are considered in `clusterMany`. These parameters can be set via the arguments `mainClusterArgs`, `subsampleArgs` and `seqArgs`. These arguments correspond to the different processes described above (the main clustering step, the creation of $D$ to be clustered via subsampling, and the sequential clustering process, respectively). These arguments take a list of arguments that are sent directly to `clusterSingle`. However, these arguments may be overridden by the interpretation of `clusterMany` of how different combinations interact; again for complete control direct calls to `clusterSingle` are necessary.
 
 
 ```{r tableArguments, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
@@ -577,19 +701,19 @@ tabl <- "
 Argument| Dependencies |  Passed to | Argument passed to
 ---------------|-----------------|:-------------:|------:|
 ks             | sequential=TRUE |  seqCluster   |  k0 
--    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | clusterD | k
+-    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | mainClustering | k
 -              | sequential=FALSE, findBestK=FALSE, subsample=TRUE | subsampleClustering | k
--               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | clusterD | kRange
+-               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | mainClustering | kRange
 dimReduce      | none            | transform     | dimReduce
 nVarDims       | dimReduce in 'mad','cv','var' | transform | nVarDims
 nPCADims       | dimReduce='PCA' | transform     | nPCADims
-clusterFunction| none            | clusterD      | clusterFunction    
-minSizes       | none            | clusterD      | minSize
-distFunction   | subsample=FALSE | clusterD      | distFunction
-alphas         | clusterFunction of type '01'| clusterD | alpha
-findBestK      | clusterFunction of type 'K' | clusterD | findBestK
-removeSil      | clusterFunction of type 'K' | clusterD | removeSil
-silCutoff      | clusterFunction of type 'K' | clusterD | silCutoff
+clusterFunction| none            | mainClustering      | clusterFunction    
+minSizes       | none            | mainClustering      | minSize
+distFunction   | subsample=FALSE | mainClustering      | distFunction
+alphas         | clusterFunction of type '01'| mainClustering | alpha
+findBestK      | clusterFunction of type 'K' | mainClustering | findBestK
+removeSil      | clusterFunction of type 'K' | mainClustering | removeSil
+silCutoff      | clusterFunction of type 'K' | mainClustering | silCutoff
 betas          | sequential=TRUE | seqCluster    | beta
 "
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
@@ -608,18 +732,20 @@ spearDist<-function(x){(1-cor(t(x),method="spearman"))/2}
 
 These distances are defined so as to give distance of 0 between samples with correlation 1, and distance of 1 for correlation -1.
 
-We will also compare using different algorithms for clustering. Since we chose distances between 0-1, we can use any algorithm. Currently, `clusterMany` requires that the distances work with all of the `clusterFunction` choices given. Since some of the `clusterFunction` algorithms require a distance matrix between 0-1, this means we can only compare all of the algorithms when the distance is a 0-1 distance. (Future versions will probably try to create a work around so that the algorithm just skips algorithms that don't match the distance).
+We will also compare using different algorithms for clustering. Currently, `clusterMany` requires that the distances work with all of the `clusterFunction` choices given. Since some of the `clusterFunction` algorithms require a distance matrix between 0-1, this means we can only compare all of the algorithms when the distance is a 0-1 distance. (Future versions may try to create a work around so that the algorithm just skips algorithms that don't match the distance). Since the distances we defined are between 0-1, however, we can use any algorithm that takes dissimilarities as input. 
 
-**Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values $\alpha$ for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with  high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). We show an example of the $D$ matrix from subsampling; we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly, which gives the output $D$ from the sampling in the "coClustering" slot of `ce`. Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
+**Note on 0-1 clustering when `subsample=FALSE`** We would note that the default values of $\alpha$ in `clusterMany` and `RSEC` for the 0-1 clustering were set with the distance $D$ the result of subsampling or other concensus summary in mind. In generally, subsampling creates a $D$ matrix with high similarity for many samples who share a cluster (the proportion of times samples are seen together for well clustered samples can easily be in the .8-.95 range, or even exactly 1). For this reason the default $\alpha$ is 0.1 which requires distances between samples in the 0.1 range or less (i.e. a similarity in the range of 0.9 or more). 
+
+To illustrate this point, we show an example of the $D$ matrix from subsampling. To do this we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly; it gives the output $D$ from the sampling in the "coClustering" slot of `ce` when we set `replaceCoCluster=TRUE` (and therefore we save it as a separate object, so that it doesn't write over the existing "coClustering" slot in `ce`). Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,clusterFunction="hierarchical01",subsampleArgs=list(k=8),clusterLabel="subsamplingCluster",clusterDArgs=list(minSize=5))
+ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
-We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (with size greater than 5).
+We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (at leastwith size greater than 5).
 
-The distances based on correlation calculated directly on the data, such as we created above, are often used for clustering expression data. But they are unlikely to have distances as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
+However, the distances based on correlation calculated directly on the data, such as we created above, are also often used for clustering expression data directly (i.e. without the subsampling step). But they are unlikely to have dissimilarities as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
 
 ```{r visualizeSpearmanDist}
 dSp<-spearDist(t(transform(ce,dimReduce="mad",nVarDims=1000)))
@@ -645,7 +771,7 @@ par(mar=c(1.1,15.1,1.1,1.1))
 plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 ```
 
-Notice that using the 01 methods did not give relevant results
+Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
 ### Dealing with large numbers of clusterings
 
@@ -671,11 +797,11 @@ We can set `ncores` argument to have these clusterings done in parallel. If `nco
 We can now run this, either by giving the information in `checkParam$paramMatrix` to clusterMany argument `paramMatrix`, or by recalling the function from scratch. If the user has not changed `paramMatrix`, there's no advantage in giving `paramMatrix` to `clusterMany` rather than just recalling `clusterMany`, but we'll do it here just to show how it is done. 
 
 ```{r clusterManyCheckParam2,eval=FALSE}
-# ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, clusterDArgs=checkParam$clusterDArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
+# ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, mainClusterArgs=checkParam$mainClusterArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
 ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
 
-Note that we also provided in the above call the additional arguments `clusterDArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
+Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
 -->
 
 ## Create a unified cluster from many clusters with `combineMany` {#combineMany}
@@ -747,11 +873,12 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
+To vary the display, we'll show the display where we put blocks of color instead of names (`labelType="colorblock"`) and we also decide to show the leaves as the individual samples instead of the clusters (`leafType="sample"`); the combination of which gives us color blocks equal to the size of the clusterings. 
 
 ```{r remakeMakeDendrogram}
 ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
                    whichCluster="combineMany,final")
-plotDendrogram(ce)
+plotDendrogram(ce,leafType="sample",labelType="colorblock")
 ```
 
 Note that the clusterType of this clustering is not "combineMany", but "combineMany.x", where "x" indicates what iteration it was:
@@ -771,7 +898,7 @@ show(ce)
 ### Merging clusters with little differential expression {#mergeClusters}
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
-Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate threshold (using the Benjamini-Hochberg procedure). However, other methods are also implemented (see the help of `mergeClusters`). 
+Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate threshold (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see the help of `mergeClusters`). 
 
 Notice that `mergeClusters` will always run based on the clustering that made the currently existing dendrogram. So it is always good to check that it is what we expect. 
 
@@ -779,10 +906,10 @@ Notice that `mergeClusters` will always run based on the clustering that made th
 ce
 ```
 
-`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotType="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
+`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
 
 ```{r mergeClusters_plot,fig.width=12}
-mergeClusters(ce,mergeMethod="none",plotType="all")
+mergeClusters(ce,mergeMethod="none",plotInfo="all")
 ```
 
 Now we can pick a cutoff. We'll give it a label to keep it separate from the previous run we had made.
@@ -800,6 +927,8 @@ ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB",
                   clusterLabel="mergeClusters,v3")
 ce
 ```
+
+Note, we can turn off plotting completely by setting `plot=FALSE`.
 
 ## Keeping track of and rerunning elements of the workflow {#rerun}
 
@@ -860,7 +989,7 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 The clustering workflow described so far is a generalization of our RSEC algorithm for single-cell sequencing data. The RSEC algorithm is particularly oriented around using subsampling and sequential discovery of clusters to find very robust signals. 
 
-In particular, `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE`. Furthermore, the only clustering functions that are allowed are the "01" types ("hierarchical01" and "tight"). This removes a number of options from clusterMany, making for a slightly reduced set of commands. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all arguments available to be set. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
+In particular, `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE`. Furthermore, the only clustering functions that are allowed are the "01" types (currently "hierarchical01" and "tight"). This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all arguments available to be set. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
 
 We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
 
@@ -878,7 +1007,7 @@ tabl <- "
 - |  | alphas | |
 - |  | betas | |
 - |  | minSizes | |
--  | | clusterDArgs | |
+-  | | mainClusterArgs | |
 -  | | subsampleArgs | |
 - |  | seqArgs | |
 - |  | run | |
@@ -893,7 +1022,7 @@ tabl <- "
 -  | ignoreUnassignedVar=TRUE | dendroReduce      | dimReduce | 
 -  | unassignedSamples= *(default)* | dendroNDims       | ndims |  
 *mergeClusters*  | |  | |
--  | plotType='none' | mergeMethod     | | 
+-  | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 
 -  |  | isCount | | used for both mergeMethod and clusterMany 
 "
@@ -907,7 +1036,7 @@ cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 
 The function `getBestFeatures` finds features in the data that are strongly differentiated between the clusters of a given clustering. Finding the best features is generally the last step in the workflow, once a final clustering has been decided upon, though as we have seen it is also called internally in `mergeClusters` to decide between which clusters to merge together. 
 
-The function `getBestFeatures` calls `limma` on input data to determine the gene features most associated with a particular clustering.  `getBestFeatures` picks the `primaryCluster` of a `ClusterExperiment` object as the clustering to use to find features. If the standard workflow is followed, this will be the last completed step (usually the result of `mergeClusters` or manually choosing a final cluster via `setToFinal`). The primaryCluster can of course be changed by setting `primaryClusterIndex` to point to a different clustering. 
+The function `getBestFeatures` calls `limma` [@Smyth:2004gh, @Ritchie:2015fa] on input data to determine the gene features most associated with a particular clustering.  `getBestFeatures` picks the `primaryCluster` of a `ClusterExperiment` object as the clustering to use to find features. If the standard workflow is followed, this will be the last completed step (usually the result of `mergeClusters` or manually choosing a final cluster via `setToFinal`). The primaryCluster can of course be changed by setting `primaryClusterIndex` to point to a different clustering. 
 
 Since our most recent clustering (the one determined by our `setToFinal`) only has 2 clusterings, we are going to reset the primary clustering to be our result from `combineMany`, with the label "mergeClusters,v3". This will be better for explaining the functionality of the `getBestFeatures` method.
 
@@ -990,7 +1119,7 @@ plotDendrogram(ce,show.node.label=TRUE)
 
 ## Analysis for count and other RNASeq data
 
-The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom` correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
+The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom`[@Law:2014ff] correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
 
 If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
@@ -998,7 +1127,7 @@ Unlike edgeR or DESeq, the voom correction does not explicitly require a count m
 
 ## Piping into other DE routines
 
-Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq or MAST [@Finak:2015id] for single-cell sequencing. 
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
 
 Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
 

@@ -4,10 +4,10 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x = NULL, diss = NULL, k0, clusterFunction = c("tight",
-  "hierarchical01", "pam", "hierarchicalK"), subsample = TRUE, beta = 0.7,
-  top.can = 15, remain.n = 30, k.min = 3, k.max = k0 + 10,
-  verbose = TRUE, subsampleArgs = NULL, clusterDArgs = NULL)
+seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
+  top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
+  verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
+  checkDiss = TRUE)
 }
 \arguments{
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in
@@ -19,22 +19,19 @@ on which to run the clustering}
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
 
-\item{clusterFunction}{passed to clusterDMat option 'clusterFunction' to
-indicate method of clustering, see \code{\link{clusterD}}.}
-
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}} to get the distance matrix at each 
 iteration; otherwise the distance matrix is set by arguments to
-\code{\link{clusterD}}.}
+\code{\link{mainClustering}}.}
 
 \item{beta}{value between 0 and 1 to decide how stable clustership membership
 has to be before 'finding' and removing the cluster.}
 
-\item{top.can}{only the top.can clusters from \code{\link{clusterD}} (ranked
-by 'orderBy' argument given to \code{\link{clusterD}}) will be compared
+\item{top.can}{only the top.can clusters from \code{\link{mainClustering}} (ranked
+by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
 pairwise for stability. Making this very big will effectively remove this
 parameter and all pairwise comparisons of all clusters found will be
-considered. This might result in smaller clusters being found. Current
+considered. This might result in smaller clusters being found. The current
 default is fairly large, so probably will have little effect.}
 
 \item{remain.n}{when only this number of samples are left (i.e. not yet
@@ -52,9 +49,11 @@ progress.}
 \item{subsampleArgs}{list of arguments to be passed to
 \code{\link{subsampleClustering}}.}
 
-\item{clusterDArgs}{list of arguments to be passed to
-\code{\link{clusterD}}(which can include arguments to be passed to
-\code{\link{cluster01}} or \code{\link{clusterK}}).}
+\item{mainClusterArgs}{list of arguments to be passed to
+\code{\link{mainClustering}}).}
+
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
+valid.}
 }
 \value{
 A list with values
@@ -80,92 +79,90 @@ routines, and sequentially remove best clusters, and iterate to find
 clusters.
 }
 \details{
-This code is adapted from the code of the tightClust
- package of Tseng and Wong
+\code{seqCluster} is not meant to be called by the user. It is only
+  an exported function so as to be able to clearly document the arguments for
+  \code{seqCluster} which can be passed via the argument \code{seqArgs} in
+  functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
 
-Each iteration of the algorithm will cluster the current set of
-  samples. Depending on the method, the number of clusters resulting from
-  \code{\link{clusterD}} may not be equal to the K used in the clustering of
-  the (subsampled) data. The resulting clusters will then be compared to
-  clusters found in the previous iteration that set the subsampling
-  clustering to K-1. For computational (and other?) convenience, only the
-  first top.can clusters of each iteration will be compared to the first
-  top.can clusters of previous iteration for similarity (where top.can
-  currently refers to ordering by size, so first top.can largest clusters).
+This code is adapted from the sequential protion of the code of the
+  tightClust package of Tseng and Wong. At each iteration of the algorithm it
+  finds a set of samples that constitute a homogeneous cluster and remove
+  them, and iterate again to find the next set of samples that form a
+  cluster.
 
-If there is a cluster in the current iteration that has overlap
-  similarity > beta to a cluster in the previous iteration, then the cluster
-  with the largest such similarity will be identified as a 'final' cluster
-  and the samples in it will be removed for future iterations. The algorithm
-  will then continue to the next iteration, but without these samples.
-  Furthermore, in this case K for the next iteration will NOT be set to K+1,
-  but will be reset to kinit-1, where kinit was the first K used after the
-  previous 'final' cluster was removed. If kinit-1<k.min, then K will be set
-  to k.min.
+In each iteration, to determine the next set of homogeneous set of
+  samples, the algorithm will iteratively cluster the current set of samples
+  for a series of increasing values of the parameter $K$, starting at a value
+  \code{kinit} and increasing by 1 at each iteration, until a sufficiently
+  homogeneous set of clusters is found. For the first set of homogeneous
+  samples, \code{kinit} is set to the argument $k0$, and for iteration,
+  \code{kinit} is increased internally.
 
-If there is no cluster of the first top.can in the current iteration
-  that has overlap similarity > beta to any in the previous iteration, then
-  the algorithm will move to the next iteration (i.e. redo after increasing K
-  to K+1).
+Depending on the value of \code{subsample} how the value of $K$ is
+  used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the
+  cluster function \code{clusterFunction} sent to 
+  \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
+  \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
+  \code{\link{subsampleClustering}} with the \code{ClusterFunction} object
+  defined in the argument \code{clusterFunction} set via \code{mainClusterArgs}.
+  The number of clusters actually resulting from this run of
+  \code{\link{mainClustering}} may not be equal to the $K$ sent to  the clustering
+  done in \code{\link{subsampleClustering}}. If \code{subsample=FALSE},
+  \code{\link{mainClustering}} is called directly on the data to determine the
+  clusters and $K$ set by \code{seqCluster} for this iteration determines the
+  parameter of the clustering done by \code{\link{mainClustering}}. Specifically,
+  the argument \code{clusterFunction} defines the clustering of the
+  \code{\link{mainClustering}} step and \code{k} is sent to that
+  \code{ClusterFunction} object. This means that if \code{subsample=FALSE},
+  the \code{clusterFunction} must be of \code{algorithmType} "K".
 
-If there are less than remain.n samples left after finding a cluster
-  and removing its samples, the algorithm will stop, as subsampling is deamed
-  to no longer be appropriate. If the K has to be increased to beyond k.max
-  without finding any pair of clusters with overlap > beta, then the
-  algorithm will stop. Any samples not found as part of a 'final' cluster
-  after the algorithm stops, will be classified as unclustered (given a value
-  of -1)
+In either setting of \code{subsample}, the resulting clusters from
+  \code{\link{mainClustering}} for a particular $K$ will be compared to clusters
+  found in the previous iteration of $K-1$. For computational (and other?)
+  convenience, only the first \code{top.can} clusters of each iteration will
+  be compared to the first \code{top.can} clusters of previous iteration for
+  similarity (where \code{top.can} currently refers to ordering by size, so
+  first \code{top.can} largest clusters.
 
-'subsample' controls what is the D (distance) matrix used for
-  clustering at each iteration. If subsample=TRUE, D is given via
-  \code{\link{subsampleClustering}} function with k=K (with additional
-  arguments passed via subsampleArgs). If subsample=FALSE, D is dist(x), for
-  the samples currently considered in the iteration and clusterFunction must
-  be of the 'K' type (e.g. "pam", see \code{\link{clusterD}}) or an error
-  will be produced. The nsample x nsample matrix D is then clustered via
-  \code{\link{clusterD}} to find clusters. The option 'clusterFunction' is
-  passed to the argument 'clusterFunction' of \code{\link{clusterD}} to
-  control what method is used to cluster D.
+If there is no cluster of the first \code{top.can} in the current
+  iteration $K$ that has overlap similarity > \code{beta} to any in the
+  previous iteration, then the algorithm will move to the next iteration,
+  increasing to $K+1$.
 
-If clusterFunction is of type 'K' (e.g. "pam", see
-  \code{\link{clusterD}}) the 'k' argument of \code{\link{clusterK}} called
-  by \code{\link{clusterD}} is set to the current iteration of K by the
-  sequential iteration, so setting 'k=' in the list given to clusterDArgs
-  will not do anything and will produce a warning to that effect.
+If, however, of these clusters there is a cluster in the current
+  iteration $K$ that has overlap similarity > beta to a cluster in the
+  previous iteration $K-1$, then the cluster with the largest such similarity
+  will be identified as a homogenous set of samples and the samples in it
+  will be removed and designated as such. The algorithm will then start again
+  to determine the next set of homogenous samples, but without these samples.
+  Furthermore, in this case (i.e. a cluster was found and removed), the value
+  of \code{kinit} will be be reset to \code{kinit-1}; i.e. the range of
+  increasing $K$ that will be iterated over to find a set of homogenous
+  samples will start off one value less than was the case for the previous
+  set of homogeneous samples. If \code{kinit-1}<\code{k.min}, then
+  \code{kinit} will be set to \code{k.min}.
 
-Similarly, the current K of the iteration also determines the 'k'
-  argument passed to \code{\link{subsampleClustering}}  so setting 'k=' in
-  the list given to the subsampleArgs will not do anything and will produce a
-  warning to that effect.
+If there are less than \code{remain.n} samples left after finding a
+  cluster and removing its samples, the algorithm will stop, as subsampling
+  is deamed to no longer be appropriate. If the K has to be increased to
+  beyond \code{k.max} without finding any pair of clusters with overlap >
+  beta, then the algorithm will stop. Any samples not found as part of a
+  homogenous set of clusters at that point will be classified as unclustered
+  (given a value of -1)
 
-If subsample=FALSE and 'findBestK=FALSE' is passed to clusterDArgs,
-  then each iteration will run the clustering given by clusterFunction on
-  dist(x) iterating over k. However, if subsample=FALSE, you should not set
-  'findBestK=TRUE' (otherwise clustering dist(x) will be essentially the same
-  for iterating over different k and there is no method implemented to change
-  the choice of how to remove a cluster other than similarity as you change
-  k); an error message will be given if this combination of options are set.
-
-However, if clusterFunction="pam" (or is of type 'K') and
-  subsample=TRUE passing either 'findBestK=TRUE' or 'findBestK=FALSE' will
-  function as expected. In particular, the iteration over K will set the
-  number of clusters for clustering of each subsample. If findBestK=FALSE,
-  that same K will be used for clustering of DMat. If findBestK=TRUE, then
-  \code{\link{clusterD}} will search for best k; note that the default
-  'kRange' over which \code{\link{clusterD}} searches when findBestK=TRUE
-  depends on the input value of 'k' (you can change this to a fixed set of
-  values by setting 'kRange' explicitly in the clusterDArgs list).
+Certain combinations of inputs to \code{mainClusterArgs} and
+  \code{subsampleArgs} are not allowed. See \code{\link{clusterSingle}} for
+  these explanations.
 }
 \examples{
 \dontrun{
 data(simData)
 
 set.seed(12908)
-
-clustSeqHier <- seqCluster(t(simData), k0=5, subsample=TRUE,
-clusterFunction="hierarchical01", beta=0.8, subsampleArgs=list(resamp.n=100,
+clustSeqHier <- seqCluster(simData, k0=5, subsample=TRUE,
+beta=0.8, subsampleArgs=list(resamp.n=100,
 samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-clusterDArgs=list(minSize=5))
+mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
 }
 }
 \references{
@@ -174,5 +171,6 @@ Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
   61:10-16.
 }
 \seealso{
-tight.clust
+tight.clust,
+  \code{\link{clusterSingle}},\code{\link{mainClustering}},\code{\link{subsampleClustering}}
 }

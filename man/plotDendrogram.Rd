@@ -20,12 +20,7 @@ index for the clusterings to be plotted with dendrogram. Otherwise,
 \code{clusterLabels}; alternatively \code{whichClusters} can be either 
 'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
 or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
-using the clustering that created the dendrogram.
-@param removeOutgroup logical, only applicable if there are missing samples
-  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
-  for the samples was made by putting missing samples in an outbranch. In
-  which case, if this parameter is TRUE, the outbranch will not be plotted,
-  and if FALSE it will be plotted.}
+using the clustering that created the dendrogram.}
 
 \item{leafType}{if "samples" the dendrogram has one leaf per sample,
 otherwise it has one per cluster.}
@@ -41,6 +36,12 @@ internal clusterIds value will be plotted (only appropriate if
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
+
+\item{removeOutbranch}{logical, only applicable if there are missing samples
+(i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
+for the samples was made by putting missing samples in an outbranch. In
+which case, if this parameter is TRUE, the outbranch will not be plotted,
+and if FALSE it will be plotted.}
 
 \item{legend}{logical, only applicable if \code{labelType="colorblock"}.
 Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
@@ -63,8 +64,8 @@ If \code{leafType="clusters"}, the plotting function will work best
 data(simData)
 
 #create a clustering, for 8 clusters (truth was 3) 
-cl <-clusterSingle(simData, clusterFunction="pam", subsample=FALSE, 
-sequential=FALSE, clusterDArgs=list(k=8))
+cl <-clusterSingle(simData, subsample=FALSE, 
+sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 #create dendrogram of clusters and then 
 # merge clusters based ondendrogram: 

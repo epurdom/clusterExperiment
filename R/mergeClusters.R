@@ -1,4 +1,4 @@
-.availMergeMethods<-c("adjP", "locfdr", "MB", "JC")	
+.availMergeMethods<-c("adjP", "locfdr", "MB", "JC","PC","Storey")	
 #' @title Merge clusters based on dendrogram
 #'   
 #' @description Takes an input of hierarchical clusterings of clusters and 
@@ -51,7 +51,9 @@
 #'   transformation stored in the object. If FALSE, then transform(x) will be 
 #'   given to the input and will be used for both \code{makeDendrogram} and 
 #'   \code{getBestFeatures}, with no voom correction.
-#' @details "JC" refers to the method of Ji and Cai (2007), and implementation 
+#' @details "Storey" refers to the method of Storey (2002). "PC" refers to the 
+#' method of Pounds and Cheng (2004). "JC" refers to the method of 
+#' Ji and Cai (2007), and implementation 
 #'   of "JC" method is copied from code available on Jiashin Ji's website, 
 #'   December 16, 2015 
 #'   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
@@ -84,13 +86,23 @@
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
 #'   \code{ClusterExperiment} object with an additional clustering based on the 
 #'   merging. This becomes the new primary clustering.
+#' @references Ji and Cai (2007), "Estimating the Null and the Proportion 
+#' of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
+#' @references Efron (2004) "Large-scale simultaneous hypothesis testing: 
+#' the choice of a null hypothesis," JASA, 99: 96-104.
+#' @references Meinshausen and Buhlmann (2005) "Lower bounds for the 
+#' number of false null hypotheses for multiple testing of associations", 
+#' Biometrika 92(4): 893-907.
+#' @references Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479-498.
+#' @references Pounds and Cheng (2004). "Improving false discovery rate estimation." Bioinformatics 20(11): 1737-1745.
+
 #' @seealso makeDendrogram, plotDendrogram, getBestFeatures
 #' @examples
 #' data(simData)
 #' 
 #' #create a clustering, for 8 clusters (truth was 3)
-#' cl<-clusterSingle(simData, clusterFunction="pam", subsample=FALSE,
-#' sequential=FALSE, clusterDArgs=list(k=8))
+#' cl<-clusterSingle(simData, subsample=FALSE,
+#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #' 
 #' #give more interesting names to clusters:
 #' newNames<- paste("Cluster",clusterLegend(cl)[[1]][,"name"],sep="")
@@ -119,8 +131,8 @@
 setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
-                          mergeMethod=c("none", "adjP", "locfdr", "MB", "JC"),
-                          plotInfo=c("none", "all", "mergeMethod","adjP", "locfdr", "MB", "JC"), 
+                          mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
+                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), 
                           cutoff=0.1, plot=TRUE,
                           isCount=TRUE,  ...) {  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -152,11 +164,13 @@ setMethod(f = "mergeClusters",
   if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
   if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
   sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
+      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey) else NA
+      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC) else NA
       mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
       locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
       jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
       adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
-      return(c("adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
+      return(c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
   })
   newcl <- cl
   phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
@@ -345,7 +359,20 @@ This makes sense only for counts.")
   else return(NA)
 }
 
-#functions for estimating m1/m, the proportion of non-null
+#functions for estimating m1/m, the proportion of **non-null**
+.m1_Storey<-function(pvalues,lambda=0.5){
+	m<-length(pvalues)
+	num<-length(which(pvalues>lambda))
+	pi0<-num/(1-lambda)/m
+	return(1-pi0)
+
+}
+.m1_PC<-function(pvalues){
+	pi0<-2*mean(pvalues)
+	return(1-pi0)
+
+}
+
 .m1_MB<-function(pvalues){
   nCorrect<-max(howmany::lowerbound(howmany::howmany(pvalues))) #the most you can call correctly
   return(nCorrect/length(pvalues))

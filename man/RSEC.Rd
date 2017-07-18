@@ -13,12 +13,12 @@
 \usage{
 \S4method{RSEC}{matrix}(x, isCount = FALSE, transFun = NULL,
   dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), k0s = 4:15,
-  clusterFunction = c("tight", "hierarchical01"), alphas = c(0.1, 0.2, 0.3),
+  clusterFunction = listBuiltInType01(), alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-  clusterDArgs = NULL, subsampleArgs = NULL, seqArgs = NULL, ncores = 1,
-  random.seed = NULL, run = TRUE)
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  ncores = 1, random.seed = NULL, run = TRUE)
 
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
@@ -28,9 +28,9 @@
   rerunClusterMany = FALSE, ...)
 }
 \arguments{
-\item{x}{the data on which to run the clustering. Can be: matrix (with genes
-in rows), a list of datasets overwhich the clusterings should be run, a
-\code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+\item{x}{the data matrix on which to run the clustering. Can be: matrix (with
+genes in rows), a list of datasets overwhich the clusterings should be run,
+a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
 
 \item{isCount}{logical. Whether the data are in counts, in which case the
 default \code{transFun} argument is set as log2(x+1). This is simply a
@@ -57,23 +57,23 @@ included.}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-clustering techniques provided by \code{\link{clusterSingle}}, and can not
-be a user-defined function. Current functions are "tight",
-"hierarchical01","hierarchicalK", and "pam"}
+clustering techniques, and can not be a user-defined function. Current
+functions can be found by typing \code{listBuiltInFunctions()} into the
+command-line.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of
-type '01' (either 'tight' or 'hierarchical01'). Determines tightness
-required in creating clusters from the dissimilarity matrix. Takes on
-values in [0,1]. See \code{\link{clusterD}}.}
+type '01'. Determines tightness required in creating clusters from the
+dissimilarity matrix. Takes on values in [0,1]. See documentation of
+\code{\link{ClusterFunction}}.}
 
 \item{betas}{values of \code{beta} to be tried in sequential steps. Only used
 for \code{sequential=TRUE}. Determines the similarity between two clusters
 required in order to deem the cluster stable. Takes on values in [0,1]. See
-\code{\link{seqCluster}}.}
+documentation of \code{\link{seqCluster}}.}
 
-\item{minSizes}{the minimimum size required for a cluster (in
-\code{clusterD}). Clusters smaller than this are not kept and samples are
-left unassigned.}
+\item{minSizes}{the minimimum size required for a cluster (in the
+\code{mainClustering} step). Clusters smaller than this are not kept and samples
+are left unassigned.}
 
 \item{combineProportion}{passed to \code{proportion} in \code{\link{combineMany}}}
 
@@ -89,22 +89,22 @@ left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{clusterDArgs}{list of additional arguments to be passed to
-\code{\link{clusterD}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
+help pages of \code{\link{mainClustering}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
-\item{seqArgs}{list of additional arguments to be passed to
-\code{\link{seqCluster}}.}
+\item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
 
 \item{ncores}{the number of threads}
 
 \item{random.seed}{a value to set seed before each run of clusterSingle (so
 that all of the runs are run on the same subsample of the data). Note, if
 'random.seed' is set, argument 'ncores' should NOT be passed via
-subsampleArgs; instead set the argument 'ncores' of
-clusterMany directly (which is preferred for improving speed anyway).}
+subsampleArgs; instead set the argument 'ncores' of clusterMany directly
+(which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with

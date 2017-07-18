@@ -9,7 +9,7 @@
 \alias{combineMany,ClusterExperiment,missing-method}
 \title{Find sets of samples that stay together across clusterings}
 \usage{
-\S4method{combineMany}{matrix,missing}(x, whichClusters, proportion = 1,
+\S4method{combineMany}{matrix,missing}(x, whichClusters, proportion,
   clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5)
 
 \S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
@@ -26,24 +26,24 @@
 clusters to compare (missing if x is a matrix)}
 
 \item{proportion}{The proportion of times that two sets of samples should be
-together in order to be grouped into a cluster (if <1, passed to clusterD
+together in order to be grouped into a cluster (if <1, passed to mainClustering
 via alpha = 1 - proportion)}
 
 \item{clusterFunction}{the clustering to use (passed to
-\code{\link{clusterD}}); currently must be of type '01'.}
+\code{\link{mainClustering}}); currently must be of type '01'.}
 
 \item{propUnassigned}{samples with greater than this proportion of
 assignments equal to '-1' are assigned a '-1' cluster value as a last step
 (only if proportion < 1)}
 
 \item{minSize}{minimum size required for a set of samples to be considered in
-a cluster because of shared clustering, passed to \code{\link{clusterD}}}
+a cluster because of shared clustering, passed to \code{\link{mainClustering}}}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterTypes value,
-where \code{i} is one more than the largest such existing workflow
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
+workflow results will have "\code{_i}" added to the clusterTypes value, 
+where \code{i} is one more than the largest such existing workflow 
 clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By
@@ -65,7 +65,7 @@ If x is a matrix, a list with values
   out of those not '-1'} \item{\code{noUnassignedCorrection}{ a vector of
   cluster assignments before samples were converted to '-1' because had
   >\code{propUnassigned} '-1' values (i.e. the direct output of the
-  \code{clusterD} output.)}}
+  \code{mainClustering} output.)}}
 }
 
 If x is a \code{\link{ClusterExperiment}}, a
@@ -81,7 +81,7 @@ a new clustering vector.
 The function tries to find a consensus cluster across many different
   clusterings of the same samples. It does so by creating a \code{nSamples} x
   \code{nSamples} matrix of the percentage of co-occurance of each sample and
-  then calling clusterD to cluster the co-occurance matrix. The function
+  then calling mainClustering to cluster the co-occurance matrix. The function
   assumes that '-1' labels indicate clusters that are not assigned to a
   cluster. Co-occurance with the unassigned cluster is treated differently
   than other clusters. The percent co-occurance is taken only with respect to
@@ -89,10 +89,10 @@ The function tries to find a consensus cluster across many different
   than \code{propUnassigned} values that are '-1' across all of the
   clusterings are assigned a '-1' regardless of their cluster assignment.
 
-The method calls \code{\link{clusterD}} on the proportion matrix with
+The method calls \code{\link{mainClustering}} on the proportion matrix with
 \code{clusterFunction} as the 01 clustering algorithm, \code{alpha=1-proportion},
 \code{minSize=minSize}, and \code{evalClusterMethod=c("average")}. See help of
-\code{\link{clusterD}} for more details.
+\code{\link{mainClustering}} for more details.
 }
 \examples{
 data(simData)

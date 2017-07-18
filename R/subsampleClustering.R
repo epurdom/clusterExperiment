@@ -1,131 +1,201 @@
 #' Cluster subsamples of the data
-#'
-#' Given a data matrix, this function will subsample the rows
-#' (samples), cluster the subsamples, and return a \code{n x n} matrix with the
-#' probability of co-occurance.
-#'
+#' 
+#' Given input data, this function will subsample the samples, cluster the
+#' subsamples, and return a \code{n x n} matrix with the probability of
+#' co-occurance.
+#' @name subsampleClustering
 #' @param x the data on which to run the clustering (samples in columns).
-#' @param k number of clusters to find for each clustering of a subsample
-#'   (passed to clusterFunction).
-#' @param clusterFunction a function that clusters a \code{p x n} matrix of
-#'   data. Can also be given character values 'pam' or 'kmeans' to indicate use
-#'   of internal wrapper functions. Must accept arguments 'x' and 'k' (whether
-#'   uses them or not). See Details for format of what must return.
-#' @param clusterArgs a list of parameter arguments to be passed to
-#'   clusterFunction.
+#' @param diss a dissimilarity matrix on which to run the clustering.
+#' @param clusterFunction a \code{\link{ClusterFunction}} object that defines
+#'   the clustering routine. See \code{\link{ClusterFunction}} for required
+#'   format of user-defined clustering routines. User can also give a character
+#'   value to the argument \code{clusterFunction} to indicate the use of
+#'   clustering routines provided in package. Type
+#'   \code{\link{listBuiltInFunctions}} at command prompt to see the built-in
+#'   clustering routines. If \code{clusterFunction} is missing, the default is
+#'   set to "pam".
+#' @param clusterArgs a list of parameter arguments to be passed to the function
+#'   defined in the \code{clusterFunction} slot of the \code{ClusterFunction}
+#'   object. For any given \code{\link{ClusterFunction}} object, use function
+#'   \code{\link{requiredArgs}} to get a list of required arguments for the
+#'   object.
 #' @param resamp.num the number of subsamples to draw.
 #' @param samp.p the proportion of samples to sample for each subsample.
-#' @param classifyMethod method for determining which samples should be used in
-#'   the co-occurance matrix. "All"= all samples, "OutOfSample"= those not
-#'   subsampled, and "InSample"=those in the subsample.  "All" and "OutOfSample"
-#'   require that you provide classifyFunction to define how to classify those
-#'   samples not in the subsample into a cluster. If "All" is chosen, all
-#'   samples will be classified into clusters via the classifyFunctions, not
-#'   just those that are out-of-sample. Note if not choose 'All' possible to get
-#'   NAs in resulting D matrix (particularly if not enough subsamples taken).
-#' @param classifyFunction a function which, given the output of clusterFunction
-#'   and new data points, will classify the new data points into a cluster.
-#' @param ncores integer giving the number of cores. If ncores>1, mclapply will
+#' @param classifyMethod method for determining which samples should be used in 
+#'   calculating the co-occurance matrix. "All"= all samples, "OutOfSample"=
+#'   those not subsampled, and "InSample"=those in the subsample.  See details
+#'   for explanation.
+#' @param ncores integer giving the number of cores. If ncores>1, mclapply will 
 #'   be called.
 #' @param ... arguments passed to mclapply (if ncores>1).
-#'
-#' @details The \code{clusterFunction} must be a function that takes as an
-#'   argument 'x' which is a \code{p x n} matrix  of data and integer 'k'. It
-#'   minimally must return a list with element named 'clustering' giving the
-#'   vector of cluster ids. To be incorporated with the larger hierarchy, it
-#'   should be list with elements of a partition object, just as is returned by
-#'   \code{\link[cluster]{pam}}. Generally, the user will need to write a
-#'   wrapper function to do this. In the case of pam or kmeans, the user can
-#'   identify clusterFunction as "pam" or "kmeans", and the package functions
-#'   will use internally written wrappers for the clusterFunction and
-#'   classifyFunction arguments. Additional arguments should be supplied via
-#'   clusterArgs.
-#'
-#' @details The classifyFunction should take as an object a data matrix 'x' with
-#'   samples on the columns, and the output of the clusterFunction. Note that the
-#'   function should assume that the input 'x' is not the same samples that were
-#'   input to the clusterFunction (but can assume that it is the same number of
-#'   features/columns).
-#'
-#' @return A \code{n x n} matrix of co-occurances.
+#' @inheritParams mainClustering
+#' @inheritParams clusterSingle
+#'   
+#' @details \code{subsampleClustering} is not usually called directly by the
+#'   user. It is only an exported function so as to be able to clearly document
+#'   the arguments for \code{subsampleClustering}  which can be passed via the
+#'   argument \code{subsampleArgs} in functions like \code{\link{clusterSingle}}
+#'   and \code{\link{clusterMany}}.
+#' @details \code{requiredArgs:} The choice of "All" or "OutOfSample" for
+#'   \code{requiredArgs} require the classification of arbitrary samples not
+#'   originally in the clustering to clusters; this is done via the classifyFUN
+#'   provided in the \code{\link{ClusterFunction}} object. If the
+#'   \code{\link{ClusterFunction}} object does not have such a function to
+#'   define how to classify into a cluster samples not in the subsample that
+#'   created the clustering then \code{classifyMethod} must be
+#'   \code{"InSample"}. Note that if "All" is chosen, all samples will be
+#'   classified into clusters via the classifyFUN, not just those that are
+#'   out-of-sample; this could result in different assignments to clusters for
+#'   the in-sample samples than their original assignment by the clustering
+#'   depending on the classification function. If you do not choose 'All',it is
+#'   possible to get NAs in resulting S matrix (particularly if when not enough
+#'   subsamples are taken) which can cause errors if you then pass the resulting
+#'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
+#'   "All".
+#' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
+#'   [i,j] entries equal to the percentage of subsamples where the ith and jth
+#'   sample were clustered into the same cluster. The percentage is only out of
+#'   those subsamples where the ith and jth samples were both assigned to a
+#'   clustering. If \code{classifyMethod=="All"}, this is all subsamples for all
+#'   i,j pairs. But if \code{classifyMethod=="InSample"} or
+#'   \code{classifyMethod=="OutOfSample"}, then the percentage is only taken on
+#'   those subsamples where the ith and jth sample were both in or out of
+#'   sample, respectively, relative to the subsample.
 #'
 #' @examples
 #' data(simData)
+#' coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData, 
+#' clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
 #'
-#' subD <- subsampleClustering(t(simData), k=3, clusterFunction="kmeans",
-#' clusterArgs=list(nstart=10), resamp.n=100, samp.p=0.7)
-#'
-#' heatmap(subD)
+#' #visualize the resulting co-occurance matrix
+#' plotHeatmap(coOccur)
+#' @aliases subsampleClustering,character-method
 #' @export
-subsampleClustering<-function(x,k,clusterFunction="pam", clusterArgs=NULL, 
-                              classifyMethod=c("All","InSample","OutOfSample"),classifyFunction=NULL,
-                              resamp.num = 100, samp.p = 0.7,ncores=1,... )
+setMethod(
+  f = "subsampleClustering",
+  signature = signature(clusterFunction = "character"),
+  definition = function(clusterFunction,...){
+  	subsampleClustering(getBuiltInFunction(clusterFunction),...)
+	  
+  }
+ )
+
+# #' @rdname subsampleClustering
+# #' @export
+# setMethod(
+# f = "subsampleClustering",
+# signature = signature(clusterFunction = "missing"),
+# definition = function(clusterFunction,...){
+# 	subsampleClustering(clusterFunction="pam",...)
+# }
+# )
+ 
+#' @rdname subsampleClustering
+#' @export
+setMethod(
+   f = "subsampleClustering",
+   signature = signature(clusterFunction = "ClusterFunction"),
+definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL, 
+                              classifyMethod=c("All","InSample","OutOfSample"),
+                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,... )
 {
-  #input<-.checkXDissInput(x,diss)
-  if(!is.function(clusterFunction)){
-    if(clusterFunction%in%c("pam","kmeans")){
-      if(clusterFunction=="pam"){
-        clusterFunction<-.pamCluster
-        classifyFunction<-.pamClassify
-      }
-      else if(clusterFunction=="kmeans"){
-        clusterFunction<-.kmeansCluster
-        classifyFunction<-.kmeansClassify
-      }
-    }
-    else stop("clusterFunction must define a function")
-  }
-  classifyMethod<-match.arg(classifyMethod)
-  if(classifyMethod %in% c("All","OutOfSample") && missing(classifyFunction)){
-    stop("Must provide a classification function for the 'All' or 'OutOfSample' options")
-  }
-  #if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-  N <- dim(x)[2]
+	#######################
+	### Check both types of inputs and create diss if needed, and check it.
+	#######################
+	input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+	classifyMethod<-match.arg(classifyMethod)
+	if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
+    	classifyMethod<-"InSample" #silently change it...
+  	}
+	else{
+		inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!  	
+  	}
+	if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
+		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+		if(input=="X") input<-"diss"
+		if(inputClassify=="X") inputClassify<-"diss"
+	}
+  #-----
+  # Other Checks
+  #-----
+  reqArgs<-requiredArgs(clusterFunction)
+  if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
+  
+#-----
+# Basic parameters, subsamples
+#-----
+  if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
   subSize <- round(samp.p * N)
   idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
-  perSample<-function(ids){
-#     xWithIds<-switch(input,"X"=x[,ids,drop=FALSE],"diss"=x,"both"=x[,ids,drop=FALSE])
-#     dissWithIds<-switch(input,"X"=diss,"diss"=diss[ids,ids,drop=FALSE],"both"=diss[ids,ids,drop=FALSE])
-    xWithIds<-x[,ids,drop=FALSE]
-    #result<-do.call(clusterFunction,c(list(x=xWithIds,diss=dissWithIds,k=k),clusterArgs))
-    result<-do.call(clusterFunction,c(list(x=xWithIds,k=k),clusterArgs))
-    #if(classifyMethod=="All") classX<-classifyFunction(x=x,diss=diss,result)
-    if(classifyMethod=="All") classX<-classifyFunction(x=x,result)
-    if(classifyMethod=="OutOfSample"){
-      #     xWithoutIds<-switch(input,"X"=x[,-ids,drop=FALSE],"diss"=x,"both"=x[,-ids,drop=FALSE])
-      #     dissWithoutIds<-switch(input,"X"=diss,"diss"=diss[-ids,-ids,drop=FALSE],"both"=diss[-ids,-ids,drop=FALSE])
-      xWithoutIds<-x[,-ids,drop=FALSE]
-      #classElse<-classifyFunction(x=xWithoutIds, diss=dissWithoutIds,result)
-      classElse<-classifyFunction(x=xWithoutIds, result)
-      classX<-rep(NA,N)
-      classX[-ids]<-classElse
-    }
-    if(classifyMethod=="InSample"){
-      classX<-rep(NA,N)
-      classX[ids]<-result$clustering
-    }
-    D <- outer(classX, classX, function(a, b) a == b)
-    Dinclude<-matrix(1,N,N)
-    whNA<-which(is.na(classX))
-    if(length(whNA)>0){
-      Dinclude[whNA,]<-0 #don't add them to the denominator either
-      Dinclude[,whNA]<-0
-      D[whNA,]<-0 #don't add to sum
-      D[,whNA]<-0
-    }
-    return(list(D=D,Dinclude=Dinclude))
-  }
+  #-----
+  # Function that calls the clustering for each subsample
+  #-----
+	  perSample<-function(ids){
+	  ##----
+	  ##Cluster part of subsample
+	  ##----
+	  argsClusterList<-.makeDataArgs(dataInput=input, funInput=clusterFunction@inputType, xData=x[,ids,drop=FALSE], dissData=diss[ids,ids,drop=FALSE])
+	 
+	  #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
+	  argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"= (classifyMethod=="InSample") ))
+	  result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+
+	  ##----
+	  ##Classify part of subsample
+	  ##----
+	    if(classifyMethod=="All"){
+		argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)	 
+		classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(clusterResult=result)))
+	}
+	    if(classifyMethod=="OutOfSample"){
+			argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 
+		classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(clusterResult=result)))
+	      classX<-rep(NA,N)
+	      classX[-ids]<-classElse
+	    }
+	    if(classifyMethod=="InSample"){
+	      classX<-rep(NA,N)
+		  #methods that do not have 
+		  if(is.list(result)){
+			  #the next shouldn't happen any more because should be cluster.only=TRUE
+			  # if("clustering" %in% names(result)){ 
+			  # 	classX[ids]<-result$clustering
+			  # }
+			  # 		  	  else{
+			  if(clusterFunction@outputType=="list"){
+				resultVec  <-.convertClusterListToVector(result,N=length(ids))
+				classX[ids]<-resultVec
+			  }
+			  else stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
+#			  }
+		  }
+		  else{
+		      classX[ids]<-result
+		  	
+		  }
+	    }
+	    D <- outer(classX, classX, function(a, b) a == b)
+	    Dinclude<-matrix(1,N,N)
+	    whNA<-which(is.na(classX))
+	    if(length(whNA)>0){
+	      Dinclude[whNA,]<-0 #don't add them to the denominator either
+	      Dinclude[,whNA]<-0
+	      D[whNA,]<-0 #don't add to sum
+	      D[,whNA]<-0
+	    }
+	    return(list(D=D,Dinclude=Dinclude))
+	  }
   if(ncores==1){
     DList<-apply(idx,2,perSample)
   }
   else{
-    DList<-parallel::mclapply(1:ncol(idx),function(nc){perSample(idx[,nc])},mc.cores=ncores,...)
+    DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
   }
   DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
   DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-  Dbar = DNum/DDenom
-#   if(input %in% c("X","both")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
-#   else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
+  Dbar <- DNum/DDenom
+  if(input %in% c("X")) rownames(Dbar)<-colnames(Dbar)<-colnames(x)
+  else rownames(Dbar)<-colnames(Dbar)<-colnames(diss)
   rownames(Dbar)<-colnames(Dbar)<-colnames(x)
-    return(Dbar)
-}
+  return(Dbar)
+})
