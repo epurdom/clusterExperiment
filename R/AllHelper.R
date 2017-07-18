@@ -16,6 +16,7 @@ setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
+    #browser()
     origN<-NCOL(x)
     out <- callNextMethod() #doesn't work once I added the logical and character choices.
     #out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
