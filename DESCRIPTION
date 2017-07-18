@@ -74,3 +74,4 @@ Collate:
     'subsampleClustering.R'
     'transformFunction.R'
     'workflowClusters.R'
+    'dimReduce.R'
