@@ -73,7 +73,7 @@ Required arguments for \code{clusterFUN}: \itemize{ \item{"x or
   arguments"}{\code{clusterFUN} must also accept arguments required for its
   \code{algorithmType} (see Details below).} }
 
-\code{algorithmType}: Type "01" is for clustering functions that 
+\code{algorithmType}: Type "01" is for clustering functions that
   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
   from subclustering) with 1 indicating more dissimilarity between samples.
   "01" algorithm types must also have \code{inputType} equal to
@@ -89,8 +89,8 @@ Required arguments for \code{clusterFUN}: \itemize{ \item{"x or
   as \code{findBestK} and \code{removeSil} may not operate correctly since
   they rely on silhouette distances.
 
-\code{internalFunctionCheck} is the function that is called by the 
-  validity check of the \code{clusterFunction} constructor (if 
+\code{internalFunctionCheck} is the function that is called by the
+  validity check of the \code{clusterFunction} constructor (if
   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
   to be able to test their functions and debug them, which is difficult to do
   with a S4 validity function.

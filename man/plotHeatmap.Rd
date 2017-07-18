@@ -52,13 +52,13 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}. 
+\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}.
 For the other signatures, passed to the method for signature \code{matrix}.
 Not all arguments can be passed to \code{aheatmap} effectively, see details.}
 
-\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that 
-will be used to in \code{hclust} to define the hiearchical clustering of 
-samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
+\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that
+will be used to in \code{hclust} to define the hiearchical clustering of
+samples (e.g. normalized data) or a pre-existing dendrogram that clusters
 the samples. If \code{data} is a \code{ClusterExperiment} object, the input
 should be either character or integers or logical. Indicates how (and
 whether) the samples should be clustered (or gives indices of the order for
@@ -74,9 +74,9 @@ should be used (see details).}
 \item{nFeatures}{integer indicating how many features should be used (if
 \code{clusterFeaturesData} is 'var' or 'PCA').}
 
-\item{visualizeData}{either a character string, indicating what form of the 
-data should be used for visualizing the data (i.e. for making the 
-color-scale), or a data.frame/matrix with same number of samples as 
+\item{visualizeData}{either a character string, indicating what form of the
+data should be used for visualizing the data (i.e. for making the
+color-scale), or a data.frame/matrix with same number of samples as
 \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 clusterFeaturesData will be ignored.}
 
@@ -137,13 +137,13 @@ number between 0 and 1, indicating that the breaks should be equally spaced
 symmetric. Useful when plotting a co-clustering matrix or other sample by
 sample matrices (e.g., correlation).}
 
-\item{overRideClusterLimit}{logical. Whether to override the internal limit 
-that only allows 10 clusterings/annotations. If overridden, may result in 
+\item{overRideClusterLimit}{logical. Whether to override the internal limit
+that only allows 10 clusterings/annotations. If overridden, may result in
 incomprehensible errors from \code{aheatmap}. Only override this if you have a
 very large plotting device and want to see if \code{aheatmap} can render it.}
 
-\item{invert}{logical determining whether the coClustering matrix should be 
-inverted to be 1-coClustering for plotting. By default, if the diagonal 
+\item{invert}{logical determining whether the coClustering matrix should be
+inverted to be 1-coClustering for plotting. By default, if the diagonal
 elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
 coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
 output from \code{\link{clusterSingle}}, then the user should manually set
@@ -242,10 +242,10 @@ If \code{breaks} is a numeric value between 0 and 1, then
   0.9 quantile will be absorbed by the upper-most color bin. This can help to
   reduce the visual impact of a few highly expressed genes (features).
 
-Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the 
-  hood. This allows you to plot multiple heatmaps via 
-  \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if 
-  you change the size of your plot window in an interactive session of R 
+Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
+  hood. This allows you to plot multiple heatmaps via
+  \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
+  you change the size of your plot window in an interactive session of R
   (this might be a problem for RStudio if you want to pop it out into a large
   window...). Also, plotting to a pdf adds a blank page; see help pages of
   \code{\link[NMF]{aheatmap}} for how to turn this off.
@@ -256,9 +256,9 @@ If you have a factor with many levels, it is important to note that
   get the color white. Thus if you have many factors or many levels in those
   factors, you should set their colors via \code{clusterLegend}.
 
-Many arguments can be passed on to \code{aheatmap}, however, some are set 
-  internally by \code{plotHeatmap.} In particular, setting the values of 
-  \code{Rowv} or \code{Colv} will cause errors. \code{color} in 
+Many arguments can be passed on to \code{aheatmap}, however, some are set
+  internally by \code{plotHeatmap.} In particular, setting the values of
+  \code{Rowv} or \code{Colv} will cause errors. \code{color} in
   \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
   \code{annCol} to give annotation to the samples is replaced by the
   \code{sampleData}; moreover, the \code{annColors} option in \code{aheatmap}
