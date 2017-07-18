@@ -16,7 +16,6 @@ setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
-    #browser()
     origN<-NCOL(x)
     out <- callNextMethod() #doesn't work once I added the logical and character choices.
     #out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
@@ -25,6 +24,7 @@ setMethod(
     out@coClustering <- NULL
     out@dendro_samples <- NULL
     out@dendro_clusters <- NULL
+    out@dendro_outbranch <- NA
     out@dendro_index <- NA_real_
     #browser()
     #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])

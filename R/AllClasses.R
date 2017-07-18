@@ -436,10 +436,10 @@ setMethod(
 ################ clusterFunction class
 
 #' @title Class ClusterFunction
-#'   
+#'
 #' @description \code{ClusterFunction} is a class for holding functions that can
 #'   be used for clustering in the clustering algorithms in this package.
-#'   
+#'
 #' @docType class
 #' @aliases ClusterFunction ClusterFunction-class clusterFunction
 #' @slot clusterFUN a function defining the clustering function. See details for
@@ -499,9 +499,9 @@ setMethod(
 #'   passed via arguments to \code{clusterFUN}} \item{"Other required
 #'   arguments"}{\code{clusterFUN} must also accept arguments required for its
 #'   \code{algorithmType} (see Details below).} }
-#'   
-#'   
-#' @details \code{algorithmType}: Type "01" is for clustering functions that 
+#'
+#'
+#' @details \code{algorithmType}: Type "01" is for clustering functions that
 #'   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
 #'   from subclustering) with 1 indicating more dissimilarity between samples.
 #'   "01" algorithm types must also have \code{inputType} equal to
@@ -555,8 +555,8 @@ setClass(
 #' myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 #' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
 #' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
-#' @details \code{internalFunctionCheck} is the function that is called by the 
-#'   validity check of the \code{clusterFunction} constructor (if 
+#' @details \code{internalFunctionCheck} is the function that is called by the
+#'   validity check of the \code{clusterFunction} constructor (if
 #'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
 #'   to be able to test their functions and debug them, which is difficult to do
 #'   with a S4 validity function.
@@ -570,8 +570,8 @@ internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
 	diss<-diss + t(diss)
 	diag(diss)<-0
 	#--- Set parameters
-	if(algorithmType=="01") argList<-list(alpha=.5)	
-	if(algorithmType=="K") argList<-list(k=2)	
+	if(algorithmType=="01") argList<-list(alpha=.5)
+	if(algorithmType=="K") argList<-list(k=2)
 	argList<-c(argList,list(cluster.only=TRUE,checkArgs=FALSE))
 	#--- Run function on small data
 	if(inputType %in% c("X")){
@@ -628,29 +628,29 @@ setValidity("ClusterFunction", function(object) {
 	#----
 	if(is.na(object@algorithmType)) return("Must define algorithmType")
 	if(!object@algorithmType%in%.algTypes) return(paste("algorithmType must be one of",paste(.algTypes,collapse=",")))
-	### Add additional checks that 'k' and '01' work as expected... in particular that take particular arguments, etc. that 'k' and '01' are expected to take. 
-		
-		
+	### Add additional checks that 'k' and '01' work as expected... in particular that take particular arguments, etc. that 'k' and '01' are expected to take.
+
+
 	#----
 	# function arguments are as needed
 	#----
 	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to clusterFunction doesn't contain 'x'")
-		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")	
+		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")
 	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to clusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
-	
-	
+
+
 	if(object@checkFunctions){ #user can skip the check.
 		out<-internalFunctionCheck(object@clusterFUN,object@inputType,object@algorithmType,object@outputType)
 		if(!is.logical(out) || !out) return(out)
-		
+
 	}
 	return(TRUE)
   })
 
 #'@description The constructor \code{clusterFunction} creates an object of the
 #'  class \code{ClusterFunction}.
-#'  
+#'
 #'@param clusterFUN function bassed to slot \code{clusterFUN}.
 #'@param inputType character for slot \code{inputType}
 #'@param algorithmType character for slot \code{inputType}
@@ -660,7 +660,7 @@ setValidity("ClusterFunction", function(object) {
 #'@param requiredArgs character for slot \code{requiredArgs}
 #'@param checkFunctions logical for whether to check the input functions with
 #'  \code{internalFunctionsCheck}
-#'@param ... arguments passed to different methods of \code{clusterFunction}  
+#'@param ... arguments passed to different methods of \code{clusterFunction}
 #'@return A \code{ClusterFunction} object.
 #'
 #' @aliases clusterFunction
