@@ -53,7 +53,8 @@ included, then the full dataset will also be included.}
 in \code{dimReduce}). If NA is included, then the full dataset will also be
 included.}
 
-\item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
+\item{k0s}{the k0 parameter for sequential clustering (see
+\code{\link{seqCluster}})}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
@@ -75,15 +76,18 @@ documentation of \code{\link{seqCluster}}.}
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
-\item{combineProportion}{passed to \code{proportion} in \code{\link{combineMany}}}
+\item{combineProportion}{passed to \code{proportion} in
+\code{\link{combineMany}}}
 
 \item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
 
-\item{dendroReduce}{passed to \code{dimReduce} in \code{\link{makeDendrogram}}}
+\item{dendroReduce}{passed to \code{dimReduce} in
+\code{\link{makeDendrogram}}}
 
 \item{dendroNDims}{passed to \code{ndims} in \code{\link{makeDendrogram}}}
 
-\item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
+\item{mergeMethod}{passed to \code{mergeMethod} in
+\code{\link{mergeClusters}}}
 
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
@@ -130,8 +134,8 @@ different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
 }
 \description{
-Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
-Clustering) for single cell sequencing data. This is a wrapper function
-around the existing clusterExperiment workflow that results in the output of
-RSEC.
+Implementation of the RSEC algorithm (Resampling-based
+  Sequential Ensemble Clustering) for single cell sequencing data. This is a
+  wrapper function around the existing clusterExperiment workflow that
+  results in the output of RSEC.
 }

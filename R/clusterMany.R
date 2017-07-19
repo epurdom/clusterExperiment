@@ -512,10 +512,15 @@ setMethod(
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
 
-      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
-      else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      if(!is.null(x)) {
+        retval <- .addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
+      } else {
+        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      }
+
       validObject(retval)
       return(retval)
+
     } else {
       return(outval)
     }
