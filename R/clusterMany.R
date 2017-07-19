@@ -505,8 +505,8 @@ setMethod(
   definition = function(x, dimReduce="none", nVarDims=NA, nPCADims=NA,
                         eraseOld=FALSE, ...)
   {
-    outval<-clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
-                        nPCADims=nPCADims, transFun=transformation(x), ...)
+    outval <- clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
+                          nPCADims=nPCADims, transFun=transformation(x), ...)
     if(is(outval, "ClusterExperiment")) {
       #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
@@ -540,15 +540,15 @@ setMethod(
                           nPCADims=nPCADims, transFun=transFun, isCount=isCount,
                           ...)
     if(class(outval)=="ClusterExperiment") {
-        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 
-        return(retval)
-    }  #need to redo it to make sure get any other part of summarized experiment
-    else {
+      return(retval)
+    } else {
       return(outval)
     }
   }
 )
+
 #' @export
 #' @rdname clusterMany
 setMethod(
