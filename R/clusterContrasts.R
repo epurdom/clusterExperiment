@@ -71,6 +71,7 @@ setMethod(f = "clusterContrasts",
           signature = "vector",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
+		   outputType<-match.arg(outputType)
 		   if(outputType=="MAST" & !requireNamespace("MAST", quietly = TRUE)) stop("for outputType 'MAST', you must have package 'MAST' from Bioconductor installed.")
 		   
 		   cluster<-.convertToNum(cluster)
