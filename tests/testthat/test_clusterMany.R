@@ -94,3 +94,14 @@ test_that("`clusterMany` works changing parameters", {
                             isCount=FALSE))
 })
 
+test_that("`getClusterManyParams` works", {
+	cc<-clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
+	                       subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
+	                       isCount=FALSE)
+	cc<-combineMany(cc,proportion=1,whichClusters = "clusterMany")
+	getClusterManyParams(cc)
+	getClusterManyParams(cc,whichClusters=3:4)
+	expect_warning(getClusterManyParams(cc,whichClusters=1:5),"some clusters indicated in 'whichClusters' do not have type 'clusterMany'")
+	expect_warning(getClusterManyParams(cc,whichClusters=1),"did not return any clusters of type 'clusterMany'")
+	expect_warning(getClusterManyParams(cc,whichClusters="mergeClusters"),"did not return any clusters")
+})

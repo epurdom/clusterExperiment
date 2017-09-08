@@ -35,9 +35,13 @@ setMethod(f = "getClusterManyParams",
 					
 	allClTypes<-clusterTypes(x)
 	if(!"clusterMany" %in% allClTypes) stop("x does not have any clusterings that have clusterType exactly equal to 'clusterMany' ")	 #note to self: this makes it impossible to use function on old clusterMany results that have type clusterMany.1 or what ever.		
-	wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-	if(length(wh)==0 || !"clusterMany" %in% allClTypes[wh]){
-		warning("argument whichClusters either did not return any clusters or did not return any that were from 'clusterMany' type; using all clusterMany clusters")
+	wh <- if(is.character(whichClusters)).TypeIntoIndices(x, whClusters=whichClusters) else whichClusters
+	if(length(wh)==0){
+		warning("argument whichClusters did not return any clusters; using all clusterMany clusters")
+		wh<-which(allClTypes=="clusterMany")
+	}
+	if(!"clusterMany" %in% allClTypes[wh]){
+		warning("argument whichClusters did not return any clusters of type 'clusterMany'; using all clusterMany clusters")
 		wh<-which(allClTypes=="clusterMany")
 	}
 	else{
@@ -52,17 +56,77 @@ setMethod(f = "getClusterManyParams",
 	
 	listByParams<-sapply(1:length(listByClusters[[1]]),function(kk){
 		sapply(listByClusters,.subset2,kk)})
-	nms<-apply(listByParams,2,function(yy){
-		n<-unique(sapply(strsplit(yy,"="),.subset2,1))
-		if(length(n)>1) stop(paste("found the following multiple values for the parameter name:",paste(n,collapse=",")))
+	nameList<-lapply(1:ncol(listByParams),function(kk){
+		yy<-listByParams[,kk]
+		n<-sapply(strsplit(yy,"="),.subset2,1)
 	})
+	
 	
 	vals<-lapply(1:ncol(listByParams),function(kk){
 		yy<-listByParams[,kk]
-		v<-(sapply(strsplit(yy,"="),.subset2,2))
-		numV<-as.numeric(v)
-		if(any(is.na(numV))) return(v) else numV
+		v<-sapply(strsplit(yy,"="),function(zz){if(length(zz)>1).subset2(zz,2) else zz}) #deal with problem if no "=", e.g. 'noDimReduce' ...
+		if(isNumeric(v)) return(as.numeric(v)) else return(v)
 	})
+	
+	##Deal with dim Reduce that can be multiple labels
+	##This has to be manually updated when have new values in transform!
+	dimChoices<-toupper(c("PCA","var","mad","cv"))
+	dimValues <- c("noDimReduce",paste("n",dimChoices,"Features",sep=""))
+	whDimReduce<-which(sapply(nameList,function(yy){any(yy %in% dimValues)}))
+	if(length(whDimReduce)>1) stop("coding error: not expecting to have more than dimReduce parameter")
+	if(length(whDimReduce)==1){
+		if(length(unique(nameList[[whDimReduce]]))==1){ 
+			#only single value for dimReduce, so works like normal; use standard code
+			nms<-sapply(nameList,unique)
+			if(nms[[whDimReduce]]=="noDimReduce"){
+				#if no Dim reduction on all, then just remove (would this even show up in clusterLabel)
+				nms<-nms[-whDimReduce]
+				vals<-vals[-whDimReduce]	
+			}
+		}
+		else{
+			##First, create variable giving type of dimReduce
+			dimReduceType<-nameList[[whDimReduce]]
+			nameList[[whDimReduce]]<-"nDimReduce"
+			nms<-sapply(nameList,function(n){
+				n<-unique(n)
+				if(length(n)>1) stop(paste("found the following multiple values for the parameter name:",paste(n,collapse=",")))
+				return(n)
+			})
+			##Fix up any that had 'noDimReduce' to be NA in vals and then make it numeric
+			if(any(dimReduceType=="noDimReduce")){
+				whNoDim<-which(dimReduceType=="noDimReduce")
+				vals[[whDimReduce]][whNoDim]<-NA
+				vals[[whDimReduce]]<-as.numeric(vals[[whDimReduce]])
+			}
+			##add dimReduceType to values
+			dimReduceType<-gsub("Features","",dimReduceType)
+			for(dimMethod in dimChoices){
+				dimReduceType[dimReduceType==paste("n",dimMethod,sep="")]<-dimMethod
+			}
+			dimReduceType[dimReduceType=="noDimReduce"]<-"none"
+			
+			if(whDimReduce==1){
+				nms<-c("dimReduce",nms)
+				vals<-c(list(dimReduceType),vals)
+			}
+			else{
+				nms<-c(nms[1:(whDimReduce)],"typeDimReduce",nms[whDimReduce:length(nms)])
+				vals<-c(vals[1:(whDimReduce)],list(dimReduceType),vals[whDimReduce:length(nms)])
+			}
+		}
+	
+	}
+	else{
+		nms<-sapply(nameList,function(n){
+			n<-unique(n)
+			if(length(n)>1) stop(paste("found the following multiple values for the parameter name:",paste(n,collapse=",")))
+			return(n)
+		})
+	}
+	
+	
+	
 	vals<-do.call("data.frame",vals)
 	colnames(vals)<-nms
 	vals<-data.frame("clusteringIndex"=wh,vals)
