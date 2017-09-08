@@ -34,7 +34,6 @@ Imports:
 Suggests:
     BiocStyle,
     knitr,
-    diagram,
     testthat,
 	scRNAseq,
     MAST
