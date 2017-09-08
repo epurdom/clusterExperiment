@@ -59,6 +59,7 @@ Collate:
     'combineMany.R'
     'dataCreation.R'
     'getFeatures.R'
+    'getParams.R'
     'mainClustering.R'
     'makeBlankData.R'
     'makeDendrogram.R'

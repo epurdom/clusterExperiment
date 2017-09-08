@@ -185,6 +185,7 @@
 }
 
 ##Universal way to change character indication of clusterTypes into integer indices.
+##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){
   test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
   if(!inherits(test,"try-error")){
