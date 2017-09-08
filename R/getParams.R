@@ -127,7 +127,7 @@ setMethod(f = "getClusterManyParams",
 	
 	
 	
-	vals<-do.call("data.frame",vals)
+	vals<-do.call("data.frame",c(vals,list(stringsAsFactors=FALSE)))
 	colnames(vals)<-nms
 	vals<-data.frame("clusteringIndex"=wh,vals)
 	return(vals)

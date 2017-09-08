@@ -99,8 +99,17 @@ test_that("`getClusterManyParams` works", {
 	                       subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
 	                       isCount=FALSE)
 	cc<-combineMany(cc,proportion=1,whichClusters = "clusterMany")
-	getClusterManyParams(cc)
-	getClusterManyParams(cc,whichClusters=3:4)
+	paramAll<-getClusterManyParams(cc)
+	expect_equal(colnames(paramAll),c("clusteringIndex", "dimReduce" ,"nDimReduce","k"))
+	expect_true(is.data.frame(paramAll))
+	expect_equal(paramAll[1:4,"dimReduce"],c("none","VAR","VAR","PCA"))
+	expect_equal(paramAll[1:4,"nDimReduce"],c(NA,10,15,3))
+	
+	paramSub<-getClusterManyParams(cc,whichClusters=3:4)
+	expect_equal(colnames(paramSub),c("clusteringIndex", "nVARFeatures","k"))
+	expect_true(is.data.frame(paramSub))
+	expect_equal(paramSub[,"nVARFeatures"],c(10,15))
+	
 	expect_warning(getClusterManyParams(cc,whichClusters=1:5),"some clusters indicated in 'whichClusters' do not have type 'clusterMany'")
 	expect_warning(getClusterManyParams(cc,whichClusters=1),"did not return any clusters of type 'clusterMany'")
 	expect_warning(getClusterManyParams(cc,whichClusters="mergeClusters"),"did not return any clusters")
