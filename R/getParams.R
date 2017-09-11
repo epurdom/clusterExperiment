@@ -65,7 +65,8 @@ setMethod(f = "getClusterManyParams",
 	vals<-lapply(1:ncol(listByParams),function(kk){
 		yy<-listByParams[,kk]
 		v<-sapply(strsplit(yy,"="),function(zz){if(length(zz)>1).subset2(zz,2) else zz}) #deal with problem if no "=", e.g. 'noDimReduce' ...
-		if(isNumeric(v)) return(as.numeric(v)) else return(v)
+		numV<-suppressWarnings(as.numeric(v))
+		if(any(is.na(numV))) return(v) else return(numV)
 	})
 	
 	##Deal with dim Reduce that can be multiple labels
@@ -73,7 +74,7 @@ setMethod(f = "getClusterManyParams",
 	dimChoices<-toupper(c("PCA","var","mad","cv"))
 	dimValues <- c("noDimReduce",paste("n",dimChoices,"Features",sep=""))
 	whDimReduce<-which(sapply(nameList,function(yy){any(yy %in% dimValues)}))
-	if(length(whDimReduce)>1) stop("coding error: not expecting to have more than dimReduce parameter")
+	if(length(whDimReduce)>1) stop("coding error: not expecting to have more than one dimReduce parameter")
 	if(length(whDimReduce)==1){
 		if(length(unique(nameList[[whDimReduce]]))==1){ 
 			#only single value for dimReduce, so works like normal; use standard code

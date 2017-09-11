@@ -45,8 +45,7 @@ setMethod(
     out@dendro_samples <- NULL
     out@dendro_clusters <- NULL
     out@dendro_index <- NA_real_
-   # browser()
-    #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
+	out@dendro_outbranch<- NA
 	out@orderSamples <- rank(x@orderSamples[j])
 	
     #need to convert to consecutive integer valued clusters:
