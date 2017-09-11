@@ -184,7 +184,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
 #' @export
 #'
 #' @examples

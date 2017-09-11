@@ -11,7 +11,7 @@
 #'   in \code{groupsOfFeatures} adds lines of NA values into data between these
 #'   groups. When given to heatmap, will create white space between these groups
 #'   of features.
-#'
+#' @seealso \code{\link{plotHeatmap}}
 #' @return \code{makeBlankData} returns a list with items
 #'  \itemize{
 #'  \item{"dataWBlanks"}{ The data with the rows of NAs separating the given
