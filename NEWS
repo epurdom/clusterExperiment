@@ -1,8 +1,11 @@
-Changes in version 1.3.3-9000 ( Release date: )
+Changes in version 1.3.3-9001 ( Release date: )
 ==============
 Changes:
 * Added function `getClusterManyParams` to parse the parameter values in the clusterLabels from clusterMany
 * Removed old dependency on diagram (from previous vignette, no longer needed)
+
+Bugs:
+* Fixed error in subsetting of clusterExperiment object when dendrogram is attached (previously didn't reset dendro_outbranch to NA)
 
 Changes in version 1.3.3 ( Release date: 2017-09-07)
 ==============
