@@ -166,6 +166,10 @@ test_that("subsetting works as promised",{
   expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
   expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
 
+  #test works if have dendrogram attached:
+  x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
+  x[1:3,1:2]
+  
   
   ##########
   #checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)

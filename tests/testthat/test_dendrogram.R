@@ -43,7 +43,7 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
 test_that("`makeDendrogram` with dimReduce options", {
     x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
-    expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
+	expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
     x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
     expect_equal(x,x2)
     makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
