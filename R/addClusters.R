@@ -47,14 +47,13 @@ setMethod(
       stop("Cannot merge clusters from different data.")
     }
     x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
-    #browser()
     x@clusterTypes <- c(x@clusterTypes, y@clusterTypes)
     x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
     x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
     if(any(duplicated(colnames(x@clusterMatrix)))){
       colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
     }
-    x<-.unnameClusterSlots(x)
+    x<-.unnameClusterSlots(x) #just gets rid of the names of objects that shouldn't have them
     validObject(x)
     return(x)
   }
@@ -145,7 +144,6 @@ setMethod(
                             coClustering=coMat,
                             orderSamples=orderSamples
                               )
-   validObject(retval)
     clusterLegend(retval)<-newClusterColors
     return(retval)
   }
