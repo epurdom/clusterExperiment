@@ -99,7 +99,9 @@ setClass(
 ## For now, if subsetting, these are lost, but perhaps we can do something smarter?
 
 setValidity("ClusterExperiment", function(object) {
-  #browser()
+    # ############
+    # check assays
+    # ############
   if(length(assays(object)) < 1) {
     return("There must be at least one assay slot.")
   }
@@ -109,6 +111,10 @@ setValidity("ClusterExperiment", function(object) {
   if(any(is.na(assay(object)))) {
     return("NA values are not allowed.")
   }
+
+  #############
+  #check transform
+  #############
   tX <- try(transform(object),silent=TRUE)
   if(inherits(tX, "try-error")){
     stop(paste("User-supplied `transformation` produces error on the input data
@@ -117,6 +123,9 @@ setValidity("ClusterExperiment", function(object) {
   if(any(is.na(tX))) {
     return("NA values after transforming data matrix are not allowed.")
   }
+  ############
+  #Check clusterMatrix
+  ############
 
   if(!all(is.na((object@clusterMatrix))) &
      !(NROW(object@clusterMatrix) == NCOL(object))) {
@@ -133,6 +142,15 @@ setValidity("ClusterExperiment", function(object) {
   if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
     return("length of clusterInfo must be same as NCOL of the clusterMatrix")
   }
+      #check internally stored as integers
+      testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
+        whCl<-which(!x %in% c(-1,-2))
+        uniqVals<-unique(x[whCl])
+        return(all(sort(uniqVals)==1:length(uniqVals)))
+      })
+      #browser()
+      if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+  
   ############
   ##Check dendrogram slotNames
   ############
@@ -157,37 +175,33 @@ setValidity("ClusterExperiment", function(object) {
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
   }
+
   ## Check co-clustering
   if(!is.null(object@coClustering) &&
      (NROW(object@coClustering) != NCOL(object@coClustering)
       | NCOL(object@coClustering) != NCOL(object))) {
     return("`coClustering` must be a sample by sample matrix.")
   }
-  ## If have a cluster matrix
+
+  ############
+  ## Check primary index
+  ############
   if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
     #check primary index
     if(length(object@primaryIndex) != 1) {
-        if(length(object@primaryIndex) == 0) return("If more than one set of clusterings, a primary cluster must
-               be specified.")
+        if(length(object@primaryIndex) == 0) return("If more than one set of clusterings, a primary cluster must be specified.")
         if(length(object@primaryIndex) > 0) return("Only a single primary index may be specified")
     }
-    if(object@primaryIndex > NCOL(object@clusterMatrix) |
-       object@primaryIndex < 1) {
+    if(object@primaryIndex > NCOL(object@clusterMatrix) | object@primaryIndex < 1) {
       return("`primaryIndex` out of bounds.")
     }
+  ############
+  ## Check clusterTypes
+  ############
     #check clusterTypes
     if(NCOL(object@clusterMatrix) != length(object@clusterTypes)) {
-      return("`clusterTypes` must be the same length as NCOL of
-               `clusterMatrix`.")
+      return("`clusterTypes` must be the same length as NCOL of `clusterMatrix`.")
     }
-    #check internally stored as integers
-    testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
-      whCl<-which(!x %in% c(-1,-2))
-      uniqVals<-unique(x[whCl])
-      return(all(sort(uniqVals)==1:length(uniqVals)))
-    })
-    #browser()
-    if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
 
     ####
     #test that colnames of clusterMatrix appropriately aligns with everything else
@@ -197,6 +211,7 @@ setValidity("ClusterExperiment", function(object) {
     if(!is.null(names(object@clusterTypes))) return("clusterTypes should not have names")
     if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
     if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
+
     ####
     #test that @clusterLegend is proper form
     ####
@@ -210,8 +225,7 @@ setValidity("ClusterExperiment", function(object) {
       return("Each element of `clusterLegend` list must be a matrix")
     }
     testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
-    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
-      length(unique(x))})
+    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {length(unique(x))})
     if(!all(testColorRows == testClusterMat)) {
       return("each element of `clusterLegend` must be matrix with number of
                rows equal to the number of clusters (including -1 or -2 values)
@@ -247,7 +261,12 @@ setValidity("ClusterExperiment", function(object) {
              `clusterIds` matching the corresponding integer valued
              clusterMatrix values")
     }
+
   }
+
+    ####
+    #test orderSamples
+    ####
   if(length(object@orderSamples)!=NCOL(assay(object))) {
     return("`orderSamples` must be of same length as number of samples
          (NCOL(assay(object)))")
