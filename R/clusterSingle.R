@@ -327,12 +327,13 @@ setMethod(
       retval <- clusterExperiment(origX, outlist$clustering,
                                   transformation=transFun,
                                   clusterInfo=clInfo,
-                                  clusterTypes="clusterSingle")
+                                  clusterTypes="clusterSingle",checkTransformAndAssay=FALSE)
       clusterLabels(retval)<-clusterLabel
       if(!sequential & subsample) {
         retval@coClustering<-1-finalClusterList$diss
+		ch<-.checkCoClustering(reval)
+		if(!is.logical(ch)) stop(ch)
       }
-      validObject(retval)
       return(retval)
     }
     else{

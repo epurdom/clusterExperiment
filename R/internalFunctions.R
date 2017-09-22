@@ -20,7 +20,7 @@
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-    validObject(retval)
+#   Note: .addBackSEInfo calls clusterExperiment (i.e. validates)
     return(retval)
 }
 
@@ -36,7 +36,8 @@
                             dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
-							primaryIndex=primaryClusterIndex(newObj)
+							primaryIndex=primaryClusterIndex(newObj),
+							checkTransformAndAssay=FALSE
 							)
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)

@@ -217,7 +217,6 @@ setMethod(
                                   transformation=transFun,
                                   clusterInfo=outval$clusterInfo,
                                   clusterTypes="clusterMany")
-      validObject(retval)
       return(retval)
     }
     else {
@@ -514,7 +513,7 @@ setMethod(
 
       if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
       else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-      validObject(retval)
+		  #both above check validity.
       return(retval)
     } else {
       return(outval)

@@ -32,7 +32,7 @@ setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "matrix"),
   definition = function(x, y, clusterTypes="User") {
-    ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes)
+    ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes,checkTransformAndAssay=FALSE)
     addClusters(x,ccObj)
   }
 )
@@ -54,7 +54,13 @@ setMethod(
       colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
     }
     x<-.unnameClusterSlots(x) #just gets rid of the names of objects that shouldn't have them
-    validObject(x)
+	ch<-.checkClusterMatrix(x)
+	if(!is.logical(ch)) stop(ch)
+	ch<-.checkClusterTypes(x)
+	if(!is.logical(ch)) stop(ch)
+	ch<-.checkClusterLegend(x)
+	if(!is.logical(ch)) stop(ch)
+		#would it be less memory to do a call to "new"? What is difference versus having to check dendrogram, coClustering, etc if they exists? Should do checks on large data.
     return(x)
   }
 )
@@ -142,7 +148,8 @@ setMethod(
                             dendro_index=dend_ind,
                             dendro_outbranch=dend_out,
                             coClustering=coMat,
-                            orderSamples=orderSamples
+                            orderSamples=orderSamples,
+							checkTransformAndAssay=FALSE
                               )
     clusterLegend(retval)<-newClusterColors
     return(retval)
