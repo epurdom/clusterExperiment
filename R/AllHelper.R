@@ -38,7 +38,7 @@ setMethod(
   definition = function(x, i, j, ..., drop=TRUE) {
     # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
     # out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
-
+	###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
 	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
     subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
@@ -64,8 +64,8 @@ setMethod(
     })
 	#fix order of samples so same
 	newOrder<-rank(x@orderSamples[j])
-	out<- clusterExperiment(
-             se=assay(selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j)),#have to explicitly give the inherintence... not great.
+    out<- clusterExperiment(
+             se=as(selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j),"SummarizedExperiment"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
                primaryIndex = x@primaryIndex,
