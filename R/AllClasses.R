@@ -262,6 +262,7 @@ setMethod(
         clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
+	browser()
     tmp<-.makeColors(clusters, colors=bigPalette)
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters

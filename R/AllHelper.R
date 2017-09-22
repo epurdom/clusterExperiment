@@ -42,7 +42,7 @@ setMethod(
 	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
     subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
-	nms<-colnames(newMat)
+	nms<-colnames(subMat)
 	newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
     colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
@@ -71,10 +71,10 @@ setMethod(
                primaryIndex = x@primaryIndex,
                clusterTypes = x@clusterTypes,
                clusterInfo=x@clusterInfo,
-               clusterLegend=newClLegend,
                orderSamples=newOrder,
 			   checkTransformAndAssay=FALSE
     )
+	clusterLegend(out)<-newClLegend
     return(out)
   }
 )

@@ -63,8 +63,8 @@
 }
 .checkClusterLabels<-function(object){
 	 if(!all(is.na(object@clusterMatrix))){
-	     if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
-	     if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
+	     if(is.null(colnames(object@clusterMatrix))) return("must have clusterLabels by assignment of column names for clusterMatrix")
+	     if(any(duplicated(colnames(object@clusterMatrix)))) return("cannot have duplicated clusterLabels (i.e. clusterMatrix must have unique column names)")
  	
 	 }
 	 return(TRUE)

@@ -156,6 +156,7 @@
             y[x>0]<-currcolors[x[x>0]]
             return(y)
         })
+		if(nrow(clMat)==1) colorMat<-matrix(colorMat,nrow=1) #in case only 1 sample!
     }
     else{
         if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
