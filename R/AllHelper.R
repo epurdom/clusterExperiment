@@ -426,7 +426,7 @@ setReplaceMethod(
     f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
-        object@orderSamples<-value
+		object@orderSamples<-value
 		ch<-.checkOrderSamples(object) 
 		if(is.logical(ch) && ch) return(object) else stop(ch)
         

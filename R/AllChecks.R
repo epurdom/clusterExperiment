@@ -203,6 +203,7 @@
 	if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) {
 	  return("`orderSamples` must be values between 1 and the number of samples.")
 	}
+	return(TRUE)
 }
 
 #' @rdname ClusterFunction-class

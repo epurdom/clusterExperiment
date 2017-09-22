@@ -67,7 +67,8 @@ Slots).}
 
 \item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
 
-\item{checkTransformAndAssay}{logical. Whether to check the content of the assay and given transformation function for whether they are valid.}
+\item{checkTransformAndAssay}{logical. Whether to check the content of the
+assay and given transformation function for whether they are valid.}
 }
 \value{
 A \code{ClusterExperiment} object.
@@ -96,11 +97,16 @@ Note that when subsetting the data, the co-clustering and
 dendrogram information are lost.
 }
 \details{
-The \code{clusterExperiment} constructor function gives clusterLabels
- based on the column names of the input matrix/SummarizedExperiment. If
- missing, will assign labels "cluster1","cluster2", etc.
+The \code{clusterExperiment} constructor function gives
+  clusterLabels based on the column names of the input
+  matrix/SummarizedExperiment. If missing, will assign labels
+  "cluster1","cluster2", etc.
 
-Note that the validity check when creating a new \code{ClusterExperiment} object with \code{new} is less extensive than when using \code{clusterExperiment} function with \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
+Note that the validity check when creating a new
+  \code{ClusterExperiment} object with \code{new} is less extensive than when
+  using \code{clusterExperiment} function with
+  \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
+  \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 }
 \section{Slots}{
 

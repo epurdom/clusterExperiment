@@ -72,8 +72,7 @@
 
 \S4method{transformation}{ClusterExperiment}(x)
 
-\S4method{transformation}{ClusterExperiment,`function`}(object,
-  checkValidity = TRUE) <- value
+\S4method{transformation}{ClusterExperiment,`function`}(object) <- value
 
 \S4method{nClusters}{ClusterExperiment}(x)
 
@@ -186,4 +185,10 @@ This is a collection of helper methods for the ClusterExperiment class.
 \details{
 Note that when subsetting the data, the dendrogram information and
 the co-clustering matrix are lost.
+
+Note that redefining the transformation function via
+  \code{transformation(x)<-} will check the validity of the transformation on
+  the data assay. If the assay is large, this may be time consuming. Consider
+  using a call to clusterExperiment, which has the option as to whether to
+  check the validity of the transformation.
 }
