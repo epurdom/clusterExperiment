@@ -81,7 +81,7 @@ test_that("adding clusters work as promised",{
   expect_error(clusterLabels(c3)[1:2]<-c("User","User"),"cannot have duplicated clusterLabels")
   clusterLabels(c3)[1:2]<-c("User1","User2")
   clusterLabels(c3)[1]<-"User4"
-  expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
+  expect_error(clusterLabels(c3)[1]<-"User2","cannot have duplicated clusterLabels")
   expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
   
   ###check adding matrix of clusters

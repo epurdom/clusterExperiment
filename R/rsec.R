@@ -141,7 +141,6 @@ setMethod(
     else{
       retval<-.postClusterMany(x,...)
     }
-    validObject(retval)
 
     return(retval)
   })
