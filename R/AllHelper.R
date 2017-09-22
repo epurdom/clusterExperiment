@@ -152,11 +152,17 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @details Note that redefining the transformation function via
+#'   \code{transformation(x)<-} will check the validity of the transformation on
+#'   the data assay. If the assay is large, this may be time consuming. Consider
+#'   using a call to clusterExperiment, which has the option as to whether to
+#'   check the validity of the transformation.
 #' @aliases transformation<-
 setReplaceMethod(
   f = "transformation",
   signature = signature("ClusterExperiment", "function"),
-  definition = function(object, value,checkValidity=TRUE) {
+  definition = function(object, value) {
+	checkValidity=TRUE
     object@transformation <- value
     if(checkValidity){
 		ch<-.checkTransform(object)

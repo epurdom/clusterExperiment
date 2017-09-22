@@ -206,11 +206,17 @@ setMethod(
 #' @param dendro_index numeric. Sets the dendro_index slot (see Slots).
 #' @param dendro_outbranch logical. Sets the dendro_outbranch slot (see Slots).
 #' @param coClustering matrix. Sets the `coClustering` slot (see Slots).
-#' @param checkTransformAndAssay logical. Whether to check the content of the assay and given transformation function for whether they are valid. 
-#' @details The \code{clusterExperiment} constructor function gives clusterLabels
-#'  based on the column names of the input matrix/SummarizedExperiment. If
-#'  missing, will assign labels "cluster1","cluster2", etc.
-#' @details Note that the validity check when creating a new \code{ClusterExperiment} object with \code{new} is less extensive than when using \code{clusterExperiment} function with \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use \code{clusterExperiment} to create new \code{ClusterExperiment} objects. 
+#' @param checkTransformAndAssay logical. Whether to check the content of the
+#'   assay and given transformation function for whether they are valid.
+#' @details The \code{clusterExperiment} constructor function gives
+#'   clusterLabels based on the column names of the input
+#'   matrix/SummarizedExperiment. If missing, will assign labels
+#'   "cluster1","cluster2", etc.
+#' @details Note that the validity check when creating a new
+#'   \code{ClusterExperiment} object with \code{new} is less extensive than when
+#'   using \code{clusterExperiment} function with
+#'   \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
+#'   \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 setMethod(
   f = "clusterExperiment",
   signature = signature("SummarizedExperiment","matrix"),

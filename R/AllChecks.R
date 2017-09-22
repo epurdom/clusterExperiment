@@ -23,7 +23,7 @@
     tX <- try(transform(object),silent=TRUE)
     if(inherits(tX, "try-error")){
       stop(paste("User-supplied `transformation` produces error on the input data
-                 matrix:\n",x))
+                 matrix:\n",tX))
     }
     if(any(is.na(tX))) {
       return("NA values after transforming data matrix are not allowed.")

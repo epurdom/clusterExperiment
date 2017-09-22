@@ -331,7 +331,7 @@ setMethod(
       clusterLabels(retval)<-clusterLabel
       if(!sequential & subsample) {
         retval@coClustering<-1-finalClusterList$diss
-		ch<-.checkCoClustering(reval)
+		ch<-.checkCoClustering(retval)
 		if(!is.logical(ch)) stop(ch)
       }
       return(retval)
