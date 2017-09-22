@@ -69,17 +69,9 @@ We provide a visualization to compare many clusterings of the same data in the f
 
 # Quickstart {#quickstart}
 
-We will go quickly through the standard workflow steps of clustering using the  `clusterExperiment` package, before turning to more details. The standard workflow we envision is the following:
+In this section we give a quick introduction to the package. We will demonstrate running `RSEC` on a single cell dataset to immediately find clusters and then how to find features (biomarkers) that go along with the clustering. We will then quickly go over the intermediate steps that underlie the `RSEC` wrapper function, which can also be called directly to make different choices in the clustering procedures. 
 
-* `clusterMany` -- run desired clusterings
-* `combineMany` -- get a unified clustering
-* `makeDendrogram` -- get a hierarchical relationship between the clusters
-* `mergeClusters` -- merge together clusters with little DE between their genes.
-* `getBestFeatures` -- Find Features that are differential between the final clustering.
-
-The first four steps (the clustering steps) are done in one function call by `RSEC`, which is the preferred usage. However, to understand the parameters available in `RSEC` it is useful to go through the steps first. 
-
-## Data example {#data}
+## The Data {#data}
 
 We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package.
 
@@ -98,7 +90,7 @@ NCOL(fluidigm) #number of samples
 ```
 
 
-## Step 0: Filtering and normalization {#step0}
+## Filtering and normalization {#step0}
 
 While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice at different sequencing depth. We will limit the analysis to the samples corresponding to high sequencing depth. 
 
@@ -124,7 +116,65 @@ fq <- round(limma::normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
 
-## Step 1: Clustering with `clusterMany` {#step1}
+## Clustering with RSEC
+
+We will now run `RSEC` to find clusters of the cells. Because this procedure is computationally intensive, we have set this code to not run (changing `eval=TRUE` will run the code)
+
+```{r RSEC, eval=FALSE}
+
+```
+
+Instead we will have save the results from this call. We will load it into the vignette:
+
+```{r RSECLoad}
+
+```
+
+
+
+## Finding Features related to the clusters {#step4}
+
+After finding the clusters, the next step is often to then find features that are different between these clusters, as a start to understanding biological differences in the samples. The function `getBestFeatures` performs tests for differential expression (i.e. different mean levels) between the clusters for each feature. It relies on `limma` [@Smyth:2004gh, @Ritchie:2015fa] to run the differential expression analysis, with `voom` [@Law:2014ff] correction if the data are indicated by the user to be counts.
+
+There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
+
+```{r getBestFeatures}
+pairsAll<-getBestFeatures(ce,contrastType="Pairs",p.value=0.05,
+                          number=nrow(ce),isCount=TRUE)
+head(pairsAll)
+```
+
+We can visualize only these significantly different pair-wise features with `plotHeatmap` by using the column "IndexInOriginal" in the result of `getBestFeatures` to quickly identify the genes to be used in the heatmap. Notice that the same genes can be replicated across different contrasts, so we will not always have unique genes:
+
+```{r getBestFeatures_size}
+length(pairsAll$Feature)==length(unique(pairsAll$Feature))
+```
+
+In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
+
+```{r getBestFeatures_heatmap}
+plotHeatmap(ce, clusterSamplesData="dendrogramValue",
+            clusterFeaturesData=unique(pairsAll[,"IndexInOriginal"]),
+            main="Heatmap of features w/ significant pairwise differences",
+            breaks=.99)
+```
+
+Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram was made with `makeDendrogram`. These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
+
+
+## Components of the clustering workflow
+We explain superficially here what the standard workflow is that is used by RSEC and the  `clusterExperiment` package. 
+
+The standard clustering workflow steps are the following:
+
+* `clusterMany` -- run desired clusterings
+* `combineMany` -- get a unified clustering
+* `makeDendrogram` -- get a hierarchical relationship between the clusters
+* `mergeClusters` -- merge together clusters with little DE between their genes.
+
+These clustering steps are done in one function call by `RSEC`, described above, which is the preferred usage. However, to understand the parameters available in `RSEC` it is useful to go through the steps first. We will go through these steps, but instead of using the parameters of `RSEC` that involve subsampling and are computationally intensive, we will simplify the procedure so it just uses basic PAM with no subsampling or sequential clustering. This is simply for the purpose of understanding the object that is created, how to manipulate it, and the intermediate steps that `RSEC` follows. Later sections will go through these steps in more detail. 
+
+### Step 1: Clustering with `clusterMany` {#step1}
 
 `clusterMany` lets the user quickly pick between many clustering options and run all of the clusterings in one single command. In the quick start we pick a simple set of clusterings based on varying the dimensionality reduction options. The way to designate which options to vary is to give multiple values to an argument. 
 <!-- Due to a bug in R, we need to set `getClass.msg=FALSE` or otherwise a slew of annoying warnings will spit out at every call; this should be fixed in the next patch to R.  -->
@@ -211,7 +261,7 @@ plotBarplot(ce,whichClusters=c("nPCA=15,k=6" ,"nPCA=15,k=8"))
 ```
 
 
-### The output 
+#### The output 
 
 The output of `clusterMany` is a `ClusterExperiment` object. This is a class built for this package and explained in the section on [ClusterExperiment Objects](#ceobjects). In the object `ce` the clusters are stored, names and colors for each cluster within a clustering are assigned, and other information about the clusterings is recorded. Furthermore, all of the information in the original `SummarizedExperiment` is retained. 
 
@@ -227,7 +277,7 @@ Because we have changed `clusterLabels` above, these new cluster labels are show
 
 Another special value is `-2` discussed in the section on [ClusterExperiment objects](#ceobjects)
 
-## Step 2: Find a consensus with `combineMany` {#step2}
+### Step 2: Find a consensus with `combineMany` {#step2}
 
 To find a consensus clustering across the many different clusterings created by `clusterMany` the function `combineMany` can be used next. 
 
@@ -283,7 +333,7 @@ plotCoClustering(ce)
 
 This visualization can help in determining whether to change the value of `proportion` (though see [combineMany](#combineMany) for how -1 assignments affect `combineMany`).
 
-## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
+### Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
 
 Once you start varying the parameters, is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case the results of `combineMany` can often result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters, for example with a heatmap, and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
 
@@ -345,34 +395,6 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99,
 
 By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. The argument `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
 
-## Step 4: Finding Features related to the clusters {#step4}
-
-The last step is to then find features that are different between these clusters, as a start to understanding biological differences in the samples. The function `getBestFeatures` performs tests for differential expression (i.e. different mean levels) between the clusters for each feature. It relies on `limma` [@Smyth:2004gh, @Ritchie:2015fa] to run the differential expression analysis, with `voom` [@Law:2014ff] correction if the data are indicated by the user to be counts.
-
-There are several types of tests that can be performed to identify features that are different between the clusters. Here we perform all pairwise tests between the clusters. 
-
-```{r getBestFeatures}
-pairsAll<-getBestFeatures(ce,contrastType="Pairs",p.value=0.05,
-                          number=nrow(ce),isCount=TRUE)
-head(pairsAll)
-```
-
-We can visualize only these significantly different pair-wise features with `plotHeatmap` by using the column "IndexInOriginal" in the result of `getBestFeatures` to quickly identify the genes to be used in the heatmap. Notice that the same genes can be replicated across different contrasts, so we will not always have unique genes:
-
-```{r getBestFeatures_size}
-length(pairsAll$Feature)==length(unique(pairsAll$Feature))
-```
-
-In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
-
-```{r getBestFeatures_heatmap}
-plotHeatmap(ce, clusterSamplesData="dendrogramValue",
-            clusterFeaturesData=unique(pairsAll[,"IndexInOriginal"]),
-            main="Heatmap of features w/ significant pairwise differences",
-            breaks=.99)
-```
-
-Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram was made with `makeDendrogram`. These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
 
 # ClusterExperiment Objects {#ceobjects}
 
@@ -1124,6 +1146,31 @@ The `getBestFeatures` method for `ClusterExperiment` objects has an argument `is
 If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
 Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+
+## Piping into other DE routines
+
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
+
+Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
+
+
+## Additional considerations
+
+The user should be careful about questions of multiple comparisons when all of these multiple contrasts are being performed on each feature; the default is to correct across all of these tests (see the help of `getBestFeatures` and the argument `contrastAdj` for more). As noted in the introduction, p-values created in this way are reusing the data (since the data was also used for creating the clusters) and hence should not be considered valid p-values regardless.
+
+
+As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned *for each contrast*. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
+
+# Session Information
+This vignette was compiled under:
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+
+# References
+ used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 
 ## Piping into other DE routines
 
