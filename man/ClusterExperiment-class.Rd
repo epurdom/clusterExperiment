@@ -27,7 +27,7 @@ clusterExperiment(se, clusters, ...)
   transformation, primaryIndex = 1, clusterTypes = "User",
   clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
   dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
-  coClustering = NULL)
+  coClustering = NULL, checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
@@ -66,6 +66,8 @@ Slots).}
 \item{dendro_outbranch}{logical. Sets the dendro_outbranch slot (see Slots).}
 
 \item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
+
+\item{checkTransformAndAssay}{logical. Whether to check the content of the assay and given transformation function for whether they are valid.}
 }
 \value{
 A \code{ClusterExperiment} object.
@@ -97,6 +99,8 @@ dendrogram information are lost.
 The \code{clusterExperiment} constructor function gives clusterLabels
  based on the column names of the input matrix/SummarizedExperiment. If
  missing, will assign labels "cluster1","cluster2", etc.
+
+Note that the validity check when creating a new \code{ClusterExperiment} object with \code{new} is less extensive than when using \code{clusterExperiment} function with \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 }
 \section{Slots}{
 

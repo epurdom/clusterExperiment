@@ -371,7 +371,6 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
-    if(any(duplicated(value))) stop("cannot have duplicated clusterLabels")
     colnames(object@clusterMatrix) <- value
     ch<-.checkClusterLabels(object)
 	if(is.logical(ch) && ch) return(object) else stop(ch)

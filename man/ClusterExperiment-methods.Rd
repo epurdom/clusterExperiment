@@ -72,7 +72,8 @@
 
 \S4method{transformation}{ClusterExperiment}(x)
 
-\S4method{transformation}{ClusterExperiment,`function`}(object) <- value
+\S4method{transformation}{ClusterExperiment,`function`}(object,
+  checkValidity = TRUE) <- value
 
 \S4method{nClusters}{ClusterExperiment}(x)
 

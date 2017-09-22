@@ -216,7 +216,7 @@ setMethod(
       retval <- clusterExperiment(origX, outval$clMat,
                                   transformation=transFun,
                                   clusterInfo=outval$clusterInfo,
-                                  clusterTypes="clusterMany")
+                                  clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
       return(retval)
     }
     else {

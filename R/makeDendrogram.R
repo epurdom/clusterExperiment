@@ -99,7 +99,7 @@ setMethod(
 	#browser()
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     ch<-.checkDendrogram(x)
-	if(!logical(ch) stop(ch)
+	if(!logical(ch)) stop(ch)
     return(x)
   })
 
