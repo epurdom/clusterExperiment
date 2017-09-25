@@ -16,6 +16,7 @@
 #' @keywords data
 #' @examples
 #' #code used to create data:
+#' \dontrun{
 #' nvar<-51 #multiple of 3
 #' n<-100
 #' x<-cbind(matrix(rnorm(n*nvar,mean=5),nrow=nvar),
@@ -50,7 +51,8 @@
 #' =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))
 #' #labels for the truth
 #' trueCluster<-rep(c(1:3),each=n)
-#' #save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+#' save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+#' }
 NULL
 
 
@@ -68,6 +70,7 @@ NULL
 #' @keywords data
 #' @examples
 #' #code used to create rsecFluidigm:
+#' \dontrun{
 #' library(scRNAseq)
 #'data("fluidigm")
 #' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
@@ -76,10 +79,13 @@ NULL
 #' se <- se[pass_filter,]
 #' fq <- round(limma::normalizeQuantiles(assay(se)))
 #' assays(se) <- list(normalized_counts=fq)
+#' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
+#' colnames(colData(se))[wh]<-c("Published1","Published2")
 #' library(clusterExperiment)
-#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201, clusterFunction="hierarchical01"))
+#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,ncores=5,random.seed=176201, clusterFunction="hierarchical01",combineMinSize=3))
 #' packageVersion("clusterExperiment")
-#' save(ce, file="~/rsecFluidigm.rda")
+#' save(rsecFluidigm, file="~/rsecFluidigm.rda")
+#' }
 
 ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
 # Note: Merging will be done on ' combineMany ', with clustering index 1

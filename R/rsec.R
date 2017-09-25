@@ -43,7 +43,7 @@ setMethod(
         nVarDims<-NA
     }
     if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
-    ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
+ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
@@ -80,7 +80,8 @@ setMethod(
 	args1<-list()
 	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
 	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
-  ce<-do.call("combineMany",c(list(x=ce,whichClusters="clusterMany"),args1))
+		 whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters else "clusterMany"
+  ce<-do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1))
 #browser()
 	##makeDendrogram
   	args1<-list()

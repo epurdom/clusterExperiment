@@ -1,7 +1,7 @@
 Changes in version 1.3.3-9002 ( Release date: )
 ==============
 Changes:
-* Added data object of run of RSEC
+* Added data object of run of RSEC. Changed `lazyLoad` to `false` because loading this object on installation was creating errors. 
 * Updated vignette to more completely cover RSEC.
 * Change default `clusterFunction` argument to `RSEC` to be "hierarchical01" rather than all 01 methods (previous default). This reduces load of making simple call.
 * Updated validity checks to reduce memory load, and dropped `validObject` calls.
