@@ -53,3 +53,42 @@
 #' #save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
 NULL
 
+
+
+
+#' RSEC run for vignette
+#'
+#' @name rsecFluidigm
+#' @docType data
+#' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
+#' @format clusterExperiment object, the result of running \code{\link{RSEC}} on 
+#' fluidigm data described in vignette and available in the \code{scRNAseq} 
+#' package.
+#' @seealso \code{\link[scRNAseq]{fluidigm}}
+#' @keywords data
+#' @examples
+#' #code used to create rsecFluidigm:
+#' library(scRNAseq)
+#'data("fluidigm")
+#' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
+#' wh_zero <- which(rowSums(assay(se))==0)
+#' pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
+#' se <- se[pass_filter,]
+#' fq <- round(limma::normalizeQuantiles(assay(se)))
+#' assays(se) <- list(normalized_counts=fq)
+#' library(clusterExperiment)
+#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201, clusterFunction="hierarchical01"))
+#' packageVersion("clusterExperiment")
+#' save(ce, file="~/rsecFluidigm.rda")
+
+###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
+# Note: Merging will be done on ' combineMany ', with clustering index 1
+# Note: If `isCount=TRUE` the data will be transformed with voom() rather than
+# with the transformation function in the slot `transformation`.
+# This makes sense only for counts.
+#    user  system elapsed
+# 170.428   5.408  61.705
+# > packageVersion("clusterExperiment")
+# [1] ‘1.3.3.9001’
+
+NULL

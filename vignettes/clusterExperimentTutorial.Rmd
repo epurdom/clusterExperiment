@@ -118,16 +118,19 @@ assays(se) <- list(normalized_counts=fq)
 
 ## Clustering with RSEC
 
-We will now run `RSEC` to find clusters of the cells. Because this procedure is computationally intensive, we have set this code to not run (changing `eval=TRUE` will run the code)
+We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`.
+
+Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly. Changing `eval=TRUE` will run the code. On a 32-core compute machine with 62GiB of memory and a Quad-Core AMD Opteron(tm) Processor, running the following command took 1 minute (version `1.3.3-9001` of `clusterExperiment`). 
+
 
 ```{r RSEC, eval=FALSE}
-
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
 ```
 
-Instead we will have save the results from this call. We will load it into the vignette:
+Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
 
 ```{r RSECLoad}
-
+load(rsecFluidigm)
 ```
 
 
