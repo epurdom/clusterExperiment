@@ -22,6 +22,7 @@ Simulated data for running examples
 }
 \examples{
 #code used to create data:
+\dontrun{
 nvar<-51 #multiple of 3
 n<-100
 x<-cbind(matrix(rnorm(n*nvar,mean=5),nrow=nvar),
@@ -56,7 +57,8 @@ simCount<-matrix(rpois(n=length(as.vector(countMean)), lambda
 =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))
 #labels for the truth
 trueCluster<-rep(c(1:3),each=n)
-#save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+}
 }
 \author{
 Elizabeth Purdom \email{epurdom@stat.berkeley.edu}

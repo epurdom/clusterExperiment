@@ -12,6 +12,7 @@ RSEC run for vignette
 }
 \examples{
 #code used to create rsecFluidigm:
+\dontrun{
 library(scRNAseq)
 data("fluidigm")
 se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
@@ -20,10 +21,13 @@ pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
 se <- se[pass_filter,]
 fq <- round(limma::normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
+wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
+colnames(colData(se))[wh]<-c("Published1","Published2")
 library(clusterExperiment)
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201, clusterFunction="hierarchical01"))
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,ncores=5,random.seed=176201, clusterFunction="hierarchical01",combineMinSize=3))
 packageVersion("clusterExperiment")
-save(ce, file="~/rsecFluidigm.rda")
+save(rsecFluidigm, file="~/rsecFluidigm.rda")
+}
 }
 \seealso{
 \code{\link[scRNAseq]{fluidigm}}
