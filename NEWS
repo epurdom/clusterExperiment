@@ -1,6 +1,7 @@
 Changes in version 1.3.3-9002 ( Release date: )
 ==============
 Changes:
+* Add argument `clusterLabels` to `plotClusters` to allow user to set clusterLabels without changing the object.
 * Added data object of run of RSEC. Changed `lazyLoad` to `false` because loading this object on installation was creating errors. 
 * Updated vignette to more completely cover RSEC.
 * Change default `clusterFunction` argument to `RSEC` to be "hierarchical01" rather than all 01 methods (previous default). This reduces load of making simple call.

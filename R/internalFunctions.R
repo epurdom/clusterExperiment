@@ -42,6 +42,7 @@
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
+#Returns NULL if no sample data
 .pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
 	fixNA<-match.arg(fixNA)
   if(!is.null(wh)){

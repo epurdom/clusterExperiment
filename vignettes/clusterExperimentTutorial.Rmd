@@ -361,32 +361,23 @@ We will set an order with first the PCA, ordered by number of dimensions, then t
 
 ```{r plotCluster_newOrder}
 ord<-order(cmParams[,"dimReduce"],cmParams[,"nDimReduce"])
+ind<-cmParams[ord,"clusteringIndex"]
 par(mar=plotCMar)
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=cmParams[ord,"clusteringIndex"], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-
-
-We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
-
-The labels shown are those given automatically by `clusterMany` but can be a bit much for plotting. We can assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (note we are permanently changing the labels here within the `ClusterExperiment` object). We choose to remove "Features" as being too wordy:
+We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. 
+The labels shown are those given automatically by `clusterMany` but can be a bit much for plotting. We choose to remove "Features" as being too wordy:
 
 ```{r plotCluster_newLabels}
 clOrig<-clusterLabels(ce)
-clusterLabels(ce)<-gsub("Features","",clOrig)
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=cmParams[ord,"clusteringIndex"], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+clOrig<-gsub("Features","",clOrig)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-However, note that we changed the labels internally in `ce`, and therefore will not be able to run `getClusterManyParams` which relies on parsing the expected clusterLabels from `clusterMany`. 
+We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. However, if we change the labels internally in `ce` we will not be able to run `getClusterManyParams` which relies on parsing the expected clusterLabels from `clusterMany`. 
 
-```{r paramsError,error=TRUE}
-head(getClusterManyParams(ce))
-```
-At this point, the best solution is to save the original cluster labels (as we did above) and reset the clusterLabels after you change them. 
-
-```{r plotCluster_resetLabels}
-clusterLabels(ce)<-clOrig
-```
+There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
 ## Step 2: Find a consensus with `combineMany` {#step2}
 
