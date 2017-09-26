@@ -1,8 +1,8 @@
 #' @include AllChecks.R
 setOldClass("dendrogram")
+setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
-setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 #' @title Class ClusterExperiment
 #'
