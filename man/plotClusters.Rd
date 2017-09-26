@@ -79,7 +79,11 @@ columns, they will be encoded as 'unassigned' and receive the same color as
 'unassigned' samples in the clustering.}
 
 \item{clusterLabels}{names to go with the columns (clusterings) in matrix
-\code{colorMat}.}
+\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the
+\code{clusterLabels} argument must include names for the sample data too.
+If the user gives only names for the clusterings, the code will try to 
+anticipate that and use the column names of the sample data, but this is fragile.
+If set to \code{FALSE}, then no labels will be plotted.}
 
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters

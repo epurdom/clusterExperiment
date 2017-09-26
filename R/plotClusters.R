@@ -65,6 +65,7 @@
 #'   \code{clusterLabels} argument must include names for the sample data too.
 #'   If the user gives only names for the clusterings, the code will try to 
 #'   anticipate that and use the column names of the sample data, but this is fragile.
+#'   If set to \code{FALSE}, then no labels will be plotted.
 #' @param add whether to add to existing plot.
 #' @param xCoord values on x-axis at which to plot the rows (samples).
 #' @param ylim vector of limits of y-axis.
@@ -351,6 +352,10 @@ setMethod(
     clusters<-cbind(clusters,sampleData)
 	}
     clNames<-clusterLabels
+	if(is.logical(clNames)){
+		if(!clNames) clNames<-rep("",ncol(clusters))
+		else clNames<-colnames(clusters)
+	}
     if(length(clNames)!=ncol(clusters)){
     	if(length(clNames==ncol(clusters)-ncol(sampleData))){
     		clNames<-c(clNames,colnames(sampleData))
