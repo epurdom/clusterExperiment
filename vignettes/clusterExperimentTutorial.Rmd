@@ -128,7 +128,8 @@ Instead we have saved the results from this call as a data object in the package
 ```{r RSECLoad}
 #don't call this routine if you ran the above code.
 #it will overwrite the rsecFluidigm you made
-data(rsecFluidigm)
+library(clusterExperiment)
+data("rsecFluidigm")
 ```
 
 
