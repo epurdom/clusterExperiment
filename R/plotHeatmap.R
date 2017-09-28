@@ -184,7 +184,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
 #' @export
 #'
 #' @examples
@@ -248,7 +248,7 @@ setMethod(
     ){
       transformation<-.transData(assay(data),isCount=isCount,transFun=transFun,dimReduce="none")$transFun
       fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
-      fakeCE<-clusterExperiment(data,fakeCL,transformation=transformation)
+      fakeCE<-clusterExperiment(data,fakeCL,transformation=transformation,checkTransformAndAssay=FALSE)
       if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data of class Summarized Experiment")
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
@@ -802,7 +802,8 @@ setMethod(
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
                               dendro_outbranch=data@dendro_outbranch,
-                              primaryIndex=data@primaryIndex
+                              primaryIndex=data@primaryIndex,
+							  checkTransformAndAssay=FALSE
                               
                               
     )

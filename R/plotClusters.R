@@ -60,8 +60,12 @@
 #'   \code{clusters} is a matrix of colors and there is no alignment (this
 #'   option allows the user to manually adjust the colors and replot, for
 #'   example).
-#' @param clNames names to go with the columns (clusterings) in matrix
-#'   \code{colorMat}.
+#' @param clusterLabels names to go with the columns (clusterings) in matrix
+#'   \code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the
+#'   \code{clusterLabels} argument must include names for the sample data too.
+#'   If the user gives only names for the clusterings, the code will try to 
+#'   anticipate that and use the column names of the sample data, but this is fragile.
+#'   If set to \code{FALSE}, then no labels will be plotted.
 #' @param add whether to add to existing plot.
 #' @param xCoord values on x-axis at which to plot the rows (samples).
 #' @param ylim vector of limits of y-axis.
@@ -216,11 +220,12 @@ setMethod(
   f = "plotClusters",
   signature = signature(clusters = "ClusterExperiment",whichClusters="numeric"),
   definition = function(clusters, whichClusters,existingColors=c("ignore","all"),
-                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,sampleData=NULL,...)
+                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,sampleData=NULL,clusterLabels=NULL,...)
   {
     existingColors<-match.arg(existingColors)
-    sampleData<-.pullSampleData(clusters,sampleData,fixNA="unassigned")
-#	browser()
+	sampleData<-.pullSampleData(clusters,sampleData,fixNA="unassigned")
+	#	browser()
+	if(is.null(clusterLabels)) clusterLabels<-clusterLabels(clusters)[whichClusters]
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
         args<-list(...)
@@ -247,11 +252,13 @@ setMethod(
             colVect<-colMat[m,"color"]
         }))
         colnames(newColorMat)<-colnames(existingClusters)
-        do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,],input="colors",plot=plotArg),args))
+       #now plot them
+	    do.call(plotClusters,c(list(clusters=newColorMat[outval$orderSamples,], input="colors", plot=plotArg,clusterLabels=clusterLabels), args))
 
     }
     else{
-        outval<-plotClusters(clusters=clusterMatrix(clusters)[,whichClusters,drop=FALSE],input="clusters",sampleData=sampleData,...)
+       #browser()
+	    outval<-plotClusters(clusters=clusterMatrix(clusters)[,whichClusters,drop=FALSE],input="clusters",sampleData=sampleData,clusterLabels=clusterLabels,...)
 
     }
     if(resetColors | resetNames){
@@ -317,7 +324,7 @@ setMethod(
               orderSamples=NULL,sampleData=NULL,reuseColors=FALSE,matchToTop=FALSE,
               plot=TRUE,unassignedColor="white",missingColor="grey",
               minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,
-              input=c("clusters","colors"),clNames=colnames(clusters),
+              input=c("clusters","colors"),clusterLabels=colnames(clusters),
               add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",
               axisLine=0,box=FALSE,...)
 {
@@ -344,6 +351,17 @@ setMethod(
 	  #browser()
     clusters<-cbind(clusters,sampleData)
 	}
+    clNames<-clusterLabels
+	if(is.logical(clNames)){
+		if(!clNames) clNames<-rep("",ncol(clusters))
+		else clNames<-colnames(clusters)
+	}
+    if(length(clNames)!=ncol(clusters)){
+    	if(length(clNames==ncol(clusters)-ncol(sampleData))){
+    		clNames<-c(clNames,colnames(sampleData))
+		}
+		else stop("number of cluster labels given in clusterLabels must be equal to the number of clusterings (or sample data columns plus clusterings)")
+    } 
 
 	dnames<-dimnames(clusters)
 	#arguments to be passed at various calls (these are ones that do not change across the different internal calls)

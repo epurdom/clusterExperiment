@@ -120,4 +120,7 @@ par(mfrow=c(1,1))
 }
 
 }
+\seealso{
+\code{\link{plotHeatmap}}
+}
 \keyword{datasets}

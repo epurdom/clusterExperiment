@@ -107,7 +107,11 @@ setGeneric(
         standardGeneric("clusterLabels<-")
     }
 )
-
+setGeneric(
+	name="getClusterManyParams",
+	def=function(x,...){
+		standardGeneric("getClusterManyParams")
+	})
 setGeneric(
   name = "nClusters",
   def = function(x) {

@@ -169,14 +169,14 @@ table(primaryCluster(cl), primaryCluster(merged))
 Ji and Cai (2007), "Estimating the Null and the Proportion 
 of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
 
-Efron (2004) “Large-scale simultaneous hypothesis testing: 
-the choice of a null hypothesis,” JASA, 99: 96–104.
+Efron (2004) "Large-scale simultaneous hypothesis testing: 
+the choice of a null hypothesis," JASA, 99: 96-104.
 
 Meinshausen and Buhlmann (2005) "Lower bounds for the 
 number of false null hypotheses for multiple testing of associations", 
 Biometrika 92(4): 893-907.
 
-Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479–498.
+Storey (2002) "A direct approach to false discovery rates", J. R. Statist. Soc. B 64 (3)": 479-498.
 
 Pounds and Cheng (2004). "Improving false discovery rate estimation." Bioinformatics 20(11): 1737-1745.
 }

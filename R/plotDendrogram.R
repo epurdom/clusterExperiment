@@ -351,7 +351,6 @@ setMethod(
 	else tip.color<-"black"
   	
 
-		#browser()
   	###############
   	#this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
   	# Divides edge lengths so not too large.
@@ -363,9 +362,12 @@ setMethod(
 	plotArgs<-c(plotArgs,list(tip.color=tip.color,node.pos=2,edge.width=edge.width))	
   	#	browser()
   	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
-  	else{#if colorblock
+  	else{
+		#if colorblock
+		#just calculate:
   		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,plot=FALSE),plotArgs))
   		treeWidth<-phyloPlotOut$x.lim[2]
+		#plot dendrogram:
   		do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,x.lim=treeWidth*(1+dataPct)),plotArgs))
   		
   		nclusters<-ncol(colorMat)

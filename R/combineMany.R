@@ -157,7 +157,7 @@ setMethod(
     outlist <- combineMany(clusterMat, ...)
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterTypes="combineMany")
+                                clusterTypes="combineMany",checkTransformAndAssay=FALSE)
     #add "c" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
@@ -169,8 +169,6 @@ setMethod(
     x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    validObject(retval)
-
     return(retval)
   }
 )

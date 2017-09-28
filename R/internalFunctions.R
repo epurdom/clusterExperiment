@@ -20,7 +20,7 @@
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-    validObject(retval)
+#   Note: .addBackSEInfo calls clusterExperiment (i.e. validates)
     return(retval)
 }
 
@@ -36,11 +36,13 @@
                             dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
-							primaryIndex=primaryClusterIndex(newObj)
+							primaryIndex=primaryClusterIndex(newObj),
+							checkTransformAndAssay=FALSE
 							)
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
+#Returns NULL if no sample data
 .pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
 	fixNA<-match.arg(fixNA)
   if(!is.null(wh)){
@@ -155,6 +157,7 @@
             y[x>0]<-currcolors[x[x>0]]
             return(y)
         })
+		if(nrow(clMat)==1) colorMat<-matrix(colorMat,nrow=1) #in case only 1 sample!
     }
     else{
         if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
@@ -185,6 +188,7 @@
 }
 
 ##Universal way to change character indication of clusterTypes into integer indices.
+##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){
   test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
   if(!inherits(test,"try-error")){

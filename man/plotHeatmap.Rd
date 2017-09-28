@@ -323,7 +323,7 @@ Upper Limit")
 
 }
 \seealso{
-\code{\link[NMF]{aheatmap}}
+\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
 }
 \author{
 Elizabeth Purdom

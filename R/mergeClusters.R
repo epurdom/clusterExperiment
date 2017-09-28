@@ -299,7 +299,7 @@ This makes sense only for counts.")
     #----
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterTypes="mergeClusters")
+                                clusterTypes="mergeClusters",checkTransformAndAssay=FALSE)
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- clusterLabel

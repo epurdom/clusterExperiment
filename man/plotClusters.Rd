@@ -14,7 +14,8 @@
 
 \S4method{plotClusters}{ClusterExperiment,numeric}(clusters, whichClusters,
   existingColors = c("ignore", "all"), resetNames = FALSE,
-  resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL, ...)
+  resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
+  clusterLabels = NULL, ...)
 
 \S4method{plotClusters}{ClusterExperiment,missing}(clusters, whichClusters, ...)
 
@@ -23,8 +24,9 @@
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
   colPalette = bigPalette, input = c("clusters", "colors"),
-  clNames = colnames(clusters), add = FALSE, xCoord = NULL, ylim = NULL,
-  tick = FALSE, ylab = "", xlab = "", axisLine = 0, box = FALSE, ...)
+  clusterLabels = colnames(clusters), add = FALSE, xCoord = NULL,
+  ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
+  box = FALSE, ...)
 }
 \arguments{
 \item{clusters}{A matrix of with each column corresponding to a clustering
@@ -76,6 +78,13 @@ a column or column name, respectively, of the \code{colData} slot of the
 columns, they will be encoded as 'unassigned' and receive the same color as
 'unassigned' samples in the clustering.}
 
+\item{clusterLabels}{names to go with the columns (clusterings) in matrix
+\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the
+\code{clusterLabels} argument must include names for the sample data too.
+If the user gives only names for the clusterings, the code will try to 
+anticipate that and use the column names of the sample data, but this is fragile.
+If set to \code{FALSE}, then no labels will be plotted.}
+
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters
 (assuming \code{input="clusters"})}
@@ -116,9 +125,6 @@ clusters, or contains the colors. If \code{input="colors"}, then the object
 \code{clusters} is a matrix of colors and there is no alignment (this
 option allows the user to manually adjust the colors and replot, for
 example).}
-
-\item{clNames}{names to go with the columns (clusterings) in matrix
-\code{colorMat}.}
 
 \item{add}{whether to add to existing plot.}
 
@@ -250,7 +256,7 @@ transformation=transformation(cl))
 plotClusters(cl2)
 }
 \references{
-Wilkerson, D. M, Hayes and Neil D (2010). “ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking.” Bioinformatics, 26(12), pp. 1572-1573.
+Wilkerson, D. M, Hayes and Neil D (2010). "ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking." Bioinformatics, 26(12), pp. 1572-1573.
 }
 \seealso{
 The \code{\link[ConsensusClusterPlus]{ConsensusClusterPlus}} package.

@@ -27,7 +27,7 @@ setMethod(
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nVarDims=NA,
         nPCADims=c(50), k0s=4:15,
-        clusterFunction=listBuiltInType01(),
+        clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=1000,
@@ -43,7 +43,7 @@ setMethod(
         nVarDims<-NA
     }
     if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
-    ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
+ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
@@ -80,7 +80,8 @@ setMethod(
 	args1<-list()
 	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
 	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
-  ce<-do.call("combineMany",c(list(x=ce,whichClusters="clusterMany"),args1))
+		 whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters else "clusterMany"
+  ce<-do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1))
 #browser()
 	##makeDendrogram
   	args1<-list()
@@ -141,7 +142,6 @@ setMethod(
     else{
       retval<-.postClusterMany(x,...)
     }
-    validObject(retval)
 
     return(retval)
   })

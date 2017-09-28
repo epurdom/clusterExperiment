@@ -81,7 +81,7 @@ test_that("adding clusters work as promised",{
   expect_error(clusterLabels(c3)[1:2]<-c("User","User"),"cannot have duplicated clusterLabels")
   clusterLabels(c3)[1:2]<-c("User1","User2")
   clusterLabels(c3)[1]<-"User4"
-  expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
+  expect_error(clusterLabels(c3)[1]<-"User2","cannot have duplicated clusterLabels")
   expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
   
   ###check adding matrix of clusters
@@ -166,6 +166,10 @@ test_that("subsetting works as promised",{
   expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
   expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
 
+  #test works if have dendrogram attached:
+  x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
+  x[1:3,1:2]
+  
   
   ##########
   #checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)

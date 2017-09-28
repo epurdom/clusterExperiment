@@ -98,7 +98,8 @@ setMethod(
     x@dendro_index<-whCl
 	#browser()
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
-    validObject(x)
+    ch<-.checkDendrogram(x)
+	if(!is.logical(ch)) stop(ch)
     return(x)
   })
 
