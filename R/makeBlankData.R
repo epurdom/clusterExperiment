@@ -30,6 +30,7 @@
 #'
 #' x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 #' 34, 25)))
+#' plotHeatmap(x$dataWBlanks,clusterFeatures=FALSE)
 makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
   if (!is.list(groupsOfFeatures))
     stop("groupsOfFeatures must be a list. Will ignore.")
