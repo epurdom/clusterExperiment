@@ -257,11 +257,11 @@ setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
-                        clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"),
+                        clusterSamplesData=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"),
                         clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
-                        sampleData=NULL,clusterFeatures=TRUE,
+                        sampleData=NULL,clusterFeatures=TRUE, 
                         colorScale,
                        ...
   ){
@@ -304,43 +304,49 @@ setMethod(
     }
     else groupFeatures<-NULL
     if(!externalData){
-	    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
-	        dimReduce=switch(clusterFeaturesData,
-	                         "var"="var",
-	                        "PCA"="PCA",
-	                        "all"="none")
-	        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
-	        wh<-1:NROW(data)
+	    if(!clusterFeatures && visualizeData=="original"){
+	    	heatData<-assay(data)
 	    }
-	    else{
-	      if(is.character(clusterFeaturesData)){#gene names
-	        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
-	        else{
-	          wh<-match(clusterFeaturesData,rownames(data))
-	          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
-	          if(any(is.na(wh))){
-	            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
-	            wh<-na.omit(wh)
-	          }
-	        }
-	      }
-	      else{
-	          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
-	          wh<-clusterFeaturesData
-	      }
-	      dimReduce<-"none"
-	    }
-	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
-	    if(dimReduce%in%"PCA") wh<-1:nFeatures
-	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
-		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
-	    else{
-			#note, transObj is already been limited to the wh.
-			heatData<-switch(visualizeData,
-	                    "original"=assay(data[wh,]),
-	                    "transformed"=transObj$x,
-	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
-	                    )
+		else{
+		    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
+		        dimReduce=switch(clusterFeaturesData,
+		                         "var"="var",
+		                        "PCA"="PCA",
+		                        "all"="none")
+		        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+		        wh<-1:NROW(data)
+		    }
+		    else{
+		      if(is.character(clusterFeaturesData)){#gene names
+		        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
+		        else{
+		          wh<-match(clusterFeaturesData,rownames(data))
+		          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
+		          if(any(is.na(wh))){
+		            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
+		            wh<-na.omit(wh)
+		          }
+		        }
+		      }
+		      else{
+		          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+		          wh<-clusterFeaturesData
+		      }
+		      dimReduce<-"none"
+		    }
+		 
+			transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
+		    if(dimReduce%in%"PCA") wh<-1:nFeatures
+		    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
+			if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
+		    else{
+				#note, transObj is already been limited to the wh.
+				heatData<-switch(visualizeData,
+		                    "original"=assay(data[wh,]),
+		                    "transformed"=transObj$x,
+		                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
+		                    )
+			}	
 		}
 	}
 	else{
@@ -413,7 +419,7 @@ setMethod(
         }
       }
     }
-	
+	else clLegend<-.convertToAheatmap(clLegend,names=TRUE)
     ######
     #Create clusterSamplesData
     ######
@@ -452,7 +458,6 @@ setMethod(
           else if(clusterSamplesData=="hclust"){
               #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
               clusterSamplesData <- heatData
-  
               if(is.character(visualizeData)) {
                 if(visualizeData=="original") {
                   transObj$x
@@ -465,10 +470,27 @@ setMethod(
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
+	  # blankData<-makeBlankData(transform(object),geneByContrast,nBlankLines=nBlankLines)
       blankData<-makeBlankData(heatData,groupFeatures)
+
+
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       clusterFeatures<-FALSE
+	  
+	  if(!is.null(names(groupFeatures))){
+		  annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks))
+		  nGroups<-length(groupFeatures)
+		  groupColors<-bigPalette[1:nGroups]	
+		  names(groupColors)<-levels(annRow[["Gene Group"]])
+		  #show color-coding of gene groupings:
+		  if("annRow" %in% names(userList)){
+			  if(is.list(userList$annRow)) userList$annRow<-c(userList$annRow,annRow) 
+			  else userList$annRow<-c(list(userList$annRow),annRow)
+		  }
+		  else userList$annRow<-annRow
+		  clLegend<-c(clLegend, "Gene Group"=list(groupColors))
+	  }
     }
     else{
       labRow<-rownames(heatData)

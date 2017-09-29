@@ -16,7 +16,7 @@
   transFun = NULL, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
-  clusterSamplesData = c("hclust", "dendrogramValue", "orderSamplesValue",
+  clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
   "primaryCluster"), clusterFeaturesData = c("var", "all", "PCA"),
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "workflow", "all", "none"),

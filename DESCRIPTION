@@ -66,6 +66,7 @@ Collate:
     'mergeClusters.R'
     'plotBarplot.R'
     'plotClusters.R'
+    'plotContrastHeatmap.R'
     'plotDendrogram.R'
     'plotHeatmap.R'
     'plottingHelpers.R'

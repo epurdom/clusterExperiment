@@ -1,4 +1,10 @@
 setGeneric(
+	name="plotContrastHeatmap",
+	def=function(object,...){
+		standardGeneric("plotContrastHeatmap")
+	}
+)
+setGeneric(
     name = "RSEC",
     def = function(x, ...) {
         standardGeneric("RSEC")

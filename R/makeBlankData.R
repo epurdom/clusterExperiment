@@ -18,9 +18,16 @@
 #'  indices.}
 #'  \item{"rowNamesWBlanks"}{ A vector of characters giving the rownames for the
 #'  data, including blanks for the NA rows. These are not given as rownames to
-#'  the returned data because they are not unique. However, they can be given to
-#'  the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
+#'  the returned data because they are not necessarily unique. However, they can be 
+#'  given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
 #'  \code{\link{plotHeatmap}}.}
+#'  \item{"groupNamesWBlanks"}{ A vector of characters of the same length 
+#'	as the number of rows of the new data (i.e. with blanks) giving the group name  
+#'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
+#'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
+#'   names will be used, other wise "Group1", "Group2", etc. The NA rows are given 
+#'   NA values. 
+#'   }	
 #' }
 #'
 #' @export
@@ -60,8 +67,19 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
     })
   rnames <- unname(c(unlist(rnamesMinus),rnames[[length(rnames)]]))
   #browser()
+  
+  if(!is.null(names(groupsOfFeatures)) && length(unique(names(groupsOfFeatures)))==length(names(groupsOfFeatures)) ){
+	  gNames<-names(groupsOfFeatures)
+  }
+  else gNames<-paste("Group",1:length(groupsOfFeatures),sep="")
+  groupNames<- lapply(1:length(dataList),function(i){
+	  gname<-rep(gNames[i],times=length(groupsOfFeatures[[i]]))
+	  if(i!=length(dataList)) gname<-c(gname,rep(NA,nBlankLines))
+	  return(gname)
+  })
+  groupNames<-unname(unlist(groupNames))
   #can't set rownames because not unique values!
   #rownames(newData)<-rnames
-  return(list(dataWBlanks = newData,rowNamesWBlanks = rnames))
+  return(list(dataWBlanks = newData,rowNamesWBlanks = rnames, groupNamesWBlanks=groupNames))
 
 }
