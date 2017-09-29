@@ -33,6 +33,12 @@ setMethod(
 			  m<-match(names(geneByContrast),gpnames[,"Contrast"])
 			  names(geneByContrast)<-gpnames[m,"ContrastName"]
 		  }
+		  nodeGrep<-grep("Node",names(geneByContrast))
+		  if(length(nodeGrep)==length(geneByContrast)){
+			  nsplit<-strsplit(names(geneByContrast),"Node")
+			  norder<-order(as.numeric(sapply(nsplit,.subset2,2)))
+			  geneByContrast<-geneByContrast[norder]
+		  }
 	  }
 	 plotHeatmap(object,clusterFeaturesData=geneByContrast,...)
 

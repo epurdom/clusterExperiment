@@ -479,7 +479,7 @@ setMethod(
       clusterFeatures<-FALSE
 	  
 	  if(!is.null(names(groupFeatures))){
-		  annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks))
+		  annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks,levels=names(groupFeatures)))
 		  nGroups<-length(groupFeatures)
 		  groupColors<-bigPalette[1:nGroups]	
 		  names(groupColors)<-levels(annRow[["Gene Group"]])
