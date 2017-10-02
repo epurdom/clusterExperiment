@@ -351,6 +351,7 @@ setMethod(
 	  #browser()
     clusters<-cbind(object,sampleData)
 	}
+	else clusters<-object
     clNames<-clusterLabels
 	if(is.logical(clNames)){
 		if(!clNames) clNames<-rep("",ncol(clusters))
@@ -673,16 +674,28 @@ setMethod(
 
 #' @rdname plotClustersWorkflow
 #' @aliases plotClustersWorkflow
-#' @title A plot of clusterings specific for clusterMany and workflow visualization
-#' @description A realization of \code{\link{plotClusters}} call specific to separating out the results of \code{clusterMany} and other clustering results. 
-#' @param object A \code{ClusterExperiment} object on which \code{\link{clusterMany}} has been run
-#' @param whichClusterMany numeric indices of which of the clusterMany clusterings to plot (if NULL, defaults to all)
-#' @param whichResults which clusterings to use as the results. 
-#' @param nBlankRows the number of blank (i.e. white) rows to add between the clusterMany clusterings and the results
+#' @title A plot of clusterings specific for clusterMany and workflow
+#'   visualization
+#' @description A realization of \code{\link{plotClusters}} call specific to
+#'   separating out the results of \code{clusterMany} and other clustering
+#'   results.
+#' @param object A \code{ClusterExperiment} object on which
+#'   \code{\link{clusterMany}} has been run
+#' @param whichClusterMany numeric indices of which of the clusterMany
+#'   clusterings to plot (if NULL, defaults to all)
+#' @param whichResults which clusterings to use as the results.
+#' @param nBlankRows the number of blank (i.e. white) rows to add between the
+#'   clusterMany clusterings and the results
 #' @param nSizeResult the number of rows each result clustering should take up
-#' @param clusterManyLabels logical, whether to plot the labels for the results of clusterMany
-#' @param sortBy how to align the clusters. If "results" then the results are in the top of the alignment done by plotClusters. If "clusterMany", then the clusterMany results are in the top. (Note this does not determine where they will be plotted, but how they are ordered in the aligning step done by \code{plotClusters})
-#' @param resultsOnTop logical. Whether the results should be plotted on the top of clusterMany results or the bottom.
+#' @param clusterManyLabels logical, whether to plot the labels for the results
+#'   of clusterMany
+#' @param sortBy how to align the clusters. If "results" then the results are in
+#'   the top of the alignment done by plotClusters. If "clusterMany", then the
+#'   clusterMany results are in the top. (Note this does not determine where
+#'   they will be plotted, but how they are ordered in the aligning step done by
+#'   \code{plotClusters})
+#' @param resultsOnTop logical. Whether the results should be plotted on the top
+#'   of clusterMany results or the bottom.
 #' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
 #' @export
 setMethod(
@@ -704,16 +717,16 @@ setMethod(
 		if(length(whichResults)==0) stop("invalid identification of clusters for whichResults argument")
 	}
 	 if(sortBy=="results"){
-		 tempClusters<-clusterMatrix(object)[,c(whichResults,whichClusterMany)]
+		 tempClusters<-clusterMatrix(object)[,c(whichResults,whichClusterMany),drop=FALSE]
 		 out<-plotClusters(tempClusters,plot=FALSE)	 	
-		 cmM<-out$colors[,-c(1:length(whichResults))]
-		 resM<-out$colors[,c(1:length(whichResults))]
+		 cmM<-out$colors[,-c(1:length(whichResults)),drop=FALSE]
+		 resM<-out$colors[,c(1:length(whichResults)),drop=FALSE]
 	 }
 	 else{
-		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichResults)]
+		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichResults),drop=FALSE]
 		 out<-plotClusters(tempClusters,plot=FALSE)
-		 cmM<-out$colors[,c(1:length(whichClusterMany))]
-		 resM<-out$colors[,-c(1:length(whichClusterMany))]
+		 cmM<-out$colors[,c(1:length(whichClusterMany)),drop=FALSE]
+		 resM<-out$colors[,-c(1:length(whichClusterMany)),drop=FALSE]
 	 }
 	 
  	# make replication of results
@@ -721,27 +734,26 @@ setMethod(
  		 x<-resM[,ii]
  		 mat<-matrix(x,nrow=length(x),ncol=nSizeResult,byrow=FALSE)
  	 	 colnames(mat)<-rep("",ncol(mat))
- 		 colnames(mat)[floor(ncol(mat)/2)]<-colnames(resM)[ii]
+ 		 colnames(mat)[ceiling(ncol(mat)/2)]<-colnames(resM)[ii]
  		 return(mat)
  	 })
  	 repResults<-do.call("cbind",repResults)
-	 
 	 ##Add blanks
 	 if(resultsOnTop){
     		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlank=nBlankRows)
-			whCM<-(length(whichResults)+1):nrow(bd$dataWBlanks)
+			whCM<-(length(whichResults)+1):nrow(bd$dataWBlanks) #includes blanks
 	 } 	
 	 else{
-   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=length(whichClusterMany)+length(whichResults)),nBlank=nBlankRows)
-   	  	whCM<-  1:length(whichClusterMany)
+   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichResults))),nBlank=nBlankRows)
+   	  	whCM<-  1:(length(whichClusterMany)+nBlankRows) #includes blanks
 	 }  
 	 test<-t(bd$dataWBlanks)
   	 test[is.na(test)]<-"white"
-	 colnames(test)[whCM]<-bd$rowNamesWBlanks[whCM]
-     if(clusterManyLabels) colnames(test)[whCM]<-rep("",length(whCM))
+	 colnames(test)<-rep("",ncol(test))
+     if(clusterManyLabels) colnames(test)[whCM]<-bd$rowNamesWBlanks[whCM]
 
-	if(resultsOnTop) test<-cbind(repResults,test[,(ncol(resM)+1):ncol(test)])
-	else test<-cbind(test[,ncol(test)-ncol(resM)],repResults)
+	if(resultsOnTop) test<-cbind(repResults,test[,whCM])
+	else test<-cbind(test[,whCM],repResults)
 	
 	plotClusters(test[out$orderSamples,],input="colors",...)
 

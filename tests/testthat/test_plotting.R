@@ -255,6 +255,21 @@ test_that("`plotCoClustering` works", {
   plotCoClustering(sm,clusterSamplesData="dendrogramValue")
 })
 
+test_that("plotClustersWorkflow", {
+	cc<-clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
+	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
+	                       isCount=FALSE)
+	cc<-combineMany(cc,proportion=.7,whichClusters = "clusterMany")
+	plotClustersWorkflow(cc)
+	plotClustersWorkflow(cc,clusterManyLabels=FALSE)
+	plotClustersWorkflow(cc,sortBy="clusterMany")
+	plotClustersWorkflow(cc,sortBy="clusterMany",resultsOnTop=FALSE)
+	plotClustersWorkflow(cc,resultsOnTop=FALSE)
+	
+
+})
+
+
 test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="aheatmap")
   convertClusterLegend(smSimCE,output="plotAndLegend")
