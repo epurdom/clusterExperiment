@@ -687,8 +687,11 @@ setMethod(
 #' @param nBlankRows the number of blank (i.e. white) rows to add between the
 #'   clusterMany clusterings and the results
 #' @param nSizeResult the number of rows each result clustering should take up
-#' @param clusterManyLabels logical, whether to plot the labels for the results
-#'   of clusterMany
+#' @param clusterManyLabels either logical, whether to plot the labels for the
+#'   clusterings from clusterMany, or a character vector of labels to use
+#' @param resultLabels either logical, whether to plot the labels for the
+#'   clusterings identified in the results , or a character vector of labels to
+#'   use.
 #' @param sortBy how to align the clusters. If "results" then the results are in
 #'   the top of the alignment done by plotClusters. If "clusterMany", then the
 #'   clusterMany results are in the top. (Note this does not determine where
