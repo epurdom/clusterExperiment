@@ -215,7 +215,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="all")
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="var",nFeatures=3)
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=3:5,nFeatures=3)
-  expect_error(plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3))
+  expect_error(plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3),"Cannot give feature names in clusterFeaturesData unless")
   row.names(smSimCE)<-paste("Gene",1:NROW(smSimCE))
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3)
   plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="PCA",nFeatures=10,clusterSamplesData="hclust")
