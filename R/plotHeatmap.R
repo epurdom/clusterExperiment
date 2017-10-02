@@ -28,11 +28,12 @@
 #'   color-scale), or a data.frame/matrix with same number of samples as 
 #'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 #'   clusterFeaturesData will be ignored.
-#' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
-#'   will be used to in \code{hclust} to define the hiearchical clustering of 
-#'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
-#'   the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-#'   should be either character or integers or logical. Indicates how (and
+#' @param clusterSamplesData If \code{data} is a matrix,
+#'   \code{clusterSamplesData} is either a matrix that will be used by
+#'   \code{hclust} to define the hiearchical clustering of samples (e.g.
+#'   normalized data) or a pre-existing dendrogram that clusters the samples. If
+#'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
+#'   should be either character or integers or logical which indicates how (and 
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
 #' @param whichClusters character string, or vector of characters or integers,
@@ -103,19 +104,26 @@
 #'   wishes that the color scale be based on the log-counts for easier
 #'   interpretation, \code{visualizeData} could be set to be the
 #'   \code{log2(counts + 1)}.
-#' @details If \code{data} is a \code{ClusterExperiment} object,
-#'   \code{clusterSamplesData} can be used to indicate the type of clustering
-#'   for the samples. If equal to `dendrogramValue` the dendrogram stored in
-#'   \code{data} will be used; if missing, a new one will be created based on
-#'   the \code{primaryCluster} of data. If equal to "hclust", then standard
+#' @details If \code{data} is a \code{ClusterExperiment} object, 
+#'   \code{clusterSamplesData} can be used to indicate the type of clustering 
+#'   for the samples. If equal to `dendrogramValue` the dendrogram stored in 
+#'   \code{data} will be used; if dendrogram is missing, a new one will be
+#'   created based on the \code{primaryCluster} of data using
+#'   \code{\link{makeDendrogram}}, assuming no errors are created (if errors are
+#'   created, then \code{clusterSamplesData} will be set to "primaryCluster").
+#'   If \code{clusterSamplesData} is equal to "hclust", then standard 
 #'   hierachical clustering of the transformed data will be used. If
-#'   'orderSamplesValue' no clustering of the samples will be done, and instead
-#'   the samples will be ordered as in the slot \code{orderSamples} of
-#'   \code{data}. If equal to 'primaryCluster', again no clustering will be
-#'   done, and instead the samples will be ordered based on grouping the samples
-#'   to match the primaryCluster of \code{data}. If not one of these values,
-#'   \code{clusterSamplesData} can be a character vector matching the
-#'   clusterLabels (colnames of clusterMatrix).
+#'   \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of
+#'   the samples will be done, and instead the samples will be ordered as in the
+#'   slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is
+#'   equal to 'primaryCluster', again no clustering will be done, and instead
+#'   the samples will be ordered based on grouping the samples to match the
+#'   primaryCluster of \code{data}; however, if the primaryCluster of
+#'   \code{data} is only one cluster or consists soley of -1/-2 values,
+#'   \code{clusterSamplesData} will be set to "hclust". If
+#'   \code{clusterSamplesData}  is not a character value, 
+#'   \code{clusterSamplesData} can be a integer valued vector giving the order
+#'   of the samples.
 #' @details If \code{data} is a matrix, then \code{sampleData} is a data.frame
 #'   of annotation data to be plotted above the heatmap and
 #'   \code{whSampleDataCont} gives the index of the column(s) of this dataset
@@ -423,9 +431,9 @@ setMethod(
     ######
     #Create clusterSamplesData
     ######
-    clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
+    clusterSamplesData<-.convertTry(clusterSamplesData, try(match.arg(clusterSamplesData), silent=TRUE))
     if(is.logical(clusterSamplesData)) clusterSamples<-clusterSamplesData
-    else {
+    else{
       clusterSamples<-TRUE
       if(is.numeric(clusterSamplesData)){
           heatData<-heatData[,clusterSamplesData,drop=FALSE]
@@ -438,24 +446,35 @@ setMethod(
             heatData<-heatData[,orderSamples(data),drop=FALSE]
             if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
             clusterSamplesData<-heatData
-              clusterSamples<-FALSE
-  
-          }
-          else if(clusterSamplesData=="primaryCluster"){
-              heatData<-heatData[,order(primaryCluster(data))]
-              if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
-              clusterSamplesData<-heatData
-              clusterSamples<-FALSE
+            clusterSamples<-FALSE
           }
           else if(clusterSamplesData=="dendrogramValue"){
               if(is.null(data@dendro_samples)){
-                clusterSamplesData<-makeDendrogram(data)@dendro_samples
+                clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
+				if(inherits(clusterSamplesData, "try-error")){
+					warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
+					clusterSamplesData<-"primaryCluster"
+				}
               }
               else{
                   clusterSamplesData<-data@dendro_samples
               }
           }
-          else if(clusterSamplesData=="hclust"){
+		  if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
+              wh<-which(primaryCluster(data) %in% c(-1,-2))
+			  if(length(wh)==nSamples(data) || length(unique(primary[-wh]))==1){
+				  #in this case, all -1/-2 or same cluster, just do heatmap with hclust
+				  warning("Cannot order by primary cluster because all one cluster and/or all clustering values are -1/-2. Using standard hiearchical clustering.")
+				  clusterSamplesData<-"hclust"
+			  }
+			  else{
+				  heatData<-heatData[,order(primaryCluster(data))]
+	              if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
+	              clusterSamplesData<-heatData
+	              clusterSamples<-FALSE			  	
+			  }
+          }
+          if(is.character(clusterSamplesData) && clusterSamplesData=="hclust"){
               #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
               clusterSamplesData <- heatData
               if(is.character(visualizeData)) {

@@ -56,11 +56,12 @@ before clustering.}
 For the other signatures, passed to the method for signature \code{matrix}.
 Not all arguments can be passed to \code{aheatmap} effectively, see details.}
 
-\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that 
-will be used to in \code{hclust} to define the hiearchical clustering of 
-samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
-the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-should be either character or integers or logical. Indicates how (and
+\item{clusterSamplesData}{If \code{data} is a matrix,
+\code{clusterSamplesData} is either a matrix that will be used by
+\code{hclust} to define the hiearchical clustering of samples (e.g.
+normalized data) or a pre-existing dendrogram that clusters the samples. If
+\code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
+should be either character or integers or logical which indicates how (and 
 whether) the samples should be clustered (or gives indices of the order for
 the samples). See details.}
 
@@ -192,19 +193,26 @@ If \code{data} is a \code{ClusterExperiment} object,
   interpretation, \code{visualizeData} could be set to be the
   \code{log2(counts + 1)}.
 
-If \code{data} is a \code{ClusterExperiment} object,
-  \code{clusterSamplesData} can be used to indicate the type of clustering
-  for the samples. If equal to `dendrogramValue` the dendrogram stored in
-  \code{data} will be used; if missing, a new one will be created based on
-  the \code{primaryCluster} of data. If equal to "hclust", then standard
+If \code{data} is a \code{ClusterExperiment} object, 
+  \code{clusterSamplesData} can be used to indicate the type of clustering 
+  for the samples. If equal to `dendrogramValue` the dendrogram stored in 
+  \code{data} will be used; if dendrogram is missing, a new one will be
+  created based on the \code{primaryCluster} of data using
+  \code{\link{makeDendrogram}}, assuming no errors are created (if errors are
+  created, then \code{clusterSamplesData} will be set to "primaryCluster").
+  If \code{clusterSamplesData} is equal to "hclust", then standard 
   hierachical clustering of the transformed data will be used. If
-  'orderSamplesValue' no clustering of the samples will be done, and instead
-  the samples will be ordered as in the slot \code{orderSamples} of
-  \code{data}. If equal to 'primaryCluster', again no clustering will be
-  done, and instead the samples will be ordered based on grouping the samples
-  to match the primaryCluster of \code{data}. If not one of these values,
-  \code{clusterSamplesData} can be a character vector matching the
-  clusterLabels (colnames of clusterMatrix).
+  \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of
+  the samples will be done, and instead the samples will be ordered as in the
+  slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is
+  equal to 'primaryCluster', again no clustering will be done, and instead
+  the samples will be ordered based on grouping the samples to match the
+  primaryCluster of \code{data}; however, if the primaryCluster of
+  \code{data} is only one cluster or consists soley of -1/-2 values,
+  \code{clusterSamplesData} will be set to "hclust". If
+  \code{clusterSamplesData}  is not a character value, 
+  \code{clusterSamplesData} can be a integer valued vector giving the order
+  of the samples.
 
 If \code{data} is a matrix, then \code{sampleData} is a data.frame
   of annotation data to be plotted above the heatmap and

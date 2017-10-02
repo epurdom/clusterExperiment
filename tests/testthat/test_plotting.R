@@ -248,8 +248,9 @@ test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
   smMin1<-combineMany(smSimCE,whichClusters=1:4,proportion=.95) #gives all -1, but creates coClustering
   plotCoClustering(smMin1,clusterSamplesData="hclust")
-  expect_error(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue"),
-               "all samples have clusterIds<0")
+  ## Have changed so now changes it internally to primary cluster then hclust
+  expect_warning(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue"),
+               "cannot make dendrogram from 'data'")
   sm<-combineMany(smSimCE,whichClusters=1:4,proportion=.5)
   plotCoClustering(sm,clusterSamplesData="dendrogramValue")
 })

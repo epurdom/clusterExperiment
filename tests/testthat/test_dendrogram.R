@@ -139,7 +139,7 @@ test_that("plotDendrogram works with outgroup", {
   cl[1]<-3
   dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
   primaryClusterIndex(dend5)<-3
-  expect_error(makeDendrogram(dend5),"Only 1 cluster given. Can not make a dendrogram.")
+  expect_error(makeDendrogram(dend5,dimReduce="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",labelType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
 
