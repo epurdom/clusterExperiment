@@ -671,10 +671,20 @@ setMethod(
 }
 
 
-#' @rdname plotClusters
+#' @rdname plotClustersWorkflow
 #' @aliases plotClustersWorkflow
-#' @docType methods
-#' 
+#' @title A plot of clusterings specific for clusterMany and workflow visualization
+#' @description A realization of \code{\link{plotClusters}} call specific to separating out the results of \code{clusterMany} and other clustering results. 
+#' @param object A \code{ClusterExperiment} object on which \code{\link{clusterMany}} has been run
+#' @param whichClusterMany numeric indices of which of the clusterMany clusterings to plot (if NULL, defaults to all)
+#' @param whichResults which clusterings to use as the results. 
+#' @param nBlankRows the number of blank (i.e. white) rows to add between the clusterMany clusterings and the results
+#' @param nSizeResult the number of rows each result clustering should take up
+#' @param clusterManyLabels logical, whether to plot the labels for the results of clusterMany
+#' @param sortBy how to align the clusters. If "results" then the results are in the top of the alignment done by plotClusters. If "clusterMany", then the clusterMany results are in the top. (Note this does not determine where they will be plotted, but how they are ordered in the aligning step done by \code{plotClusters})
+#' @param resultsOnTop logical. Whether the results should be plotted on the top of clusterMany results or the bottom.
+#' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
+#' @export
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
