@@ -462,7 +462,7 @@ setMethod(
           }
 		  if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
               wh<-which(primaryCluster(data) %in% c(-1,-2))
-			  if(length(wh)==nSamples(data) || length(unique(primary[-wh]))==1){
+			  if(length(wh)==nSamples(data) || length(unique(primaryCluster(data)[-wh]))==1){
 				  #in this case, all -1/-2 or same cluster, just do heatmap with hclust
 				  warning("Cannot order by primary cluster because all one cluster and/or all clustering values are -1/-2. Using standard hiearchical clustering.")
 				  clusterSamplesData<-"hclust"
