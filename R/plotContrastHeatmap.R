@@ -1,4 +1,5 @@
 #' @rdname plotContrastHeatmap
+#' @aliases plotContrastHeatmap
 #' @title Plot heatmaps showing significant genes per contrast
 #' @description Plots a heatmap of the data, with the genes grouped based on the contrast for which they were significant. 
 #' @param object ClusterExperiment object on which biomarkers were found

@@ -3,6 +3,7 @@
 \docType{methods}
 \name{plotContrastHeatmap,ClusterExperiment-method}
 \alias{plotContrastHeatmap,ClusterExperiment-method}
+\alias{plotContrastHeatmap}
 \title{Plot heatmaps showing significant genes per contrast}
 \usage{
 \S4method{plotContrastHeatmap}{ClusterExperiment}(object, signifTable, ...)

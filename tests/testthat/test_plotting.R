@@ -5,12 +5,12 @@ source("create_objects.R")
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
     #test matrix version
-    x<-plotClusters(clusters=clusterMatrix(ceSim))
+    x<-plotClusters(object=clusterMatrix(ceSim))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim)))
-    expect_error(plotClusters(clusters=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
-    expect_error(plotClusters(clusters=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
+    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
+    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
 
     #test CE version
     x<-plotClusters(ceSim)
@@ -18,7 +18,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal( x,ceSim)
 
     xx<-plotClusters(ceSim,whichClusters="clusterMany")
-    xx2<-plotClusters(clusters=ceSim,whichClusters="workflow") #only clusterMany values so should be the same
+    xx2<-plotClusters(object=ceSim,whichClusters="workflow") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
 
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
@@ -44,8 +44,8 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     plotClusters(ceSim)
 
     #CE object with mixture of workflow and other types
-    x1<-plotClusters(clusters=ceSim,whichClusters="workflow",resetColors=TRUE)
-    x2<-plotClusters(clusters=removeClusters(ceSim,"User"),resetColors=TRUE)
+    x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
+    x2<-plotClusters(object=removeClusters(ceSim,"User"),resetColors=TRUE)
     whP<-.TypeIntoIndices(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
@@ -62,7 +62,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 test_that("`plotClusters` rerun above tests with sampleData included", {
 
   #test matrix version
-  x<-plotClusters(clusters=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
+  x<-plotClusters(object=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$colors))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$aligned))
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
@@ -265,7 +265,9 @@ test_that("plotClustersWorkflow", {
 	plotClustersWorkflow(cc,sortBy="clusterMany")
 	plotClustersWorkflow(cc,sortBy="clusterMany",resultsOnTop=FALSE)
 	plotClustersWorkflow(cc,resultsOnTop=FALSE)
-	
+	plotClustersWorkflow(cc,clusterManyLabels=FALSE,resultLabels="test")
+	expect_error(plotClustersWorkflow(cc,clusterManyLabels=c("1","2"),resultLabels="test"),"number of cluster labels given in clusterManyLabels")
+	expect_error(plotClustersWorkflow(cc,clusterManyLabels=TRUE,resultLabels=c("A","test")),"number of cluster labels given in resultLabels")
 
 })
 
@@ -281,11 +283,11 @@ test_that("plotting helpers", {
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    plotBarplot(clusters=clusterMatrix(ceSim)[,1:2])
+    plotBarplot(object=clusterMatrix(ceSim)[,1:2])
     #test vector version
-    plotBarplot(clusters=clusterMatrix(ceSim)[,1])
+    plotBarplot(object=clusterMatrix(ceSim)[,1])
     #check error
-    expect_error(plotBarplot(clusters=clusterMatrix(ceSim)),"clusters must at most 2 clusters")
+    expect_error(plotBarplot(object=clusterMatrix(ceSim)),"clusters must at most 2 clusters")
     
     #test CE version with no defaults
     plotBarplot(ceSim)
@@ -298,9 +300,9 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     test<-ceSim
     clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])]
     #test character matrix version
-    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1:2])
+    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2])
     #test character vector version
-    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1])
+    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1])
     #test labels argument
     plotBarplot(test,whichClusters=1:2,labels="id")
     plotBarplot(test,whichClusters=1:2,labels="name")
