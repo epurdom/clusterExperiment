@@ -9,7 +9,7 @@
 \usage{
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
   whichClusterMany = NULL, whichResults = c("mergeClusters", "combineMany"),
-  nBlankRows = ceiling(nClusters(object) * 0.05),
+  nBlankLines = ceiling(nClusters(object) * 0.05),
   nSizeResult = ceiling(nClusters(object) * 0.02), clusterManyLabels = TRUE,
   resultLabels = TRUE, sortBy = c("results", "clusterMany"),
   resultsOnTop = TRUE, ...)
@@ -23,13 +23,17 @@ clusterings to plot (if NULL, defaults to all)}
 
 \item{whichResults}{which clusterings to use as the results.}
 
-\item{nBlankRows}{the number of blank (i.e. white) rows to add between the
+\item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the results}
 
 \item{nSizeResult}{the number of rows each result clustering should take up}
 
-\item{clusterManyLabels}{logical, whether to plot the labels for the results
-of clusterMany}
+\item{clusterManyLabels}{either logical, whether to plot the labels for the
+clusterings from clusterMany, or a character vector of labels to use}
+
+\item{resultLabels}{either logical, whether to plot the labels for the
+clusterings identified in the results , or a character vector of labels to
+use.}
 
 \item{sortBy}{how to align the clusters. If "results" then the results are in
 the top of the alignment done by plotClusters. If "clusterMany", then the

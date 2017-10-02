@@ -684,7 +684,7 @@ setMethod(
 #' @param whichClusterMany numeric indices of which of the clusterMany
 #'   clusterings to plot (if NULL, defaults to all)
 #' @param whichResults which clusterings to use as the results.
-#' @param nBlankRows the number of blank (i.e. white) rows to add between the
+#' @param nBlankLines the number of blank (i.e. white) rows to add between the
 #'   clusterMany clusterings and the results
 #' @param nSizeResult the number of rows each result clustering should take up
 #' @param clusterManyLabels either logical, whether to plot the labels for the
@@ -704,7 +704,7 @@ setMethod(
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusterMany=NULL, whichResults=c("mergeClusters","combineMany"),nBlankRows=ceiling(nClusters(object)*.05), 
+  definition = function(object, whichClusterMany=NULL, whichResults=c("mergeClusters","combineMany"),nBlankLines=ceiling(nClusters(object)*.05), 
   nSizeResult=ceiling(nClusters(object)*.02), clusterManyLabels=TRUE, resultLabels=TRUE, sortBy=c("results","clusterMany"), resultsOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
@@ -769,13 +769,13 @@ setMethod(
  	 repResults<-do.call("cbind",repResults)
 	 ##Add blanks
 	 if(resultsOnTop){
-    		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlank=nBlankRows)
+    		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlankLines=nBlankLines)
 			whNotRes<-(length(whichResults)+1):nrow(bd$dataWBlanks) #includes blanks
-			whCM<-whNotRes[-c(1:nBlankRows)] #no blanks
+			whCM<-whNotRes[-c(1:nBlankLines)] #no blanks
 	 } 	
 	 else{
-   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichResults))),nBlank=nBlankRows)
-   	  	whNotRes<-  1:(length(whichClusterMany)+nBlankRows) #includes blanks
+   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichResults))),nBlank=nBlankLines)
+   	  	whNotRes<-  1:(length(whichClusterMany)+nBlankLines) #includes blanks
    	  	whCM<-  1:(length(whichClusterMany)) #no blanks
 	 }  
 	 test<-t(bd$dataWBlanks)
