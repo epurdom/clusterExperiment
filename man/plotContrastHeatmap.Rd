@@ -13,8 +13,6 @@
 \item{signifTable}{A \code{data.frame} in format of the result of \code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast' and 'IndexInOriginal' giving the grouping and original index of the features in the \code{assay(object)}}
 
 \item{...}{Arguments passed to \code{\link{plotHeatmap}}}
-
-\item{nBlankLines}{integer:  many blank lines to add between contrast groups.}
 }
 \description{
 Plots a heatmap of the data, with the genes grouped based on the contrast for which they were significant.

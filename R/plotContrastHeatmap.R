@@ -3,7 +3,6 @@
 #' @description Plots a heatmap of the data, with the genes grouped based on the contrast for which they were significant. 
 #' @param object ClusterExperiment object on which biomarkers were found
 #' @param signifTable A \code{data.frame} in format of the result of \code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast' and 'IndexInOriginal' giving the grouping and original index of the features in the \code{assay(object)}
-#' @param nBlankLines integer:  many blank lines to add between contrast groups.
 #' @param ... Arguments passed to \code{\link{plotHeatmap}}
 #' @seealso \code{\link{plotHeatmap}}, \code{\link{makeBlankData}}, \code{\link{getBestFeatures}}
 #' @export
