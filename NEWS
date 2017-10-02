@@ -3,7 +3,7 @@ Changes in version 1.3.4-9001 ( Release date: )
 Changes:
 * Add function `plotClustersWorkflow`
 * Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
-* Change argument to plotClusters from `clusters` to `object`
+* Change argument to plotClusters and plotBarplot from `clusters` to `object`
 * default in `makeDendrogram` is now `dimReduce="mad"` to avoid accidentally calling it with `dimReduce="none"` (previous default), which can kill interactive R sessions.
 * Change default in `plotHeatmap` to `clusterSamplesData="dendrogramValue"`.
 * Change handling of `clusterSamplesData` argument in `plotHeatmap` so that if argument equals `dendrogramValue` or `primaryCluster` and gives bad results / errors, will give warning and change argument appropriately. 

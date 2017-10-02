@@ -768,7 +768,7 @@ setMethod(
 	 if(resultsOnTop){
     		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlank=nBlankRows)
 			whNotRes<-(length(whichResults)+1):nrow(bd$dataWBlanks) #includes blanks
-			whCM<-whNoRes[-c(1:nBlankRows)] #no blanks
+			whCM<-whNotRes[-c(1:nBlankRows)] #no blanks
 	 } 	
 	 else{
    		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichResults))),nBlank=nBlankRows)

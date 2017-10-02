@@ -287,7 +287,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     #test vector version
     plotBarplot(object=clusterMatrix(ceSim)[,1])
     #check error
-    expect_error(plotBarplot(object=clusterMatrix(ceSim)),"clusters must at most 2 clusters")
+    expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
     
     #test CE version with no defaults
     plotBarplot(ceSim)

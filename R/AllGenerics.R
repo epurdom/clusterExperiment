@@ -205,7 +205,7 @@ setGeneric(
 
 setGeneric(
     name="plotBarplot",
-    def=function(clusters, whichClusters,...)
+    def=function(object, whichClusters,...)
     {
         standardGeneric("plotBarplot")
     }
