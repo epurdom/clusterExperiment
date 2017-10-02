@@ -356,11 +356,18 @@ setMethod(
 		if(!clNames) clNames<-rep("",ncol(clusters))
 		else clNames<-colnames(clusters)
 	}
+	#browser()
     if(length(clNames)!=ncol(clusters)){
-    	if(length(clNames==ncol(clusters)-ncol(sampleData))){
-    		clNames<-c(clNames,colnames(sampleData))
+		if(is.null(clNames)){
+			clNames<-rep("",ncol(clusters))
 		}
-		else stop("number of cluster labels given in clusterLabels must be equal to the number of clusterings (or sample data columns plus clusterings)")
+		else{
+	    	if(length(clNames==ncol(clusters)-ncol(sampleData))){
+	    		clNames<-c(clNames,colnames(sampleData))
+			}
+			else stop("number of cluster labels given in clusterLabels must be equal to the number of clusterings (or sample data columns plus clusterings)")
+			
+		}
     } 
 
 	dnames<-dimnames(clusters)
@@ -665,4 +672,64 @@ setMethod(
 
 
 
+setMethod(
+  f = "plotClustersWorkflow",
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichClusterMany=NULL, whichResults=c("mergeClusters","combineMany"),nBlankRows=ceiling(nClusters(object)*.05), 
+  nSizeResult=ceiling(nClusters(object)*.02), clusterManyLabels=TRUE, sortBy=c("results","clusterMany"), resultsOnTop=TRUE,...)
+  {
+	  sortBy<-match.arg(sortBy)
+	  allClusterMany<-which(clusterTypes(object)=="clusterMany")
+	 if(is.null(whichClusterMany)){
+		 whichClusterMany<-allClusterMany
+	 }
+	 if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
+	 if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
+		 
+	if(is.character(whichResults)){
+		whichResults<- .TypeIntoIndices(object,whClusters=whichResults)
+		if(length(whichResults)==0) stop("invalid identification of clusters for whichResults argument")
+	}
+	 if(sortBy=="results"){
+		 tempClusters<-clusterMatrix(object)[,c(whichResults,whichClusterMany)]
+		 out<-plotClusters(tempClusters,plot=FALSE)	 	
+		 cmM<-out$colors[,-c(1:length(whichResults))]
+		 resM<-out$colors[,c(1:length(whichResults))]
+	 }
+	 else{
+		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichResults)]
+		 out<-plotClusters(tempClusters,plot=FALSE)
+		 cmM<-out$colors[,c(1:length(whichClusterMany))]
+		 resM<-out$colors[,-c(1:length(whichClusterMany))]
+	 }
+	 
+ 	# make replication of results
+ 	 repResults<-lapply(1:ncol(resM),function(ii){
+ 		 x<-resM[,ii]
+ 		 mat<-matrix(x,nrow=length(x),ncol=nSizeResult,byrow=FALSE)
+ 	 	 colnames(mat)<-rep("",ncol(mat))
+ 		 colnames(mat)[floor(ncol(mat)/2)]<-colnames(resM)[ii]
+ 		 return(mat)
+ 	 })
+ 	 repResults<-do.call("cbind",repResults)
+	 
+	 ##Add blanks
+	 if(resultsOnTop){
+    		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlank=nBlankRows)
+			whCM<-(length(whichResults)+1):nrow(bd$dataWBlanks)
+	 } 	
+	 else{
+   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=length(whichClusterMany)+length(whichResults)),nBlank=nBlankRows)
+   	  	whCM<-  1:length(whichClusterMany)
+	 }  
+	 test<-t(bd$dataWBlanks)
+  	 test[is.na(test)]<-"white"
+	 colnames(test)[whCM]<-bd$rowNamesWBlanks[whCM]
+     if(clusterManyLabels) colnames(test)[whCM]<-rep("",length(whCM))
 
+	if(resultsOnTop) test<-cbind(repResults,test[,(ncol(resM)+1):ncol(test)])
+	else test<-cbind(test[,ncol(test)-ncol(resM)],repResults)
+	
+	plotClusters(test[out$orderSamples,],input="colors",...)
+
+})

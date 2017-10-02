@@ -1,4 +1,10 @@
 setGeneric(
+  name = "plotClustersWorkflow",
+	def=function(object,...){
+	standardGeneric("plotClustersWorkflow")
+	}
+)
+setGeneric(
 	name="plotContrastHeatmap",
 	def=function(object,...){
 		standardGeneric("plotContrastHeatmap")

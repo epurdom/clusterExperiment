@@ -50,17 +50,21 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
   if(is.null(rownames(data))) row.names(data)<-as.character(1:nrow(data))
   #make list of data of feature groups
   dataList <- lapply(groupsOfFeatures,function(ii){data[ii,,drop=FALSE]})
-
+  rnames <- lapply(dataList,rownames)
+  #remove rownames to avoid warning
+  dataList<-lapply(dataList,function(x){
+	  row.names(x)<-NULL
+	  return(x)
+  })
   #add NA rows between groups
   naData <- matrix(NA,nrow = nBlankLines,ncol = ncol(data))
   dataListMinus <- lapply(dataList[-length(dataList)],function(x) {
-    return(rbind(x,naData))
-  })
+	  rbind(x,naData)
+  })  
   newData <-
     data.frame(do.call("rbind",c(dataListMinus,dataList[length(dataList)])))
 
   #make names for this
-  rnames <- lapply(dataList,rownames)
   rnamesMinus <-
     lapply(head(rnames,-1),function(x) {
       c(x,rep("",nBlankLines))
