@@ -12,7 +12,7 @@
   whichClusterMany = NULL, nBlankLines = ceiling(nClusters(object) * 0.05),
   nSizeResult = ceiling(nClusters(object) * 0.02), clusterLabels = TRUE,
   clusterManyLabels = TRUE, sortBy = c("highlighted", "clusterMany"),
-  resultsOnTop = TRUE, ...)
+  highlightOnTop = TRUE, ...)
 }
 \arguments{
 \item{object}{A \code{ClusterExperiment} object on which
@@ -50,7 +50,7 @@ the clusterMany results are first in the alignment. (Note this does not
 determine where they will be plotted, but how they are ordered in the
 aligning step done by \code{plotClusters})}
 
-\item{resultsOnTop}{logical. Whether the results should be plotted on the top
+\item{highlightOnTop}{logical. Whether the results should be plotted on the top
 of clusterMany results or the bottom.
 @param ... arguments passed to \code{\link{plotClusters}}
 @details This plot is solely intended to make it easier to use the 

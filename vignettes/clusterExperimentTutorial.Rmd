@@ -667,7 +667,7 @@ By default, the "combineMany" and "mergeClusters" clusterings are highlighted. W
 
 ```{r plotWorkflow_resort}
 par(mar=plotCMar)
-plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3",sortBy="clusterMany",resultOnTop=FALSE)
+plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3",sortBy="clusterMany",highlightOnTop=FALSE)
 ```
 
 There are no limits as to which clusterings can be shown with the `whichClusters` command, but the non-highlighted clusterings must always be of `clusterType` "clusterMany". The user can select a subset or different ordering of the "clusterMany" clusterings with the argument `whichClusterMany`, which must be a numeric vector giving the indices of the clusters to be chosen. 

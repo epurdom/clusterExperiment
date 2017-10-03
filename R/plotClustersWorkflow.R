@@ -32,7 +32,7 @@
 #'   the clusterMany results are first in the alignment. (Note this does not
 #'   determine where they will be plotted, but how they are ordered in the
 #'   aligning step done by \code{plotClusters})
-#' @param resultsOnTop logical. Whether the results should be plotted on the top
+#' @param highlightOnTop logical. Whether the results should be plotted on the top
 #'   of clusterMany results or the bottom.
 #'   @param ... arguments passed to \code{\link{plotClusters}}
 #'   @details This plot is solely intended to make it easier to use the 
@@ -49,7 +49,7 @@ setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), 
-  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), resultsOnTop=TRUE,...)
+  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
 	  allClusterMany<-which(clusterTypes(object)=="clusterMany")
@@ -113,7 +113,7 @@ setMethod(
  	 })
  	 repResults<-do.call("cbind",repResults)
 	 ##Add blanks
-	 if(resultsOnTop){
+	 if(highlightOnTop){
     		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),nBlankLines=nBlankLines)
 			whNotRes<-(length(whichClusters)+1):nrow(bd$dataWBlanks) #includes blanks
 			whCM<-whNotRes[-c(1:nBlankLines)] #no blanks
@@ -131,7 +131,7 @@ setMethod(
 	colnames(test)<-rep("",ncol(test))
 	colnames(test)[whCM]<-clusterManyLabels
  
-	if(resultsOnTop) test<-cbind(repResults,test[,whNotRes])
+	if(highlightOnTop) test<-cbind(repResults,test[,whNotRes])
 	else test<-cbind(test[,whNotRes],repResults)
 	
 	plotClusters(test[out$orderSamples,],input="colors",...)
