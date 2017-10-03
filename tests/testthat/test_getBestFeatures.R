@@ -88,4 +88,9 @@ test_that("`plotContrastHeatmap` works", {
     dendro <- makeDendrogram(ceSimCont, whichCluster=primaryClusterIndex(ceSimCont))
     topCD <- getBestFeatures(dendro, contrastType="Dendro", isCount=FALSE)
 	plotContrastHeatmap(dendro,signifTable=topCD)
+	
+    top1 <- getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="F",
+                          isCount=FALSE)
+	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
+						  
 })
