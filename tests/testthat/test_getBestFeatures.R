@@ -81,3 +81,11 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   expect_equal(dend1, dendC1)
 }
 )
+test_that("`plotContrastHeatmap` works", {
+    topC2 <- getBestFeatures(ceSimCont, contrastType="Pairs", isCount=FALSE)
+	plotContrastHeatmap(ceSimCont,signifTable=topC2)
+
+    dendro <- makeDendrogram(ceSimCont, whichCluster=primaryClusterIndex(ceSimCont))
+    topCD <- getBestFeatures(dendro, contrastType="Dendro", isCount=FALSE)
+	plotContrastHeatmap(dendro,signifTable=topCD)
+})
