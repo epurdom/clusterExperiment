@@ -12,7 +12,10 @@
 \S4method{plot2D}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{plot2D}{ClusterExperiment,numeric}(object, whichClusters,
-  dimReduce = c("PCA"), whichDims, clusterLegend = NULL, pch = 19, ...)
+  dimReduce = c("PCA"), whichDims = c(1:2), plotUnassigned = TRUE,
+  legend = TRUE, legendTitle = "", clusterLegend = NULL,
+  unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
+  ylab = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -21,13 +24,39 @@
 
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
-\item{dimReduce}{What dimensionality reduction method to use (currently only PCA). See \code{\link{transform}} for how this is implemented.}
+\item{dimReduce}{What dimensionality reduction method to use (currently only
+PCA). See \code{\link{transform}} for how this is implemented.}
 
-\item{whichDims}{vector of length 2 giving the indices of which dimensions to show. The first value goes on the x-axis and the second on the y-axis.}
+\item{whichDims}{vector of length 2 giving the indices of which dimensions to
+show. The first value goes on the x-axis and the second on the y-axis.}
 
-\item{clusterLegend}{matrix with three columns and colnames 'clusterIds','name', and 'color' that give the color and name of the clusters in whichClusters. If NULL, pulls the information from \code{object}.}
+\item{plotUnassigned}{logical as to whether unassigned (either -1 or -2
+cluster values) should be plotted. If TRUE, and the color for -1 is set to
+"white", will be coerced to "lightgrey". To change this, set a different
+(non-white) color in \code{unassignedColor} argument.}
+
+\item{legend}{either logical, indicating whether to plot legend, or character
+giving the location of the legend (passed to \code{\link{legend}})}
+
+\item{legendTitle}{character value giving title for the legend. If NULL, uses
+the clusterLabels value for clustering.}
+
+\item{clusterLegend}{matrix with three columns and colnames
+'clusterIds','name', and 'color' that give the color and name of the
+clusters in whichClusters. If NULL, pulls the information from
+\code{object}.}
+
+\item{unassignedColor}{If not NULL, should be character value giving the
+color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
+
+\item{missingColor}{If not NULL, should be character value giving the color
+for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{pch}{the point type, passed to \code{plot.default}}
+
+\item{xlab}{Label for x axis}
+
+\item{ylab}{Label for y axis}
 }
 \description{
 Plot a 2-dimensional representation of the data, color-code by a clustering.
@@ -40,8 +69,7 @@ cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 
-plot2D(cl)
-plot2D(cl,whichClusters=1:2)
+plot2D(cl,legend="bottomright")
 }
 \seealso{
 \code{\link{plot.default}}, \code{\link{transform}}
