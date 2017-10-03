@@ -7,52 +7,71 @@
 #'   results.
 #' @param object A \code{ClusterExperiment} object on which
 #'   \code{\link{clusterMany}} has been run
-#' @param whichClusterMany numeric indices of which of the clusterMany
-#'   clusterings to plot (if NULL, defaults to all)
-#' @param whichResults which clusterings to use as the results.
+#' @param whichClusterMany numeric indices of which of the clusterMany 
+#'   clusterings to plot (if NULL, defaults to all). Unlike
+#'   \code{whichClusters}, these must be numeric indices. They must also refer
+#'   to clusterings of clusterType \code{clusterMany}.
+#' @param whichClusters which clusterings to "highlight", i.e draw separately 
+#'   from the \code{clusterMany} results. Can be numeric or character vector, 
+#'   indicating the indices or clusterLabels/clusterTypes of the clusterings of 
+#'   interest, respectively.
 #' @param nBlankLines the number of blank (i.e. white) rows to add between the
-#'   clusterMany clusterings and the results
-#' @param nSizeResult the number of rows each result clustering should take up
-#' @param clusterManyLabels either logical, whether to plot the labels for the
-#'   clusterings from clusterMany, or a character vector of labels to use
-#' @param resultLabels either logical, whether to plot the labels for the
-#'   clusterings identified in the results , or a character vector of labels to
-#'   use.
-#' @param sortBy how to align the clusters. If "results" then the results are in
-#'   the top of the alignment done by plotClusters. If "clusterMany", then the
-#'   clusterMany results are in the top. (Note this does not determine where
-#'   they will be plotted, but how they are ordered in the aligning step done by
-#'   \code{plotClusters})
+#'   clusterMany clusterings and the highlighted clusterings.
+#' @param nSizeResult the number of rows each highlighted clustering should take up.
+#'   Increasing the number increases the thickness of the rectangles
+#'   representing the highlighted clusterings.
+#' @param clusterManyLabels either logical, indicating whether to plot the
+#'   labels for the clusterings from clusterMany identified in the
+#'   \code{whichClusterMany}, or a character vector of labels to use.
+#' @param clusterLabels either logical, indicating whether to plot the labels
+#'   for the clusterings identified to be highlighted in the
+#'   \code{whichClusters} argument, or a character vector of labels to use.
+#' @param sortBy how to align the clusters. If "highlighted" then the
+#'   highlighted clusters indicated in the argument \code{whichClusters} are
+#'   first in the alignment done by \code{plotClusters}. If "clusterMany", then
+#'   the clusterMany results are first in the alignment. (Note this does not
+#'   determine where they will be plotted, but how they are ordered in the
+#'   aligning step done by \code{plotClusters})
 #' @param resultsOnTop logical. Whether the results should be plotted on the top
 #'   of clusterMany results or the bottom.
+#'   @param ... arguments passed to \code{\link{plotClusters}}
+#'   @details This plot is solely intended to make it easier to use the 
+#'     \code{\link{plotClusters}} visualization when there are a large number of
+#'     clusterings from a call to \code{\link{clusterMany}}. This plot separates
+#'     out the \code{\link{clusterMany}} results from a designated clustering of
+#'     interest, as indicated by the \code{whichClusters} argument
+#'     (by default clusterings from a call to \code{\link{combineMany}} or 
+#'     \code{\link{mergeClusters}}). In addition the highlighted clusters are
+#'     made bigger so that they can be easily seen.
 #' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
 #' @export
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusterMany=NULL, whichResults=c("mergeClusters","combineMany"),nBlankLines=ceiling(nClusters(object)*.05), 
-  nSizeResult=ceiling(nClusters(object)*.02), clusterManyLabels=TRUE, resultLabels=TRUE, sortBy=c("results","clusterMany"), resultsOnTop=TRUE,...)
+  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), 
+  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), resultsOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
 	  allClusterMany<-which(clusterTypes(object)=="clusterMany")
+	  if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
 	 if(is.null(whichClusterMany)){
 		 whichClusterMany<-allClusterMany
 	 }
 	 if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
 	 if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
 		 #convert to indices
- 	if(is.character(whichResults)){
- 		whichResults<- .TypeIntoIndices(object,whClusters=whichResults)
- 		if(length(whichResults)==0) stop("invalid identification of clusters for whichResults argument")
+ 	if(is.character(whichClusters)){
+ 		whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
+ 		if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
  	}
 	 #result labels:
-       if(is.logical(resultLabels)){
- 		  if(resultLabels) resultLabels<-clusterLabels(object)[whichResults]
-		  else resultLabels<-rep("",length(whichResults))  
+       if(is.logical(clusterLabels)){
+ 		  if(clusterLabels) clusterLabels<-clusterLabels(object)[whichClusters]
+		  else clusterLabels<-rep("",length(whichClusters))  
  	  }
  	  else{
- 	       if(length(resultLabels)!=length(whichResults) & !is.null(resultLabels)){
- 	   			stop("number of cluster labels given in resultLabels must be equal to the number of clusterings in 'whichResults'")
+ 	       if(length(clusterLabels)!=length(whichClusters) & !is.null(clusterLabels)){
+ 	   			stop("number of cluster labels given in clusterLabels must be equal to the number of clusterings in 'whichClusters'")
 
  	   		}
  	  }
@@ -69,14 +88,14 @@ setMethod(
   	  }
 
 
-	 if(sortBy=="results"){
-		 tempClusters<-clusterMatrix(object)[,c(whichResults,whichClusterMany),drop=FALSE]
+	 if(sortBy=="highlighted"){
+		 tempClusters<-clusterMatrix(object)[,c(whichClusters,whichClusterMany),drop=FALSE]
 		 out<-plotClusters(tempClusters,plot=FALSE)	 	
-		 cmM<-out$colors[,-c(1:length(whichResults)),drop=FALSE]
-		 resM<-out$colors[,c(1:length(whichResults)),drop=FALSE]
+		 cmM<-out$colors[,-c(1:length(whichClusters)),drop=FALSE]
+		 resM<-out$colors[,c(1:length(whichClusters)),drop=FALSE]
 	 }
 	 else{
-		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichResults),drop=FALSE]
+		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichClusters),drop=FALSE]
 		 out<-plotClusters(tempClusters,plot=FALSE)
 		 cmM<-out$colors[,c(1:length(whichClusterMany)),drop=FALSE]
 		 resM<-out$colors[,-c(1:length(whichClusterMany)),drop=FALSE]
@@ -89,18 +108,18 @@ setMethod(
  		 x<-resM[,ii]
  		 mat<-matrix(x,nrow=length(x),ncol=nSizeResult,byrow=FALSE)
  	 	 colnames(mat)<-rep("",ncol(mat))
- 		 colnames(mat)[ceiling(ncol(mat)/2)]<-resultLabels[ii]
+ 		 colnames(mat)[ceiling(ncol(mat)/2)]<-clusterLabels[ii]
  		 return(mat)
  	 })
  	 repResults<-do.call("cbind",repResults)
 	 ##Add blanks
 	 if(resultsOnTop){
-    		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichResults),"ClusterMany"=(length(whichResults)+1):(length(whichResults)+length(whichClusterMany))),nBlankLines=nBlankLines)
-			whNotRes<-(length(whichResults)+1):nrow(bd$dataWBlanks) #includes blanks
+    		bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=1:length(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),nBlankLines=nBlankLines)
+			whNotRes<-(length(whichClusters)+1):nrow(bd$dataWBlanks) #includes blanks
 			whCM<-whNotRes[-c(1:nBlankLines)] #no blanks
 	 } 	
 	 else{
-   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichResults))),nBlank=nBlankLines)
+   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlank=nBlankLines)
    	  	whNotRes<-  1:(length(whichClusterMany)+nBlankLines) #includes blanks
    	  	whCM<-  1:(length(whichClusterMany)) #no blanks
 	 }  

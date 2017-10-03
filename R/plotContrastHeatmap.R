@@ -40,6 +40,14 @@ setMethod(
 			  geneByContrast<-geneByContrast[norder]
 		  }
 	  }
+	  else{
+		  diffGrep<-grep("-",names(geneByContrast))
+		  if(length(diffGrep)==length(geneByContrast)){
+			  #assume the ones I made
+			  names(geneByContrast)<-gsub("X","Cluster",names(geneByContrast))
+			  
+		  }
+	  }
 	 plotHeatmap(object,clusterFeaturesData=geneByContrast,...)
 
 }

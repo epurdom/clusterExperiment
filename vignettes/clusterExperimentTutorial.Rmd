@@ -194,6 +194,12 @@ We also added a `sampleData` argument in our call, indicating that we also want 
 
 Notice that some samples are white. This indicates that they have the value -1, meaning they were not clustered. In fact, for many clusterings, there is a large amount of white here. This is likely do to the fact that there are only `r ncol(rsecFluidigm)` cells here, and the default parameters of RSEC are better suited for a large number of cells, such as seen in more modern single-cell sequencing experiments.  The sequential clustering may be problematic for small numbers of cells.
 
+We can use an alternative version of `plotClusters` called `plotClustersWorkflow` that will better emphasize the more final clusterings from the ensemble/concensus step and merging steps (it currently does not allow for showing the `sampleData` as well, however -- only clustering results). 
+
+```{r plotClustersWorkflow}
+par(mar=plotCMar)
+plotClustersWorkflow(rsecFluidigm)
+```
 
 *Barplots* We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
 
@@ -290,7 +296,11 @@ plotHeatmap(rsecFluidigm, whichClusters=c("combineMany","mergeClusters"),cluster
 
 Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram (described below). These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
 
+We can identify the genes corresponding to the different contrasts with the `plotContrastHeatmap` function.
 
+```{r plotContrastHeatmap}
+plotContrastHeatmap(rsecFluidigm, signif=pairsAllRSEC)
+```
 
 # Overview of the clustering workflow
 We give an overview here of the steps used by the `RSEC` wrapper and more generally in the   `clusterExperiment` package. The section [The clustering workflow](#workflow) goes over these steps and the possible arguments in greater details. 
@@ -392,12 +402,12 @@ The `proportion` argument indicates the minimum proportion of times samples shou
 
 If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of all of these functions in this package. Any clustering function that is applied to an existing `ClusterExperiment` object adds the new clustering to the set of existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
 
-We can again run `plotClusters`, which will now also show the result of `combineMany`:
+We can again run `plotClusters`, which will now also show the result of `combineMany`. Instead, we'll use `plotClustersWorkflow` which is nicer for looking specifically at the results of `combineMany`
 
 ```{r lookAtCombineMany}
 head(clusterMatrix(ce)[,1:3])
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow")
+plotClustersWorkflow(ce)
 
 ```
 
@@ -415,17 +425,20 @@ Now we'll rerun `combineMany` with `proportion=0.7`. This time, we will give it 
 ```{r combineMany_newCombineMany}
 ce<-combineMany(ce,proportion=0.7,clusterLabel="combineMany,0.7")
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow")
+plotClustersWorkflow(ce)
 
 ```
 
-We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. There is also a `minSize` parameter for `combineMany`, with the default of `minSize=5`. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. Here, we reduce it to `minSize=3` (we'll call this "combineMany,final"):
+We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. There is also a `minSize` parameter for `combineMany`, with the default of `minSize=5`. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. Here, we reduce it to `minSize=3` (we'll call this "combineMany,final"). We'll also choose to show all of the different combineMany results in our call to `plotClustersWorkflow`:
 
 ```{r combineMany_changeMinSize}
 ce<-combineMany(ce,proportion=0.7,minSize=3,clusterLabel="combineMany,final")
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow",main="Min. Size=3")
+plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3")
 ```
+
+
+
 
 As we did before for `RSEC` results, we can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called combineMany provided that proportion argument is <1):
 
@@ -641,6 +654,23 @@ plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
              main="clusterMany Clusters, fix the color of clusters",
              axisLine=-1)
 ```
+
+
+### Variant version: `plotClustersWorkflow`
+`plotClusters` is a generic function for showing any clusterings. In following our workflow, however, there can often be many clusterings from `clusterMany` and the important clusters from `combineMany` and `mergeMany` can get lost from view. The function `plotClustersWorkflow` implements `plotClusters` but pulls out specific clusterings designated by the user and puts them apart from the results of `clusterMany`. 
+
+```{r plotWorkflow}
+plotClustersWorkflow(ce)
+```
+
+By default, the "combineMany" and "mergeClusters" clusterings are highlighted. We can choose other clusterings to be the result, rather than the default ones using the argument `whichClusters`. We can also sort the clusterings differently so that we sort based on the results of `clusterMany` first, rather than the highlighted results first and/or choose to have the highlighted clusters on the bottom or the top (independently of the sorting choices). In the following code, we choose to show the different versions of `combineMany` as our highlighted clusters. 
+
+```{r plotWorkflow_resort}
+par(mar=plotCMar)
+plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3",sortBy="clusterMany",resultOnTop=FALSE)
+```
+
+There are no limits as to which clusterings can be shown with the `whichClusters` command, but the non-highlighted clusterings must always be of `clusterType` "clusterMany". The user can select a subset or different ordering of the "clusterMany" clusterings with the argument `whichClusterMany`, which must be a numeric vector giving the indices of the clusters to be chosen. 
 
 ## Heatmap including the clusters with `plotHeatmap` {#plotHeatmap}
 There is also a default heatmap command for a `ClusterExperiment` object that we used in the Quick Start. By default it clusters on the most variable features (after transforming the data) and shows the `primaryCluster` alongside the data. The `primaryCluster`, now that we've run the workflow, has been set as that from the last mergeClusters step. 
