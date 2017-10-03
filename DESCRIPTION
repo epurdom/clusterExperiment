@@ -64,6 +64,7 @@ Collate:
     'makeBlankData.R'
     'makeDendrogram.R'
     'mergeClusters.R'
+    'plot2D.R'
     'plotBarplot.R'
     'plotClusters.R'
     'plotClustersWorkflow.R'

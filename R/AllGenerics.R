@@ -210,6 +210,13 @@ setGeneric(
         standardGeneric("plotBarplot")
     }
 )
+setGeneric(
+    name="plot2D",
+    def=function(object, whichClusters,...)
+    {
+        standardGeneric("plot2D")
+    }
+)
 
 setGeneric(
   name="plotHeatmap",
