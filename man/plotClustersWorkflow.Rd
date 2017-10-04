@@ -10,9 +10,9 @@
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
   whichClusters = c("mergeClusters", "combineMany"),
   whichClusterMany = NULL, nBlankLines = ceiling(nClusters(object) * 0.05),
-  nSizeResult = ceiling(nClusters(object) * 0.02), clusterLabels = TRUE,
-  clusterManyLabels = TRUE, sortBy = c("highlighted", "clusterMany"),
-  highlightOnTop = TRUE, ...)
+  existingColors = FALSE, nSizeResult = ceiling(nClusters(object) * 0.02),
+  clusterLabels = TRUE, clusterManyLabels = TRUE,
+  sortBy = c("highlighted", "clusterMany"), highlightOnTop = TRUE, ...)
 }
 \arguments{
 \item{object}{A \code{ClusterExperiment} object on which
@@ -30,6 +30,22 @@ to clusterings of clusterType \code{clusterMany}.}
 
 \item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the highlighted clusterings.}
+
+\item{existingColors}{logical. If logical, whether the highlighted clusters
+should use colors matched to the clusterMany results, or should the stored
+colors in \code{ClusterExperiment} object be used. This argument has no
+effect on the colors of the clusterMany results, whose colors will be
+chosen based on the alignment of plotClusters.
+@param ... arguments passed to the matrix version of
+  \code{\link{plotClusters}}
+@details This plot is solely intended to make it easier to use the 
+  \code{\link{plotClusters}} visualization when there are a large number of
+  clusterings from a call to \code{\link{clusterMany}}. This plot separates
+  out the \code{\link{clusterMany}} results from a designated clustering of
+  interest, as indicated by the \code{whichClusters} argument
+  (by default clusterings from a call to \code{\link{combineMany}} or 
+  \code{\link{mergeClusters}}). In addition the highlighted clusters are
+  made bigger so that they can be easily seen.}
 
 \item{nSizeResult}{the number of rows each highlighted clustering should take up.
 Increasing the number increases the thickness of the rectangles
@@ -50,17 +66,8 @@ the clusterMany results are first in the alignment. (Note this does not
 determine where they will be plotted, but how they are ordered in the
 aligning step done by \code{plotClusters})}
 
-\item{highlightOnTop}{logical. Whether the results should be plotted on the top
-of clusterMany results or the bottom.
-@param ... arguments passed to \code{\link{plotClusters}}
-@details This plot is solely intended to make it easier to use the 
-  \code{\link{plotClusters}} visualization when there are a large number of
-  clusterings from a call to \code{\link{clusterMany}}. This plot separates
-  out the \code{\link{clusterMany}} results from a designated clustering of
-  interest, as indicated by the \code{whichClusters} argument
-  (by default clusterings from a call to \code{\link{combineMany}} or 
-  \code{\link{mergeClusters}}). In addition the highlighted clusters are
-  made bigger so that they can be easily seen.}
+\item{highlightOnTop}{logical. Whether the highlighted clusters should be
+plotted on the top of clusterMany results or underneath.}
 }
 \description{
 A realization of \code{\link{plotClusters}} call specific to

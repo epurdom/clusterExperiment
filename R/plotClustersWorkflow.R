@@ -32,9 +32,15 @@
 #'   the clusterMany results are first in the alignment. (Note this does not
 #'   determine where they will be plotted, but how they are ordered in the
 #'   aligning step done by \code{plotClusters})
-#' @param highlightOnTop logical. Whether the results should be plotted on the top
-#'   of clusterMany results or the bottom.
-#'   @param ... arguments passed to \code{\link{plotClusters}}
+#' @param highlightOnTop logical. Whether the highlighted clusters should be
+#'   plotted on the top of clusterMany results or underneath.
+#' @param existingColors logical. If logical, whether the highlighted clusters
+#'   should use colors matched to the clusterMany results, or should the stored
+#'   colors in \code{ClusterExperiment} object be used. This argument has no
+#'   effect on the colors of the clusterMany results, whose colors will be
+#'   chosen based on the alignment of plotClusters.
+#'   @param ... arguments passed to the matrix version of
+#'     \code{\link{plotClusters}}
 #'   @details This plot is solely intended to make it easier to use the 
 #'     \code{\link{plotClusters}} visualization when there are a large number of
 #'     clusterings from a call to \code{\link{clusterMany}}. This plot separates
@@ -48,7 +54,7 @@
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), 
+  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), existingColors=FALSE,
   nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
@@ -101,7 +107,16 @@ setMethod(
 		 resM<-out$colors[,-c(1:length(whichClusterMany)),drop=FALSE]
 	 }
 	 
-
+	 if(existingColors){
+		 #don't use resM for the colors, but make one
+		 resMatch<-lapply(1:length(whichClusters),function(ii){
+			 x<-clusterMatrix(object)[,ii]
+			 col<-clusterLegend(object)[[ii]]
+			 m<-match(as.character(x),col[,"clusterIds"])
+			 return(col[m,"color"])
+		 })
+		 resM<-do.call("cbind",resMatch)
+	 }
 	 
  	# make replication of results
  	 repResults<-lapply(1:ncol(resM),function(ii){
