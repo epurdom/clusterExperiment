@@ -83,7 +83,6 @@ setMethod(
 	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
 	}
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-	browser()
 	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
     
   })
@@ -225,7 +224,7 @@ setMethod(
 						whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
 						
 						if(length(whExistingColor)>0){
-							#find new id to give it
+							#reassign the cluster id to the one matching existing color id.
 							matchNew<-match(currMat[whExistingColor,"color"],newClusterLegendMat[,"color"])
 							oldId<-currMat[whExistingColor,"clusterIds"]
 							newId<-newClusterLegendMat[matchNew,"clusterIds"]
@@ -268,7 +267,6 @@ setMethod(
 						newCl<-cbind(newCl,currCl)
 						
 					}
-					#browser()
 					clusterLegendMat<-newClusterLegendMat
 					colnames(newCl)<-colnames(cl)
 					rownames(newCl)<-rownames(cl)
@@ -350,7 +348,7 @@ setMethod(
 		}
 	}
 	else tip.color<-"black"
-  	
+	
 
   	###############
   	#this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
@@ -361,7 +359,6 @@ setMethod(
 	prohibitOptions<-c("tip.color","node.pos","edge.width")
 	if(any(prohibitOptions %in% names(plotArgs))) stop("User cannot set following options to plot.phylo:",paste(prohibitOptions, collapse=","))
 	plotArgs<-c(plotArgs,list(tip.color=tip.color,node.pos=2,edge.width=edge.width))	
-  	#	browser()
   	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
   	else{
 		#if colorblock
@@ -392,9 +389,12 @@ setMethod(
   			m<-match(as.character(ux),names(namedColors))
 			namedColors[m]
   		}
-  		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
+		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
+		if(packageVersion("ape")<'5.0.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have ape package between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
 		colInput<-function(n){cols}
 		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
+		
+		# ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
 			ypos<-par("usr")[4]+0*diff(par("usr")[3:4])

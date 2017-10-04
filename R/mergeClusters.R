@@ -213,7 +213,6 @@ setMethod(f = "mergeClusters",
     }
   }
 
-  #browser()
   nodePropTable <- do.call("rbind", sigByNode)
   annotTable <- data.frame("Node"=names(sigByNode),
                               "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)])
