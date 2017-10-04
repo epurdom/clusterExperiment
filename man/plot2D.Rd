@@ -3,6 +3,7 @@
 \docType{methods}
 \name{plot2D,ClusterExperiment,character-method}
 \alias{plot2D,ClusterExperiment,character-method}
+\alias{plot2D}
 \alias{plot2D,ClusterExperiment,missing-method}
 \alias{plot2D,ClusterExperiment,numeric-method}
 \title{Plot 2-dimensionsal representation with clusters}

@@ -39,9 +39,9 @@
 #'   colors in \code{ClusterExperiment} object be used. This argument has no
 #'   effect on the colors of the clusterMany results, whose colors will be
 #'   chosen based on the alignment of plotClusters.
-#'   @param ... arguments passed to the matrix version of
+#' @param ... arguments passed to the matrix version of
 #'     \code{\link{plotClusters}}
-#'   @details This plot is solely intended to make it easier to use the 
+#' @details This plot is solely intended to make it easier to use the 
 #'     \code{\link{plotClusters}} visualization when there are a large number of
 #'     clusterings from a call to \code{\link{clusterMany}}. This plot separates
 #'     out the \code{\link{clusterMany}} results from a designated clustering of
@@ -134,7 +134,7 @@ setMethod(
 			whCM<-whNotRes[-c(1:nBlankLines)] #no blanks
 	 } 	
 	 else{
-   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlank=nBlankLines)
+   		bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=1:length(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankLines=nBlankLines)
    	  	whNotRes<-  1:(length(whichClusterMany)+nBlankLines) #includes blanks
    	  	whCM<-  1:(length(whichClusterMany)) #no blanks
 	 }  

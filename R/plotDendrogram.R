@@ -143,7 +143,6 @@ setMethod(
           #convert names of internal nodes for plotting
           #####
           #match to order of tree
-  		#browser()
   	    sigInfo<-mergeOutput$propDE
   	    whToMerge<-which(sigInfo$Merged)
   	    nodesToMerge<-as.character(sigInfo$Node[whToMerge])
@@ -218,7 +217,6 @@ setMethod(
 					newCl<-cl[,1]
 					#make it general in case some day want more than just 2 clusterings
 					for(ii in 2:nclusters){
-						#browser()
 						currMat<-clusterLegendMat[[ii]]
 						currCl<-cl[,ii]
 						whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
@@ -243,7 +241,6 @@ setMethod(
 							#remove from current color scheme
 							currMat<-currMat[-whExistingColor,,drop=FALSE]
 						}
-						#browser()
 						if(nrow(currMat)>0){
 							## increase remaing ids 
 							maxNew<-max(as.vector(newCl))
@@ -255,7 +252,6 @@ setMethod(
 							
 							## change ids in currMat
 							currMat[,"clusterIds"]<-newId2
-							#browser()
 							
 							## test correct that no overlap in ids or names or colors:
 							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])) stop("Internal coding error: still overlap in cluster Ids")
@@ -288,12 +284,10 @@ setMethod(
 		if(leafType=="clusters"){
 			#get rid of matching string 
 			m<-match(gsub("ClusterId","",phyloObj$tip.label),clusterLegendMat[,"clusterIds"])
-			#browser()
 		    if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
 		    phyloObj$tip.label<-clusterLegendMat[m,"name"]
 		    tip.color<-clusterLegendMat[m,"color"]
 			if(label=="colorblock"){
-				#browser()
 				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
 				colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
 				row.names(colorMat)<-clusterLegendMat[,"name"]
@@ -320,7 +314,6 @@ setMethod(
 	
 				}
 				tip.color<-"black"
-				#browser()
 			}
 			else{
 				if(is.matrix(cl)) cl<-cl[,1]
@@ -390,18 +383,16 @@ setMethod(
 			namedColors[m]
   		}
 		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
-		if(packageVersion("ape")<'5.0.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have ape package between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
+		if(packageVersion("ape")<'5.0.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
 		colInput<-function(n){cols}
 		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		
-		# ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
 			ypos<-par("usr")[4]+0*diff(par("usr")[3:4])
 			text(x=xloc,y=ypos,labels=colnames(cl),srt=45,xpd=NA,adj=c(0,0))
 			
 		}
-		#browser()
 		
   	}
 	

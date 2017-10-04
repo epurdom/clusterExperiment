@@ -1,5 +1,6 @@
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a clustering.
+#' @aliases plot2D
 #' @rdname plot2D
 #' @export
 setMethod(
