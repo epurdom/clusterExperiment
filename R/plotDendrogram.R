@@ -83,6 +83,7 @@ setMethod(
 	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
 	}
 	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
+	browser()
 	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
     
   })
