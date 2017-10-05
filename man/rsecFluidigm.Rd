@@ -24,11 +24,12 @@ assays(se) <- list(normalized_counts=fq)
 wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 library(clusterExperiment)
+ncores<-1
 system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,
-ncores=5,random.seed=176201, clusterFunction="hierarchical01",
+ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
  combineMinSize=3))
 packageVersion("clusterExperiment")
-save(rsecFluidigm, file="~/rsecFluidigm.rda")
+devtools::use_data(rsecFluidigm)
 }
 }
 \seealso{

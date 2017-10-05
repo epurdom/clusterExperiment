@@ -5,6 +5,12 @@
 \alias{mergeClusters,matrix-method}
 \alias{mergeClusters}
 \alias{mergeClusters,ClusterExperiment-method}
+\alias{nodeMergeInfo,ClusterExperiment-method}
+\alias{nodeMergeInfo}
+\alias{mergeCutoff,ClusterExperiment-method}
+\alias{mergeCutoff}
+\alias{mergeMethod,ClusterExperiment-method}
+\alias{mergeMethod}
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
@@ -17,6 +23,12 @@
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
   clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
   labelType = c("colorblock", "name", "ids"), plot = TRUE, ...)
+
+\S4method{nodeMergeInfo}{ClusterExperiment}(x)
+
+\S4method{mergeCutoff}{ClusterExperiment}(x)
+
+\S4method{mergeMethod}{ClusterExperiment}(x)
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a 
@@ -95,11 +107,16 @@ If `x` is a matrix, it returns (invisibly) a list with elements
   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
   the proportions that are DE on each node.} 
   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
-  was based (based on the original clustering).} }
+  was based (based on the original clustering).} 
+  \item{\code{cutoff}}{ The cutoff value for merging.} }
 
 If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
   \code{ClusterExperiment} object with an additional clustering based on the 
   merging. This becomes the new primary clustering.
+
+\code{mergeCutoff} returns the cutoff used for the current merging.
+
+\code{mergeMethod} returns the method used for the current merge.
 }
 \description{
 Takes an input of hierarchical clusterings of clusters and 
