@@ -22,6 +22,7 @@
       retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
       retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
+      retval@merge_cutoff<-oldObj@merge_cutoff
       retval@merge_method<-oldObj@merge_method
     }
     if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
@@ -48,6 +49,7 @@
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
                             merge_index=newObj@merge_index,
+                            merge_cutoff=newObj@merge_cutoff,
                             merge_dendrocluster_index=newObj@merge_dendrocluster_index,
                             merge_nodeProp=newObj@merge_nodeProp,
                             merge_nodeMerge=newObj@merge_nodeMerge,

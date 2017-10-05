@@ -39,9 +39,14 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
 #' @slot merge_index index of the current merged cluster
-#' @slot merge_dendrocluster_index index of the cluster merged with the current merge
-#' @slot merge_nodeMerge data.frame of information about nodes merged in the current merge
-#' @slot merge_nodeProp data.frame of information of proportion estimated non-null at each node of dendrogram
+#' @slot merge_cutoff value for the cutoff used to determine whether to merge
+#'   clusters
+#' @slot merge_dendrocluster_index index of the cluster merged with the current
+#'   merge
+#' @slot merge_nodeMerge data.frame of information about nodes merged in the
+#'   current merge
+#' @slot merge_nodeProp data.frame of information of proportion estimated
+#'   non-null at each node of dendrogram
 #' @slot merge_method character indicating method used for merging
 #' \itemize{
 #' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
@@ -103,6 +108,7 @@ setClass(
 	merge_index="numeric",
 	merge_dendrocluster_index="numeric",
 	merge_method="character",
+	merge_cutoff="numeric",
 	merge_nodeProp="data.frameOrNULL",
 	merge_nodeMerge="data.frameOrNULL"
 	
@@ -247,6 +253,7 @@ setMethod(
                         dendro_outbranch=NA,
                         coClustering=NULL,
                         merge_index=NA_real_,
+						merge_cutoff=NA_real_,
                         merge_dendrocluster_index=NA_real_,
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
@@ -304,6 +311,7 @@ setMethod(
                dendro_index=dendro_index,
                dendro_outbranch=dendro_outbranch,
                merge_index=merge_index,
+			   merge_cutoff=merge_cutoff,
                merge_dendrocluster_index=merge_dendrocluster_index,
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,

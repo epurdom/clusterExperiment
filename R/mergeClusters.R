@@ -86,7 +86,8 @@
 #'   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
 #'   the proportions that are DE on each node.} 
 #'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
-#'   was based (based on the original clustering).} }
+#'   was based (based on the original clustering).} 
+#'   \item{\code{cutoff}}{ The cutoff value for merging.} }
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
 #'   \code{ClusterExperiment} object with an additional clustering based on the 
 #'   merging. This becomes the new primary clustering.
@@ -310,7 +311,7 @@ setMethod(f = "mergeClusters",
     clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
     if(!all(sort(as.character(na.omit(nodePropTable$mergeClusterId)))==sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
   }
-  out<-list(clustering=newcl, oldClToNew=oldClToNew,
+  out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff,
             propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
   if(plot){
     clMat<-cbind(Original=cl, mergeCluster=newcl)
@@ -400,6 +401,7 @@ This makes sense only for counts.")
     retval@merge_method<-mergeMethod
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
+    retval@merge_cutoff<-outlist$cutoff
     ch<-.checkMerge(retval)
     if(!is.logical(ch) || !ch) stop(ch)
   }
