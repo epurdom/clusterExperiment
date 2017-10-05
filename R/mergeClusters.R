@@ -385,9 +385,10 @@ This makes sense only for counts.")
   propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
   mergeTable<-outlist$propDE[,c("Node","Contrast","Merged","mergeClusterId")]
   ##Did anything change??
-  didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
-  if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
+  
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+    didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
+    if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
@@ -450,6 +451,60 @@ This makes sense only for counts.")
 }
 )
 
+
+#' @rdname mergeClusters
+#' @return \code{nodeMergeInfo} returns information collected about the nodes
+#'   during merging as a data.frame with the following entries:
+#' \itemize{ \item{\code{Node}}{ Name of the node} \item{\code{Contrast}}{The
+#' contrast compared at each node, in terms of the cluster ids} 
+#' \item{\code{Merged}}{ Logical as to whether samples from that node which were
+#' merged into one cluster during merging} \item{\code{mergeClusterId}}{ If a
+#' node corresponds to a new, merged cluster, gives the cluster id it
+#' corresponds to. Otherwise NA} \item{\code{...}}{The remaining columns give
+#' the estimated proportion of genes differentially expressed for each method. A
+#' column of NAs means that the method in question hasn't been calculated yet.}
+#' } }
+#' @aliases nodeMergeInfo
+#' @export
+setMethod(
+  f = "nodeMergeInfo",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    if(!is.na(x@merge_index)){
+      nodeProp<-x@merge_nodeProp
+      nodeMerge<-x@merge_nodeMerge
+      m<-match(nodeMerge$Node,nodeProp$Node)
+      out<-(cbind(nodeProp[m,c("Node","Contrast")],nodeMerge[,c("Merged","mergeClusterId")],nodeProp[m,.availMergeMethods]))
+      row.names(out)<-NULL
+      return(out)
+      
+    }
+    else return(NULL)
+  }
+)
+
+#' @rdname mergeClusters
+#' @return \code{mergeCutoff} returns the cutoff used for the current merging.
+#' @aliases mergeCutoff
+#' @export
+setMethod(
+  f = "mergeCutoff",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    x@merge_cutoff
+  }
+)
+#' @rdname mergeClusters
+#' @return \code{mergeMethod} returns the method used for the current merge.
+#' @aliases mergeMethod
+#' @export
+setMethod(
+  f = "mergeMethod",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    x@merge_method
+  }
+)
 
 
 

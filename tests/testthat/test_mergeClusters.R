@@ -112,6 +112,10 @@ test_that("giving nodePropTable to mergeClusters works",{
   #helpful for debugging:
   # plotDendrogram(clustMerged,show.node=TRUE,show.tip.label=TRUE)
   # table(clusterMatrix(clustMerged)[,c(1)],clusterMatrix(clustMerged)[,c(2)])
+  
+  nodeMergeInfo(clustMerged4)
+  expect_equal(mergeCutoff(clustMerged4),0.5)
+  expect_equal(mergeMethod(clustMerged4),"Storey")
 })
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 

@@ -1086,10 +1086,26 @@ Notice that `mergeClusters` will always run based on the clustering that made th
 ce
 ```
 
+The info about the merge is saved in the `ce` object.
+
+```{r getMergeInfo}
+mergeMethod(ce)
+mergeCutoff(ce)
+nodeMergeInfo(ce)
+```
+
+Notice that `nodeMergeInfo` gives the proportion estimated to be differentially expressed at each node, as well as whether that node was merged together in the last `mergeClusters` call (the `Merged` column). The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `Merged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
+
 `mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
 
 ```{r mergeClusters_plot,fig.width=12}
 mergeClusters(ce,mergeMethod="none",plotInfo="all")
+```
+
+Notice that now all of the methods have estimates. This means in any future calls to `mergeClusters` there will be no more need for calculations of per-gene significance, which will speed up the calls if you just want to change the cutoff.
+
+```{r showMergeAll}
+nodeMergeInfo(ce)
 ```
 
 Now we can pick a cutoff. We'll give it a label to keep it separate from the previous run we had made.

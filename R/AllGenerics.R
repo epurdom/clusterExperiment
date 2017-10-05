@@ -1,4 +1,23 @@
 setGeneric(
+  name = "nodeMergeInfo",
+  def=function(x,...){
+    standardGeneric("nodeMergeInfo")
+  }
+)
+setGeneric(
+  name = "mergeMethod",
+  def=function(x,...){
+    standardGeneric("mergeMethod")
+  }
+)
+setGeneric(
+  name = "mergeCutoff",
+  def=function(x,...){
+    standardGeneric("mergeCutoff")
+  }
+)
+
+setGeneric(
   name = "plotClustersWorkflow",
 	def=function(object,...){
 	standardGeneric("plotClustersWorkflow")
