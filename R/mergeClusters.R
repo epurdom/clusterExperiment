@@ -298,7 +298,7 @@ setMethod(f = "mergeClusters",
     logicalMerge <- rep(FALSE, length = nrow(annotTable))
     corrspCluster <- rep(NA, length = nrow(annotTable))
   }
-  nodePropTable<-data.frame(annotTable,"Merged"=logicalMerge,"mergeClusterId"=corrspCluster,nodePropTable,stringsAsFactors=FALSE)
+  nodePropTable<-data.frame(annotTable,"isMerged"=logicalMerge,"mergeClusterId"=corrspCluster,nodePropTable,stringsAsFactors=FALSE)
   
   if(mergeMethod=="none"){
     newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
@@ -383,7 +383,7 @@ This makes sense only for counts.")
                            dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
   propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
-  mergeTable<-outlist$propDE[,c("Node","Contrast","Merged","mergeClusterId")]
+  mergeTable<-outlist$propDE[,c("Node","Contrast","isMerged","mergeClusterId")]
   ##Did anything change??
   
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
@@ -455,15 +455,18 @@ This makes sense only for counts.")
 #' @rdname mergeClusters
 #' @return \code{nodeMergeInfo} returns information collected about the nodes
 #'   during merging as a data.frame with the following entries:
-#' \itemize{ \item{\code{Node}}{ Name of the node} \item{\code{Contrast}}{The
+#' \itemize{ \item{\code{Node}}{ Name of the node} 
+#' \item{\code{Contrast}}{The
 #' contrast compared at each node, in terms of the cluster ids} 
-#' \item{\code{Merged}}{ Logical as to whether samples from that node which were
-#' merged into one cluster during merging} \item{\code{mergeClusterId}}{ If a
+#' \item{\code{isMerged}}{ Logical as to whether samples from that node which were
+#' merged into one cluster during merging} 
+#' \item{\code{mergeClusterId}}{ If a
 #' node corresponds to a new, merged cluster, gives the cluster id it
-#' corresponds to. Otherwise NA} \item{\code{...}}{The remaining columns give
+#' corresponds to. Otherwise NA} 
+#' \item{\code{...}}{The remaining columns give
 #' the estimated proportion of genes differentially expressed for each method. A
 #' column of NAs means that the method in question hasn't been calculated yet.}
-#' } }
+#' }
 #' @aliases nodeMergeInfo
 #' @export
 setMethod(
@@ -474,7 +477,7 @@ setMethod(
       nodeProp<-x@merge_nodeProp
       nodeMerge<-x@merge_nodeMerge
       m<-match(nodeMerge$Node,nodeProp$Node)
-      out<-(cbind(nodeProp[m,c("Node","Contrast")],nodeMerge[,c("Merged","mergeClusterId")],nodeProp[m,.availMergeMethods]))
+      out<-(cbind(nodeProp[m,c("Node","Contrast")],nodeMerge[,c("isMerged","mergeClusterId")],nodeProp[m,.availMergeMethods]))
       row.names(out)<-NULL
       return(out)
       

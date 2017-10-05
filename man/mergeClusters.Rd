@@ -114,6 +114,21 @@ If `x` is a \code{\link{ClusterExperiment}}, it returns a new
   \code{ClusterExperiment} object with an additional clustering based on the 
   merging. This becomes the new primary clustering.
 
+\code{nodeMergeInfo} returns information collected about the nodes
+  during merging as a data.frame with the following entries:
+\itemize{ \item{\code{Node}}{ Name of the node} 
+\item{\code{Contrast}}{The
+contrast compared at each node, in terms of the cluster ids} 
+\item{\code{isMerged}}{ Logical as to whether samples from that node which were
+merged into one cluster during merging} 
+\item{\code{mergeClusterId}}{ If a
+node corresponds to a new, merged cluster, gives the cluster id it
+corresponds to. Otherwise NA} 
+\item{\code{...}}{The remaining columns give
+the estimated proportion of genes differentially expressed for each method. A
+column of NAs means that the method in question hasn't been calculated yet.}
+}
+
 \code{mergeCutoff} returns the cutoff used for the current merging.
 
 \code{mergeMethod} returns the method used for the current merge.

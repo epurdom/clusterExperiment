@@ -114,18 +114,18 @@
     if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
     if(!object@merge_method %in% .availMergeMethods) return("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=","))
-    if(ncol(object@merge_nodeMerge)!=4 || any(sort(colnames(object@merge_nodeMerge)) != c('Contrast','mergeClusterId','Merged','Node') )) {
-      return("merge_nodeMerge must be data.frame with 4 columns and column names equal to: 'Node','Contrast','Merged','mergeClusterId'")
+    if(ncol(object@merge_nodeMerge)!=4 || any(sort(colnames(object@merge_nodeMerge)) != c('Contrast','mergeClusterId','isMerged','Node') )) {
+      return("merge_nodeMerge must be data.frame with 4 columns and column names equal to: 'Node','Contrast','isMerged','mergeClusterId'")
     }
     if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
     if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
-    if(!is.logical(object@merge_nodeMerge[,"Merged"])) return("'Merged' column of merge_nodeMerge must be character")
+    if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be character")
     if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
     
     if(length(unique(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) != length(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId values in merge_nodeMerge not unique")
     id<-    object@merge_nodeMerge[,"mergeClusterId"]
-    merg<-object@merge_nodeMerge[,"Merged"]
-    if(any(!is.na(id) & !merg)) stop("Cannot have values 'mergeClusterId' where 'Merged' is FALSE")
+    merg<-object@merge_nodeMerge[,"isMerged"]
+    if(any(!is.na(id) & !merg)) stop("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
   }
   if(!is.null(object@merge_nodeProp)){
     allowColumns<-c("Node","Contrast",.availMergeMethods)

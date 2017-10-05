@@ -1094,7 +1094,7 @@ mergeCutoff(ce)
 nodeMergeInfo(ce)
 ```
 
-Notice that `nodeMergeInfo` gives the proportion estimated to be differentially expressed at each node, as well as whether that node was merged together in the last `mergeClusters` call (the `Merged` column). The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `Merged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
+Notice that `nodeMergeInfo` gives the proportion estimated to be differentially expressed at each node, as well as whether that node was merged together in the last `mergeClusters` call (the `isMerged` column). The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `isMerged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
 
 `mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
 
