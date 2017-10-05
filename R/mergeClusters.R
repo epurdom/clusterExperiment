@@ -132,7 +132,7 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), 
+                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL,
                           cutoff=0.1, plot=TRUE,
                           isCount=TRUE,  ...) {  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -153,28 +153,39 @@ setMethod(f = "mergeClusters",
   if(plotInfo=="mergeMethod" & mergeMethod=="none") {
     stop("can only plot 'mergeMethod' results if one method is selected")
   }
-
-  #get test-statistics for the contrasts corresponding to each node (and return all)
-  sigTable <- getBestFeatures(x, cl, contrastType=c("Dendro"), dendro=dendro,
-                               contrastAdj=c("All"),
-                              number=nrow(x), p.value=1, isCount=isCount)
-#browser()
-  #divide table into each node.
+  #determine what methods asked to be calculated
   whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
   if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
   if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
-  sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
-      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey) else NA
-      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC) else NA
-      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
-      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
-      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
-      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
-      return(c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
-  })
+
+	  #determine whether need to calculate, or if already in nodePropTable
+  if(!is.null(nodePropTable)){
+    if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
+    if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
+  }
+  needCalculate<-is.null(nodePropTable) || any(!whMethodCalculate %in% names(nodePropTable)) || any(is.na(nodePropTable[,whMethodCalculate]))
+  if(needCalculate){### calculate the estimated proportions
+	 
+	  #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
+	  sigTable <- getBestFeatures(x, cl, contrastType=c("Dendro"), dendro=dendro,
+	                               contrastAdj=c("All"),
+	                              number=nrow(x), p.value=1, isCount=isCount)
+	  #divide table into each node and calculate.
+	  sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
+	      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey) else NA
+	      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC) else NA
+	      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
+	      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
+	      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
+	      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
+	      return(c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
+	  })
+  }
+  else{
+    sigByNode<-by(nodePropTable,nodePropTable$Node,function(x){x})
+  }
   newcl <- cl
   phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
-
   if(mergeMethod != "none"){
     #go up tree and merge clusters
     valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 2)})
@@ -212,39 +223,105 @@ setMethod(f = "mergeClusters",
       newcl[is.na(newcl)] <- cl[is.na(newcl)]
     }
   }
-
-  nodePropTable <- do.call("rbind", sigByNode)
-  annotTable <- data.frame("Node"=names(sigByNode),
-                              "Contrast"=sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)])
-    #add merge information:
-   if(mergeMethod != "none" && length(whToMerge)>0 && length(which(whToMerge)) > 0){
-     logicalMerge<-annotTable$Node %in%nodesToMerge
-
- } else logicalMerge<-rep(FALSE,length=nrow(annotTable))
-  nodePropTable<-data.frame(annotTable,"Merged"=logicalMerge,nodePropTable)
+  nodePropTableGiven<-nodePropTable
+	if(!needCalculate){
+	  whProp <- which(names(nodePropTable) %in% .availMergeMethods)
+	  nodePropTable <- nodePropTableGiven[, whProp]
+	  annotTable <- nodePropTableGiven[, c("Node", "Contrast")]
+	}
+  else{
+    if (!is.null(nodePropTable)) {
+      #add results to given nodePropTable
+      nodePropTable <- do.call("rbind", sigByNode)
+      annotTable <- data.frame(
+        "Node" = names(sigByNode),
+        "Contrast" = as.character(sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)]),
+        stringsAsFactors = FALSE
+      )
+      #check same nodes and contrasts
+      if (!all(sort(nodePropTableGiven$Node) == sort(annotTable$Node)))
+        stop("different nodes in nodePropTable than when calculated fresh")
+      if (!all(sort(nodePropTableGiven$Contrast) == sort(annotTable$Contrast)))
+        stop("different contrast values in nodePropTable than when calculated fresh")
+      whInGiven<-.availMergeMethods[sapply(.availMergeMethods,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
+      whInGiven<-whInGiven[which(!whInGiven %in% whMethodCalculate)]
+      if(length(whInGiven)>0){
+        m<-match(annotTable$Node,nodePropTableGiven$Node)
+        nodePropTable[,whInGiven]<-nodePropTableGiven[m,whInGiven]
+      }
+    }
+    else{
+      nodePropTable <- do.call("rbind", sigByNode)
+      annotTable <- data.frame("Node"=names(sigByNode),
+                               "Contrast"=as.character(sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)]),stringsAsFactors =FALSE)
+    }
+  }						  
+  #add merge information:
+  #also determine whether node corresponds to a cluster in merge clusters
+  if (mergeMethod != "none" &&
+      length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
+    logicalMerge <- annotTable$Node %in% nodesToMerge
+    corrspCluster <- sapply(annotTable$Node, function(node) {
+      tips <- phylobase::descendants(phylo4Obj, node, type = c("tips"))
+      if (any(!names(tips) %in% as.character(cl))) {
+        stop("coding error-- tips don't match values of cl")
+      }
+      m <- match(tips, cl)
+      if (length(unique(newcl[m])) == 1) return(unique(newcl[m]))
+      else NA
+    })
+    #Need to decide if any of these are nested inside each other!
+    #Should be the largest is the parent that was merged
+    if(length(na.omit(corrspCluster))!=length(unique(na.omit(corrspCluster)))){
+      uniqueCorr<-unique(na.omit(corrspCluster))
+      correctNode<-sapply(uniqueCorr,function(x){
+        nodes<-annotTable$Node[which(corrspCluster==x)]
+        if(length(nodes)>1){
+          ntips<-sapply(nodes,function(node){length(phylobase::descendants(phylo4Obj, node, type = c("tips")))})
+          maxnode<-nodes[which.max(ntips)]
+          #check true assumption, no weird cases
+          maxdesc<-phylobase::descendants(phylo4Obj, maxnode, type = c("all"))
+          if(!all(nodes[-which.max(ntips)] %in% names(maxdesc))) stop("coding error -- largest samples wasn't parent node")
+          return(maxnode)
+        }
+        else return(nodes)
+      })
+      corrspCluster<-rep(NA,length(corrspCluster))
+      corrspCluster[match(correctNode,annotTable$Node)]<-uniqueCorr
+    }
+  } else{
+    logicalMerge <- rep(FALSE, length = nrow(annotTable))
+    corrspCluster <- rep(NA, length = nrow(annotTable))
+  }
+  nodePropTable<-data.frame(annotTable,"Merged"=logicalMerge,"mergeClusterId"=corrspCluster,nodePropTable,stringsAsFactors=FALSE)
   
   if(mergeMethod=="none"){
     newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
     oldClToNew<-NULL
-      }
-  else oldClToNew=table(Original=cl, New=newcl)
+  }
+  else{
+    oldClToNew=table(Original=cl, New=newcl)
+    #check node identification from above
+    nmerge<-apply(oldClToNew,2,function(x){sum(x>0)})
+    clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
+    if(!all(sort(as.character(na.omit(nodePropTable$mergeClusterId)))==sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
+  }
   out<-list(clustering=newcl, oldClToNew=oldClToNew,
-                 propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
+            propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
   if(plot){
-	  clMat<-cbind(Original=cl, mergeCluster=newcl)
-	  if(!is.null(dendroSamples)){
-		  if(is.null(names(cl))){
-			 warning("dendroSamples argument will be ignored because cl does not have names to allow for linkage to the dendroSamples values")
-			 dendroSamples<-NULL
-		  } 
-		  else{
-			  rownames(clMat)<-names(cl)	  	
-		  }
-	  }
-	  #browser()
-	  if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,label="name",outbranch=any(cl<0),...)
-	 else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,label="name",...)
-  	
+    clMat<-cbind(Original=cl, mergeCluster=newcl)
+    if(!is.null(dendroSamples)){
+      if(is.null(names(cl))){
+        warning("dendroSamples argument will be ignored because cl does not have names to allow for linkage to the dendroSamples values")
+        dendroSamples<-NULL
+      } 
+      else{
+        rownames(clMat)<-names(cl)	  	
+      }
+    }
+    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,label="name",outbranch=any(cl<0),...)
+    else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,label="name",...)
+    
   }
   invisible(out)
 }
@@ -288,18 +365,25 @@ This makes sense only for counts.")
 	}
   
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
+  if(!is.na(x@merge_index)){
+    #check to make sure all match, same, etc. 
+    if(x@merge_index==x@dendro_index) propTable<-x@merge_nodeProp
+    else propTable<-NULL
+  }
+  else propTable<-NULL
   outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
-                           cl=cl,
+                           cl=cl, nodePropTable=propTable,
                            dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
-  
-  if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
-    #----
-    #add "m" to name of cluster
-    #----
+  propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
+  mergeTable<-outlist$propDE[,c("Node","Contrast","Merged","mergeClusterId")]
+  if(mergeMethod!="none" ){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterTypes="mergeClusters",checkTransformAndAssay=FALSE)
+                                clusterTypes="mergeClusters", 
+								merge_nodeProp=propTable,  merge_index=1,
+								merge_nodeMerge=mergeTable,merge_method=mergeMethod,
+								checkTransformAndAssay=FALSE)
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
@@ -307,15 +391,16 @@ This makes sense only for counts.")
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+    retval@merge_index<-retval@dendro_index #update here because otherwise won't be right number.
   }
-  else{ #don't do anything, since there was no merging done.
+  else{ #still save merge info so don't have to redo it.
     retval<-x
+    retval@merge_nodeProp=outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
   }
   if(plot){
     dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
   	# leg<-clusterLegend(retval)[[retval@dendro_index]]
   	#     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
-	#browser()
 	if(leafType=="samples" & mergeMethod!="none" & labelType=="colorblock"){
 		whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
 	  	leg<-clusterLegend(retval)[whClusters]
@@ -331,7 +416,7 @@ This makes sense only for counts.")
 		}
 		
 	}
-  #browser()
+
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
   	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
   	outbranch<-FALSE
