@@ -64,29 +64,33 @@ setMethod(
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
-	labelType<-match.arg(labelType)
-	whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
+    labelType<-match.arg(labelType)
+    whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
-
+    if(leafType=="clusters" && whCl!=x@dendro_index){
+      warning("if leafType=='clusters', 'whichClusters' must match the clusters that created the dendrogram. Changing 'leafType' to 'samples'")
+      leafType<-"samples"
+    }
+    if(leafType=="clusters" & length(whCl)>1) stop("If leafType equal to 'clusters' 'whichClusters' must be of length 1 (i.e. single cluster).")
     if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
-	dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
-
+    dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
+    
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
-	if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
-	if(length(whCl)==1){
-		leg<-clusterLegend(x)[[whCl]]
-	    if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]		
-	}
-	else{
-		leg<-clusterLegend(x)[whCl]
-	    if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
-	}
-	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-	invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
+    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
+    if(length(whCl)==1){
+      leg<-clusterLegend(x)[[whCl]]
+      if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]		
+    }
+    else{
+      leg<-clusterLegend(x)[whCl]
+      if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+    }
+    label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
+    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
     
   })
-  
+
 
 
 
@@ -129,7 +133,6 @@ setMethod(
 		outbranch<-FALSE
 	}
 	phyloObj <- as(phylo4Obj, "phylo")
-
   	plotArgs<-list(...)
 	dataPct<-0.5
 	offsetDivide<-16
@@ -284,7 +287,7 @@ setMethod(
 		if(leafType=="clusters"){
 			#get rid of matching string 
 			m<-match(gsub("ClusterId","",phyloObj$tip.label),clusterLegendMat[,"clusterIds"])
-		    if(any(is.na(m))) stop("clusterIds do not match dendrogram labels")
+		    if(any(is.na(m))) stop("clusterIds in clusterLegend do not match dendrogram labels")
 		    phyloObj$tip.label<-clusterLegendMat[m,"name"]
 		    tip.color<-clusterLegendMat[m,"color"]
 			if(label=="colorblock"){
@@ -356,10 +359,11 @@ setMethod(
   	else{
 		#if colorblock
 		#just calculate:
-  		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,plot=FALSE),plotArgs))
+  	  if(!"show.tip.label"%in% plotArgs) plotArgs$show.tip.label<-FALSE
+  		phyloPlotOut<-do.call(ape::plot.phylo,c(list(phyloObj,plot=FALSE),plotArgs))
   		treeWidth<-phyloPlotOut$x.lim[2]
 		#plot dendrogram:
-  		do.call(ape::plot.phylo,c(list(phyloObj,show.tip.label = FALSE,x.lim=treeWidth*(1+dataPct)),plotArgs))
+  		do.call(ape::plot.phylo,c(list(phyloObj,x.lim=treeWidth*(1+dataPct)),plotArgs))
   		
   		nclusters<-ncol(colorMat)
 		colnames(colorMat)<-NULL		

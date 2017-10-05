@@ -9,12 +9,23 @@
 
 .addNewResult<-function(newObj,oldObj){
     retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
-    #erases dendrogram so need to put it back if wasn't already there
+    #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
+    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusters lost dendro_index")
+    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusters lost merge_index")
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
-        retval@dendro_samples<-oldObj@dendro_samples
-        retval@dendro_clusters<-oldObj@dendro_clusters
-		retval@dendro_outbranch<-oldObj@dendro_outbranch
-        retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+      retval@dendro_samples<-oldObj@dendro_samples
+      retval@dendro_clusters<-oldObj@dendro_clusters
+      retval@dendro_outbranch<-oldObj@dendro_outbranch
+      retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+    }
+    if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
+      retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
+      retval@merge_nodeMerge<-oldObj@merge_nodeMerge
+      retval@merge_method<-oldObj@merge_method
+    }
+    if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
+      retval@merge_nodeProp<-oldObj@merge_nodeProp
     }
     #put back orderSamples, coClustering
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
@@ -25,7 +36,7 @@
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-clusterExperiment(oldObj,
+  retval<-clusterExperiment(as(oldObj,"SummarizedExperiment"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
@@ -36,9 +47,14 @@
                             dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
-							primaryIndex=primaryClusterIndex(newObj),
-							checkTransformAndAssay=FALSE
-							)
+                            merge_index=newObj@merge_index,
+                            merge_dendrocluster_index=newObj@merge_dendrocluster_index,
+                            merge_nodeProp=newObj@merge_nodeProp,
+                            merge_nodeMerge=newObj@merge_nodeMerge,
+                            merge_method=newObj@merge_method,
+                            primaryIndex=primaryClusterIndex(newObj),
+                            checkTransformAndAssay=FALSE
+  )
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
