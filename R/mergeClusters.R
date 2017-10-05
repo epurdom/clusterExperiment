@@ -348,8 +348,10 @@ setMethod(f = "mergeClusters",
 #'   particularly if \code{labelType="colorblock"}
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
-          definition = function(x, eraseOld=FALSE,isCount=FALSE,
-                                mergeMethod="none",plotInfo="all",clusterLabel="mergeClusters",leafType=c("samples","clusters" ),labelType=c("colorblock","name","ids"),plot=TRUE,...) {
+          definition = function(x, eraseOld=FALSE,isCount=FALSE, 
+                                mergeMethod="none",plotInfo="all",clusterLabel="mergeClusters",
+                                leafType=c("samples","clusters" ),labelType=c("colorblock","name","ids"),
+                                plot=TRUE,...) {
   labelType<-match.arg(labelType)
   leafType<-match.arg(leafType)
   if(is.null(x@dendro_clusters)) {
@@ -382,7 +384,10 @@ This makes sense only for counts.")
                            isCount=isCount,mergeMethod=mergeMethod, ...)
   propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
   mergeTable<-outlist$propDE[,c("Node","Contrast","Merged","mergeClusterId")]
-  if(mergeMethod!="none" ){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+  ##Did anything change??
+  didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
+  if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
+  if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
@@ -395,7 +400,6 @@ This makes sense only for counts.")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
-    
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
     retval@merge_method<-mergeMethod
@@ -485,4 +489,10 @@ This makes sense only for counts.")
   #copied code from Jianshin's website
   musigma<-try(.EstNull.func(tstats),silent=TRUE)
   .epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
+}
+
+
+.makeMergeDendrogram<-function(object){
+	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+		if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
 }

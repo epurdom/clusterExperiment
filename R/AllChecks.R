@@ -120,7 +120,7 @@
     if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
     if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
     if(!is.logical(object@merge_nodeMerge[,"Merged"])) return("'Merged' column of merge_nodeMerge must be character")
-    if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"])) return("'mergeClusterId' column of merge_nodeMerge must be character")
+    if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
     
     if(length(unique(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) != length(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId values in merge_nodeMerge not unique")
     id<-    object@merge_nodeMerge[,"mergeClusterId"]
