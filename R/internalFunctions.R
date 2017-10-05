@@ -20,6 +20,7 @@
     }
     if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
       retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
       retval@merge_method<-oldObj@merge_method
     }
@@ -47,6 +48,7 @@
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
                             merge_index=newObj@merge_index,
+                            merge_dendrocluster_index=newObj@merge_dendrocluster_index,
                             merge_nodeProp=newObj@merge_nodeProp,
                             merge_nodeMerge=newObj@merge_nodeMerge,
                             merge_method=newObj@merge_method,

@@ -27,7 +27,9 @@ clusterExperiment(se, clusters, ...)
   transformation, primaryIndex = 1, clusterTypes = "User",
   clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
   dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
-  coClustering = NULL, checkTransformAndAssay = TRUE)
+  coClustering = NULL, merge_index = NA_real_, merge_nodeProp = NULL,
+  merge_nodeMerge = NULL, merge_method = NA_character_,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{se}{a matrix or \code{SummarizedExperiment} containing the data to be

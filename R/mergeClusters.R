@@ -36,6 +36,10 @@
 #'   details.
 #' @param plot logical as to whether to plot the dendrogram with the merge
 #'   results
+#' @param nodePropTable Only for matrix version. Matrix of results from previous
+#'   run of \code{mergeClusters} as returned by matrix version of
+#'   \code{mergeClusters}. Useful if just want to change the cutoff. Not
+#'   generally intended for user but used internally by package.
 #' @param ... for signature \code{matrix}, arguments passed to the 
 #'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 #'   For signature \code{ClusterExperiment} arguments passed to the method for 
@@ -367,7 +371,7 @@ This makes sense only for counts.")
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
   if(!is.na(x@merge_index)){
     #check to make sure all match, same, etc. 
-    if(x@merge_index==x@dendro_index) propTable<-x@merge_nodeProp
+    if(x@merge_dendrocluster_index==x@dendro_index) propTable<-x@merge_nodeProp
     else propTable<-NULL
   }
   else propTable<-NULL
@@ -381,8 +385,6 @@ This makes sense only for counts.")
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
-								merge_nodeProp=propTable,  merge_index=1,
-								merge_nodeMerge=mergeTable,merge_method=mergeMethod,
 								checkTransformAndAssay=FALSE)
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
@@ -391,7 +393,15 @@ This makes sense only for counts.")
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    retval@merge_index<-retval@dendro_index #update here because otherwise won't be right number.
+    #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
+    
+    retval@merge_nodeProp<-propTable
+    retval@merge_index<-1
+    retval@merge_method<-mergeMethod
+    retval@merge_nodeMerge<-mergeTable
+    retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
+    ch<-.checkMerge(retval)
+    if(!is.logical(ch) || !ch) stop(ch)
   }
   else{ #still save merge info so don't have to redo it.
     retval<-x

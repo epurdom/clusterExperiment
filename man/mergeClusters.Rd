@@ -10,7 +10,8 @@
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC",
-  "mergeMethod"), cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
+  "mergeMethod"), nodePropTable = NULL, cutoff = 0.1, plot = TRUE,
+  isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
@@ -43,6 +44,11 @@ the value used in the merging is plotted at each node. If 'none', then no
 proportions will be added to the dendrogram. 'plotInfo' can also be one of
 the mergeMethod choices (even if that method is not the method chosen in
 'mergeMethod' options).}
+
+\item{nodePropTable}{Only for matrix version. Matrix of results from previous
+run of \code{mergeClusters} as returned by matrix version of
+\code{mergeClusters}. Useful if just want to change the cutoff. Not
+generally intended for user but used internally by package.}
 
 \item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two 
 clusters with the proportion of DE below cutoff will be merged. Must be a 

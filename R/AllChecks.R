@@ -103,10 +103,12 @@
   ############
   if(is.na(object@merge_index) & !is.na(object@merge_method)) return("merge_index NA but merge_method has value")
   if(!is.na(object@merge_index) & is.na(object@merge_method)) return("if merge_index not NA, must have value for merge_method")
+  if(is.na(object@merge_index) & !is.na(object@merge_dendrocluster_index)) return("merge_index NA but merge_dendrocluster_index has value")
+  if(!is.na(object@merge_index) & is.na(object@merge_dendrocluster_index)) return("if merge_index not NA, must have value for merge_dendrocluster_index")
   if(is.na(object@merge_index) & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
   if(!is.na(object@merge_index) & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
-  
   if(!is.na(object@merge_index)){
+    if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
     if(!object@merge_method %in% .availMergeMethods) return("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=","))
     if(ncol(object@merge_nodeMerge)!=4 || any(sort(colnames(object@merge_nodeMerge)) != c('Contrast','mergeClusterId','Merged','Node') )) {
