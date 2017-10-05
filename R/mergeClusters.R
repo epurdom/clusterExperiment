@@ -549,5 +549,34 @@ setMethod(
 
 .makeMergeDendrogram<-function(object){
 	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
-		if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+  #should this instead just silently return the existing?
+	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object") 
+  whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
+  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
+  clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
+  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
+  newPhylo4<-phylo4Obj
+  for(node in clusterNode){
+    #first remove tips of children nodes so all children of node are tips
+    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+    if(length(whDescNodes)>0){
+      tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
+      newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+      
+    }
+    #redo to check fixed problem
+    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+    if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
+    #should only have tips now
+    tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
+    newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
+  }
+  #return(newPhylo4)
+  #Now need to change tip name to be that of the cluster
+
+  #convert back to dendrogram class and return  
 }
+ 
+  
