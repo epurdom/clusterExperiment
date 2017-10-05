@@ -550,64 +550,66 @@ setMethod(
 }
 
 
-.makeMergeDendrogram<-function(object){
-	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
-  #should this instead just silently return the existing?
-	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object") 
-  if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
-  whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
-  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
-  clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
-  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
-  newPhylo4<-phylo4Obj
-  for(node in clusterNode){
-    #first remove tips of children nodes so all children of node are tips
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0){
-      tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
-      newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
-      
-    }
-    #redo to check fixed problem
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
-    #should only have tips now
-    tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
-    newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
-  }
-  #return(newPhylo4)
-  #Now need to change tip name to be that of the merge cluster
-  mCl<-clusterMatrix(object)[,object@merge_index]
-  dCl<-clusterMatrix(object)[,object@dendro_index]
-  tab<-table(mCl,dCl) #match them up 
-  browser()
-  newTips<-currTips<-phylobase::tipData(newPhylo4)
-  whOldCl<-which(currTips %in% colnames(tab))
-  if(length(whOldCl)>0){
-    subtab<-tab[,currTips[whOldCl]]
-    nn<-apply(subtab,2,function(x){
-      mm<-rownames(subtab)[x>0]; 
-      if(length(mm)>0) stop("coding error -- shouldn't have multiple matches")
-      else if (length(nm)==0) stop("coding error -- shouldn't have no matches")
-      else return(mm)
-      })
-    newTips[whOldCl]<-nn
-  }
-  if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
-  mClusterNode<-match(clusterNode, currTips)
-  newTips[mClusterNode]<-as.character(clusterId)
-  names(newTips)<-names(currTips) #this is the internal numbering of the nodes
-  phylobase::tipData(newPhylo4)<-newTips
-  #just some checks didn't screw up
-  whMergeNode<-which(currTips %in% clusterNode)
-  if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
-  if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")  
-  
-  if(length(currTips)!= length(unique(mCl[mCl>0]))) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-return(newPhylo4)
-  #convert back to dendrogram class and return  
-}
+# .makeMergeDendrogram<-function(object){
+# 	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+#   #should this instead just silently return the existing?
+# 	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object") 
+#   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
+#   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
+#   clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
+#   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
+#   phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
+#   newPhylo4<-phylo4Obj
+#   for(node in clusterNode){
+#     #first remove tips of children nodes so all children of node are tips
+#     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+#     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+#     if(length(whDescNodes)>0){
+#       tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
+#       newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+#       
+#     }
+#     #redo to check fixed problem
+#     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+#     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+#     if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
+#     #should only have tips now
+#     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
+#     newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
+#   }
+#   #return(newPhylo4)
+#   #Now need to change tip name to be that of the merge cluster
+#   mCl<-clusterMatrix(object)[,object@merge_index]
+#   dCl<-clusterMatrix(object)[,object@dendro_index]
+#   tab<-table(mCl,dCl) #match them up #might not work if only 1 cluster in one of these...
+#   
+#   newTips<-currTips<-phylobase::tipLabels(newPhylo4)
+#   whOldCl<-which(currTips %in% colnames(tab))
+#   if(length(whOldCl)>0){
+#     subtab<-tab[,currTips[whOldCl],drop=FALSE]
+#     nn<-apply(subtab,2,function(x){
+#       mm<-rownames(subtab)[x>0]; 
+#       if(length(mm)>1){
+#         stop("coding error -- shouldn't have multiple matches")
+#       }
+#       else if (length(nm)==0) stop("coding error -- shouldn't have no matches")
+#       else return(mm)
+#       })
+#     newTips[whOldCl]<-nn
+#   }
+#   if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
+#   mClusterNode<-match(clusterNode, currTips)
+#   newTips[mClusterNode]<-as.character(clusterId)
+#   names(newTips)<-names(currTips) #this is the internal numbering of the nodes
+#   phylobase::tipLabels(newPhylo4)<-newTips
+#   #just some checks didn't screw up
+#   whMergeNode<-which(currTips %in% clusterNode)
+#   if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
+#   if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")  
+#   
+#   if(length(currTips)!= length(unique(mCl[mCl>0]))) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+# return(newPhylo4)
+#   #convert back to dendrogram class and return  
+# }
  
   
