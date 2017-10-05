@@ -4,6 +4,14 @@ setGeneric(
     standardGeneric("nodeMergeInfo")
   }
 )
+
+setGeneric(
+  name = "mergeClusterIndex",
+  def=function(x,...){
+    standardGeneric("mergeClusterIndex")
+  }
+)
+
 setGeneric(
   name = "mergeMethod",
   def=function(x,...){
