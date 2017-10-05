@@ -407,7 +407,7 @@ This makes sense only for counts.")
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
-    ch<-.checkMerge(retval)
+        ch<-.checkMerge(retval)
     if(!is.logical(ch) || !ch) stop(ch)
   }
   else{ #still save merge info so don't have to redo it.
