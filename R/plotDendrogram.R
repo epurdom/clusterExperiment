@@ -147,7 +147,7 @@ setMethod(
           #####
           #match to order of tree
   	    sigInfo<-mergeOutput$propDE
-  	    whToMerge<-which(sigInfo$Merged)
+  	    whToMerge<-which(sigInfo$isMerged)
   	    nodesToMerge<-as.character(sigInfo$Node[whToMerge])
   	    methods<-colnames(sigInfo[,-c(1:3)])
         m <- match( as.character(sigInfo$Node),phyloObj$node)
