@@ -1,6 +1,7 @@
 Changes in version 1.3.4-9004 ( Release date: )
 ==============
 Changes:
+* `RSEC` now aligns the colors from `mergeClusters` and `combineMany`. 
 * Added slots to `ClusterExperiment` so that keeps the information about the merging.
 * Add function `plotClustersWorkflow`
 * Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures

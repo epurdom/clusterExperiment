@@ -100,6 +100,9 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 	if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
 		args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
       	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
+		##Align the colors between mergeClusters and combineMany
+		ce<-plotClusters(ce,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
+		
 	}
 	else note("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
   }

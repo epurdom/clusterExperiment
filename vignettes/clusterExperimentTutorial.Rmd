@@ -243,7 +243,7 @@ As shown in this plot, the individual clusters of the `combineMany` ensembl clus
 ## Rerunning RSEC with different parameters 
 
 Below we will describe more about the options we could adjust in `RSEC`. But we might, for example, want to change the proportion of co-clustering (which was the default of 0.7) we required in making our `combineMany`
- clustering, or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many clustering steps (unless we request it).
+ clustering, or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many clustering steps (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`).
  
 ```{r recallRSEC}
 rsecFluidigm<-RSEC(rsecFluidigm,combineProportion=0.6,mergeMethod="Storey",mergeCutoff=0.01)
@@ -260,8 +260,11 @@ par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","combineMany.1","mergeClusters","combineMany"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-The clusterings with the `.1` appended to the labels are the previous `combineMany` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are stored internally). We can see that we lost several clusters with these options.
+The clusterings with the `.1` appended to the labels are the previous `combineMany` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are stored internally). We can see that we lost several clusters with these options. We're going to go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it):
 
+```{r plotClusterRSECReset}
+rsecFluidigm<-RSEC(rsecFluidigm)
+```
 
 ## Finding Features related to the clusters {#step4}
 
@@ -1086,6 +1089,12 @@ Notice that `mergeClusters` will always run based on the clustering that made th
 ce
 ```
 
+We will run `mergeClusters` with the option `mergeMethod="adjP"`. We will also set `plotInfo="adjP"` meaning that we would like the `mergeClusters` command to also produce a plot showing the dendrogram and the estimates from the `adjP` and `Storey` method. We also set `calculateAll=FALSE` for illustration purposes, meaning the function will only calculate the estimates for the methods we request, but as we explain below, that is not necessarily the best option if you are going to be trying out different cutoffs.
+
+```{r runMergeDetail}
+ce<-mergeClusters(ce,mergeMethod="adjP",plotInfo=c("Storey","adjP"),calculateAll=FALSE)
+```
+
 The info about the merge is saved in the `ce` object.
 
 ```{r getMergeInfo}
@@ -1094,37 +1103,49 @@ mergeCutoff(ce)
 nodeMergeInfo(ce)
 ```
 
-Notice that `nodeMergeInfo` gives the proportion estimated to be differentially expressed at each node, as well as whether that node was merged together in the last `mergeClusters` call (the `isMerged` column). The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `isMerged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
+Notice that `nodeMergeInfo` gives for each node the proportion estimated to be differentially expressed at each node (as displayed in the plot that we requested), as well as whether that node was merged together in the `mergeClusters` call (the `isMerged` column). Because we set `calculateAll=FALSE` only the methods needed for our command were calculated (`adjP` and `Storey` for the plot). The others have `NA` values.  The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `isMerged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
 
-`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before in the QuickStart, we only showed the default values.
+`mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before we only showed the values for the specific `mergeMethod` we requested.
 
 ```{r mergeClusters_plot,fig.width=12}
 mergeClusters(ce,mergeMethod="none",plotInfo="all")
 ```
 
-Notice that now all of the methods have estimates. This means in any future calls to `mergeClusters` there will be no more need for calculations of per-gene significance, which will speed up the calls if you just want to change the cutoff.
+Notice that now if we call `nodeMergeInfo`, all of the methods now have estimates. 
 
 ```{r showMergeAll}
 nodeMergeInfo(ce)
 ```
 
-Now we can pick a cutoff. We'll give it a label to keep it separate from the previous run we had made.
+This means in any future calls to `mergeClusters` there will be no more need for calculations of per-gene significance, which will speed up the calls if you just want to change the cutoff (all of the methods used the same input of per-gene p-values, so recalling them each time is computationally inefficient). In practice, the default is `calculateAll=TRUE`, meaning all methods are calculated unless the user specifically requests otherwise.
+
+Now we can pick a cutoff and rerun `mergeClusters`. We'll give it a label to keep it separate from the previous merge clusters run we had made. Note, we can turn off plotting completely by setting `plot=FALSE`.
+
 
 ```{r mergeClusters_ex}
-ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP",clusterLabel="mergeClusters,v2")
+ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP",clusterLabel="mergeClusters,v2",plot=FALSE)
 ce
 ```
 
+Notice that the `nodeMergeInfo` has changed, since different nodes were merged, but the estimates per node stay the same. 
 
-If we want to rerun `mergeClusters` with a different cutoff, we can go ahead and do that (notice in the summary above, that the dendrogram is still there, and associated with the same cluster, so we can rerun `mergeClusters` and know that it will still pull from the same input clustering from `combineMany` as we were before)
+```{r mergeClusters_reexamineNode}
+nodeMergeInfo(ce)
+```
+
+If we want to rerun `mergeClusters` with a different method, we can do that instead.
 
 ```{r mergeClusters_redo}
 ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB",
-                  clusterLabel="mergeClusters,v3")
+                  clusterLabel="mergeClusters,v3",plot=FALSE)
 ce
 ```
 
-Note, we can turn off plotting completely by setting `plot=FALSE`.
+And we can use `plotClusters` to compare the results.
+
+```{r mergeClusters_compareMerges}
+plotClusters(ce,whichClusters=c("mergeClusters,v3","mergeClusters,v2"))
+```
 
 ## Keeping track of and rerunning elements of the workflow {#rerun}
 
@@ -1229,12 +1250,7 @@ The function `getBestFeatures` finds features in the data that are strongly diff
 
 The function `getBestFeatures` calls `limma` [@Smyth:2004gh, @Ritchie:2015fa] on input data to determine the gene features most associated with a particular clustering.  `getBestFeatures` picks the `primaryCluster` of a `ClusterExperiment` object as the clustering to use to find features. If the standard workflow is followed, this will be the last completed step (usually the result of `mergeClusters` or manually choosing a final cluster via `setToFinal`). The primaryCluster can of course be changed by setting `primaryClusterIndex` to point to a different clustering. 
 
-Since our most recent clustering (the one determined by our `setToFinal`) only has 2 clusterings, we are going to reset the primary clustering to be our result from `combineMany`, with the label "mergeClusters,v3". This will be better for explaining the functionality of the `getBestFeatures` method.
 
-```{r resetToManyClusters}
-wh<-which(clusterLabels(ce)=="mergeClusters,v3")
-if(length(wh)==1) primaryClusterIndex(ce)<-wh else stop()
-```
 
 The basic implementation is that of `limma` which fits a linear model per feature and tests for the significance of parameters of that linear model. The main contribution of `getBestFeatures` is to interface with `limma` so as to pick appropriate parameters or tests for comparing clusters. Naturally, `getBestFeatures` also seamlessly works with `ClusterExperiment` objects to minimize the burden on the user. The output is in the form of `topTable` in `limma`, i.e. a data.frame giving the relevant features, the p-value, etc. 
 
@@ -1248,15 +1264,15 @@ The $F$ test is a test for whether there are *any* differences in expression bet
 Note that for all of these contrasts, we are making use of all of the data, not just the samples in the particular cluster pairs being compared. This means the variance is estimated with all the samples. Indeed, the same linear model is being used for all of these comparisons. 
 
 ### All Pairwise
-The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons:
+The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons on the results of rsec:
 
 ```{r getBestFeatures_onlyTopPairs}
-pairsAllTop<-getBestFeatures(ce,contrastType="Pairs",p.value=0.05)
+pairsAllTop<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05)
 dim(pairsAllTop)
 head(pairsAllTop)
 ```
 
-Notice that compared to the quick start guide, We didn't set the parameter `number` which is passed to topTable, so we can get out *at most* 10 significant features for each contrast/comparison (because the default value of `number` in `topTable` is 10). Similarly, if we didn't set a value for `p.value`, `topTable` would return the top `number` genes per contrast, regardless of whether they were all significant or not. These are the defaults of `topTable`, which we purposefully do not modify, but we urge the user to read the documentation of `topTable` carefully to understand what is being asked for. In the QuickStart, we set `number=NROW(ce)` to make sure we got *all* significant genes.
+Notice that compared to the quick start guide, we didn't set the parameter `number` which is passed to topTable, so we can get out *at most* 10 significant features for each contrast/comparison (because the default value of `number` in `topTable` is 10). Similarly, if we didn't set a value for `p.value`, `topTable` would return the top `number` genes per contrast, regardless of whether they were all significant or not. These are the defaults of `topTable`, which we purposefully do not modify, but we urge the user to read the documentation of `topTable` carefully to understand what is being asked for. In the QuickStart, we set `number=NROW(rsecFluidigm)` to make sure we got *all* significant genes.
 
 In addition to the columns provided by `topTable`, the column "Contrast" tells us what pairwise contrast the result is from. "X1-X2" means a comparison of cluster 1 and cluster 2. The column "IndexInOriginal" gives the index of the gene to the original input data matrix, namely `assay(ce)`. The other columns are given by `topTable` (with the column "Feature" renamed -- it is usually "ProbeID" in `limma`).  
 
@@ -1264,34 +1280,39 @@ In addition to the columns provided by `topTable`, the column "Contrast" tells u
 The choice `type="OneAgainsAll"` performs a comparison of a cluster against the mean of all of the other clusters. 
 
 ```{r getBestFeatures_oneAgainstAll}
-best1vsAll<-getBestFeatures(ce,contrastType="OneAgainstAll",p.value=0.05)
+best1vsAll<-getBestFeatures(rsecFluidigm,contrastType="OneAgainstAll",p.value=0.05,number=NROW(rsecFluidigm))
 head(best1vsAll)
 ```
 
 Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4+X5+X6)/5-X1", meaning the mean of the means of clusters 2-6 is compared to the mean of cluster1. Note that the contrasts here are always written in terms of the internal (numeric) cluster id, with an "X" in front of the number. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
 
+```{r getBestFeatures_oneHeatmap}
+plotContrastHeatmap(rsecFluidigm,signifTable=best1vsAll)
+```
 
 ### Dendrogram
 The option `type="Dendro"` is more complex; it assumes that there is a hierarchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, `getBestFeatures` defines a contrast or comparison of the mean expression between the daughter nodes. 
 
-Notice the problem if we try to run the command, however.
-
 ```{r getBestFeatures_dendro}
-bestDendro<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
+bestDendro<-getBestFeatures(rsecFluidigm,contrastType="Dendro",p.value=0.05)
+head(bestDendro)
 ```
 
-
-Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" column identifies which clusters were on each side of the node (and hence commpared) and "ContrastName" is a name for the node.
+Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" column identifies which clusters ids were on each side of the node (and hence commpared) and "ContrastName" is a name for the node.
 
 ```{r dendroContrastLevels}
 levels((bestDendro)$Contrast)
 ```
 
-We can plot the dendrogram showing the node names to help make sense of which contrasts go with which nodes (plotDendrogram calls `plot.phylo` from the `ape` package and can take those arguments).
+```{r getBestFeatures_dendroHeatmap}
+plotContrastHeatmap(rsecFluidigm,signifTable=bestDendro)
+```
+
+We can plot the dendrogram showing the node names to help make sense of which contrasts go with which nodes (plotDendrogram calls `plot.phylo` from the `ape` package and can take as imput those arguments like `show.node.label`).
 
 
 ```{r dendroWithNodeNames}
-plotDendrogram(ce,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leaf="samples",label="colorblock")
+plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leaf="samples",label="colorblock")
 ```
 
 
