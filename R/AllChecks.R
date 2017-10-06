@@ -122,10 +122,12 @@
     if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be character")
     if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
     
-    if(length(unique(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) != length(na.omit(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId values in merge_nodeMerge not unique")
     id<-    object@merge_nodeMerge[,"mergeClusterId"]
     merg<-object@merge_nodeMerge[,"isMerged"]
-    if(any(!is.na(id) & !merg)) stop("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
+    if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
+    if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
+	cl<-clusterMatrix(object)[,object@merge_index]
+	if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
   }
   if(!is.null(object@merge_nodeProp)){
     allowColumns<-c("Node","Contrast",.availMergeMethods)

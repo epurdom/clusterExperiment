@@ -58,7 +58,13 @@
 #'   \code{sampleData}. Each element of the list should be a either the format
 #'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
 #'   corresponding to the levels of the column of \code{sampleData}), or should
-#'   be format of \code{ClusterExperiment}.
+#'   be format of \code{ClusterExperiment}. This takes the place of argument
+#'   \code{annColors} from \code{aheatmap}. Color assignments to the rows/genes 
+#'   should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
+#'   an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
+#'   \emph{named} list describing groupings of genes (see details) then the colors 
+#'   for those groups can be given in \code{clusterLegend} under the name 
+#'   "Gene Group".
 #' @param alignSampleData Logical as to whether should align the colors of the
 #'   \code{sampleData} (only if \code{clusterLegend} not given and
 #'   \code{sampleData} is not \code{NULL}).
@@ -406,20 +412,26 @@ setMethod(
 
 
     userList<-list(...)
-    userAlign<-"alignSampleData" %in% names(userList)
-    userLegend<-"clusterLegend" %in% names(userList)
+    userAlign<-"alignSampleData" %in% names(userList) & !is.null(userList$alignSampleData)
+    userLegend<-"clusterLegend" %in% names(userList) & !is.null(userList$clusterLegend)
 	if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
       if(userLegend){
         userClLegend<-userList[["clusterLegend"]]
-		userClLegend<-userClLegend[names(userClLegend) %in% colnames(sampleData)]
-		if(length(userClLegend)==0) warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
+		annotNames<-colnames(sampleData)
+		if("annRow" %in% names(userList)) annotNames<-c(annotNames,colnames(userList$annRow))
+		if(!is.null(groupFeatures)) annotNames<-c(annotNames,"Gene Group")
+		userClLegend<-userClLegend[names(userClLegend) %in% annotNames]
+		if(length(userClLegend)==0){
+			warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
+		}
 		else{
 	        #keep existing clLegend from clusterExperiment object if not conflict with user input:
 	        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
 	        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
 	        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
-	        userList<-userList[-grep("clusterLegend",names(userList))]			
+	        		
 		}
+		userList<-userList[-grep("clusterLegend",names(userList))]	
       }
       else{
         if(userAlign){
@@ -500,16 +512,19 @@ setMethod(
 	  
 	  if(!is.null(names(groupFeatures))){
 		  annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks,levels=names(groupFeatures)))
-		  nGroups<-length(groupFeatures)
-		  groupColors<-bigPalette[1:nGroups]	
-		  names(groupColors)<-levels(annRow[["Gene Group"]])
 		  #show color-coding of gene groupings:
 		  if("annRow" %in% names(userList)){
-			  if(is.list(userList$annRow)) userList$annRow<-c(userList$annRow,annRow) 
-			  else userList$annRow<-c(list(userList$annRow),annRow)
+			  stop("Cannot provide 'annRow' if grouping features")
+			  # if(is.list(userList$annRow)) userList$annRow<-c(userList$annRow,annRow)
+			  # else userList$annRow<-c(list(userList$annRow),annRow)
 		  }
 		  else userList$annRow<-annRow
-		  clLegend<-c(clLegend, "Gene Group"=list(groupColors))
+		  if(!"Gene Group" %in% names(clLegend)){
+			  nGroups<-length(groupFeatures)
+			  groupColors<-bigPalette[1:nGroups]	
+			  names(groupColors)<-levels(annRow[["Gene Group"]])
+		  	  clLegend<-c(clLegend, "Gene Group"=list(groupColors))
+		  }
 	  }
     }
     else{

@@ -217,7 +217,6 @@ setMethod(f = "mergeClusters",
       desc <- phylobase::descendants(phylo4Obj, node, type = c("all"))
       return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
     })
-    #browser()
     if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
       nodesToMerge <- nodesBelowCutoff[whToMerge]
 
@@ -226,7 +225,6 @@ setMethod(f = "mergeClusters",
         anc <- phylobase::ancestors(phylo4Obj, node, type="all")
         return(!any(names(anc) %in% nodesToMerge))
       })
-     # browser()
       nodesAtTop <- nodesToMerge[whAnc]
 
       #make new clusters
@@ -238,7 +236,8 @@ setMethod(f = "mergeClusters",
         newcl[cl%in% tips] <<- as.numeric(tips[[1]])
       })
       #make consecutive integers
-      newcl <- as.numeric(factor(newcl, levels=unique(cl[cl>0])))
+	  uc<-sort(unique(newcl[newcl>0]))
+      newcl <- as.numeric(factor(newcl, levels=uc,labels=as.character(1:length(uc))))
       #deal with -1/-2
       newcl[is.na(newcl)] <- cl[is.na(newcl)]
     }
@@ -281,12 +280,13 @@ setMethod(f = "mergeClusters",
   if (mergeMethod != "none" &&
       length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
     logicalMerge <- annotTable$Node %in% nodesToMerge
+	#gives the names of original cluster ids
     corrspCluster <- sapply(annotTable$Node, function(node) {
-      tips <- phylobase::descendants(phylo4Obj, node, type = c("tips"))
+      tips <- phylobase::descendants(phylo4Obj, node, type = c("tips")) #names of tips
       if (any(!names(tips) %in% as.character(cl))) {
         stop("coding error-- tips don't match values of cl")
       }
-      m <- match(tips, cl)
+      m <- match(names(tips), cl) #gives index of first match of tips to cl
       if (length(unique(newcl[m])) == 1) return(unique(newcl[m]))
       else NA
     })

@@ -121,7 +121,13 @@ cells (if FALSE, any input to clusterSamplesData is ignored).}
 \code{sampleData}. Each element of the list should be a either the format
 requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
 corresponding to the levels of the column of \code{sampleData}), or should
-be format of \code{ClusterExperiment}.}
+be format of \code{ClusterExperiment}. This takes the place of argument
+\code{annColors} from \code{aheatmap}. Color assignments to the rows/genes 
+should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
+an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
+\emph{named} list describing groupings of genes (see details) then the colors 
+for those groups can be given in \code{clusterLegend} under the name 
+"Gene Group".}
 
 \item{alignSampleData}{Logical as to whether should align the colors of the
 \code{sampleData} (only if \code{clusterLegend} not given and

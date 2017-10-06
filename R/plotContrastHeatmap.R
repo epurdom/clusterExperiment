@@ -41,6 +41,7 @@ setMethod(
         geneByContrast<-geneByContrast[norder]
       }
     }
+	colVect<-NULL
     if(!is.null(whichCluster)){
       if(is.character(whichCluster)) whichCluster <- .TypeIntoIndices(object, whClusters=whichCluster)
       if(length(whichCluster)>1) stop("Must indicate single clustering in 'whichCluster'")
@@ -53,9 +54,12 @@ setMethod(
       for(ii in 1:length(mCl)){
         names(geneByContrast)<-gsub(mCl[[ii]],clMat[ii,"name"],names(geneByContrast))
       }
-      
+      if(all(sort(names(geneByContrast))==sort(clMat[,"name"]))){
+		  colVect<-clMat[,"color"]
+		  names(colVect)<-names(geneByContrast)
+      }
     }
-    plotHeatmap(object,clusterFeaturesData=geneByContrast,...)
+    plotHeatmap(object,clusterFeaturesData=geneByContrast,clusterLegend=list("Gene Group"=colVect),...)
     
   }
 )

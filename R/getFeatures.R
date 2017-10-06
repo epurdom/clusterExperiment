@@ -351,6 +351,8 @@ This makes sense only for counts.")
 }
 
 #' @importFrom phylobase descendants nodeLabels subset
+#' @importFrom ape as.hclust.phylo
+#' @import dendextend
 .makeMergeDendrogram<-function(object){
 	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
   #should this instead just silently return the existing?
@@ -369,7 +371,6 @@ This makes sense only for counts.")
     if(length(whDescNodes)>0){
       tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
       newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
-
     }
     #redo to check fixed problem
     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
@@ -377,11 +378,26 @@ This makes sense only for counts.")
     if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
+    if(length(phylobase::tipLabels(newPhylo4))-length(tipsRemove)<2){
+      ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
+      ###Remove all but 1 tip seems to work -- collapse down desptie trim.internal=FALSE. Very weird.
+      keptTip<-TRUE
+      tipKeep<-names(tipsRemove)[1] #label of the tip removed (tipsRemove has internal names as value)
+      tipsRemove<-tipsRemove[-1] 
+      }
+	  else keptTip<-FALSE
     newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
+    #have to give that 
+    if(keptTip){
+      labs<-phylobase::tipLabels(newPhylo4)
+      wh<-which(labs==tipKeep)
+      labs[wh]<-node
+      phylobase::tipLabels(newPhylo4)<-labs
+    }
   }
   #return(newPhylo4)
   #Now need to change tip name to be that of the merge cluster
-  corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to 
+  corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
   newTips<-currTips<-phylobase::tipLabels(newPhylo4)
   whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original
   if(length(whOldCl)>0){
@@ -400,10 +416,23 @@ This makes sense only for counts.")
   if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
   if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
   mCl<-clusterMatrix(object)[,object@merge_index]
-  if(length(currTips)!= length(unique(mCl[mCl>0]))) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+  mCl<-unique(mCl[mCl>0])
+  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+	  if(!all(sort(as.character(mCl))==sort(tipLabels(newPhylo4)))) stop("coding error -- names of new tips of tree do not match cluster ids")
   newPhylo4<-.force.ultrametric(newPhylo4)
-  return(as.dendrogram(as(newPhylo4,"phylo")))
+  
   #convert back to dendrogram class and return
+  ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
+  ## as.dendrogram(ape::as.hclust.phylo(object))
+  ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
+  ##Have to restep through and manually fix it
+  #browser()
+  xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
+  if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
+  return(as.dendrogram(xxhclust))
+  #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
+
 }
  
 #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId 

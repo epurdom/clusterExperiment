@@ -1,6 +1,12 @@
 context("Constructor")
 source("create_objects.R")
 
+
+test_that("saved rsecFluidigm is still valid object", {
+	data(rsecFluidigm)
+	validObject(rsecFluidigm)
+		  })
+		  
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")

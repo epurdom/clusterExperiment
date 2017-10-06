@@ -28,7 +28,7 @@
       retval@dendro_outbranch<-oldObj@dendro_outbranch
       retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
     }
-    if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
+	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
       retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
       retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
