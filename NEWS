@@ -2,6 +2,7 @@ Changes in version 1.3.4-9004 ( Release date: )
 ==============
 Changes:
 * `RSEC` now aligns the colors from `mergeClusters` and `combineMany` internally. 
+* `getBestFeatures` can now be run on result of mergeClusters without having to call makeDendrogram again for the merged clusters.
 * Added slots to `ClusterExperiment` so that keeps the information about the merging and corresponding helper functions
 * Add function `plotClustersWorkflow`
 * Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
