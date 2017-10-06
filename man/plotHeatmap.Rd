@@ -20,7 +20,8 @@
   "primaryCluster"), clusterFeaturesData = c("var", "all", "PCA"),
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "workflow", "all", "none"),
-  sampleData = NULL, clusterFeatures = TRUE, colorScale, ...)
+  sampleData = NULL, clusterFeatures = TRUE, nBlankLines = 2, colorScale,
+  ...)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
@@ -97,6 +98,8 @@ indicates the sample was not assigned to a cluster and gets color
 
 \item{clusterFeatures}{Logical as to whether to do hiearchical clustering of
 features (if FALSE, any input to clusterFeaturesData is ignored).}
+
+\item{nBlankLines}{Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).}
 
 \item{colorScale}{palette of colors for the color scale of the heatmap.}
 

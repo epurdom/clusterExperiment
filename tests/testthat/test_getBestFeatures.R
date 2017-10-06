@@ -64,6 +64,11 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   idx <- voom3$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom3$AveExpr)
 
+  
+
+}
+)
+test_that("'Dendro' contrasts works for clusterExperiment object in `getBestFeatures`",{
   ## test dendrogram
   expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
                "must provide dendro")
@@ -71,11 +76,6 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   dendro <- makeDendrogram(simData, primaryCluster(ceSimCont))
   expect_error(getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="Dendro",
                                dendro=dendro$samples), "dendro don't match")
-  
-
-}
-)
-test_that("'Dendro' contrasts works for clusterExperiment object in `getBestFeatures`",{
   dendro <- makeDendrogram(simData, primaryCluster(ceSimCont))
   dend1 <- getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="Dendro",
                            dendro = dendro$clusters)
@@ -98,9 +98,15 @@ test_that("'Dendro' contrasts works for clusterExperiment object in `getBestFeat
 })
 
 test_that("`plotContrastHeatmap` works", {
+    mat<-clusterLegend(ceSimCont)[[1]]
+    mat[,"name"]<-letters[1:nrow(mat)]
+    clusterLegend(ceSimCont)[[1]]<-mat
     topC2 <- getBestFeatures(ceSimCont, contrastType="Pairs", isCount=FALSE)
-	plotContrastHeatmap(ceSimCont,signifTable=topC2)
+	  plotContrastHeatmap(ceSimCont,signifTable=topC2)
 
+	  topCOne <- getBestFeatures(ceSimCont, contrastType="OneAgainstAll", isCount=FALSE)
+	  plotContrastHeatmap(ceSimCont,signifTable=topCOne)
+	  
     dendro <- makeDendrogram(ceSimCont, whichCluster=primaryClusterIndex(ceSimCont))
     topCD <- getBestFeatures(dendro, contrastType="Dendro", isCount=FALSE)
 	plotContrastHeatmap(dendro,signifTable=topCD)
@@ -109,6 +115,13 @@ test_that("`plotContrastHeatmap` works", {
                           isCount=FALSE)
 	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
 						  
+	#test name replacement:
+	plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimCont))
+	plotContrastHeatmap(ceSimCont,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimCont))
+	plotContrastHeatmap(ceSimCont,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimCont))
+	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
+	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument'")
+	
 })
 
 

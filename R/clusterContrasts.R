@@ -71,14 +71,25 @@ setMethod(f = "clusterContrasts",
           signature = "vector",
           definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
-		   outputType<-match.arg(outputType)
-		   if(outputType=="MAST" & !requireNamespace("MAST", quietly = TRUE)) stop("for outputType 'MAST', you must have package 'MAST' from Bioconductor installed.")
-		   
-		   cluster<-.convertToNum(cluster)
-           if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
-            cl<-factor(cl)
+            outputType<-match.arg(outputType)
+            if(outputType=="MAST" & !requireNamespace("MAST", quietly = TRUE)) stop("for outputType 'MAST', you must have package 'MAST' from Bioconductor installed.")
+            
+            cluster<-.convertToNum(cluster)
+            if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
+
+            ###--------
+            ### Fix up the names
+            ###--------
+            pad<-if(length(unique(cl))<100) 2 else 3
+            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+            clLevels<-unique(cl[order(clPretty)])
+            clPrettyLevels<-unique(clPretty[order(clPretty)])
+            #get them ordered
+            cl<-factor(cl,levels=clLevels)
+            
+            
             contrastType<-match.arg(contrastType)
-			outputType<-match.arg(outputType)
+            outputType<-match.arg(outputType)
             if(contrastType=="Dendro"){
               if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
               ####
@@ -108,7 +119,7 @@ setMethod(f = "clusterContrasts",
               
             }
             if(contrastType=="OneAgainstAll"){
-              levs<-levels(cl)
+              levs<-clPrettyLevels
               contrastNames<-sapply(levs,function(x){
                 one<-make.names(x)
                 all<-make.names(levs[-which(levs==x)])
@@ -116,7 +127,7 @@ setMethod(f = "clusterContrasts",
                 contr<-paste(one,"-",all,sep="")
                 return(contr)
               })
-              names(contrastNames)<-levs
+              names(contrastNames)<-clPrettyLevels
             }
             if(contrastType=="Pairs"){
               if(is.null(pairMat)){ #make pair Mat of all pairwise
@@ -127,7 +138,10 @@ setMethod(f = "clusterContrasts",
               }
               if(is.null(dim(pairMat)) || ncol(pairMat)!=2) stop("pairMat must be matrix of 2 columns")
               if(!all(as.character(unique(c(pairMat[,1],pairMat[,2]))) %in% as.character(cl))) stop("Some elements of pairMat do not match cl")
-              contrastNames <- apply(pairMat,1,function(y){y<-make.names(as.character(y));paste(y[1],y[2],sep="-")})
+              contrastNames <- apply(pairMat,1,function(y){
+                yPretty<-make.names(clPrettyLevels[match(as.character(y),as.character(clLevels))])
+                paste(yPretty[1],yPretty[2],sep="-")
+                })
             }
             #     if(!removeNegative){
             #         levnames<-levels(cl)
@@ -139,11 +153,11 @@ setMethod(f = "clusterContrasts",
             #     if(removeNegative){
             #         levnames<-levels(factor(cluster[cluster>0]))
             #     }
-            levnames<-make.names(levels(cl))
+            levnames<-if(contrastType!="Dendro") clPrettyLevels else make.names(as.character(clLevels))
             if(outputType=="limma"){	
-	            contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)
-				return(list(contrastMatrix=contr.matrix,contrastNames=names(contrastNames)))
-			}
-			if(outputType=="MAST") return(MAST::Hypothesis(contrastNames, levnames))
+              contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)
+              return(list(contrastMatrix=contr.matrix,contrastNames=names(contrastNames)))
+            }
+            if(outputType=="MAST") return(MAST::Hypothesis(contrastNames, levnames))
             
           })

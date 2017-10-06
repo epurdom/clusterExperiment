@@ -261,6 +261,7 @@ setMethod(
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 #' @rdname plotHeatmap
+#' @param nBlankLines Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).  
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
@@ -269,7 +270,7 @@ setMethod(
                         clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
-                        sampleData=NULL,clusterFeatures=TRUE, 
+                        sampleData=NULL,clusterFeatures=TRUE, nBlankLines=2,
                         colorScale,
                        ...
   ){
@@ -490,7 +491,7 @@ setMethod(
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
 	  # blankData<-makeBlankData(transform(object),geneByContrast,nBlankLines=nBlankLines)
-      blankData<-makeBlankData(heatData,groupFeatures)
+      blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
 
 
       heatData<-data.matrix(blankData$dataWBlanks)

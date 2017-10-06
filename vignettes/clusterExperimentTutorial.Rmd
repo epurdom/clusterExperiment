@@ -302,7 +302,7 @@ Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are 
 We can identify the genes corresponding to the different contrasts with the `plotContrastHeatmap` function.
 
 ```{r plotContrastHeatmap}
-plotContrastHeatmap(rsecFluidigm, signif=pairsAllRSEC)
+plotContrastHeatmap(rsecFluidigm, signif=pairsAllRSEC,nBlankLines=40)
 ```
 
 # Overview of the clustering workflow

@@ -6,12 +6,15 @@
 \alias{plotContrastHeatmap}
 \title{Plot heatmaps showing significant genes per contrast}
 \usage{
-\S4method{plotContrastHeatmap}{ClusterExperiment}(object, signifTable, ...)
+\S4method{plotContrastHeatmap}{ClusterExperiment}(object, signifTable,
+  whichCluster = NULL, ...)
 }
 \arguments{
 \item{object}{ClusterExperiment object on which biomarkers were found}
 
 \item{signifTable}{A \code{data.frame} in format of the result of \code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast' and 'IndexInOriginal' giving the grouping and original index of the features in the \code{assay(object)}}
+
+\item{whichCluster}{if not NULL, indicates cluster used in making the significance table. Used to match to names in \code{clusterLegend(object)}.}
 
 \item{...}{Arguments passed to \code{\link{plotHeatmap}}}
 }

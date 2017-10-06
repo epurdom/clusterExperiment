@@ -146,6 +146,7 @@
 #'
 #' @export
 #' @import limma
+#' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
           signature = signature(x = "matrix"),
@@ -157,11 +158,11 @@ setMethod(f = "getBestFeatures",
 
             #... is always sent to topTable, and nothing else
             cl<-cluster
-             if(is.factor(cl)) {
+            if(is.factor(cl)) {
               warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
               cl <- .convertToNum(cl)
             }
-
+            
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
@@ -170,17 +171,26 @@ setMethod(f = "getBestFeatures",
             if(is.null(rownames(dat))) {
               rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
             }
-
+            
             tmp <- dat
-
+            
             if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
               whNA <- which(cl<0)
               tmp <- tmp[, -whNA]
               cl <- cl[-whNA]
             }
-            cl <- factor(cl)
-
+            ###--------
+            ### Fix up the names
+            ###--------
+            pad<-if(length(unique(cl))<100) 2 else 3
+            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+            clLevels<-unique(cl[order(clPretty)])
+            clPrettyLevels<-unique(clPretty[order(clPretty)])
+            #get them ordered nicely.
+            clNumFac<-factor(cl,levels=clLevels)
+            
             if(contrastType=="Dendro") {
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
               if(is.null(dendro)) {
                 stop("must provide dendro")
               }
@@ -188,26 +198,32 @@ setMethod(f = "getBestFeatures",
                 stop("dendro must be of class 'dendrogram'")
               }
             }
-
+            else{
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+            }
+            
             if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-              designContr <- model.matrix(~ 0 + cl)
-              colnames(designContr) <- make.names(levels(cl))
-
+              ###Create fit for running contrasts
+              designContr <- model.matrix(~ 0 + clPrettyFac)
+              colnames(designContr) <- make.names(levels(clPrettyFac))
+              
               if(isCount) {
                 v <- voom(tmp, design=designContr, plot=FALSE,
-                                 normalize.method = normalize.method)
+                          normalize.method = normalize.method)
                 fitContr <- lmFit(v, designContr)
               } else {
                 fitContr <- lmFit(tmp, designContr)
               }
             }
-
+            
             if(contrastType=="F" || contrastAdj=="AfterF") {
-              designF <- model.matrix(~cl)
-
+              xdat<-data.frame("Cluster"=clPrettyFac)
+              designF<-model.matrix(~Cluster,data=xdat)
+              #designF <- model.matrix(~clPrettyFac)
+              
               if(isCount) {
                 v <- voom(tmp, design=designF, plot=FALSE,
-                                 normalize.method = normalize.method)
+                          normalize.method = normalize.method)
                 fitF <- lmFit(v, designF)
               } else {
                 fitF <- lmFit(tmp, designF)
@@ -216,7 +232,7 @@ setMethod(f = "getBestFeatures",
               fitF <- NULL
             }
             #browser()
-            if(contrastType!="F") contr.result<-clusterContrasts(cl,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
+            if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
             tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
             tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
             if(returnType=="Index") {
