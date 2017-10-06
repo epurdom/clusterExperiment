@@ -38,7 +38,8 @@
 #' return a dendrogram with less samples than \code{NCOL(x)}, which is not
 #' permitted for the \code{@dendro_samples} slot.
 #'
-#'
+#' @details If any merge information is stored in the input object, it will be
+#'   erased by a call to mergeDendrogram.
 #' @return If x is a matrix, a list with two dendrograms, one in which the
 #' leaves are clusters and one in which the leaves are samples. If x is a
 #' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
@@ -71,6 +72,9 @@ setMethod(
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
 #    browser()
     cl<-clusterMatrix(x)[,whCl]
+    ##erase merge information
+    if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
+    
 	#cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
     ########
     ##Transform the data

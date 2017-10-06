@@ -54,7 +54,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 })
 
 
-test_that("giving nodePropTable to mergeClusters works",{
+test_that("saving merge info works",{
   cl1 <- clusterSingle(smSimData, 
                        subsample=FALSE, sequential=FALSE,
                        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
@@ -118,6 +118,34 @@ test_that("giving nodePropTable to mergeClusters works",{
   expect_equal(mergeClusterIndex(clustMerged4),clustMerged4@merge_index)
   expect_equal(mergeCutoff(clustMerged4),0.5)
   expect_equal(mergeMethod(clustMerged4),"Storey")
+  
+  #check if can calculate all, but do nothing else
+  clustMergedAll<-mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=TRUE)
+  expect_false(is.na(clustMergedAll@merge_dendrocluster_index))
+  expect_true(is.na(clustMergedAll@merge_index))
+  expect_false(is.null(nodeMergeInfo(clustMergedAll)))
+  
+  #should erase merge info if call dendrogram
+  clustMergedErase<-makeDendrogram(clustMerged5)
+  expect_true(is.na(clustMergedErase@merge_index))
+  expect_true(is.na(clustMergedErase@merge_dendrocluster_index))
+  
+  #should erase merge info if call dendrogram
+  clustMergedErase2<-makeDendrogram(clustMergedAll)
+  expect_true(is.na(clustMergedErase2@merge_index))
+  expect_true(is.na(clustMergedErase2@merge_dendrocluster_index))
+
+  #test getMergeCorresp
+  #node clustMerge
+  mgCl<-clusterMatrix(clustMerged)[,clustMerged@merge_index]
+  ogCl<-clusterMatrix(clustMerged)[,clustMerged@merge_dendrocluster_index]
+  mc<-getMergeCorrespond(clustMerged)
+  expect_equal(length(mc),length(unique(mgCl[mgCl>0])))
+  mc<-getMergeCorrespond(clustMerged,by="original")
+  expect_equal(length(mc),length(unique(ogCl[ogCl>0])))
+  
+  expect_error(getMergeCorrespond(clustMergedAll),"there is no merge clustering in this object")
+  
 })
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 

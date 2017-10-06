@@ -1268,7 +1268,7 @@ best1vsAll<-getBestFeatures(ce,contrastType="OneAgainstAll",p.value=0.05)
 head(best1vsAll)
 ```
 
-Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4+X5+X6)/5-X1", meaning the mean of the means of clusters 2-6 is compared to the mean of cluster1. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
+Notice that now there is both a "Contrast" and a "ContrastName" column. Like before, "Contrast" gives an explicit definition of what is the comparisons, in the form of "(X2+X3+X4+X5+X6)/5-X1", meaning the mean of the means of clusters 2-6 is compared to the mean of cluster1. Note that the contrasts here are always written in terms of the internal (numeric) cluster id, with an "X" in front of the number. "ContrastName" interprets this into a more usable name, namely that this contrast can be easily identified as a test of "cluster 1". 
 
 
 ### Dendrogram
@@ -1276,7 +1276,12 @@ The option `type="Dendro"` is more complex; it assumes that there is a hierarchy
 
 Notice the problem if we try to run the command, however.
 
-```{r getBestFeatures_dendroFail,error=TRUE}
+```{r getBestFeatures_dendroFailSkip,error=TRUE}
+bestDendroTest1<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
+```
+
+
+```{r getBestFeatures_dendroFail}
 bestDendroTest1<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
 ```
 

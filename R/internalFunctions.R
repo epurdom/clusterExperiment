@@ -1,4 +1,14 @@
-
+.eraseMerge<-function(x){
+  x@merge_index<-NA_real_
+  x@merge_dendrocluster_index<-NA_real_
+  x@merge_method<-NA_character_
+  x@merge_cutoff<-NA_real_
+  x@merge_nodeProp<-NULL
+  x@merge_nodeMerge<-NULL
+  ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  else return(x)
+}
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
     ceLegend<-clusterLegend(ceObj)[[whCluster]]
     whPos<-which(as.numeric(ceLegend[,"clusterIds"]) >0)

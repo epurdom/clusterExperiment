@@ -76,6 +76,9 @@ that samples with "-1" should be discarded. This is not a permitted option,
 however, when \code{x} is a \code{ClusterExperiment} object, because it would
 return a dendrogram with less samples than \code{NCOL(x)}, which is not
 permitted for the \code{@dendro_samples} slot.
+
+If any merge information is stored in the input object, it will be
+  erased by a call to mergeDendrogram.
 }
 \examples{
 data(simData)

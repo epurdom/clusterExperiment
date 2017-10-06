@@ -6,6 +6,12 @@ setGeneric(
 )
 
 setGeneric(
+  name = "getMergeCorrespond",
+  def=function(x,...){
+    standardGeneric("getMergeCorrespond")
+  }
+)
+setGeneric(
   name = "mergeClusterIndex",
   def=function(x,...){
     standardGeneric("mergeClusterIndex")

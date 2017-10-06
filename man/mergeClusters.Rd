@@ -11,13 +11,17 @@
 \alias{mergeCutoff}
 \alias{mergeMethod,ClusterExperiment-method}
 \alias{mergeMethod}
+\alias{mergeClusterIndex,ClusterExperiment-method}
+\alias{mergeClusterIndex}
+\alias{getMergeCorrespond,ClusterExperiment-method}
+\alias{getMergeCorrespond}
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC",
-  "mergeMethod"), nodePropTable = NULL, cutoff = 0.1, plot = TRUE,
-  isCount = TRUE, ...)
+  "mergeMethod"), nodePropTable = NULL, calculateAll = TRUE,
+  showWarnings = FALSE, cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
@@ -29,6 +33,11 @@
 \S4method{mergeCutoff}{ClusterExperiment}(x)
 
 \S4method{mergeMethod}{ClusterExperiment}(x)
+
+\S4method{mergeClusterIndex}{ClusterExperiment}(x)
+
+\S4method{getMergeCorrespond}{ClusterExperiment}(x, by = c("merge",
+  "original"))
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a 
@@ -61,6 +70,20 @@ the mergeMethod choices (even if that method is not the method chosen in
 run of \code{mergeClusters} as returned by matrix version of
 \code{mergeClusters}. Useful if just want to change the cutoff. Not
 generally intended for user but used internally by package.}
+
+\item{calculateAll}{logical. Whether to calculate the estimates for all 
+methods. This reduces computation costs for any future calls to 
+\code{mergeClusters} since the results can be passed to future calls of
+\code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
+automatically).}
+
+\item{showWarnings}{logical. Whether to show warnings given by the methods. 
+The 'locfdr' method in particular frequently spits out warnings (which may 
+indicate that its estimates are not reliable). Setting 
+\code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+default to avoid large number of warnings being produced by "locfdr", but
+users may want to be more careful to check the warnings for themselves.}
 
 \item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two 
 clusters with the proportion of DE below cutoff will be merged. Must be a 
@@ -98,6 +121,10 @@ particularly if \code{labelType="colorblock"}}
 \item{labelType}{if plotting, then whether leaves of dendrogram should be
 labeled by rectangular blocks of color ("colorblock")  or with the names of
 the leaves ("name") (only if x is a ClusterExperiment object).}
+
+\item{by}{indicates whether output from \code{getMergeCorrespond} should be
+a vector/list with elements corresponding to merge cluster ids or elements
+corresponding to the original clustering ids. See return value for details.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements 
@@ -132,6 +159,19 @@ column of NAs means that the method in question hasn't been calculated yet.}
 \code{mergeCutoff} returns the cutoff used for the current merging.
 
 \code{mergeMethod} returns the method used for the current merge.
+
+\code{mergeClusterIndex} returns the index of the clustering used for the current merge.
+
+\code{getMergeCorrespond} returns the correspondence between the
+  merged cluster and its originating cluster. If \code{by="original"} returns
+  a named vector, where the names of the vector are the cluster ids of the
+  originating cluster and the values of the vector are the cluster ids of the
+  merged cluster. If \code{by="merge"} the results returned are organized by
+  the merged clusters. This will generally be a list, with the names of the
+  list equal to the clusterIds of the merge clusters and the entries the
+  clusterIds of the originating clusters. However, if there was no merging
+  done (so that the clusters are identical) the output will be a vector like
+  with \code{by="original"}.
 }
 \description{
 Takes an input of hierarchical clusterings of clusters and 
@@ -174,6 +214,21 @@ If the dendrogram was made with option
   \code{leafType='samples'}. This is because the current code cannot reliably
   link up the internal nodes of the sample dendrogram to the internal nodes
   of the cluster dendrogram when the unassigned samples are intermixed.
+
+When the input is a \code{ClusterExperiment} object, the function
+    attempts to update the merge information in that object. This is done by
+    checking that the existing dendrogram stored in the object  (and run on
+    the clustering stored in the slot \code{dendro_index}) is the same
+    clustering that is stored in the slot \code{merge_dendrocluster_index}.
+    For this reason, new calls to \code{\link{makeDendrogram}} will erase the merge
+    information saved in the object.
+
+If \code{mergeClusters} is run with \code{mergeMethod="none"}, the
+  function may still calculate the proportions per node if \code{plotInfo} is
+  not equal to "none" or \code{calculateAll=TRUE}. If the input object was a
+  \code{ClusterExperiment} object, the resulting information will be still
+  saved, though no new clustering was created; if there was not an existing
+  merge method, the slot \code{merge_dendrocluster_index} will be updated.
 }
 \examples{
 data(simData)

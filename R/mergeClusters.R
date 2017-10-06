@@ -166,7 +166,7 @@ setMethod(f = "mergeClusters",
   }
   mergeMethod <- match.arg(mergeMethod)
   plotInfo <- match.arg(plotInfo)
-  if(mergeMethod=="none" & plotInfo=="none") stop("mergeMethod and plotInfo both equal 'none'; nothing to be done.")
+  if(mergeMethod=="none" & plotInfo=="none" & !calculateAll) stop("mergeMethod and plotInfo both equal 'none'; nothing to be done.")
   if(plotInfo=="mergeMethod" & mergeMethod=="none") {
     stop("can only plot 'mergeMethod' results if one method is selected")
   }
@@ -361,6 +361,20 @@ setMethod(f = "mergeClusters",
 #'   are in the merged clusters (only if x is a ClusterExperiment object), which
 #'   is the main difference between choosing "clusters" and "samples",
 #'   particularly if \code{labelType="colorblock"}
+#' @details When the input is a \code{ClusterExperiment} object, the function
+#'     attempts to update the merge information in that object. This is done by
+#'     checking that the existing dendrogram stored in the object  (and run on
+#'     the clustering stored in the slot \code{dendro_index}) is the same
+#'     clustering that is stored in the slot \code{merge_dendrocluster_index}.
+#'     For this reason, new calls to \code{\link{makeDendrogram}} will erase the merge
+#'     information saved in the object.
+#' @details If \code{mergeClusters} is run with \code{mergeMethod="none"}, the
+#'   function may still calculate the proportions per node if \code{plotInfo} is
+#'   not equal to "none" or \code{calculateAll=TRUE}. If the input object was a
+#'   \code{ClusterExperiment} object, the resulting information will be still
+#'   saved, though no new clustering was created; if there was not an existing
+#'   merge method, the slot \code{merge_dendrocluster_index} will be updated.
+
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE, 
@@ -427,7 +441,10 @@ This makes sense only for counts.")
   }
   else{ #still save merge info so don't have to redo it.
     retval<-x
-    retval@merge_nodeProp=outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
+    if(!is.na(x@merge_index) & x@merge_dendrocluster_index==x@dendro_index){
+      retval@merge_nodeProp=outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
+    }
+    if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
   }
   if(plot){
     dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
@@ -488,15 +505,24 @@ setMethod(
   f = "nodeMergeInfo",
   signature = "ClusterExperiment",
   definition = function(x) {
-    if(!is.na(x@merge_index)){
+    if(!is.na(x@merge_dendrocluster_index)){
       nodeProp<-x@merge_nodeProp
-      nodeMerge<-x@merge_nodeMerge
-      m<-match(nodeMerge$Node,nodeProp$Node)
-      out<-(cbind(nodeProp[m,c("Node","Contrast")],nodeMerge[,c("isMerged","mergeClusterId")],nodeProp[m,.availMergeMethods]))
+      if(!is.na(x@merge_index)){
+        nodeMerge<-x@merge_nodeMerge
+        #just in case not in same order!
+        m<-match(nodeMerge$Node,nodeProp$Node)
+        nodeProp<-nodeProp[m,]
+        
+      }
+      else{ #if run calculate all, can have the prop but no merge index
+        nodeMerge<-matrix(NA,nrow=nrow(nodeProp),ncol=2)
+        colnames(nodeMerge)<-c("isMerged","mergeClusterId")
+      }
+      out<-(cbind(nodeProp[,c("Node","Contrast")],nodeMerge[,c("isMerged","mergeClusterId")],nodeProp[,.availMergeMethods]))
       row.names(out)<-NULL
       return(out)
-      
     }
+
     else return(NULL)
   }
 )
@@ -577,67 +603,60 @@ setMethod(
   .epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
 }
 
+#' @param by indicates whether output from \code{getMergeCorrespond} should be
+#'   a vector/list with elements corresponding to merge cluster ids or elements
+#'   corresponding to the original clustering ids. See return value for details.
+#' @rdname mergeClusters
+#' @return \code{getMergeCorrespond} returns the correspondence between the
+#'   merged cluster and its originating cluster. If \code{by="original"} returns
+#'   a named vector, where the names of the vector are the cluster ids of the
+#'   originating cluster and the values of the vector are the cluster ids of the
+#'   merged cluster. If \code{by="merge"} the results returned are organized by
+#'   the merged clusters. This will generally be a list, with the names of the
+#'   list equal to the clusterIds of the merge clusters and the entries the
+#'   clusterIds of the originating clusters. However, if there was no merging
+#'   done (so that the clusters are identical) the output will be a vector like
+#'   with \code{by="original"}.
+#' @aliases getMergeCorrespond
+#' @export
+setMethod(
+  f = "getMergeCorrespond",
+  signature = "ClusterExperiment",
+  definition = function(x,by=c("merge","original")){
+	by<-match.arg(by)
+	if(is.na(x@merge_index)) stop("there is no merge clustering in this object")
+    mCl<-clusterMatrix(x)[,x@merge_index]
+    dCl<-clusterMatrix(x)[,x@merge_dendrocluster_index]
+	mUnique<-as.character(unique(mCl[mCl>0]))
+	dUnique<-as.character(unique(dCl[dCl>0]))
+	nDCl<-length(dUnique)
+	nMCl<-length(mUnique)
+	notSubsetMessage<-"Current merge cluster is no longer a merge of the cluster in this -- indicated clustering that creates merge is not a partition of the merge cluster"
+	if(nDCl<nMCl) stop(notSubsetMessage)
+	if(nMCl==1){ #all d clusters are in the one cluster
+		if(by=="merge"){
+			out<-list(dUnique)
+			names(out)<-mUnique
+		}
+		else{
+			out<-lapply(dUnique,function(z){return(mUnique)})
+		}
+		return(out)
 
-.makeMergeDendrogram<-function(object){
-	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
-  #should this instead just silently return the existing?
-	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object")
-  if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
-  whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
-  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
-  clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
-  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
-  newPhylo4<-phylo4Obj
-  for(node in clusterNode){
-    #first remove tips of children nodes so all children of node are tips
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0){
-      tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
-      newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+	}
+    tab<-table(mCl,dCl) #match them up #might not work if only 1 cluster in one of these...
+	if(is.null(dim(tab))) stop("coding error -- should get matrix of tabulations")
+	margin<-switch(by,"merge"=1,"original"=2)
+	dimvalue<-switch(by,"merge"=2,"original"=1)
+	dimnms<-dimnames(tab)[[dimvalue]]
+	nn<-apply(tab,margin,function(z){
+        mm<-dimnms[z>0]
+        if(by=="original" & length(mm)>1) stop(notSubsetMessage)
+        else if (length(mm)==0) stop("coding error -- should have a corresponding merge cluster")
+        else return(mm)
+	})
+	names(nn)<-dimnames(tab)[[margin]]
+	return(nn)
+})
 
-    }
-    #redo to check fixed problem
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
-    #should only have tips now
-    tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
-    newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
-  }
-  #return(newPhylo4)
-  #Now need to change tip name to be that of the merge cluster
-  mCl<-clusterMatrix(object)[,object@merge_index]
-  dCl<-clusterMatrix(object)[,object@dendro_index]
-  tab<-table(mCl,dCl) #match them up #might not work if only 1 cluster in one of these...
 
-  newTips<-currTips<-phylobase::tipLabels(newPhylo4)
-  whOldCl<-which(currTips %in% colnames(tab))
-  if(length(whOldCl)>0){
-    subtab<-tab[,currTips[whOldCl],drop=FALSE]
-    nn<-apply(subtab,2,function(x){
-      mm<-rownames(subtab)[x>0];
-      if(length(mm)>1){
-        stop("coding error -- shouldn't have multiple matches")
-      }
-      else if (length(mm)==0) stop("coding error -- shouldn't have no matches")
-      else return(mm)
-      })
-    newTips[whOldCl]<-nn
-  }
-  if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
-  mClusterNode<-match(clusterNode, currTips)
-  newTips[mClusterNode]<-as.character(clusterId)
-  names(newTips)<-names(currTips) #this is the internal numbering of the nodes
-  phylobase::tipLabels(newPhylo4)<-newTips
-  #just some checks didn't screw up
-  whMergeNode<-which(currTips %in% clusterNode)
-  if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
-  if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
-
-  if(length(currTips)!= length(unique(mCl[mCl>0]))) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-return(as.dendrogram(as(newPhylo4,"phylo")))
-  #convert back to dendrogram class and return
-}
- 
-  
