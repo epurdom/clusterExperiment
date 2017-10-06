@@ -40,6 +40,18 @@
 #'   run of \code{mergeClusters} as returned by matrix version of
 #'   \code{mergeClusters}. Useful if just want to change the cutoff. Not
 #'   generally intended for user but used internally by package.
+#' @param calculateAll logical. Whether to calculate the estimates for all 
+#'   methods. This reduces computation costs for any future calls to 
+#'   \code{mergeClusters} since the results can be passed to future calls of
+#'   \code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
+#'   automatically).
+#' @param showWarnings logical. Whether to show warnings given by the methods. 
+#'   The 'locfdr' method in particular frequently spits out warnings (which may 
+#'   indicate that its estimates are not reliable). Setting 
+#'   \code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+#'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+#'   default to avoid large number of warnings being produced by "locfdr", but
+#'   users may want to be more careful to check the warnings for themselves.
 #' @param ... for signature \code{matrix}, arguments passed to the 
 #'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 #'   For signature \code{ClusterExperiment} arguments passed to the method for 
@@ -137,7 +149,7 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL,
                           mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL,
+                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
                           cutoff=0.1, plot=TRUE,
                           isCount=TRUE,  ...) {  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -159,9 +171,12 @@ setMethod(f = "mergeClusters",
     stop("can only plot 'mergeMethod' results if one method is selected")
   }
   #determine what methods asked to be calculated
-  whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
-  if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
-  if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
+  if(calculateAll) whMethodCalculate=.availMergeMethods
+  else{
+	  whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
+	  if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
+	  if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))  	
+  }
 
 	  #determine whether need to calculate, or if already in nodePropTable
   if(!is.null(nodePropTable)){
@@ -177,11 +192,11 @@ setMethod(f = "mergeClusters",
 	                              number=nrow(x), p.value=1, isCount=isCount)
 	  #divide table into each node and calculate.
 	  sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
-	      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey) else NA
-	      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC) else NA
-	      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB) else NA
-	      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr) else NA
-	      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC) else NA
+	      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
+	      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC,showWarnings=showWarnings) else NA
+	      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB,showWarnings=showWarnings) else NA
+	      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr,showWarnings=showWarnings) else NA
+	      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC,showWarnings=showWarnings) else NA
 	      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
 	      return(c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
 	  })
@@ -522,8 +537,10 @@ setMethod(
 
 
 
-.myTryFunc<-function(FUN,...){
-  x<-try(FUN(...),silent=TRUE)
+.myTryFunc<-function(FUN,showWarnings,...){
+# If warn is zero (the default) warnings are stored until the top–level function returns. If 10 or fewer warnings were signalled they will be printed otherwise a message saying how many were signalled. An object called last.warning is created and can be printed through the function warnings. If warn is one, warnings are printed as they occur. If warn is two or larger all warnings are turned into errors.
+	if(!showWarnings) suppressWarnings(x<-try(FUN(...),silent=TRUE))
+	else x<-try(FUN(...),silent=TRUE)
   if(!inherits(x, "try-error")) return(x)
   else return(NA)
 }
@@ -619,7 +636,7 @@ setMethod(
   if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
 
   if(length(currTips)!= length(unique(mCl[mCl>0]))) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-return(newPhylo4)
+return(as.dendrogram(as(newPhylo4,"phylo")))
   #convert back to dendrogram class and return
 }
  

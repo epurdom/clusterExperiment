@@ -243,8 +243,11 @@ setMethod(f = "getBestFeatures",
               } else {
                 if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
 					#check if merge from cluster that made dendro
-					#if()
-					stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+					if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+						dendro<-.makeMergeDendrogram(x)
+						if(is.null(dendro)) stop("Could not make merge dendrogram")
+					}
+					else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
 				}
                 else dendro <- x@dendro_clusters
               }
