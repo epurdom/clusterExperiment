@@ -334,6 +334,7 @@ This makes sense only for counts.")
   
 }
 
+#' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
 	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
   #should this instead just silently return the existing?
@@ -389,27 +390,28 @@ This makes sense only for counts.")
   #convert back to dendrogram class and return
 }
  
+#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId 
 ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 .force.ultrametric<-function(tree){
 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
 	
-	allTips<-tipLabels(tree)
-	depthToTips<-nodeHeight(tree,allTips,from="root")
+	allTips<-phylobase::tipLabels(tree)
+	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
 	maxD<-max(depthToTips)
 	addValue<-maxD-depthToTips
-	allLen<-edgeLength(tree)
-  edgeMat<-edges(tree)
+	allLen<-phylobase::edgeLength(tree)
+  edgeMat<-phylobase::edges(tree)
   tipIds<-as.numeric(names(allTips))
   m<-match(tipIds,edgeMat[,2])
   edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
 
   #check didn't do something stupid:
-  checkTipEdges<-edgeId(tree,type="tip")
+  checkTipEdges<-phylobase::edgeId(tree,type="tip")
   if(!all(sort(checkTipEdges)==sort(edgeIds))) stop("coding error -- didn't correctly get edge ids for tips")
 
   #replace with new edges:
 	allLen[edgeIds]<-allLen[edgeIds]+addValue
-	edgeLength(tree)<-allLen
+	phylobase::edgeLength(tree)<-allLen
 	tree
 }
 

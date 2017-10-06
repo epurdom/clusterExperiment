@@ -1276,30 +1276,12 @@ The option `type="Dendro"` is more complex; it assumes that there is a hierarchy
 
 Notice the problem if we try to run the command, however.
 
-```{r getBestFeatures_dendroFailSkip,error=TRUE}
-bestDendroTest1<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
-```
-
-
-```{r getBestFeatures_dendroFail}
-bestDendroTest1<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
-```
-
-This is because the dendrogram we have does not correspond to the primaryCluster. 
-
-```{r showCeAgain}
-show(ce)
-```
-
-`getBestFeatures` only works on the primaryCluster, and has noticed that the dendrogram in our `ce` object was not made from the primaryCluster. So we need to rerun `makeDendrogram` with our primaryCluster. It's regardless generally a good idea to make sure the dendrogram you have is the one you want. 
-
 ```{r getBestFeatures_dendro}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
 bestDendro<-getBestFeatures(ce,contrastType="Dendro",p.value=0.05)
-head(bestDendro)
 ```
 
-Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" column identifies which clusters where on each side of the node (and hence commpared) and "ContrastName" is a name for the node.
+
+Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" column identifies which clusters were on each side of the node (and hence commpared) and "ContrastName" is a name for the node.
 
 ```{r dendroContrastLevels}
 levels((bestDendro)$Contrast)
@@ -1309,7 +1291,7 @@ We can plot the dendrogram showing the node names to help make sense of which co
 
 
 ```{r dendroWithNodeNames}
-plotDendrogram(ce,show.node.label=TRUE)
+plotDendrogram(ce,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leaf="samples",label="colorblock")
 ```
 
 
