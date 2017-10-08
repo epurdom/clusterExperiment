@@ -61,14 +61,26 @@ Slots).}
 
 \item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
 
-\item{dendro_index}{numeric. Sets the dendro_index slot (see Slots).}
+\item{dendro_index}{numeric. Sets the \code{dendro_index} slot (see Slots).}
 
 \item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
 Slots).}
 
-\item{dendro_outbranch}{logical. Sets the dendro_outbranch slot (see Slots).}
+\item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see Slots).}
 
-\item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
+\item{coClustering}{matrix. Sets the \code{coClustering} slot (see Slots).}
+
+\item{merge_index}{integer. Sets the \code{merge_index} slot (see Slots)}
+
+\item{merge_cutoff}{numeric. Sets the \code{merge_cutoff} slot (see Slots)}
+
+\item{merge_dendrocluster_index}{integer. Sets the \code{merge_dendrocluster_index} slot (see Slots)}
+
+\item{merge_nodeProp}{data.frame. Sets the \code{merge_nodeProp} slot (see Slots)}
+
+\item{merge_nodeMerge}{data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)}
+
+\item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the
 assay and given transformation function for whether they are valid.}
