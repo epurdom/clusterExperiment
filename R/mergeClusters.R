@@ -432,7 +432,7 @@ This makes sense only for counts.")
     #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
-    retval@merge_method<-mergeMethod
+    retval@merge_method<-outlist$mergeMethod
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff

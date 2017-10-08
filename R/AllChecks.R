@@ -113,7 +113,7 @@
     if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
     if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
-    if(!object@merge_method %in% .availMergeMethods) return("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=","))
+    if(!object@merge_method %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")))
     if(ncol(object@merge_nodeMerge)!=4 || any(sort(colnames(object@merge_nodeMerge)) != c('Contrast','isMerged','mergeClusterId','Node') )) {
       return("merge_nodeMerge must be data.frame with 4 columns and column names equal to: 'Node','Contrast','isMerged','mergeClusterId'")
     }
