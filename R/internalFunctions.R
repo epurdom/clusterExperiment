@@ -328,3 +328,22 @@
 # clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
 # sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
+.safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
+    if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
+      ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
+      ###Remove all but 1 tip seems to work -- collapse down desptie trim.internal=FALSE. Very weird.
+      keptTip<-TRUE
+      tipKeep<-names(tipsRemove)[1] #label of the tip removed (tipsRemove has internal names as value)
+      tipsRemove<-tipsRemove[-1] 
+      }
+	  else keptTip<-FALSE
+    phylo4<-phylobase::subset(phylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
+    #have to give that 
+    if(keptTip){
+      labs<-phylobase::tipLabels(phylo4)
+      wh<-which(labs==tipKeep)
+      labs[wh]<-nodeName
+      phylobase::tipLabels(phylo4)<-labs
+    }
+	return(phylo4)
+}

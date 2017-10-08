@@ -253,6 +253,8 @@ setMethod(f = "getBestFeatures",
           definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 isCount=FALSE, ...){
             contrastType <- match.arg(contrastType)
+			cl<-primaryCluster(x)
+			if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
             if(contrastType=="Dendro") {
               if(is.null(x@dendro_clusters)) {
                 stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
@@ -364,36 +366,25 @@ This makes sense only for counts.")
   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
   phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
   newPhylo4<-phylo4Obj
+  if(names(rootNode(phylo4Obj)) %in% clusterNode){
+	  stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
+  }
   for(node in clusterNode){
     #first remove tips of children nodes so all children of node are tips
     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     if(length(whDescNodes)>0){
-      tipNodeDesc<-unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))
+      tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips"))))
       newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
     }
     #redo to check fixed problem
     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
+		
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
-    if(length(phylobase::tipLabels(newPhylo4))-length(tipsRemove)<2){
-      ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
-      ###Remove all but 1 tip seems to work -- collapse down desptie trim.internal=FALSE. Very weird.
-      keptTip<-TRUE
-      tipKeep<-names(tipsRemove)[1] #label of the tip removed (tipsRemove has internal names as value)
-      tipsRemove<-tipsRemove[-1] 
-      }
-	  else keptTip<-FALSE
-    newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
-    #have to give that 
-    if(keptTip){
-      labs<-phylobase::tipLabels(newPhylo4)
-      wh<-which(labs==tipKeep)
-      labs[wh]<-node
-      phylobase::tipLabels(newPhylo4)<-labs
-    }
+    .safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
   }
   #return(newPhylo4)
   #Now need to change tip name to be that of the merge cluster
