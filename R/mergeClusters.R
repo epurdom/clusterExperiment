@@ -414,7 +414,6 @@ This makes sense only for counts.")
   propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
   mergeTable<-outlist$propDE[,c("Node","Contrast","isMerged","mergeClusterId")]
   ##Did anything change??
-  
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
     if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
@@ -436,16 +435,20 @@ This makes sense only for counts.")
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
-        ch<-.checkMerge(retval)
-    if(!is.logical(ch) || !ch) stop(ch)
+        
   }
   else{ #still save merge info so don't have to redo it.
     retval<-x
-    if(!is.na(x@merge_index) & x@merge_dendrocluster_index==x@dendro_index){
-      retval@merge_nodeProp=outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
+  saveNodeTable<-is.na(x@merge_index)
+  if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
+    if(saveNodeTable ){
+      retval@merge_nodeProp <-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
     }
     if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
+	
   }
+    ch<-.checkMerge(retval)
+	if(!is.logical(ch) || !ch) stop(ch)
   if(plot){
     dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
   	# leg<-clusterLegend(retval)[[retval@dendro_index]]

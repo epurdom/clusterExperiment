@@ -120,7 +120,7 @@ test_that("`plotContrastHeatmap` works", {
 	plotContrastHeatmap(ceSimCont,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimCont))
 	plotContrastHeatmap(ceSimCont,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimCont))
 	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
-	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument'")
+	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument")
 	
 })
 

@@ -18,7 +18,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 	#check plotting types:
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="adjP")
-  expect_silent(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr"))
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr")
   expect_warning(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr",showWarnings=TRUE))
   expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="mergeMethod"),"can only plot 'mergeMethod' results if one method is selected")
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
@@ -104,7 +104,7 @@ test_that("saving merge info works",{
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged3@dendro_index+1)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged4@dendro_index)
   expect_equal(clustMerged4@merge_index,1)
-  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,2,6,NA))
+  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,1,3,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
   #check really gets clusterIds and not names
   clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6]
@@ -145,7 +145,9 @@ test_that("saving merge info works",{
   expect_equal(length(mc),length(unique(ogCl[ogCl>0])))
   
   expect_error(getMergeCorrespond(clustMergedAll),"there is no merge clustering in this object")
-  
+  #check saves even if just plotInfo
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
+  expect_false(is.null(clustMerged@merge_nodeProp))
 })
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 

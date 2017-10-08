@@ -223,7 +223,7 @@ setMethod(
             if(length(val)==0) val<-length(prvar) #in case some numerical problem
             return(val)
           })
-          if(any(is.na(pctNDims))) browser()
+          #if(any(is.na(pctNDims))) browser()
           nPCADims[whPct]<-pctNDims
         }
         xPCA <- lapply(nPCADims,function(nn){prc[seq_len(nn),]})
