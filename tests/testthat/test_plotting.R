@@ -317,5 +317,8 @@ test_that("plotDimReduce works",{
 	clusterLegend(cl)[[primaryClusterIndex(cl)]][,"name"]<-LETTERS[1:5]
 	plotDimReduce(cl,legend="bottomright")
 	plotDimReduce(cl,legend=TRUE)
+
+	#higher dims.
+	plotDimReduce(cl,legend=TRUE,whichDims=1:4)
 	
 })
