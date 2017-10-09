@@ -135,7 +135,7 @@ definition = function(object, whichClusters,
 		
 	}
 	else if(length(whichDims)>2){
-		colnames(dat)<-paste("Dim.",whichDims,sep=" ")
+		colnames(dat)<-paste("Dim.",whichDims,sep="")
 		pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
 	}
 
