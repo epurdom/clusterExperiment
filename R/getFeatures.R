@@ -384,9 +384,9 @@ This makes sense only for counts.")
 		
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
-    .safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
+    newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
   }
-  #return(newPhylo4)
+
   #Now need to change tip name to be that of the merge cluster
   corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
   newTips<-currTips<-phylobase::tipLabels(newPhylo4)
