@@ -104,7 +104,7 @@ fq <- round(limma::normalizeQuantiles(assay(se)))
 assays(se) <- list(normalized_counts=fq)
 ```
 
-As one last step, we are going to change the name of the columns "Published1" and "Published2" that refer to published clustering results from the paper to better distinguish them in later plots from other clustering we will do.
+As one last step, we are going to change the name of the columns "Cluster1" and "Cluster2" that some in the dataset and refer to published clustering results from the paper; we will use the terms "Published1" and "Published2" to better distinguish them in later plots from other clustering we will do.
 
 ```{r colnames}
 wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
@@ -141,9 +141,9 @@ We can look at the object that was created.
 rsecFluidigm
 ```
 
-The print out tells us about the clustering(s) that were created (namely `r nClusters(rsecFluidigm)` clusterings). Recall from our brief description above that RSEC clusters the data many times using different parameters before finding an consensus clustering. All of these intermediate clusterings are saved. Each of these intermediate clusterings used subsampling of the data and sequential clustering of the data to find the clustering, while the different clusterings represent the different parameters that were adjusted. 
+The print out tells us about the clustering(s) that were created (namely `r nClusters(rsecFluidigm)` clusterings) and which steps of the workflow have been called (all of them have because we used the wrapper `RSEC` that does the whole thing). Recall from our brief description above that RSEC clusters the data many times using different parameters before finding an consensus clustering. All of these intermediate clusterings are saved. Each of these intermediate clusterings used subsampling of the data and sequential clustering of the data to find the clustering, while the different clusterings represent the different parameters that were adjusted. 
 
-We can see that `rsecFluidigm` has a built in (S4) class called  a `ClusterExperiment` object. This is a class built for this package and explained in the section on [ClusterExperiment Objects](#ceobjects). In the object `rsecFluidigm` the clusterings are stored along with corresponding information for each clustering. Furthermore, all of the information in the original `SummarizedExperiment` is retained. 
+We can see that `rsecFluidigm` has a built in (S4) class called  a `ClusterExperiment` object. This is a class built for this package and explained in the section on [ClusterExperiment Objects](#ceobjects). In the object `rsecFluidigm` the clusterings are stored along with corresponding information for each clustering. Furthermore, all of the information in the original `SummarizedExperiment` is retained. The print out also tells us information about the "primaryCluster" of `rsecFluidigm`. Each `ClusterExperiment` object has a "primaryCluster", which is the default cluster that the many functions will use unless specified by the user. We are told that the "primaryCluster" for `rsecFluidigm` is has the label "mergeClusters" -- which is the defaul label given to the last cluster of the `RSEC` function because the last call of the `RSEC` function is to `mergeClusters`. 
 
 There are many accessor functions that help you get at the information in a `ClusterExperiment` object and some of the most relevant are described in the section on [ClusterExperiment Objects](#ceobjects). (`ClusterExperiment` objects are S4 objects, and are not lists). 
 
@@ -156,7 +156,7 @@ head(primaryCluster(rsecFluidigm),20)
 The clusters are encoded by consecutive integers. Notice that some of the samples are assigned the value of `-1`. `-1` is the value assigned in this package for samples that are not assigned to any cluster. Why certain samples are not clustered depends on the underlying choices of the clustering routine and we won't get into here until we learn a bit more about RSEC. Another special value is `-2` discussed in the section on [ClusterExperiment objects](#ceobjects)
 
 
-This final result of RSEC is the result of running many clusterings and finding the ensembl consensus between them. All of the these intermediate clusterings are saved in `rsecFluidigm` object. They can be accessed by the `clusterMatrix` function, that returns a matrix where the columns are the different clusterings and the rows are samples. 
+This final result of RSEC is the result of running many clusterings and finding the ensembl consensus between them. All of the these intermediate clusterings are saved in `rsecFluidigm` object. They can be accessed by the `clusterMatrix` function, that returns a matrix where the columns are the different clusterings and the rows are samples. We show a subset of this matrix here:
 
 ```{r clusterMatrix}
 head(clusterMatrix(rsecFluidigm)[,1:4])
@@ -179,7 +179,7 @@ head(getClusterManyParams(rsecFluidigm))
 ### Visualizing the output
 `clusterExperiment` also provides many ways to visualize the output of RSEC (or any set of clusterings run in `clusterExperiment`, as we'll show below). 
 
-*Many clusters* The first such useful visualization is a plot of all of the clusterings together using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
+**Visualizing many clusterings** The first such useful visualization is a plot of all of the clusterings together using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
 
 ```{r plotClusterRSEC}
 defaultMar<-par("mar")
@@ -201,7 +201,7 @@ par(mar=plotCMar)
 plotClustersWorkflow(rsecFluidigm)
 ```
 
-*Barplots* We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
+**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
 
 ```{r plotBarplotRSEC}
 plotBarplot(rsecFluidigm,main="Final Clustering")
@@ -223,16 +223,16 @@ plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"combineMany"))
 Since "combineMany" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
 
 
-*Co-Clustering* We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
+**Co-Clustering** We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
 
 ```{r plotCoClustering_rsec}
 plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","combineMany"))
 ```
 
-The initial consensus clustering in `combineMany` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
+Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering), but the proportion of times across the clusterings we ran. The initial consensus clustering in `combineMany` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
 
 
-*Plot of Dendrogram* Finally, we can visualize how the initial ensembl cluster in `combineMany` was merged to give us the final clustering in `mergeClusters`: 
+**Plot of Dendrogram** We can visualize how the initial ensembl cluster in `combineMany` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
 plotDendrogram(rsecFluidigm,whichClusters=c("combineMany","mergeClusters"),labelType="colorblock",leafType="sample")
@@ -240,16 +240,38 @@ plotDendrogram(rsecFluidigm,whichClusters=c("combineMany","mergeClusters"),label
 
 As shown in this plot, the individual clusters of the `combineMany` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `combineMany` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
 
+**2D plot of clusters** Finally, we can plot a 2-dimensional representation of the data with PCA and color code the samples to get a sense of how the data cluster.
+
+```{r plotDimReduce}
+plotDimReduce(rsecFluidigm)
+```
+
+We can also look at a higher number of dimensions (or different dimensions) by changing the parameter 'whichDims'.
+
+```{r plotDimReduceMany}
+plotDimReduce(rsecFluidigm,whichDims=c(1:4))
+```
+
+In this case we can see that higher dimensions show us a greater amount of separation between the clusters than in just 2 dimensions.
+
+
 ## Rerunning RSEC with different parameters 
 
-Below we will describe more about the options we could adjust in `RSEC`. But we might, for example, want to change the proportion of co-clustering (which was the default of 0.7) we required in making our `combineMany`
- clustering, or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many clustering steps (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We set the proportion of co-clustering required by the argument `combineProportion=0.6`, we make the merge cutoff `mergeCutoff=0.01`, and we decide to use a different method of estimating the proportion differential for merge by setting `mergeMethod="Storey"` instead of the default ("adjP"). These are the main parameters we might want to tweak in these steps.
+In the next section, we will describe more about the options we could adjust in `RSEC`. As an example of a few options, we might, for example, want to change the proportion of co-clustering we required in making our `combineMany`
+ clustering (which used the default of 0.7), or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many individual clustering steps which are time intensive (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We demonstrate this in our next command where we change these choices in the following ways:
+ 
+ * set the proportion of co-clustering required by the argument `combineProportion=0.6`, 
+ * make the merge cutoff `mergeCutoff=0.01`
+ * decide to use a different method of estimating the proportion differential for merge by setting `mergeMethod="Storey"` instead of the default ("adjP"). 
+ * no longer adjust the minimum cluster size and use the default (`combineMinSize=5`).
+ 
+ These are the main parameters we might frequently want to tweak in `RSEC`.
  
 ```{r recallRSEC}
 rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineProportion=0.6,mergeMethod="Storey",mergeCutoff=0.01)
 ```
 
-Notice that we save the output over our original object. This is the standard way to work with the `clusterExperiment` objects, since they just continue to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data (which is often large).
+Notice that we save the output over our original object. This is the standard way to work with the `clusterExperiment` objects, since the package's commands just continue to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
 
 We can compare the results of our changes with the `whichClusters` command to explicitly choose the clusterings we want to plot:
 
@@ -260,7 +282,7 @@ par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","combineMany.1","mergeClusters","combineMany"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-The clusterings with the `.1` appended to the labels are the previous `combineMany` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are stored internally). We can see that we lost several clusters with these options. 
+The clusterings with the `.1` appended to the labels are the previous `combineMany` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
 
 In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
 
@@ -488,25 +510,32 @@ ce
 
 Now we are ready to actually merge clusters together. We run `mergeClusters` that will go up this hierarchy and compare the level of differential expression (DE) in each pair. In other words, if we focus on the left side of the tree, DE tests are run, between 1 and 3, and between 6 and 8. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 1 and 3 and/or 6 and 8 will be merged. And so on up the tree.
 
-It is useful to first run `mergeClusters` without actually creating any merged clusters so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
+If the dataset it not too large,  is can be useful to first run `mergeClusters` without actually saving the results so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
 
 ```{r mergeClustersPlot}
 mergeClusters(ce,mergeMethod="adjP",plotInfo="mergeMethod")
 ```
 
-Then we can decide on a cutoff and visualize the resulting clustering. 
-<!---We'll add some more information to the `plotCoClustering` making the clustering of the samples be via the dendrogram on which `mergeClusters` was made:
--->
+The default is cutoff is `cutoff=0.1`, meaning those nodes with less than 10% of genes estimated to be differentially expressed between its two children groupings of samples are merged. This is pretty stringent, and as we see it results in no clusterings being kept. 
+
+However, the plot tells us the estimate of that proportion for each node. We can decide on a better cutoff using that information. We choose instead `cutoff=0.01`:
 
 ```{r mergeClusters}
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.01)
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"))
+```
+
+Notice that now the plot has given the estimates from *all* of the methods (the default set by `plotInfo` argument), not just the `adjP` method. But the dotted lines of the dendrogram indicate the merging performed by the actual choices in merging made in the command (`mergeMethod="adjP"` and `cutoff=0.01`).
+
+It can be interesting to visualize the clusterings both with the `plotClustersWorkflow`  and the co-Proportion plot (a heatmap of the proportion of times the samples co-clustered):
+
+```{r mergeClusters_coClustering}
+plotClustersWorkflow(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"))
 plotCoClustering(ce,whichClusters=c("mergeClusters","combineMany"),
                  sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
 
-Notice that `mergeClusters` combines clusters based on the actual values of the features, while the `coClustering` plot shows how often the samples clustered together. It is not uncommon that `mergeClusters` will merge clusters that don't look "close" on the `coClustering` plot. This can be due to just the choices of the hierarchical clustering, but can also be because the two merged clusters are not often confused for each other across the clustering algorithms, yet don't have strong differences on individual genes. This can be the case especially when the clustering is done on reduced PCA space, where an accumulation of small differences might consistently separate the samples (so the two clusters are not "confused" as to the samples), but because the differences are not strong on individual genes, `mergeClusters` combines them. These are ultimately different criteria.
+Notice that `mergeClusters` combines clusters based on the actual values of the features, while the `coClustering` plot shows how often the samples clustered together. It is not uncommon that `mergeClusters` will merge clusters that don't look "close" on the `coClustering` plot. This can be due to just the choices of the hierarchical clustering between the clusters, but can also be because the two merged clusters are not often confused for each other across the clustering algorithms, yet still don't have strong differences on individual genes. This can be the case especially when the clustering is done on reduced PCA space, where an accumulation of small differences might consistently separate the samples (so that comparatively few clusterings are "confused" as to the samples). But because the differences are not strong on individual genes, `mergeClusters` combines them. These are ultimately different criteria.
 
 Finally, we can do a heatmap visualizing this final step of clustering.
 
@@ -519,7 +548,7 @@ By choosing "dendrogramValue" for the clustering of the samples, we will be show
 
 ##RSEC
 
-The above explanation follows the simple example of PAM. The original RSEC result called `RSEC` which calls these steps internally. Many of the options described above can be set through a call to RSEC, but some are restricted for simplicity. A detail explanation of the differences can be found in the section [RSEC]{#RSEC} below. But briefly, the following RSEC command, which uses most of the arguments of `RSEC` (the meaning of which will be described more fully below)
+The above explanation follows the simple example of PAM. The original RSEC result called `RSEC` which calls these steps internally. Many of the options described above can be set through a call to RSEC, but some are restricted for simplicity. A detail explanation of the differences can be found in the section [RSEC]{#RSEC} below. But briefly, the following RSEC command, which uses most of the arguments of `RSEC`:
 
 ```{r quasiRsecCode, eval=FALSE}
 rsecOut<-RSEC(se, dimReduce="PCA", nPCADims=c(50,10), k0s=4:15,
@@ -530,7 +559,7 @@ rsecOut<-RSEC(se, dimReduce="PCA", nPCADims=c(50,10), k0s=4:15,
 		)
 ```
 
-Would be equivalent to 
+would be equivalent to the following individual steps:
 
 ```{r stepCode,eval=FALSE}
 ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5),
@@ -554,11 +583,11 @@ Typing the name at the control prompt results in a quick summary of the object.
 ce
 ```
 
-This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. The "primaryCluster" can be reset by the user (see `primaryClusterIndex`). `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`. Often, if a function is not given a specific clustering (usually via an option `whichCluster` or `whichClusters`) the "primary" cluster is taken by default. 
+This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`. Often, if a function is not given a specific clustering (usually via an option `whichCluster` or `whichClusters`) the "primary" cluster is taken by default. 
 
 There are also additional commands to access the clusterings and their related information (type `help("ClusterExperiment-methods")` for more).
 
-The cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. We can look at the cluster matrix and the primary cluster with the commands `clusterMatrix` and `primaryCluster`
+The cluster assignments are stored in the `clusterMatrix` slot of `ce`, with samples on the rows and different clusterings on the columns. We saw that we can look at the cluster matrix and the primary cluster with the commands `clusterMatrix` and `primaryCluster`
 
 ```{r CEHelperCommands1}
 head(clusterMatrix(ce))[,1:5]
@@ -577,7 +606,7 @@ head(clusterLabels(ce),10)
 
 As we've seen, the user can also change these labels.
 
-`clusterTypes` on the other hand indicates what call made the clustering. Unlike the labels, it is wise to not change the values of `clusterTypes` unless you are sure of what you are doing. 
+`clusterTypes` on the other hand indicates what call made the clustering. Unlike the labels, it is wise to not change the values of `clusterTypes` unless you are sure of what you are doing because these values are used to identify clusterings from different steps of the workflow. 
 
 ```{r CEHelperCommands3}
 head(clusterTypes(ce),10)
@@ -589,20 +618,28 @@ The information that was in the original `fluidigm` object has also been preserv
 colData(ce)[,1:5]
 ```
 
-Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column or clustering of `clusterMatrix`, that gives colors and names to each cluster within a clustering. 
+Another important slot in the `ClusterExperiment` object is the `clusterLegend` slot. This consists of a list, one element per column (or clustering) of `clusterMatrix`, that gives colors and names to each cluster within a clustering. 
 
 ```{r CEClusterLengend}
 length(clusterLegend(ce))
 clusterLegend(ce)[1:2]
 ```
 
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. 
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. We can assign new values with a simple assignment operator. Here we change the internal cluster names of the first clustering from lowercase to uppercase "M":
 
+```{r CEClusterLengendAssign}
+existingColors<-clusterLegend(ce)[[1]]
+existingColors[,"name"]<-gsub("m","M",existingColors[,"name"])
+clusterLegend(ce)[[1]]<-existingColors
+print(ce)
+```
+
+However, the user should not assign new values to `clusterIds` which must correspond to the internal ids of the clustering stored in the clustering matrix.
 
 # Visualizing the data {#visual}
 
 ## Plotting the clusters with `plotClusters`{#plotClusters}
-We demonstrated during the quick start that we can visualize multiple clusterings using the `plotClusters` command.
+We demonstrated during the quick start that we can visualize multiple clusterings using the `plotClusters` or `plotClustersWorkflow` command. Since `plotClustersWorkflow` calls the `plotClusters` command and passes the arguments of `plotClusters` onward, we will focus mainly on the main `plotClusters` command, with the understanding that most of these arguments work for both. 
 
 ```{r plotClusterEx1_redo}
 par(mar=plotCMar)
@@ -612,9 +649,11 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow",
 
 
 
-We have seen that we can get very different plots depending on how we order the clusterings, and what clusterings are included. The argument `whichClusters` allows the user to choose different clusterings or provide an explicit ordering of the clusterings. `whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusterings chosen are either all, or only those from the most recent calls to the workflow functions. Choosing "workflow" removes from the visualization both user-defined clusterings and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `combineMany` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.
+We have seen that we can get very different plots depending on how we order the clusterings, and what clusterings are included. The argument `whichClusters` allows the user to choose different clusterings or provide an explicit ordering of the clusterings. For `plotClustersWorkflow`, `whichClusters` indicates the clusterings that are "highlighted" by being drawn separately from the results of `clusterMany`. 
 
-If `whichClusters` is a character that is not one of these designated values, the entries should match a clusterType value (like `clusterMany`) or a clusterLabel value (with exact matching). Alternatively, the user can specify numeric indices corresponding to the columns of `clusterMatrix` that provide the order of the clusters.
+`whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusterings chosen are either all, or only those from the most recent calls to the workflow functions. Choosing "workflow" removes from the visualization both user-defined clusterings and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `combineMany` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.
+
+If `whichClusters` is a character that is not one of these designated values, the entries should match a "clusterType" value (like `clusterMany`) or a "clusterLabel" value (with exact matching). Alternatively, the user can specify numeric indices corresponding to the columns of `clusterMatrix` that provide the order of the clusters.
 
 ```{r plotClusterEx1_newOrder}
 par(mar=plotCMar)
@@ -630,9 +669,11 @@ plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","P
                main="Workflow clusters plus other data",axisLine=-1)
 ```
 
+This options of plotting the data in the `colData`, however, is not currently available with `plotClustersWorkflow` which only plots clusterings.
+
 ### Saving the alignment of plotClusters {#plotClustersAlign}
 
-`plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot. Similarly, if `resetNames=TRUE` the names of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore not consecutive integers, which is why these are saved as names for the clusters and not `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
+`plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved *into* the appropriate slots of the `ClusterExperiment` object the colors and orderings in order to save the color and alignments of samples. This is done via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot (and indeed this is done automatically by `RSEC` so that the `combineMany` and `mergeClusters` steps will have aligned color assignments). Similarly, if `resetNames=TRUE` the *names* of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore will not be consecutive integers, which is why these are saved as *names* for the clusters and not the internal `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
 
 Here we make a call to plotClusters, but now ask to reset everything to match this ordering. We'll save this as a different object so that this is not a permanent change for the rest of the vignette.
 
@@ -865,7 +906,7 @@ Recall that arguments in `clusterMany` that take on multiple values mean that th
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
 * `clusterFunction` The clustering functions to be tried in the *main clustering step*. Recall if `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the matrix $D$ created from subsampling the data. Otherwise, `clusterFunction` is the clustering method that will be used directly on the data. 
 * `ks` The argument 'ks' is interpreted differently for different choices of the other parameters *and can differ from between parameter combinations!*. If `sequential=TRUE` is part of the parameter combination, `ks` defines the argument `k0` of sequential clustering (see `?seqCluster`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set `k` of both the main clustering step (and by default that of the subsampled data), and is only relevant if `clusterFunction` is of type "K". When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in the documentation of `clusterMany` for more).
-* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA", indicating clustering on the top principal components, "var", indicating clustering on the top most variable features, and "none", indicating the whole data set should be used. If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
+* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA","var","mad","cv", and/or "none". "PCA" indicates clustering on the top principal components. "var","mad",and "cv" indicate clustering on the top most variable features, as determined by either "var", "mad" or "cv" per gene. And "none" indicates the whole data set should be used (which is usually going to be computationally intractable). If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
     * `nVarDims`
     * `nPCADims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the standard R function `dist`, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.

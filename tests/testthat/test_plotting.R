@@ -310,12 +310,12 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     
 })
 
-test_that("plot2D works",{
+test_that("plotDimReduce works",{
 	cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 	removeSil=c(TRUE,FALSE))
 	clusterLegend(cl)[[primaryClusterIndex(cl)]][,"name"]<-LETTERS[1:5]
-	plot2D(cl,legend="bottomright")
-	plot2D(cl,legend=TRUE)
+	plotDimReduce(cl,legend="bottomright")
+	plotDimReduce(cl,legend=TRUE)
 	
 })

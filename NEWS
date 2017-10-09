@@ -1,12 +1,13 @@
 Changes in version 1.3.4-9004 ( Release date: )
 ==============
 Changes:
+* Add function `plotClustersWorkflow`
+* Add function `plotDimReduce` for plotting low-dim pca with points labeled by cluster.
+* Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
 * `RSEC` now aligns the colors from `mergeClusters` and `combineMany` internally. 
 * `getBestFeatures` can now be run on result of mergeClusters without having to call makeDendrogram again for the merged clusters.
-* Added slots to `ClusterExperiment` so that keeps the information about the merging and corresponding helper functions
-* Add function `plotClustersWorkflow`
-* Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
-* Added arguments to `plotHeatmap` regarding making blank lines for when have gene groupings.
+* Added slots to `ClusterExperiment` so that keeps the information about the merging and added corresponding helper functions.
+* Added arguments to `plotHeatmap` allowing more user control regarding making blank lines for when have gene groupings.
 * Change argument to plotClusters and plotBarplot from `clusters` to `object`
 * default in `makeDendrogram` is now `dimReduce="mad"` to avoid accidentally calling it with `dimReduce="none"` (previous default), which can kill interactive R sessions.
 * Change default in `plotHeatmap` to `clusterSamplesData="dendrogramValue"`.

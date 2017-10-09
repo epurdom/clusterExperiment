@@ -1,28 +1,28 @@
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a clustering.
-#' @aliases plot2D
-#' @rdname plot2D
+#' @aliases plotDimReduce
+#' @rdname plotDimReduce
 #' @export
 setMethod(
-  f = "plot2D",
+  f = "plotDimReduce",
   signature = signature(object = "ClusterExperiment",whichClusters="character"),
   definition = function(object, whichClusters,...)
   {
 	wh<-.TypeIntoIndices(object,whClusters=whichClusters)
 	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
 	wh<-head(wh,2) #limit it to 2
-    return(plot2D(object,whichClusters=wh,...))
+    return(plotDimReduce(object,whichClusters=wh,...))
 
   })
   
-#' @rdname plot2D
+#' @rdname plotDimReduce
 #' @export
 setMethod(
-  f = "plot2D",
+  f = "plotDimReduce",
   signature = signature(object = "ClusterExperiment",whichClusters="missing"),
   definition = function(object, whichClusters,...)
   {
-    plot2D(object,whichClusters="primaryCluster",...)
+    plotDimReduce(object,whichClusters="primaryCluster",...)
 
   })
   
@@ -53,7 +53,7 @@ setMethod(
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @seealso \code{\link{plot.default}}, \code{\link{transform}}
-#' @rdname plot2D
+#' @rdname plotDimReduce
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
@@ -62,72 +62,83 @@ setMethod(
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #'
-#' plot2D(cl,legend="bottomright")
+#' plotDimReduce(cl,legend="bottomright")
 #' @export
 setMethod(
-f = "plot2D",
+f = "plotDimReduce",
 signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
 definition = function(object, whichClusters,
 	dimReduce=c("PCA"),whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
 	clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
 {
 	dimReduce<-match.arg(dimReduce)
-	if(length(whichDims)!=2) stop("whichDims must be a vector of length 2 giving the which dimensions of the dimensionality reduction to plot")
 	if(length(whichClusters)!=1) stop("whichClusters must identify a single clustering.")
-	if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])
-	if(is.null(xlab)) xlab<-paste("Dimension",whichDims[1])
-	cluster<-clusterMatrix(object)[,whichClusters]
-	if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
-	if(is.null(clusterLegend)){
-		clusterLegend<-clusterLegend(object)[[whichClusters]]
-	}
-	else{
-		if(is.null(dim(clusterLegend)) || ncol(clusterLegend)!=3 || !all(c("clusterIds","name","color") %in% colnames(clusterLegend))) stop("clusterLegend must be a matrix with three columns and names 'clusterIds','name', and 'color'")
-		if(!all(as.character(unique(cluster)) %in% clusterLegend[,"clusterIds"])) stop("'clusterIds' in 'clusterLegend' do not match clustering values")
-	}
-	clColor<-clusterLegend[,"color"]
-	names(clColor)<-clusterLegend[,"name"]
-	wh1<-which(clusterLegend[,"clusterIds"]==-1)
-	wh2<-which(clusterLegend[,"clusterIds"]==-2)
-	if(!is.null(unassignedColor) && is.character(unassignedColor)){
-		if(length(wh1)>0) clColor[wh1]<-unassignedColor
-	}
-	if(!is.null(missingColor) && is.character(missingColor)){
-		if(length(wh2)>0) clColor[wh2]<-missingColor
-	}
-	if(length(wh1)>0){
-		if(plotUnassigned && clColor[wh1]=="white") clColor[wh1]<-"lightgrey"
-		else if(!plotUnassigned) clColor[wh1]<-NA
-		names(clColor)[wh1]<-"Unassigned"
-		clusterLegend[wh1,"name"]<-"Unassigned"
-		clColor<-c(clColor[-wh1],clColor[wh1])
-	} 
-	if(length(wh2)>0){
-		if(plotUnassigned && clColor[wh2]=="white") clColor[wh2]<-"lightgrey"
-		else if(!plotUnassigned) clColor[wh2]<-NA
-		names(clColor)[wh2]<-"Missing"
-		clusterLegend[wh2,"name"]<-"Missing"
-		clColor<-c(clColor[-wh2],clColor[wh2])
-	}
-	clFactor<-factor(as.character(cluster),levels=clusterLegend[,"clusterIds"], labels=clusterLegend[,"name"])
+		cluster<-clusterMatrix(object)[,whichClusters]
+		if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
+		if(is.null(clusterLegend)){
+			clusterLegend<-clusterLegend(object)[[whichClusters]]
+		}
+		else{
+			if(is.null(dim(clusterLegend)) || ncol(clusterLegend)!=3 || !all(c("clusterIds","name","color") %in% colnames(clusterLegend))) stop("clusterLegend must be a matrix with three columns and names 'clusterIds','name', and 'color'")
+			if(!all(as.character(unique(cluster)) %in% clusterLegend[,"clusterIds"])) stop("'clusterIds' in 'clusterLegend' do not match clustering values")
+		}
+		clColor<-clusterLegend[,"color"]
+		names(clColor)<-clusterLegend[,"name"]
+		wh1<-which(clusterLegend[,"clusterIds"]==-1)
+		wh2<-which(clusterLegend[,"clusterIds"]==-2)
+		if(!is.null(unassignedColor) && is.character(unassignedColor)){
+			if(length(wh1)>0) clColor[wh1]<-unassignedColor
+		}
+		if(!is.null(missingColor) && is.character(missingColor)){
+			if(length(wh2)>0) clColor[wh2]<-missingColor
+		}
+		if(length(wh1)>0){
+			if(plotUnassigned && clColor[wh1]=="white") clColor[wh1]<-"lightgrey"
+			else if(!plotUnassigned) clColor[wh1]<-NA
+			names(clColor)[wh1]<-"Unassigned"
+			clusterLegend[wh1,"name"]<-"Unassigned"
+			clColor<-c(clColor[-wh1],clColor[wh1])
+		} 
+		if(length(wh2)>0){
+			if(plotUnassigned && clColor[wh2]=="white") clColor[wh2]<-"lightgrey"
+			else if(!plotUnassigned) clColor[wh2]<-NA
+			names(clColor)[wh2]<-"Missing"
+			clusterLegend[wh2,"name"]<-"Missing"
+			clColor<-c(clColor[-wh2],clColor[wh2])
+		}
+		clFactor<-factor(as.character(cluster),levels=clusterLegend[,"clusterIds"], labels=clusterLegend[,"name"])
 	
+	####Dim reduction stuff:
+	if(length(whichDims)<2) stop("whichDims must be a vector of length at least 2 giving the which dimensions of the dimensionality reduction to plot")
+
 	transObj <- .transData(assay(object), nPCADims=max(whichDims), nVarDims=NA,
                            dimReduce=dimReduce, transFun=transformation(object),clustering=cluster)
+						  
 	dat <- t(transObj$x[whichDims,])
-	plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
-	doLegend<-FALSE
-	if(is.logical(legend) && legend){
-	  doLegend<-TRUE
-	  legend<-"topright"
+	if(length(whichDims)==2){
+		if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])
+		if(is.null(xlab)) xlab<-paste("Dimension",whichDims[1])
+		plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
+		doLegend<-FALSE
+		if(is.logical(legend) && legend){
+		  doLegend<-TRUE
+		  legend<-"topright"
+		}
+		else{
+		  if(is.character(legend)) doLegend<-TRUE
+		  else stop("legend must either be logical or character value.")
+		}
+		if(doLegend){
+		 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichClusters]
+			legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
+		}
+		
 	}
-	else{
-	  if(is.character(legend)) doLegend<-TRUE
-	  else stop("legend must either be logical or character value.")
+	else if(length(whichDims)>2){
+		colnames(dat)<-paste("Dim.",whichDims,sep=" ")
+		pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
 	}
-	if(doLegend){
-	 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichClusters]
-		legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
-	}
+
 	
 	
 })

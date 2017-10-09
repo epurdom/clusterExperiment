@@ -244,10 +244,10 @@ setGeneric(
     }
 )
 setGeneric(
-    name="plot2D",
+    name="plotDimReduce",
     def=function(object, whichClusters,...)
     {
-        standardGeneric("plot2D")
+        standardGeneric("plotDimReduce")
     }
 )
 
