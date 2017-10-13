@@ -194,8 +194,8 @@ setMethod(f = "getBestFeatures",
               if(is.null(dendro)) {
                 stop("must provide dendro")
               }
-              if(!inherits(dendro,"dendrogram")) {
-                stop("dendro must be of class 'dendrogram'")
+              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+				stop("dendro must be of class 'dendrogram' or 'phylo4'")
               }
             }
             else{
@@ -419,9 +419,10 @@ This makes sense only for counts.")
   ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
   ##Have to restep through and manually fix it
   #browser()
-  xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
-  if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
-  return(as.dendrogram(xxhclust))
+  # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
+  # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
+  # return(as.dendrogram(xxhclust))
+  return(newPhylo4)
   #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
 
 }

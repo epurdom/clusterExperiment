@@ -11,7 +11,8 @@
 #'   pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
 #'   each cluster to the average of all others.
 #' @param dendro The dendrogram to traverse if contrastType="Dendro". Note that this
-#'   should be the dendrogram of the clusters, not of the individual samples.
+#'   should be the dendrogram of the clusters, not of the individual samples,  
+#'   either of class "dendrogram" or "phylo4"
 #' @param pairMat matrix giving the pairs of clusters for which to do pair-wise
 #'   contrasts (must match to elements of cl). If NULL, will do all pairwise of
 #'   the clusters in \code{cluster} (excluding "-1" categories). Each row is a pair
@@ -94,7 +95,8 @@ setMethod(f = "clusterContrasts",
               if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
               ####
               #Convert to object used by phylobase so can navigate easily -- might should make generic function...
-              phylo4Obj<-.makePhylobaseTree(dendro,type="dendro")
+              if(!inherits(dendro,"phylo4")) phylo4Obj<-.makePhylobaseTree(dendro,type="dendro")
+			  else phylo4Obj<-dendro
               clChar<-as.character(cl)
               allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]
 			  if(any(sort(allTipNames)!=sort(unique(clChar)))) stop("tip names of dendro don't match cluster vector values")
