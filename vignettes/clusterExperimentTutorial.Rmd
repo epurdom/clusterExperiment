@@ -530,7 +530,7 @@ Notice that now the plot has given the estimates from *all* of the methods (the 
 It can be interesting to visualize the clusterings both with the `plotClustersWorkflow`  and the co-Proportion plot (a heatmap of the proportion of times the samples co-clustered):
 
 ```{r mergeClusters_coClustering}
-plotClustersWorkflow(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"))
+plotClustersWorkflow(ce,whichClusters="workflow") #, sampleData=c("Biological_Condition","Published2")
 plotCoClustering(ce,whichClusters=c("mergeClusters","combineMany"),
                  sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
