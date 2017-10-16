@@ -830,7 +830,7 @@ setMethod(
 	        grid::upViewport() #close it
 	      }
 	  }
-
+	  else out<-NULL
 
       invisible(list(aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
     }
