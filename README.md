@@ -32,8 +32,7 @@ Below are status checks for the package. Note that occassionally errors do not a
 
 | Resource:     |  Travis CI   |
 | ------------- | ------------ |
-| R CMD check master   | [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=master)](https://travis-ci.org/epurdom/clusterExperiment)|
-| ------------- | ------------ |
+| R CMD check master   | [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=master)](https://travis-ci.org/epurdom/clusterExperiment) |
 | R CMD check develop   | [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=develop)](https://travis-ci.org/epurdom/clusterExperiment) |
 | Test coverage |  [![Coverage Status](https://coveralls.io/repos/github/epurdom/clusterExperiment/badge.svg?branch=develop)](https://coveralls.io/github/epurdom/clusterExperiment?branch=develop) |
 | ------------- | ------------ |
@@ -41,7 +40,6 @@ Below are status checks for the package. Note that occassionally errors do not a
 | Resource:     |  Bioconductor  |
 | ------------- | ------------ |
 | Bioc Release  | [![BiocDevel Status](http://bioconductor.org/shields/build/release/bioc/clusterExperiment.svg)](http://bioconductor.org/checkResults/release/bioc-LATEST/clusterExperiment/)|
-| ------------- | ------------ |
 | Bioc Development  | [![BiocDevel Status](http://bioconductor.org/shields/build/devel/bioc/clusterExperiment.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/clusterExperiment/)|
 | ------------- | ------------ |
 
