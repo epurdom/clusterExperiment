@@ -11,7 +11,7 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("clusterExperiment")
 ```
 
-To install the most recent version on the development branch of bioconductor, follow the above instructions, with the development version of bioconductor (see https://www.bioconductor.org/developers/how-to/useDevel/ for instructions [here](downloading development version of bioconductor) ).
+To install the most recent version on the development branch of bioconductor, follow the above instructions, with the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
 
 ## Installation of Github version:
 
