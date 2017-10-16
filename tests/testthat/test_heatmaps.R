@@ -153,9 +153,11 @@ test_that("`makeBlankData` works", {
   plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99)
   expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
 })
+
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-  smMin1<-combineMany(smSimCE,whichClusters=1:4,proportion=.95) #gives all -1, but creates coClustering
+  smMin1<-combineMany(smSimCE,whichClusters=10:13,proportion=.99)#gibes all -1, but creates coClustering
+#  smMin1<-combineMany(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
   plotCoClustering(smMin1,clusterSamplesData="hclust")
   ## Have changed so now changes it internally to primary cluster then hclust
   expect_warning(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue"),
