@@ -86,7 +86,7 @@ NULL
 #'	ncores=5,random.seed=176201, clusterFunction="hierarchical01",
 #'  combineMinSize=3))
 #' packageVersion("clusterExperiment")
-#' save(rsecFluidigm, file="~/rsecFluidigm.rda")
+#' devtools::use_data(rsecFluidigm)
 #' }
 
 ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
