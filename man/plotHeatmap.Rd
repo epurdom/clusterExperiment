@@ -33,7 +33,7 @@
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
-  isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
+  isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data,
   invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
@@ -151,6 +151,9 @@ sample matrices (e.g., correlation).}
 that only allows 10 clusterings/annotations. If overridden, may result in 
 incomprehensible errors from \code{aheatmap}. Only override this if you have a
 very large plotting device and want to see if \code{aheatmap} can render it.}
+
+\item{plot}{logical indicating whether to plot the heatmap. Mainly useful for 
+package mantaince to avoid calls to aheatmap on unit tests that take a long time.}
 
 \item{invert}{logical determining whether the coClustering matrix should be 
 inverted to be 1-coClustering for plotting. By default, if the diagonal 

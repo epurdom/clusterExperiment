@@ -1,6 +1,7 @@
 context("getBestFeatures")
 source("create_objects.R")
-
+plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
+###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 library(limma)
 test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", {
    x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Pairs")
@@ -105,20 +106,20 @@ test_that("`plotContrastHeatmap` works", {
 	  plotContrastHeatmap(ceSimCont,signifTable=topC2)
 
 	  topCOne <- getBestFeatures(ceSimCont, contrastType="OneAgainstAll", isCount=FALSE)
-	  plotContrastHeatmap(ceSimCont,signifTable=topCOne)
+	  plotContrastHeatmap(ceSimCont,signifTable=topCOne,plot=plotAll)
 	  
     dendro <- makeDendrogram(ceSimCont, whichCluster=primaryClusterIndex(ceSimCont))
     topCD <- getBestFeatures(dendro, contrastType="Dendro", isCount=FALSE)
-	plotContrastHeatmap(dendro,signifTable=topCD)
+	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
 	
     top1 <- getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="F",
                           isCount=FALSE)
 	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
 						  
 	#test name replacement:
-	plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimCont))
-	plotContrastHeatmap(ceSimCont,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimCont))
-	plotContrastHeatmap(ceSimCont,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimCont))
+	plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
+	plotContrastHeatmap(ceSimCont,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
+	plotContrastHeatmap(ceSimCont,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
 	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
 	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument")
 	

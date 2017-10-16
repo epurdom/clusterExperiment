@@ -87,6 +87,8 @@
 #'   that only allows 10 clusterings/annotations. If overridden, may result in 
 #'   incomprehensible errors from \code{aheatmap}. Only override this if you have a
 #'   very large plotting device and want to see if \code{aheatmap} can render it.
+#' @param plot logical indicating whether to plot the heatmap. Mainly useful for 
+#'  package mantaince to avoid calls to aheatmap on unit tests that take a long time.
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -572,7 +574,7 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
     ){
 
 
@@ -800,32 +802,35 @@ setMethod(
       # put into aheatmap
       #############
       breaks<-setBreaks(data=heatData,breaks=breaks)
-      out<-NMF::aheatmap(heatData,
-                         Rowv =Rowv,Colv = Colv,
-                         color = colorScale, scale = getHeatmapValue("scale","none"),
-                         annCol = annCol,annColors=annColors,breaks=breaks,...)
+	  if(plot){
+	      out<-NMF::aheatmap(heatData,
+	                         Rowv =Rowv,Colv = Colv,
+	                         color = colorScale, scale = getHeatmapValue("scale","none"),
+	                         annCol = annCol,annColors=annColors,breaks=breaks,...)
 
-      #############
-      # add labels to clusters at top of heatmap
-      #############
+	      #############
+	      # add labels to clusters at top of heatmap
+	      #############
 
-      if(!any(is.na(annCol))){
-        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
-        newNameList<-strsplit(newName,"\\.")[[1]]
-        oldIndex<-as.numeric(newNameList[[3]])-1
-        newNameList[[3]]<-oldIndex
-        oldName<-paste(newNameList,collapse=".")
-        grid::seekViewport(sprintf("aheatmap-%s",oldName))
-        NMF:::vplayout(3,4:5)
-        #grid::grid.rect()
-        y <- seq(0,1,length=ncol(annCol))
-        n<-ncol(annCol)
-        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-        grid::upViewport() #close it
-        grid::upViewport() #close it
-      }
+	      if(!any(is.na(annCol))){
+	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
+	        newNameList<-strsplit(newName,"\\.")[[1]]
+	        oldIndex<-as.numeric(newNameList[[3]])-1
+	        newNameList[[3]]<-oldIndex
+	        oldName<-paste(newNameList,collapse=".")
+	        grid::seekViewport(sprintf("aheatmap-%s",oldName))
+	        NMF:::vplayout(3,4:5)
+	        #grid::grid.rect()
+	        y <- seq(0,1,length=ncol(annCol))
+	        n<-ncol(annCol)
+	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+	        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+	        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+	        grid::upViewport() #close it
+	        grid::upViewport() #close it
+	      }
+	  }
+
 
       invisible(list(aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
     }
