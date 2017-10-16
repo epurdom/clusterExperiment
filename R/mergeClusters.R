@@ -347,7 +347,6 @@ setMethod(f = "mergeClusters",
 }
 )
 
-
 #' @rdname mergeClusters
 #' @export
 #' @param clusterLabel a string used to describe the type of clustering. By 
