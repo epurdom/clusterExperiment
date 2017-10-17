@@ -4,7 +4,7 @@ Changes:
 * Add function `plotClustersWorkflow`
 * Add function `plotDimReduce` for plotting low-dim pca with points labeled by cluster.
 * Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
-* `RSEC` now aligns the colors from `mergeClusters` and `combineMany` internally. 
+* `mergeClusters` now aligns the colors from `mergeClusters` and `combineMany` internally. 
 * `getBestFeatures` can now be run on result of mergeClusters without having to call makeDendrogram again for the merged clusters.
 * Added slots to `ClusterExperiment` so that keeps the information about the merging and added corresponding helper functions.
 * Added arguments to `plotHeatmap` allowing more user control regarding making blank lines for when have gene groupings.

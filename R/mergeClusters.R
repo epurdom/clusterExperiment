@@ -472,6 +472,9 @@ This makes sense only for counts.")
   }
     ch<-.checkMerge(retval)
 	if(!is.logical(ch) || !ch) stop(ch)
+		##Align the colors between mergeClusters and combineMany
+	retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
+		
   if(plot){
     dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
   	# leg<-clusterLegend(retval)[[retval@dendro_index]]
@@ -502,7 +505,8 @@ This makes sense only for counts.")
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
   # rownames(cl)<-colnames(retval)
   # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch,legend="none"),plotArgs))
+  if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
+do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
   }
   
   invisible(retval)
