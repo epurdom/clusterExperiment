@@ -43,10 +43,11 @@ for the samples was made by putting missing samples in an outbranch. In
 which case, if this parameter is TRUE, the outbranch will not be plotted,
 and if FALSE it will be plotted.}
 
-\item{legend}{logical, only applicable if \code{labelType="colorblock"}.
+\item{legend}{character, only applicable if \code{labelType="colorblock"}.
 Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
 used to draw the color values of the clusters/samples next to the
-dendrogram. Options are 'none', 'below', or 'side'}
+dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
+available for 'ape' package >= 4.1-0.6).}
 
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of
 \code{ape} that plots the dendrogram.}

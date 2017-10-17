@@ -29,10 +29,11 @@
 #'     for the samples was made by putting missing samples in an outbranch. In
 #'     which case, if this parameter is TRUE, the outbranch will not be plotted,
 #'     and if FALSE it will be plotted.
-#' @param legend logical, only applicable if \code{labelType="colorblock"}.
+#' @param legend character, only applicable if \code{labelType="colorblock"}.
 #'   Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
 #'   used to draw the color values of the clusters/samples next to the
-#'   dendrogram. Options are 'none', 'below', or 'side'
+#'   dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
+#'   available for 'ape' package >= 4.1-0.6).
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -189,8 +190,9 @@ setMethod(
 		}
 		  
   		phyloObj$node.label[-m]<-""
-  		plotArgs$show.node.label<-TRUE
-  		plotArgs$edge.lty<-edgeLty
+		###Only set these if user doesn't...
+		if(!"show.node.label" %in% names(plotArgs)) plotArgs$show.node.label<-TRUE
+  		if(!"edge.lty" %in% names(plotArgs)) plotArgs$edge.lty<-edgeLty
   	}
   	###############
   	### Deal with clusterLegend object: 
@@ -387,7 +389,7 @@ setMethod(
 			namedColors[m]
   		}
 		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
-		if(packageVersion("ape")<'5.0.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
+		if(packageVersion("ape")<'4.9.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
 		colInput<-function(n){cols}
 		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		

@@ -55,21 +55,13 @@
 #' @param ... for signature \code{matrix}, arguments passed to the 
 #'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 #'   For signature \code{ClusterExperiment} arguments passed to the method for 
-#'   signature \code{matrix} and then onto \code{\link{plot.phylo}}.
+#'   signature \code{matrix} and then if do not match those arguments, will be 
+#'   passed onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany,matrix-method
 #'   
-#' @details If  \code{isCount=TRUE}, and the input is a matrix, \code{log2(count
-#'   + 1)} will be used for \code{\link{makeDendrogram}} and the original data
-#'   with voom correction will be used in \code{\link{getBestFeatures}}). If
-#'   input is \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE}
-#'   also means that the log2(1+count) will be used as the transformation, like
-#'   for the matrix case as well as the voom calculation, and will NOT use the 
-#'   transformation stored in the object. If FALSE, then transform(x) will be 
-#'   given to the input and will be used for both \code{makeDendrogram} and 
-#'   \code{getBestFeatures}, with no voom correction.
-#' @details "Storey" refers to the method of Storey (2002). "PC" refers to the 
-#' method of Pounds and Cheng (2004). "JC" refers to the method of 
-#' Ji and Cai (2007), and implementation 
+#' @details \strong{Estimation of Proportion non-null} "Storey" refers to the
+#'   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
+#'   (2004). "JC" refers to the method of Ji and Cai (2007), and implementation 
 #'   of "JC" method is copied from code available on Jiashin Ji's website, 
 #'   December 16, 2015 
 #'   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
@@ -78,13 +70,34 @@
 #'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP" 
 #'   refers to the proportion of genes that are found significant based on a FDR
 #'   adjusted p-values (method "BH") and a cutoff of 0.05.
+#' @details  \strong{Count correction} If  \code{isCount=TRUE}, and the input is
+#'   a matrix, \code{log2(count + 1)} will be used for
+#'   \code{\link{makeDendrogram}} and the original data with voom correction
+#'   will be used in \code{\link{getBestFeatures}}). If input is
+#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
+#'   means that the log2(1+count) will be used as the transformation, like for
+#'   the matrix case as well as the voom calculation, and will NOT use the 
+#'   transformation stored in the object. If FALSE, then transform(x) will be 
+#'   given to the input and will be used for both \code{makeDendrogram} and 
+#'   \code{getBestFeatures}, with no voom correction.
 #'   
-#' @details If \code{mergeMethod} is not equal to 'none' then the plotting will 
-#'   indicate where the clusters will be merged (assuming \code{plotInfo} is not
-#'   'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will
-#'   cause function to stop, because nothing is asked to be done. If you just
-#'   want plot of the dendrogram, with no merging performed or demonstrated on
-#'   the plot, see \code{\link{plotDendrogram}}.
+#' @details \strong{Control of Plotting} If \code{mergeMethod} is not equal to 
+#'   'none' then the plotting will indicate where the clusters will be merged by
+#'   making dotted lines of edges that are merged together (assuming 
+#'   \code{plotInfo} is not 'none'). \code{plotInfo} controls simultaneously 
+#'   what information will be plotted on the nodes as well as whether the dotted
+#'   lines will be shown for the merged cluster. Notice that the choice of 
+#'   \code{plotInfo} (as long as it is not 'none') has no effect on how the 
+#'   dotted edges are drawn -- they are always drawn based on the 
+#'   \code{mergeMethod}. If you choose \code{plotInfo} to not be equal to the 
+#'   \code{mergeMethod}, then you will have a confusing picture where the dotted
+#'   edges will be based on the clustering created by \code{mergeMethod} while
+#'   the information on the nodes is based on a different method. Note that you
+#'   can override \code{plotInfo} by setting \code{show.node.label=FALSE}
+#'   (passed to plot.phylo), so that no information is plotted on the nodes, but
+#'   the dotted edges are still drawn. If you just want plot of the dendrogram,
+#'   with no merging performed nor demonstrated on the plot, see
+#'   \code{\link{plotDendrogram}}.
 #' @details If the dendrogram was made with option
 #'   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
 #'   other samples), then you cannot choose the option
@@ -339,6 +352,7 @@ setMethod(f = "mergeClusters",
         rownames(clMat)<-names(cl)	  	
       }
     }
+	browser()
     if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,label="name",outbranch=any(cl<0),...)
     else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,label="name",...)
     
@@ -398,7 +412,17 @@ This makes sense only for counts.")
 			leafType<-"clusters"
 		}
 	}
-  
+   ###Divide ... into mergeCluster arguments and plotting arguments
+   ###Remove mergeClusters arguments in ... so can pass arguments to  
+   mergeArgs<-.methodFormals("mergeClusters","matrix") #list with names equal to formal arguments
+   passedArgs<-list(...)
+   if(any(!names(passedArgs) %in% names(mergeArgs))){
+	   plotArgs<-passedArgs[which(!names(passedArgs) %in% names(mergeArgs))]
+   }
+   else plotArgs<-NULL
+   
+	  
+	  
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
   if(!is.na(x@merge_index)){
     #check to make sure all match, same, etc. 
@@ -478,7 +502,7 @@ This makes sense only for counts.")
   # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
   # rownames(cl)<-colnames(retval)
   # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-     .plotDendro(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch,legend="none")
+do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch,legend="none"),plotArgs))
   }
   
   invisible(retval)

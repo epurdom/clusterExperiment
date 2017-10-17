@@ -99,7 +99,8 @@ details.}
 \item{...}{for signature \code{matrix}, arguments passed to the 
 \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 For signature \code{ClusterExperiment} arguments passed to the method for 
-signature \code{matrix} and then onto \code{\link{plot.phylo}}.}
+signature \code{matrix} and then if do not match those arguments, will be 
+passed onto \code{\link{plot.phylo}}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class 
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
@@ -179,19 +180,9 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
-If  \code{isCount=TRUE}, and the input is a matrix, \code{log2(count
-  + 1)} will be used for \code{\link{makeDendrogram}} and the original data
-  with voom correction will be used in \code{\link{getBestFeatures}}). If
-  input is \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE}
-  also means that the log2(1+count) will be used as the transformation, like
-  for the matrix case as well as the voom calculation, and will NOT use the 
-  transformation stored in the object. If FALSE, then transform(x) will be 
-  given to the input and will be used for both \code{makeDendrogram} and 
-  \code{getBestFeatures}, with no voom correction.
-
-"Storey" refers to the method of Storey (2002). "PC" refers to the 
-method of Pounds and Cheng (2004). "JC" refers to the method of 
-Ji and Cai (2007), and implementation 
+\strong{Estimation of Proportion non-null} "Storey" refers to the
+  method of Storey (2002). "PC" refers to the method of Pounds and Cheng
+  (2004). "JC" refers to the method of Ji and Cai (2007), and implementation 
   of "JC" method is copied from code available on Jiashin Ji's website, 
   December 16, 2015 
   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
@@ -201,12 +192,34 @@ Ji and Cai (2007), and implementation
   refers to the proportion of genes that are found significant based on a FDR
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
-If \code{mergeMethod} is not equal to 'none' then the plotting will 
-  indicate where the clusters will be merged (assuming \code{plotInfo} is not
-  'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will
-  cause function to stop, because nothing is asked to be done. If you just
-  want plot of the dendrogram, with no merging performed or demonstrated on
-  the plot, see \code{\link{plotDendrogram}}.
+\strong{Count correction} If  \code{isCount=TRUE}, and the input is
+  a matrix, \code{log2(count + 1)} will be used for
+  \code{\link{makeDendrogram}} and the original data with voom correction
+  will be used in \code{\link{getBestFeatures}}). If input is
+  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
+  means that the log2(1+count) will be used as the transformation, like for
+  the matrix case as well as the voom calculation, and will NOT use the 
+  transformation stored in the object. If FALSE, then transform(x) will be 
+  given to the input and will be used for both \code{makeDendrogram} and 
+  \code{getBestFeatures}, with no voom correction.
+
+\strong{Control of Plotting} If \code{mergeMethod} is not equal to 
+  'none' then the plotting will indicate where the clusters will be merged by
+  making dotted lines of edges that are merged together (assuming 
+  \code{plotInfo} is not 'none'). \code{plotInfo} controls simultaneously 
+  what information will be plotted on the nodes as well as whether the dotted
+  lines will be shown for the merged cluster. Notice that the choice of 
+  \code{plotInfo} (as long as it is not 'none') has no effect on how the 
+  dotted edges are drawn -- they are always drawn based on the 
+  \code{mergeMethod}. If you choose \code{plotInfo} to not be equal to the 
+  \code{mergeMethod}, then you will have a confusing picture where the dotted
+  edges will be based on the clustering created by \code{mergeMethod} while
+  the information on the nodes is based on a different method. Note that you
+  can override \code{plotInfo} by setting \code{show.node.label=FALSE}
+  (passed to plot.phylo), so that no information is plotted on the nodes, but
+  the dotted edges are still drawn. If you just want plot of the dendrogram,
+  with no merging performed nor demonstrated on the plot, see
+  \code{\link{plotDendrogram}}.
 
 If the dendrogram was made with option
   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
