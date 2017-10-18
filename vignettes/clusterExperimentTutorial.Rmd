@@ -235,7 +235,7 @@ Note that this is not the result from any particular subsampling (which was done
 **Plot of Dendrogram** We can visualize how the initial ensembl cluster in `combineMany` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
-plotDendrogram(rsecFluidigm,whichClusters=c("combineMany","mergeClusters"),labelType="colorblock",leafType="sample")
+plotDendrogram(rsecFluidigm,whichClusters=c("combineMany","mergeClusters"),plotType="colorblock",leafType="sample")
 ```
 
 As shown in this plot, the individual clusters of the `combineMany` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `combineMany` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
@@ -497,7 +497,7 @@ We can see that clusters 1 and 3 are most closely related, at least in the top 5
 We can see the relative size of the clusters by setting some options in `plotDendrogram`:
 
 ```{r makeDendrogram2}
-plotDendrogram(ce,labelType="colorblock",leafType="sample")
+plotDendrogram(ce,plotType="colorblock",leafType="sample")
 ```
 
 
@@ -1101,12 +1101,12 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
-To vary the display, we'll show the display where we put blocks of color instead of names (`labelType="colorblock"`) and we also decide to show the leaves as the individual samples instead of the clusters (`leafType="sample"`); the combination of which gives us color blocks equal to the size of the clusterings. 
+To vary the display, we'll show the display where we put blocks of color instead of names (`plotType="colorblock"`) and we also decide to show the leaves as the individual samples instead of the clusters (`leafType="sample"`); the combination of which gives us color blocks equal to the size of the clusterings. 
 
 ```{r remakeMakeDendrogram}
 ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
                    whichCluster="combineMany,final")
-plotDendrogram(ce,leafType="sample",labelType="colorblock")
+plotDendrogram(ce,leafType="sample",plotType="colorblock")
 ```
 
 Note that the clusterType of this clustering is not "combineMany", but "combineMany.x", where "x" indicates what iteration it was:
@@ -1361,7 +1361,7 @@ We can plot the dendrogram to help make sense of which contrasts go with which n
 
 
 ```{r dendroWithNodeNames}
-plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leaf="samples",label="colorblock")
+plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leafType="samples",plotType="colorblock")
 ```
 
 

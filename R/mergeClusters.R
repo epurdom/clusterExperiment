@@ -149,7 +149,7 @@
 #' #Simpler plot with just dendrogram and single method
 #' merged <- mergeClusters(cl, plotInfo="mergeMethod",
 #' mergeMethod="adjP", use.edge.length=FALSE,
-#' leafType="clusters",label="name")
+#' leafType="clusters",plotType="name")
 #'
 #' #compare merged to original
 #' table(primaryCluster(cl), primaryCluster(merged))
@@ -363,14 +363,14 @@ setMethod(f = "mergeClusters",
 #' @param clusterLabel a string used to describe the type of clustering. By 
 #'   default it is equal to "mergeClusters", to indicate that this clustering is
 #'   the result of a call to mergeClusters (only if x is a ClusterExperiment object)
-#' @param labelType if plotting, then whether leaves of dendrogram should be
+#' @param plotType if plotting, then whether leaves of dendrogram should be
 #'   labeled by rectangular blocks of color ("colorblock")  or with the names of
 #'   the leaves ("name") (only if x is a ClusterExperiment object). 
 #' @param leafType if plotting, whether the leaves should be the clusters or the
 #'   samples. Choosing 'samples' allows for visualization of how many samples 
 #'   are in the merged clusters (only if x is a ClusterExperiment object), which
 #'   is the main difference between choosing "clusters" and "samples",
-#'   particularly if \code{labelType="colorblock"}
+#'   particularly if \code{plotType="colorblock"}
 #' @details When the input is a \code{ClusterExperiment} object, the function
 #'     attempts to update the merge information in that object. This is done by
 #'     checking that the existing dendrogram stored in the object  (and run on
@@ -389,9 +389,9 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE, 
                                 mergeMethod="none",plotInfo="all",clusterLabel="mergeClusters",
-                                leafType=c("samples","clusters" ),labelType=c("colorblock","name","ids"),
+                                leafType=c("samples","clusters" ),plotType=c("colorblock","name","ids"),
                                 plot=TRUE,...) {
-  labelType<-match.arg(labelType)
+  plotType<-match.arg(plotType)
   leafType<-match.arg(leafType)
   if(is.null(x@dendro_clusters)) {
     stop("`makeDendrogram` needs to be called before `mergeClusters`")
@@ -476,7 +476,7 @@ This makes sense only for counts.")
     dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
     # leg<-clusterLegend(retval)[[retval@dendro_index]]
     #     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
-    if(leafType=="samples" & mergeMethod!="none" & labelType=="colorblock"){
+    if(leafType=="samples" & mergeMethod!="none" & plotType=="colorblock"){
       whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
       leg<-clusterLegend(retval)[whClusters]
       cl<-clusterMatrix(retval,whichClusters=whClusters)
@@ -492,8 +492,8 @@ This makes sense only for counts.")
       
     }
     
-    if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
-  	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
+    if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]
+  	label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
   	outbranch<-FALSE
   	if(leafType=="samples" & any(cl<0)) outbranch<-retval@dendro_outbranch
 		#if(leafType=="samples" & any(cl<0)) outbranch<-TRUE

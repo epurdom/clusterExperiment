@@ -90,6 +90,6 @@ sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
-plotDendrogram(hcl, leafType="samples",labelType="colorblock")
+plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 
 }
