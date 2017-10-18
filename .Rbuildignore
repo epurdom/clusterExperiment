@@ -15,6 +15,7 @@ README[.]md
 ^cran-comments[.].*$
 ^vignettes/.*[.](pdf|PDF)$
 ^vignettes/.*[.](r|R)$
+^vignettes/.*[.](html)$
 ^vignettes/[.]install_extras$
 ^vignettes/oldVignette
 ^vignettes/R_cache
