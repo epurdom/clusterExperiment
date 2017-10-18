@@ -31,10 +31,10 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name")
 
   expect_error(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
                                cl=primaryCluster(clustWithDendro),plot="none",
@@ -169,17 +169,17 @@ test_that("`mergeClusters` works with unassignedSamples", {
 
   clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup"))
 
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name")
 
   clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("cluster"))
 
-	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="colorblock"))
-	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",labelType="name"))
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",labelType="name")
+	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))
+	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name"))
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name")
 
 
 })

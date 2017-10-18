@@ -26,7 +26,7 @@
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
   clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
-  labelType = c("colorblock", "name", "ids"), plot = TRUE, ...)
+  plotType = c("colorblock", "name", "ids"), plot = TRUE, ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 
@@ -117,9 +117,9 @@ the result of a call to mergeClusters (only if x is a ClusterExperiment object)}
 samples. Choosing 'samples' allows for visualization of how many samples 
 are in the merged clusters (only if x is a ClusterExperiment object), which
 is the main difference between choosing "clusters" and "samples",
-particularly if \code{labelType="colorblock"}}
+particularly if \code{plotType="colorblock"}}
 
-\item{labelType}{if plotting, then whether leaves of dendrogram should be
+\item{plotType}{if plotting, then whether leaves of dendrogram should be
 labeled by rectangular blocks of color ("colorblock")  or with the names of
 the leaves ("name") (only if x is a ClusterExperiment object).}
 
@@ -265,7 +265,7 @@ mergeMethod="adjP", use.edge.length=FALSE)
 #Simpler plot with just dendrogram and single method
 merged <- mergeClusters(cl, plotInfo="mergeMethod",
 mergeMethod="adjP", use.edge.length=FALSE,
-leafType="clusters",labelType="name")
+leafType="clusters",plotType="name")
 
 #compare merged to original
 table(primaryCluster(cl), primaryCluster(merged))

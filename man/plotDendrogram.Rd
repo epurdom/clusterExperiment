@@ -7,7 +7,7 @@
 \title{Plot dendrogram of clusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
-  leafType = c("clusters", "samples"), labelType = c("name", "colorblock",
+  leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
   "ids"), main, sub, clusterLabelAngle = 45, removeOutbranch = TRUE,
   legend = "side", ...)
 }
@@ -26,7 +26,7 @@ using the clustering that created the dendrogram.}
 \item{leafType}{if "samples" the dendrogram has one leaf per sample,
 otherwise it has one per cluster.}
 
-\item{labelType}{one of 'name', 'colorblock' or 'id'. If 'Name' then 
+\item{plotType}{one of 'name', 'colorblock' or 'id'. If 'Name' then 
 dendrogram will be plotted, and name of cluster or sample (depending on 
 type of value for \code{leafType}) will be plotted next to the leaf of the 
 dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
@@ -39,7 +39,7 @@ internal clusterIds value will be plotted (only appropriate if
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
 
 \item{clusterLabelAngle}{angle at which label of cluster will be drawn. Only
-applicable if \code{labelType="colorblock"}.}
+applicable if \code{plotType="colorblock"}.}
 
 \item{removeOutbranch}{logical, only applicable if there are missing samples
 (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
@@ -47,7 +47,7 @@ for the samples was made by putting missing samples in an outbranch. In
 which case, if this parameter is TRUE, the outbranch will not be plotted,
 and if FALSE it will be plotted.}
 
-\item{legend}{character, only applicable if \code{labelType="colorblock"}.
+\item{legend}{character, only applicable if \code{plotType="colorblock"}.
 Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
 used to draw the color values of the clusters/samples next to the
 dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
@@ -77,6 +77,6 @@ sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k
 cl <- makeDendrogram(cl) 
 cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
 plotDendrogram(cl) 
-plotDendrogram(cl,leafType="samples",whichClusters="all",labelType="colorblock")
+plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 
 }
