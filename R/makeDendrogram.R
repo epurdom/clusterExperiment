@@ -56,7 +56,7 @@
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
 #' plotDendrogram(hcl)
-#' plotDendrogram(hcl, leafType="samples",plotType="colorblock")
+#' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
 #'
 #' @name makeDendrogram
 #' @rdname makeDendrogram

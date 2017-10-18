@@ -7,7 +7,7 @@
 #'   otherwise it has one per cluster.
 #' @param main passed to the \code{plot.phylo} function to set main title.
 #' @param sub passed to the \code{plot.phylo} function to set subtitle.
-#' @param plotType one of 'name', 'colorblock' or 'id'. If 'Name' then 
+#' @param labelType one of 'name', 'colorblock' or 'id'. If 'Name' then 
 #'   dendrogram will be plotted, and name of cluster or sample (depending on 
 #'   type of value for \code{leafType}) will be plotted next to the leaf of the 
 #'   dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
@@ -29,13 +29,11 @@
 #'     for the samples was made by putting missing samples in an outbranch. In
 #'     which case, if this parameter is TRUE, the outbranch will not be plotted,
 #'     and if FALSE it will be plotted.
-#' @param legend character, only applicable if \code{plotType="colorblock"}.
+#' @param legend character, only applicable if \code{labelType="colorblock"}.
 #'   Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
 #'   used to draw the color values of the clusters/samples next to the
 #'   dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 #'   available for 'ape' package >= 4.1-0.6).
-#' @param clusterLabelAngle angle at which the clusterLabel text will be printed 
-#'	 on top (only relevant if \code{plotType="colorblock"})
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -56,18 +54,18 @@
 #' cl <- makeDendrogram(cl) 
 #' cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
 #' plotDendrogram(cl) 
-#' plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
+#' plotDendrogram(cl,leafType="samples",whichClusters="all",labelType="colorblock")
 #' 
 #' @export
 #' @rdname plotDendrogram
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  plotType=c("name","colorblock","ids"), main,sub,clusterLabelAngle=45,removeOutbranch=TRUE,legend='side',...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,labelAngle=45,removeOutbranch=TRUE,legend='side',...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
-    plotType<-match.arg(plotType)
+    labelType<-match.arg(labelType)
     whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
     if(leafType=="clusters" && whCl!=x@dendro_index){
@@ -83,14 +81,14 @@ setMethod(
     if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
     if(length(whCl)==1){
       leg<-clusterLegend(x)[[whCl]]
-      if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
+      if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]		
     }
     else{
       leg<-clusterLegend(x)[whCl]
-      if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+      if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
     }
-    label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
-    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...))
+    label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
+    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,labelType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,labelAngle=labelAngle,...))
     
   })
 
@@ -103,8 +101,8 @@ setMethod(
 #' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
-.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
-	label<-match.arg(label)
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,labelType=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",labelAngle=45,...){
+	labelType<-match.arg(labelType)
 	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
 	#---
 	#remove the outbranch from the dendrogram and from cl
@@ -139,7 +137,7 @@ setMethod(
   	plotArgs<-list(...)
 	dataPct<-0.5
 	offsetDivide<-16
-	if(label=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if label='colorblock'")
+	if(labelType=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if labelType='colorblock'")
   	###############
   	### For plotting of dendrogram for the merging
   	### Add information about the merging as node labels and change edge type
@@ -201,7 +199,7 @@ setMethod(
 	### - Make default if not provided and 
 	### - If # of clusterings>1 make clusterLegend and cl matrix appropriate
   	###############
-	if(label=="colorblock"){
+	if(labelType=="colorblock"){
 		clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
 		if(is.null(clusterLegendMat)){ 
 			#----
@@ -283,8 +281,8 @@ setMethod(
 	} 
 	###############
 	### Deal with clusterLegend object: 
-	### - Add color of cluster and cluster/sample name to tip labels if plotType=="name"
-	### - Make colorMat matrix if plotType=="colorblock"
+	### - Add color of cluster and cluster/sample name to tip labels if labelType=="name"
+	### - Make colorMat matrix if labelType=="colorblock"
 	###############
 	edge.width=1
 	if(!is.null(clusterLegendMat)){
@@ -294,7 +292,7 @@ setMethod(
 		    if(any(is.na(m))) stop("clusterIds in clusterLegend do not match dendrogram labels")
 		    phyloObj$tip.label<-clusterLegendMat[m,"name"]
 		    tip.color<-clusterLegendMat[m,"color"]
-			if(label=="colorblock"){
+			if(labelType=="colorblock"){
 				clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
 				colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
 				row.names(colorMat)<-clusterLegendMat[,"name"]
@@ -308,7 +306,7 @@ setMethod(
 		if(leafType=="samples"){
 			if(is.matrix(cl) && ncol(cl)>1){
 				clNames<-row.names(cl)
-				if(label=="colorblock"){
+				if(labelType=="colorblock"){
 					colorMat<-apply(cl,2,function(x){
 						m<-match(x,clusterLegendMat[,"clusterIds"])
 						clusterLegendMat[m,"name"]
@@ -327,14 +325,14 @@ setMethod(
 				clNames<-names(cl)
 				m<-match(cl,clusterLegendMat[,"clusterIds"])
 			    tip.color<-clusterLegendMat[m,"color"]		
-				if(label=="colorblock"){
+				if(labelType=="colorblock"){
 					colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
 					rownames(colorMat)<-names(cl)
 					cols<-tip.color
 					names(cols)<-clusterLegendMat[m,"name"]
 				}	
 			}
-			if(label=="colorblock"){
+			if(labelType=="colorblock"){
 				ntips<-length(phyloObj$tip.label)
 				whClusterNode<-which(!is.na(phyloObj$node.label) & phyloObj$node.label!="")+ ntips
 				#only edges going to/from these nodes
@@ -359,7 +357,7 @@ setMethod(
 	prohibitOptions<-c("tip.color","node.pos","edge.width")
 	if(any(prohibitOptions %in% names(plotArgs))) stop("User cannot set following options to plot.phylo:",paste(prohibitOptions, collapse=","))
 	plotArgs<-c(plotArgs,list(tip.color=tip.color,node.pos=2,edge.width=edge.width))	
-  	if(label=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
+  	if(labelType=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
   	else{
 		#if colorblock
 		#just calculate:
@@ -403,7 +401,7 @@ setMethod(
 			adj<-c(0,0)		
 			if("cex" %in% names(list(...))) labcex<-list(...)[["cex"]]
 				else labcex<-1	
-			text(x=xloc,y=ypos,labels=colnames(cl),srt=clusterLabelAngle,xpd=NA,adj=adj,cex=labcex)
+			text(x=xloc,y=ypos,labels=colnames(cl),srt=labelAngle,xpd=NA,adj=adj,cex=labcex)
 			
 		}
 		
