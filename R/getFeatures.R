@@ -353,8 +353,6 @@ This makes sense only for counts.")
 }
 
 #' @importFrom phylobase descendants nodeLabels subset
-#' @importFrom ape as.hclust.phylo
-#' @import dendextend
 .makeMergeDendrogram<-function(object){
 	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
   #should this instead just silently return the existing?
@@ -418,7 +416,9 @@ This makes sense only for counts.")
   ## as.dendrogram(ape::as.hclust.phylo(object))
   ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
   ##Have to restep through and manually fix it
-  #browser()
+  #previously had to do, but no longer using:
+  #@importFrom ape as.hclust.phylo
+  #@import dendextend (Couldn't import from because the as.dendrogram.hclust was not exported)
   # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
   # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
   # return(as.dendrogram(xxhclust))
