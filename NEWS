@@ -5,16 +5,18 @@ Changes:
 * Add function `plotClustersWorkflow`, see documentation
 * Add function `plotDimReduce` for plotting low-dim pca with points labeled by cluster.
 * Add function `plotContrastHeatmap` to plot the significant genes that are result of getBestFeatures
-* `getBestFeatures` can now be run on result of mergeClusters without having to call makeDendrogram again for the merged clusters.
-* Change argument to plotClusters and plotBarplot from `clusters` to `object`
-* default in `makeDendrogram` is now `dimReduce="mad"` to avoid accidentally calling it with `dimReduce="none"` (previous default), which can kill interactive R sessions.
+* `getBestFeatures`: can now be run on result of mergeClusters without having to call makeDendrogram again for the merged clusters.
+* Change argument to `plotClusters` and `plotBarplot` from `clusters` to `object`
+* `makeDendrogram`: default in  is now `dimReduce="mad"` to avoid accidentally calling it with `dimReduce="none"` (previous default), which can kill interactive R sessions.
 * Changes to `plotHeatmap`: 
 	- default in `plotHeatmap` to `clusterSamplesData="dendrogramValue"`.
 	- Changed handling of `clusterSamplesData` argument in `plotHeatmap` so that if argument equals `dendrogramValue` or `primaryCluster` and gives bad results / errors, will give warning and change argument appropriately. 
 	- Added arguments to `plotHeatmap` allowing more user control regarding making blank lines for when have gene groupings.
 * `mergeClusters` now aligns the colors from `mergeClusters` and `combineMany` internally. 
 * `mergeClusters` now suppresses warnings created by the estimation of the percentage non-null unless `showWarnings=TRUE`. 
-* `plotDendrogram` has new argument `clusterLabelAngle` allowing user to change the angle of the clusterLabel printed on top (when plot is of type "colorblock")
+* `plotDendrogram`:
+	- has new argument `clusterLabelAngle` allowing user to change the angle of the clusterLabel printed on top (when plot is of type "colorblock")
+	- argument `labelType` has been changed to `plotType`
 
 Bugs:
 * Arguments passed to `mergeClusters`, ClusterExperiment version, via the `...` command will now go first to the `mergeClusters` matrix version and then onto the plotting, as stated in documentation (plotting arguments were being ignored on the clusterExperiment version of the function). 
