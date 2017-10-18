@@ -84,7 +84,9 @@ test_that("`makeDendrogram` works with whichCluster", {
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     
-    expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
+    expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"only single cluster in clustering -- cannot run getBestFeatures")
+	primaryClusterIndex(bigCE)<-3
+	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
 })
 
 test_that("plotDendrogram works with outgroup", {
@@ -94,11 +96,11 @@ test_that("plotDendrogram works with outgroup", {
   dend <- makeDendrogram(ccSE)
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
-  plotDendrogram(dend,leafType="samples",labelType="name")
-  plotDendrogram(dend,leafType="samples",labelType="name",removeOutbranch=FALSE)
-  plotDendrogram(dend,leafType="samples",labelType="colorblock")
-  plotDendrogram(dend,leafType="clusters",labelType="colorblock")
-  plotDendrogram(dend,leafType="clusters",labelType="name")
+  plotDendrogram(dend,leafType="samples",plotType="name")
+  plotDendrogram(dend,leafType="samples",plotType="name",removeOutbranch=FALSE)
+  plotDendrogram(dend,leafType="samples",plotType="colorblock")
+  plotDendrogram(dend,leafType="clusters",plotType="colorblock")
+  plotDendrogram(dend,leafType="clusters",plotType="name")
   
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -106,9 +108,9 @@ test_that("plotDendrogram works with outgroup", {
   dend2<-addClusters(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend2)<-3
   dend2 <- makeDendrogram(dend2)
-  plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
-  plotDendrogram(dend2,leafType="samples",labelType="colorblock")
-  plotDendrogram(dend2,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+  plotDendrogram(dend2,leafType="clusters",plotType="colorblock")
+  plotDendrogram(dend2,leafType="samples",plotType="colorblock")
+  plotDendrogram(dend2,leafType="samples",plotType="colorblock",removeOutbranch=FALSE)
 
   ## make only single sample -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -116,9 +118,9 @@ test_that("plotDendrogram works with outgroup", {
   dend3<-addClusters(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend3)<-3
   dend3 <- makeDendrogram(dend3)
-  plotDendrogram(dend3,leafType="clusters",labelType="colorblock")
-  plotDendrogram(dend3,leafType="samples",labelType="colorblock")
-  plotDendrogram(dend3,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+  plotDendrogram(dend3,leafType="clusters",plotType="colorblock")
+  plotDendrogram(dend3,leafType="samples",plotType="colorblock")
+  plotDendrogram(dend3,leafType="samples",plotType="colorblock",removeOutbranch=FALSE)
 
   # This test breaks something. Needs to be figured out. 
   # ## make all -1 but two samples
@@ -129,9 +131,9 @@ test_that("plotDendrogram works with outgroup", {
   # dend4<-addClusters(ccSE,cl,clusterLabel="missingCluster")
   # primaryClusterIndex(dend4)<-3
   # dend4 <- makeDendrogram(dend4)
-  # plotDendrogram(dend4,leafType="clusters",labelType="colorblock")
-  # plotDendrogram(dend4,leafType="samples",labelType="colorblock")
-  # plotDendrogram(dend4,leafType="samples",labelType="colorblock",removeOutbranch=FALSE)
+  # plotDendrogram(dend4,leafType="clusters",plotType="colorblock")
+  # plotDendrogram(dend4,leafType="samples",plotType="colorblock")
+  # plotDendrogram(dend4,leafType="samples",plotType="colorblock",removeOutbranch=FALSE)
 
   ## make all -1 but one sample -- should get error bc only 1 cluster, can't make dendrogram; 
   ## in case this changes, this test will catch that need to fix plotDendrogram, which makes assumption that not possible.
@@ -139,8 +141,8 @@ test_that("plotDendrogram works with outgroup", {
   cl[1]<-3
   dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
   primaryClusterIndex(dend5)<-3
-  expect_error(makeDendrogram(dend5),"Only 1 cluster given. Can not make a dendrogram.")
-  expect_error(plotDendrogram(dend5,leafType="clusters",labelType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+  expect_error(makeDendrogram(dend5,dimReduce="none"),"Only 1 cluster given. Can not make a dendrogram.")
+  expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
 
     
@@ -152,7 +154,7 @@ test_that("plotDendrogram works with whichClusters", {
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
   dend<-mergeClusters(dend)
-  plotDendrogram(dend,whichClusters="all",leafType="samples",label="colorblock")
+  plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock")
   
   
 })
@@ -165,10 +167,10 @@ test_that("plotDendrogram works with cluster missing", {
   dend <- makeDendrogram(ccSE,unassignedSamples = c("cluster"))
   plotDendrogram(dend)
   plotDendrogram(dend,show.node.label=TRUE)
-  plotDendrogram(dend,leafType="samples",labelType="name")
-  plotDendrogram(dend,leafType="samples",labelType="colorblock")
-  plotDendrogram(dend,leafType="clusters",labelType="colorblock")
-  plotDendrogram(dend,leafType="clusters",labelType="name")
+  plotDendrogram(dend,leafType="samples",plotType="name")
+  plotDendrogram(dend,leafType="samples",plotType="colorblock")
+  plotDendrogram(dend,leafType="clusters",plotType="colorblock")
+  plotDendrogram(dend,leafType="clusters",plotType="name")
   
   ## make all -2
   dend2<-dend
@@ -179,7 +181,7 @@ test_that("plotDendrogram works with cluster missing", {
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg
   dend2 <- makeDendrogram(dend2,unassignedSamples = c("cluster"))
-  plotDendrogram(dend2,leafType="clusters",labelType="colorblock")
-  plotDendrogram(dend2,leafType="samples",labelType="colorblock")
+  plotDendrogram(dend2,leafType="clusters",plotType="colorblock")
+  plotDendrogram(dend2,leafType="samples",plotType="colorblock")
   
 })

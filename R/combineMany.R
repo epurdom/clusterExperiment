@@ -112,7 +112,7 @@ setMethod(
     
     ##Make clusterMat character, just in case
     clusterMat <- apply(clusterMat, 2, as.character)
-    clusterMat[clusterMat == "-1"] <- NA
+    clusterMat[clusterMat %in%  c("-1","-2")] <- NA
     sharedPerct <- .hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back.
 
     #fix those pairs that have no clusterings for which they are both not '-1'

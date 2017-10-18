@@ -30,7 +30,8 @@ pairs given in pairMat (if pairMat=NULL, does all pairwise), and
 to \code{\link{clusterContrasts}}}
 
 \item{dendro}{The dendrogram to traverse if contrastType="Dendro". Note that this
-should be the dendrogram of the clusters, not of the individual samples.}
+should be the dendrogram of the clusters, not of the individual samples,  
+either of class "dendrogram" or "phylo4"}
 
 \item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise
 contrasts (must match to elements of cl). If NULL, will do all pairwise of

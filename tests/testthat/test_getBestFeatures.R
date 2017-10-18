@@ -1,6 +1,7 @@
 context("getBestFeatures")
 source("create_objects.R")
-
+plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
+###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 library(limma)
 test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", {
    x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Pairs")
@@ -64,20 +65,65 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   idx <- voom3$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom3$AveExpr)
 
+  
 
+}
+)
+test_that("'Dendro' contrasts works for clusterExperiment object in `getBestFeatures`",{
   ## test dendrogram
   expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
                "must provide dendro")
-
+  
   dendro <- makeDendrogram(simData, primaryCluster(ceSimCont))
   expect_error(getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="Dendro",
-                            dendro=dendro$samples), "dendro don't match")
-
+                               dendro=dendro$samples), "dendro don't match")
+  dendro <- makeDendrogram(simData, primaryCluster(ceSimCont))
   dend1 <- getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="Dendro",
-                        dendro = dendro$clusters)
+                           dendro = dendro$clusters)
   ceTemp<-ceSimCont
   ceTemp <- makeDendrogram(ceTemp)
   dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro")
   expect_equal(dend1, dendC1)
-}
-)
+  
+  #check whole mergeDendrogram thing at least runs!
+  cl1 <- clusterSingle(smSimData, 
+                       subsample=FALSE, sequential=FALSE,
+                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
+  test<-clusterLegend(cl1)[[1]]
+  test[,"name"]<-test[,"clusterIds"]
+  clusterLegend(cl1)[[1]]<-test
+  clustWithDendro <- makeDendrogram(cl1)
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE)
+  resCE<-getBestFeatures(clustMerged, contrastType="Dendro")
+
+})
+
+test_that("`plotContrastHeatmap` works", {
+    mat<-clusterLegend(ceSimCont)[[1]]
+    mat[,"name"]<-letters[1:nrow(mat)]
+    clusterLegend(ceSimCont)[[1]]<-mat
+    topC2 <- getBestFeatures(ceSimCont, contrastType="Pairs", isCount=FALSE)
+	  plotContrastHeatmap(ceSimCont,signifTable=topC2)
+
+	  topCOne <- getBestFeatures(ceSimCont, contrastType="OneAgainstAll", isCount=FALSE)
+	  plotContrastHeatmap(ceSimCont,signifTable=topCOne,plot=plotAll)
+	  
+    dendro <- makeDendrogram(ceSimCont, whichCluster=primaryClusterIndex(ceSimCont))
+    topCD <- getBestFeatures(dendro, contrastType="Dendro", isCount=FALSE)
+	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
+	
+    top1 <- getBestFeatures(simData, primaryCluster(ceSimCont), contrastType="F",
+                          isCount=FALSE)
+	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
+						  
+	#test name replacement:
+	plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
+	plotContrastHeatmap(ceSimCont,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
+	plotContrastHeatmap(ceSimCont,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimCont),plot=plotAll)
+	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
+	expect_error(plotContrastHeatmap(ceSimCont,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument")
+	
+})
+
+
+

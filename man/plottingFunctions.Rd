@@ -64,9 +64,16 @@ breaks should be calculated.}
  indices.}
  \item{"rowNamesWBlanks"}{ A vector of characters giving the rownames for the
  data, including blanks for the NA rows. These are not given as rownames to
- the returned data because they are not unique. However, they can be given to
- the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
+ the returned data because they are not necessarily unique. However, they can be 
+ given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
  \code{\link{plotHeatmap}}.}
+ \item{"groupNamesWBlanks"}{ A vector of characters of the same length 
+as the number of rows of the new data (i.e. with blanks) giving the group name  
+ for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
+  list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
+  names will be used, other wise "Group1", "Group2", etc. The NA rows are given 
+  NA values. 
+  }	
 }
 }
 \description{
@@ -99,6 +106,7 @@ data(simData)
 
 x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 34, 25)))
+plotHeatmap(x$dataWBlanks,clusterFeatures=FALSE)
 showBigPalette()
 setBreaks(data=simData,breaks=.9)
 

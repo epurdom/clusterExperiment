@@ -96,6 +96,56 @@
 	return(TRUE)
 }
 
+
+.checkMerge<-function(object){
+  ############
+  ##Check merge related slots
+  ############
+  if(is.na(object@merge_index) & !is.na(object@merge_method)) return("merge_index NA but merge_method has value")
+  if(!is.na(object@merge_index) & is.na(object@merge_method)) return("if merge_index not NA, must have value for merge_method")
+  if(is.na(object@merge_index) & !is.na(object@merge_cutoff)) return("merge_index NA but merge_cutoff has value")
+  if(!is.na(object@merge_index) & is.na(object@merge_cutoff)) return("if merge_index not NA, must have value for merge_cutoff")
+  
+  if(!is.na(object@merge_index) & is.na(object@merge_dendrocluster_index)) return("if merge_index not NA, must have value for merge_dendrocluster_index")
+  if(is.na(object@merge_index) & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
+  if(!is.na(object@merge_index) & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
+
+  if(!is.na(object@merge_index)){
+    if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
+    if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
+    if(!length(object@merge_method)==1) return("merge_method must be of length 1")
+    if(!object@merge_method %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")))
+    if(ncol(object@merge_nodeMerge)!=4 || any(sort(colnames(object@merge_nodeMerge)) != c('Contrast','isMerged','mergeClusterId','Node') )) {
+      return("merge_nodeMerge must be data.frame with 4 columns and column names equal to: 'Node','Contrast','isMerged','mergeClusterId'")
+    }
+    if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
+    if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
+    if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be character")
+    if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
+    
+    id<-    object@merge_nodeMerge[,"mergeClusterId"]
+    merg<-object@merge_nodeMerge[,"isMerged"]
+    if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
+    if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
+	cl<-clusterMatrix(object)[,object@merge_index]
+	if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
+  }
+  if(!is.null(object@merge_nodeProp)){
+	  if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
+	  
+	  }
+    allowColumns<-c("Node","Contrast",.availMergeMethods)
+    if(ncol(object@merge_nodeProp)!=length(allowColumns) || any(sort(colnames(object@merge_nodeProp)) != sort(allowColumns) )) 
+    return(paste("merge_nodeProp must be data.frame with",length(allowColumns),"columns and column names equal to:",paste(allowColumns,sep="",collapse=",")))
+    
+    if(!is.character(object@merge_nodeProp[,"Node"])) return("'Node' column of merge_nodeProp must be character")
+    if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
+    for(method in .availMergeMethods){
+      if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
+    }
+  }
+  return(TRUE)
+}
 .checkCoClustering<-function(object){
     ## Check co-clustering
     if(!is.null(object@coClustering) &&

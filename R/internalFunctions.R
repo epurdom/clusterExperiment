@@ -1,7 +1,17 @@
-
+.eraseMerge<-function(x){
+  x@merge_index<-NA_real_
+  x@merge_dendrocluster_index<-NA_real_
+  x@merge_method<-NA_character_
+  x@merge_cutoff<-NA_real_
+  x@merge_nodeProp<-NULL
+  x@merge_nodeMerge<-NULL
+  ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  else return(x)
+}
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
     ceLegend<-clusterLegend(ceObj)[[whCluster]]
-    whPos<-which(ceLegend[,"clusterIds"] >0)
+    whPos<-which(as.numeric(ceLegend[,"clusterIds"]) >0)
     if(length(whPos)>0) ceLegend[whPos,"name"]<-paste(prefix,ceLegend[whPos,"clusterIds"],sep="")
     clusterLegend(ceObj)[[whCluster]]<-ceLegend
     return(ceObj)
@@ -9,12 +19,24 @@
 
 .addNewResult<-function(newObj,oldObj){
     retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
-    #erases dendrogram so need to put it back if wasn't already there
+    #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
+    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusters lost dendro_index")
+    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusters lost merge_index")
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
-        retval@dendro_samples<-oldObj@dendro_samples
-        retval@dendro_clusters<-oldObj@dendro_clusters
-		retval@dendro_outbranch<-oldObj@dendro_outbranch
-        retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+      retval@dendro_samples<-oldObj@dendro_samples
+      retval@dendro_clusters<-oldObj@dendro_clusters
+      retval@dendro_outbranch<-oldObj@dendro_outbranch
+      retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+    }
+	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
+      retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
+      retval@merge_nodeMerge<-oldObj@merge_nodeMerge
+      retval@merge_cutoff<-oldObj@merge_cutoff
+      retval@merge_method<-oldObj@merge_method
+    }
+    if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
+      retval@merge_nodeProp<-oldObj@merge_nodeProp
     }
     #put back orderSamples, coClustering
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
@@ -25,7 +47,7 @@
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-clusterExperiment(oldObj,
+  retval<-clusterExperiment(as(oldObj,"SummarizedExperiment"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
@@ -36,9 +58,15 @@
                             dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
-							primaryIndex=primaryClusterIndex(newObj),
-							checkTransformAndAssay=FALSE
-							)
+                            merge_index=newObj@merge_index,
+                            merge_cutoff=newObj@merge_cutoff,
+                            merge_dendrocluster_index=newObj@merge_dendrocluster_index,
+                            merge_nodeProp=newObj@merge_nodeProp,
+                            merge_nodeMerge=newObj@merge_nodeMerge,
+                            merge_method=newObj@merge_method,
+                            primaryIndex=primaryClusterIndex(newObj),
+                            checkTransformAndAssay=FALSE
+  )
   clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
@@ -300,3 +328,22 @@
 # clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
 # sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
+.safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
+    if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
+      ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
+      ###Remove all but 1 tip seems to work -- collapse down desptie trim.internal=FALSE. Very weird.
+      keptTip<-TRUE
+      tipKeep<-names(tipsRemove)[1] #label of the tip removed (tipsRemove has internal names as value)
+      tipsRemove<-tipsRemove[-1] 
+      }
+	  else keptTip<-FALSE
+    phylo4<-phylobase::subset(phylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
+    #have to give that 
+    if(keptTip){
+      labs<-phylobase::tipLabels(phylo4)
+      wh<-which(labs==tipKeep)
+      labs[wh]<-nodeName
+      phylobase::tipLabels(phylo4)<-labs
+    }
+	return(phylo4)
+}

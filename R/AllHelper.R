@@ -355,6 +355,8 @@ setMethod(
     return(out)
   }
 )
+
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 #' @export

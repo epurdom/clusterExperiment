@@ -5,11 +5,11 @@
 #'
 #' @aliases plotBarplot
 #' @docType methods
-#' @param clusters A matrix of with each column corresponding to a clustering
+#' @param object A matrix of with each column corresponding to a clustering
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. 
 #' @param colPalette a vector of colors used for the different clusters. Must be
 #'   as long as the maximum number of clusters found in any single
-#'   clustering/column given in \code{clusters} or will otherwise return an
+#'   clustering/column given in \code{object} or will otherwise return an
 #'   error.
 #' @param xNames names for the first clusters (on x-axis). By default uses
 #'   values in 1st cluster of clusters matrix
@@ -20,7 +20,7 @@
 #'   the 1st cluster of clusters matrix
 #' @param legend.title label for legend. By default or if equal NULL the column
 #'   name of the 2st cluster of clusters matrix
-#' @param labels if clusters is a clusterExperiment object, then labels defines
+#' @param labels if object is a clusterExperiment object, then labels defines
 #'   whether the clusters will be identified by their names values in
 #'   clusterLegend (labels="names", the default) or by their clusterIds value in
 #'   clusterLegend (labels="ids").
@@ -55,13 +55,13 @@
 #' @rdname plotBarplot
 setMethod(
   f = "plotBarplot",
-  signature = signature(clusters = "ClusterExperiment",whichClusters="character"),
-  definition = function(clusters, whichClusters,...)
+  signature = signature(object = "ClusterExperiment",whichClusters="character"),
+  definition = function(object, whichClusters,...)
   {
-	wh<-.TypeIntoIndices(clusters,whClusters=whichClusters)
+	wh<-.TypeIntoIndices(object,whClusters=whichClusters)
 	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
 	wh<-head(wh,2) #limit it to 2
-    return(plotBarplot(clusters,whichClusters=wh,...))
+    return(plotBarplot(object,whichClusters=wh,...))
 
   })
 
@@ -69,10 +69,10 @@ setMethod(
 #' @export
 setMethod(
     f = "plotBarplot",
-    signature = signature(clusters = "ClusterExperiment",whichClusters="missing"),
-    definition = function(clusters, whichClusters,...)
+    signature = signature(object = "ClusterExperiment",whichClusters="missing"),
+    definition = function(object, whichClusters,...)
     {
-      plotBarplot(clusters,whichClusters="primaryCluster")
+      plotBarplot(object,whichClusters="primaryCluster")
 
     })
 
@@ -80,15 +80,15 @@ setMethod(
 #' @export
 setMethod(
   f = "plotBarplot",
-  signature = signature(clusters = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(clusters, whichClusters,labels=c("names","ids"),...)
+  signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
+  definition = function(object, whichClusters,labels=c("names","ids"),...)
   { 
   	labels<-match.arg(labels)
-	legend<-clusterLegend(clusters)[[tail(whichClusters,1)]]
+	legend<-clusterLegend(object)[[tail(whichClusters,1)]]
 	colPalette<-legend[,"color"]
-	numClusterMat<-clusterMatrix(clusters,whichClusters=whichClusters)
+	numClusterMat<-clusterMatrix(object,whichClusters=whichClusters)
 	if(labels=="names"){
-		clusterMat<-convertClusterLegend(clusters,output="matrixNames")[,whichClusters]
+		clusterMat<-convertClusterLegend(object,output="matrixNames")[,whichClusters]
 		names(colPalette)<-legend[,"name"]
 		#make sure "-1" stays "-1" 
 		clusterMat[numClusterMat== -1]<- "-1"
@@ -112,17 +112,17 @@ setMethod(
 		args$missingColor<-legend[legend[,"clusterIds"]== "-2","color"]
 	}
 	#browser()
-	do.call("plotBarplot",c(list(clusters=clusterMat,colPalette=colPalette),args))
+	do.call("plotBarplot",c(list(object=clusterMat,colPalette=colPalette),args))
 
   })
 
 #' @rdname plotBarplot
 setMethod(
   f = "plotBarplot",
-  signature = signature(clusters = "ClusterExperiment",whichClusters="missing"),
-  definition = function(clusters, whichClusters,...)
+  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
+  definition = function(object, whichClusters,...)
   {
-    plotBarplot(clusters,whichClusters="primaryCluster",...)
+    plotBarplot(object,whichClusters="primaryCluster",...)
   })
 
 
@@ -130,24 +130,24 @@ setMethod(
 #' @rdname plotBarplot
 setMethod(
   f = "plotBarplot",
-  signature = signature(clusters = "vector",whichClusters="missing"),
-  definition = function(clusters, whichClusters, ...){
-	  plotBarplot(matrix(clusters,ncol=1),...)
+  signature = signature(object = "vector",whichClusters="missing"),
+  definition = function(object, whichClusters, ...){
+	  plotBarplot(matrix(object,ncol=1),...)
   })
 
 #' @rdname plotBarplot
 setMethod(
   f = "plotBarplot",
-  signature = signature(clusters = "matrix",whichClusters="missing"),
-  definition = function(clusters, whichClusters, xNames=NULL, legNames=NULL, legend=TRUE, xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=bigPalette,...){
-	if(ncol(clusters)>2) stop("clusters must at most 2 clusters (i.e. 2 columns)")
-	clLeg<-clusters[,1]
-	if(is.null(xlab)) xlab<-colnames(clusters)[1]
-    if(ncol(clusters)==2){
+  signature = signature(object = "matrix",whichClusters="missing"),
+  definition = function(object, whichClusters, xNames=NULL, legNames=NULL, legend=TRUE, xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=bigPalette,...){
+	if(ncol(object)>2) stop("if 'object' a matrix, must contain at most 2 clusters (i.e. 2 columns)")
+	clLeg<-object[,1]
+	if(is.null(xlab)) xlab<-colnames(object)[1]
+    if(ncol(object)==2){
 		pair<-TRUE
-		clX<-clusters[,2]
+		clX<-object[,2]
 	    x<-t(table(clLeg,clX)) #references is on the columns, alt on rows
-		if(is.null(legend.title)) legend.title<-colnames(clusters)[2]	
+		if(is.null(legend.title)) legend.title<-colnames(object)[2]	
 		#browser()
 	   	
 	    if(is.null(names(colPalette))) colPalette<-rep(colPalette,length=nrow(x))   

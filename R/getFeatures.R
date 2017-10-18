@@ -146,6 +146,7 @@
 #'
 #' @export
 #' @import limma
+#' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
           signature = signature(x = "matrix"),
@@ -157,11 +158,11 @@ setMethod(f = "getBestFeatures",
 
             #... is always sent to topTable, and nothing else
             cl<-cluster
-             if(is.factor(cl)) {
+            if(is.factor(cl)) {
               warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
               cl <- .convertToNum(cl)
             }
-
+            
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)
@@ -170,44 +171,59 @@ setMethod(f = "getBestFeatures",
             if(is.null(rownames(dat))) {
               rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
             }
-
+            
             tmp <- dat
-
+            
             if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
               whNA <- which(cl<0)
               tmp <- tmp[, -whNA]
               cl <- cl[-whNA]
             }
-            cl <- factor(cl)
-
+            ###--------
+            ### Fix up the names
+            ###--------
+            pad<-if(length(unique(cl))<100) 2 else 3
+            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+            clLevels<-unique(cl[order(clPretty)])
+            clPrettyLevels<-unique(clPretty[order(clPretty)])
+            #get them ordered nicely.
+            clNumFac<-factor(cl,levels=clLevels)
+            
             if(contrastType=="Dendro") {
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
               if(is.null(dendro)) {
                 stop("must provide dendro")
               }
-              if(!inherits(dendro,"dendrogram")) {
-                stop("dendro must be of class 'dendrogram'")
+              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+				stop("dendro must be of class 'dendrogram' or 'phylo4'")
               }
             }
-
+            else{
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+            }
+            
             if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-              designContr <- model.matrix(~ 0 + cl)
-              colnames(designContr) <- make.names(levels(cl))
-
+              ###Create fit for running contrasts
+              designContr <- model.matrix(~ 0 + clPrettyFac)
+              colnames(designContr) <- make.names(levels(clPrettyFac))
+              
               if(isCount) {
                 v <- voom(tmp, design=designContr, plot=FALSE,
-                                 normalize.method = normalize.method)
+                          normalize.method = normalize.method)
                 fitContr <- lmFit(v, designContr)
               } else {
                 fitContr <- lmFit(tmp, designContr)
               }
             }
-
+            
             if(contrastType=="F" || contrastAdj=="AfterF") {
-              designF <- model.matrix(~cl)
-
+              xdat<-data.frame("Cluster"=clPrettyFac)
+              designF<-model.matrix(~Cluster,data=xdat)
+              #designF <- model.matrix(~clPrettyFac)
+              
               if(isCount) {
                 v <- voom(tmp, design=designF, plot=FALSE,
-                                 normalize.method = normalize.method)
+                          normalize.method = normalize.method)
                 fitF <- lmFit(v, designF)
               } else {
                 fitF <- lmFit(tmp, designF)
@@ -216,7 +232,7 @@ setMethod(f = "getBestFeatures",
               fitF <- NULL
             }
             #browser()
-            if(contrastType!="F") contr.result<-clusterContrasts(cl,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
+            if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
             tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
             tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
             if(returnType=="Index") {
@@ -237,11 +253,20 @@ setMethod(f = "getBestFeatures",
           definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 isCount=FALSE, ...){
             contrastType <- match.arg(contrastType)
+			cl<-primaryCluster(x)
+			if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
             if(contrastType=="Dendro") {
               if(is.null(x@dendro_clusters)) {
                 stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
               } else {
-                if(primaryClusterIndex(x)!= dendroClusterIndex(x)) stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+                if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
+					#check if merge from cluster that made dendro
+					if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+						dendro<-.makeMergeDendrogram(x)
+						if(is.null(dendro)) stop("Could not make merge dendrogram")
+					}
+					else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+				}
                 else dendro <- x@dendro_clusters
               }
             }
@@ -327,6 +352,104 @@ This makes sense only for counts.")
   
 }
 
+#' @importFrom phylobase descendants nodeLabels subset
+.makeMergeDendrogram<-function(object){
+	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+  #should this instead just silently return the existing?
+	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object")
+  if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
+		#test mergeClusters actually subset of the cluster says merged
+  whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
+  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
+  clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
+  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
+  newPhylo4<-phylo4Obj
+  if(names(rootNode(phylo4Obj)) %in% clusterNode){
+	  stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
+  }
+  for(node in clusterNode){
+    #first remove tips of children nodes so all children of node are tips
+    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+    if(length(whDescNodes)>0){
+      tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips"))))
+      newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+    }
+    #redo to check fixed problem
+    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+    if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
+		
+    #should only have tips now
+    tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
+    newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
+  }
 
+  #Now need to change tip name to be that of the merge cluster
+  corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
+  newTips<-currTips<-phylobase::tipLabels(newPhylo4)
+  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original
+  if(length(whOldCl)>0){
+    newTips[whOldCl]<-corrsp[currTips[whOldCl]]
+  }
+  if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
+  mClusterNode<-match(clusterNode, currTips)
+  newTips[mClusterNode]<-as.character(clusterId)
+  names(newTips)<-names(currTips) #this is the internal numbering of the nodes
+  phylobase::tipLabels(newPhylo4)<-newTips
+  
+  #--------
+  #just some checks didn't screw up
+  #--------
+  whMergeNode<-which(currTips %in% clusterNode)
+  if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
+  if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
+  mCl<-clusterMatrix(object)[,object@merge_index]
+  mCl<-unique(mCl[mCl>0])
+  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+	  if(!all(sort(as.character(mCl))==sort(tipLabels(newPhylo4)))) stop("coding error -- names of new tips of tree do not match cluster ids")
+  newPhylo4<-.force.ultrametric(newPhylo4)
+  
+  #convert back to dendrogram class and return
+  ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
+  ## as.dendrogram(ape::as.hclust.phylo(object))
+  ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
+  ##Have to restep through and manually fix it
+  #previously had to do, but no longer using:
+  #@importFrom ape as.hclust.phylo
+  #@import dendextend (Couldn't import from because the as.dendrogram.hclust was not exported)
+  # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
+  # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
+  # return(as.dendrogram(xxhclust))
+  return(newPhylo4)
+  #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
+
+}
+ 
+#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId 
+##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
+.force.ultrametric<-function(tree){
+	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
+	
+	allTips<-phylobase::tipLabels(tree)
+	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
+	maxD<-max(depthToTips)
+	addValue<-maxD-depthToTips
+	allLen<-phylobase::edgeLength(tree)
+  edgeMat<-phylobase::edges(tree)
+  tipIds<-as.numeric(names(allTips))
+  m<-match(tipIds,edgeMat[,2])
+  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
+
+  #check didn't do something stupid:
+  checkTipEdges<-phylobase::edgeId(tree,type="tip")
+  if(!all(sort(checkTipEdges)==sort(edgeIds))) stop("coding error -- didn't correctly get edge ids for tips")
+
+  #replace with new edges:
+	allLen[edgeIds]<-allLen[edgeIds]+addValue
+	phylobase::edgeLength(tree)<-allLen
+	tree
+}
 
 

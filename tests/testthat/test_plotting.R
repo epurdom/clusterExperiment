@@ -1,16 +1,16 @@
-context("Plot functions")
+context("Non-heatmap related plot functions")
 
 source("create_objects.R")
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
     #test matrix version
-    x<-plotClusters(clusters=clusterMatrix(ceSim))
+    x<-plotClusters(object=clusterMatrix(ceSim))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim)))
-    expect_error(plotClusters(clusters=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
-    expect_error(plotClusters(clusters=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
+    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
+    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
 
     #test CE version
     x<-plotClusters(ceSim)
@@ -18,7 +18,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal( x,ceSim)
 
     xx<-plotClusters(ceSim,whichClusters="clusterMany")
-    xx2<-plotClusters(clusters=ceSim,whichClusters="workflow") #only clusterMany values so should be the same
+    xx2<-plotClusters(object=ceSim,whichClusters="workflow") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
 
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
@@ -44,9 +44,9 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     plotClusters(ceSim)
 
     #CE object with mixture of workflow and other types
-    x1<-plotClusters(clusters=ceSim,whichClusters="workflow",resetColors=TRUE)
-    x2<-plotClusters(clusters=removeClusters(ceSim,"User"),resetColors=TRUE)
-    whP<-.TypeIntoIndices(ceSim,"workflow")
+    x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
+    x2<-plotClusters(object=removeClusters(ceSim,"User"),resetColors=TRUE)
+    whP<-clusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
@@ -62,7 +62,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 test_that("`plotClusters` rerun above tests with sampleData included", {
 
   #test matrix version
-  x<-plotClusters(clusters=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
+  x<-plotClusters(object=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$colors))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$aligned))
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
@@ -94,165 +94,24 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   par(mfrow=c(1,1))
 
 })
-test_that("`setBreaks`", {
-	setBreaks(smSimData)
-	setBreaks(smSimData,breaks=0.99)
-	x<-setBreaks(smSimData,breaks=0.99,makeSymmetric=TRUE)
-	expect_equal(max(x),-min(x))
-	expect_equal(x,setBreaks(smSimData,breaks=0.01,makeSymmetric=TRUE))
-	expect_warning(y<-setBreaks(smSimData,breaks=10))
-	expect_equal(length(y),10)
-})
-test_that("`plotHeatmap` works with matrix objects", {
 
-    x1<-plotHeatmap(data=smSimData)
-    a1<-NMF::aheatmap(smSimData)
-    expect_equal(x1$aheatmapOut,a1)
-    x2<-plotHeatmap(data=smSimCount,clusterSamplesData=smSimData,clusterFeaturesData=smSimData)
-    #for some reason, labels on dendrogram move from character to numeric so can't test entire object...
-    expect_equal(x1$aheatmapOut$rowInd,x2$aheatmapOut$rowInd) 
-    expect_equal(x1$aheatmapOut$colInd,x2$aheatmapOut$colInd) 
-    
-    #check internal alignment of sampleData (alignSampleData=TRUE) is working:
-    sampleData<-clusterMatrix(smSimCE)
-    alList<-plotClusters(sampleData)
-    alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
-   #these should be same plots:
-    x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE)
-    x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE)
-#   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
-#    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 
-    expect_error( plotHeatmap(data=smSimData,Rowv=TRUE),"arguments to aheatmap cannot be set by the user")
-    expect_error( plotHeatmap(data=smSimData,Colv=TRUE),"arguments to aheatmap cannot be set by the user")
-    expect_error( plotHeatmap(data=smSimData,colorScale=seqPal5,color=TRUE),"arguments to aheatmap cannot be set by the user")
+test_that("plotClustersWorkflow", {
+	cc<-clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
+	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
+	                       isCount=FALSE)
+	cc<-combineMany(cc,proportion=.7,whichClusters = "clusterMany")
+	plotClustersWorkflow(cc)
+	plotClustersWorkflow(cc,clusterManyLabels=FALSE)
+	plotClustersWorkflow(cc,sortBy="clusterMany")
+	plotClustersWorkflow(cc,sortBy="clusterMany",highlightOnTop=FALSE)
+	plotClustersWorkflow(cc,highlightOnTop=FALSE)
+	plotClustersWorkflow(cc,clusterManyLabels=FALSE,clusterLabels="test")
+	expect_error(plotClustersWorkflow(cc,clusterManyLabels=c("1","2"),clusterLabels="test"),"number of cluster labels given in clusterManyLabels")
+	expect_error(plotClustersWorkflow(cc,clusterManyLabels=TRUE,clusterLabels=c("A","test")),"number of cluster labels given in clusterLabels")
 
-    expect_error( plotHeatmap(data=smSimData,annCol=rnorm(n=ncol(smSimData))),"arguments to aheatmap cannot be set by the user")
-    expect_error( plotHeatmap(data=smSimData,annColors=list(a=c("blue","green"))),"arguments to aheatmap cannot be set by the user")
-
-    x1<-plotHeatmap(data=smSimData)
-    
-    
-    ##Should add tests that pass aheatmap arguments correctly.
 })
 
-
-
-test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
-
-    plotHeatmap(cc)
-    plotHeatmap(cc,whichClusters="none")
-    expect_warning(plotHeatmap(cc,whichClusters="workflow") ,"whichClusters value does not match any clusters") #there are no workflow for this one
-
-    plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
-    expect_warning(plotHeatmap(smSimCE,whichClusters=1:15),"given whichClusters value does not match any clusters")
-	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
-    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=FALSE,overRideClusterLimit=TRUE)
-
- 
-    #test sampleData
-    expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
-
-    plotHeatmap(smSimCE,sampleData="all",overRideClusterLimit=TRUE)
-    plotHeatmap(smSimCE,sampleData="A")
-    plotHeatmap(smSimCE,sampleData=2:3)
-
-    #check that it pulls the names, not the clusterIds.
-    clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
-    plotHeatmap(cc)
-    
-    #check user setting clusterLegend
-	x<-palette()[1:7]
-	names(x)<-clusterLegend(cc)$Cluster1[,"name"]
-    plotHeatmap(cc,clusterLegend=list("Cluster1"=x))
-
-    plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
-	plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:4]))
-
-	names(x)<-LETTERS[1:7]
-	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"do not cover all levels in the data")
-	x<-palette()[1:6]
-	names(x)<-LETTERS[1:6]
-	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"is less than the number of levels in the data")
-	
-	########################
-	########################
-    # the following checks work outside of the test but  inside test_that, they hit errors
-    # possibly issue with testthat? Not evaluating for now.
-	########################
-	########################
-	#
-	# plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
-	#
-	# #this test doesn't work -- for some reason, expect_warning environment hits error that don't see at the consule.
-	# plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
-	# expect_warning( plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=TRUE)
-	# , "More than 10 annotations/clusterings")
-	#
-	# # create some names to see if keeps names with alignSampleData=TRUE
-	# # only can check manually, not with testthat.
-	# # BUG!: doesn't work. looses their -1/-2 designation... haven't fixed yet.
-	# clLeg<-clusterLegend(smSimCE)
-	# clLeg[[1]][,"name"]<-LETTERS[1:nrow(clLeg[[1]])]
-	# clusterLegend(smSimCE)<-clLeg
-	# plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE,overRideClusterLimit=TRUE)
-	#
-})
-
-test_that("`plotHeatmap` visualization choices/feature choices all work", {
-
-  plotHeatmap(smSimCE,visualizeData=smSimCount)
-  plotHeatmap(smSimCE,visualizeData="transformed")
-  plotHeatmap(smSimCE,visualizeData="original")
-  plotHeatmap(smSimCE,visualizeData="centeredAndScaled")
-  #even if visualizeData="orginal, still clsuter on transformed. Should make unit test out of below that get same:
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="hclust")
-  orderSamples(smSimCE)<-sample(1:nSamples(smSimCE))
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="orderSamplesValue")
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="primaryCluster")
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData=c(3,4,5))
-
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="all")
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="var",nFeatures=3)
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=3:5,nFeatures=3)
-  expect_error(plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3))
-  row.names(smSimCE)<-paste("Gene",1:NROW(smSimCE))
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3)
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="PCA",nFeatures=10,clusterSamplesData="hclust")
-
-  plotHeatmap(smSimCE,visualizeData="transform",clusterSamplesData="dendrogramValue")
-  #test works with outside dataset
- plotHeatmap(smSimCE,visualizeData=assay(smSimCE)[1:10,])
- expect_error(plotHeatmap(smSimCE, visualizeData=assay(smSimCE)[,1:5]))
-})
-
-test_that("`makeBlankData` works", {
-
-
-  ##call directly
-  gps<-list(c(3,6,7),c(2,1))
-  xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps)
-  expect_equal(nrow(xx$dataWBlanks),length(xx$rowNamesWBlanks))
-  whBlankNames<-which(xx$rowNamesWBlanks=="")
-  expect_equal(xx$rowNamesWBlanks[-whBlankNames],as.character(unlist(gps)) )
-  whBlankRows<-as.numeric(which(apply(xx$dataWBlanks,1,function(x){all(is.na(x))})))
-  expect_equal(whBlankRows,whBlankNames)
-  expect_equal(whBlankRows,4)
-
-  ##call within plotHeatmap (serves as test of NA capabilities)
-  plotHeatmap(smSimCE,clusterFeaturesData=gps)
-  plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99)
-  expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
-})
-test_that("`plotCoClustering` works", {
-  expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-  smMin1<-combineMany(smSimCE,whichClusters=1:4,proportion=.95) #gives all -1, but creates coClustering
-  plotCoClustering(smMin1,clusterSamplesData="hclust")
-  expect_error(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue"),
-               "all samples have clusterIds<0")
-  sm<-combineMany(smSimCE,whichClusters=1:4,proportion=.5)
-  plotCoClustering(sm,clusterSamplesData="dendrogramValue")
-})
 
 test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="aheatmap")
@@ -265,11 +124,11 @@ test_that("plotting helpers", {
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    plotBarplot(clusters=clusterMatrix(ceSim)[,1:2])
+    plotBarplot(object=clusterMatrix(ceSim)[,1:2])
     #test vector version
-    plotBarplot(clusters=clusterMatrix(ceSim)[,1])
+    plotBarplot(object=clusterMatrix(ceSim)[,1])
     #check error
-    expect_error(plotBarplot(clusters=clusterMatrix(ceSim)),"clusters must at most 2 clusters")
+    expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
     
     #test CE version with no defaults
     plotBarplot(ceSim)
@@ -282,9 +141,9 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     test<-ceSim
     clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])]
     #test character matrix version
-    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1:2])
+    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2])
     #test character vector version
-    plotBarplot(clusters=convertClusterLegend(test,output="matrixNames")[,1])
+    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1])
     #test labels argument
     plotBarplot(test,whichClusters=1:2,labels="id")
     plotBarplot(test,whichClusters=1:2,labels="name")
@@ -292,3 +151,15 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     
 })
 
+test_that("plotDimReduce works",{
+	cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+	removeSil=c(TRUE,FALSE))
+	clusterLegend(cl)[[primaryClusterIndex(cl)]][,"name"]<-LETTERS[1:5]
+	plotDimReduce(cl,legend="bottomright")
+	plotDimReduce(cl,legend=TRUE)
+
+	#higher dims.
+	plotDimReduce(cl,legend=TRUE,whichDims=1:4)
+	
+})

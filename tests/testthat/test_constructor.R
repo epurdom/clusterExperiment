@@ -1,6 +1,12 @@
 context("Constructor")
 source("create_objects.R")
 
+
+test_that("saved rsecFluidigm is still valid object", {
+	data(rsecFluidigm)
+	validObject(rsecFluidigm)
+		  })
+		  
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
@@ -142,7 +148,7 @@ test_that("removing clusters work as promised",{
   leg[,"name"]<-letters[1:6]
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
   clustWithDendro <- makeDendrogram(cl1)
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotType="none")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none")
   removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
   removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
   

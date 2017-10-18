@@ -28,11 +28,12 @@
 #'   color-scale), or a data.frame/matrix with same number of samples as 
 #'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 #'   clusterFeaturesData will be ignored.
-#' @param clusterSamplesData If \code{data} is a matrix, either a matrix that 
-#'   will be used to in \code{hclust} to define the hiearchical clustering of 
-#'   samples (e.g. normalized data) or a pre-existing dendrogram that clusters 
-#'   the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-#'   should be either character or integers or logical. Indicates how (and
+#' @param clusterSamplesData If \code{data} is a matrix,
+#'   \code{clusterSamplesData} is either a matrix that will be used by
+#'   \code{hclust} to define the hiearchical clustering of samples (e.g.
+#'   normalized data) or a pre-existing dendrogram that clusters the samples. If
+#'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
+#'   should be either character or integers or logical which indicates how (and 
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
 #' @param whichClusters character string, or vector of characters or integers,
@@ -57,7 +58,13 @@
 #'   \code{sampleData}. Each element of the list should be a either the format
 #'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
 #'   corresponding to the levels of the column of \code{sampleData}), or should
-#'   be format of \code{ClusterExperiment}.
+#'   be format of \code{ClusterExperiment}. This takes the place of argument
+#'   \code{annColors} from \code{aheatmap}. Color assignments to the rows/genes 
+#'   should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
+#'   an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
+#'   \emph{named} list describing groupings of genes (see details) then the colors 
+#'   for those groups can be given in \code{clusterLegend} under the name 
+#'   "Gene Group".
 #' @param alignSampleData Logical as to whether should align the colors of the
 #'   \code{sampleData} (only if \code{clusterLegend} not given and
 #'   \code{sampleData} is not \code{NULL}).
@@ -80,6 +87,8 @@
 #'   that only allows 10 clusterings/annotations. If overridden, may result in 
 #'   incomprehensible errors from \code{aheatmap}. Only override this if you have a
 #'   very large plotting device and want to see if \code{aheatmap} can render it.
+#' @param plot logical indicating whether to plot the heatmap. Mainly useful for 
+#'  package mantaince to avoid calls to aheatmap on unit tests that take a long time.
 #' @inheritParams clusterSingle
 #'
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -103,19 +112,26 @@
 #'   wishes that the color scale be based on the log-counts for easier
 #'   interpretation, \code{visualizeData} could be set to be the
 #'   \code{log2(counts + 1)}.
-#' @details If \code{data} is a \code{ClusterExperiment} object,
-#'   \code{clusterSamplesData} can be used to indicate the type of clustering
-#'   for the samples. If equal to `dendrogramValue` the dendrogram stored in
-#'   \code{data} will be used; if missing, a new one will be created based on
-#'   the \code{primaryCluster} of data. If equal to "hclust", then standard
+#' @details If \code{data} is a \code{ClusterExperiment} object, 
+#'   \code{clusterSamplesData} can be used to indicate the type of clustering 
+#'   for the samples. If equal to `dendrogramValue` the dendrogram stored in 
+#'   \code{data} will be used; if dendrogram is missing, a new one will be
+#'   created based on the \code{primaryCluster} of data using
+#'   \code{\link{makeDendrogram}}, assuming no errors are created (if errors are
+#'   created, then \code{clusterSamplesData} will be set to "primaryCluster").
+#'   If \code{clusterSamplesData} is equal to "hclust", then standard 
 #'   hierachical clustering of the transformed data will be used. If
-#'   'orderSamplesValue' no clustering of the samples will be done, and instead
-#'   the samples will be ordered as in the slot \code{orderSamples} of
-#'   \code{data}. If equal to 'primaryCluster', again no clustering will be
-#'   done, and instead the samples will be ordered based on grouping the samples
-#'   to match the primaryCluster of \code{data}. If not one of these values,
-#'   \code{clusterSamplesData} can be a character vector matching the
-#'   clusterLabels (colnames of clusterMatrix).
+#'   \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of
+#'   the samples will be done, and instead the samples will be ordered as in the
+#'   slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is
+#'   equal to 'primaryCluster', again no clustering will be done, and instead
+#'   the samples will be ordered based on grouping the samples to match the
+#'   primaryCluster of \code{data}; however, if the primaryCluster of
+#'   \code{data} is only one cluster or consists soley of -1/-2 values,
+#'   \code{clusterSamplesData} will be set to "hclust". If
+#'   \code{clusterSamplesData}  is not a character value, 
+#'   \code{clusterSamplesData} can be a integer valued vector giving the order
+#'   of the samples.
 #' @details If \code{data} is a matrix, then \code{sampleData} is a data.frame
 #'   of annotation data to be plotted above the heatmap and
 #'   \code{whSampleDataCont} gives the index of the column(s) of this dataset
@@ -253,15 +269,16 @@ setMethod(
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 #' @rdname plotHeatmap
+#' @param nBlankLines Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).  
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
-                        clusterSamplesData=c("hclust","dendrogramValue","orderSamplesValue","primaryCluster"),
+                        clusterSamplesData=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"),
                         clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
-                        sampleData=NULL,clusterFeatures=TRUE,
+                        sampleData=NULL,clusterFeatures=TRUE, nBlankLines=2,
                         colorScale,
                        ...
   ){
@@ -304,43 +321,49 @@ setMethod(
     }
     else groupFeatures<-NULL
     if(!externalData){
-	    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
-	        dimReduce=switch(clusterFeaturesData,
-	                         "var"="var",
-	                        "PCA"="PCA",
-	                        "all"="none")
-	        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
-	        wh<-1:NROW(data)
+	    if(!clusterFeatures && visualizeData=="original"){
+	    	heatData<-assay(data)
 	    }
-	    else{
-	      if(is.character(clusterFeaturesData)){#gene names
-	        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
-	        else{
-	          wh<-match(clusterFeaturesData,rownames(data))
-	          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
-	          if(any(is.na(wh))){
-	            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
-	            wh<-na.omit(wh)
-	          }
-	        }
-	      }
-	      else{
-	          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
-	          wh<-clusterFeaturesData
-	      }
-	      dimReduce<-"none"
-	    }
-	    transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
-	    if(dimReduce%in%"PCA") wh<-1:nFeatures
-	    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
-		if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
-	    else{
-			#note, transObj is already been limited to the wh.
-			heatData<-switch(visualizeData,
-	                    "original"=assay(data[wh,]),
-	                    "transformed"=transObj$x,
-	                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
-	                    )
+		else{
+		    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
+		        dimReduce=switch(clusterFeaturesData,
+		                         "var"="var",
+		                        "PCA"="PCA",
+		                        "all"="none")
+		        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
+		        wh<-1:NROW(data)
+		    }
+		    else{
+		      if(is.character(clusterFeaturesData)){#gene names
+		        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
+		        else{
+		          wh<-match(clusterFeaturesData,rownames(data))
+		          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
+		          if(any(is.na(wh))){
+		            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
+		            wh<-na.omit(wh)
+		          }
+		        }
+		      }
+		      else{
+		          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+		          wh<-clusterFeaturesData
+		      }
+		      dimReduce<-"none"
+		    }
+		 
+			transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
+		    if(dimReduce%in%"PCA") wh<-1:nFeatures
+		    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
+			if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
+		    else{
+				#note, transObj is already been limited to the wh.
+				heatData<-switch(visualizeData,
+		                    "original"=assay(data[wh,]),
+		                    "transformed"=transObj$x,
+		                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
+		                    )
+			}	
 		}
 	}
 	else{
@@ -391,20 +414,26 @@ setMethod(
 
 
     userList<-list(...)
-    userAlign<-"alignSampleData" %in% names(userList)
-    userLegend<-"clusterLegend" %in% names(userList)
+    userAlign<-"alignSampleData" %in% names(userList) & !is.null(userList$alignSampleData)
+    userLegend<-"clusterLegend" %in% names(userList) & !is.null(userList$clusterLegend)
 	if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
       if(userLegend){
         userClLegend<-userList[["clusterLegend"]]
-		userClLegend<-userClLegend[names(userClLegend) %in% colnames(sampleData)]
-		if(length(userClLegend)==0) warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
+		annotNames<-colnames(sampleData)
+		if("annRow" %in% names(userList)) annotNames<-c(annotNames,colnames(userList$annRow))
+		if(!is.null(groupFeatures)) annotNames<-c(annotNames,"Gene Group")
+		userClLegend<-userClLegend[names(userClLegend) %in% annotNames]
+		if(length(userClLegend)==0){
+			warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
+		}
 		else{
 	        #keep existing clLegend from clusterExperiment object if not conflict with user input:
 	        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
 	        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
 	        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
-	        userList<-userList[-grep("clusterLegend",names(userList))]			
+	        		
 		}
+		userList<-userList[-grep("clusterLegend",names(userList))]	
       }
       else{
         if(userAlign){
@@ -413,13 +442,13 @@ setMethod(
         }
       }
     }
-	
+	else clLegend<-.convertToAheatmap(clLegend,names=TRUE)
     ######
     #Create clusterSamplesData
     ######
-    clusterSamplesData<-.convertTry(clusterSamplesData,try(match.arg(clusterSamplesData),silent=TRUE))
+    clusterSamplesData<-.convertTry(clusterSamplesData, try(match.arg(clusterSamplesData), silent=TRUE))
     if(is.logical(clusterSamplesData)) clusterSamples<-clusterSamplesData
-    else {
+    else{
       clusterSamples<-TRUE
       if(is.numeric(clusterSamplesData)){
           heatData<-heatData[,clusterSamplesData,drop=FALSE]
@@ -432,27 +461,37 @@ setMethod(
             heatData<-heatData[,orderSamples(data),drop=FALSE]
             if(!is.null(sampleData)) sampleData<-sampleData[orderSamples(data), ,drop=FALSE]
             clusterSamplesData<-heatData
-              clusterSamples<-FALSE
-  
-          }
-          else if(clusterSamplesData=="primaryCluster"){
-              heatData<-heatData[,order(primaryCluster(data))]
-              if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
-              clusterSamplesData<-heatData
-              clusterSamples<-FALSE
+            clusterSamples<-FALSE
           }
           else if(clusterSamplesData=="dendrogramValue"){
               if(is.null(data@dendro_samples)){
-                clusterSamplesData<-makeDendrogram(data)@dendro_samples
+                clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
+				if(inherits(clusterSamplesData, "try-error")){
+					warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
+					clusterSamplesData<-"primaryCluster"
+				}
               }
               else{
                   clusterSamplesData<-data@dendro_samples
               }
           }
-          else if(clusterSamplesData=="hclust"){
+		  if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
+              wh<-which(primaryCluster(data) %in% c(-1,-2))
+			  if(length(wh)==nSamples(data) || length(unique(primaryCluster(data)[-wh]))==1){
+				  #in this case, all -1/-2 or same cluster, just do heatmap with hclust
+				  warning("Cannot order by primary cluster because all one cluster and/or all clustering values are -1/-2. Using standard hiearchical clustering.")
+				  clusterSamplesData<-"hclust"
+			  }
+			  else{
+				  heatData<-heatData[,order(primaryCluster(data))]
+	              if(!is.null(sampleData)) sampleData<-sampleData[order(primaryCluster(data)),,drop=FALSE]
+	              clusterSamplesData<-heatData
+	              clusterSamples<-FALSE			  	
+			  }
+          }
+          if(is.character(clusterSamplesData) && clusterSamplesData=="hclust"){
               #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
               clusterSamplesData <- heatData
-  
               if(is.character(visualizeData)) {
                 if(visualizeData=="original") {
                   transObj$x
@@ -465,10 +504,30 @@ setMethod(
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
-      blankData<-makeBlankData(heatData,groupFeatures)
+	  # blankData<-makeBlankData(transform(object),geneByContrast,nBlankLines=nBlankLines)
+      blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
+
+
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       clusterFeatures<-FALSE
+	  
+	  if(!is.null(names(groupFeatures))){
+		  annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks,levels=names(groupFeatures)))
+		  #show color-coding of gene groupings:
+		  if("annRow" %in% names(userList)){
+			  stop("Cannot provide 'annRow' if grouping features")
+			  # if(is.list(userList$annRow)) userList$annRow<-c(userList$annRow,annRow)
+			  # else userList$annRow<-c(list(userList$annRow),annRow)
+		  }
+		  else userList$annRow<-annRow
+		  if(!"Gene Group" %in% names(clLegend)){
+			  nGroups<-length(groupFeatures)
+			  groupColors<-bigPalette[1:nGroups]	
+			  names(groupColors)<-levels(annRow[["Gene Group"]])
+		  	  clLegend<-c(clLegend, "Gene Group"=list(groupColors))
+		  }
+	  }
     }
     else{
       labRow<-rownames(heatData)
@@ -515,7 +574,7 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE,...
+                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
     ){
 
 
@@ -743,32 +802,35 @@ setMethod(
       # put into aheatmap
       #############
       breaks<-setBreaks(data=heatData,breaks=breaks)
-      out<-NMF::aheatmap(heatData,
-                         Rowv =Rowv,Colv = Colv,
-                         color = colorScale, scale = getHeatmapValue("scale","none"),
-                         annCol = annCol,annColors=annColors,breaks=breaks,...)
+	  if(plot){
+	      out<-NMF::aheatmap(heatData,
+	                         Rowv =Rowv,Colv = Colv,
+	                         color = colorScale, scale = getHeatmapValue("scale","none"),
+	                         annCol = annCol,annColors=annColors,breaks=breaks,...)
 
-      #############
-      # add labels to clusters at top of heatmap
-      #############
+	      #############
+	      # add labels to clusters at top of heatmap
+	      #############
 
-      if(!any(is.na(annCol))){
-        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
-        newNameList<-strsplit(newName,"\\.")[[1]]
-        oldIndex<-as.numeric(newNameList[[3]])-1
-        newNameList[[3]]<-oldIndex
-        oldName<-paste(newNameList,collapse=".")
-        grid::seekViewport(sprintf("aheatmap-%s",oldName))
-        NMF:::vplayout(3,4:5)
-        #grid::grid.rect()
-        y <- seq(0,1,length=ncol(annCol))
-        n<-ncol(annCol)
-        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-        grid::upViewport() #close it
-        grid::upViewport() #close it
-      }
+	      if(!any(is.na(annCol))){
+	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
+	        newNameList<-strsplit(newName,"\\.")[[1]]
+	        oldIndex<-as.numeric(newNameList[[3]])-1
+	        newNameList[[3]]<-oldIndex
+	        oldName<-paste(newNameList,collapse=".")
+	        grid::seekViewport(sprintf("aheatmap-%s",oldName))
+	        NMF:::vplayout(3,4:5)
+	        #grid::grid.rect()
+	        y <- seq(0,1,length=ncol(annCol))
+	        n<-ncol(annCol)
+	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+	        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+	        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+	        grid::upViewport() #close it
+	        grid::upViewport() #close it
+	      }
+	  }
+	  else out<-NULL
 
       invisible(list(aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
     }

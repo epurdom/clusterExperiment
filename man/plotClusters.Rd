@@ -9,27 +9,27 @@
 \alias{plotClusters,matrix,missing-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
-\S4method{plotClusters}{ClusterExperiment,character}(clusters,
+\S4method{plotClusters}{ClusterExperiment,character}(object,
   whichClusters = c("workflow", "all"), ...)
 
-\S4method{plotClusters}{ClusterExperiment,numeric}(clusters, whichClusters,
+\S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
   existingColors = c("ignore", "all"), resetNames = FALSE,
   resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
   clusterLabels = NULL, ...)
 
-\S4method{plotClusters}{ClusterExperiment,missing}(clusters, whichClusters, ...)
+\S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
 
-\S4method{plotClusters}{matrix,missing}(clusters, whichClusters,
+\S4method{plotClusters}{matrix,missing}(object, whichClusters,
   orderSamples = NULL, sampleData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
   colPalette = bigPalette, input = c("clusters", "colors"),
-  clusterLabels = colnames(clusters), add = FALSE, xCoord = NULL,
+  clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
   ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
   box = FALSE, ...)
 }
 \arguments{
-\item{clusters}{A matrix of with each column corresponding to a clustering
+\item{object}{A matrix of with each column corresponding to a clustering
 and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 matrix, the function will plot the clusterings in order of this matrix, and
 their order influences the plot greatly.}
