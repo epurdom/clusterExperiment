@@ -61,7 +61,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,removeOutbranch=TRUE,legend='side',...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  labelType=c("name","colorblock","ids"), main,sub,labelAngle=45,removeOutbranch=TRUE,legend='side',...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -88,7 +88,7 @@ setMethod(
       if(labelType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
     }
     label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
-    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,...))
+    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,label=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,labelAngle=labelAngle,...))
     
   })
 
@@ -101,7 +101,7 @@ setMethod(
 #' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
-.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",...){
+.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,label=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",labelAngle=45,...){
 	label<-match.arg(label)
 	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
 	#---
@@ -395,8 +395,13 @@ setMethod(
 		
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
-			ypos<-par("usr")[4]+0*diff(par("usr")[3:4])
-			text(x=xloc,y=ypos,labels=colnames(cl),srt=45,xpd=NA,adj=c(0,0))
+			diffX<-diff(xloc)
+			xloc<-xloc+diffX/2
+			ypos<-par("usr")[4]-0.025*diff(par("usr")[3:4])	
+			adj<-c(0,0)		
+			if("cex" %in% names(list(...))) labcex<-list(...)[["cex"]]
+				else labcex<-1	
+			text(x=xloc,y=ypos,labels=colnames(cl),srt=labelAngle,xpd=NA,adj=adj,cex=labcex)
 			
 		}
 		

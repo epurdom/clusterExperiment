@@ -160,11 +160,9 @@
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
-          definition = function(x, cl, dendro=NULL,
-                          mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-                          plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-                          cutoff=0.1, plot=TRUE,
-                          isCount=TRUE,  ...) {  
+          definition = function(x, cl, dendro=NULL, mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
+                                plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
+                                cutoff=0.1, plot=TRUE,isCount=TRUE,  ...){  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
@@ -223,7 +221,7 @@ setMethod(f = "mergeClusters",
     #go up tree and merge clusters
     valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 2)})
     nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
-
+    
     #find nodes where *all* descendants are below cutoff
     allTipNames <- phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj, type=c("tip"))]
     whToMerge <- sapply(nodesBelowCutoff,function(node){
@@ -232,14 +230,14 @@ setMethod(f = "mergeClusters",
     })
     if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
       nodesToMerge <- nodesBelowCutoff[whToMerge]
-
+      
       #now find top ones
       whAnc <- sapply(nodesToMerge, function(node){
         anc <- phylobase::ancestors(phylo4Obj, node, type="all")
         return(!any(names(anc) %in% nodesToMerge))
       })
       nodesAtTop <- nodesToMerge[whAnc]
-
+      
       #make new clusters
       temp <- lapply(nodesAtTop, function(node){
         tips <- phylobase::descendants(phylo4Obj, node, type="tips")
@@ -249,18 +247,18 @@ setMethod(f = "mergeClusters",
         newcl[cl%in% tips] <<- as.numeric(tips[[1]])
       })
       #make consecutive integers
-	  uc<-sort(unique(newcl[newcl>0]))
+      uc<-sort(unique(newcl[newcl>0]))
       newcl <- as.numeric(factor(newcl, levels=uc,labels=as.character(1:length(uc))))
       #deal with -1/-2
       newcl[is.na(newcl)] <- cl[is.na(newcl)]
     }
   }
   nodePropTableGiven<-nodePropTable
-	if(!needCalculate){
-	  whProp <- which(names(nodePropTable) %in% .availMergeMethods)
-	  nodePropTable <- nodePropTableGiven[, whProp]
-	  annotTable <- nodePropTableGiven[, c("Node", "Contrast")]
-	}
+  if(!needCalculate){
+    whProp <- which(names(nodePropTable) %in% .availMergeMethods)
+    nodePropTable <- nodePropTableGiven[, whProp]
+    annotTable <- nodePropTableGiven[, c("Node", "Contrast")]
+  }
   else{
     if (!is.null(nodePropTable)) {
       #add results to given nodePropTable
@@ -293,7 +291,7 @@ setMethod(f = "mergeClusters",
   if (mergeMethod != "none" &&
       length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
     logicalMerge <- annotTable$Node %in% nodesToMerge
-	#gives the names of original cluster ids
+    #gives the names of original cluster ids
     corrspCluster <- sapply(annotTable$Node, function(node) {
       tips <- phylobase::descendants(phylo4Obj, node, type = c("tips")) #names of tips
       if (any(!names(tips) %in% as.character(cl))) {
@@ -352,7 +350,6 @@ setMethod(f = "mergeClusters",
         rownames(clMat)<-names(cl)	  	
       }
     }
-	browser()
     if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,label="name",outbranch=any(cl<0),...)
     else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,label="name",...)
     
@@ -443,7 +440,7 @@ This makes sense only for counts.")
     newObj <- clusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
-								checkTransformAndAssay=FALSE)
+                                checkTransformAndAssay=FALSE)
     #add "m" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
@@ -458,55 +455,55 @@ This makes sense only for counts.")
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
-        
+    retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
+    
   }
   else{ #still save merge info so don't have to redo it.
     retval<-x
-  saveNodeTable<-is.na(x@merge_index)
-  if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
+    saveNodeTable<-is.na(x@merge_index)
+    if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
     if(saveNodeTable ){
       retval@merge_nodeProp <-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
     }
     if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
-	
+    
   }
-    ch<-.checkMerge(retval)
-	if(!is.logical(ch) || !ch) stop(ch)
-		##Align the colors between mergeClusters and combineMany
-	retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
-		
+  ch<-.checkMerge(retval)
+  if(!is.logical(ch) || !ch) stop(ch)
+  ##Align the colors between mergeClusters and combineMany
+  
   if(plot){
-    dend<- switch(leafType,"samples"=retval@dendro_samples,"clusters"=retval@dendro_clusters)
-  	# leg<-clusterLegend(retval)[[retval@dendro_index]]
-  	#     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
-	if(leafType=="samples" & mergeMethod!="none" & labelType=="colorblock"){
-		whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
-	  	leg<-clusterLegend(retval)[whClusters]
-	    cl<-clusterMatrix(retval,whichClusters=whClusters)
-		rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
-		
-	}
-	else{
-	  	leg<-clusterLegend(retval)[[retval@dendro_index]]
-	  	    cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
-		if(leafType=="samples"){
-			names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
-		}
-		
-	}
-
+    dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
+    # leg<-clusterLegend(retval)[[retval@dendro_index]]
+    #     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+    if(leafType=="samples" & mergeMethod!="none" & labelType=="colorblock"){
+      whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
+      leg<-clusterLegend(retval)[whClusters]
+      cl<-clusterMatrix(retval,whichClusters=whClusters)
+      rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
+      
+    }
+    else{
+      leg<-clusterLegend(retval)[[retval@dendro_index]]
+      cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
+      if(leafType=="samples"){
+        names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
+      }
+      
+    }
+    
     if(labelType=="id") leg[,"name"]<-leg[,"clusterIds"]
   	label<-switch(labelType,"name"="name","colorblock"="colorblock","ids"="name")
   	outbranch<-FALSE
   	if(leafType=="samples" & any(cl<0)) outbranch<-retval@dendro_outbranch
 		#if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
 
-  # outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
-  # cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
-  # rownames(cl)<-colnames(retval)
-  # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
-  if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
+  	# outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
+  	# cl<-clusterMatrix(retval,whichCluster=retval@dendro_index)
+  	# rownames(cl)<-colnames(retval)
+  	# dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
+  	if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
+  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,label=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
   }
   
   invisible(retval)
