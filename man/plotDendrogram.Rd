@@ -8,7 +8,7 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("clusters", "samples"), labelType = c("name", "colorblock",
-  "ids"), main, sub, labelAngle = 45, removeOutbranch = TRUE,
+  "ids"), main, sub, clusterLabelAngle = 45, removeOutbranch = TRUE,
   legend = "side", ...)
 }
 \arguments{
@@ -37,6 +37,9 @@ internal clusterIds value will be plotted (only appropriate if
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
+
+\item{clusterLabelAngle}{angle at which label of cluster will be drawn. Only
+applicable if \code{labelType="colorblock"}.}
 
 \item{removeOutbranch}{logical, only applicable if there are missing samples
 (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
