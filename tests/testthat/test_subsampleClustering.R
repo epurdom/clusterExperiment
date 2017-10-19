@@ -1,9 +1,6 @@
 context("subsampleClustering")
 source("create_objects.R")
 test_that("`subsampleClustering` works", {
-	' coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData, 
-	#' clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
-	
     set.seed(4897)
     subAll <- subsampleClustering(x=mat,clusterFunction="pam", 
 		clusterArgs=list(k=3), classifyMethod="All",
