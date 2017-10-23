@@ -32,7 +32,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  seqArgs=list(beta=0.9,k.min=3,verbose=FALSE),
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
-cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+print(system.time(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
@@ -41,6 +41,7 @@ cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
+				 ))
 
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.",file=outfile,append=TRUE)

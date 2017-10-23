@@ -269,9 +269,9 @@ setMethod(f = "mergeClusters",
         stringsAsFactors = FALSE
       )
       #check same nodes and contrasts
-      if (!all(sort(nodePropTableGiven$Node) == sort(annotTable$Node)))
+      if (!identical(sort(nodePropTableGiven$Node),sort(annotTable$Node)))
         stop("different nodes in nodePropTable than when calculated fresh")
-      if (!all(sort(nodePropTableGiven$Contrast) == sort(annotTable$Contrast)))
+      if (!identical(sort(nodePropTableGiven$Contrast), sort(annotTable$Contrast)))
         stop("different contrast values in nodePropTable than when calculated fresh")
       whInGiven<-.availMergeMethods[sapply(.availMergeMethods,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
       whInGiven<-whInGiven[which(!whInGiven %in% whMethodCalculate)]
@@ -335,7 +335,7 @@ setMethod(f = "mergeClusters",
     #check node identification from above
     nmerge<-apply(oldClToNew,2,function(x){sum(x>0)})
     clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
-    if(!all(sort(as.character(na.omit(nodePropTable$mergeClusterId)))==sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
+    if(!identical(sort(as.character(na.omit(nodePropTable$mergeClusterId))),sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
   }
   out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff,
             propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
@@ -454,21 +454,27 @@ This makes sense only for counts.")
 	##Need to update the mergeTable to reflect this.
 	##Do this by matching the outlist$clustering to the new clustering
 	############## 
-	
-	currOldToNew<-tableClusters(retval,whichClusters=c("combineMany","mergeClusters"))
-	origOldToNew<-outlist$oldClToNew
-	#-----
-	##Match merge Ids in mergeTable to columns of origOldToNew
-	#-----
-	#get non NAs in mergeTable
-	whNotNAMerge<-which(!is.na(mergeTable$mergeClusterId))
-	idsInMergeTable<-mergeTable$mergeClusterId[whNotNAMerge]
-	#make origOldToNew only these ids in this order
-	origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew))]
-	#make new merge table in same order as these ids by match columns to each other
-	mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
-	#currOldToNew<-currOldToNew[,mCols]
-	mergeTable$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+	if(didMerge){ 
+		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
+		origOldToNew<-outlist$oldClToNew
+		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
+			currOldToNew<-tableClusters(retval,whichClusters=c("combineMany","mergeClusters"))
+			#-----
+			##Match merge Ids in mergeTable to columns of origOldToNew
+			#-----
+			#get non NAs in mergeTable
+			whNotNAMerge<-which(!is.na(mergeTable$mergeClusterId))
+			idsInMergeTable<-mergeTable$mergeClusterId[whNotNAMerge]
+			#make origOldToNew only these ids in this order
+			origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
+			#make new merge table in same order as these ids by match columns to each other
+			mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
+			#currOldToNew<-currOldToNew[,mCols]
+			mergeTable$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+			
+		}
+		
+	}
 	
 		
     retval@merge_nodeProp<-propTable
