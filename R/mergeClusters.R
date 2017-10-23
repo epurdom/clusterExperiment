@@ -477,6 +477,7 @@ This makes sense only for counts.")
     retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
+    ##Align the colors between mergeClusters and combineMany
     retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
     
   }
@@ -491,8 +492,7 @@ This makes sense only for counts.")
     
   }
   ch<-.checkMerge(retval)
-  if(!is.logical(ch) || !ch) stop(ch)
-  ##Align the colors between mergeClusters and combineMany
+  if(!is.logical(ch)) stop(ch)
   
   if(plot){
     dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
