@@ -469,7 +469,7 @@ This makes sense only for counts.")
     
   }
   ch<-.checkMerge(retval)
-  if(!is.logical(ch) || !ch) stop(ch)
+  if(!is.logical(ch)) stop(ch)
   ##Align the colors between mergeClusters and combineMany
   
   if(plot){
