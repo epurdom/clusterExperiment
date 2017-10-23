@@ -36,6 +36,9 @@
 #'   available for 'ape' package >= 4.1-0.6).
 #' @param clusterLabelAngle angle at which label of cluster will be drawn. Only
 #'	 applicable if \code{plotType="colorblock"}.
+#' @param mergeInfo What kind of information about merge to plot on dendrogram. If not 
+#' equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
+#' creates.
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
