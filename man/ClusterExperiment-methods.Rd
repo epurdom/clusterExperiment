@@ -145,8 +145,6 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
-
-\item{whichClusters}{which clusters to table}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
