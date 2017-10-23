@@ -452,9 +452,9 @@ setMethod(
 
 		if(i == 1) colorListTop<-newColorVector
 		if(any(is.na(newColorVector))) stop("Error in internal code: NA values")
-		if(!identical(sort(table(newColorVector)),sort(table(unlist(clusters[i,]))))) stop("Coding error, colors to do not have same number as original")
+		if(!identical(sort(unname(table(newColorVector))),sort(unname(table(unlist(clusters[i,])))))) stop("Coding error, colors to do not have same number as original")
 		crossTab<-paste(newColorVector,unlist(clusters[i,]),sep=";")
-		if(!identical(sort(table(crossTab)),sort(table(unlist(clusters[i,]))))) stop("Coding error, colors to do not have same assignments as original")
+		if(!identical(sort(unname(table(crossTab))),sort(unname(table(unlist(clusters[i,])))))) stop("Coding error, colors to do not have same assignments as original")
 		colorM = rbind(colorM,newColorVector)
 		if(!matchToTop) pastColorVector<-newColorVector
 			else pastColorVector<-colorM[1,]
@@ -618,8 +618,8 @@ setMethod(
 	if(any(is.na(newColors))) stop("Coding Error: some samples not given a color")
 	tabOld<-table(ct)
 	tabNew<-table(newColors)
-
-	if(!identical(tabNew,tabOld)) stop("Coding error, didn't get same number of entries of each")
+	if(!identical(sort(unname(tabNew)),sort(unname(tabOld)))) stop("Coding error, didn't get same number of entries of each")
+	#	if(length(tabNew)!=length(tabOld) || any(sort(tabNew)!=sort(tabOld))) stop("Coding error, didn't get same number of entries of each")
 	return(newColors)
 }
 

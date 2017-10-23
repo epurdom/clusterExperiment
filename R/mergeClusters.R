@@ -269,9 +269,9 @@ setMethod(f = "mergeClusters",
         stringsAsFactors = FALSE
       )
       #check same nodes and contrasts
-      if (!identical(sort(nodePropTableGiven$Node),sort(annotTable$Node)))
+      if (!identical(unname(sort(nodePropTableGiven$Node)),unname(sort(annotTable$Node))))
         stop("different nodes in nodePropTable than when calculated fresh")
-      if (!identical(sort(nodePropTableGiven$Contrast), sort(annotTable$Contrast)))
+      if (!identical(unname(sort(nodePropTableGiven$Contrast)), sort(unname(annotTable$Contrast))))
         stop("different contrast values in nodePropTable than when calculated fresh")
       whInGiven<-.availMergeMethods[sapply(.availMergeMethods,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
       whInGiven<-whInGiven[which(!whInGiven %in% whMethodCalculate)]
@@ -335,7 +335,7 @@ setMethod(f = "mergeClusters",
     #check node identification from above
     nmerge<-apply(oldClToNew,2,function(x){sum(x>0)})
     clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
-    if(!identical(sort(as.character(na.omit(nodePropTable$mergeClusterId))),sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
+    if(!identical(unname(sort(as.character(na.omit(nodePropTable$mergeClusterId)))),sort(unname(clustersThatMerge)))) stop("coding error -- wrong identification of merged clusters")
   }
   out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff,
             propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)

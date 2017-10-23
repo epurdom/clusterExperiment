@@ -420,7 +420,7 @@ This makes sense only for counts.")
   mCl<-unique(mCl[mCl>0])
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-  if(!identical(sort(as.character(mCl)),sort(tipLabels(newPhylo4)))){
+  if(!identical(sort(unname(as.character(mCl))),sort(unname(tipLabels(newPhylo4))))){
 	  stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
@@ -457,7 +457,7 @@ This makes sense only for counts.")
 
   #check didn't do something stupid:
   checkTipEdges<-phylobase::edgeId(tree,type="tip")
-  if(!identical(sort(checkTipEdges),sort(edgeIds))) stop("coding error -- didn't correctly get edge ids for tips")
+  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
 
   #replace with new edges:
 	allLen[edgeIds]<-allLen[edgeIds]+addValue

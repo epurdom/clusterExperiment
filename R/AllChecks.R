@@ -51,13 +51,14 @@
     if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
       return("length of clusterInfo must be same as NCOL of the clusterMatrix")
     }
-        #check internally stored as integers
-        testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
+    #check internally stored as integers
+	testConsecIntFun<-function(x){
           whCl<-which(!x %in% c(-1,-2))
           uniqVals<-unique(x[whCl])
-          return(identical(sort(uniqVals),1:length(uniqVals)))
-        })
-     if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+          return(all(sort(unname(uniqVals))==1:length(uniqVals)))
+        }
+     testConsecIntegers<-apply(object@clusterMatrix,2,testConsecIntFun)
+	 if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
 	 
 	 return(TRUE)
 }
