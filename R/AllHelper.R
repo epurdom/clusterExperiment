@@ -451,7 +451,7 @@ setReplaceMethod(
 )
 
 
-#' @whichClusters which clusters to table
+#' @param whichClusters which clusters to table
 #' @aliases tableClusters
 #' @rdname ClusterExperiment-methods
 setMethod(
@@ -465,7 +465,7 @@ setMethod(
 
   })
 
-#' @rdname tableClusters
+#' @rdname ClusterExperiment-methods
 #' @export
 setMethod(
     f = "tableClusters",
@@ -476,7 +476,7 @@ setMethod(
 
     })
 
-#' @rdname tableClusters
+#' @rdname ClusterExperiment-methods
 #' @export
 setMethod(
   f = "tableClusters",

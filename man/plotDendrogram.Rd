@@ -8,8 +8,9 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
-  "ids"), main, sub, clusterLabelAngle = 45, removeOutbranch = TRUE,
-  legend = "side", ...)
+  "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
+  "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
+  removeOutbranch = TRUE, legend = "side", ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
