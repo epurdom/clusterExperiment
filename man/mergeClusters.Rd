@@ -268,7 +268,7 @@ mergeMethod="adjP", use.edge.length=FALSE,
 leafType="clusters",plotType="name")
 
 #compare merged to original
-table(primaryCluster(cl), primaryCluster(merged))
+tableClusters(merged,whichClusters=c("mergeClusters","clusterSingle"))
 
 }
 \references{

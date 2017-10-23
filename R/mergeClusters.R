@@ -152,7 +152,7 @@
 #' leafType="clusters",plotType="name")
 #'
 #' #compare merged to original
-#' table(primaryCluster(cl), primaryCluster(merged))
+#' tableClusters(merged,whichClusters=c("mergeClusters","clusterSingle"))
 #'
 #' @export
 #' @importFrom howmany howmany lowerbound
@@ -449,16 +449,22 @@ This makes sense only for counts.")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
+    retval@merge_nodeProp<-propTable
+    retval@merge_index<-1
+    retval@merge_method<-outlist$mergeMethod
+    retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
+    retval@merge_cutoff<-outlist$cutoff
 	############## 
 	##The above can change the internal coding of the merge clusters (???Why???)
-	##Need to update the mergeTable to reflect this.
+	##Need to update the mergeTable to reflect this before save to object.
 	##Do this by matching the outlist$clustering to the new clustering
 	############## 
 	if(didMerge){ 
 		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
 		origOldToNew<-outlist$oldClToNew
 		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-			currOldToNew<-tableClusters(retval,whichClusters=c("combineMany","mergeClusters"))
+			#browser()
+			currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
 			#-----
 			##Match merge Ids in mergeTable to columns of origOldToNew
 			#-----
@@ -475,14 +481,9 @@ This makes sense only for counts.")
 		}
 		
 	}
+    retval@merge_nodeMerge<-mergeTable
 	
 		
-    retval@merge_nodeProp<-propTable
-    retval@merge_index<-1
-    retval@merge_method<-outlist$mergeMethod
-    retval@merge_nodeMerge<-mergeTable
-    retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
-    retval@merge_cutoff<-outlist$cutoff
     ##Align the colors between mergeClusters and combineMany
     retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
     
