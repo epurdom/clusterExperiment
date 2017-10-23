@@ -70,7 +70,7 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
       c(x,rep("",nBlankLines))
     })
   rnames <- unname(c(unlist(rnamesMinus),rnames[[length(rnames)]]))
-  #browser()
+  
   
   if(!is.null(names(groupsOfFeatures)) && length(unique(names(groupsOfFeatures)))==length(names(groupsOfFeatures)) ){
 	  gNames<-names(groupsOfFeatures)

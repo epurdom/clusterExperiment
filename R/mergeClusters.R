@@ -290,7 +290,7 @@ setMethod(f = "mergeClusters",
   #also determine whether node corresponds to a cluster in merge clusters
   if (mergeMethod != "none" &&
       length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
-    logicalMerge <- annotTable$Node %in% nodesToMerge
+	logicalMerge <- annotTable$Node %in% nodesToMerge
     #gives the names of original cluster ids
     corrspCluster <- sapply(annotTable$Node, function(node) {
       tips <- phylobase::descendants(phylo4Obj, node, type = c("tips")) #names of tips
@@ -350,8 +350,8 @@ setMethod(f = "mergeClusters",
         rownames(clMat)<-names(cl)	  	
       }
     }
-    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
-    else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
+    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
+    else .plotDendro(dendro,leafType="clusters",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
     
   }
   invisible(out)
@@ -449,6 +449,28 @@ This makes sense only for counts.")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
+	############## 
+	##The above can change the internal coding of the merge clusters (???Why???)
+	##Need to update the mergeTable to reflect this.
+	##Do this by matching the outlist$clustering to the new clustering
+	############## 
+	
+	currOldToNew<-tableClusters(retval,whichClusters=c("combineMany","mergeClusters"))
+	origOldToNew<-outlist$oldClToNew
+	#-----
+	##Match merge Ids in mergeTable to columns of origOldToNew
+	#-----
+	#get non NAs in mergeTable
+	whNotNAMerge<-which(!is.na(mergeTable$mergeClusterId))
+	idsInMergeTable<-mergeTable$mergeClusterId[whNotNAMerge]
+	#make origOldToNew only these ids in this order
+	origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew))]
+	#make new merge table in same order as these ids by match columns to each other
+	mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
+	#currOldToNew<-currOldToNew[,mCols]
+	mergeTable$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+	
+		
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
     retval@merge_method<-outlist$mergeMethod
@@ -503,7 +525,7 @@ This makes sense only for counts.")
   	# rownames(cl)<-colnames(retval)
   	# dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
   	if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
+  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
   }
   
   invisible(retval)

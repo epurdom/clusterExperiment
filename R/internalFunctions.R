@@ -159,7 +159,7 @@
       y[wh2]<- -2
       return(y)
     }
-    #browser()
+    
     if(!is.null(dim(clMat)) && ncol(clMat)>1){
         x<-apply(clMat,2,fun)
         if(is.null(dim(x))) x<-matrix(x,nrow=1) #in case clMat was matrix with 1 row
@@ -253,7 +253,7 @@
         }
     },SIMPLIFY=FALSE)
     totalMatch<-unlist(totalMatch,use.names=FALSE)
-    #browser()
+    
     if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
   }
@@ -277,7 +277,7 @@
     }
     phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
     if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-	#browser()
+	
 	if(isSamples){
 		#NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
 		nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[which(phylobase::edgeLength(phylo4Obj)>0)] #doesn't include root

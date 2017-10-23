@@ -111,7 +111,7 @@ setMethod(
 	if(!"missingColor" %in% names(args) & any(legend[,"clusterIds"]== "-2")){
 		args$missingColor<-legend[legend[,"clusterIds"]== "-2","color"]
 	}
-	#browser()
+	
 	do.call("plotBarplot",c(list(object=clusterMat,colPalette=colPalette),args))
 
   })
@@ -148,7 +148,7 @@ setMethod(
 		clX<-object[,2]
 	    x<-t(table(clLeg,clX)) #references is on the columns, alt on rows
 		if(is.null(legend.title)) legend.title<-colnames(object)[2]	
-		#browser()
+		
 	   	
 	    if(is.null(names(colPalette))) colPalette<-rep(colPalette,length=nrow(x))   
 		else colPalette<-colPalette[rownames(x)]

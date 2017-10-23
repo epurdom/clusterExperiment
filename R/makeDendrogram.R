@@ -100,7 +100,7 @@ setMethod(
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
-	#browser()
+	
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
     ch<-.checkDendrogram(x)
 	if(!is.logical(ch)) stop(ch)
@@ -142,7 +142,7 @@ setMethod(
     medoids <- do.call("rbind", by(t(x[,whRm]), clFactor, function(z){apply(z, 2, median)}))
     rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
-	#browser()
+	
     clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
     
     #############

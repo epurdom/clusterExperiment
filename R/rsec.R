@@ -49,7 +49,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
                     dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
                     mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
-					#browser()
+					
     if(run){
       ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,isCount=isCount)
     }
@@ -82,7 +82,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
 		 whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters else "clusterMany"
   ce<-do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1))
-#browser()
+
 	##makeDendrogram
   	args1<-list()
   	if("dendroReduce" %in% names(passedArgs)){

@@ -441,7 +441,7 @@ setMethod(
       if(any(!is.na(param[,"distFunction"]))){
         distParam<-unique(param[,c("dataset","distFunction")])
         distParam<-distParam[!is.na(distParam[,"distFunction"]),]
-        #browser()
+        
           allDist<-lapply(1:nrow(distParam),function(ii){
             distFun<-as.character(distParam[ii,"distFunction"])
             dataName<-as.character(distParam[ii,"dataset"])
@@ -459,7 +459,7 @@ setMethod(
       if(verbose) {
         cat("Running Clustering on Parameter Combinations...")
       }
-	  #browser()
+	  
       if(ncores>1) {
         out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
         nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))

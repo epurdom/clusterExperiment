@@ -257,7 +257,7 @@ setMethod(
 
     }
     else{
-       #browser()
+       
 	    outval<-plotClusters(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",sampleData=sampleData,clusterLabels=clusterLabels,...)
 
     }
@@ -348,7 +348,7 @@ setMethod(
 	    if(nrow(sampleData)!=nrow(object)) stop("sampleData must have same number of observations as clusterings")
 
 	  }
-	  #browser()
+	  
     clusters<-cbind(object,sampleData)
 	}
 	else clusters<-object
@@ -357,7 +357,7 @@ setMethod(
 		if(!clNames) clNames<-rep("",ncol(clusters))
 		else clNames<-colnames(clusters)
 	}
-	#browser()
+	
     if(length(clNames)!=ncol(clusters)){
 		if(is.null(clNames)){
 			clNames<-rep("",ncol(clusters))
@@ -384,9 +384,9 @@ setMethod(
 		  #align them, including "-1","-2" as a cluster. To DO: do this without -1/-2 so not lose a color to them.
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
-			#browser()
+			
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
-			  #browser()
+			  
 				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
@@ -482,7 +482,7 @@ setMethod(
 		tmp<-lapply(1:nrow(alignCl),function(i){unlist(alignCl[i,])})
 		index<-do.call("order",tmp)
 	}
-	#browser()
+	
 
 	if(plot) .clusterTrackingPlot(t(colorM[,index,drop=FALSE]),...)
 
