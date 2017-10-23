@@ -137,7 +137,7 @@ setMethod(
       if( name %in% varValues) nVarDims<<- ndims
       if(name =="PCA") nPCADims <<- ndims
     }
-    #browser()
+    
 
     lapply(c("PCA", varValues), checkValues)
 

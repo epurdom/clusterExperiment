@@ -450,6 +450,43 @@ setReplaceMethod(
     }
 )
 
+
+#' @aliases tableClusters
+#' @rdname ClusterExperiment-methods
+setMethod(
+  f = "tableClusters",
+  signature = signature(x = "ClusterExperiment",whichClusters="character"),
+  definition = function(x, whichClusters,...)
+  {
+	wh<-.TypeIntoIndices(x,whClusters=whichClusters)
+	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
+	return(tableClusters(x,whichClusters=wh,...))
+
+  })
+
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+    f = "tableClusters",
+    signature = signature(x = "ClusterExperiment",whichClusters="missing"),
+    definition = function(x, whichClusters,...)
+    {
+      tableClusters(x,whichClusters="primaryCluster")
+
+    })
+
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+  f = "tableClusters",
+  signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
+  definition = function(x, whichClusters,...)
+  { 
+	numCluster<-clusterMatrix(x)[,whichClusters]
+	table(data.frame(numCluster))
+})
+
+
 # # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of clusterMany (and compatible with it)
 # #' @rdname ClusterExperiment-class
 # setMethod(

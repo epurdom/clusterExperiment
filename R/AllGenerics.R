@@ -1,4 +1,10 @@
 setGeneric(
+  name = "tableClusters",
+  def=function(x,whichClusters,...){
+    standardGeneric("tableClusters")
+  }
+)
+setGeneric(
   name = "nodeMergeInfo",
   def=function(x,...){
     standardGeneric("nodeMergeInfo")

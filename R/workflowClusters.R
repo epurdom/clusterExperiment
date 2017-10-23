@@ -121,13 +121,13 @@ setMethod(
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
-    #browser()
+    
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
     newX<-.updateCurrentWorkflow(x,eraseOld=eraseOld,newToAdd=type)
     clusterTypes(newX)[whCl]<-type
     primaryClusterIndex(newX)<-whCl
-    #browser()
+    
     if(strsplit(clusterLabels(x)[whCl],"[.]")[[1]][1]==type){
       clusterLabels(newX)[whCl]<-type
     }
@@ -160,7 +160,7 @@ setMethod(
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(object,eraseOld,newToAdd){
-    #browser()
+    
     ppIndex<-workflowClusterDetails(object)
 	origLabels<-clusterLabels(object)
 	origTypes<-clusterTypes(object)
@@ -189,7 +189,7 @@ setMethod(
                     if(maxUpstream>newIteration) newIteration<-maxUpstream
                   }
                     whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
-                    #browser()
+                    
                     updateCluster<-origTypes
                     updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
                     clusterTypes(object)<-updateCluster

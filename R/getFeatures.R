@@ -231,7 +231,7 @@ setMethod(f = "getBestFeatures",
             } else {
               fitF <- NULL
             }
-            #browser()
+            
             if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
             tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
             tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
@@ -368,30 +368,42 @@ This makes sense only for counts.")
 	  stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
   }
   for(node in clusterNode){
-    #first remove tips of children nodes so all children of node are tips
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+    #first remove tips of children nodes so all children of node in question are tips
+    
+	desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0){
-      tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips"))))
+    while(length(whDescNodes)>0){
+      tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))) #internal ids, not names, and no names to it
       newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+      #redo to check fixed problem
+      desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+      whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     }
-    #redo to check fixed problem
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    if(length(whDescNodes)>0) stop("coding error -- didn't get rid of children nodes...")
 		
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
     newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
   }
 
+  ##################
   #Now need to change tip name to be that of the merge cluster
+  #Currently tips should be either 
+  #1) Name of combineMany cluster (i.e. integer) which needs to translate to a merge cluster
+  #2) Node name which now should be a merge cluster id
+  ##################
+  newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
+  #browser()
+
+  #Solve 1) First:
+  #Find the correspondence between old and new
+  #replace the old (i.e. non-nodes) with the new
   corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
-  newTips<-currTips<-phylobase::tipLabels(newPhylo4)
-  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original
+  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be 
   if(length(whOldCl)>0){
     newTips[whOldCl]<-corrsp[currTips[whOldCl]]
   }
+  ## Solve 2) Now:
+  ## should all be clusterNode
   if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
   mClusterNode<-match(clusterNode, currTips)
   newTips[mClusterNode]<-as.character(clusterId)
@@ -408,9 +420,11 @@ This makes sense only for counts.")
   mCl<-unique(mCl[mCl>0])
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-	  if(!all(sort(as.character(mCl))==sort(tipLabels(newPhylo4)))) stop("coding error -- names of new tips of tree do not match cluster ids")
-  newPhylo4<-.force.ultrametric(newPhylo4)
-  
+  if(!identical(sort(unname(as.character(mCl))),sort(unname(tipLabels(newPhylo4))))){
+	  stop("coding error -- names of new tips of tree do not match cluster ids")
+  }
+  return(newPhylo4)
+  #newPhylo4<-.force.ultrametric(newPhylo4) 
   #convert back to dendrogram class and return
   ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
   ## as.dendrogram(ape::as.hclust.phylo(object))
@@ -422,7 +436,6 @@ This makes sense only for counts.")
   # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
   # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
   # return(as.dendrogram(xxhclust))
-  return(newPhylo4)
   #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
 
 }
@@ -444,7 +457,7 @@ This makes sense only for counts.")
 
   #check didn't do something stupid:
   checkTipEdges<-phylobase::edgeId(tree,type="tip")
-  if(!all(sort(checkTipEdges)==sort(edgeIds))) stop("coding error -- didn't correctly get edge ids for tips")
+  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
 
   #replace with new edges:
 	allLen[edgeIds]<-allLen[edgeIds]+addValue

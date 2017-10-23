@@ -54,7 +54,7 @@ setMethod(
       for(ii in 1:length(mCl)){
         names(geneByContrast)<-gsub(mCl[[ii]],clMat[ii,"name"],names(geneByContrast))
       }
-      if(all(sort(names(geneByContrast))==sort(clMat[,"name"]))){
+      if(identical(sort(names(geneByContrast)),unname(sort(clMat[,"name"])))){
 		  colVect<-clMat[,"color"]
 		  names(colVect)<-names(geneByContrast)
       }

@@ -111,7 +111,7 @@ setMethod(
 	if(!"missingColor" %in% names(args) & any(legend[,"clusterIds"]== "-2")){
 		args$missingColor<-legend[legend[,"clusterIds"]== "-2","color"]
 	}
-	#browser()
+	
 	do.call("plotBarplot",c(list(object=clusterMat,colPalette=colPalette),args))
 
   })
@@ -148,7 +148,7 @@ setMethod(
 		clX<-object[,2]
 	    x<-t(table(clLeg,clX)) #references is on the columns, alt on rows
 		if(is.null(legend.title)) legend.title<-colnames(object)[2]	
-		#browser()
+		
 	   	
 	    if(is.null(names(colPalette))) colPalette<-rep(colPalette,length=nrow(x))   
 		else colPalette<-colPalette[rownames(x)]
@@ -193,7 +193,7 @@ setMethod(
 	    else{
 	            if(is.null(names(legNames))) stop("must give names to legNames that match values of reference cluster")
 	            if(length(legNames)!=ncol(x)) stop("Invalid reference cluster names -- not same length as number of reference clusters")
-	            if(!all(sort(names(legNames))==sort(colnames(x)))) stop("Invalid names for reference cluster names -- not match names of reference clusters")
+	            if(!identical(sort(names(legNames)),sort(colnames(x)))) stop("Invalid names for reference cluster names -- not match names of reference clusters")
 	            #put in same order
 	            legNames<-legNames[colnames(x)]
 	            labs<-paste(legNames," (",colnames(x),")",sep="")
@@ -211,7 +211,7 @@ setMethod(
 	    else{
 	            if(is.null(names(legNames))) stop("must give names to legNames that match values of reference cluster")
 	            if(length(legNames)!=ncol(x)) stop("Invalid reference cluster names -- not same length as number of reference clusters")
-	            if(!all(sort(names(legNames))==sort(names(x)))) stop("Invalid names for reference cluster names -- not match names of reference clusters")
+	            if(!identical(sort(names(legNames)),sort(names(x)))) stop("Invalid names for reference cluster names -- not match names of reference clusters")
 	            #put in same order
 	            legNames<-legNames[names(x)]
 	            labs<-paste(legNames," (",names(x),")",sep="")

@@ -152,7 +152,7 @@
 #' leafType="clusters",plotType="name")
 #'
 #' #compare merged to original
-#' table(primaryCluster(cl), primaryCluster(merged))
+#' tableClusters(merged,whichClusters=c("mergeClusters","clusterSingle"))
 #'
 #' @export
 #' @importFrom howmany howmany lowerbound
@@ -269,9 +269,9 @@ setMethod(f = "mergeClusters",
         stringsAsFactors = FALSE
       )
       #check same nodes and contrasts
-      if (!all(sort(nodePropTableGiven$Node) == sort(annotTable$Node)))
+      if (!identical(unname(sort(nodePropTableGiven$Node)),unname(sort(annotTable$Node))))
         stop("different nodes in nodePropTable than when calculated fresh")
-      if (!all(sort(nodePropTableGiven$Contrast) == sort(annotTable$Contrast)))
+      if (!identical(unname(sort(nodePropTableGiven$Contrast)), sort(unname(annotTable$Contrast))))
         stop("different contrast values in nodePropTable than when calculated fresh")
       whInGiven<-.availMergeMethods[sapply(.availMergeMethods,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
       whInGiven<-whInGiven[which(!whInGiven %in% whMethodCalculate)]
@@ -290,7 +290,7 @@ setMethod(f = "mergeClusters",
   #also determine whether node corresponds to a cluster in merge clusters
   if (mergeMethod != "none" &&
       length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
-    logicalMerge <- annotTable$Node %in% nodesToMerge
+	logicalMerge <- annotTable$Node %in% nodesToMerge
     #gives the names of original cluster ids
     corrspCluster <- sapply(annotTable$Node, function(node) {
       tips <- phylobase::descendants(phylo4Obj, node, type = c("tips")) #names of tips
@@ -335,7 +335,7 @@ setMethod(f = "mergeClusters",
     #check node identification from above
     nmerge<-apply(oldClToNew,2,function(x){sum(x>0)})
     clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
-    if(!all(sort(as.character(na.omit(nodePropTable$mergeClusterId)))==sort(clustersThatMerge))) stop("coding error -- wrong identification of merged clusters")
+    if(!identical(unname(sort(as.character(na.omit(nodePropTable$mergeClusterId)))),sort(unname(clustersThatMerge)))) stop("coding error -- wrong identification of merged clusters")
   }
   out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff,
             propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
@@ -350,8 +350,8 @@ setMethod(f = "mergeClusters",
         rownames(clMat)<-names(cl)	  	
       }
     }
-    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
-    else .plotDendro(dendro,leafType="clusters",mergeOutput=out,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
+    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
+    else .plotDendro(dendro,leafType="clusters",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
     
   }
   invisible(out)
@@ -452,9 +452,39 @@ This makes sense only for counts.")
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
     retval@merge_method<-outlist$mergeMethod
-    retval@merge_nodeMerge<-mergeTable
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
+	############## 
+	##The above can change the internal coding of the merge clusters (???Why???)
+	##Need to update the mergeTable to reflect this before save to object.
+	##Do this by matching the outlist$clustering to the new clustering
+	############## 
+	if(didMerge){ 
+		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
+		origOldToNew<-outlist$oldClToNew
+		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
+			#browser()
+			currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
+			#-----
+			##Match merge Ids in mergeTable to columns of origOldToNew
+			#-----
+			#get non NAs in mergeTable
+			whNotNAMerge<-which(!is.na(mergeTable$mergeClusterId))
+			idsInMergeTable<-mergeTable$mergeClusterId[whNotNAMerge]
+			#make origOldToNew only these ids in this order
+			origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
+			#make new merge table in same order as these ids by match columns to each other
+			mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
+			#currOldToNew<-currOldToNew[,mCols]
+			mergeTable$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+			
+		}
+		
+	}
+    retval@merge_nodeMerge<-mergeTable
+	
+		
+    ##Align the colors between mergeClusters and combineMany
     retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
     
   }
@@ -469,9 +499,7 @@ This makes sense only for counts.")
     
   }
   ch<-.checkMerge(retval)
-  if(!is.logical(ch)) stop(ch)
-  ##Align the colors between mergeClusters and combineMany
-  
+  if(!is.logical(ch)) stop(ch)  
   if(plot){
     dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
     # leg<-clusterLegend(retval)[[retval@dendro_index]]
@@ -503,7 +531,7 @@ This makes sense only for counts.")
   	# rownames(cl)<-colnames(retval)
   	# dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
   	if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
+  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
   }
   
   invisible(retval)

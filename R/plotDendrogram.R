@@ -36,6 +36,9 @@
 #'   available for 'ape' package >= 4.1-0.6).
 #' @param clusterLabelAngle angle at which label of cluster will be drawn. Only
 #'	 applicable if \code{plotType="colorblock"}.
+#' @param mergeInfo What kind of information about merge to plot on dendrogram. If not 
+#' equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
+#' creates.
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
@@ -63,11 +66,12 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  plotType=c("name","colorblock","ids"), main,sub,clusterLabelAngle=45,removeOutbranch=TRUE,legend='side',...)
+  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  plotType=c("name","colorblock","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main,sub,clusterLabelAngle=45,removeOutbranch=TRUE,legend='side',...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
     plotType<-match.arg(plotType)
+	mergeInfo<-match.arg(mergeInfo)
     whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
     if(leafType=="clusters" && whCl!=x@dendro_index){
@@ -90,7 +94,29 @@ setMethod(
       if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
     }
     label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
-    invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=leg,cl=cl,plotType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...))
+#   mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL, 
+
+	if(is.na(x@merge_dendrocluster_index)) mergeInfo<-"none"
+	if(mergeInfo=="none"){
+		mergeInfo<-NULL
+		mergeMethod<-NULL
+	}
+	else if(!is.na(x@merge_dendrocluster_index)){ #has node prop info, even if no merge cluster
+		if(mergeInfo=="mergeMethod"){
+			if(is.na(x@merge_index)){
+				warning("Cannot plot merge method because there is none. Plotting all")
+				mergeInfo<-"all"
+			}
+			else{
+				mergeMethod<-x@merge_method
+			}
+		}
+		else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from clusterExperiment object
+		else mergeMethod<-"none"
+	} else{
+		warning("There is no information about merging -- will ignore input to 'mergeInfo'")
+	}
+invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...))
     
   })
 
@@ -149,12 +175,11 @@ setMethod(
           #convert names of internal nodes for plotting
           #####
           #match to order of tree
-  	    sigInfo<-mergeOutput$propDE
-  	    whToMerge<-which(sigInfo$isMerged)
-  	    nodesToMerge<-as.character(sigInfo$Node[whToMerge])
-  	    methods<-colnames(sigInfo[,-c(1:3)])
-        m <- match( as.character(sigInfo$Node),phyloObj$node)
-  		if(any(is.na(m))) stop("some nodes in mergeOutput not in the given dendrogram")
+  	    whToMerge<-which(mergeOutput$isMerged)
+  	    nodesToMerge<-as.character(mergeOutput$Node[whToMerge])
+  	    methods<-colnames(mergeOutput[,-c(1:3)])
+        m <- match( as.character(mergeOutput$Node),phyloObj$node)
+  		if(any(is.na(m))) stop("some nodes in merge node info not in the given dendrogram")
         edgeLty <- rep(1, nrow(phyloObj$edge))
 		if(mergeMethod != "none" && length(whToMerge) > 0){
 		  #which of nodes merged
@@ -165,7 +190,7 @@ setMethod(
 		}
 		if(mergePlotType == "mergeMethod"){
 		  if(!mergeMethod %in% methods) stop("mergeMethod not in methods of output")
-		  valsNodes<-as.character(signif(sigInfo[,mergeMethod],2))
+		  valsNodes<-as.character(signif(mergeOutput[,mergeMethod],2))
 		  valsNodes[is.na(valsNodes)]<-"NA" #make them print out as NA -- otherwise doesn't plot
 		  phyloObj$node.label[m] <- valsNodes
 		  # offsetDivide<-3
@@ -173,7 +198,7 @@ setMethod(
 		}
 		if(mergePlotType %in% c("all",.availMergeMethods)) {
 		  	meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
-		  	phyloObj$node.label[m] <- apply(sigInfo[,meth,drop=FALSE],1, 
+		  	phyloObj$node.label[m] <- apply(mergeOutput[,meth,drop=FALSE],1, 
 			  function(x){
 		  		whKp<-which(!is.na(x))
 		  	  	vals<-paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")

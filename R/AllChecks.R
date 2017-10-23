@@ -51,13 +51,14 @@
     if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
       return("length of clusterInfo must be same as NCOL of the clusterMatrix")
     }
-        #check internally stored as integers
-        testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
+    #check internally stored as integers
+	testConsecIntFun<-function(x){
           whCl<-which(!x %in% c(-1,-2))
           uniqVals<-unique(x[whCl])
-          return(all(sort(uniqVals)==1:length(uniqVals)))
-        })
-     if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+          return(all(sort(unname(uniqVals))==1:length(uniqVals)))
+        }
+     testConsecIntegers<-apply(object@clusterMatrix,2,testConsecIntFun)
+	 if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
 	 
 	 return(TRUE)
 }
@@ -116,9 +117,10 @@
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
     if(!object@merge_method %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")))
 	allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','Node')
-    if(ncol(object@merge_nodeMerge)!=length(allowMergeColumns) || any(sort(colnames(object@merge_nodeMerge)) !=  sort(allowMergeColumns))) {
-      return(paste("merge_nodeMerge must have 4 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
-    }
+	
+	if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
+		      return(paste("merge_nodeMerge must have 4 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
+		}
     if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
     if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
     if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be character")
@@ -136,7 +138,7 @@
 	  
 	  }
     allowColumns<-c("Node","Contrast",.availMergeMethods)
-    if(ncol(object@merge_nodeProp)!=length(allowColumns) || any(sort(colnames(object@merge_nodeProp)) != sort(allowColumns) )) 
+    if(!identical(sort(colnames(object@merge_nodeProp)),sort(allowColumns)) ) 
     return(paste("merge_nodeProp must be data.frame with",length(allowColumns),"columns and column names equal to:",paste(allowColumns,sep="",collapse=",")))
     
     if(!is.character(object@merge_nodeProp[,"Node"])) return("'Node' column of merge_nodeProp must be character")

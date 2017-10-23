@@ -99,7 +99,7 @@ setMethod(f = "clusterContrasts",
 			  else phylo4Obj<-dendro
               clChar<-as.character(cl)
               allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]
-			  if(any(sort(allTipNames)!=sort(unique(clChar)))) stop("tip names of dendro don't match cluster vector values")
+			  if(!identical(sort(unname(allTipNames)),sort(unname(unique(clChar))))) stop("tip names of dendro don't match cluster vector values")
               
               #each internal node (including root) construct contrast between them.
               #(before just tested differences between them)

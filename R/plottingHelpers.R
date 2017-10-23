@@ -154,7 +154,7 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
 			#	  browser()
 			  uppQ<-if(isPositive) quantile(data[which(data>0)],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
 			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
-			  #browser()
+			  
 			  if(makeSymmetric & !isPositive & !isNegative){
 				  absq<-max(abs(c(lowQ,uppQ)),na.rm=TRUE)
 				  absm<-max(abs(c(min(data,na.rm=TRUE),max(data,na.rm=TRUE))))

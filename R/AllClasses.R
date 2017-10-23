@@ -284,7 +284,7 @@ setMethod(
            `clusters`")
     }
     #fix up names of clusters and match
-    #browser()
+    
     if(is.null(colnames(clusters))){
       colnames(clusters)<-paste("cluster",1:NCOL(clusters),sep="")
     }

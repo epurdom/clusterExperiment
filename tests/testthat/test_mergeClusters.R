@@ -104,7 +104,7 @@ test_that("saving merge info works",{
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged3@dendro_index+1)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged4@dendro_index)
   expect_equal(clustMerged4@merge_index,1)
-  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,1,3,NA))
+  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,2,1,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
   #check really gets clusterIds and not names
   clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6]

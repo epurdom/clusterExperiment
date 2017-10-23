@@ -8,8 +8,9 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
-  "ids"), main, sub, clusterLabelAngle = 45, removeOutbranch = TRUE,
-  legend = "side", ...)
+  "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
+  "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
+  removeOutbranch = TRUE, legend = "side", ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
@@ -33,6 +34,10 @@ dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
 of the cluster will be plotted, along with cluster name legend. If 'id' the
 internal clusterIds value will be plotted (only appropriate if 
 \code{leafType="clusters"}).}
+
+\item{mergeInfo}{What kind of information about merge to plot on dendrogram. If not 
+equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
+creates.}
 
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
