@@ -41,7 +41,7 @@ tm<-system.time(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=T
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
-				 ))
+				 )
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes"),file=outfile,append=TRUE)
