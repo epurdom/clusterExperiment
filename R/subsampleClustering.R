@@ -103,8 +103,10 @@ setMethod(
    signature = signature(clusterFunction = "ClusterFunction"),
 definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL, 
                               classifyMethod=c("All","InSample","OutOfSample"),
-                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,... )
+                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,... )
 {
+	## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
+#	doGC<-largeDataset & ncores>1
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
@@ -140,8 +142,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     perSample<-function(ids){
 		## Calls rm and gc frequently to free up memory 
 		## (mclapply child processes don't know when other processes are using large memory. )
-		## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
-		doGC<-largeDataset & ncores>1
+		
         ##----
         ##Cluster part of subsample
         ##----
