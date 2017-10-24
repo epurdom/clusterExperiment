@@ -2,13 +2,14 @@
 # If get that corrupted file, probably copied from laptop or elsewhere that only has tag
 # Do git lfs checkout L5_sumExp.rda
 library(devtools)
+library(profmem)
 load_all()
 #install.packages(pkgs="../../../clusterExperiment",repos=NULL,type="source")
 #library(clusterExperiment)
 load("L5_sumExp.rda")
 outpath<-"resultsDirectory"
 if(!file.exists(outpath)) dir.create(outpath)
-ncores<-1
+ncores<-5
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript clusterManyTest.R <tagString>' where <tagString> will be name on saved file of output.")
 tag<-args[1]

@@ -135,8 +135,12 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
     #-----
     # Function that calls the clustering for each subsample
+	# Called over a loop (lapply or mclapply)
     #-----
     perSample<-function(ids){
+		## Calls rm and gc frequently to free up memory 
+		## (mclapply child processes don't know when other processes are using large memory. )
+		
         ##----
         ##Cluster part of subsample
         ##----
@@ -145,6 +149,8 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
         argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"= (classifyMethod=="InSample") ))
         result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
+		rm(argsClusterList)
+		gc()
         
         ##----
         ##Classify part of subsample
@@ -152,10 +158,14 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         if(classifyMethod=="All"){
             argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)	 
             classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(clusterResult=result)))
+			rm(argsClassifyList)
+			gc()
         }
         if(classifyMethod=="OutOfSample"){
             argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 
             classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(clusterResult=result)))
+			rm(argsClassifyList)
+			gc()
             classX<-rep(NA,N)
             classX[-ids]<-classElse
         }
@@ -180,8 +190,11 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
                 
             }
         }
-        if(!largeDataset){ #current implementation
-            
+		#classX is length N
+        #classX has NA if method does not classify all of the data.
+		if(!largeDataset){ 
+			#current implementation
+			# returns TWO NxN matrices!!!
             D <- outer(classX, classX, function(a, b) a == b)
             Dinclude<-matrix(1,N,N)
             whNA<-which(is.na(classX))
@@ -194,8 +207,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
             return(list(D=D,Dinclude=Dinclude))
         }
         else{
-            #instead return one vector of indices and another indicating length 
-            #of each cluster vector, where ids in clusters are adjacent
+            #instead return 
+			# 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and 
+			# 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector), 
+			# What does this do with NAs? Removes them -- not included.
             clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
             clusterLengths<-tapply(1:N,classX,length)
             return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
@@ -229,6 +244,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         Dbar = DNum/DDenom
     }
     else{
+		#############
+		#Need to calculate number of times pairs together without building large NxN matrix
+		#############
+		
         otherIds<-function(idx,clustVec,clustLeng){
             m<-which(clustVec==idx)
             if(length(m)>1) stop("ids clustered in more than one cluster")
@@ -242,6 +261,11 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
             }
         }
         #Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
+		
+		#########
+		#For ii an index of a sample, calculates the number of times joint with every other sample with index > ii.
+		#clusterList is the results of subsampling, i.e. list with indices of clusters adjacent
+		#########
         searchForPairs<-function(ii,clusterList){
             #ii is an index. 
             # clusterList is a list of all the subsampled returns from the perSample
