@@ -140,7 +140,8 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     perSample<-function(ids){
 		## Calls rm and gc frequently to free up memory 
 		## (mclapply child processes don't know when other processes are using large memory. )
-		
+		## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
+		doGC<-largeDataset & ncores>1
         ##----
         ##Cluster part of subsample
         ##----
@@ -149,8 +150,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
         argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"= (classifyMethod=="InSample") ))
         result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
-		rm(argsClusterList)
-		gc()
+		if(doGC){
+			rm(argsClusterList)
+			gc()
+		}
         
         ##----
         ##Classify part of subsample
@@ -158,14 +161,18 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         if(classifyMethod=="All"){
             argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)	 
             classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(clusterResult=result)))
-			rm(argsClassifyList)
-			gc()
+			if(doGC){
+				rm(argsClassifyList)
+				gc()
+			}
         }
         if(classifyMethod=="OutOfSample"){
             argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])	 
             classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(clusterResult=result)))
-			rm(argsClassifyList)
-			gc()
+			if(doGC){
+				rm(argsClassifyList)
+				gc()
+			}
             classX<-rep(NA,N)
             classX[-ids]<-classElse
         }
