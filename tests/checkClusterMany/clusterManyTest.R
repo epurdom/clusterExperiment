@@ -8,7 +8,7 @@ load_all()
 load("L5_sumExp.rda")
 outpath<-"resultsDirectory"
 if(!file.exists(outpath)) dir.create(outpath)
-ncores<-5
+ncores<-1
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript clusterManyTest.R <tagString>' where <tagString> will be name on saved file of output.")
 tag<-args[1]
@@ -32,7 +32,8 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  seqArgs=list(beta=0.9,k.min=3,verbose=FALSE),
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
-tm<-system.time(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+sttm<-proc.time()
+pf<-profmem(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
@@ -42,9 +43,12 @@ tm<-system.time(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=T
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
 				 )
+endtm<-proc.time()
+tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
+if(ncores==1) cat(paste("Total memory:",total(pf),"Bytes\n"),file=outfile,append=TRUE)
 mat<-clusterMatrix(cl)
 row.names(mat)<-colnames(cl)
 matFile<-paste(nm,".txt",sep="")
