@@ -49,8 +49,8 @@ The constructor \code{clusterFunction} creates an object of the
  class \code{ClusterFunction}.
 }
 \details{
-\code{internalFunctionCheck} is the function that is called by the
-  validity check of the \code{clusterFunction} constructor (if
+\code{internalFunctionCheck} is the function that is called by the 
+  validity check of the \code{clusterFunction} constructor (if 
   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
   to be able to test their functions and debug them, which is difficult to do
   with a S4 validity function.

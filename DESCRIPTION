@@ -60,6 +60,7 @@ Collate:
     'clusterSingle.R'
     'combineMany.R'
     'dataCreation.R'
+    'dimReduce.R'
     'getFeatures.R'
     'getParams.R'
     'mainClustering.R'
@@ -79,4 +80,3 @@ Collate:
     'subsampleClustering.R'
     'transformFunction.R'
     'workflowClusters.R'
-    'dimReduce.R'
