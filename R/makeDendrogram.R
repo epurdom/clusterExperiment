@@ -38,7 +38,8 @@
 #' return a dendrogram with less samples than \code{NCOL(x)}, which is not
 #' permitted for the \code{@dendro_samples} slot.
 #'
-#'
+#' @details If any merge information is stored in the input object, it will be
+#'   erased by a call to mergeDendrogram.
 #' @return If x is a matrix, a list with two dendrograms, one in which the
 #' leaves are clusters and one in which the leaves are samples. If x is a
 #' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
@@ -55,15 +56,15 @@
 #' #create dendrogram of clusters:
 #' hcl <- makeDendrogram(cl)
 #' plotDendrogram(hcl)
-#' plotDendrogram(hcl, leafType="samples",labelType="colorblock")
+#' plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 #'
 #' @name makeDendrogram
 #' @rdname makeDendrogram
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("none", "PCA", "var","cv","mad"),
-                        ndims=NA,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","cv","var","PCA","none"),
+                        ndims=if(dimReduce%in%c("mad","cv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
@@ -71,6 +72,9 @@ setMethod(
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
 #    browser()
     cl<-clusterMatrix(x)[,whCl]
+    ##erase merge information
+    if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
+    
 	#cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
     ########
     ##Transform the data
@@ -96,9 +100,10 @@ setMethod(
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
-	#browser()
+	
 	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
-    validObject(x)
+    ch<-.checkDendrogram(x)
+	if(!is.logical(ch)) stop(ch)
     return(x)
   })
 
@@ -137,7 +142,7 @@ setMethod(
     medoids <- do.call("rbind", by(t(x[,whRm]), clFactor, function(z){apply(z, 2, median)}))
     rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
-	#browser()
+	
     clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
     
     #############

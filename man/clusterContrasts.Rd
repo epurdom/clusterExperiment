@@ -27,7 +27,8 @@ each cluster to the average of all others.}
 version to the most basic numeric version.}
 
 \item{dendro}{The dendrogram to traverse if contrastType="Dendro". Note that this
-should be the dendrogram of the clusters, not of the individual samples.}
+should be the dendrogram of the clusters, not of the individual samples,  
+either of class "dendrogram" or "phylo4"}
 
 \item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise
 contrasts (must match to elements of cl). If NULL, will do all pairwise of

@@ -16,11 +16,12 @@
   transFun = NULL, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
-  clusterSamplesData = c("hclust", "dendrogramValue", "orderSamplesValue",
+  clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
   "primaryCluster"), clusterFeaturesData = c("var", "all", "PCA"),
   nFeatures = NULL, visualizeData = c("transformed", "centeredAndScaled",
   "original"), whichClusters = c("primary", "workflow", "all", "none"),
-  sampleData = NULL, clusterFeatures = TRUE, colorScale, ...)
+  sampleData = NULL, clusterFeatures = TRUE, nBlankLines = 2, colorScale,
+  ...)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
@@ -32,7 +33,7 @@
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
-  isSymmetric = FALSE, overRideClusterLimit = FALSE, ...)
+  isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data,
   invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
@@ -56,11 +57,12 @@ before clustering.}
 For the other signatures, passed to the method for signature \code{matrix}.
 Not all arguments can be passed to \code{aheatmap} effectively, see details.}
 
-\item{clusterSamplesData}{If \code{data} is a matrix, either a matrix that
-will be used to in \code{hclust} to define the hiearchical clustering of
-samples (e.g. normalized data) or a pre-existing dendrogram that clusters
-the samples. If \code{data} is a \code{ClusterExperiment} object, the input
-should be either character or integers or logical. Indicates how (and
+\item{clusterSamplesData}{If \code{data} is a matrix,
+\code{clusterSamplesData} is either a matrix that will be used by
+\code{hclust} to define the hiearchical clustering of samples (e.g.
+normalized data) or a pre-existing dendrogram that clusters the samples. If
+\code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
+should be either character or integers or logical which indicates how (and
 whether) the samples should be clustered (or gives indices of the order for
 the samples). See details.}
 
@@ -97,6 +99,8 @@ indicates the sample was not assigned to a cluster and gets color
 \item{clusterFeatures}{Logical as to whether to do hiearchical clustering of
 features (if FALSE, any input to clusterFeaturesData is ignored).}
 
+\item{nBlankLines}{Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).}
+
 \item{colorScale}{palette of colors for the color scale of the heatmap.}
 
 \item{whSampleDataCont}{Which of the \code{sampleData} columns are continuous
@@ -117,7 +121,13 @@ cells (if FALSE, any input to clusterSamplesData is ignored).}
 \code{sampleData}. Each element of the list should be a either the format
 requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
 corresponding to the levels of the column of \code{sampleData}), or should
-be format of \code{ClusterExperiment}.}
+be format of \code{ClusterExperiment}. This takes the place of argument
+\code{annColors} from \code{aheatmap}. Color assignments to the rows/genes
+should also be passed via \code{clusterLegend} (assuming \code{annRow} is
+an argument passed to \code{...}). If \code{clusterFeaturesData} is a
+\emph{named} list describing groupings of genes (see details) then the colors
+for those groups can be given in \code{clusterLegend} under the name
+"Gene Group".}
 
 \item{alignSampleData}{Logical as to whether should align the colors of the
 \code{sampleData} (only if \code{clusterLegend} not given and
@@ -142,8 +152,16 @@ that only allows 10 clusterings/annotations. If overridden, may result in
 incomprehensible errors from \code{aheatmap}. Only override this if you have a
 very large plotting device and want to see if \code{aheatmap} can render it.}
 
+<<<<<<< HEAD
 \item{invert}{logical determining whether the coClustering matrix should be
 inverted to be 1-coClustering for plotting. By default, if the diagonal
+=======
+\item{plot}{logical indicating whether to plot the heatmap. Mainly useful for
+package mantaince to avoid calls to aheatmap on unit tests that take a long time.}
+
+\item{invert}{logical determining whether the coClustering matrix should be
+inverted to be 1-coClustering for plotting. By default, if the diagonal
+>>>>>>> master
 elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
 coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
 output from \code{\link{clusterSingle}}, then the user should manually set
@@ -195,16 +213,23 @@ If \code{data} is a \code{ClusterExperiment} object,
 If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterSamplesData} can be used to indicate the type of clustering
   for the samples. If equal to `dendrogramValue` the dendrogram stored in
-  \code{data} will be used; if missing, a new one will be created based on
-  the \code{primaryCluster} of data. If equal to "hclust", then standard
+  \code{data} will be used; if dendrogram is missing, a new one will be
+  created based on the \code{primaryCluster} of data using
+  \code{\link{makeDendrogram}}, assuming no errors are created (if errors are
+  created, then \code{clusterSamplesData} will be set to "primaryCluster").
+  If \code{clusterSamplesData} is equal to "hclust", then standard
   hierachical clustering of the transformed data will be used. If
-  'orderSamplesValue' no clustering of the samples will be done, and instead
-  the samples will be ordered as in the slot \code{orderSamples} of
-  \code{data}. If equal to 'primaryCluster', again no clustering will be
-  done, and instead the samples will be ordered based on grouping the samples
-  to match the primaryCluster of \code{data}. If not one of these values,
-  \code{clusterSamplesData} can be a character vector matching the
-  clusterLabels (colnames of clusterMatrix).
+  \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of
+  the samples will be done, and instead the samples will be ordered as in the
+  slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is
+  equal to 'primaryCluster', again no clustering will be done, and instead
+  the samples will be ordered based on grouping the samples to match the
+  primaryCluster of \code{data}; however, if the primaryCluster of
+  \code{data} is only one cluster or consists soley of -1/-2 values,
+  \code{clusterSamplesData} will be set to "hclust". If
+  \code{clusterSamplesData}  is not a character value,
+  \code{clusterSamplesData} can be a integer valued vector giving the order
+  of the samples.
 
 If \code{data} is a matrix, then \code{sampleData} is a data.frame
   of annotation data to be plotted above the heatmap and
@@ -323,7 +348,7 @@ Upper Limit")
 
 }
 \seealso{
-\code{\link[NMF]{aheatmap}}
+\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
 }
 \author{
 Elizabeth Purdom

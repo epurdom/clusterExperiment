@@ -5,17 +5,39 @@
 \alias{mergeClusters,matrix-method}
 \alias{mergeClusters}
 \alias{mergeClusters,ClusterExperiment-method}
+\alias{nodeMergeInfo,ClusterExperiment-method}
+\alias{nodeMergeInfo}
+\alias{mergeCutoff,ClusterExperiment-method}
+\alias{mergeCutoff}
+\alias{mergeMethod,ClusterExperiment-method}
+\alias{mergeMethod}
+\alias{mergeClusterIndex,ClusterExperiment-method}
+\alias{mergeClusterIndex}
+\alias{getMergeCorrespond,ClusterExperiment-method}
+\alias{getMergeCorrespond}
 \title{Merge clusters based on dendrogram}
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC",
-  "mergeMethod"), cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
+  "mergeMethod"), nodePropTable = NULL, calculateAll = TRUE,
+  showWarnings = FALSE, cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
   clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
-  labelType = c("colorblock", "name", "ids"), plot = TRUE, ...)
+  plotType = c("colorblock", "name", "ids"), plot = TRUE, ...)
+
+\S4method{nodeMergeInfo}{ClusterExperiment}(x)
+
+\S4method{mergeCutoff}{ClusterExperiment}(x)
+
+\S4method{mergeMethod}{ClusterExperiment}(x)
+
+\S4method{mergeClusterIndex}{ClusterExperiment}(x)
+
+\S4method{getMergeCorrespond}{ClusterExperiment}(x, by = c("merge",
+  "original"))
 }
 \arguments{
 \item{x}{data to perform the test on. It can be a matrix or a 
@@ -44,6 +66,25 @@ proportions will be added to the dendrogram. 'plotInfo' can also be one of
 the mergeMethod choices (even if that method is not the method chosen in
 'mergeMethod' options).}
 
+\item{nodePropTable}{Only for matrix version. Matrix of results from previous
+run of \code{mergeClusters} as returned by matrix version of
+\code{mergeClusters}. Useful if just want to change the cutoff. Not
+generally intended for user but used internally by package.}
+
+\item{calculateAll}{logical. Whether to calculate the estimates for all 
+methods. This reduces computation costs for any future calls to 
+\code{mergeClusters} since the results can be passed to future calls of
+\code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
+automatically).}
+
+\item{showWarnings}{logical. Whether to show warnings given by the methods. 
+The 'locfdr' method in particular frequently spits out warnings (which may 
+indicate that its estimates are not reliable). Setting 
+\code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+default to avoid large number of warnings being produced by "locfdr", but
+users may want to be more careful to check the warnings for themselves.}
+
 \item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two 
 clusters with the proportion of DE below cutoff will be merged. Must be a 
 value between 0, 1, where lower values will make it harder to merge 
@@ -58,7 +99,8 @@ details.}
 \item{...}{for signature \code{matrix}, arguments passed to the 
 \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 For signature \code{ClusterExperiment} arguments passed to the method for 
-signature \code{matrix} and then onto \code{\link{plot.phylo}}.}
+signature \code{matrix} and then if do not match those arguments, will be 
+passed onto \code{\link{plot.phylo}}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
@@ -75,11 +117,15 @@ the result of a call to mergeClusters (only if x is a ClusterExperiment object)}
 samples. Choosing 'samples' allows for visualization of how many samples 
 are in the merged clusters (only if x is a ClusterExperiment object), which
 is the main difference between choosing "clusters" and "samples",
-particularly if \code{labelType="colorblock"}}
+particularly if \code{plotType="colorblock"}}
 
-\item{labelType}{if plotting, then whether leaves of dendrogram should be
+\item{plotType}{if plotting, then whether leaves of dendrogram should be
 labeled by rectangular blocks of color ("colorblock")  or with the names of
 the leaves ("name") (only if x is a ClusterExperiment object).}
+
+\item{by}{indicates whether output from \code{getMergeCorrespond} should be
+a vector/list with elements corresponding to merge cluster ids or elements
+corresponding to the original clustering ids. See return value for details.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements 
@@ -89,11 +135,44 @@ If `x` is a matrix, it returns (invisibly) a list with elements
   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
   the proportions that are DE on each node.} 
   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
-  was based (based on the original clustering).} }
+  was based (based on the original clustering).} 
+  \item{\code{cutoff}}{ The cutoff value for merging.} }
 
 If `x` is a \code{\link{ClusterExperiment}}, it returns a new 
   \code{ClusterExperiment} object with an additional clustering based on the 
   merging. This becomes the new primary clustering.
+
+\code{nodeMergeInfo} returns information collected about the nodes
+  during merging as a data.frame with the following entries:
+\itemize{ \item{\code{Node}}{ Name of the node} 
+\item{\code{Contrast}}{The
+contrast compared at each node, in terms of the cluster ids} 
+\item{\code{isMerged}}{ Logical as to whether samples from that node which were
+merged into one cluster during merging} 
+\item{\code{mergeClusterId}}{ If a
+node corresponds to a new, merged cluster, gives the cluster id it
+corresponds to. Otherwise NA} 
+\item{\code{...}}{The remaining columns give
+the estimated proportion of genes differentially expressed for each method. A
+column of NAs means that the method in question hasn't been calculated yet.}
+}
+
+\code{mergeCutoff} returns the cutoff used for the current merging.
+
+\code{mergeMethod} returns the method used for the current merge.
+
+\code{mergeClusterIndex} returns the index of the clustering used for the current merge.
+
+\code{getMergeCorrespond} returns the correspondence between the
+  merged cluster and its originating cluster. If \code{by="original"} returns
+  a named vector, where the names of the vector are the cluster ids of the
+  originating cluster and the values of the vector are the cluster ids of the
+  merged cluster. If \code{by="merge"} the results returned are organized by
+  the merged clusters. This will generally be a list, with the names of the
+  list equal to the clusterIds of the merge clusters and the entries the
+  clusterIds of the originating clusters. However, if there was no merging
+  done (so that the clusters are identical) the output will be a vector like
+  with \code{by="original"}.
 }
 \description{
 Takes an input of hierarchical clusterings of clusters and 
@@ -101,19 +180,9 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
-If  \code{isCount=TRUE}, and the input is a matrix, \code{log2(count
-  + 1)} will be used for \code{\link{makeDendrogram}} and the original data
-  with voom correction will be used in \code{\link{getBestFeatures}}). If
-  input is \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE}
-  also means that the log2(1+count) will be used as the transformation, like
-  for the matrix case as well as the voom calculation, and will NOT use the 
-  transformation stored in the object. If FALSE, then transform(x) will be 
-  given to the input and will be used for both \code{makeDendrogram} and 
-  \code{getBestFeatures}, with no voom correction.
-
-"Storey" refers to the method of Storey (2002). "PC" refers to the 
-method of Pounds and Cheng (2004). "JC" refers to the method of 
-Ji and Cai (2007), and implementation 
+\strong{Estimation of Proportion non-null} "Storey" refers to the
+  method of Storey (2002). "PC" refers to the method of Pounds and Cheng
+  (2004). "JC" refers to the method of Ji and Cai (2007), and implementation 
   of "JC" method is copied from code available on Jiashin Ji's website, 
   December 16, 2015 
   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
@@ -123,12 +192,34 @@ Ji and Cai (2007), and implementation
   refers to the proportion of genes that are found significant based on a FDR
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
-If \code{mergeMethod} is not equal to 'none' then the plotting will 
-  indicate where the clusters will be merged (assuming \code{plotInfo} is not
-  'none'). Note setting both 'mergeMethod' and 'plotInfo' to 'none' will
-  cause function to stop, because nothing is asked to be done. If you just
-  want plot of the dendrogram, with no merging performed or demonstrated on
-  the plot, see \code{\link{plotDendrogram}}.
+\strong{Count correction} If  \code{isCount=TRUE}, and the input is
+  a matrix, \code{log2(count + 1)} will be used for
+  \code{\link{makeDendrogram}} and the original data with voom correction
+  will be used in \code{\link{getBestFeatures}}). If input is
+  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
+  means that the log2(1+count) will be used as the transformation, like for
+  the matrix case as well as the voom calculation, and will NOT use the 
+  transformation stored in the object. If FALSE, then transform(x) will be 
+  given to the input and will be used for both \code{makeDendrogram} and 
+  \code{getBestFeatures}, with no voom correction.
+
+\strong{Control of Plotting} If \code{mergeMethod} is not equal to 
+  'none' then the plotting will indicate where the clusters will be merged by
+  making dotted lines of edges that are merged together (assuming 
+  \code{plotInfo} is not 'none'). \code{plotInfo} controls simultaneously 
+  what information will be plotted on the nodes as well as whether the dotted
+  lines will be shown for the merged cluster. Notice that the choice of 
+  \code{plotInfo} (as long as it is not 'none') has no effect on how the 
+  dotted edges are drawn -- they are always drawn based on the 
+  \code{mergeMethod}. If you choose \code{plotInfo} to not be equal to the 
+  \code{mergeMethod}, then you will have a confusing picture where the dotted
+  edges will be based on the clustering created by \code{mergeMethod} while
+  the information on the nodes is based on a different method. Note that you
+  can override \code{plotInfo} by setting \code{show.node.label=FALSE}
+  (passed to plot.phylo), so that no information is plotted on the nodes, but
+  the dotted edges are still drawn. If you just want plot of the dendrogram,
+  with no merging performed nor demonstrated on the plot, see
+  \code{\link{plotDendrogram}}.
 
 If the dendrogram was made with option
   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
@@ -136,6 +227,21 @@ If the dendrogram was made with option
   \code{leafType='samples'}. This is because the current code cannot reliably
   link up the internal nodes of the sample dendrogram to the internal nodes
   of the cluster dendrogram when the unassigned samples are intermixed.
+
+When the input is a \code{ClusterExperiment} object, the function
+    attempts to update the merge information in that object. This is done by
+    checking that the existing dendrogram stored in the object  (and run on
+    the clustering stored in the slot \code{dendro_index}) is the same
+    clustering that is stored in the slot \code{merge_dendrocluster_index}.
+    For this reason, new calls to \code{\link{makeDendrogram}} will erase the merge
+    information saved in the object.
+
+If \code{mergeClusters} is run with \code{mergeMethod="none"}, the
+  function may still calculate the proportions per node if \code{plotInfo} is
+  not equal to "none" or \code{calculateAll=TRUE}. If the input object was a
+  \code{ClusterExperiment} object, the resulting information will be still
+  saved, though no new clustering was created; if there was not an existing
+  merge method, the slot \code{merge_dendrocluster_index} will be updated.
 }
 \examples{
 data(simData)
@@ -159,10 +265,10 @@ mergeMethod="adjP", use.edge.length=FALSE)
 #Simpler plot with just dendrogram and single method
 merged <- mergeClusters(cl, plotInfo="mergeMethod",
 mergeMethod="adjP", use.edge.length=FALSE,
-leafType="clusters",label="name")
+leafType="clusters",plotType="name")
 
 #compare merged to original
-table(primaryCluster(cl), primaryCluster(merged))
+tableClusters(merged,whichClusters=c("mergeClusters","clusterSingle"))
 
 }
 \references{

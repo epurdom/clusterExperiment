@@ -30,7 +30,10 @@ clusterExperiment(se, clusters, ...)
   transformation, primaryIndex = 1, clusterTypes = "User",
   clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
   dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
-  coClustering = NULL)
+  coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
+  merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
+  merge_nodeMerge = NULL, merge_method = NA_character_,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{se}{a matrix, \code{SingleCellExperiment} or \code{SummarizedExperiment}
@@ -61,14 +64,29 @@ Slots).}
 
 \item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
 
-\item{dendro_index}{numeric. Sets the dendro_index slot (see Slots).}
+\item{dendro_index}{numeric. Sets the \code{dendro_index} slot (see Slots).}
 
 \item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
 Slots).}
 
-\item{dendro_outbranch}{logical. Sets the dendro_outbranch slot (see Slots).}
+\item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see Slots).}
 
-\item{coClustering}{matrix. Sets the `coClustering` slot (see Slots).}
+\item{coClustering}{matrix. Sets the \code{coClustering} slot (see Slots).}
+
+\item{merge_index}{integer. Sets the \code{merge_index} slot (see Slots)}
+
+\item{merge_cutoff}{numeric. Sets the \code{merge_cutoff} slot (see Slots)}
+
+\item{merge_dendrocluster_index}{integer. Sets the \code{merge_dendrocluster_index} slot (see Slots)}
+
+\item{merge_nodeProp}{data.frame. Sets the \code{merge_nodeProp} slot (see Slots)}
+
+\item{merge_nodeMerge}{data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)}
+
+\item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
+
+\item{checkTransformAndAssay}{logical. Whether to check the content of the
+assay and given transformation function for whether they are valid.}
 }
 \value{
 A \code{ClusterExperiment} object.
@@ -97,9 +115,16 @@ Note that when subsetting the data, the co-clustering and
 dendrogram information are lost.
 }
 \details{
-The \code{clusterExperiment} constructor function gives clusterLabels
- based on the column names of the input matrix/SummarizedExperiment. If
- missing, will assign labels "cluster1","cluster2", etc.
+The \code{clusterExperiment} constructor function gives
+  clusterLabels based on the column names of the input
+  matrix/SummarizedExperiment. If missing, will assign labels
+  "cluster1","cluster2", etc.
+
+Note that the validity check when creating a new
+  \code{ClusterExperiment} object with \code{new} is less extensive than when
+  using \code{clusterExperiment} function with
+  \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
+  \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 }
 \section{Slots}{
 
@@ -119,7 +144,23 @@ labels.}
 \item{\code{clusterInfo}}{list. A list with info about the clustering.
 If created from \code{\link{clusterSingle}}, clusterInfo will include the
 parameter used for the call, and the call itself. If \code{sequential = TRUE}
-it will also include the following components.
+it will also include the following components.}
+
+\item{\code{merge_index}}{index of the current merged cluster}
+
+\item{\code{merge_cutoff}}{value for the cutoff used to determine whether to merge
+clusters}
+
+\item{\code{merge_dendrocluster_index}}{index of the cluster merged with the current
+merge}
+
+\item{\code{merge_nodeMerge}}{data.frame of information about nodes merged in the
+current merge}
+
+\item{\code{merge_nodeProp}}{data.frame of information of proportion estimated
+non-null at each node of dendrogram}
+
+\item{\code{merge_method}}{character indicating method used for merging
 \itemize{
 \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
 found, a matrix of information regarding the algorithm behavior for each

@@ -1,8 +1,11 @@
+#' @include AllChecks.R
 setOldClass("dendrogram")
+setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
-setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
+setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
+setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
@@ -35,6 +38,16 @@ setClassUnion("functionOrNULL",members=c("function", "NULL"))
 #' If created from \code{\link{clusterSingle}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
+#' @slot merge_index index of the current merged cluster
+#' @slot merge_cutoff value for the cutoff used to determine whether to merge
+#'   clusters
+#' @slot merge_dendrocluster_index index of the cluster merged with the current
+#'   merge
+#' @slot merge_nodeMerge data.frame of information about nodes merged in the
+#'   current merge
+#' @slot merge_nodeProp data.frame of information of proportion estimated
+#'   non-null at each node of dendrogram
+#' @slot merge_method character indicating method used for merging
 #' \itemize{
 #' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
 #' found, a matrix of information regarding the algorithm behavior for each
@@ -91,175 +104,42 @@ setClass(
 	dendro_outbranch = "logical",
     coClustering = "matrixOrNULL",
     clusterLegend="list",
-    orderSamples="numeric"
+    orderSamples="numeric",
+	merge_index="numeric",
+	merge_dendrocluster_index="numeric",
+	merge_method="character",
+	merge_cutoff="numeric",
+	merge_nodeProp="data.frameOrNULL",
+	merge_nodeMerge="data.frameOrNULL"
+
     )
 )
 
-## One question is how to extend the "[" method, i.e., how do we subset the co-occurance matrix and the dendrogram?
-## For now, if subsetting, these are lost, but perhaps we can do something smarter?
-
 setValidity("ClusterExperiment", function(object) {
-
-  if(length(assays(object)) < 1) {
-    return("There must be at least one assay slot.")
-  }
-  if(!is.numeric(assay(object))) {
-    return("The data must be numeric.")
-  }
-  if(any(is.na(assay(object)))) {
-    return("NA values are not allowed.")
-  }
-  tX <- try(transform(object),silent=TRUE)
-  if(inherits(tX, "try-error")){
-    stop("User-supplied `transformation` produces error on the input data matrix")
-  }
-  if(any(is.na(tX))) {
-    return("NA values after transforming data matrix are not allowed.")
-  }
-
-  if(!all(is.na((object@clusterMatrix))) &
-     !(NROW(object@clusterMatrix) == NCOL(object))) {
-    return("If present, `clusterMatrix` must have as many row as cells.")
-  }
-  if(!is.numeric(object@clusterMatrix)) {
-    return("`clusterMatrix` must be a numeric matrix.")
-  }
-
-  if(NCOL(object@clusterMatrix)!= length(object@clusterTypes)) {
-    return("length of clusterTypes must be same as NCOL of the clusterMatrix")
-  }
-
-  if(NCOL(object@clusterMatrix)!= length(object@clusterInfo)) {
-    return("length of clusterInfo must be same as NCOL of the clusterMatrix")
-  }
-
-  if(!all(rownames(object@clusterMatrix) == colnames(object))) {
-    return("clusterMatrix must have rownames equal to colnames of object")
-  }
-
-  ############
-  ##Check dendrogram slotNames
-  ############
-  #browser()
-  if(!is.null(object@dendro_samples)){
-    if(nobs(object@dendro_samples) != NCOL(object)) {
-      return("dendro_samples must have the same number of leaves as the number of samples")
-    }
-	if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
-  }
-  else{
-    if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null")
-	if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
-  }
-  if(!is.null(object@dendro_clusters)){
-    if(is.na(dendroClusterIndex(object))) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
-    dcluster<-clusterMatrix(object)[,dendroClusterIndex(object)]
-    if(nobs(object@dendro_clusters) != max(dcluster)) {
-      return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
-    }
-  }
-  else{
-    if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null")
-  }
-  ## Check co-clustering
-  if(!is.null(object@coClustering) &&
-     (NROW(object@coClustering) != NCOL(object@coClustering)
-      | NCOL(object@coClustering) != NCOL(object))) {
-    return("`coClustering` must be a sample by sample matrix.")
-  }
-  ## If have a cluster matrix
-  if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-    #check primary index
-    if(length(object@primaryIndex) != 1) {
-        if(length(object@primaryIndex) == 0) return("If more than one set of clusterings, a primary cluster must
-               be specified.")
-        if(length(object@primaryIndex) > 0) return("Only a single primary index may be specified")
-    }
-    if(object@primaryIndex > NCOL(object@clusterMatrix) |
-       object@primaryIndex < 1) {
-      return("`primaryIndex` out of bounds.")
-    }
-    #check clusterTypes
-    if(NCOL(object@clusterMatrix) != length(object@clusterTypes)) {
-      return("`clusterTypes` must be the same length as NCOL of
-               `clusterMatrix`.")
-    }
-    #check internally stored as integers
-    testConsecIntegers<-apply(object@clusterMatrix,2,function(x){
-      whCl<-which(!x %in% c(-1,-2))
-      uniqVals<-unique(x[whCl])
-      return(all(sort(uniqVals)==1:length(uniqVals)))
-    })
-    #browser()
-    if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
-
     ####
-    #test that colnames of clusterMatrix appropriately aligns with everything else
+    #test that clusterInfo not have names
     ####
-    if(is.null(colnames(object@clusterMatrix))) return("clusterMatrix must have column names")
-    if(any(duplicated(colnames(object@clusterMatrix)))) return("clusterMatrix must have unique column names")
-    if(!is.null(names(object@clusterTypes))) return("clusterTypes should not have names")
     if(!is.null(names(object@clusterInfo))) return("clusterInfo should not have names")
-    if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
-    ####
-    #test that @clusterLegend is proper form
-    ####
-    if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
-      return("`clusterLegend` must be list of same length as NCOL of
-               `clusterMatrix`")
-    }
-    testIsMatrix <- sapply(object@clusterLegend,
-                           function(x) {!is.null(dim(x))})
-    if(!all(testIsMatrix)) {
-      return("Each element of `clusterLegend` list must be a matrix")
-    }
-    testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
-    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {
-      length(unique(x))})
-    if(!all(testColorRows == testClusterMat)) {
-      return("each element of `clusterLegend` must be matrix with number of
-               rows equal to the number of clusters (including -1 or -2 values)
-               in `clusterMatrix`")
-    }
-    testColorCols1 <- sapply(object@clusterLegend, function(x) {
-      "color" %in% colnames(x)})
-    testColorCols2 <- sapply(object@clusterLegend, function(x) {
-      "clusterIds" %in% colnames(x)})
-    testColorCols3 <- sapply(object@clusterLegend, function(x) {
-      "name" %in% colnames(x)})
-    if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
-      return("each element of `clusterLegend` must be matrix with at least 3
-             columns, and at least 3 columns have names `clusterIds`,
-             `color` and `name`")
-    }
-#     testUniqueName <- sapply(object@clusterLegend, function(x) {
-#       any(duplicated(x[,"name"]))})
-#     if(any(testUniqueName)) return("the column")
-    testColorCols1 <- sapply(object@clusterLegend, function(x){is.character(x)})
-    if(!all(testColorCols1)) {
-      return("each element of `clusterLegend` must be matrix of character
-             values")
-    }
-    testColorCols1 <- sapply(1:length(object@clusterLegend), function(ii){
-      col<-object@clusterLegend[[ii]]
-      x<-object@clusterMatrix[,ii]
-      y<-as.numeric(col[,"clusterIds"])
-      all(y %in% x)
-    })
-    if(!all(testColorCols1)) {
-      return("each element of `clusterLegend` must be matrix with column
-             `clusterIds` matching the corresponding integer valued
-             clusterMatrix values")
-    }
-  }
-  if(length(object@orderSamples)!=NCOL(assay(object))) {
-    return("`orderSamples` must be of same length as number of samples
-         (NCOL(assay(object)))")
-  }
-  if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) {
-    return("`orderSamples` must be values between 1 and the number of samples.")
-  }
-  return(TRUE)
+
+	ch<-.checkClusterMatrix(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkPrimaryIndex(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkClusterTypes(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkClusterLegend(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkOrderSamples(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkClusterLabels(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkMerge(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkDendrogram(object)
+	if(!is.logical(ch))  return(ch)
+	ch<-.checkCoClustering(object)
+	if(!is.logical(ch))  return(ch)
+	return(TRUE)
 })
 
 #' @description The constructor \code{clusterExperiment} creates an object of
@@ -354,27 +234,48 @@ setMethod(
 #'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
 #'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
 #'  Slots).
-#'@param dendro_index numeric. Sets the dendro_index slot (see Slots).
-#' @param dendro_outbranch logical. Sets the dendro_outbranch slot (see Slots).
-#'@param coClustering matrix. Sets the `coClustering` slot (see Slots).
-#'@details The \code{clusterExperiment} constructor function gives clusterLabels
-#'  based on the column names of the input matrix/SummarizedExperiment. If
-#'  missing, will assign labels "cluster1","cluster2", etc.
+#' @param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
+#' @param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see Slots).
+#' @param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
+#' @param checkTransformAndAssay logical. Whether to check the content of the
+#'   assay and given transformation function for whether they are valid.
+#' @param merge_index integer. Sets the \code{merge_index} slot (see Slots)
+#' @param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
+#' @param merge_dendrocluster_index integer. Sets the \code{merge_dendrocluster_index} slot (see Slots)
+#' @param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)
+#' @param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see Slots)
+#' @param merge_method character, Sets the \code{merge_method} slot (see Slots)
+#' @details The \code{clusterExperiment} constructor function gives
+#'   clusterLabels based on the column names of the input
+#'   matrix/SummarizedExperiment. If missing, will assign labels
+#'   "cluster1","cluster2", etc.
+#' @details Note that the validity check when creating a new
+#'   \code{ClusterExperiment} object with \code{new} is less extensive than when
+#'   using \code{clusterExperiment} function with
+#'   \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
+#'   \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 setMethod(
   f = "clusterExperiment",
   signature = signature("SingleCellExperiment","matrix"),
   definition = function(se, clusters,
-            transformation,
-            primaryIndex=1,
-            clusterTypes="User",
-            clusterInfo=NULL,
-            orderSamples=1:ncol(se),
-            dendro_samples=NULL,
-            dendro_index=NA_real_,
-            dendro_clusters=NULL,
-			dendro_outbranch=NA,
-            coClustering=NULL
-            ){
+                        transformation,
+                        primaryIndex=1,
+                        clusterTypes="User",
+                        clusterInfo=NULL,
+                        orderSamples=1:ncol(se),
+                        dendro_samples=NULL,
+                        dendro_index=NA_real_,
+                        dendro_clusters=NULL,
+                        dendro_outbranch=NA,
+                        coClustering=NULL,
+                        merge_index=NA_real_,
+						merge_cutoff=NA_real_,
+                        merge_dendrocluster_index=NA_real_,
+                        merge_nodeProp=NULL,
+                        merge_nodeMerge=NULL,
+                        merge_method=NA_character_,
+                        checkTransformAndAssay=TRUE
+  ){
     if(NCOL(se) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
@@ -385,6 +286,9 @@ setMethod(
     if(is.null(clusterInfo)) {
       clusterInfo<-rep(list(NULL),length=NCOL(clusters))
     }
+    # if(is.null(merge_info)) {
+    #   merge_info<-list()
+    # }
     if(length(clusterTypes)!=NCOL(clusters)) {
       stop("clusterTypes must be of length equal to number of clusters in
            `clusters`")
@@ -401,10 +305,10 @@ setMethod(
       colnames(clusters)<-make.names(colnames(clusters),unique=TRUE)
     }
     if(length(clusterTypes) == 1) {
-        clusterTypes <- rep(clusterTypes, length=NCOL(clusters))
+      clusterTypes <- rep(clusterTypes, length=NCOL(clusters))
     }
     if(is.null(clusterInfo)) {
-        clusterInfo <- rep(list(NULL), length=NCOL(clusters))
+      clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
     tmp<-.makeColors(clusters, colors=bigPalette)
@@ -426,9 +330,21 @@ setMethod(
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
                dendro_outbranch=dendro_outbranch,
+               merge_index=merge_index,
+			   merge_cutoff=merge_cutoff,
+               merge_dendrocluster_index=merge_dendrocluster_index,
+               merge_nodeProp=merge_nodeProp,
+               merge_nodeMerge=merge_nodeMerge,
+               merge_method=merge_method,
                coClustering=coClustering
+
     )
-    validObject(out)
+    if(checkTransformAndAssay){
+      chass<-.checkAssays(out)
+      if(is.logical(chass) && !chass) stop(chass)
+      chtrans<-.checkTransform(out)
+      if(is.logical(chtrans) && !chtrans) stop(chtrans)
+    }
     return(out)
   })
 
@@ -540,72 +456,6 @@ setClass(
 .requiredKArgs<-c("k")
 .outputTypes<-c("vector","list")
 
-#' @rdname ClusterFunction-class
-#' @export
-#' @aliases internalFunctionCheck
-#' @examples
-#' #Use internalFunctionCheck to check possible function
-#' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){
-#'	cluster::pam(x=t(x),k=k,cluster.only=cluster.only)
-#' }
-#' #passes internal check
-#' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
-#' #Note it doesn't pass if inputType="either" because no catches for x=NULL
-#' internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
-#' myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
-#' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
-#' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
-#' @details \code{internalFunctionCheck} is the function that is called by the
-#'   validity check of the \code{clusterFunction} constructor (if
-#'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
-#'   to be able to test their functions and debug them, which is difficult to do
-#'   with a S4 validity function.
-internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
-	#--- Make small data
-	N<-20
-	set.seed(2851)
-	x<-matrix(rnorm(N*3),ncol=N,nrow=3)
-	set.seed(2851)
-	diss<-matrix(runif(N^2,min=0,max=0.5),ncol=N,nrow=N)
-	diss<-diss + t(diss)
-	diag(diss)<-0
-	#--- Set parameters
-	if(algorithmType=="01") argList<-list(alpha=.5)
-	if(algorithmType=="K") argList<-list(k=2)
-	argList<-c(argList,list(cluster.only=TRUE,checkArgs=FALSE))
-	#--- Run function on small data
-	if(inputType %in% c("X")){
-		test<-try(do.call(clusterFUN,c(list(x=x),argList)),silent=TRUE)
-		if(inherits(test,"try-error")) return(paste("function test fails with input X. ",test[1]))
-	}
-	if(inputType %in% c("diss")){
-		test<-try(do.call(clusterFUN,c(list(diss=diss),argList)),silent=TRUE)
-		if(inherits(test,"try-error")) return(paste("function test fails with input diss.",test[1]))
-	}
-	if(inputType %in% c("either")){
-		test1<-try(do.call(clusterFUN,c(list(x=x,diss=NULL),argList)),silent=TRUE)
-		if(inherits(test1,"try-error")) return(paste("function test fails with input x and NULL diss.",test1[1]))
-		test2<-try(do.call(clusterFUN,c(list(x=NULL,diss=diss),argList)),silent=TRUE)
-		if(inherits(test2,"try-error")){
-			return(paste("function test fails with input diss and NULL x.",test2[1]))
-		}
-		test3<-try(do.call(clusterFUN,c(list(x=x,diss=diss),argList)),silent=TRUE)
-		if(inherits(test3,"try-error")) return(paste("function test fails both diss and x input.",test3[1]))
-		if(outputType=="vector" & length(test1)!=N || length(test2)!=N || length(test3)!=N) return("clusterFUN does not return a vector equal to the number of observations.")
-	}
-	else{
-		if(outputType=="vector"){
-			if(length(test)!=N) return("clusterFUN does not return a vector equal to the number of observations")
-		}
-	}
-	return(TRUE)
-}
-
-
-.checkHasArgs<-function(FUN,requiredArgs){
-    funArgs<-names(as.list(args(FUN)))
-	all(requiredArgs %in% funArgs)
-}
 setValidity("ClusterFunction", function(object) {
     if(is.na(object@outputType)) {
       return("Must define outputType.")
@@ -688,7 +538,6 @@ setMethod(
 			 requiredArgs=requiredArgs,
 			 checkFunctions=checkFunctions
 			 )
-		validObject(out)
 		return(out)
 	}
 )

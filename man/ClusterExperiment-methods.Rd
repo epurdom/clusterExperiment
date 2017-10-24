@@ -53,6 +53,10 @@
 \alias{orderSamples<-}
 \alias{clusterTypes<-,ClusterExperiment,character-method}
 \alias{clusterTypes<-}
+\alias{tableClusters,ClusterExperiment,character-method}
+\alias{tableClusters}
+\alias{tableClusters,ClusterExperiment,missing-method}
+\alias{tableClusters,ClusterExperiment,numeric-method}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
 \S4method{[}{ClusterExperiment,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
@@ -108,6 +112,12 @@
 \S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{clusterTypes}{ClusterExperiment,character}(object) <- value
+
+\S4method{tableClusters}{ClusterExperiment,character}(x, whichClusters, ...)
+
+\S4method{tableClusters}{ClusterExperiment,missing}(x, whichClusters, ...)
+
+\S4method{tableClusters}{ClusterExperiment,numeric}(x, whichClusters, ...)
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -178,4 +188,10 @@ This is a collection of helper methods for the ClusterExperiment class.
 \details{
 Note that when subsetting the data, the dendrogram information and
 the co-clustering matrix are lost.
+
+Note that redefining the transformation function via
+  \code{transformation(x)<-} will check the validity of the transformation on
+  the data assay. If the assay is large, this may be time consuming. Consider
+  using a call to clusterExperiment, which has the option as to whether to
+  check the validity of the transformation.
 }

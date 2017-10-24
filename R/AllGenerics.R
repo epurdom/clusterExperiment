@@ -1,4 +1,55 @@
 setGeneric(
+  name = "tableClusters",
+  def=function(x,whichClusters,...){
+    standardGeneric("tableClusters")
+  }
+)
+setGeneric(
+  name = "nodeMergeInfo",
+  def=function(x,...){
+    standardGeneric("nodeMergeInfo")
+  }
+)
+
+setGeneric(
+  name = "getMergeCorrespond",
+  def=function(x,...){
+    standardGeneric("getMergeCorrespond")
+  }
+)
+setGeneric(
+  name = "mergeClusterIndex",
+  def=function(x,...){
+    standardGeneric("mergeClusterIndex")
+  }
+)
+
+setGeneric(
+  name = "mergeMethod",
+  def=function(x,...){
+    standardGeneric("mergeMethod")
+  }
+)
+setGeneric(
+  name = "mergeCutoff",
+  def=function(x,...){
+    standardGeneric("mergeCutoff")
+  }
+)
+
+setGeneric(
+  name = "plotClustersWorkflow",
+	def=function(object,...){
+	standardGeneric("plotClustersWorkflow")
+	}
+)
+setGeneric(
+	name="plotContrastHeatmap",
+	def=function(object,...){
+		standardGeneric("plotContrastHeatmap")
+	}
+)
+setGeneric(
     name = "RSEC",
     def = function(x, ...) {
         standardGeneric("RSEC")
@@ -107,7 +158,11 @@ setGeneric(
         standardGeneric("clusterLabels<-")
     }
 )
-
+setGeneric(
+	name="getClusterManyParams",
+	def=function(x,...){
+		standardGeneric("getClusterManyParams")
+	})
 setGeneric(
   name = "nClusters",
   def = function(x) {
@@ -181,7 +236,7 @@ setGeneric(
 
 setGeneric(
     name="plotClusters",
-    def=function(clusters, whichClusters,...)
+    def=function(object, whichClusters,...)
     {
         standardGeneric("plotClusters")
     }
@@ -189,9 +244,16 @@ setGeneric(
 
 setGeneric(
     name="plotBarplot",
-    def=function(clusters, whichClusters,...)
+    def=function(object, whichClusters,...)
     {
         standardGeneric("plotBarplot")
+    }
+)
+setGeneric(
+    name="plotDimReduce",
+    def=function(object, whichClusters,...)
+    {
+        standardGeneric("plotDimReduce")
     }
 )
 

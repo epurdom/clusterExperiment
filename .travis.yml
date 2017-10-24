@@ -15,8 +15,8 @@ cache: packages
 
 # R versions to be tested on
 r:
-#  - bioc-release
-  - bioc-devel
+  - bioc-release
+#  - bioc-devel
 
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false

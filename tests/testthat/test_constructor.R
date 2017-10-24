@@ -1,6 +1,12 @@
 context("Constructor")
 source("create_objects.R")
 
+
+test_that("saved rsecFluidigm is still valid object", {
+	data(rsecFluidigm)
+	validObject(rsecFluidigm)
+		  })
+		  
 test_that("`clusterExperiment` constructor works with matrix and
           SummarizedExperiments", {
             expect_error(clusterExperiment(mat), "missing")
@@ -81,7 +87,7 @@ test_that("adding clusters work as promised",{
   expect_error(clusterLabels(c3)[1:2]<-c("User","User"),"cannot have duplicated clusterLabels")
   clusterLabels(c3)[1:2]<-c("User1","User2")
   clusterLabels(c3)[1]<-"User4"
-  expect_error(clusterLabels(c3)[1]<-"User2","duplicated clusterLabels")
+  expect_error(clusterLabels(c3)[1]<-"User2","cannot have duplicated clusterLabels")
   expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
   
   ###check adding matrix of clusters
@@ -142,7 +148,7 @@ test_that("removing clusters work as promised",{
   leg[,"name"]<-letters[1:6]
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
   clustWithDendro <- makeDendrogram(cl1)
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotType="none")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none")
   removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
   removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
   
@@ -166,6 +172,10 @@ test_that("subsetting works as promised",{
   expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
   expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
 
+  #test works if have dendrogram attached:
+  x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
+  x[1:3,1:2]
+  
   
   ##########
   #checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)

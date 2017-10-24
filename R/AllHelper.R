@@ -16,30 +16,20 @@ setMethod(
   f = "[",
   signature = c("ClusterExperiment", "ANY", "ANY"),
   definition = function(x, i, j, ..., drop=TRUE) {
-    #browser()
-    origN<-NCOL(x)
-    out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    #out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
-    #browser()
-    out@clusterMatrix <- x@clusterMatrix[j, ,drop=FALSE]
-    out@coClustering <- NULL
-    out@dendro_samples <- NULL
-    out@dendro_clusters <- NULL
-    out@dendro_outbranch <- NA
-    out@dendro_index <- NA_real_
-    #browser()
-    #out@orderSamples<-match(out@orderSamples[j],c(1:origN)[j])
-	out@orderSamples <- rank(x@orderSamples[j])
-
-    #need to convert to consecutive integer valued clusters:
-    newMat<-.makeIntegerClusters(out@clusterMatrix)
-    colnames(newMat)<-colnames(out@clusterMatrix)
-    rownames(newMat)<-colnames(out)
+    # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
+    # out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+	###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
+	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
+    #need to subset cluster matrix and convert to consecutive integer valued clusters:
+    subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
+	nms<-colnames(subMat)
+	newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
+    colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    newClLegend<-lapply(1:NCOL(out@clusterMatrix),function(ii){
-        colMat<-out@clusterLegend[[ii]]
+    newClLegend<-lapply(1:NCOL(newMat),function(ii){
+        colMat<-x@clusterLegend[[ii]]
         newCl<-newMat[,ii]
-        cl<-out@clusterMatrix[,ii]
+        cl<-subMat[,ii]
         #remove (possible) levels lost
         whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
         if(length(whRm)>0){
@@ -52,10 +42,19 @@ setMethod(
         colMat[,"clusterIds"]<-oldNew[m,"new"]
         return(colMat)
     })
-    out@clusterMatrix<-newMat
-    out@clusterLegend<-newClLegend
-    #browser()
-    validObject(out)
+	#fix order of samples so same
+	newOrder<-rank(x@orderSamples[j])
+    out<- clusterExperiment(
+             se=as(selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j),"SummarizedExperiment"),#have to explicitly give the inherintence... not great.
+             clusters = newMat,
+               transformation=x@transformation,
+               primaryIndex = x@primaryIndex,
+               clusterTypes = x@clusterTypes,
+               clusterInfo=x@clusterInfo,
+               orderSamples=newOrder,
+			   checkTransformAndAssay=FALSE
+    )
+	clusterLegend(out)<-newClLegend
     return(out)
   }
 )
@@ -133,14 +132,23 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @details Note that redefining the transformation function via
+#'   \code{transformation(x)<-} will check the validity of the transformation on
+#'   the data assay. If the assay is large, this may be time consuming. Consider
+#'   using a call to clusterExperiment, which has the option as to whether to
+#'   check the validity of the transformation.
 #' @aliases transformation<-
 setReplaceMethod(
   f = "transformation",
   signature = signature("ClusterExperiment", "function"),
   definition = function(object, value) {
+	checkValidity=TRUE
     object@transformation <- value
-    validObject(object)
-    return(object)
+    if(checkValidity){
+		ch<-.checkTransform(object)
+    	if(ch) return(object) else stop(ch)
+	}
+	else return(object)
   }
 )
 
@@ -270,8 +278,8 @@ setReplaceMethod(
   signature = signature("ClusterExperiment", "numeric"),
   definition = function(object, value) {
     object@primaryIndex <- value
-    validObject(object)
-    return(object)
+    ch<-.checkPrimaryIndex(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
 
@@ -295,8 +303,8 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="matrix"),
   definition = function(object, value) {
     object@coClustering <- value
-    validObject(object)
-    return(object)
+	ch<-.checkCoClustering(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
 
@@ -327,6 +335,8 @@ setMethod(
     return(out)
   }
 )
+
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 #' @export
@@ -349,10 +359,9 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
-    if(any(duplicated(value))) stop("cannot have duplicated clusterLabels")
     colnames(object@clusterMatrix) <- value
-    validObject(object)
-    return(object)
+    ch<-.checkClusterLabels(object)
+	if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
 #' @rdname ClusterExperiment-methods
@@ -376,8 +385,8 @@ setReplaceMethod(
     signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
         object@clusterLegend<-unname(value)
-        validObject(object)
-        return(object)
+        ch<-.checkClusterLegend(object)
+		if(is.logical(ch) && ch) return(object) else stop(ch)
     }
 )
 
@@ -399,9 +408,10 @@ setReplaceMethod(
     f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
-        object@orderSamples<-value
-        validObject(object)
-        return(object)
+		object@orderSamples<-value
+		ch<-.checkOrderSamples(object)
+		if(is.logical(ch) && ch) return(object) else stop(ch)
+
     }
 )
 
@@ -414,10 +424,48 @@ setReplaceMethod(
     definition = function(object,value) {
         object@clusterTypes<-value
         object<-.unnameClusterSlots(object)
-        validObject(object)
-        return(object)
+        ch<-.checkClusterTypes(object)
+		if(is.logical(ch) && ch) return(object) else stop(ch)
+
     }
 )
+
+
+#' @aliases tableClusters
+#' @rdname ClusterExperiment-methods
+setMethod(
+  f = "tableClusters",
+  signature = signature(x = "ClusterExperiment",whichClusters="character"),
+  definition = function(x, whichClusters,...)
+  {
+	wh<-.TypeIntoIndices(x,whClusters=whichClusters)
+	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
+	return(tableClusters(x,whichClusters=wh,...))
+
+  })
+
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+    f = "tableClusters",
+    signature = signature(x = "ClusterExperiment",whichClusters="missing"),
+    definition = function(x, whichClusters,...)
+    {
+      tableClusters(x,whichClusters="primaryCluster")
+
+    })
+
+#' @rdname ClusterExperiment-methods
+#' @export
+setMethod(
+  f = "tableClusters",
+  signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
+  definition = function(x, whichClusters,...)
+  {
+	numCluster<-clusterMatrix(x)[,whichClusters]
+	table(data.frame(numCluster))
+})
+
 
 # # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of clusterMany (and compatible with it)
 # #' @rdname ClusterExperiment-class

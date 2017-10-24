@@ -9,25 +9,27 @@
 \alias{plotClusters,matrix,missing-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
-\S4method{plotClusters}{ClusterExperiment,character}(clusters,
+\S4method{plotClusters}{ClusterExperiment,character}(object,
   whichClusters = c("workflow", "all"), ...)
 
-\S4method{plotClusters}{ClusterExperiment,numeric}(clusters, whichClusters,
+\S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
   existingColors = c("ignore", "all"), resetNames = FALSE,
-  resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL, ...)
+  resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
+  clusterLabels = NULL, ...)
 
-\S4method{plotClusters}{ClusterExperiment,missing}(clusters, whichClusters, ...)
+\S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
 
-\S4method{plotClusters}{matrix,missing}(clusters, whichClusters,
+\S4method{plotClusters}{matrix,missing}(object, whichClusters,
   orderSamples = NULL, sampleData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
   colPalette = bigPalette, input = c("clusters", "colors"),
-  clNames = colnames(clusters), add = FALSE, xCoord = NULL, ylim = NULL,
-  tick = FALSE, ylab = "", xlab = "", axisLine = 0, box = FALSE, ...)
+  clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
+  ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
+  box = FALSE, ...)
 }
 \arguments{
-\item{clusters}{A matrix of with each column corresponding to a clustering
+\item{object}{A matrix of with each column corresponding to a clustering
 and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 matrix, the function will plot the clusterings in order of this matrix, and
 their order influences the plot greatly.}
@@ -76,6 +78,13 @@ a column or column name, respectively, of the \code{colData} slot of the
 columns, they will be encoded as 'unassigned' and receive the same color as
 'unassigned' samples in the clustering.}
 
+\item{clusterLabels}{names to go with the columns (clusterings) in matrix
+\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the
+\code{clusterLabels} argument must include names for the sample data too.
+If the user gives only names for the clusterings, the code will try to 
+anticipate that and use the column names of the sample data, but this is fragile.
+If set to \code{FALSE}, then no labels will be plotted.}
+
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters
 (assuming \code{input="clusters"})}
@@ -116,9 +125,6 @@ clusters, or contains the colors. If \code{input="colors"}, then the object
 \code{clusters} is a matrix of colors and there is no alignment (this
 option allows the user to manually adjust the colors and replot, for
 example).}
-
-\item{clNames}{names to go with the columns (clusterings) in matrix
-\code{colorMat}.}
 
 \item{add}{whether to add to existing plot.}
 

@@ -8,8 +8,9 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = c("none", "PCA", "var", "cv",
-  "mad"), ndims = NA, ignoreUnassignedVar = TRUE,
+  whichCluster = "primaryCluster", dimReduce = c("mad", "cv", "var", "PCA",
+  "none"), ndims = if (dimReduce \%in\% c("mad", "cv", "var")) 500 else if
+  (dimReduce == "none") NA else 50, ignoreUnassignedVar = TRUE,
   unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{matrix}(x, cluster,
@@ -75,6 +76,9 @@ that samples with "-1" should be discarded. This is not a permitted option,
 however, when \code{x} is a \code{ClusterExperiment} object, because it would
 return a dendrogram with less samples than \code{NCOL(x)}, which is not
 permitted for the \code{@dendro_samples} slot.
+
+If any merge information is stored in the input object, it will be
+  erased by a call to mergeDendrogram.
 }
 \examples{
 data(simData)
@@ -86,6 +90,6 @@ sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k
 #create dendrogram of clusters:
 hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
-plotDendrogram(hcl, leafType="samples",labelType="colorblock")
+plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 
 }

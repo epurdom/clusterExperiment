@@ -11,25 +11,24 @@
 \alias{plotBarplot,matrix,missing-method}
 \title{Barplot of 1 or 2 clusterings}
 \usage{
-\S4method{plotBarplot}{ClusterExperiment,character}(clusters, whichClusters,
-  ...)
+\S4method{plotBarplot}{ClusterExperiment,character}(object, whichClusters, ...)
 
-\S4method{plotBarplot}{ClusterExperiment,missing}(clusters, whichClusters, ...)
+\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters, ...)
 
-\S4method{plotBarplot}{ClusterExperiment,numeric}(clusters, whichClusters,
+\S4method{plotBarplot}{ClusterExperiment,numeric}(object, whichClusters,
   labels = c("names", "ids"), ...)
 
-\S4method{plotBarplot}{ClusterExperiment,missing}(clusters, whichClusters, ...)
+\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters, ...)
 
-\S4method{plotBarplot}{vector,missing}(clusters, whichClusters, ...)
+\S4method{plotBarplot}{vector,missing}(object, whichClusters, ...)
 
-\S4method{plotBarplot}{matrix,missing}(clusters, whichClusters, xNames = NULL,
+\S4method{plotBarplot}{matrix,missing}(object, whichClusters, xNames = NULL,
   legNames = NULL, legend = TRUE, xlab = NULL, legend.title = NULL,
   unassignedColor = "white", missingColor = "grey",
   colPalette = bigPalette, ...)
 }
 \arguments{
-\item{clusters}{A matrix of with each column corresponding to a clustering
+\item{object}{A matrix of with each column corresponding to a clustering
 and each row a sample or a \code{\link{ClusterExperiment}} object.}
 
 \item{whichClusters}{If numeric, a predefined order for the clusterings in 
@@ -43,7 +42,7 @@ the plot. If x is a \code{\link{ClusterExperiment}} object,
 \item{...}{for \code{plotBarplot} arguments passed either to the method
 of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
 
-\item{labels}{if clusters is a clusterExperiment object, then labels defines
+\item{labels}{if object is a clusterExperiment object, then labels defines
 whether the clusters will be identified by their names values in
 clusterLegend (labels="names", the default) or by their clusterIds value in
 clusterLegend (labels="ids").}
@@ -71,7 +70,7 @@ clusterings run on different sets of samples)}
 
 \item{colPalette}{a vector of colors used for the different clusters. Must be
 as long as the maximum number of clusters found in any single
-clustering/column given in \code{clusters} or will otherwise return an
+clustering/column given in \code{object} or will otherwise return an
 error.}
 }
 \description{
