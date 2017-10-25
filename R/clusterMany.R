@@ -316,12 +316,12 @@ setMethod(
 	  ###Check value alpha, beta values
       alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
 	  if(length(alpha01)>0){
-		  warning("alpha value must be in (0,1). Input alphas outside that range are ignored")
+		  stop("alpha value must be in (0,1)")
 		  param[alpha01,"alpha"]<-NA
 	  }
       beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
 	  if(length(beta01)>0){
-		  warning("beta value must be in (0,1). Input betas outside that range are ignored")
+		  stop("beta value must be in (0,1)")
 		  param[beta01,"beta"]<-NA
 	  }
 
@@ -352,7 +352,10 @@ setMethod(
 	  #if type K and not findBestK, need to give the k value. 
       whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
       if(length(whInvalid)>0){
-			param<-param[-whInvalid,]
+		  clFun<-param[,"clusterFunction"]
+		  if(any(algorithmType(clFun)=="K")) stop("One of clusterFunctions chosen requires choice of k")
+          else param<-param[-whInvalid,]
+			
 		}
 
       #####
