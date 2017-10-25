@@ -13,7 +13,7 @@
   diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"), resamp.num = 100,
   samp.p = 0.7, ncores = 1, checkArgs = TRUE, checkDiss = TRUE,
-  largeDataset = FALSE, ...)
+  largeDataset = FALSE, doGC = FALSE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines

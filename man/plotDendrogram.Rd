@@ -10,7 +10,7 @@
   leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
   "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
   "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
-  removeOutbranch = TRUE, legend = "side", ...)
+  removeOutbranch = TRUE, legend = c("side", "below", "none"), ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
