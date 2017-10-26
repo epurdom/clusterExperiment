@@ -40,7 +40,7 @@ Suggests:
     MAST
 VignetteBuilder: knitr
 LazyData: false
-LazyLoad: true
+LazyLoad: false
 RoxygenNote: 6.0.1
 biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
 Collate: 
