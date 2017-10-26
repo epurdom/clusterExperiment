@@ -28,6 +28,13 @@
 #'   clustering. The column 'clusteringIndex' identifies the index of the
 #'   clustering in the full set of clusterings of the given ClusterExperiment
 #'   object.
+#' @examples
+#' data(simData)
+#'
+#' cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+#' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+#' removeSil=c(TRUE,FALSE))
+#' getClusterManyParams(cl)
 #' @export
 setMethod(f = "getClusterManyParams",
           signature = signature(x = "ClusterExperiment"),

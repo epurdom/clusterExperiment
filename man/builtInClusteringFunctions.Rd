@@ -20,6 +20,19 @@ listBuiltInType01()
 \arguments{
 \item{object}{name of built in function.}
 }
+\value{
+\code{listBuiltInFunctions} returns a character vector of all 
+the built-in cluster functions' names.
+
+\code{getBuiltInFunction} returns the \code{ClusterFunction} 
+object that corresponds to the character name of a function
+
+\code{listBuiltInTypeK} returns a character vector of the 
+names of built-in cluster functions that are of type "K"
+
+\code{listBuiltInType01} returns a character vector of the 
+names of built-in cluster functions that are of type "01"
+}
 \description{
 Documents the built-in clustering options that are available in
   the clusterExperiment package.

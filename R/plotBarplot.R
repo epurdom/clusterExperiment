@@ -36,6 +36,7 @@
 #'   following order (most recent first): final, mergeClusters, combineMany,
 #'   clusterMany.
 #'
+#' @return A plot is produced, nothing is returned
 #' @author Elizabeth Purdom
 #' @inheritParams plotClusters,ClusterExperiment,character-method
 
@@ -61,7 +62,7 @@ setMethod(
 	wh<-.TypeIntoIndices(object,whClusters=whichClusters)
 	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
 	wh<-head(wh,2) #limit it to 2
-    return(plotBarplot(object,whichClusters=wh,...))
+    plotBarplot(object,whichClusters=wh,...)
 
   })
 

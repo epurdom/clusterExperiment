@@ -73,6 +73,9 @@ as long as the maximum number of clusters found in any single
 clustering/column given in \code{object} or will otherwise return an
 error.}
 }
+\value{
+A plot is produced, nothing is returned
+}
 \description{
 Make a barplot of sample's assignments to clusters for single clustering, or
 cross comparison for two clusterings.

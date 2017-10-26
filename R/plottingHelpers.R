@@ -28,7 +28,7 @@
 #'   or cluster name instead of the clusterIds, respectively.
 #' @importFrom RColorBrewer brewer.pal brewer.pal.info
 #' @export
-#' @name convertClusterLegend
+#' @rdname plottingFunctions
 #' @aliases convertClusterLegend convertClusterLegend,ClusterExperiment-method
 setMethod(
   f = "convertClusterLegend",

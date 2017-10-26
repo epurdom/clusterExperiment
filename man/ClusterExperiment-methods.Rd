@@ -19,7 +19,9 @@
 \alias{nClusters,ClusterExperiment-method}
 \alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
+\alias{nFeatures}
 \alias{nSamples,ClusterExperiment-method}
+\alias{nSamples}
 \alias{clusterMatrix,ClusterExperiment,missing-method}
 \alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,numeric-method}

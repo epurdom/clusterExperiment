@@ -50,6 +50,16 @@
 #'     \code{\link{mergeClusters}}). In addition the highlighted clusters are
 #'     made bigger so that they can be easily seen.
 #' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
+#' @return A plot is produced, nothing is returned.
+#' @examples
+#' #clustering using pam: try using different dimensions of pca and different k
+#' data(simData)
+#'
+#' cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+#' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+#' removeSil=c(TRUE,FALSE))
+#' cl <- combineMany(cl, proportion=0.7)
+#' plotClustersWorkflow(cl)
 #' @export
 setMethod(
   f = "plotClustersWorkflow",

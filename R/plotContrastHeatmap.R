@@ -6,6 +6,7 @@
 #' @param signifTable A \code{data.frame} in format of the result of \code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast' and 'IndexInOriginal' giving the grouping and original index of the features in the \code{assay(object)}
 #' @param whichCluster if not NULL, indicates cluster used in making the significance table. Used to match to names in \code{clusterLegend(object)}.
 #' @param ... Arguments passed to \code{\link{plotHeatmap}}
+#' @return A heatmap is created. Nothing is returned. 
 #' @seealso \code{\link{plotHeatmap}}, \code{\link{makeBlankData}}, \code{\link{getBestFeatures}}
 #' @export
 #'

@@ -186,6 +186,7 @@ setMethod(
 )
 #' @rdname ClusterExperiment-methods
 #' @return \code{nFeatures} returns the number of features (same as `nrow`).
+#' @aliases nFeatures
 #' @export
 setMethod(
   f = "nFeatures",
@@ -197,6 +198,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{nSamples} returns the number of samples (same as `ncol`).
+#' @aliases nSamples
 #' @export
 setMethod(
   f = "nSamples",

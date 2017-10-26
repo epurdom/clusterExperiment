@@ -170,13 +170,6 @@ setGeneric(
   }
 )
 
-#' Generic function that returns the number of features
-#'
-#' Given an object that describes a dataset or a model, it returns the number of
-#' features.
-#' @param x an object that describes a dataset or a model.
-#' @return the number of features.
-#' @export
 setGeneric(
   name = "nFeatures",
   def = function(x) {
@@ -184,13 +177,6 @@ setGeneric(
   }
 )
 
-#' Generic function that returns the number of samples
-#'
-#' Given an object that describes a model or a dataset, it returns the number of
-#' samples.
-#' @param x an object that describes a dataset or a model.
-#' @return the number of samples.
-#' @export
 setGeneric(
   name = "nSamples",
   def = function(x) {
