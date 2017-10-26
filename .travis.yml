@@ -19,7 +19,7 @@ r:
 #  - bioc-devel
 
 ## Turn this to true before submission to CRAN/Bioconductor
-warnings_are_errors: false
+warnings_are_errors: true
 
 # r_build_args: "--no-build-vignettes"
 # r_check_args: "--no-vignettes"
