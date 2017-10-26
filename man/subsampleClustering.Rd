@@ -64,6 +64,10 @@ valid.}
 \item{largeDataset}{logical indicating whether a more memory-efficient version 
 should be used because the dataset is large. This is a beta option, and is 
 in the process of being tested before it becomes the default.}
+
+\item{doGC}{logical indicating whether frequent calls to gc should be 
+implemented in children processes (i.e. when ncores>1) to free up memory 
+for the other processes.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
