@@ -129,6 +129,10 @@ determines whether to rerun the clusterMany step. Useful if want to try
 different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
 }
+\value{
+A \code{ClusterExperiment} object is returned containing all of 
+the clusterings from the steps of RSEC
+}
 \description{
 Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 Clustering) for single cell sequencing data. This is a wrapper function

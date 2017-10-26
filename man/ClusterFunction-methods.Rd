@@ -45,6 +45,16 @@
 
 \item{genericOnly}{logical If TRUE, return only the generic required arguments (i.e. those required by the algorithm type) and not the arguments specific to that clustering found in the slot \code{requiredArgs}. If FALSE both sets of arguments are returned.}
 }
+\value{
+\code{requiredArgs}  returns a list of the required args of a function 
+(via a call to \code{\link{requiredArgs}})
+
+\code{algorithmType} returns a character value giving the type of 
+clustering function ("01" or "K")
+
+\code{inputType} returns a character value giving the input 
+type of the object
+}
 \description{
 This is a collection of helper methods for the ClusterExperiment class.
 }

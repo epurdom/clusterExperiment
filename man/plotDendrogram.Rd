@@ -61,6 +61,9 @@ available for 'ape' package >= 4.1-0.6).}
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of
 \code{ape} that plots the dendrogram.}
 }
+\value{
+A dendrogram is plotted. Nothing is returned.
+}
 \description{
 Plots the dendrogram saved in a clusterExperiment object
 }

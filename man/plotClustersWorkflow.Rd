@@ -62,6 +62,9 @@ plotted on the top of clusterMany results or underneath.}
 \item{...}{arguments passed to the matrix version of
 \code{\link{plotClusters}}}
 }
+\value{
+A plot is produced, nothing is returned.
+}
 \description{
 A realization of \code{\link{plotClusters}} call specific to
   separating out the results of \code{clusterMany} and other clustering
@@ -76,6 +79,16 @@ This plot is solely intended to make it easier to use the
     (by default clusterings from a call to \code{\link{combineMany}} or 
     \code{\link{mergeClusters}}). In addition the highlighted clusters are
     made bigger so that they can be easily seen.
+}
+\examples{
+#clustering using pam: try using different dimensions of pca and different k
+data(simData)
+
+cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+removeSil=c(TRUE,FALSE))
+cl <- combineMany(cl, proportion=0.7)
+plotClustersWorkflow(cl)
 }
 \seealso{
 \code{\link{plotClusters}}, \code{\link{clusterMany}}

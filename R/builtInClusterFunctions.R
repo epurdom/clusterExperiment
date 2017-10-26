@@ -320,6 +320,8 @@
 #' listBuiltInType01()
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInFunctions
+#' @return \code{listBuiltInFunctions} returns a character vector of all 
+#' the built-in cluster functions' names.
 #' @export
 listBuiltInFunctions<-function() {
 	  .builtInClusterNames
@@ -327,6 +329,8 @@ listBuiltInFunctions<-function() {
   }
 #' @rdname builtInClusteringFunctions
 #' @aliases getBuiltInFunction
+#' @return \code{getBuiltInFunction} returns the \code{ClusterFunction} 
+#' object that corresponds to the character name of a function
 #' @export
 setMethod(
   f = "getBuiltInFunction",
@@ -343,6 +347,8 @@ setMethod(
 
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInTypeK
+#' @return \code{listBuiltInTypeK} returns a character vector of the 
+#' names of built-in cluster functions that are of type "K"
 #' @export
 listBuiltInTypeK<-function() {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)
@@ -351,6 +357,8 @@ listBuiltInTypeK<-function() {
 
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInType01
+#' @return \code{listBuiltInType01} returns a character vector of the 
+#' names of built-in cluster functions that are of type "01"
 #' @export
 listBuiltInType01<-function() {
 	  allBuiltInTypes<-algorithmType(.builtInClusterNames)

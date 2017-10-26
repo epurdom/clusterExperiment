@@ -18,6 +18,9 @@
 
 \item{...}{Arguments passed to \code{\link{plotHeatmap}}}
 }
+\value{
+A heatmap is created. Nothing is returned.
+}
 \description{
 Plots a heatmap of the data, with the genes grouped based on the contrast for which they were significant.
 }

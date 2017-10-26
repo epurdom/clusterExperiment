@@ -6,6 +6,8 @@
 #' @param object input to the method, usually either a \code{ClusterFunction} class or a character describing a built-in \code{ClusterFunction} object.
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
+#' @return \code{requiredArgs}  returns a list of the required args of a function 
+#' (via a call to \code{\link{requiredArgs}})
 #' @export
 setMethod(
   f = "requiredArgs",
@@ -68,6 +70,8 @@ setMethod(
 
 #' @rdname ClusterFunction-methods
 #' @aliases algorithmType
+#' @return \code{algorithmType} returns a character value giving the type of 
+#' clustering function ("01" or "K")
 #' @export
 setMethod(
   f = "algorithmType",
@@ -100,6 +104,8 @@ setMethod(
 
 #' @rdname ClusterFunction-methods
 #' @aliases inputType
+#' @return \code{inputType} returns a character value giving the input 
+#' type of the object
 #' @export
 setMethod(
   f = "inputType",

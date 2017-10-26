@@ -499,8 +499,7 @@ This makes sense only for counts.")
     
   }
   ch<-.checkMerge(retval)
-  if(!is.logical(ch)) stop(ch)
-  
+  if(!is.logical(ch)) stop(ch)  
   if(plot){
     dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
     # leg<-clusterLegend(retval)[[retval@dendro_index]]

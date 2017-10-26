@@ -54,6 +54,7 @@ setMethod(
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @seealso \code{\link{plot.default}}, \code{\link{transform}}
 #' @rdname plotDimReduce
+#' @return A plot is created. Nothing is returned. 
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)

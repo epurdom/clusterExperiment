@@ -60,6 +60,9 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{ylab}{Label for y axis}
 }
+\value{
+A plot is created. Nothing is returned.
+}
 \description{
 Plot a 2-dimensional representation of the data, color-code by a clustering.
 }
