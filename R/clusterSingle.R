@@ -348,7 +348,7 @@ setMethod(
 .clusterWrapper <- function(x, diss, subsample, mainClusterArgs=NULL, subsampleArgs=NULL) 
 {
     if(subsample){
-        Dbar<-do.call("subsampleClustering",c(list(x=x),subsampleArgs))
+        Dbar<-do.call("subsampleClustering",c(list(x=x,diss=diss),subsampleArgs))
         diss<-1-Dbar #make it a distance.
         x<-NULL
 
