@@ -18,6 +18,10 @@ fixedVersion<-if(length(args)==2) args[2] else "fixedClusterManyResult.txt"
 x<-sessionInfo()
 version<-x$otherPkgs[["clusterExperiment"]][["Version"]]
 nm<-paste(tag,"_",version,sep="")
+# library(benchmarkme) #to get information about RAM and CPUs on machine:
+# print(get_ram())
+# print(get_cpu())
+# print(sessionInfo())
 
 outfile<-file.path(outpath,paste(nm,".Rout",sep=""))
 cat("Results for test of",version,"\n",file=outfile)
