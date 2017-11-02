@@ -1,8 +1,8 @@
 ncores<-1
 subcores<-5
-large<-FALSE
+large<-TRUE
 resamp.num<-20
-tag<-"memTest_StandardSmall_singleCore_subCore"
+tag<-"memTest_LargeSmall_singleCore_subCore"
 
 #Usage: nohup RScript clusterManyTest.R <tagString> <compareTo(optional)> &
 # If get that corrupted file, probably copied from laptop or elsewhere that only has tag

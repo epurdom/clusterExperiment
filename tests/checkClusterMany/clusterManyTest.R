@@ -49,6 +49,8 @@ tm<-endtm-sttm
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
 cat(paste("Number of clusters:",nClusters(cl),"\n"),file=outfile,append=TRUE)
+cat(paste("Number of genes of Assay:",nrow(cl),"\n"),file=outfile,append=TRUE)
+cat(paste("Number of samples of Assay:",ncol(cl),"\n"),file=outfile,append=TRUE)
 
 
 mat<-clusterMatrix(cl)

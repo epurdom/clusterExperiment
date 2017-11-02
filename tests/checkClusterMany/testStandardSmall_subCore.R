@@ -1,8 +1,8 @@
-ncores<-1
+ncores<-5
 subcores<-5
 large<-FALSE
 resamp.num<-20
-tag<-"memTest_StandardSmall_singleCore_subCore"
+tag<-"memTest_StandardSmall"
 
 #Usage: nohup RScript clusterManyTest.R <tagString> <compareTo(optional)> &
 # If get that corrupted file, probably copied from laptop or elsewhere that only has tag
@@ -45,8 +45,10 @@ cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  random.seed=21321, run=TRUE)
 endtm<-proc.time()
 tm<-endtm-sttm
+#save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
 #cat(paste("Total memory:",total(pf),"Bytes\n"),file=outfile,append=TRUE)
-cat("gc() call:\n",file=outfile,append=TRUE)
+cat("gc() call:\n")
 print(gc())
+
