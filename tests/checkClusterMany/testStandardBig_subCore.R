@@ -42,7 +42,7 @@ cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ncores=ncores, subsampleArgs=list(resamp.num=resamp.num,largeDataset=large,ncores=subcores,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
-                 random.seed=21321, run=TRUE)
+                 run=TRUE)
 endtm<-proc.time()
 tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
