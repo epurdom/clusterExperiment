@@ -49,5 +49,5 @@ tm<-endtm-sttm
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
 cat(paste("Total memory:",total(pf),"Bytes\n"),file=outfile,append=TRUE)
-cat("gc() call:\n")
-print(gc)
+cat("gc() call:\n",file=outfile,append=TRUE)
+print(gc())
