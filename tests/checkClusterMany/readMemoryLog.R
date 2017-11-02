@@ -19,4 +19,5 @@ convb <- function(x){
   num * unname(mult[unit])
 }
 maxMemUsed<-log$used[which.max(convb(log$used))]
+print("Maximum Memory Used:\n",stdout())
 print(maxMemUsed,stdout())
