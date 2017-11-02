@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=StandardSmall_single
+#SBATCH --job-name=StandSubcore
 #SBATCH --cpus-per-task 32
 while true; do free -h >> memTestDirectory/memoryLogger_StandardSmall_singleCore_subCore.txt; sleep 15; done &
 

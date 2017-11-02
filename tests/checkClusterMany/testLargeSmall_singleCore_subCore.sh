@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=LargeProfile
+#SBATCH --job-name=LargeSub
 #SBATCH --cpus-per-task 32
 while true; do free -h >> memTestDirectory/memoryLogger_LargeSmall_singleCore_subCore.txt; sleep 15; done &
 
