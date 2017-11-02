@@ -21,7 +21,7 @@ test_that("`RSEC` works with matrix, clusterExperiment, summarizedExperiment",{
    })
 
 test_that("`RSEC` works through whole series of steps",{
-#bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
+#bigger example where actually goes through all the steps, takes some time:
 rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
               betas=0.9,dendroReduce="none",minSizes=1,

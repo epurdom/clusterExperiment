@@ -293,8 +293,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 			clusterWith<-lapply(clusterList[whHave],function(ll){
                 otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
             })
-			rm(clusterList) #just to reduce memory since will be parallelized
-			gc()
+			if(doGC){#just to reduce memory since will be parallelized
+				rm(clusterList) 
+				gc()
+			}
 			clusterWithTab<-table(unlist(clusterWith))
             jointNames<-as.character(1:N)
 			whLower<-which(as.integer(as.numeric(jointNames))<ii)
