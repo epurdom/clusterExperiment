@@ -33,7 +33,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
-pf<-profmem(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
@@ -42,13 +42,12 @@ pf<-profmem(cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
-				 )
 endtm<-proc.time()
 tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
-cat(paste("Total memory:",total(pf),"Bytes\n"),file=outfile,append=TRUE)
+#cat(paste("Total memory:",total(pf),"Bytes\n"),file=outfile,append=TRUE)
 cat("gc() call:\n")
-print(gc)
+print(gc())
 
