@@ -1,7 +1,7 @@
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript readMemoryLog.R <fileName>' where <fileName> is the name of the file with the memory log.")
 file<-args[1]
-file<-"memoryLogger_StandardSmall.txt"
+#file<-"memoryLogger_StandardSmall.txt"
 log<-read.table(file,header=FALSE,fill=TRUE,stringsAsFactors=FALSE)
 nms<-head(unlist(log[1,]),-1)
 log<-log[log[,1]=="Mem:",-1]
