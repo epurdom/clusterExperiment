@@ -19,4 +19,9 @@ convb <- function(x){
   num * unname(mult[unit])
 }
 maxMemUsed<-log$used[which.max(convb(log$used))]
+library(gdata)
+aveMemUsed<-humanReadable(mean(convb(log$used))) #convert back.
+medMemUsed<-humanReadable(median(convb(log$used))) #convert back.
 cat("Maximum Memory Used:",maxMemUsed,"\n",file=stdout())
+cat("Average Memory Used:",aveMemUsed,"\n",file=stdout())
+cat("Median Memory Used:",medMemUsed,"\n",file=stdout())
