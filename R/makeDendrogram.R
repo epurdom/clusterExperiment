@@ -252,7 +252,7 @@ setMethod(
     fakeData <- do.call("rbind", lapply(levels(clFactor), function(z){
         ind <- which(clFactor == z) #indices of those in this cluster
         med <- medoids[z,]
-        mat <- matriz(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
+        mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
         rownames(mat) <- rownames(dat[whKeep,])[ind]
         return(mat)
     }))
