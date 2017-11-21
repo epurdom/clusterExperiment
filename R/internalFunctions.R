@@ -297,12 +297,15 @@
 			#assumes all tips in the non-outbranch have 0-length (so max value is zero)
 			#######
 			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-			#find tip descendants of these:
+			#find tip descendants of each of these:
 			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-			rootChildNum<-sapply(rootChildLeng,max)
-			whLog<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
-			outbranchNode<-rootChild[whLog]
+			rootChildNum<-sapply(rootChildLeng,max) #maximum length 
+			
+			#indicator of which child node is the 
+			whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
+			if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
+			outbranchNode<-rootChild[!whKeep]
 			
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE

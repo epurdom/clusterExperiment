@@ -133,8 +133,8 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 #' @importFrom ape plot.phylo phydataplot
 .plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,plotType=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
 	plotType<-match.arg(plotType)
-	browser()
 	phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=(leafType=="samples"),outbranch=outbranch)
+	
 	#---
 	#remove the outbranch from the dendrogram and from cl
 	#(note this is using phylo4 obj)
@@ -159,6 +159,8 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
 		if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
 		namesClusterTips<-names(clusterTips)
+		#browser()
+	
 		if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
 		phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)
 		#set outbranch=FALSE because now doesn't exist in tree...
@@ -229,6 +231,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 	### - Make default if not provided and 
 	### - If # of clusterings>1 make clusterLegend and cl matrix appropriate
   	###############
+	
 	if(plotType=="colorblock"){
 		clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
 		if(is.null(clusterLegendMat)){ 
@@ -250,6 +253,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 					if(length(clusterLegendMat)!=nclusters) stop("Internal coding error -- wrong length of colors for clustering")
 					newClusterLegendMat<-clusterLegendMat[[1]]
 					newCl<-cl[,1]
+					
 					#make it general in case some day want more than just 2 clusterings
 					for(ii in 2:nclusters){
 						currMat<-clusterLegendMat[[ii]]
@@ -287,7 +291,6 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 							
 							## change ids in currMat
 							currMat[,"clusterIds"]<-newId2
-							
 							## test correct that no overlap in ids or names or colors:
 							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])) stop("Internal coding error: still overlap in cluster Ids")
 							if(any(currMat[,"color"] %in% newClusterLegendMat[,"color"])) stop("Internal coding error: still overlap in color")
@@ -425,7 +428,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		
 		if(nclusters>1 & !is.null(colnames(cl))){
 			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
-			diffX<-diff(xloc)
+			diffX<-unique(diff(xloc))
 			xloc<-xloc+diffX/2
 			ypos<-par("usr")[4]-0.025*diff(par("usr")[3:4])	
 			adj<-c(0,0)		

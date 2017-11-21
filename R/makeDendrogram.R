@@ -103,6 +103,7 @@ setMethod(
 	}
 	else{
 		if(is.null(ceObj@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'dimReduce'")
+			if(is.null(dimnames(ceObj@coClustering))) stop("This clusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
 		outlist<-makeDendrogram(x=as.dist(1-ceObj@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
 		
 	}
@@ -197,7 +198,7 @@ setMethod(
 	m<-na.omit(match(sampleNames,rownames(fakeData)))
 	fakeData<-fakeData[m,m]
 	fullD <- as.dendrogram(stats::hclust(as.dist(fakeData)), ...)
-    if(length(whKeep) != nSamples && unassigned == "outgroup"){
+	if(length(whKeep) != nSamples && unassigned == "outgroup"){
         #need to get rid of super long outgroup arm
         armLength <- max(attributes(fullD[[1]])$height,
                          attributes(fullD[[2]])$height)
