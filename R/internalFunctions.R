@@ -294,13 +294,15 @@
 			#######
 			#find the -1/-2 internal node (if it exists)
 			#determine it as the one without 0-length tip edges.
+			#assumes all tips in the non-outbranch have 0-length (so max value is zero)
 			#######
 			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
 			#find tip descendants of these:
 			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-			rootChildNum<-sapply(rootChildLeng,min)
-			outbranchNode<-rootChild[rootChildNum>0]
+			rootChildNum<-sapply(rootChildLeng,max)
+			whLog<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
+			outbranchNode<-rootChild[whLog]
 			
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE
