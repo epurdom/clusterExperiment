@@ -1,4 +1,10 @@
 setGeneric(
+  name = "plotClusterLegend",
+  def=function(object,...){
+    standardGeneric("plotClusterLegend")
+  }
+)
+setGeneric(
   name = "tableClusters",
   def=function(x,whichClusters,...){
     standardGeneric("tableClusters")

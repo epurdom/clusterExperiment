@@ -104,18 +104,39 @@ setMethod(
 #'
 #' @examples
 #' showBigPalette()
-showBigPalette<-function(wh=NULL){
+showBigPalette<-function(wh=NULL,cex=1){
   oldMar<-par("mar")
   if(is.null(wh)){
     col<-.thisPal
     wh<-1:length(col)
   }
   else{ col<-.thisPal[wh]}
-  par(mar=c(2.1,2.1,2.1,2.1))
-  plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-  text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
-  text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
-  par(mar=oldMar)
+  # par(mar=c(2.1,2.1,2.1,2.1))
+  # plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+  # text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
+  # text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
+  # par(mar=oldMar)
+  n<-ceiling(sqrt(length(col)))
+  nblank<-n^2-length(col)
+  xwide<-n
+  yup<-n
+  x1<-rep(c(1:xwide)-.5,yup)
+  x2<-rep(c(1:xwide)+.5,yup)
+  xtext<-rep(c(1:xwide),yup)
+  ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
+  ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
+  ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
+  adj.text<-cbind(rep(.5,length(xtext)),rep(c(0,1),times=length(xtext)/2))
+  
+  par(mar=c(0,0,0,0),omi=c(0,0,0,0))
+  plot.new()
+  plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
+  rect(x1,ycolor1,x2,ycolor2,col=c(col,rep("white",nblank)),border=F)
+  for(i in 1:length(col)){
+      text(xtext[i],ytext[i]-1,col[i],cex=cex,adj=c(0.5,0))#,adj.text[i,])
+      text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
+  }
+
 }
 
 
@@ -290,3 +311,50 @@ seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
 #' @rdname plottingFunctions
 #' @export
 seqPal1<-rev(brewer.pal(11, "Spectral"))
+
+
+#' @export
+#' @param whichCluster which cluster to plot cluster legend
+#' @param object a clusterExperiment object
+#' @param clusterNames vector of names for the clusters; vector should have names 
+#'  that correspond to the clusterIds in the clusterExperiment object. If this 
+#'  argument is missing, will use the names in the "name" column of the clusterLegend 
+#'  slot of the object.
+#' @param ... arguments passed to legend
+#' @rdname plottingFunctions
+#' @aliases plotClusterLegend
+setMethod(
+  f = "plotClusterLegend",
+  signature = c("ClusterExperiment"),
+  definition = function(object,whichCluster="primary",clusterNames,title,...){
+      whichCluster<-.TypeIntoIndices(object,whClusters=whichCluster)
+      if(length(whichCluster)==0) stop("given whichCluster value does not match any clusters")
+      if(length(whichCluster)>1) stop("given whichCluster indicates more than 1 clustering")
+	  legMat<-clusterLegend(object)[[whichCluster]]
+	 if(!missing(clusterNames)){
+		 if(is.null(names(clusterNames))) stop("clusterNames must be named vector")
+			 m<-match(legMat[,"clusterIds"],names(clusterNames))
+		 	 if(any(is.na(m))){
+				 whClusters<-which(legMat[,"clusterIds"]>0)
+				 if(any(is.na(m[whClusters]))) stop("not all clusters are found in names of clusterNames argument")
+				 else{ #give default names to -1 and -2
+					 whMiss1<-which(legMat[,"clusterIds"]== -1 & is.na(m))
+					 if(length(whMiss1)>0) clusterNames<-c(clusterNames,"-1"="Not assigned")
+					 whMiss2<-which(legMat[,"clusterIds"]== -2 & is.na(m))
+					 if(length(whMiss2)>0) clusterNames<-c(clusterNames,"-2"="Not clustered")
+				 }
+			 }
+			 m<-match(legMat[,"clusterIds"],names(clusterNames))
+		 	 clusterNames<-clusterNames[m]
+	 }
+	 else{
+		 clusterNames<-legMat[,"name"]
+	 } 	 
+	 if(missing(title)){
+		 title<-paste("Clusters of",clusterLabel(object)[whichCluster])
+	 }
+	  plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+	  legend("center",legend=clusterNames,fill=legMat[,"color"],title=title,...)
+	  
+  
+ })
