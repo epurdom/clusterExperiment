@@ -422,6 +422,7 @@ setMethod(
 	# matchToTop allows that the comparison for color assignment be done, not row by row, but always back to the first row.
 
 	# Check that no row has more than length(colPalette) number of unique entries
+	colPalette<-unique(colPalette)
 	tabVals<-apply(clusters,1,function(x){length(table(x))})
 	if(any(tabVals> length(colPalette))) stop("Must give colPalette (i.e. distinct colors to be assigned to clustres) longer than number of clusters. Largest number of distinct clusters in the clusterings:",max(tabVals),". Length of colPalette:",length(colPalette))
 
