@@ -10,6 +10,7 @@
 \alias{showPalette}
 \alias{bigPalette}
 \alias{bigPalette}
+\alias{massivePalette}
 \alias{setBreaks}
 \alias{showHeatmapPalettes}
 \alias{seqPal5}
@@ -31,6 +32,8 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 showPalette(colPalette = bigPalette, wh = NULL, cex = 1)
 
 bigPalette
+
+massivePalette
 
 setBreaks(data, breaks = NA, makeSymmetric = FALSE)
 
@@ -143,10 +146,15 @@ Most of these functions are called internally by plotting
 convertClusterLegend pulls out information stored in the
   \code{clusterLegend} slot of the object and returns it in useful format.
 
-\code{bigPalette} is a long palette of colors (length 62) used by
+\code{bigPalette} is a long palette of colors (length 58) used by
   \code{\link{plotClusters}} and accompanying functions.
   \code{showPalette} creates plot that gives index of each color in
-  bigPalette.
+  a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
+  and the non-grey colors of \code{\link{colors}()} (length 487). 
+  \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
+  of a very large number of clusterings, each with many clusters, so that the code 
+ doesn't run out of colors. However, many of the colors will be very similar 
+ to each other.
 
 \code{showPalette} will plot the \code{colPalette} colors with
   their labels and index.

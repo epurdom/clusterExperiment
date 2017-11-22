@@ -111,9 +111,10 @@ this percent overlap.}
 
 \item{startNewColors}{logical, indicating whether in aligning colors between
 rows of clusters, should the colors restart at beginning of colPalette as
-long as colors are not in immediately proceeding row (some of the colors at
-the end of bigPalette are a bit wonky, and so if you have a large clusters
-matrix, this can be useful).}
+long as colors are not in immediately proceeding row (the colors at the end 
+of \code{massivePalette} are all of \code{\link{colors}()} and many will be
+indistinguishable, so this option can be useful if you have a large cluster
+matrix).}
 
 \item{colPalette}{a vector of colors used for the different clusters. Must be
 as long as the maximum number of clusters found in any single

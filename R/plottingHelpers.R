@@ -90,10 +90,15 @@ setMethod(
 #'
 #' @aliases bigPalette showPalette
 #'
-#' @details \code{bigPalette} is a long palette of colors (length 62) used by
+#' @details \code{bigPalette} is a long palette of colors (length 58) used by
 #'   \code{\link{plotClusters}} and accompanying functions.
 #'   \code{showPalette} creates plot that gives index of each color in
-#'   bigPalette.
+#'   a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
+#'   and the non-grey colors of \code{\link{colors}()} (length 487). 
+#'   \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
+#'   of a very large number of clusterings, each with many clusters, so that the code 
+#'  doesn't run out of colors. However, many of the colors will be very similar 
+#'  to each other.
 #'
 #' @param wh numeric. Which colors to plot. Must be a numeric vector with values
 #'   between 1 and length of \code{colPalette}. If missing, all colors plotted.
@@ -107,7 +112,7 @@ setMethod(
 #'
 #' @examples
 #' showPalette()
-#' showPalette(colors()[-c(152:361)]) #take out the grays
+#' showPalette(massivePalette,cex=0.6)
 showPalette<-function(colPalette=bigPalette,wh=NULL,cex=1){
   oldMar<-par("mar")
   if(is.null(wh)){
@@ -207,7 +212,14 @@ bigPalette<-c(
 #	"mediumturquoise",
 	'cadetblue3'
 )
-
+.rcolors<-function(){
+	#so sure that setting seed doesn't mess up when installing package
+	set.seed(23589)
+	return(sample(colors()[-c(152:361)]))
+}
+#' @rdname plottingFunctions
+#' @export
+massivePalette<-unique(c(bigPalette,.rcolors()))
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced

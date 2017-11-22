@@ -48,9 +48,10 @@
 #'   this percent overlap.
 #' @param startNewColors logical, indicating whether in aligning colors between
 #'   rows of clusters, should the colors restart at beginning of colPalette as
-#'   long as colors are not in immediately proceeding row (some of the colors at
-#'   the end of bigPalette are a bit wonky, and so if you have a large clusters
-#'   matrix, this can be useful).
+#'   long as colors are not in immediately proceeding row (the colors at the end 
+#'   of \code{massivePalette} are all of \code{\link{colors}()} and many will be
+#'   indistinguishable, so this option can be useful if you have a large cluster
+#'   matrix).
 #' @param colPalette a vector of colors used for the different clusters. Must be
 #'   as long as the maximum number of clusters found in any single
 #'   clustering/column given in \code{clusters} or will otherwise return an
@@ -323,7 +324,7 @@ setMethod(
   definition = function(object, whichClusters,
               orderSamples=NULL,sampleData=NULL,reuseColors=FALSE,matchToTop=FALSE,
               plot=TRUE,unassignedColor="white",missingColor="grey",
-              minRequireColor=0.3,startNewColors=FALSE,colPalette=bigPalette,
+              minRequireColor=0.3,startNewColors=FALSE,colPalette=massivePalette,
               input=c("clusters","colors"),clusterLabels=colnames(object),
               add=FALSE,xCoord=NULL,ylim=NULL,tick=FALSE,ylab="",xlab="",
               axisLine=0,box=FALSE,...)
