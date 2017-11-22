@@ -118,6 +118,15 @@ test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="plotAndLegend")
   convertClusterLegend(smSimCE,output="matrixNames")
   convertClusterLegend(smSimCE,output="matrixColors")
+  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=c("cluster1"))
+  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=1:3)
+  convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=c("cluster1"))
+  expect_error(convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=1:3),"given whichClusters indicates more than 1 clustering which is not allowed for option")
+  
+  plotClusterLegend(smSimCE)
+  plotClusterLegend(smSimCE,whichCluster="cluster1")
+    showPalette()
+  showPalette(massivePalette)
 })
 
 

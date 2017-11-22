@@ -51,7 +51,7 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     expect_warning(plotHeatmap(cc,whichClusters="workflow",plot=plotAll) ,"whichClusters value does not match any clusters") #there are no workflow for this one
 
     plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
-    expect_warning(plotHeatmap(smSimCE,whichClusters=1:15,plot=plotAll),"given whichClusters value does not match any clusters")
+    expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,plot=plotAll),"given whichClusters value does not match any clusters")
 	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
     plotHeatmap(smSimCE,whichClusters="all",alignSampleData=FALSE,overRideClusterLimit=TRUE)
 

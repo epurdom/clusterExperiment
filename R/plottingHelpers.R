@@ -215,14 +215,20 @@ bigPalette<-c(
 #	"mediumturquoise",
 	'cadetblue3'
 )
+
+#' @importFrom grDevices colors
 .rcolors<-function(){
 	#so sure that setting seed doesn't mess up when installing package
 	set.seed(23589)
 	return(sample(colors()[-c(152:361)]))
 }
+
 #' @rdname plottingFunctions
 #' @export
 massivePalette<-unique(c(bigPalette,.rcolors()))
+
+
+
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced
@@ -394,10 +400,15 @@ setMethod(
 		 clusterNames<-legMat[,"name"]
 	 } 	 
 	 if(missing(title)){
-		 title<-paste("Clusters of",clusterLabel(object)[whichCluster])
+		 title<-paste("Clusters of",clusterLabels(object)[whichCluster])
+	 }
+	 if(any(as.numeric(legMat[,"clusterIds"])<0)){
+		 #put -1/-2 last
+		 isNeg<-as.numeric(legMat[,"clusterIds"])<0
+		 ord<-c(which(!isNeg),which(isNeg))
 	 }
 	  plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-	  legend("center",legend=clusterNames,fill=legMat[,"color"],title=title,...)
+	  legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 	  
   
  })

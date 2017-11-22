@@ -262,8 +262,9 @@
 	 } 
   	 if(any(wh>nClusters(x) | wh<1)){
 		 wh<-wh[wh<=nClusters(x) & wh>0]
-		 wh<-wh[is.integer(wh)]
+		 
   	 }
+#	 if(length(wh)>0) wh<-wh[is.integer(wh)]
   return(wh)
 }
 

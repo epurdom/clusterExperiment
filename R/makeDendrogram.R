@@ -107,9 +107,9 @@ setMethod(
 	
 	}
 	else{
-		if(is.null(ceObj@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'dimReduce'")
-			if(is.null(dimnames(ceObj@coClustering))) stop("This clusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
-		outlist<-makeDendrogram(x=as.dist(1-ceObj@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
+		if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'dimReduce'")
+			if(is.null(dimnames(x@coClustering))) stop("This clusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
+		outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
 		
 	}
     x@dendro_samples <- outlist$samples
