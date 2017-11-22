@@ -7,6 +7,8 @@ Changes:
 * The colors in `bigPalette` have been changed and shuffled to reduce similar colors.
 * `clusterMatrix` function now returns cluster matrix with rownames corresponding to sample names.
 * New function `plotClusterLegend` that will plot a legend for a clustering.
+* `convertClusterLegend` now takes argument `whichClusters`
+* `plotClusters` argument `existingColors` now allows for the option `firstOnly` 
 
 Bugs:
 * Fixed so `diss` now passed to subsampling in calls to clusterSingle/clusterMany

@@ -21,13 +21,14 @@
 \alias{plotClusterLegend,ClusterExperiment-method}
 \alias{plotClusterLegend}
 \title{Convert clusterLegend into useful formats}
-\format{An object of class \code{character} of length 58.}
+\format{An object of class \code{character} of length 56.}
 \usage{
 makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
 \S4method{convertClusterLegend}{ClusterExperiment}(object,
   output = c("plotAndLegend", "aheatmapFormat", "matrixNames",
-  "matrixColors"))
+  "matrixColors"), whichClusters = ifelse(output == "plotAndLegend",
+  "primary", "all"))
 
 showPalette(colPalette = bigPalette, wh = NULL, cex = 1)
 
@@ -65,6 +66,8 @@ data is then fed to heatmap.)}
 \item{object}{a \code{ClusterExperiment} object.}
 
 \item{output}{character value, indicating desired type of conversion.}
+
+\item{whichClusters}{which clusters to use}
 
 \item{colPalette}{a vector of character colors. By default, the palette 
 \code{bigPalette} is used}
@@ -173,7 +176,7 @@ x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 34, 25)))
 plotHeatmap(x$dataWBlanks,clusterFeatures=FALSE)
 showPalette()
-showPalette(colors()[-c(152:361)]) #take out the grays
+showPalette(massivePalette,cex=0.6)
 setBreaks(data=simData,breaks=.9)
 
 #show the palette colors

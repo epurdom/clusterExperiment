@@ -13,7 +13,7 @@
   whichClusters = c("workflow", "all"), ...)
 
 \S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
-  existingColors = c("ignore", "all"), resetNames = FALSE,
+  existingColors = c("ignore", "all", "firstOnly"), resetNames = FALSE,
   resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
   clusterLabels = NULL, ...)
 
@@ -23,7 +23,7 @@
   orderSamples = NULL, sampleData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
-  colPalette = bigPalette, input = c("clusters", "colors"),
+  colPalette = massivePalette, input = c("clusters", "colors"),
   clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
   ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
   box = FALSE, ...)
@@ -49,8 +49,9 @@ of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
 \item{existingColors}{how to make use of the exiting colors in the
 \code{ClusterExperiment} object. 'ignore' will ignore them and assign new
 colors. 'firstOnly' will use the existing colors of only the 1st
-clustering, and then give new colors for the remaining (not implemented
-yet). 'all' will use all of the existing colors.}
+clustering, and then align the remaining clusters and give new colors for the 
+remaining only. 'all' will use 
+all of the existing colors.}
 
 \item{resetNames}{logical. Whether to reset the names of the clusters in
 \code{clusterLegend} to be the aligned integer-valued ids from

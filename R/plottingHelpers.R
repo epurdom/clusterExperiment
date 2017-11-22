@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#'
+#' @param whichClusters which clusters to use
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'
@@ -33,25 +33,30 @@
 setMethod(
   f = "convertClusterLegend",
   signature = c("ClusterExperiment"),
-  definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors")){
+  definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors"),whichClusters=ifelse(output=="plotAndLegend","primary","all")){
     output<-match.arg(output)
+	whichClusters<-.TypeIntoIndices(object,whClusters=whichClusters)
+    if(length(whichClusters)==0) stop("given whichClusters value does not match any clusters")
+	
+	
     if(output=="aheatmapFormat"){
-      outval<-.convertToAheatmap(clusterLegend(object))
+      outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
     if(output%in% c("matrixNames","matrixColors")){
-      outval<-do.call("cbind",lapply(1:nClusters(object),function(ii){
-        cl<-clusterMatrix(object)[,ii]
-        colMat<-clusterLegend(object)[[ii]]
+      outval<-do.call("cbind",lapply(1:length(whichClusters),function(ii){
+        cl<-clusterMatrix(object)[,whichClusters,drop=FALSE][,ii]
+        colMat<-clusterLegend(object)[whichClusters][[ii]]
         m<-match(cl,colMat[,"clusterIds"])
         colReturn<-if(output=="matrixNames") "name" else "color"
         return(colMat[m,colReturn])
       }))
-	  colnames(outval)<-clusterLabels(object)
+	  colnames(outval)<-clusterLabels(object)[whichClusters]
 
     }
     if(output=="plotAndLegend"){
-      cl<-primaryCluster(object)
-      colMat<-clusterLegend(object)[[primaryClusterIndex(object)]]
+	  if(length(whichClusters)>1) stop("given whichClusters indicates more than 1 clustering which is not allowed for option 'plotAndLegend'")
+      cl<-clusterMatrix(object)[,whichClusters]
+      colMat<-clusterLegend(object)[[whichClusters]]
       clColor<-colMat[match(cl,colMat[,"clusterIds"]),"color"]
       legend<-colMat[,"name"]
       color<-colMat[,"color"]
