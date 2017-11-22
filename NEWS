@@ -1,4 +1,4 @@
-Changes in version 1.3.8-9001 ( Release date: )
+Changes in version 1.3.8-9002 ( Release date: )
 ==============
 Changes:
 * makeDendrogram now allows option 'coCluster' to the argument `dimReduce` indicating use of the coClustering matrix to build the dendrogram.
@@ -6,9 +6,11 @@ Changes:
 * `showBigPalette` has been replaced with `showPalette` and now can show any palette of colors.
 * The colors in `bigPalette` have been changed and shuffled to reduce similar colors.
 * `clusterMatrix` function now returns cluster matrix with rownames corresponding to sample names.
+* New function `plotClusterLegend` that will plot a legend for a clustering.
 
 Bugs:
 * Fixed so `diss` now passed to subsampling in calls to clusterSingle/clusterMany
+* Fixed so `plotClusters` now will not give incomprehensible error if given duplicates of a color
 
 Changes in version 1.3.8 ( Release date: 2017-10-24)
 ==============
