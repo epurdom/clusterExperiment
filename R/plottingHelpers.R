@@ -149,15 +149,15 @@ showPalette<-function(colPalette=bigPalette,wh=NULL,cex=1){
 #' @rdname plottingFunctions
 #' @export
 bigPalette<-c(
+	'#E31A1C',
 	'#1F78B4',
 	'#33A02C',
-	'#E31A1C',
 	'#FF7F00',
 	'#6A3D9A',
 	'#B15928',
-	'#2ef4ca',
-	'#bd18ea',
 	'#A6CEE3',
+	'#bd18ea',
+	'cyan',
 	'#B2DF8A',
 	'#FB9A99',
 	"deeppink4",
@@ -167,7 +167,6 @@ bigPalette<-c(
 	'#05188a',
 	'#CCFF00FF',
 	'cornflowerblue',
-	'#f4cced',
 	'#f4cc03',
 	'black',
 	'blueviolet',
@@ -193,7 +192,7 @@ bigPalette<-c(
 	'#1B9E77',
 	'#FFD92F',
 	'deepskyblue4',
-	'#FDDAEC',
+	"yellow3",
 	'#00FFB2FF',
 	'#FDBF6F',
 	'#FDCDAC',
@@ -207,7 +206,6 @@ bigPalette<-c(
 	"lightpink3",
 	"olivedrab",
 #	"plum",
-	"yellow3",
 #	"lightskyblue3",
 #	"mediumturquoise",
 	'cadetblue3'
