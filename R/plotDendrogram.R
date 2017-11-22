@@ -402,27 +402,30 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
   		
   		nclusters<-ncol(colorMat)
 		colnames(colorMat)<-NULL		
-		if(nclusters==1 & packageVersion("ape")<'4.1.0.6'){
-			#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017 and now fixed in new version of ape.
-		  			colorMat<-cbind(colorMat,colorMat)
-		  		}
-				
-  		#we have to do this to get order for colors to be what we want!
-  		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. New version of ape fixes this.
-  		getColFun<-function(x,phy,namedColors){
-  			x <- ape:::.matchDataPhylo(x, phy)
-  			n <- length(phy$tip.label)
-  			one2n <- seq_len(n)
-  			lastPP <- get("last_plot.phylo", envir = ape:::.PlotPhyloEnv)
-  			y1 <- lastPP$yy[one2n]
-  			o <- order(y1)
-			if(!is.null(ncol(x))) ux<-unique.default(x[o,])
-  			else ux<-unique.default(x[o])
-  			m<-match(as.character(ux),names(namedColors))
-			namedColors[m]
-  		}
-		if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
-		if(packageVersion("ape")<'4.9.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
+
+		#########
+		## Now require ape >5.0 so don't need this code. Not yet deleting...
+		#########
+		# if(nclusters==1 & packageVersion("ape")<'4.1.0.6'){
+		# 	#this is a temporary hack, because right now function has bug and fails for a 1-column matrix or vector. Have reported this 5/23/2017 and now fixed in new version of ape.
+		#   			colorMat<-cbind(colorMat,colorMat)
+		#   		}				
+		#   		#we have to do this to get order for colors to be what we want!
+		#   		#basically have to redo code in phydataplot so figure out what order is in plot of the leaves, etc. Poor function. New version of ape fixes this.
+		#   		getColFun<-function(x,phy,namedColors){
+		#   			x <- ape:::.matchDataPhylo(x, phy)
+		#   			n <- length(phy$tip.label)
+		#   			one2n <- seq_len(n)
+		#   			lastPP <- get("last_plot.phylo", envir = ape:::.PlotPhyloEnv)
+		#   			y1 <- lastPP$yy[one2n]
+		#   			o <- order(y1)
+		# 	if(!is.null(ncol(x))) ux<-unique.default(x[o,])
+		#   			else ux<-unique.default(x[o])
+		#   			m<-match(as.character(ux),names(namedColors))
+		# 	namedColors[m]
+		#   		}
+		# if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
+		# if(packageVersion("ape")<'4.9.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
 		colInput<-function(n){cols}
 		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		
