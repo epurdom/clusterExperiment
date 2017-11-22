@@ -407,6 +407,7 @@ setMethod(
 		 isNeg<-as.numeric(legMat[,"clusterIds"])<0
 		 ord<-c(which(!isNeg),which(isNeg))
 	 }
+	 else ord<-1:nrow(legMat)
 	  plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
 	  legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 	  
