@@ -256,6 +256,7 @@ setMethod(
               args<-NULL
             }
         }
+		colPalGood<-colPaletteArg
 		if(existingColors=="firstOnly"){
 	        nadd<-nrow(clusterLegend(object)[[whichClusters[[1]]]])
 			addgreys<-gray(seq(0.01,.99,length=nadd))
@@ -284,7 +285,7 @@ setMethod(
 			firstCl<-clusterMatrix(object)[,whichClusters[1]]
 			valsToChange<-unique(alignCl[firstCl>0]) #don't mess with assignment of -1/-2
 			#match them and make them the existing color
-			unusedColors<-colPaletteArg[!colPaletteArg %in% c(as.vector(newColorMat),firstRow)]
+			unusedColors<-colPalGood[!colPalGood %in% c(as.vector(newColorMat),firstRow)]
 			###Note: Need to update color legend in out val because used if resetColors
 			#browser()
 			for(val in valsToChange){
@@ -469,7 +470,7 @@ setMethod(
 			out<-do.call(".plotClustersInternal",c(list(clusters=clusters,plot=FALSE),plotTrackArgs,clusterPlotArgs ,list(...)))
 			#take out -1
 
-			#2. replace colors of -1/-2 
+			#2. replace colors of -1/-2 in clusterLegend (used to update clusterLegend if resetColors=TRUE)
 			newColorLeg<-lapply(1:nrow(clusters),function(i){
 				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
@@ -479,12 +480,13 @@ setMethod(
 				return(leg)
 			})
 			names(newColorLeg)<-names(out$clusterLegend)
+			#3. Update colors in colors matrix
 			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
 				out$colors[clusters[i,]=="-1",i]<-unassignedColor
 				out$colors[clusters[i,]=="-2",i]<-missingColor
 				return(out$colors[,i])
 			}))
-			#3. call .clusterTrackingPlot to make plot			
+			#4. call .clusterTrackingPlot to make plot			
 			if(plot) do.call(".clusterTrackingPlot",c(list(colorMat=xColors[out$orderSamples,]),clusterPlotArgs,list(...)))
 			out$colors<-xColors
 			dimnames(out$colors)<-dnames
