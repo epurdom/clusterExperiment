@@ -284,17 +284,42 @@ setMethod(
 			valsToChange<-unique(alignCl[firstCl>0]) #don't mess with assignment of -1/-2
 			#match them and make them the existing color
 			unusedColors<-colPaletteArg[!colPaletteArg %in% c(as.vector(newColorMat),firstRow)]
+			###Note: Need to update color legend in out val because used if resetColors
+			#browser()
 			for(val in valsToChange){
 				wh<-which(alignCl==val)
 				newCol<-unique(firstRow[wh])
 				if(length(newCol)!=1) stop("internal coding error in existingColors='first'")
-				#alignedClusterIds aligns even if -1/-2)
+				#make sure not the same as existing color	
 				if(any(newColorMat==newCol)){
 					newColorMat[newColorMat==newCol]<-unusedColors[1]
 					unusedColors<-tail(unusedColors,-1)
 				}
+				#alignedClusterIds aligns to a number even if -1/-2)
 				newColorMat[outval$alignedClusterIds==val & clusterMatrix(object)[,whichClusters]>0]<-newCol
+
+
 			}
+			outval$colors<-newColorMat
+			###make new clusterLegend from color matrix
+			temp<-lapply(1:length(whichClusters),function(ii){
+				oldMat<-outval$clusterLegend[[ii]]
+				alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
+				m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
+				if(any(is.na(m))) stop("internal coding error in make new clusterLegend")
+				alignMat<-alignMat[m,]
+				oldMat[,"color"]<-alignMat[,"color"]
+				return(oldMat)
+			})
+			names(temp)<-names(outval$clusterLegend)
+			outval$clusterLegend<-temp
+			# $PublishedClusters
+			#       clusterIds alignedClusterIds color     name
+			#  [1,] "-2"       "1"               "black"   "1"
+			#  [2,] "1"        "2"               "#161616" "2"
+			#  [3,] "10"       "3"               "#292929" "3"
+			#  [4,] "11"       "4"               "#3C3C3C" "4"
+			
 		}
 		#------------
        	#now plot them
