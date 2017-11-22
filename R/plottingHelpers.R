@@ -343,7 +343,7 @@ seqPal1<-rev(brewer.pal(11, "Spectral"))
 
 #' @export
 #' @param whichCluster which cluster to plot cluster legend
-#' @param object a clusterExperiment object
+#' @param title title for the clusterLegend plot
 #' @param clusterNames vector of names for the clusters; vector should have names 
 #'  that correspond to the clusterIds in the clusterExperiment object. If this 
 #'  argument is missing, will use the names in the "name" column of the clusterLegend 

@@ -20,7 +20,7 @@
 \alias{plotClusterLegend,ClusterExperiment-method}
 \alias{plotClusterLegend}
 \title{Convert clusterLegend into useful formats}
-\format{An object of class \code{character} of length 60.}
+\format{An object of class \code{character} of length 58.}
 \usage{
 makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
@@ -84,9 +84,9 @@ that correspond to the clusterIds in the clusterExperiment object. If this
 argument is missing, will use the names in the "name" column of the clusterLegend 
 slot of the object.}
 
-\item{...}{arguments passed to legend}
+\item{title}{title for the clusterLegend plot}
 
-\item{object}{a clusterExperiment object}
+\item{...}{arguments passed to legend}
 }
 \value{
 \code{makeBlankData} returns a list with items
