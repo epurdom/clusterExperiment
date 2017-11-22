@@ -88,36 +88,34 @@ setMethod(
 #'
 #' @name plottingFunctions
 #'
-#' @aliases bigPalette showBigPalette
+#' @aliases bigPalette showPalette
 #'
 #' @details \code{bigPalette} is a long palette of colors (length 62) used by
 #'   \code{\link{plotClusters}} and accompanying functions.
-#'   \code{showBigPalette} creates plot that gives index of each color in
+#'   \code{showPalette} creates plot that gives index of each color in
 #'   bigPalette.
 #'
 #' @param wh numeric. Which colors to plot. Must be a numeric vector with values
-#'   between 1 and 62.
-#' @details \code{showBigPalette} will plot the \code{bigPalette} functions with
+#'   between 1 and length of \code{colPalette}. If missing, all colors plotted.
+#' @param cex numeric value giving the cex for the text of the plot. 
+#' @param colPalette a vector of character colors. By default, the palette 
+#'  \code{bigPalette} is used
+#' @details \code{showPalette} will plot the \code{colPalette} colors with
 #'   their labels and index.
 #'
 #' @export
 #'
 #' @examples
-#' showBigPalette()
-showBigPalette<-function(wh=NULL,cex=1){
+#' showPalette()
+#' showPalette(colors()[-c(152:361)]) #take out the grays
+showPalette<-function(colPalette=bigPalette,wh=NULL,cex=1){
   oldMar<-par("mar")
   if(is.null(wh)){
-    col<-.thisPal
-    wh<-1:length(col)
+    wh<-1:length(colPalette)
   }
-  else{ col<-.thisPal[wh]}
-  # par(mar=c(2.1,2.1,2.1,2.1))
-  # plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-  # text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
-  # text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
-  # par(mar=oldMar)
-  n<-ceiling(sqrt(length(col)))
-  nblank<-n^2-length(col)
+  else{ colPalette<-colPalette[wh]}
+  n<-ceiling(sqrt(length(colPalette)))
+  nblank<-n^2-length(colPalette)
   xwide<-n
   yup<-n
   x1<-rep(c(1:xwide)-.5,yup)
@@ -126,18 +124,91 @@ showBigPalette<-function(wh=NULL,cex=1){
   ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
   ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
   ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
-  adj.text<-cbind(rep(.5,length(xtext)),rep(c(0,1),times=length(xtext)/2))
   
   par(mar=c(0,0,0,0),omi=c(0,0,0,0))
   plot.new()
   plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
-  rect(x1,ycolor1,x2,ycolor2,col=c(col,rep("white",nblank)),border=F)
-  for(i in 1:length(col)){
-      text(xtext[i],ytext[i]-1,col[i],cex=cex,adj=c(0.5,0))#,adj.text[i,])
-      text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
+  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=F)
+  if(length(colPalette)>100){
+	  half<-ceiling(length(colPalette)/2)
+	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))
+	 adj.text<-adj.text[1:length(colPalette),]
   }
-
+  else adj.text<-matrix(c(0.5,0),nrow=length(colPalette),ncol=2,byrow=TRUE)
+  for(i in 1:length(colPalette)){
+      text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
+      if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
+  }  	
 }
+
+#' @rdname plottingFunctions
+#' @export
+bigPalette<-c(
+	'#1F78B4',
+	'#33A02C',
+	'#E31A1C',
+	'#FF7F00',
+	'#6A3D9A',
+	'#B15928',
+	'#2ef4ca',
+	'#bd18ea',
+	'#A6CEE3',
+	'#B2DF8A',
+	'#FB9A99',
+	'#FDBF6F',
+	'#00B3FFFF',
+	'#CAB2D6',
+	'#FFFF99',
+	'#05188a',
+	'#06f106',
+	'#85848f',
+	'cornflowerblue',
+	'#f4cced',
+	'#f4cc03',
+	'#E5D8BD',
+	'#000000',
+	'blueviolet',
+	'#4d0776',
+	'maroon3',
+	'blue',
+#	'grey',
+	'green3',
+	'cadetblue4',
+	'#e5a25a',
+	'#7570B3',
+	'#CC00FFFF',
+	'#F781BF',
+	'#FC8D62',
+	'#8DA0CB',
+	'#E78AC3',
+	'#CCFF00FF',
+	'#E7298A',
+	'burlywood3',
+	'#A6D854',
+	"firebrick",
+	'#FFFFCC',
+	"mediumpurple",
+	'#1B9E77',
+	'#FFD92F',
+	'deepskyblue4',
+	'#FDDAEC',
+	'#00FFB2FF',
+	"deeppink4",
+	'#FDCDAC',
+	"gold3",
+	'#F4CAE4',
+	'#E6F5C9',
+	'#FF00E6FF',
+	"goldenrod",
+	"lightblue1",
+	"lightpink3",
+	"olivedrab",
+#	"plum",
+	"yellow3",
+#	"lightskyblue3",
+#	"mediumturquoise",
+	'cadetblue3'
+)
 
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
@@ -211,47 +282,6 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
 }
 
 
-.thisPal = c(
-	"#A6CEE3",#light blue
-	"#1F78B4",#dark blue
-	"#B2DF8A",#light green
-	"#33A02C",#dark green
-	"#FB9A99",#pink
-	"#E31A1C",#red
-	"#FDBF6F",#light orange
-	"#FF7F00",#orange
-	"#CAB2D6",#light purple
-	"#6A3D9A",#purple
-	"#FFFF99",#light yellow
-	"#B15928",#brown
-	"#bd18ea", #magenta
-	"#2ef4ca", #aqua
-	"#f4cced", #pink,
-	"#05188a", #navy,
-	"#f4cc03", #lightorange
-	"#e5a25a", #light brown
-	"#06f106", #bright green
-	"#85848f", #med gray
-	"#000000", #black
-	"#076f25", #dark green
-	"#93cd7f",#lime green
-	"#4d0776", #dark purple
-	"maroon3",
-	"blue",
-	"grey"
-		)
-.thisPal<-.thisPal[c(2,4,6,8,10,12,14,13,1,3,5,7,9,11,16,19,20,15,17,18,21:27)]
-.brewers<-RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info[,"category"]=="qual",]
-.brewers<-.brewers[c(1:3,6:8,4:5),]
-.thisPal<-c(.thisPal,palette(),unlist(sapply(1:nrow(.brewers),function(ii){RColorBrewer::brewer.pal(.brewers[ii,"maxcolors"], rownames(.brewers)[ii])})))
-.thisPal<-unique(.thisPal)
-.thisPal<-.thisPal[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
-.thisPal<-.thisPal[-34] #very similar to 2
-.thisPal<-.thisPal[-31] #very similar to 7
-
-#' @rdname plottingFunctions
-#' @export
-bigPalette<-.thisPal
 
 #' @rdname plottingFunctions
 #'
@@ -358,3 +388,43 @@ setMethod(
 	  
   
  })
+
+
+ ###Old definition of bigPalette (.thisPal):
+ # bigPalette = c(
+ # 	"#A6CEE3",#1 light blue
+ # 	"#1F78B4",#2 dark blue
+ # 	"#B2DF8A",#3 light green
+ # 	"#33A02C",#4 dark green
+ # 	"#FB9A99",#5 pink
+ # 	"#E31A1C",#6 red
+ # 	"#FDBF6F",#7 light orange
+ # 	"#FF7F00",#8 orange
+ # 	"#CAB2D6",#9 light purple
+ # 	"#6A3D9A",#10 purple
+ # 	"#FFFF99",#11 light yellow
+ # 	"#B15928",#12 brown
+ # 	"#bd18ea", #13 magenta
+ # 	"#2ef4ca", #14 aqua
+ # 	"#f4cced", #15 pink,
+ # 	"#05188a", #16 navy,
+ # 	"#f4cc03", #17 lightorange
+ # 	"#e5a25a", #18 light brown
+ # 	"#06f106", #19 bright green
+ # 	"#85848f", #20 med gray
+ # 	"#000000", #21 black
+ # 	"#076f25", #22 dark green
+ # 	"#93cd7f",#23 lime green
+ # 	"#4d0776", #24 dark purple
+ # 	"maroon3",
+ # 	"blue",
+ # 	"grey"
+ # 		)
+ # bigPalette<-bigPalette[c(2,4,6,8,10,12,14,13,1,3,5,7,9,11,16,19,20,15,17,18,21:27)]
+ # .brewers<-RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info[,"category"]=="qual",]
+ # .brewers<-.brewers[c(1:3,6:8,4:5),]
+ # bigPalette<-c(bigPalette,palette()[-1],unlist(sapply(1:nrow(.brewers),function(ii){RColorBrewer::brewer.pal(.brewers[ii,"maxcolors"], rownames(.brewers)[ii])})))
+ # bigPalette<-unique(bigPalette)
+ # bigPalette<-bigPalette[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
+ # bigPalette<-bigPalette[-34] #very similar to 2
+ # bigPalette<-bigPalette[-31] #very similar to 7

@@ -304,6 +304,7 @@
 			
 			#indicator of which child node is the 
 			whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
+			#browser()
 			if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
 			outbranchNode<-rootChild[!whKeep]
 			

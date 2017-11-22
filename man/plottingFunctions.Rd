@@ -7,16 +7,18 @@
 \alias{convertClusterLegend,ClusterExperiment-method}
 \alias{convertClusterLegend}
 \alias{plottingFunctions}
-\alias{showBigPalette}
+\alias{showPalette}
+\alias{bigPalette}
 \alias{bigPalette}
 \alias{setBreaks}
-\alias{bigPalette}
 \alias{showHeatmapPalettes}
 \alias{seqPal5}
 \alias{seqPal2}
 \alias{seqPal3}
 \alias{seqPal4}
 \alias{seqPal1}
+\alias{plotClusterLegend,ClusterExperiment-method}
+\alias{plotClusterLegend}
 \title{Convert clusterLegend into useful formats}
 \format{An object of class \code{character} of length 60.}
 \usage{
@@ -26,11 +28,11 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
   output = c("plotAndLegend", "aheatmapFormat", "matrixNames",
   "matrixColors"))
 
-showBigPalette(wh = NULL)
-
-setBreaks(data, breaks = NA, makeSymmetric = FALSE)
+showPalette(colPalette = bigPalette, wh = NULL, cex = 1)
 
 bigPalette
+
+setBreaks(data, breaks = NA, makeSymmetric = FALSE)
 
 showHeatmapPalettes()
 
@@ -43,6 +45,9 @@ seqPal3
 seqPal4
 
 seqPal1
+
+\S4method{plotClusterLegend}{ClusterExperiment}(object,
+  whichCluster = "primary", clusterNames, title, ...)
 }
 \arguments{
 \item{data}{matrix with samples on columns and features on rows.}
@@ -58,14 +63,30 @@ data is then fed to heatmap.)}
 
 \item{output}{character value, indicating desired type of conversion.}
 
+\item{colPalette}{a vector of character colors. By default, the palette 
+\code{bigPalette} is used}
+
 \item{wh}{numeric. Which colors to plot. Must be a numeric vector with values
-between 1 and 62.}
+between 1 and length of \code{colPalette}. If missing, all colors plotted.}
+
+\item{cex}{numeric value giving the cex for the text of the plot.}
 
 \item{breaks}{either vector of breaks, or number of breaks (integer) or a
 number between 0 and 1 indicating a quantile, between which evenly spaced
 breaks should be calculated.}
 
 \item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
+
+\item{whichCluster}{which cluster to plot cluster legend}
+
+\item{clusterNames}{vector of names for the clusters; vector should have names 
+that correspond to the clusterIds in the clusterExperiment object. If this 
+argument is missing, will use the names in the "name" column of the clusterLegend 
+slot of the object.}
+
+\item{...}{arguments passed to legend}
+
+\item{object}{a clusterExperiment object}
 }
 \value{
 \code{makeBlankData} returns a list with items
@@ -124,10 +145,10 @@ convertClusterLegend pulls out information stored in the
 
 \code{bigPalette} is a long palette of colors (length 62) used by
   \code{\link{plotClusters}} and accompanying functions.
-  \code{showBigPalette} creates plot that gives index of each color in
+  \code{showPalette} creates plot that gives index of each color in
   bigPalette.
 
-\code{showBigPalette} will plot the \code{bigPalette} functions with
+\code{showPalette} will plot the \code{colPalette} colors with
   their labels and index.
 
 \code{setBreaks} gives a set of breaks (of length 52) equally spaced
@@ -143,7 +164,8 @@ data(simData)
 x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 34, 25)))
 plotHeatmap(x$dataWBlanks,clusterFeatures=FALSE)
-showBigPalette()
+showPalette()
+showPalette(colors()[-c(152:361)]) #take out the grays
 setBreaks(data=simData,breaks=.9)
 
 #show the palette colors

@@ -158,7 +158,7 @@
 #' #first cluster:
 #'
 #' #see what the default colors are and their names
-#' showBigPalette(wh=1:5)
+#' showPalette(wh=1:5)
 #'
 #' #change "#E31A1C" to "#33A02C"
 #' newColorMat <- clusterLegend(cl)[[clOrder[1]]]

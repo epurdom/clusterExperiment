@@ -11,6 +11,11 @@
 #'   ``-1'' indicates the sample was not assigned to a cluster.
 #' @param unassignedSamples how to handle unassigned samples("-1") ; only
 #'   relevant for sample clustering. See details.
+#' @param dimReduce character A character identifying what type of 
+#'   dimensionality reduction to perform before clustering. Options are 
+#'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+#'   details. The option "coCluster" will use the co-Clustering matrix stored 
+#'   in the 'coClustering' slot of the \code{clusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
