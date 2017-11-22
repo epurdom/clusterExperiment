@@ -300,11 +300,19 @@
 			#find tip descendants of each of these:
 			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-			rootChildNum<-sapply(rootChildLeng,max) #maximum length 
+			
+			#Problem here!!! if there is single sample in a cluster, then could be a tip with length not equal to zero. Need to ignore these....how? If take the min, then a single zero length in outbranch will result in both having zeros...
+			#maybe should change function so have to provide a single name of a sample that is in outbranch so as to identify it that way. 
+			#for now, lets hope that never happens! i.e. that BOTH a single sample in a cluster and that outbranch has a zero length
+			rootChildNum<-sapply(rootChildLeng,min) #minimum length 
 			
 			#indicator of which child node is the 
 			whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
-			#browser()
+			if(sum(whKeep)!=1){
+				#if both sides have a zero, then use max instead. 
+				rootChildNum<-sapply(rootChildLeng,max) #maximum length 
+				whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) 
+			}
 			if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
 			outbranchNode<-rootChild[!whKeep]
 			
