@@ -218,6 +218,7 @@ setMethod(
 #'   \code{orderSamples} slot in the \code{ClusterExperiment} object with the
 #'   new order found.
 #' @export
+#' @importFrom grDevices gray
 setMethod(
   f = "plotClusters",
   signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
