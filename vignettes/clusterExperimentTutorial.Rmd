@@ -696,7 +696,7 @@ clusterLegend(ce)[c("mergeClusters","combineMany,final")]
 
 The `plotClusterLegend` creates a quick legend plot of this information for a single clustering:
 
-```{r plotClusterLegend_before, fig.width=3,fig.height=3}
+```{r plotClusterLegend_before}
 plotClusterLegend(ce,whichCluster="combineMany,final")
 ```
 
@@ -732,7 +732,7 @@ clusterLegend(ce_temp)[["mergeClusters"]][,"name"]<-c("Not assigned","Cluster1",
 
 We use the `plotClusterLegend` to check that we assigned them as we expected:
 
-```{r plotClusterLegend,fig.width=3,fig.height=3}
+```{r plotClusterLegend}
 plotClusterLegend(ce_temp,whichCluster="mergeClusters")
 ```
 
@@ -767,25 +767,9 @@ plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
 ```
 
 
-```{r}
-par(mfrow=c(2,2))
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
-             whichClusters="workflow", existingColors="firstOnly", clusterLabels=FALSE,
-             main="firstOnly",axisLine=-1)
+We see that while the order of the samples has changed (because I have a different set of clusters to align) the *colors* assigned to each cluster have stayed the same, so I can more easily compare the plots.
 
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
-             existingColors="ignore", whichClusters="workflow", clusterLabels=FALSE,
-             main="default",
-             axisLine=-1)
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
-           existingColors="all", whichClusters="workflow", clusterLabels=FALSE,
-           main="useExisting",
-           axisLine=-1)
-```
-
-We see that while the order of the samples has changed (because I have different set of clusters to align) the *colors* assigned to each cluster have stayed the same, so I can more easily compare the plots.
-
-Note that the use of `existingColors="firstOnly"` and `existingColors="all"` will not give the same color assignments, *even if the colors have been previously aligned to be the same* unless its the exact same set of clusterings in the same order. This is because with each set of ordered clusterings, the realignment between clusters changes and so the assignment of colors changes. 
+Note that the use of `existingColors="firstOnly"` and `existingColors="all"` will not give the same color assignments, *even if the colors have been previously aligned to be the same* unless its the exact same set of clusterings in the same order. This is because with each set of ordered clusterings, the realignment between clusters changes and so the assignment of colors changes. Here we will make a ClusterAlignment plot for each of these three options of the argument to demonstrate the difference.
 
 ```{r plotClusterEx1_compareForceColors,fig.width=18,fig.height=6}
 par(mfrow=c(2,2))
@@ -841,14 +825,14 @@ plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","P
 `plotClusters` is a generic function for showing any clusterings. In following our workflow, however, there can often be many clusterings from `clusterMany` and the important clusters from `combineMany` and `mergeMany` can get lost from view. The function `plotClustersWorkflow` implements `plotClusters` but pulls out specific clusterings designated by the user and puts them apart from the results of `clusterMany`. 
 
 ```{r plotWorkflow}
-plotClustersWorkflow(ce)
+plotClustersWorkflow(ce, axisLine= -1)
 ```
 
 By default, the "combineMany" and "mergeClusters" clusterings are highlighted. We can choose other clusterings to be the result, rather than the default ones using the argument `whichClusters`. We can also sort the clusterings differently so that we sort based on the results of `clusterMany` first, rather than the highlighted results first and/or choose to have the highlighted clusters on the bottom or the top (independently of the sorting choices). In the following code, we choose to show the different versions of `combineMany` as our highlighted clusters. 
 
 ```{r plotWorkflow_resort}
 par(mar=plotCMar)
-plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3",sortBy="clusterMany",highlightOnTop=FALSE)
+plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Different choices of proportion in combineMany",sortBy="clusterMany",highlightOnTop=FALSE, axisLine= -1)
 ```
 
 There are no limits as to which clusterings can be shown with the `whichClusters` command, but the non-highlighted clusterings must always be of `clusterType` "clusterMany". The user can select a subset or different ordering of the "clusterMany" clusterings with the argument `whichClusterMany`, which must be a numeric vector giving the indices of the clusters to be chosen. 
