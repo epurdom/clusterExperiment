@@ -30,7 +30,7 @@ makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
   "matrixColors"), whichClusters = ifelse(output == "plotAndLegend",
   "primary", "all"))
 
-showPalette(colPalette = bigPalette, wh = NULL, cex = 1)
+showPalette(colPalette = bigPalette, which = NULL, cex = 1)
 
 bigPalette
 
@@ -72,7 +72,7 @@ data is then fed to heatmap.)}
 \item{colPalette}{a vector of character colors. By default, the palette 
 \code{bigPalette} is used}
 
-\item{wh}{numeric. Which colors to plot. Must be a numeric vector with values
+\item{which}{numeric. Which colors to plot. Must be a numeric vector with values
 between 1 and length of \code{colPalette}. If missing, all colors plotted.}
 
 \item{cex}{numeric value giving the cex for the text of the plot.}
