@@ -14,6 +14,7 @@ Changes:
 Bugs:
 * Fixed so `diss` now passed to subsampling in calls to clusterSingle/clusterMany
 * Fixed so `plotClusters` now will not give incomprehensible error if given duplicates of a color
+* Fixed `plotDendrogram` so will not create blank plot.
 
 Changes in version 1.3.8 ( Release date: 2017-10-24)
 ==============

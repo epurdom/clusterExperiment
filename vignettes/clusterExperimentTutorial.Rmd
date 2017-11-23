@@ -696,7 +696,7 @@ clusterLegend(ce)[c("mergeClusters","combineMany,final")]
 
 The `plotClusterLegend` creates a quick legend plot of this information for a single clustering:
 
-```{r plotClusterLegend_before,out.width="500px",out.height="500px"}
+```{r plotClusterLegend_before,out.width="300px",out.height="300px"}
 plotClusterLegend(ce,whichCluster="combineMany,final")
 ```
 
@@ -732,7 +732,7 @@ clusterLegend(ce_temp)[["mergeClusters"]][,"name"]<-c("Not assigned","Cluster1",
 
 We use the `plotClusterLegend` to check that we assigned them as we expected:
 
-```{r plotClusterLegend}
+```{r plotClusterLegend,out.width="300px",out.height="300px"}
 plotClusterLegend(ce_temp,whichCluster="mergeClusters")
 ```
 
@@ -754,7 +754,7 @@ ce_temp<-plotClusters(ce_temp,whichClusters="workflow", sampleData=c("Biological
 
 For example, we set the colors above based on the cluster alignment produced in the above `plotClusters` where the clusterings were ordered according to the workflow and making use of the colors we manually assigned to "mergeClusters". But now we want to plot only the clusters from `clusterMany`, yet keep the same colors that we just saved so we can compare them. We do this by setting the argument `existingColors="all"`, meaning use all of the existing colors.
 
-```{r plotClusterEx1_forceColors,fig.width=18,fig.height=6}
+```{r plotClusterEx1_forceColors,fig.width=18,fig.height=9}
 par(mfrow=c(1,2))
 plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
              whichClusters="workflow", existingColors="all", clusterLabels=FALSE,
@@ -771,7 +771,7 @@ We see that while the order of the samples has changed (because I have a differe
 
 Note that the use of `existingColors="firstOnly"` and `existingColors="all"` will not give the same color assignments, *even if the colors have been previously aligned to be the same* unless its the exact same set of clusterings in the same order. This is because with each set of ordered clusterings, the realignment between clusters changes and so the assignment of colors changes. Here we will make a ClusterAlignment plot for each of these three options of the argument to demonstrate the difference.
 
-```{r plotClusterEx1_compareForceColors,fig.width=18,fig.height=6}
+```{r plotClusterEx1_compareForceColors,fig.width=18,fig.height=18}
 par(mfrow=c(2,2))
 plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
              existingColors="all", whichClusters="clusterMany", clusterLabels=FALSE,
@@ -1193,7 +1193,7 @@ As mentioned above, we find that merging clusters together based on the extent o
 
 We provide a method for doing this that consists of two steps. Making a hierarchy between the clusterings and then estimating the amount of differential expression at each branch of the hierarchy.
 
-### makeDendrogram {#makeDendrogram}
+### makeDendrogram and plotDendrogram {#makeDendrogram}
 
 `makeDendrogram` creates a hierarchical clustering of the clusters as determined by the primaryCluster of the `ClusterExperiment` object. In addition to being used for merging clusters, the dendrograms created by `makeDendrogram` are also useful for ordering the clusters in `plotHeatmap` as has been shown above.
 
@@ -1218,38 +1218,55 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
-To vary the display, we'll show the display where we put blocks of color instead of names (`plotType="colorblock"`) and we also decide to show the leaves as the individual samples instead of the clusters (`leafType="sample"`); the combination of which gives us color blocks equal to the size of the clusterings. 
-
 ```{r remakeMakeDendrogram}
 ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
                    whichCluster="combineMany,final")
+```
+
+We will visualize the dendrogram with `plotDendrogram`. The default setting plots the dendrogram where there are color blocks equal to the size of the clusters (i.e number of samples in each cluster). 
+
+```{r plotRemadeDendrogram}
 plotDendrogram(ce,leafType="sample",plotType="colorblock")
 ```
 
-Note that the clusterType of this clustering is not "combineMany", but "combineMany.x", where "x" indicates what iteration it was:
+We can actually use `plotDendrogram` to compare clusterings too, like `plotClusters` using the `whichClusters` argument to identfy which clusters to show. For example, lets compare our different `combineMany` results
+
+```{r plotRemadeDendrogram_compare}
+whCM<-grep("combineMany",clusterTypes(ce))
+plotDendrogram(ce,whichClusters=whCM,leafType="sample",plotType="colorblock")
+```
+
+Unlike `plotClusters`, however, there is no aligning of samples to make samples with the same cluster group together. 
+
+**Making this clustering current** Note that if we look at the clusterType of the "combineMany,final" cluster, it is not of type "combineMany", but "combineMany.x". This is because we've run additional `combineMany` steps on this data, and the clustering "combineMany,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
 
 ```{r clusterTypeOfCombineMany}
 clusterTypes(ce)[which(clusterLabels(ce)=="combineMany,final")]
 ```
 
-We can choose reset this past call to `combineMany` to the current 'combineMany' output (which will also set this clustering to be the primaryCluster). We don't need to recall `makeDendrogram`, since we already used this clustering to make the dendrogram by our explicit call of the argument `whichCluster`. 
-
+We can choose reset this past call to `combineMany` to be the current 'combineMany' output (which will also set this clustering to be the primaryCluster). 
 
 ```{r getBackCombineMany}
 ce<-setToCurrent(ce,whichCluster="combineMany,final")
 show(ce)
 ```
 
+We don't need to recall `makeDendrogram`, since we already used this clustering to make the dendrogram by our explicit call of the argument `whichCluster`. 
+
 ### Merging clusters with little differential expression {#mergeClusters}
+
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
-Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes at a given False Discovery Rate threshold (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see the help of `mergeClusters`). 
+Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes a given False Discovery Rate threshold of 0.05 (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see the help of `mergeClusters`). 
 
 Notice that `mergeClusters` will always run based on the clustering that made the currently existing dendrogram. So it is always good to check that it is what we expect. 
 
 ```{r checkWhatDendro}
 ce
 ```
+
+We see in the summary "Dendrogram run on 'combineMany,final'", showing us that this is the clustering that will be used (and also showing us the value of giving our own labels to the results of `combineMany` if we are going to try different strategies).
+
 
 We will run `mergeClusters` with the option `mergeMethod="adjP"`. We will also set `plotInfo="adjP"` meaning that we would like the `mergeClusters` command to also produce a plot showing the dendrogram and the estimates from the `adjP` method for each node. We also set `calculateAll=FALSE` for illustration purposes, meaning the function will only calculate the estimates for the methods we request, but as we explain below, that is not necessarily the best option if you are going to be trying out different cutoffs.
 
