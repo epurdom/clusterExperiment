@@ -43,6 +43,9 @@ se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
 cc <- clusterExperiment(mat, labMat, transformation = function(x){x})
 ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
 sce<-as(se,"SingleCellExperiment")
+
+
+
 #################################
 ###Larger sized objects based on simData/simCount:
 #################################
@@ -68,6 +71,17 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
     x[wh]<- -2
     return(x)
 })
+
+library(Rtsne)
+sceSimData<-as(seSimData,"SingleCellExperiment")
+sceSimDataDimRed<-sceSimData
+pca_data <- prcomp(t(assay(sceSimData)))
+set.seed(5252)
+tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
+
+reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
+
+
 #make a new object with -1 values
 ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)

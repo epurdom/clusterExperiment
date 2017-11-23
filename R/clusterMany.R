@@ -189,16 +189,19 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
   definition = function(x,
-                        dimReduce="none",nVarDims=NA,nPCADims=NA,
+                        dimReduce,nVarDims=NA,nPCADims=NA,
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
-
+	  if(missing(dimReduce)) dimReduce<-"none"
 	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
     origX <- x
+	  
+	  ###Need to change .transData function to return a 'SingleCellExperiment' class object rather than list
     transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
                            dimReduce=dimReduce, transFun=transFun,
                            isCount=isCount)
+						   
     x <- transObj$x
     if(!is.null(dim(x)) && NCOL(x)!=NCOL(origX)) {
       stop("Error in the internal transformation of x")
@@ -208,35 +211,54 @@ setMethod(
     if(!is.null(dim(x))) {
       x <- list(dataset1=x)
     } #if npcs=NA, then .transData returns a matrix.
-    outval <- clusterMany(x, ...)
-    ##########
-    ## Convert to clusterExperiment Object
-    ##########
-    if("clMat" %in% names(outval)) {
-      retval <- clusterExperiment(origX, outval$clMat,
-                                  transformation=transFun,
-                                  clusterInfo=outval$clusterInfo,
-                                  clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
-      return(retval)
-    }
-    else {
-      return(outval)
-    }
+	out<-as(origX,"SingleCellExperiment")
+	##Note: need to not separate out the different k of PCA into a matrix
+	##Need to go back and deal with the 
+	reducedDims(out)<-x
+	return(clusterMany(out,...))
+	
+
   }
 
 )
 
-
+# ###Make it into a SingleCellExperiment class -- even though don't have assay???
+# ###Or get rid of list option, and just make the matrix version deal with this???
+# #' @rdname clusterMany
+# #' @export
+# setMethod(
+#   f = "clusterMany",
+#   signature = signature(x = "list"),
+#   definition = function(x,...){
+# 	  #turn list of datasets into a SingleCellExperiment class
+#
+# 	  #this should be part of validObject of SingleCellExperiment class
+#     # if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
+#     #   stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
+#     # }
+#     # #check all same number of observations: Why do we have this check?? Why does it matter??
+#     # if(!length(unique(sapply(data,NCOL)))==1) {
+#     #   stop("All data sets must have the same number of observations")
+#     # }
+#
+# 	# #might need this
+# 	# if(is.null(names(data))) {
+# 	#       names(data) <- paste("dataset",1:length(data),sep="")
+# 	#     }
+#   }
+#  )
 
 #' @rdname clusterMany
 #' @export
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "list"),
+  signature = signature(x = "SingleCellExperiment"),
   definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, distFunction=NA,
                         betas=0.9, minSizes=1,
+                        dimReduce,nVarDims=NA,nPCADims=NA,
+                        transFun=NULL,isCount=FALSE,
                         verbose=FALSE,
                         mainClusterArgs=NULL,
                         subsampleArgs=NULL,
@@ -246,257 +268,287 @@ setMethod(
   )
   {
     paramMatrix<-NULL
-    data <- x
-    if(!is.null(random.seed)){
-        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
-            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
-        }
-    }
-    if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
-      stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
-    }
-    #check all same number of observations: Why do we have this check?? Why does it matter??
-    if(!length(unique(sapply(data,NCOL)))==1) {
-      stop("All data sets must have the same number of observations")
-    }
-    if(is.null(names(data))) {
-      names(data) <- paste("dataset",1:length(data),sep="")
-    }
-    dataList<-data
-    dataName <- names(dataList)
-    if(is.null(paramMatrix)){
-      param <- expand.grid(dataset=dataName,
-                         k=ks, alpha=alphas, findBestK=findBestK, beta=betas, minSize=minSizes,
-                         sequential=sequential, distFunction=distFunction,
-                         removeSil=removeSil, subsample=subsample,
-                         clusterFunction=clusterFunction, silCutoff=silCutoff)
-      ###########
-      #Check param matrix:
-      #don't vary them across ones that don't matter (i.e. 0-1 versus K);
-      #code sets to single value and then will do unique
-      #also deals with just in case the user gave duplicated values of something by mistake.
-      ###########
-	  paramAlgTypes<-algorithmType(param[,"clusterFunction"])
-	  if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
-      typeK <- which( paramAlgTypes=="K")
-      if(length(typeK)>0){
-        param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here        
-        #--------
-		#if findBestK make sure other arguments make sense:
-        #--------
-        whFindBestK <- which(param[,"findBestK"])
-        if(length(whFindBestK)>0){
-          #by default make kRange in mainClustering equal to the ks. Note this will be true of ALL
-          if(!"kRange" %in% names(mainClusterArgs)) {
-            mainClusterArgs[["kRange"]]<-ks
-          }
-          #if findBestK=TRUE, and sequential=FALSE, then need to set 'k'=NA
-          whNoSeq <- which(!param[,"sequential"])
-          if(length(intersect(whFindBestK,whNoSeq))>0){
-            param[intersect(whFindBestK,whNoSeq),"k"] <- NA
-          }
-		  #and if subsample=TRUE, then user needs to set k via subsampleArgs
-		  ##Might could handle this better by call to .checkSubsampleClusterDArgs
-          whNoSeqSub <- which(!param[,"sequential"] & param[,"subsample"])
-          if(length(intersect(whFindBestK,whNoSeqSub))>0 &
-             is.null(subsampleArgs[["clusterArgs"]]) && is.null(subsampleArgs[["clusterArgs"]][["k"]])){
-            stop("must provide k in 'clusterArgs' element of 'subsampleArgs' because there are combinations of findBestK=TRUE, sequential=FALSE and subsample=TRUE. (Note this will set 'k' for all combinations that subsample, not just this parameter combinations)")
-          }
-        }
-      }
-      type01 <- which( paramAlgTypes=="01")
-      if(length(type01)>0){
-        param[type01,"findBestK"] <- FALSE
-        param[type01,"removeSil"] <- FALSE
-        param[type01,"silCutoff"] <- 0
-      }
-	  ##Turn off distFunction for those that subsample, because will use that of co-occurance
-      whSubsample<-which(param[,"subsample"])
-      if(length(whSubsample)>0){
-        param[whSubsample,"distFunction"]<-NA
-      }
-	  ###Check value alpha, beta values
-      alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
-	  if(length(alpha01)>0){
-		  stop("alpha value must be in (0,1)")
-		  param[alpha01,"alpha"]<-NA
-	  }
-      beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
-	  if(length(beta01)>0){
-		  stop("beta value must be in (0,1)")
-		  param[beta01,"beta"]<-NA
-	  }
-
-      param <- unique(param)
-
-      #####
-      #deal with those that are invalid combinations:
-	  # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
-	  # Also, if ever reinstate param option, then should apply these checks to that param
-      ######
-      whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
-                         & param[,"findBestK"])
-      if(length(whInvalid)>0) {
-        param <- param[-whInvalid,]
-      }
-
-      whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
-                       & param[,"findBestK"])
-      if(length(whInvalid)>0) {
-        param<-param[-whInvalid,]
-      }
-
-      whInvalid <- which(param[,"sequential"] & is.na(param[,"beta"]))
-      if(length(whInvalid)>0) {
-        param<-param[-whInvalid,]
-      }
-
-	  #if type K and not findBestK, need to give the k value. 
-      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
-      if(length(whInvalid)>0){
-		  clFun<-param[,"clusterFunction"]
-		  if(any(algorithmType(clFun)=="K")) stop("One of clusterFunctions chosen requires choice of k")
-          else param<-param[-whInvalid,]
-			
+	if(length(x@reducedDims)==0){
+		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellExperiment object without the args of dimReduce, etc. ...
+	    outval <- clusterMany(assay(x),...)
+	}
+    else{
+		###############
+		if(!missing(dimReduce)){
+			###To Do: Add something to check that match requested dimReduceValues
+			if(any(!dimReduce %in%reducedDimNames(x))){
+				warning("Not all of dimReduce value match a reducedDimNames of the 'SingleCellExperiment' object, will ignore them:",paste(dimReduce[!dimReduce %in%reducedDimNames(x)],collapse=","))
+				dimReduce<-dimReduce[dimReduce %in%reducedDimNames(x)]
+			}
 		}
+		else{
+			dimReduce<-reducedDimNames(x)
+		}
+		
+		dataList <- reducedDims(x)[dimReduce]
 
-      #####
-      #require at least 2 combinations:
-      #####
-      if(nrow(param)<=1) {
-        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
-      }
-
-      #give names to the parameter combinations.
-      whVary <- which(apply(param,2,function(x){length(unique(x))>1}))
-      if(length(whVary)>0) {
-        cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-        paste(colnames(param)[whVary],x,sep="=",collapse=",")})
-      } else {
-        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
-      }
-      cnames <- gsub("dataset=","",cnames)
-      cnames <- gsub("= ","=",cnames)
-      cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
-      rownames(param) <- cnames
-  } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
-      if(!run) {
-        stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
-      }
-      if(is.null(paramMatrix)) {
-        stop("invalid input for paramMatrix; must be data.frame or matrix")
-      }
-      param <- paramMatrix
-      if(is.null(rownames(paramMatrix))) {
-        stop("input paramMatrix must have row names")
-      }
-      cnames<-rownames(paramMatrix)
-  }
-
-    if(verbose) {
-      cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
-    }
-	if(is.null(mainClusterArgs)) mainClusterArgs<-list(clusterArgs=list())
-	if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
-    paramFun <- function(i){
-      par <- param[i,]
-      #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
-      #well, sometimes. Maybe don't need this?
-      removeSil <- as.logical(gsub(" ","",par["removeSil"]))
-      sequential <- as.logical(gsub(" ","",par["sequential"]))
-      subsample <- as.logical(gsub(" ","",par["subsample"]))
-      findBestK <- as.logical(gsub(" ","",par["findBestK"]))
-      clusterFunction <- as.character(par[["clusterFunction"]])
-      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
-      if(!is.na(par[["k"]])){
-        if(sequential) {
-          seqArgs[["k0"]] <- par[["k"]]
-        } else{
-          #to be safe, set both in case user set one.
-          subsampleArgs[["clusterArgs"]][["k"]] <- par[["k"]]
-          mainClusterArgs[["clusterArgs"]][["k"]] <- par[["k"]]
-        }
-      }
-      mainClusterArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
-      seqArgs[["beta"]] <- par[["beta"]]
-      mainClusterArgs[["minSize"]] <- par[["minSize"]]
-      mainClusterArgs[["findBestK"]] <- findBestK
-      mainClusterArgs[["removeSil"]] <- removeSil
-      mainClusterArgs[["silCutoff"]] <- par[["silCutoff"]]
-      mainClusterArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
-	  mainClusterArgs[["clusterFunction"]]<-clusterFunction
-      seqArgs[["verbose"]]<-FALSE
-      if(!is.null(random.seed)) {
-        set.seed(random.seed)
-      }
-	  ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
-      if(!is.null(distFunction)){
-        diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
-        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample, dimReduce="none",
-                      mainClusterArgs=mainClusterArgs,
-                      subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE)       }
-      else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
-                 mainClusterArgs=mainClusterArgs, dimReduce="none",
-                 subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) 
+		##Need to grab the different nPCAVar values and make dataList into an extended list
+		##Only do it for dimReduce methods for which it makes sense....
+		
+		##If request k for which not calculated, give warning, tell them to redo the correction
+		
+		###Add in the variance filter after add it to the slot.
+		
+		###############
+	    if(!is.null(random.seed)){
+	        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
+	            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
+	        }
 	    }
-    if(run){
-      ##Calculate distances necessary only once
-      if(any(!is.na(param[,"distFunction"]))){
-        distParam<-unique(param[,c("dataset","distFunction")])
-        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
+	    dataName <- names(dataList)
+	    if(is.null(paramMatrix)){
+			
+	      param <- expand.grid(dataset=dataName, 
+	                         k=ks, alpha=alphas, findBestK=findBestK, 
+							 beta=betas, minSize=minSizes,
+	                         sequential=sequential, distFunction=distFunction,
+	                         removeSil=removeSil, subsample=subsample,
+	                         clusterFunction=clusterFunction, silCutoff=silCutoff)
+	      #After expanding, add in dimReduce, nDim (not before, so as to not get combinations that don't make sense. Or would it be better to do that in the combination checking part)
+		  ###########
+	      #Check param matrix:
+	      #don't vary them across ones that don't matter (i.e. 0-1 versus K);
+	      #code sets to single value and then will do unique
+	      #also deals with just in case the user gave duplicated values of something by mistake.
+	      ###########
+		  paramAlgTypes<-algorithmType(param[,"clusterFunction"])
+		  if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
+	      typeK <- which( paramAlgTypes=="K")
+	      if(length(typeK)>0){
+	        param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here        
+	        #--------
+			#if findBestK make sure other arguments make sense:
+	        #--------
+	        whFindBestK <- which(param[,"findBestK"])
+	        if(length(whFindBestK)>0){
+	          #by default make kRange in mainClustering equal to the ks. Note this will be true of ALL
+	          if(!"kRange" %in% names(mainClusterArgs)) {
+	            mainClusterArgs[["kRange"]]<-ks
+	          }
+	          #if findBestK=TRUE, and sequential=FALSE, then need to set 'k'=NA
+	          whNoSeq <- which(!param[,"sequential"])
+	          if(length(intersect(whFindBestK,whNoSeq))>0){
+	            param[intersect(whFindBestK,whNoSeq),"k"] <- NA
+	          }
+			  #and if subsample=TRUE, then user needs to set k via subsampleArgs
+			  ##Might could handle this better by call to .checkSubsampleClusterDArgs
+	          whNoSeqSub <- which(!param[,"sequential"] & param[,"subsample"])
+	          if(length(intersect(whFindBestK,whNoSeqSub))>0 &
+	             is.null(subsampleArgs[["clusterArgs"]]) && is.null(subsampleArgs[["clusterArgs"]][["k"]])){
+	            stop("must provide k in 'clusterArgs' element of 'subsampleArgs' because there are combinations of findBestK=TRUE, sequential=FALSE and subsample=TRUE. (Note this will set 'k' for all combinations that subsample, not just this parameter combinations)")
+	          }
+	        }
+	      }
+	      type01 <- which( paramAlgTypes=="01")
+	      if(length(type01)>0){
+	        param[type01,"findBestK"] <- FALSE
+	        param[type01,"removeSil"] <- FALSE
+	        param[type01,"silCutoff"] <- 0
+	      }
+		  ##Turn off distFunction for those that subsample, because will use that of co-occurance
+	      whSubsample<-which(param[,"subsample"])
+	      if(length(whSubsample)>0){
+	        param[whSubsample,"distFunction"]<-NA
+	      }
+		  ###Check value alpha, beta values
+	      alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
+		  if(length(alpha01)>0){
+			  stop("alpha value must be in (0,1)")
+			  param[alpha01,"alpha"]<-NA
+		  }
+	      beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
+		  if(length(beta01)>0){
+			  stop("beta value must be in (0,1)")
+			  param[beta01,"beta"]<-NA
+		  }
+
+	      param <- unique(param)
+
+	      #####
+	      #deal with those that are invalid combinations:
+		  # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
+		  # Also, if ever reinstate param option, then should apply these checks to that param
+	      ######
+	      whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
+	                         & param[,"findBestK"])
+	      if(length(whInvalid)>0) {
+	        param <- param[-whInvalid,]
+	      }
+
+	      whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
+	                       & param[,"findBestK"])
+	      if(length(whInvalid)>0) {
+	        param<-param[-whInvalid,]
+	      }
+
+	      whInvalid <- which(param[,"sequential"] & is.na(param[,"beta"]))
+	      if(length(whInvalid)>0) {
+	        param<-param[-whInvalid,]
+	      }
+
+		  #if type K and not findBestK, need to give the k value. 
+	      whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
+	      if(length(whInvalid)>0){
+			  clFun<-param[,"clusterFunction"]
+			  if(any(algorithmType(clFun)=="K")) stop("One of clusterFunctions chosen requires choice of k")
+	          else param<-param[-whInvalid,]
+			
+			}
+
+	      #####
+	      #require at least 2 combinations:
+	      #####
+	      if(nrow(param)<=1) {
+	        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
+	      }
+
+	      #give names to the parameter combinations.
+	      whVary <- which(apply(param,2,function(x){length(unique(x))>1}))
+	      if(length(whVary)>0) {
+	        cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
+	        paste(colnames(param)[whVary],x,sep="=",collapse=",")})
+	      } else {
+	        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
+	      }
+	      cnames <- gsub("dataset=","",cnames)
+	      cnames <- gsub("= ","=",cnames)
+	      cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
+	      rownames(param) <- cnames
+	  } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
+	      if(!run) {
+	        stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
+	      }
+	      if(is.null(paramMatrix)) {
+	        stop("invalid input for paramMatrix; must be data.frame or matrix")
+	      }
+	      param <- paramMatrix
+	      if(is.null(rownames(paramMatrix))) {
+	        stop("input paramMatrix must have row names")
+	      }
+	      cnames<-rownames(paramMatrix)
+	  }
+
+	    if(verbose) {
+	      cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
+	    }
+		if(is.null(mainClusterArgs)) mainClusterArgs<-list(clusterArgs=list())
+		if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
+	    paramFun <- function(i){
+	      par <- param[i,]
+	      #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
+	      #well, sometimes. Maybe don't need this?
+	      removeSil <- as.logical(gsub(" ","",par["removeSil"]))
+	      sequential <- as.logical(gsub(" ","",par["sequential"]))
+	      subsample <- as.logical(gsub(" ","",par["subsample"]))
+	      findBestK <- as.logical(gsub(" ","",par["findBestK"]))
+	      clusterFunction <- as.character(par[["clusterFunction"]])
+	      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
+	      if(!is.na(par[["k"]])){
+	        if(sequential) {
+	          seqArgs[["k0"]] <- par[["k"]]
+	        } else{
+	          #to be safe, set both in case user set one.
+	          subsampleArgs[["clusterArgs"]][["k"]] <- par[["k"]]
+	          mainClusterArgs[["clusterArgs"]][["k"]] <- par[["k"]]
+	        }
+	      }
+	      mainClusterArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
+	      seqArgs[["beta"]] <- par[["beta"]]
+	      mainClusterArgs[["minSize"]] <- par[["minSize"]]
+	      mainClusterArgs[["findBestK"]] <- findBestK
+	      mainClusterArgs[["removeSil"]] <- removeSil
+	      mainClusterArgs[["silCutoff"]] <- par[["silCutoff"]]
+	      mainClusterArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
+		  mainClusterArgs[["clusterFunction"]]<-clusterFunction
+	      seqArgs[["verbose"]]<-FALSE
+	      if(!is.null(random.seed)) {
+	        set.seed(random.seed)
+	      }
+		  ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
+	      if(!is.null(distFunction)){
+	        diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
+	        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample, dimReduce="none",
+	                      mainClusterArgs=mainClusterArgs,
+	                      subsampleArgs=subsampleArgs, seqArgs=seqArgs,
+	                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE)       }
+	      else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
+	                 mainClusterArgs=mainClusterArgs, dimReduce="none",
+	                 subsampleArgs=subsampleArgs, seqArgs=seqArgs,
+	                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) 
+		    }
+	    if(run){
+	      ##Calculate distances necessary only once
+	      if(any(!is.na(param[,"distFunction"]))){
+	        distParam<-unique(param[,c("dataset","distFunction")])
+	        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
         
-          allDist<-lapply(1:nrow(distParam),function(ii){
-            distFun<-as.character(distParam[ii,"distFunction"])
-            dataName<-as.character(distParam[ii,"dataset"])
-			algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" #be conservative and check for the 01 type if any of clusterFunctions are 01.
-            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE,algType=algCheckType)
-			# fun<-get(distFun,envir=globalenv())
-			#             distMat<-as.matrix(fun(t(dataList[[dataName]])))
-			#             .checkDistFunction(distMat) #check it here!
-            return(distMat)
-          })
-        names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+	          allDist<-lapply(1:nrow(distParam),function(ii){
+	            distFun<-as.character(distParam[ii,"distFunction"])
+	            dataName<-as.character(distParam[ii,"dataset"])
+				algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" #be conservative and check for the 01 type if any of clusterFunctions are 01.
+	            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE,algType=algCheckType)
+				# fun<-get(distFun,envir=globalenv())
+				#             distMat<-as.matrix(fun(t(dataList[[dataName]])))
+				#             .checkDistFunction(distMat) #check it here!
+	            return(distMat)
+	          })
+	        names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
 
-      }
+	      }
 
-      if(verbose) {
-        cat("Running Clustering on Parameter Combinations...")
-      }
+	      if(verbose) {
+	        cat("Running Clustering on Parameter Combinations...")
+	      }
 	  
-      if(ncores>1) {
-        out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
-        nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
-        if(length(nErrors)>0) {
-          stop(length(nErrors)," parameter values (of ",length(out),") hit an error. The first was:\n",out[nErrors[1]])
-        }
-      } else {
-        out <- lapply(1:nrow(param),FUN=paramFun)
-      }
-      if(verbose) {
-        cat("done.\n")
-      }
-      clMat <- sapply(out, function(x){primaryCluster(x)})
+	      if(ncores>1) {
+	        out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
+	        nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
+	        if(length(nErrors)>0) {
+	          stop(length(nErrors)," parameter values (of ",length(out),") hit an error. The first was:\n",out[nErrors[1]])
+	        }
+	      } else {
+	        out <- lapply(1:nrow(param),FUN=paramFun)
+	      }
+	      if(verbose) {
+	        cat("done.\n")
+	      }
+	      clMat <- sapply(out, function(x){primaryCluster(x)})
 
-      colnames(clMat) <- unname(cnames)
-      pList <- lapply(1:nrow(param), function(i){
-        x <- param[i,]
-        names(x) <- colnames(param)
-        return(x)})
-      clInfo <- mapply(pList, out, FUN=function(x, y){
-        c(list(choicesParam=x), clusterInfo(y))
-      }, SIMPLIFY=FALSE)
+	      colnames(clMat) <- unname(cnames)
+	      pList <- lapply(1:nrow(param), function(i){
+	        x <- param[i,]
+	        names(x) <- colnames(param)
+	        return(x)})
+	      clInfo <- mapply(pList, out, FUN=function(x, y){
+	        c(list(choicesParam=x), clusterInfo(y))
+	      }, SIMPLIFY=FALSE)
 
-      return(list(clMat=clMat, clusterInfo=clInfo, paramMatrix=param,
-                  mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
-                  subsampleArgs=subsampleArgs))
-    } else{
-      if(verbose) {
-        cat("Returning Parameter Combinations without running them (to run them choose run=TRUE)\n")
-      }
-      return(list(paramMatrix=param, mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
-                  subsampleArgs=subsampleArgs))
+	      # return(list(clMat=clMat, clusterInfo=clInfo, paramMatrix=param,
+	      #             mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
+	      #             subsampleArgs=subsampleArgs))
+		  outval <- clusterExperiment(origX, clusters=clMat,
+			                                    transformation=transFun,
+			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
+
+	    } else{
+	      if(verbose) {
+	        cat("Returning Parameter Combinations without running them (to run them choose run=TRUE)\n")
+	      }
+	      outval<-list(paramMatrix=param, mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
+	                  subsampleArgs=subsampleArgs))
+	    }
+	}
+    if(class(outval)=="ClusterExperiment") {
+		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+        return(retval)
+    }  
+    else {
+      return(outval)
     }
   }
 )
@@ -536,28 +588,7 @@ setMethod(
   }
   )
   
-#' @rdname clusterMany
-#' @export
-setMethod(
-  f = "clusterMany",
-  signature = signature(x = "SingleCellExperiment"),
-  definition = function(x, dimReduce="none", nVarDims=NA, nPCADims=NA,
-                        transFun=NULL, isCount=FALSE, ...)
-  {
-    outval <- clusterMany(assay(x), dimReduce=dimReduce, nVarDims=nVarDims,
-                          nPCADims=nPCADims, transFun=transFun, isCount=isCount,
-                          ...)
-    if(class(outval)=="ClusterExperiment") {
-		#browser()
-        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 
-        return(retval)
-    }  #need to redo it to make sure get any other part of summarized experiment
-    else {
-      return(outval)
-    }
-  }
-)
 #' @export
 #' @rdname clusterMany
 setMethod(

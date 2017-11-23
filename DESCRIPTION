@@ -37,7 +37,8 @@ Suggests:
     knitr,
     testthat,
 	scRNAseq,
-    MAST
+    MAST,
+	Rtsne
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
