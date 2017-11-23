@@ -638,8 +638,12 @@ However, the user should not assign new values to `clusterIds` which must corres
 
 # Visualizing the data {#visual}
 
-## Plotting the clusters with `plotClusters`{#plotClusters}
-We demonstrated during the quick start that we can visualize multiple clusterings using the `plotClusters` or `plotClustersWorkflow` command. Since `plotClustersWorkflow` calls the `plotClusters` command and passes the arguments of `plotClusters` onward, we will focus mainly on the main `plotClusters` command, with the understanding that most of these arguments work for both. 
+## Cluster Alignment plot with `plotClusters`{#plotClusters}
+
+We demonstrated during the quick start that we can visualize the alignment of multiple clusterings via a Cluster Alignment plot implemented in `plotClusters` or `plotClustersWorkflow` command. Since `plotClustersWorkflow` calls the `plotClusters` command and passes the arguments of `plotClusters` onward, we will focus mainly on the main `plotClusters` command, with the understanding that most of these arguments work for both. 
+
+
+Here is our basic call to `plotClusters`:
 
 ```{r plotClusterEx1_redo}
 par(mar=plotCMar)
@@ -653,7 +657,7 @@ We have seen that we can get very different plots depending on how we order the 
 
 `whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusterings chosen are either all, or only those from the most recent calls to the workflow functions. Choosing "workflow" removes from the visualization both user-defined clusterings and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `combineMany` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.
 
-If `whichClusters` is a character that is not one of these designated values, the entries should match a "clusterType" value (like `clusterMany`) or a "clusterLabel" value (with exact matching). Alternatively, the user can specify numeric indices corresponding to the columns of `clusterMatrix` that provide the order of the clusters.
+If `whichClusters` is a character that is not one of these designated values, the entries should match a "clusterType" value (like "clusterMany") or a "clusterLabel" value (with exact matching). Alternatively, the user can specify numeric indices corresponding to the columns of `clusterMatrix` that provide the order of the clusters.
 
 ```{r plotClusterEx1_newOrder}
 par(mar=plotCMar)
@@ -671,40 +675,169 @@ plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","P
 
 This options of plotting the data in the `colData`, however, is not currently available with `plotClustersWorkflow` which only plots clusterings.
 
-### Saving the alignment of plotClusters {#plotClustersAlign}
+### Manipulations of colors {#plotClustersAlign}
 
-`plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved *into* the appropriate slots of the `ClusterExperiment` object the colors and orderings in order to save the color and alignments of samples. This is done via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot (and indeed this is done automatically by `RSEC` so that the `combineMany` and `mergeClusters` steps will have aligned color assignments). Similarly, if `resetNames=TRUE` the *names* of the clusters will be changed to be integer values, but now the integers will be aligned to try to be the same across clusters (and therefore will not be consecutive integers, which is why these are saved as *names* for the clusters and not the internal `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
+In this section we will talk about a number of related ways to manipulate the colors assigned to clusters in conjunction with the `plotClusters` command.
 
-Here we make a call to plotClusters, but now ask to reset everything to match this ordering. We'll save this as a different object so that this is not a permanent change for the rest of the vignette.
+We will turn off the plotting of the cluster labels to make the plot less cluttered using the option `plot=FALSE`.
+
+
+**Saving Assignment of colors from `plotClusters`:** `plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved *into* the appropriate slots of the `ClusterExperiment` object in order to save the color and alignments of samples. This is done via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. 
+
+Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot (and indeed this is done automatically by `mergeClusters` so that the `combineMany` and `mergeClusters` steps will have aligned color assignments). Similarly, if `resetNames=TRUE` the *names* of the clusters will be changed to be integer values, but now those integers will be aligned to try to be the same across clusters (and therefore will not be consecutive integers, which is why these are saved as *names* for the clusters and not the internal `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
+
+As an example, we will make a call to `plotClusters`, but now ask to reset everything to match this clusterAlignment. 
+
+First let's look at what the object's default colors are for the first two clusterings, accessed by `clusterLegend` function:
+
+```{r plotClusterEx1_origColors}
+clusterLegend(ce)[c("mergeClusters","combineMany,final")]
+```
+
+The `plotClusterLegend` creates a quick legend plot of this information for a single clustering:
+
+```{r plotClusterLegend_before, fig.width=3,fig.height=3}
+plotClusterLegend(ce,whichCluster="combineMany,final")
+```
+
+Now, we'll run `plotClusters` and save the new colors. We'll save this as a different object so that this is not a permanent change for the rest of the vignette, though in practice we would usually overwrite the existing `ce` to save memory on our computer and not have many versions floating around. 
 
 ```{r plotClusterEx1_setColors}
-par(mar=plotCMar)
 ce_temp<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), 
-               main="Clusters from clusterMany, different order",axisLine=-1,resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
+               main="Cluster Alignment of Workflow Clusters",clusterLabels=FALSE, axisLine=-1, resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
+```
+
+Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but it has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the values in the clusterLegend). Instead, there are names that "match up" the clusters across the different clusterings. 
+
+```{r plotClusterEx1_newColors}
 clusterLegend(ce_temp)[c("mergeClusters","combineMany,final")]
 ```
 
-Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but it has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the clusterLegend values).
 
-We can also force `plotClusters` to use the existing color definitions, rather than create its own. This makes particular sense if you want to have continuity between plots -- i.e. be sure that a particular cluster always has a certain color -- but would like to do different variations of plotClusters to get a sense of how similar the clusters are.
+**Manual Assignment of colors** A similar setting can be that we have colors we want to manually set for a particular cluster, but we want to have the other clusterings get aligned to the colors of that clustering. We can use `plotClusters` to assign colors to the other clusterings so that the other clusterings inherit the colors of the cluster of interest. 
 
-For example, we set the colors above based on the cluster order from `plotClusters` where the clusters were ordered according to the workflow. But now we want to plot only the clusters from `clusterMany`, yet keep the same colors as before so we can compare them. We do this by setting the argument `existingColors="all"`, meaning use all of the existing colors (currently this is the only option available for how to use the existing colors).
+Let's manually set the colors for the "mergeClusters" clustering. We'll again create a (new)  `ce_temp` object so again we don't overwrite the previous colors for the rest of the vignette. Again, the color information is accessed with the `clusterLegend` command:
+
+```{r plotClusterEx1_clusterLegend}
+ce_temp<-ce
+clusterLegend(ce_temp)[["mergeClusters"]]
+```
+
+We will just assign new colors to the `color` column. We can also give them new names too.
+
+```{r plotClusterEx1_assignColors}
+clusterLegend(ce_temp)[["mergeClusters"]][,"color"]<-c("white","blue","green","cyan","purple")
+clusterLegend(ce_temp)[["mergeClusters"]][,"name"]<-c("Not assigned","Cluster1","Cluster2","Cluster3","Cluster4")
+```
+
+We use the `plotClusterLegend` to check that we assigned them as we expected:
+
+```{r plotClusterLegend,fig.width=3,fig.height=3}
+plotClusterLegend(ce_temp,whichCluster="mergeClusters")
+```
+
+Now we will run the `plotClusters` alignment plot, but we will direct the alignment to use the cluster colors we just gave for the "mergeClusters" cluster. We do this by using the argument `existingColors="firstOnly"` -- but as the argument option indicates it only works if the "mergeClusters" clustering is the first clustering in the plot. 
+
+```{r plotClusterEx1_firstOnlyNoSave}
+plotClusters(ce_temp,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), clusterLabels=FALSE,
+               main="Clusters from clusterMany, different order",axisLine=-1,existingColors="firstOnly")
+```
+
+This just created the visualization. We can also save the results of this as we did before with `resetColors=TRUE`, so that now all of our future clusters make use of this color information. We won't reset the names, however. Note we can avoid making the plot again with the argument `plot=FALSE`.
+
+```{r plotClusterEx1_firstOnly}
+ce_temp<-plotClusters(ce_temp,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), resetColors=TRUE,
+               main="Clusters from clusterMany, different order",axisLine=-1, clusterLabels=FALSE, existingColors="firstOnly",plot=FALSE)
+```
+
+**Using only the assigned colors** Once we start manually changing the colors, we will sometimes want to align our clusters, but *use the existing cluster colors* that are saved in the object. We can force `plotClusters` to use all the existing color assignments, rather than create its own, with the argument `existingColors="all"`. This makes particular sense if you want to have continuity between plots -- i.e. be sure that a particular cluster always has a certain color -- but would like to do different variations of plotClusters to get a sense of how similar the clusters are.
+
+For example, we set the colors above based on the cluster alignment produced in the above `plotClusters` where the clusterings were ordered according to the workflow and making use of the colors we manually assigned to "mergeClusters". But now we want to plot only the clusters from `clusterMany`, yet keep the same colors that we just saved so we can compare them. We do this by setting the argument `existingColors="all"`, meaning use all of the existing colors.
 
 ```{r plotClusterEx1_forceColors,fig.width=18,fig.height=6}
-par(mar=plotCMar)
 par(mfrow=c(1,2))
 plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
-             whichClusters="workflow", existingColors="all",
-             main="Workflow Clusters, fix the color of clusters",axisLine=-1)
+             whichClusters="workflow", existingColors="all", clusterLabels=FALSE,
+             main="All Workflow Clusters, use existing colors",axisLine=-1)
 
 plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
-             existingColors="all", whichClusters="clusterMany",
-             main="clusterMany Clusters, fix the color of clusters",
+             existingColors="all", whichClusters="clusterMany", clusterLabels=FALSE,
+             main="clusterMany Clusters, use existing colors",
              axisLine=-1)
 ```
 
 
+```{r}
+par(mfrow=c(2,2))
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
+             whichClusters="workflow", existingColors="firstOnly", clusterLabels=FALSE,
+             main="firstOnly",axisLine=-1)
+
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
+             existingColors="ignore", whichClusters="workflow", clusterLabels=FALSE,
+             main="default",
+             axisLine=-1)
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
+           existingColors="all", whichClusters="workflow", clusterLabels=FALSE,
+           main="useExisting",
+           axisLine=-1)
+```
+
+We see that while the order of the samples has changed (because I have different set of clusters to align) the *colors* assigned to each cluster have stayed the same, so I can more easily compare the plots.
+
+Note that the use of `existingColors="firstOnly"` and `existingColors="all"` will not give the same color assignments, *even if the colors have been previously aligned to be the same* unless its the exact same set of clusterings in the same order. This is because with each set of ordered clusterings, the realignment between clusters changes and so the assignment of colors changes. 
+
+```{r plotClusterEx1_compareForceColors,fig.width=18,fig.height=6}
+par(mfrow=c(2,2))
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+             existingColors="all", whichClusters="clusterMany", clusterLabels=FALSE,
+             main="clusterMany Clusters, use existing colors",
+             axisLine=-1)
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+               existingColors="firstOnly", whichClusters="clusterMany", clusterLabels=FALSE,
+               main="clusterMany Clusters, use existing of first row only",
+               axisLine=-1)
+plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+            existingColors="ignore", whichClusters="clusterMany", clusterLabels=FALSE,
+            main="clusterMany Clusters, default\n(ignoring assigned colors)",
+            axisLine=-1)
+```
+
+**Choosing a different set of colors:** `plotClusters` uses the set of colors defined in the variable `massivePalette`. This is a set of `r length(massivePalette)` colors. `plotClusters` draws from this set of colors sequentially as it goes down the clusterings each time it needs a new color. This is obviously a very large list of colors; the reason for such a long list is that `plotClusters` will error out if there are not enough colors, so we want to have a large list. If we are running RSEC with many clusterings, and each clustering has many clusters, you can quickly run through many.  The first `r length(bigPalette)` colors are a smaller subset of colors saved as a variable `bigPalette`, and these have been hand-chosen so that the colors are vibrant and not too similar to each other; the order has also been chosen so that more similar colors are not next to each other. This are the colors that are most frequently seen. `massivePalette` consists of these colors, plus all of the non-grey colors in `colors()` that are not already contained in `bigPalette`
+
+We can examine the colors in `bigPalette` with the command `showPalette`:
+
+```{r showPalette}
+showPalette()
+```
+
+This plot shows us both the name of the color (on the top) and the index of the color in `bigPalette`. 
+
+We can show a smaller subset or give an arbitrary set of colors to show with `showPalette`
+
+```{r showPaletteOptions}
+showPalette(which=1:10)
+showPalette(palette())
+```
+
+We can even show the entire `massivePalette` (notice for list of colors > 100 in length, the index is no longer plotted)
+
+```{r showPaletteMassive}
+showPalette(massivePalette,cex=0.5)
+```
+
+
+We can use this information to help change our color choices. For example, suppose I want the unassigned samples to be given the color black instead of white. Then I would like to not use the black in `bigPalette` to assign to a clustering. I will use the `colPalette` argument to give a new set of colors that does not include "black". And I will set the unassigned samples using the option `unassignedColor="black"` (there is a similar argument `missingColor` to set the color assigned to those clusters with the identification of "-2", meaning they were not included in the clustering at all).
+
+```{r removeBlack}
+plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), unassignedColor="black",colPalette=bigPalette[-grep("black",bigPalette)],
+               main="Setting unassigned color",axisLine=-1)
+
+```
+
+
 ### Variant version: `plotClustersWorkflow`
+
 `plotClusters` is a generic function for showing any clusterings. In following our workflow, however, there can often be many clusterings from `clusterMany` and the important clusters from `combineMany` and `mergeMany` can get lost from view. The function `plotClustersWorkflow` implements `plotClusters` but pulls out specific clusterings designated by the user and puts them apart from the results of `clusterMany`. 
 
 ```{r plotWorkflow}

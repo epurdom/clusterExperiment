@@ -227,7 +227,6 @@ setMethod(
   {
     existingColors<-match.arg(existingColors)
 	sampleData<-.pullSampleData(object,sampleData,fixNA="unassigned")
-	#	browser()
 	if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
@@ -287,7 +286,7 @@ setMethod(
 			#match them and make them the existing color
 			unusedColors<-colPalGood[!colPalGood %in% c(as.vector(newColorMat),firstRow)]
 			###Note: Need to update color legend in out val because used if resetColors
-			#browser()
+			###Also, dimensions of outval matrices may be bigger than that of whichClusters because sampleData was added...
 			for(val in valsToChange){
 				wh<-which(alignCl==val)
 				newCol<-unique(firstRow[wh])
@@ -298,13 +297,13 @@ setMethod(
 					unusedColors<-tail(unusedColors,-1)
 				}
 				#alignedClusterIds aligns to a number even if -1/-2)
-				newColorMat[outval$alignedClusterIds==val & clusterMatrix(object)[,whichClusters]>0]<-newCol
+				newColorMat[outval$alignedClusterIds==val & !outval$origClusters%in% c("-1","-2")]<-newCol
 
 
 			}
 			outval$colors<-newColorMat
 			###make new clusterLegend from color matrix
-			temp<-lapply(1:length(whichClusters),function(ii){
+			temp<-lapply(1:ncol(outval$alignedClusterIds),function(ii){
 				oldMat<-outval$clusterLegend[[ii]]
 				alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
 				m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
@@ -326,7 +325,7 @@ setMethod(
 		#------------
        	#now plot them
 		#------------
-		do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", plot=plotArg,clusterLabels=clusterLabels), args))
+		do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", plot=plotArg,clusterLabels=clusterLabels,sampleData=sampleData), args))
 
     }
     else{
@@ -337,9 +336,9 @@ setMethod(
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!
       ## also includes values from sampleData, which are always at the bottom, so don't affect anything.
-      oldClMat<-clusterMatrix(object)[,whichClusters]
+      	oldClMat<-clusterMatrix(object)[,whichClusters]
         newClMat<-outval$alignedClusterIds
-       #make both colors switch to aligned values (but keep name the same!)
+        #make both colors switch to aligned values (but keep name the same!)
         #can't convert the cluster ids because then wouldn't be consecutive numbers... but can give them names that match.
         convertAlignedColorLegend<-function(ii){
           oldColMat<-clusterLegend(object)[whichClusters][[ii]]
@@ -370,6 +369,7 @@ setMethod(
           return(oldColMat)
         }
         newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
+		names(newClLegend)<-colnames(oldClMat)
         clusterLegend(object)[whichClusters]<-newClLegend
     }
     if(resetOrderSamples) orderSamples(object)<-outval$orderSamples
@@ -410,7 +410,7 @@ setMethod(
   #------------
   ###Add any additional sampleData to the bottom
   #------------
-	if(!is.null(sampleData)){
+	if(!is.null(sampleData) & input=="clusters"){
 	  if(!is.matrix(sampleData) && !is.data.frame(sampleData)){
       if(length(sampleData)!=nrow(object)){
         stop("if sampleData is a single vector, it must be the same length as nrow(object)")
@@ -535,7 +535,6 @@ setMethod(
 			if(!matchToTop) pastCl<-as.character(unlist(clusters[i-1,]))#as.numeric(as.character(unlist(clusters[i-1,])))
 			else pastCl<-as.character(unlist(clusters[1,]))#as.numeric(as.character(unlist(clusters[1,])))
 		}
-		#if(i==2) browser()
 		newColorVector<- .setClusterColors(past_ct=pastCl,ct=currCl ,colorU=colPalette,past_colors=pastColorVector,reuseColors=reuseColors,minRequireColor=minRequireColor,startNewColors=startNewColors)
 
 		if(i == 1) colorListTop<-newColorVector
@@ -585,9 +584,8 @@ setMethod(
 		mat<-mat[order(mat[,"clusterIds"]),,drop=FALSE]
         return(mat)
 	})
-#	browser()
 	names(clusterLegend)<-rownames(clusters)
-	invisible(list(orderSamples=index,colors=t(colorM),alignedClusterIds=t(alignCl),clusterLegend=clusterLegend))
+	invisible(list(orderSamples=index,colors=t(colorM),alignedClusterIds=t(alignCl),clusterLegend=clusterLegend,origClusters=t(clusters)))
 
 }
 
@@ -650,7 +648,6 @@ setMethod(
 		for(tci in whichClusters){ # for each cluster EAP: in order of size
 
 			if(!reuseColors){
- 			   #if(tci==1) browser()
 				#pci tells which old cluster has the greatest number of the new cluster
 				vals<-unique(m[,tci])
 				vals<-vals[vals>0] #remove zeros

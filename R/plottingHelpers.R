@@ -105,7 +105,7 @@ setMethod(
 #'  doesn't run out of colors. However, many of the colors will be very similar 
 #'  to each other.
 #'
-#' @param wh numeric. Which colors to plot. Must be a numeric vector with values
+#' @param which numeric. Which colors to plot. Must be a numeric vector with values
 #'   between 1 and length of \code{colPalette}. If missing, all colors plotted.
 #' @param cex numeric value giving the cex for the text of the plot. 
 #' @param colPalette a vector of character colors. By default, the palette 
@@ -118,8 +118,9 @@ setMethod(
 #' @examples
 #' showPalette()
 #' showPalette(massivePalette,cex=0.6)
-showPalette<-function(colPalette=bigPalette,wh=NULL,cex=1){
+showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   oldMar<-par("mar")
+  wh<-which
   if(is.null(wh)){
     wh<-1:length(colPalette)
   }
