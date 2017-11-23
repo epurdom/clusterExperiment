@@ -67,7 +67,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("clusters","samples" ),  plotType=c("name","colorblock","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)

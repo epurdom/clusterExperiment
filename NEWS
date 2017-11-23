@@ -6,6 +6,7 @@ Changes:
 * makeDendrogram now allows option 'coCluster' to the argument `dimReduce` indicating use of the coClustering matrix to build the dendrogram.
 * makeDendrogram now has a method for building a dendrogram from an arbitrary distance function
 * `showBigPalette` has been replaced with `showPalette` and now can show any palette of colors.
+* Changed defaults in `plotDendrogram` so is colorblock of samples.
 * The colors in `bigPalette` have been changed and shuffled to reduce similar colors and `massivePalette` has been created by adding the non-grey colors from `colors()` so that `plotClusters` will not run out of colors.
 * `clusterMatrix` function now returns cluster matrix with rownames corresponding to sample names.
 * `convertClusterLegend` now takes argument `whichClusters`

@@ -696,7 +696,7 @@ clusterLegend(ce)[c("mergeClusters","combineMany,final")]
 
 The `plotClusterLegend` creates a quick legend plot of this information for a single clustering:
 
-```{r plotClusterLegend_before}
+```{r plotClusterLegend_before,out.width="500px",out.height="500px"}
 plotClusterLegend(ce,whichCluster="combineMany,final")
 ```
 
@@ -1303,10 +1303,11 @@ ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="MB",
 ce
 ```
 
-And we can use `plotClusters` to compare the results.
+We can use `plotDendrogram` to compare the results. Notice that `plotDendrogram` can recreate the above plots that were created in the calls to `mergeClusters` via the argument `mergeInfo` (of course, this only works *after* `mergeClusters` has actually been called so that the information is saved in the `ce` object).  
 
 ```{r mergeClusters_compareMerges}
-plotClusters(ce,whichClusters=c("mergeClusters,v3","mergeClusters,v2"))
+par(mar=c(1.1,1.1,6.1,2.1))
+plotDendrogram(ce,whichClusters=c("mergeClusters,v3","mergeClusters,v2"),mergeInfo="mergeMethod")
 ```
 
 ## Keeping track of and rerunning elements of the workflow {#rerun}
