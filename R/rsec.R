@@ -113,13 +113,23 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 #' @rdname RSEC
 setMethod(
   f = "RSEC",
-  signature = signature(x = "SummarizedExperiment"),
+  signature = signature(x = "SingleCellExperiment"),
   definition = function(x, ...){
     outval <- RSEC(assay(x),  ...)
     retval <- .addBackSEInfo(newObj=outval,oldObj=x)
     return(retval)
 
   })
+
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "SummarizedExperiment"),
+definition = function(x, ...){
+	RSEC(as(x,"SingleCellExperiment"),...)
+
+})
 
 #' @export
 #' @rdname RSEC

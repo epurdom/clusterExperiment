@@ -9,13 +9,13 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
-#' \code{SummarizedExperiment} and is used to store the data
+#' \code{SingleCellExperiment} and is used to store the data
 #' and clustering information.
 #'
 #' @docType class
 #' @aliases ClusterExperiment ClusterExperiment-class clusterExperiment
 #'
-#' @description In addition to the slots of the \code{SummarizedExperiment}
+#' @description In addition to the slots of the \code{SingleCellExperiment}
 #' class, the \code{ClusterExperiment} object has the additional slots described
 #' in the Slots section.
 #'
@@ -83,15 +83,15 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
-#' @import SummarizedExperiment
+#' @import SingleCellExperiment
 #' @import methods
-#' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(
   Class = "ClusterExperiment",
-  contains = "SummarizedExperiment",
+  contains = "SingleCellExperiment",
   slots = list(
     transformation="function",
     clusterMatrix = "matrix",
@@ -150,8 +150,8 @@ setValidity("ClusterExperiment", function(object) {
 #' @description Note that when subsetting the data, the co-clustering and
 #' dendrogram information are lost.
 #'
-#'@param se a matrix or \code{SummarizedExperiment} containing the data to be
-#'clustered.
+#'@param sce a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
+#' containing the data to be clustered.
 #'@param clusters can be either a numeric or character vector, a factor, or a
 #'numeric matrix, containing the cluster labels.
 #'@param transformation function. A function to transform the data before
@@ -159,23 +159,23 @@ setValidity("ClusterExperiment", function(object) {
 #'as the log.
 #'@param ... The arguments \code{transformation}, \code{clusterTypes} and
 #'  \code{clusterInfo} to be passed to the constructor for signature
-#'  \code{SummarizedExperiment,matrix}.
+#'  \code{SingleCellExperiment,matrix}.
 #'
 #'@return A \code{ClusterExperiment} object.
 #'
 #'@examples
 #'
-#'se <- matrix(data=rnorm(200), ncol=10)
+#'sce <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterExperiment(se, as.numeric(labels), transformation =
+#'cc <- clusterExperiment(sce, as.numeric(labels), transformation =
 #'function(x){x})
 #'
 #' @rdname ClusterExperiment-class
 #' @export
 setGeneric(
   name = "clusterExperiment",
-  def = function(se,  clusters,...) {
+  def = function(sce,  clusters,...) {
     standardGeneric("clusterExperiment")
   }
 )
@@ -184,33 +184,40 @@ setGeneric(
 setMethod(
   f = "clusterExperiment",
   signature = signature("matrix","ANY"),
-  definition = function(se, clusters, ...){
-    clusterExperiment(SummarizedExperiment(se), clusters, ...)
+  definition = function(sce, clusters, ...){
+    clusterExperiment(SummarizedExperiment(sce), clusters, ...)
   })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment", "numeric"),
-  definition = function(se, clusters, ...){
-    if(NCOL(se) != length(clusters)) {
-      stop("`clusters` must be a vector of length equal to the number of samples.")
-    }
-  clusterExperiment(se,matrix(clusters, ncol=1),...)
+  signature = signature("SummarizedExperiment", "ANY"),
+  definition = function(sce, clusters, ...){
+  clusterExperiment(as(sce, "SingleCellExperiment"),clusters,...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","character"),
-  definition = function(se, clusters,...){
-    clusterExperiment(se,matrix(clusters,ncol=1),...)
+  signature = signature("SingleCellExperiment", "numeric"),
+  definition = function(sce, clusters, ...){
+    if(NCOL(sce) != length(clusters)) {
+      stop("`clusters` must be a vector of length equal to the number of samples.")
+    }
+  clusterExperiment(sce,matrix(clusters, ncol=1),...)
+})
+#' @rdname ClusterExperiment-class
+setMethod(
+  f = "clusterExperiment",
+  signature = signature("SingleCellExperiment","character"),
+  definition = function(sce, clusters,...){
+    clusterExperiment(sce,matrix(clusters,ncol=1),...)
     })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","factor"),
-  definition = function(se, clusters,...){
+  signature = signature("SingleCellExperiment","factor"),
+  definition = function(sce, clusters,...){
     clusters <- as.character(clusters)
-    clusterExperiment(se,clusters,...)
+    clusterExperiment(sce,clusters,...)
   })
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
@@ -237,7 +244,7 @@ setMethod(
 #' @param merge_method character, Sets the \code{merge_method} slot (see Slots)
 #' @details The \code{clusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
-#'   matrix/SummarizedExperiment. If missing, will assign labels
+#'   matrix/SingleCellExperiment. If missing, will assign labels
 #'   "cluster1","cluster2", etc.
 #' @details Note that the validity check when creating a new
 #'   \code{ClusterExperiment} object with \code{new} is less extensive than when
@@ -246,13 +253,13 @@ setMethod(
 #'   \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
 setMethod(
   f = "clusterExperiment",
-  signature = signature("SummarizedExperiment","matrix"),
-  definition = function(se, clusters,
-                        transformation,
+  signature = signature("SingleCellExperiment","matrix"),
+  definition = function(sce, clusters,
+                        transformation=function(x){x},
                         primaryIndex=1,
                         clusterTypes="User",
                         clusterInfo=NULL,
-                        orderSamples=1:ncol(se),
+                        orderSamples=1:ncol(sce),
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,
@@ -266,7 +273,7 @@ setMethod(
                         merge_method=NA_character_,
                         checkTransformAndAssay=TRUE
   ){
-    if(NCOL(se) != nrow(clusters)) {
+    if(NCOL(sce) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
     }
@@ -302,16 +309,16 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
-    #can just give se in constructor, and then don't loose any information!
+    #can just give sce in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
-               se,
+               sce,
                transformation=transformation,
                clusterMatrix = clustersNum,
                primaryIndex = primaryIndex,
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
-               orderSamples=1:ncol(se),
+               orderSamples=1:ncol(sce),
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,

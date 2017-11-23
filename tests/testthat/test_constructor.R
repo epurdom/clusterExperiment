@@ -6,25 +6,23 @@ test_that("saved rsecFluidigm is still valid object", {
 	data(rsecFluidigm)
 	validObject(rsecFluidigm)
 		  })
+
 		  
-test_that("`clusterExperiment` constructor works with matrix and
-          SummarizedExperiments", {
-            expect_error(clusterExperiment(mat), "missing")
-            expect_error(clusterExperiment(mat,as.numeric(numLabels),transformation=log),info="Error checking transFun")
-            print(numLabels)
-            expect_error(clusterExperiment(mat, as.numeric(numLabels)), "missing")
-            expect_error(clusterExperiment(mat, numLabels[1:2], function(x){x}),
+test_that("`clusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
+            expect_error(clusterExperiment(mat), "is missing, with no default")
+			expect_error(clusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
+            expect_error(clusterExperiment(mat, numLabels[1:2]),
                          "must be a matrix of rows equal")
-            expect_error(clusterExperiment(as.data.frame(mat), numLabels, function(x){x}),
+            expect_error(clusterExperiment(as.data.frame(mat), numLabels),
                          "unable to find an inherited method for function")
             #test character input
-            ccChar<-clusterExperiment(mat, chLabels, function(x){x})
+            ccChar<-clusterExperiment(mat, chLabels)
             expect_is(primaryCluster(ccChar),"numeric")
             expect_is(primaryClusterNamed(ccChar),"character")
             expect_equal(sort(unique(primaryClusterNamed(ccChar))),sort(unique(chLabels)))
 
             #test factor input
-            clusterExperiment(mat, numLabels, function(x){x})
+            clusterExperiment(mat, numLabels)
 
             expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")
@@ -41,9 +39,13 @@ test_that("`clusterExperiment` constructor works with matrix and
             expect_equal(rowData(ccSE),rowData(se)) 
             
             show(ccSE)
- })
+			
+			ccSCE<-clusterExperiment(sce,as.numeric(numLabels))
+			###Need to add things specific to sce, but first need to build a sce object with new things.
+			
+})
 
- test_that("whichClusters works with clusterMatrix",{
+test_that("whichClusters works with clusterMatrix",{
 	 x<-dim(clusterMatrix(ceSim))
 	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="workflow")),12)
@@ -51,7 +53,8 @@ test_that("`clusterExperiment` constructor works with matrix and
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="dendro")),0)
 	 dend<-makeDendrogram(ceSim)
 	 expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
- })
+})
+ 
 test_that("adding clusters work as promised",{
   ##########
   #addClusters
@@ -214,39 +217,42 @@ test_that("subsetting works as promised",{
   
 })
 test_that("check clusterLegend, remove unclustered cells work as promised", {
-            
-            ##########
-            #check removing unclustered
-            
-            #no -1 in primary cluster
-            matTemp<-abs(labMat)
-            ccTemp<-clusterExperiment(mat,matTemp,transformation=function(x){x})
-            expect_equal(ccTemp, removeUnclustered(ccTemp)) 
-            
-            #-1 in primary cluster
-            whUn<-which(primaryCluster(ccSE) <0)
-            ccR<-removeUnclustered(ccSE)
-            expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
-            ###Check retain SE info
-            expect_equal(colData(ccR),colData(se[,-whUn]) )
-            expect_equal(rownames(ccR),rownames(se)) 
-            expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-            expect_equal(metadata(ccR),metadata(se)) 
-            expect_equal(rowData(ccR),rowData(se)) 
+    
+    ##########
+    #check removing unclustered
+    
+    #no -1 in primary cluster
+    matTemp<-abs(labMat)
+    ccTemp<-clusterExperiment(mat,matTemp,transformation=function(x){x})
+    expect_equal(ccTemp, removeUnclustered(ccTemp)) 
+    
+	###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
+    #-1 in primary cluster
+	whUn<-which(primaryCluster(ccSE) <0)
+    ccR<-removeUnclustered(ccSE)
+    expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
+	
+    ###Check retain SE info
+    expect_equal(colData(ccR),colData(se[,-whUn]) )
+    expect_equal(rownames(ccR),rownames(se)) 
+    expect_equal(colnames(ccR),colnames(se[,-whUn])) 
+    expect_equal(metadata(ccR),metadata(se)) 
+    expect_equal(rowData(ccR),rowData(se)) 
 
 
-            ##########
-            #clusterLegend
-            x<-clusterLegend(cc)
-            clusterLegend(cc)<-x
-            c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
-            clusterLegend(c4)[1:2]<-x[1:2]
-            clusterLegend(c4)[[1]]<-x[[1]]
+    ##########
+    #clusterLegend
+    x<-clusterLegend(cc)
+    clusterLegend(cc)<-x
+    c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
+    clusterLegend(c4)[1:2]<-x[1:2]
+    clusterLegend(c4)[[1]]<-x[[1]]
 #add wrong dimensions:
-            expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
-            expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
+    expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
+    expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
             
-        })
+})
+
 test_that("accessing transformed data works as promised",
           {
             expect_is(transformation(ccSE),"function")

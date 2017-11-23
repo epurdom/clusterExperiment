@@ -8,7 +8,8 @@
 #'   
 #' @param x the data matrix on which to run the clustering. Can be: matrix (with
 #'   genes in rows), a list of datasets overwhich the clusterings should be run,
-#'   a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.
+#'   a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
+#'   or a \code{ClusterExperiment} object.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
 #'   different choices of other parameters).
 #' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
@@ -105,8 +106,7 @@
 #' @details If the input is a \code{ClusterExperiment} object, current
 #'   implementation is that existing \code{orderSamples},\code{coClustering} or
 #'   the many dendrogram slots will be retained.
-#' @return If \code{run=TRUE} and the input is either a matrix, a 
-#'   \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, 
+#' @return If \code{run=TRUE} and the input is not a list of data matrices, 
 #'   will return a \code{ClusterExperiment} object, where the results are stored
 #'   as clusterings with clusterTypes \code{clusterMany}. Depending on 
 #'   \code{eraseOld} argument above, this will either delete existing such 
@@ -225,6 +225,8 @@ setMethod(
   }
 
 )
+
+
 
 #' @rdname clusterMany
 #' @export
@@ -524,12 +526,21 @@ setMethod(
   }
 )
 
-
 #' @rdname clusterMany
 #' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "SummarizedExperiment"),
+  definition = function(x, ...){
+	  clusterMany(as(x,"SingleCellExperiment"),...)
+  }
+  )
+  
+#' @rdname clusterMany
+#' @export
+setMethod(
+  f = "clusterMany",
+  signature = signature(x = "SingleCellExperiment"),
   definition = function(x, dimReduce="none", nVarDims=NA, nPCADims=NA,
                         transFun=NULL, isCount=FALSE, ...)
   {
@@ -537,6 +548,7 @@ setMethod(
                           nPCADims=nPCADims, transFun=transFun, isCount=isCount,
                           ...)
     if(class(outval)=="ClusterExperiment") {
+		#browser()
         retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 
         return(retval)

@@ -100,7 +100,7 @@ setMethod(
 #'
 #'@details \code{removeClusters} removes the clusters given by
 #'  \code{whichRemove}. If all clusters are implied, then returns a
-#'  \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. If the
+#'  \code{\link[SingleCellExperiment]{SingleCellExperiment}} object. If the
 #'  \code{primaryCluster} is one of the clusters removed, the
 #'  \code{primaryClusterIndex} is set to 1 and the dendrogram and cooccurance
 #'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
@@ -114,7 +114,7 @@ setMethod(
     if(length(whichRemove)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
-      return(as(x,"SummarizedExperiment"))
+      return(as(x,"SingleCellExperiment"))
     }
     
     newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
@@ -139,7 +139,7 @@ setMethod(
       dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichRemove])
     }
     
-    retval<-clusterExperiment(as(x,"SummarizedExperiment"),newClLabels,transformation(x),
+    retval<-clusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
                               clusterTypes=newClusterType,
                               clusterInfo<-newClusterInfo,
                               primaryIndex=pIndex,

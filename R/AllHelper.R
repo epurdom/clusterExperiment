@@ -7,7 +7,7 @@
 #' the co-clustering matrix are lost.
 #' @export
 #' @param ...,i,j,drop Forwarded to the
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -37,7 +37,7 @@ setMethod(
   signature = c("ClusterExperiment", "ANY", "numeric"),
   definition = function(x, i, j, ..., drop=TRUE) {
     # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    # out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
 	###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
 	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
@@ -64,8 +64,9 @@ setMethod(
     })
 	#fix order of samples so same
 	newOrder<-rank(x@orderSamples[j])
+	#browser()
     out<- clusterExperiment(
-             se=as(selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j),"SummarizedExperiment"),#have to explicitly give the inherintence... not great.
+sce=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
                primaryIndex = x@primaryIndex,

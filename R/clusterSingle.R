@@ -1,11 +1,12 @@
 #' General wrapper method to cluster the data
 #' 
-#' Given input data, \code{\link{SummarizedExperiment}}, or 
-#' \code{\link{ClusterExperiment}} object, this function will find clusters, 
-#' based on a single specification of parameters.
+#' Given input data, \code{\link{SummarizedExperiment}}, 
+#' \code{\link{SingleCellExperiment}} or \code{\link{ClusterExperiment}} object,
+#'  this function will find clusters, based on a single specification of parameters.
 #' 
 #' @param x the data on which to run the clustering (features in rows), or a
-#'   \code{\link{SummarizedExperiment}}, or \code{\link{ClusterExperiment}}
+#'   \code{\link{SummarizedExperiment}}, or \code{\link{SingleCellExperiment}}, 
+#'   or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
 #'   on which to run the clustering.
@@ -118,7 +119,7 @@
 #'   \code{mainClusterArgs} list.} }
 #' @return A \code{\link{ClusterExperiment}} object if input was \code{x} a
 #'   matrix (or \code{assay} of a \code{ClusterExperiment} or
-#'   \code{SummarizedExperiment} object).
+#'   \code{SummarizedExperiment}/\code{SingleCellExperiment} object).
 #' @return If input was \code{diss}, then the result is a list with values 
 #'   \itemize{ \item{clustering: }{The vector of clustering results} 
 #'   \item{clusterInfo: }{A list with information about the parameters run in
@@ -186,11 +187,22 @@ setMethod(
  
 })
 
+
 #' @rdname clusterSingle
 #' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "SummarizedExperiment", diss="missing"),
+  definition = function(x, ...) {
+	  clusterSingle(as(x,"SingleCellExperiment"),...)
+  }
+)
+
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "SingleCellExperiment", diss="missing"),
   definition = function(x, ...) {
     outval <- clusterSingle(assay(x),  ...)
     retval <- .addBackSEInfo(newObj=outval,oldObj=x)

@@ -6,8 +6,8 @@
 #' of \code{NMF} package.
 #'
 #' @docType methods
-#' @param sampleData If input to \code{data} is either a \code{\link{ClusterExperiment}} or
-#'   \code{SummarizedExperiment} object, then \code{sampleData} must index the
+#' @param sampleData If input to \code{data} is either a \code{\link{ClusterExperiment}},or
+#'   \code{SummarizedExperiment} object or \code{SingleCellExperiment}, then \code{sampleData} must index the
 #'   sampleData stored as a \code{DataFrame} in \code{colData} slot of the
 #'   object. Whether that data is continuous or not will be determined by the
 #'   properties of \code{colData} (no user input is needed). If input to \code{data} is matrix,
@@ -17,7 +17,7 @@
 #'   indicates the sample was not assigned to a cluster and gets color
 #'   `unassignedColor' and ``-2`` gets the color 'missingColor'.
 #' @param data data to use to determine the heatmap. Can be a matrix,
-#'   \code{\link{ClusterExperiment}} or
+#'   \code{\link{ClusterExperiment}}, \code{\link[SingleCellExperiment]{SingleCellExperiment}}or
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
 #'   interpretation of parameters depends on the type of the input to \code{data}.
 #' @param whSampleDataCont Which of the \code{sampleData} columns are continuous
@@ -259,15 +259,24 @@
 #' @importFrom NMF aheatmap
 setMethod(
     f = "plotHeatmap",
-    signature = signature(data = "SummarizedExperiment"),
+    signature = signature(data = "SingleCellExperiment"),
     definition = function(data, isCount=FALSE,transFun=NULL,...
     ){
       transformation<-.transData(assay(data),isCount=isCount,transFun=transFun,dimReduce="none")$transFun
       fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
       fakeCE<-clusterExperiment(data,fakeCL,transformation=transformation,checkTransformAndAssay=FALSE)
-      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data of class Summarized Experiment")
+      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'clusterExperiment'")
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
+
+setMethod(
+    f = "plotHeatmap",
+    signature = signature(data = "SummarizedExperiment"),
+    definition = function(data, isCount=FALSE,transFun=NULL,...
+    ){
+     plotHeatmap(as(data,"SingleCellExperiment"),...) 
+ })
+
 #' @rdname plotHeatmap
 #' @param nBlankLines Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).  
 setMethod(
