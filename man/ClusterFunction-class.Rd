@@ -7,11 +7,6 @@
 \alias{ClusterFunction}
 \alias{ClusterFunction}
 \alias{ClusterFunction,function-method}
-\alias{SingleCellFilter}
-\alias{ClusterFunction}
-\alias{SingleCellFilter,SingleCellExperiment-method}
-\alias{SingleCellFilter,SummarizedExperiment-method}
-\alias{SingleCellFilter,matrix-method}
 \title{Class ClusterFunction}
 \usage{
 internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
@@ -21,15 +16,6 @@ ClusterFunction(clusterFUN, ...)
 \S4method{ClusterFunction}{`function`}(clusterFUN, inputType, outputType,
   algorithmType, inputClassifyType = NA_character_,
   requiredArgs = NA_character_, classifyFUN = NULL, checkFunctions = TRUE)
-
-SingleCellFilter(object, ...)
-
-\S4method{SingleCellFilter}{SingleCellExperiment}(object, filterStats = NULL,
-  filterNames = NULL)
-
-\S4method{SingleCellFilter}{SummarizedExperiment}(object, ...)
-
-\S4method{SingleCellFilter}{matrix}(object, ...)
 }
 \arguments{
 \item{clusterFUN}{function passed to slot \code{clusterFUN}.}

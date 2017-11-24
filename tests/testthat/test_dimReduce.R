@@ -134,7 +134,32 @@ test_that("filterData works as expected",{
 	
 	
 }
-  # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))
+test_that("makeFilterStats works as promised",{
+	expect_silent(fs<-makeFilterStats(mat,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(mat,filterStats=c("mean","var")))
+	expect_silent(fs<-makeFilterStats(mat))
+
+
+	expect_silent(fs<-makeFilterStats(cc,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(cc,filterStats=c("mean","var")))
+	expect_silent(fs<-makeFilterStats(cc))
+	expect_silent(fs<-makeFilterStats(cc,whichClusterIgnore="Cluster1"))
+	
+	expect_silent(fs<-makeFilterStats(se))
+	expect_silent(fs<-makeFilterStats(se,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(se,filterStats=c("mean","var")))
+	expect_equal(sort(filterNames(fs)),sort(c("mean","var")))
+	expect_silent(fs<-makeFilterStats(fs,filterStats=c("var")))
+	expect_equal(sort(filterNames(fs)),sort(c("mean","var")))
+	expect_silent(fs<-makeFilterStats(fs,filterStats=c("cv")))
+	expect_equal(sort(filterNames(fs)),sort(c("mean","var","cv")))
+	
+	expect_silent(fs<-makeFilterStats(scf,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(scf,filterStats=c("mean","var")))
+	expect_silent(fs<-makeFilterStats(scf))
+	
+	
+})
   #
   # expect_equal(dim(transformData(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))
   # expect_equal(dim(transformData(cc,dimReduce="cv",nVarDims=3)), c(3,NCOL(assay(cc))))

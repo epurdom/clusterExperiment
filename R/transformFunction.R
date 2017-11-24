@@ -251,6 +251,15 @@ listBuiltInFilterStats<-function(){c('var', 'cv', 'mad','mean','iqr','median')}
 	'iqr'=matrixStats::rowIQRs,
 	'median'=matrixStats::rowMedians)
 	
+#' @name makeFilterStats
+#' @title Calculate filtering statistics
+#' @description Function for calculating, per row (gene), built-in statistical functions that might be used for filtering. 
+#' @param object object from which user wants to calculate per-row statistics
+#' @param filterStats character vector of statistics to calculate. Must be one of the character values given by \code{listBuildInFilterStats()}.
+#' @inheritParams makeDimReduce
+#'
+#'
+#' @rdname makeFilterStats
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -277,9 +286,9 @@ setMethod(
   ###################
   ##Do loop over filterStats values:
   ###################
-  currErrors<-c()
   if('cv' %in% filterStats){
-	  #if cv, add var and mean since calculating anyway and make cv last one
+	  #origfilterStats<-filterStats
+  #if cv, add var and mean since calculating anyway and make cv last one
 	  filterStats<-unique(c(filterStats,"var","mean"))
 	  doCV<-TRUE
 	  whCV<-grep('cv',filterStats)
@@ -292,6 +301,7 @@ setMethod(
   })
   if(doCV){
 	  filterStatData<-cbind(filterStatData, "cv"=sqrt(filterStatData[,"var"])/filterStatData[,"mean"])
+	  #filterStatData<-filterStatData[,origfilterStats] #put it in order, though user shouldn't depend on it.
   }
   filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
   return(object)
@@ -322,243 +332,38 @@ setMethod(
 #' @export
 setMethod(
   f = "makeFilterStats",
-  signature = "ClusterExperiment",
+  signature = "SingleCellExperiment",
   definition = function(object,...)
 {
-	out<-makeFilterStats(as(object,"SingleCellExperiment"),transFun=transformation(object),...)
-	return(.addBackSEInfo(newObj=object,oldObj=out))
+	makeFilterStats(as(object,"SingleCellFilter"),...)
+}
+)
+#' @rdname makeFilterStats
+#' @export
+#' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done.
+setMethod(
+  f = "makeFilterStats",
+  signature = "ClusterExperiment",
+  definition = function(object,whichClusterIgnoreUnassigned=NULL,...)
+{
+	if(!is.null(whichClusterIgnoreUnassigned)){
+		whCluster<-.TypeIntoIndices(object,whichClusterIgnoreUnassigned)
+		if(length(whCluster)>1) warning("'whichClusterIgnoreUnassigned' corresponds to multiple clusterings. Ignoring input")
+		else if(length(whCluster)==0) warning("'whichClusterIgnoreUnassigned' does not correspond to a clustering. Ignoring input")
+		else{
+			whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
+			if(length(whAssigned)>0){
+				out<-makeFilterStats(object[,whAssigned],transFun=transformation(object),...)
+				
+			}
+			else stop("No unassigned samples for clustering",clusterLabels(object)[whCluster])
+		}
+	}
+	else{
+		out<-makeFilterStats(as(object,"SingleCellFilter"),transFun=transformation(object),...)
+	}
+	filterStats(object)<-filterStats(out)
 }
 )
 
 
-#' @details \code{ignoreUnassignedVar} has no impact for PCA reduction, which
-#'   will always use all samples. At all times, regardless of the value of
-#'   \code{ignoreUnassignedVar}, a matrix with the same number of columns of
-#'   \code{assay(x)} (i.e. the same number of samples) will be returned.
-#' @details  \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a
-#'   vector of values, in which case a list will be returned with the
-#'   appropriate datasets as elements of the list.
-#' @param nVarDims Numeric (integer) vector giving the number of features (e.g.
-#'   genes) to keep, based on variance/cv/mad variability.
-#' @param dimReduce Character vector specifying the dimensionality reduction to
-#'   perform, any combination of 'none', 'PCA', 'var', 'cv', and 'mad'. See details.
-#' @param ignoreUnassignedVar logical indicating whether dimensionality reduction
-#'   via top feature variability (i.e. 'var','cv','mad') should ignore
-#'   unassigned samples in the primary clustering for calculation of the top
-#'   features.
-#'
-#' #transform and take return untransformed, top 5 features, and top 10 features
-#' y <- transform(cc, dimReduce="var", nVarDims=c(NA, 5, 10))
-#' names(y)
-#'
-# old .transData function for the variance filter part.
-#
-#   ###################
-#   ###Dim Reduction
-#   ###################
-#   ##Check user inputs
-#   ###################
-#   #check valid options for dimReduce
-#   varValues <- c("var","mad","cv")
-#   if(any(!dimReduce %in% c("none","PCA",varValues)))
-#     stop("invalid options for 'dimReduce' must be one of: 'none','PCA',",paste(varValues,collapse=","))
-#
-#   if(any(dimReduce!="none")){
-#
-#     ##Function to check and interpret values given
-#     checkValues <- function(name){
-#       ndims <- switch(as.character(name %in% varValues),
-#                       "TRUE"=nVarDims, "FALSE"=nPCADims)
-#       red <- dimReduce
-#       if(any(is.na(ndims)) & name %in% red){ #if NA in ndims
-#         if(length(ndims)==1){ #ndims is only a NA value -- assume user goofed and meant to do just "none"
-#           if(length(red)==1) red<-"none"
-#           if(length(red)>1) red <- red[-match(name, red)]
-#         }
-#         else{# otherwise user meant to do none *as well* as dimReduce with other values.
-#           red <- unique(c("none", red)) #add 'none' and remove NA
-#           ndims <- ndims[!is.na(ndims)]
-#         }
-#       }
-#       dimReduce <<- red
-#       if( name %in% varValues) nVarDims<<- ndims
-#       if(name =="PCA") nPCADims <<- ndims
-#     }
-#
-#
-#     lapply(c("PCA", varValues), checkValues)
-#
-#     dimReduce <- unique(dimReduce)
-#     nVarDims <- unique(nVarDims)
-#     nPCADims <- unique(nPCADims)
-#
-#     xPCA <- xVAR <- xNone <-NULL #possible values
-#     #logical as to whether return single matrix or list of matrices
-#     listReturn<- !(length(dimReduce)==1 &&
-#                      (dimReduce=="none" ||
-#                         (dimReduce=="PCA" & length(nPCADims)==1) ||
-#                         (dimReduce %in% varValues & length(nVarDims)==1)))
-#     whFeatures <- NULL
-#
-#     xCL <- x
-#     if(!is.null(clustering)){
-#       if(any(!is.numeric(clustering)))
-#         stop("clustering vector must be numeric")
-#       if(length(clustering)!=ncol(x))
-#         stop("clustering must be vector of length equal to columns of x")
-#       if(all(clustering<0))
-#         stop("All entries of clustering are negative")
-#       if(sum(clustering<0)==ncol(x)-1)
-#         stop("only one value in clustering not negative, cannot do dim reduction")
-#       if(any(clustering<0))
-#         xCL<-x[, -which(clustering<0)]
-#     }
-#
-#
-#     ##################
-#     #PCA dim reduction
-#     ##################
-#
-#     if("PCA" %in% dimReduce){
-#
-#       ######Check dimensions
-#       if(max(nPCADims)>NROW(x))
-#         stop("the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
-#       if(min(nPCADims)<=0)
-#         stop("the number of PCA dimensions must be a value greater than 0")
-#
-#       pctReturn <- any(nPCADims < 1)
-#       if(max(nPCADims)>100)
-#         warning("the number PCA dimensions to be selected is greater than 100. Are you sure you meant to choose to use PCA dimensionality reduction rather than the top most variable features?")
-#
-#       ######Check zero variance genes:
-#       rowvars <- matrixStats::rowVars(x)
-#       if(any(rowvars==0)) {
-#         if(all(rowvars==0)) {
-#           stop("All features have zero variance.")
-#         }
-#         warning("Found features with zero variance.\nMost likely these are features with 0 across all samples.\nThey will be removed from PCA dimensionality reduction step.")
-#       }
-#       if(pctReturn) {
-#         prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
-#         prvar<-prcObj$sdev^2 #variance of each component
-#         prvar<-prvar/sum(prvar)
-#         prc<-t(prcObj$x)
-#       } else {
-#         prc <- t(.pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE,
-#                     k=max(nPCADims)))
-#       }
-#
-#       if(pctReturn & NCOL(prc) != NCOL(origX))
-#         stop("error in coding of principal components.")
-#
-#       if(any(nPCADims > NCOL(prc)))
-#         stop("error in coding of principal components.")
-#
-#       if(!listReturn){ #nPCADims length 1; just return single matrix
-#         if(pctReturn) {
-#           nPCADims <- which(cumsum(prvar)>nPCADims)[1] #pick first pca coordinate with variance > value
-#           xRet <- prc[seq_len(nPCADims),]
-#         } else {
-#           xRet <- prc
-#         }
-#       } else{
-#         if(pctReturn){
-#           whPct <- which(nPCADims<1)
-#           pctNDims <- sapply(nPCADims[whPct], function(pct){
-#             val<-which(cumsum(prvar)>pct)[1] #pick first pca coordinate with variance > value
-#             if(length(val)==0) val<-length(prvar) #in case some numerical problem
-#             return(val)
-#           })
-#           #if(any(is.na(pctNDims))) browser()
-#           nPCADims[whPct]<-pctNDims
-#         }
-#         xPCA <- lapply(nPCADims,function(nn){prc[seq_len(nn),]})
-#         names(xPCA)<-paste("nPCAFeatures=",nPCADims,sep="")
-#       }
-#     }
-#
-#     ##################
-#     #Feature variability dim reduction
-#     ##################
-#     #for each dim reduction method requested
-#     capwords <- function(s, strict = FALSE) { #From help of tolower
-#       cap <- function(s) paste(toupper(substring(s, 1, 1)),
-#                                {s <- substring(s, 2); if(strict) tolower(s) else s},
-#                                sep = "", collapse = " " )
-#       sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
-#     }
-#     doVarReduce<-function(name){
-#       fun<-switch(name,"var"=stats::var,"mad"=stats::mad,"cv"=function(x){stats::sd(x)/mean(x)})
-#
-#       if(name %in% dimReduce){
-#         if(max(nVarDims)>NROW(xCL)) stop("the number of most variable features must be strictly less than the number of rows of input data matrix")
-#         if(min(nVarDims)<1) stop("the number of most variable features must be equal to 1 or greater")
-#         if(min(nVarDims)<50 & NROW(xCL)>1000) warning("the number of most variable features to be selected is less than 50. Are you sure you meant to choose to use the top most variable features rather than PCA dimensionality reduction?")
-#         varX<-apply(xCL,1,fun)
-#         ord<-order(varX,decreasing=TRUE)
-#         xVarOrdered<-x[ord,]
-#         if(NCOL(xVarOrdered)!=NCOL(origX)) stop("error in coding of most variable.")
-#         if(!listReturn){ #just return single matrix
-#           xRet<-xVarOrdered[1:nVarDims,]
-#           whFeatures<-ord[1:nVarDims]
-#           return(list(x=xRet,whFeatures=whFeatures))
-#         }
-#         else{ #otherwise make it a list
-#           xLIST<-lapply(nVarDims,function(nn){xVarOrdered[1:nn,]})
-#           listName<-paste("n",toupper(name),"Features=",sep="")
-#           names(xLIST)<-paste(listName,nVarDims,sep="")
-#           return(xLIST)
-#         }
-#       }
-#       else return(NULL)
-#     }
-#     if(any(dimReduce %in% varValues)){
-#       dimReduceVar<-dimReduce[dimReduce %in% varValues]
-#       # browser()
-#       if(!listReturn & length(dimReduceVar)==1){
-#         out<-doVarReduce(dimReduce)
-#         xRet<-out$x
-#         whFeatures<-out$whFeatures
-#       }
-#       else{
-#         varOut<-lapply(dimReduceVar,doVarReduce)
-#         xVAR<-unlist(varOut,recursive=FALSE)
-#       }
-#     }
-#     #     if("var" %in% dimReduce & all(!is.na(nVarDims))){ #do PCA dim reduction
-#     #       if(max(nVarDims)>NROW(x)) stop("the number of most variable features must be strictly less than the number of rows of input data matrix")
-#     #       if(min(nVarDims)<1) stop("the number of most variable features must be equal to 1 or greater")
-#     #       if(min(nVarDims)<50 & NROW(x)>1000) warning("the number of most variable features to be selected is less than 50. Are you sure you meant to choose to use the top most variable features rather than PCA dimensionality reduction?")
-#     #       varX<-apply(x,1,mad)
-#     #       ord<-order(varX,decreasing=TRUE)
-#     #       xVarOrdered<-x[ord,]
-#     #       if(NCOL(xVarOrdered)!=NCOL(origX)) stop("error in coding of principle components.")
-#     #       if(length(nVarDims)==1 & length(dimReduce)==1){ #just return single matrix
-#     #         x<-xVarOrdered[1:nVarDims,]
-#     #         whFeatures<-ord[1:nVarDims]
-#     #
-#     #       }
-#     #       else{ #otherwise make it a list
-#     #         xVAR<-lapply(nVarDims,function(nn){xVarOrdered[1:nn,]})
-#     #         names(xVAR)<-paste("nVarFeatures=",nVarDims,sep="")
-#     #         listReturn<-TRUE
-#     #       }
-#     #     }
-#     if("none" %in% dimReduce){
-#       if(listReturn) xNone<-list("noDimReduce"=x)
-#       else xRet<-x
-#     }
-#
-#   }
-#   else{
-#     listReturn<-FALSE
-#     whFeatures<-NULL
-#     xRet<-x
-#
-#   }
-#
-#
-#   if(listReturn) xRet<-c(xNone,xVAR,xPCA)
-#   return(list(x=xRet,transFun=transFun,whMostVar=whFeatures))
-# }

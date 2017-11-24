@@ -13,30 +13,33 @@
 \alias{ClusterExperiment,SingleCellExperiment,matrix-method}
 \title{Class ClusterExperiment}
 \usage{
-ClusterExperiment(sce, clusters, ...)
+ClusterExperiment(object, clusters, ...)
 
-\S4method{ClusterExperiment}{matrix,ANY}(sce, clusters, ...)
+\S4method{ClusterExperiment}{matrix,ANY}(object, clusters, ...)
 
-\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(sce, clusters, ...)
+\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters, ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(sce, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(object, clusters,
+  ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,character}(sce, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,character}(object, clusters,
+  ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,factor}(sce, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,factor}(object, clusters, ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,matrix}(sce, clusters,
+\S4method{ClusterExperiment}{SingleCellExperiment,matrix}(object, clusters,
   transformation = function(x) {     x }, primaryIndex = 1,
-  clusterTypes = "User", clusterInfo = NULL, orderSamples = 1:ncol(sce),
-  dendro_samples = NULL, dendro_index = NA_real_, dendro_clusters = NULL,
-  dendro_outbranch = NA, coClustering = NULL, merge_index = NA_real_,
-  merge_cutoff = NA_real_, merge_dendrocluster_index = NA_real_,
-  merge_nodeProp = NULL, merge_nodeMerge = NULL,
-  merge_method = NA_character_, checkTransformAndAssay = TRUE)
+  clusterTypes = "User", clusterInfo = NULL,
+  orderSamples = 1:ncol(object), dendro_samples = NULL,
+  dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
+  coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
+  merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
+  merge_nodeMerge = NULL, merge_method = NA_character_,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
-\item{sce}{a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
-containing the data to be clustered.}
+\item{object}{a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
+containing the data that was clustered.}
 
 \item{clusters}{can be either a numeric or character vector, a factor, or a
 numeric matrix, containing the cluster labels.}
@@ -92,10 +95,10 @@ A \code{ClusterExperiment} object.
 }
 \description{
 \code{ClusterExperiment} is a class that extends
-\code{SingleCellExperiment} and is used to store the data
+\code{SingleCellFilter} and is used to store the data
 and clustering information.
 
-In addition to the slots of the \code{SingleCellExperiment}
+In addition to the slots of the \code{SingleCellFilter}
 class, the \code{ClusterExperiment} object has the additional slots described
 in the Slots section.
 

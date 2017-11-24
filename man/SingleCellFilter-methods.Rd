@@ -4,12 +4,15 @@
 \name{SingleCellFilter-methods}
 \alias{SingleCellFilter-methods}
 \alias{SingleCellFilter}
+\alias{filterStats,SingleCellFilter,missing-method}
 \alias{filterStats<-,SingleCellFilter-method}
 \alias{filterNames,SingleCellFilter-method}
 \alias{filterData,SingleCellFilter-method}
 \title{Helper methods for the SingleCellFilter class}
 \usage{
 \S4method{filterStats}{SingleCellFilter,character}(object, type)
+
+\S4method{filterStats}{SingleCellFilter,missing}(object, type)
 
 \S4method{filterStats}{SingleCellFilter}(object, type, ...) <- value
 

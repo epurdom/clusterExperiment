@@ -6,10 +6,10 @@
 #' 
 #' @aliases clusterMany
 #'   
-#' @param x the data matrix on which to run the clustering. Can be: matrix (with
-#'   genes in rows), a list of datasets overwhich the clusterings should be run,
-#'   a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
-#'   or a \code{ClusterExperiment} object.
+#' @param x the data matrix on which to run the clustering. Can be object of the following classes: matrix (with
+#'   genes in rows), 
+#'   \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+#'   \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
 #'   different choices of other parameters).
 #' @param alphas values of alpha to be tried. Only used for clusterFunctions of 

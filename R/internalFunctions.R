@@ -47,7 +47,7 @@
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
+  retval<-ClusterExperiment(as(oldObj,"SingleCellFilter"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),

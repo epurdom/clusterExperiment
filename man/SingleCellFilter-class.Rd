@@ -4,7 +4,28 @@
 \name{SingleCellFilter-class}
 \alias{SingleCellFilter-class}
 \alias{SingleCellFilter}
+\alias{SingleCellFilter}
+\alias{SingleCellFilter,SingleCellExperiment-method}
+\alias{SingleCellFilter,SummarizedExperiment-method}
+\alias{SingleCellFilter,matrix-method}
 \title{Class SingleCellFilter}
+\usage{
+SingleCellFilter(object, ...)
+
+\S4method{SingleCellFilter}{SingleCellExperiment}(object, filterStats = NULL,
+  filterNames = NULL)
+
+\S4method{SingleCellFilter}{SummarizedExperiment}(object, ...)
+
+\S4method{SingleCellFilter}{matrix}(object, ...)
+}
+\arguments{
+\item{object}{input either matrix, SingleCellExperiment, or SummarizedExperiment}
+
+\item{filterStats}{either vector of a single filtering statistic or matrix of filtering statistics, each column corresponding to a filtering statistic. If \code{filterNames=NULL}, column names of this matrix are the names given to the filter statistics.}
+
+\item{filterNames}{a character vector of names for the filtering statistics.}
+}
 \description{
 \code{SingleCellFilter} is a class that extends
 \code{SingleCellExperiment} and is used to store filterStats on the data

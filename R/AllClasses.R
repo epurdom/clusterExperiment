@@ -6,16 +6,123 @@ setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
+
+#############################################################
+#############################################################
+############### SingleCellFilter Class  #####################
+#############################################################
+#############################################################
+
+#' @title Class SingleCellFilter
+#'
+#' @description \code{SingleCellFilter} is a class that extends
+#' \code{SingleCellExperiment} and is used to store filterStats on the data
+#'
+#' @docType class
+#' @aliases SingleCellFilter SingleCellFilter-class 
+#'
+#' @description In addition to the slots of the \code{SingleCellExperiment}
+#' class, the \code{SingleCellFilter} object has the additional slots described
+#' in the Slots section.
+#'
+#' @slot filterStats a numeric matrix where each column gives a summary statistics 
+#'   calculated per gene that can be used for filtering of genes.
+#' @details \code{filterStats}
+#'
+#' @name SingleCellFilter-class
+#' @rdname SingleCellFilter-class
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
+#' @export
+setClass(
+  Class = "SingleCellFilter",
+  contains = "SingleCellExperiment",
+  slots = list(
+    filterStats="matrixOrNULL"
+    )
+)
+
+setValidity("SingleCellFilter", function(object) {
+    ####
+    #test that filterStats right dimension
+    ####
+	if(!is.null(object@filterStats)){
+		if(NROW(object@filterStats)!=NROW(object)) 
+			return("number of rows of filterStats matrix must be equal to number of rows of object.")
+		if(is.null(colnames(object@filterStats)) || duplicated(colnames(object@filterStats))) 
+			return("filterStats matrix must have unique column names.")
+		if(!is.numeric(object@filterStats)) return("filterStats matrix must be numeric.")
+	}
+	return(TRUE)
+})
+
+#' @rdname SingleCellFilter-class
+#' @export
+setGeneric(
+	name = "SingleCellFilter",
+	def = function(object,...) {
+	  standardGeneric("SingleCellFilter")
+	}
+)
+#' @rdname SingleCellFilter-class
+#' @param object input either matrix, SingleCellExperiment, or SummarizedExperiment
+#' @param filterStats either vector of a single filtering statistic or matrix of filtering statistics, each column corresponding to a filtering statistic. If \code{filterNames=NULL}, column names of this matrix are the names given to the filter statistics.
+#' @param filterNames a character vector of names for the filtering statistics.
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("SingleCellExperiment"),
+	definition = function(object,filterStats=NULL,filterNames=NULL){
+	if(!is.null(filterStats) & is.null(dim(filterStats))){
+		filterStats<-matrix(filterStats,ncol=1)
+	}
+	if(!is.null(filterNames)){
+		if(length(filterNames)==ncol(filterStats)) 
+			colnames(filterStats)<-filterNames
+		else if(length(filterNames)==1)
+			colnames(filterStats)<-paste(filterNames,1:ncol(filterStats),sep="")
+		else stop("filterNames must be of same length as number of columns of filterStats")
+	}
+	out <- new("SingleCellFilter",
+		  object,
+         filterStats=filterStats
+		 )
+	return(out)
+	
+})
+#' @rdname SingleCellFilter-class
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("SummarizedExperiment"),
+	definition = function(object,...){
+		SingleCellFilter(as(object,"SingleCellExperiment"),...)
+	})
+#' @rdname SingleCellFilter-class
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("matrix"),
+	definition = function(object,...){
+		SingleCellFilter(SingleCellExperiment(object),...)
+	})
+
+
+	
+#############################################################
+#############################################################
+############### ClusterExperiment Class #####################
+#############################################################
+#############################################################
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
-#' \code{SingleCellExperiment} and is used to store the data
+#' \code{SingleCellFilter} and is used to store the data
 #' and clustering information.
 #'
 #' @docType class
 #' @aliases ClusterExperiment ClusterExperiment-class ClusterExperiment
 #'
-#' @description In addition to the slots of the \code{SingleCellExperiment}
+#' @description In addition to the slots of the \code{SingleCellFilter}
 #' class, the \code{ClusterExperiment} object has the additional slots described
 #' in the Slots section.
 #'
@@ -85,13 +192,12 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' @rdname ClusterExperiment-class
 #' @import SingleCellExperiment
 #' @import methods
-#' @importClassesFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(
   Class = "ClusterExperiment",
-  contains = "SingleCellExperiment",
+  contains = "SingleCellFilter",
   slots = list(
     transformation="function",
     clusterMatrix = "matrix",
@@ -150,8 +256,8 @@ setValidity("ClusterExperiment", function(object) {
 #' @description Note that when subsetting the data, the co-clustering and
 #' dendrogram information are lost.
 #'
-#'@param sce a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
-#' containing the data to be clustered.
+#'@param object a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
+#' containing the data that was clustered.
 #'@param clusters can be either a numeric or character vector, a factor, or a
 #'numeric matrix, containing the cluster labels.
 #'@param transformation function. A function to transform the data before
@@ -175,7 +281,7 @@ setValidity("ClusterExperiment", function(object) {
 #' @export
 setGeneric(
   name = "ClusterExperiment",
-  def = function(sce,  clusters,...) {
+  def = function(object,  clusters,...) {
     standardGeneric("ClusterExperiment")
   }
 )
@@ -184,40 +290,40 @@ setGeneric(
 setMethod(
   f = "ClusterExperiment",
   signature = signature("matrix","ANY"),
-  definition = function(sce, clusters, ...){
-    ClusterExperiment(SummarizedExperiment(sce), clusters, ...)
+  definition = function(object, clusters, ...){
+    ClusterExperiment(SummarizedExperiment(object), clusters, ...)
   })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "ClusterExperiment",
   signature = signature("SummarizedExperiment", "ANY"),
-  definition = function(sce, clusters, ...){
-  ClusterExperiment(as(sce, "SingleCellExperiment"),clusters,...)
+  definition = function(object, clusters, ...){
+  ClusterExperiment(as(object, "SingleCellExperiment"),clusters,...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "ClusterExperiment",
   signature = signature("SingleCellExperiment", "numeric"),
-  definition = function(sce, clusters, ...){
-    if(NCOL(sce) != length(clusters)) {
+  definition = function(object, clusters, ...){
+    if(NCOL(object) != length(clusters)) {
       stop("`clusters` must be a vector of length equal to the number of samples.")
     }
-  ClusterExperiment(sce,matrix(clusters, ncol=1),...)
+  ClusterExperiment(object,matrix(clusters, ncol=1),...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","character"),
-  definition = function(sce, clusters,...){
-    ClusterExperiment(sce,matrix(clusters,ncol=1),...)
+  definition = function(object, clusters,...){
+    ClusterExperiment(object,matrix(clusters,ncol=1),...)
     })
 #' @rdname ClusterExperiment-class
 setMethod(
   f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","factor"),
-  definition = function(sce, clusters,...){
+  definition = function(object, clusters,...){
     clusters <- as.character(clusters)
-    ClusterExperiment(sce,clusters,...)
+    ClusterExperiment(object,clusters,...)
   })
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
@@ -254,12 +360,12 @@ setMethod(
 setMethod(
   f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","matrix"),
-  definition = function(sce, clusters,
+  definition = function(object, clusters,
                         transformation=function(x){x},
                         primaryIndex=1,
                         clusterTypes="User",
                         clusterInfo=NULL,
-                        orderSamples=1:ncol(sce),
+                        orderSamples=1:ncol(object),
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,
@@ -273,7 +379,7 @@ setMethod(
                         merge_method=NA_character_,
                         checkTransformAndAssay=TRUE
   ){
-    if(NCOL(sce) != nrow(clusters)) {
+    if(NCOL(object) != nrow(clusters)) {
       stop("`clusters` must be a matrix of rows equal to the number of
            samples.")
     }
@@ -309,16 +415,16 @@ setMethod(
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
-    #can just give sce in constructor, and then don't loose any information!
+    #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
-               sce,
+               object,
                transformation=transformation,
                clusterMatrix = clustersNum,
                primaryIndex = primaryIndex,
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
-               orderSamples=1:ncol(sce),
+               orderSamples=1:ncol(object),
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
@@ -342,7 +448,11 @@ setMethod(
   })
 
 
-################ ClusterFunction class
+#############################################################
+#############################################################
+############### ClusterFunction Class #####################
+#############################################################
+#############################################################
 
 #' @title Class ClusterFunction
 #'   
@@ -539,97 +649,3 @@ setMethod(
 
 
 
-#' @title Class SingleCellFilter
-#'
-#' @description \code{SingleCellFilter} is a class that extends
-#' \code{SingleCellExperiment} and is used to store filterStats on the data
-#'
-#' @docType class
-#' @aliases SingleCellFilter SingleCellFilter-class 
-#'
-#' @description In addition to the slots of the \code{SingleCellExperiment}
-#' class, the \code{SingleCellFilter} object has the additional slots described
-#' in the Slots section.
-#'
-#' @slot filterStats a numeric matrix where each column gives a summary statistics 
-#'   calculated per gene that can be used for filtering of genes.
-#' @details \code{filterStats}
-#'
-#' @name SingleCellFilter-class
-#' @rdname SingleCellFilter-class
-#' @importClassesFrom SingleCellExperiment SingleCellExperiment
-#' @export
-#'
-setClass(
-  Class = "SingleCellFilter",
-  contains = "SingleCellExperiment",
-  slots = list(
-    filterStats="matrixOrNULL"
-    )
-)
-
-setValidity("SingleCellFilter", function(object) {
-    ####
-    #test that filterStats right dimension
-    ####
-	if(!is.null(object@filterStats)){
-		if(NROW(object@filterStats)!=NROW(object)) 
-			return("number of rows of filterStats matrix must be equal to number of rows of object.")
-		if(is.null(colnames(object@filterStats)) || duplicated(colnames(object@filterStats))) 
-			return("filterStats matrix must have unique column names.")
-		if(!is.numeric(object@filterStats)) return("filterStats matrix must be numeric.")
-	}
-	return(TRUE)
-})
-
-#' @aliases ClusterFunction
-#' @rdname ClusterFunction-class
-#' @export
-setGeneric(
-	name = "SingleCellFilter",
-	def = function(object,...) {
-	  standardGeneric("SingleCellFilter")
-	}
-)
-#' @rdname ClusterFunction-class
-#' @export
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("SingleCellExperiment"),
-	definition = function(object,filterStats=NULL,filterNames=NULL){
-	if(!is.null(filterStats) & is.null(dim(filterStats))){
-		filterStats<-matrix(filterStats,ncol=1)
-	}
-	if(!is.null(filterNames)){
-		if(length(filterNames)==ncol(filterStats)) 
-			colnames(filterStats)<-filterNames
-		else if(length(filterNames)==1)
-			colnames(filterStats)<-paste(filterNames,1:ncol(filterStats),sep="")
-		else stop("filterNames must be of same length as number of columns of filterStats")
-	}
-	out <- new("SingleCellFilter",
-		  object,
-         filterStats=filterStats
-		 )
-	return(out)
-	
-})
-
-#' @rdname ClusterFunction-class
-#' @export
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("SummarizedExperiment"),
-	definition = function(object,...){
-		SingleCellFilter(as(object,"SingleCellExperiment"),...)
-	})
-#' @rdname ClusterFunction-class
-#' @export
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("matrix"),
-	definition = function(object,...){
-		SingleCellFilter(SingleCellExperiment(object),...)
-	})
-
-	
