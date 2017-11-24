@@ -219,7 +219,8 @@ setMethod(
 		if(any(md > NROW(prc)))
 		  stop("Internal error in coding of principal components.")
 	}
-	
+	colnames(prc)<-paste("PC",1:ncol(prc),sep="") #make them match prcomp
+	return(prc)
 }
 
 

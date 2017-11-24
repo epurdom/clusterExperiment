@@ -74,7 +74,7 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_equal(rowData(clustNothing2),rowData(sceSimDataDimRed))
   expect_equal(reducedDims(clustNothing2),reducedDims(sceSimDataDimRed))
 
-  #check picking a single dimReduce same as apply directly to matrix 
+  #check picking all dims in single dimReduce same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), 
   	ks=c(3,4),clusterFunction="pam", dimReduce="none",
     subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
@@ -82,29 +82,55 @@ test_that("`clusterMany` works with SingleCellExperiment", {
 	ks=c(3,4),clusterFunction="pam", dimReduce="PCA",
 	subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+  expect_equal(NCOL(clusterMatrix(clustNothing)),2)
+  expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
+
+  #check picking certain dims in single dimReduce same as apply directly to matrix 
+  expect_silent(clustNothing <- clusterMany(simData, 
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA"
+  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
+      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(NCOL(clusterMatrix(clustNothing)),4)
+  expect_equal(NCOL(clusterMatrix(clustNothing3)),4)
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+
+
+  #check returning reduceDims 
+  expect_silent(clustNothing <- clusterMany(simData, 
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
+  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(reducedDim(clustNothing,"PCA"), reducedDim(sceSimDataDimRed,"PCA")[,1:6])
+  
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
+	  ks=c(3,4),nPCADims=c(5:6),
+      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(reducedDim(clustNothing3,"PCA"), reducedDim(sceSimDataDimRed,"PCA"))
 
   #check picking dimReduce="none" same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
-  #check picking nPCADims same as apply directly to matrix 
+  #checks that nPCADims ignored if dimReduce="none"
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nPCADims=c(5:6),
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="none",
   	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
 	  ks=c(3,4),nPCADims=c(5:6),dimReduce="none",
       clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
+
+
 })
 
 test_that("`clusterMany` works changing parameters", {
   #check dim reduce
-  expect_silent(cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var","cv","mad"),clusterFunction="pam",
-                    subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    isCount=FALSE)
-					)
+  expect_silent(cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),
+  	dimReduce=c("none","PCA","var","cv","mad"),clusterFunction="pam",
+    subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
   #check giving paramMatrix
   expect_silent(param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
                        subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,

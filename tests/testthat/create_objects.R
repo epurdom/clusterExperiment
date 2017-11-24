@@ -72,13 +72,13 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
     return(x)
 })
 
+###Make reduce dimensions
 library(Rtsne)
 sceSimData<-as(seSimData,"SingleCellExperiment")
 sceSimDataDimRed<-sceSimData
-pca_data <- prcomp(t(assay(sceSimData)))
+pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
 set.seed(5252)
 tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
-
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
 
 

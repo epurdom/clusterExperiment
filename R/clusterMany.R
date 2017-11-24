@@ -194,15 +194,15 @@ setMethod(
 	if(missing(dimReduce) || any(is.na(nPCADims))) dimReduce<-"none"
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	if(any(dimReduce!="none")){
-		if(length(nPCADims)==1 && is.na(nPCADims)) stop("Must give nPCADims if choose a dimReduce option not equal to 'none'")
 		nPCADims<-na.omit(nPCADims)
+		if(length(nPCADims)==0) stop("Must give nPCADims values if choose a dimReduce option not equal to 'none'")
 		maxDims<-max(nPCADims)
-		x<-makeDimReduce(x,dimReduce=dimReduce[dimReduce!="none"], maxDims=maxDims)
+		x<-makeDimReduce(x,dimReduce=dimReduce[dimReduce!="none"], maxDims=maxDims,transFun=transFun,isCount=isCount)
 	}
 	else{
 		x<-SingleCellExperiment(x)
 	}
-	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,...))
+	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,transFun=transFun,isCount=isCount,...))
 }
 )
 
@@ -234,11 +234,14 @@ setMethod(
     }
 	if(length(x@reducedDims)==0 & !all(dimReduce=="none")){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellExperiment object without the args of dimReduce, etc. ...
-	    return(clusterMany(assay(x),...))
+	    outval<-clusterMany(assay(x),...)
+		if(class(outval)=="ClusterExperiment") {
+			outval<-.addBackSEInfo(newObj=outval,oldObj=x)
+		}
+		return(outval)
 	}
     else{
 	    ##TO DO: need to deal with dimReduce="none". And make sure transformed data is used!
-		
 		###############
 	    #Check inputs of dimReduce slots
 		###############  
@@ -268,6 +271,7 @@ setMethod(
 	    #Check inputs of variance filter after add it to the slot.
 		###############  
 
+
 		###############
 	    #Start creating the combinations
 		###############
@@ -279,7 +283,7 @@ setMethod(
 	        sequential=sequential, distFunction=distFunction,
 	        removeSil=removeSil, subsample=subsample,
 	        clusterFunction=clusterFunction,silCutoff=silCutoff)
-
+			
 		  ###########
 	      #Check param matrix:
 	      #don't vary them across ones that don't matter (i.e. 0-1 versus K);
@@ -552,15 +556,7 @@ setMethod(
 	    }
 		return(outval)
 	}
-	# # #do I need this?? Do I loose information somewhere?
-	#     if(class(outval)=="ClusterExperiment") {
-	# 	# retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-	# 	#         return(retval)
-	#
-	#     }
-	#     else {
-	#       return(outval)
-	#     }
+
   }
 )
 
