@@ -1,6 +1,6 @@
-#' @title Plot dendrogram of clusterExperiment object
+#' @title Plot dendrogram of ClusterExperiment object
 #'   
-#' @description Plots the dendrogram saved in a clusterExperiment object
+#' @description Plots the dendrogram saved in a ClusterExperiment object
 #'   
 #' @param x a \code{\link{ClusterExperiment}} object.
 #' @param leafType if "samples" the dendrogram has one leaf per sample,
@@ -113,7 +113,7 @@ setMethod(
 				mergeMethod<-x@merge_method
 			}
 		}
-		else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from clusterExperiment object
+		else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from ClusterExperiment object
 		else mergeMethod<-"none"
 	} else{
 		warning("There is no information about merging -- will ignore input to 'mergeInfo'")

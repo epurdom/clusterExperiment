@@ -124,7 +124,7 @@ test_that("`clusterMany` works changing parameters", {
   expect_silent(cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),
   	dimReduce=c("none","PCA","var","cv","mad"),clusterFunction="pam",
     subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
-  #check giving paramMatrix
+  #check returning paramMatrix
   expect_silent(param <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
                        subsample=FALSE, sequential=FALSE,run=FALSE,verbose=FALSE,
                        isCount=FALSE))

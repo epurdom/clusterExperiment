@@ -5,21 +5,20 @@
 \alias{internalFunctionCheck}
 \alias{ClusterFunction-class}
 \alias{ClusterFunction}
-\alias{clusterFunction}
-\alias{clusterFunction}
-\alias{clusterFunction,function-method}
+\alias{ClusterFunction}
+\alias{ClusterFunction,function-method}
 \title{Class ClusterFunction}
 \usage{
 internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
 
-clusterFunction(clusterFUN, ...)
+ClusterFunction(clusterFUN, ...)
 
-\S4method{clusterFunction}{`function`}(clusterFUN, inputType, outputType,
+\S4method{ClusterFunction}{`function`}(clusterFUN, inputType, outputType,
   algorithmType, inputClassifyType = NA_character_,
   requiredArgs = NA_character_, classifyFUN = NULL, checkFunctions = TRUE)
 }
 \arguments{
-\item{clusterFUN}{function bassed to slot \code{clusterFUN}.}
+\item{clusterFUN}{function passed to slot \code{clusterFUN}.}
 
 \item{inputType}{character for slot \code{inputType}}
 
@@ -27,7 +26,7 @@ clusterFunction(clusterFUN, ...)
 
 \item{outputType}{character for slot \code{outputType}}
 
-\item{...}{arguments passed to different methods of \code{clusterFunction}}
+\item{...}{arguments passed to different methods of \code{ClusterFunction}}
 
 \item{inputClassifyType}{character for slot \code{inputClassifyType}}
 
@@ -45,12 +44,12 @@ A \code{ClusterFunction} object.
 \code{ClusterFunction} is a class for holding functions that can
   be used for clustering in the clustering algorithms in this package.
 
-The constructor \code{clusterFunction} creates an object of the
+The constructor \code{ClusterFunction} creates an object of the
  class \code{ClusterFunction}.
 }
 \details{
 \code{internalFunctionCheck} is the function that is called by the 
-  validity check of the \code{clusterFunction} constructor (if 
+  validity check of the \code{ClusterFunction} constructor (if 
   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
   to be able to test their functions and debug them, which is difficult to do
   with a S4 validity function.
@@ -111,7 +110,7 @@ must take the corresponding required arguments (see details below).}
 \item{\code{classifyFUN}}{a function that takes as input new data and the output of
 \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster
 assignments of the new data.  Note that the function should assume that the
-input 'x' is not the same samples that were input to the clusterFunction
+input 'x' is not the same samples that were input to the ClusterFunction
 (but can assume that it is the same number of features/columns). Used in
 subsampling clustering. If given value \code{NULL} then subsampling can
 only be \code{"InSample"}, see \code{\link{subsampleClustering}}.}
@@ -150,7 +149,7 @@ cluster::pam(x=t(x),k=k,cluster.only=cluster.only)
 internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
 #Note it doesn't pass if inputType="either" because no catches for x=NULL
 internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
-myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
+myCF<-ClusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
 internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
 }

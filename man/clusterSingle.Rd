@@ -6,7 +6,9 @@
 \alias{clusterSingle,missing,matrixOrNULL-method}
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
+\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
+\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
@@ -16,18 +18,25 @@
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x, dimReduce = "none",
+  nDims = NA, ...)
+
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
+
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x, dimReduce = "none",
+  nDims = NA, ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  dimReduce = c("none", "PCA", "var", "cv", "mad"), ndims = NA,
+  dimReduce = c("none", "PCA", "var", "cv", "mad"), nDims = NA,
   clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link{SummarizedExperiment}}, or \code{\link{ClusterExperiment}}
+\code{\link{SummarizedExperiment}}, or \code{\link{SingleCellExperiment}}, 
+or \code{\link{ClusterExperiment}}
 object.}
 
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
@@ -35,6 +44,14 @@ on which to run the clustering.}
 
 \item{...}{arguments to be passed on to the method for signature 
 \code{matrix}.}
+
+\item{dimReduce}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+details.}
+
+\item{nDims}{integer An integer identifying how many dimensions to reduce to 
+in the reduction specified by \code{dimReduce}}
 
 \item{replaceCoClustering}{logical. Applicable if \code{x} is a
 \code{ClusterExperiment} object. If TRUE, the co-clustering resulting from
@@ -68,14 +85,6 @@ function to \code{transFun}.}
 \item{transFun}{function A function to use to transform the input data matrix
 before clustering.}
 
-\item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
-details.}
-
-\item{ndims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{dimReduce}}
-
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result
 of a call to \code{clusterSingle}.}
@@ -86,7 +95,7 @@ valid.}
 \value{
 A \code{\link{ClusterExperiment}} object if input was \code{x} a
   matrix (or \code{assay} of a \code{ClusterExperiment} or
-  \code{SummarizedExperiment} object).
+  \code{SummarizedExperiment}/\code{SingleCellExperiment} object).
 
 If input was \code{diss}, then the result is a list with values 
   \itemize{ \item{clustering: }{The vector of clustering results} 
@@ -95,9 +104,9 @@ If input was \code{diss}, then the result is a list with values
   clustering} }
 }
 \description{
-Given input data, \code{\link{SummarizedExperiment}}, or 
-\code{\link{ClusterExperiment}} object, this function will find clusters, 
-based on a single specification of parameters.
+Given input data, \code{\link{SummarizedExperiment}}, 
+\code{\link{SingleCellExperiment}} or \code{\link{ClusterExperiment}} object,
+ this function will find clusters, based on a single specification of parameters.
 }
 \details{
 \code{clusterSingle} is an 'expert-oriented' function, intended to

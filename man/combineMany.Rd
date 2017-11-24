@@ -20,7 +20,7 @@
 \S4method{combineMany}{ClusterExperiment,missing}(x, whichClusters, ...)
 }
 \arguments{
-\item{x}{a matrix or \code{\link{clusterExperiment}} object.}
+\item{x}{a matrix or \code{\link{ClusterExperiment}} object.}
 
 \item{whichClusters}{a numeric or character vector that specifies which
 clusters to compare (missing if x is a matrix)}

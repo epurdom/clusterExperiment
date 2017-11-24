@@ -210,7 +210,7 @@
 #' cl2 <- cl
 #' changeAssign <- sample(1:length(cl), 80)
 #' cl2[changeAssign] <- sample(cl[changeAssign])
-#' ce <- clusterExperiment(simCount, cl2, transformation=function(x){log2(x+1)})
+#' ce <- ClusterExperiment(simCount, cl2, transformation=function(x){log2(x+1)})
 #'
 #' #simple, minimal, example. Show counts, but cluster on underlying means
 #' plotHeatmap(ce)
@@ -264,8 +264,8 @@ setMethod(
     ){
       transformation<-.transData(assay(data),isCount=isCount,transFun=transFun,dimReduce="none")$transFun
       fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
-      fakeCE<-clusterExperiment(data,fakeCL,transformation=transformation,checkTransformAndAssay=FALSE)
-      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'clusterExperiment'")
+      fakeCE<-ClusterExperiment(data,fakeCL,transformation=transformation,checkTransformAndAssay=FALSE)
+      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'ClusterExperiment'")
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 
@@ -437,7 +437,7 @@ setMethod(
 			warning("names of list given by user in clusterLegend do not match clusters nor sampleData chosen. Will be ignored.")
 		}
 		else{
-	        #keep existing clLegend from clusterExperiment object if not conflict with user input:
+	        #keep existing clLegend from ClusterExperiment object if not conflict with user input:
 	        whNotShared<-which(!names(clLegend)%in% names(userClLegend))
 	        if(length(whNotShared)>0) clLegend<-c(userClLegend,clLegend[whNotShared]) else clLegend<-userClLegend
 	        clLegend<-.convertToAheatmap(clLegend, names=TRUE)
@@ -864,7 +864,7 @@ setMethod(
   definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
     if(is.null(data@coClustering)) stop("coClustering slot is empty")
       if(invert) data@coClustering<-1-data@coClustering
-    fakeCE<-clusterExperiment(data@coClustering,
+    fakeCE<-ClusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusterInfo(data),

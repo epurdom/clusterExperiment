@@ -25,7 +25,7 @@ test_that("`plotHeatmap` works with matrix objects", {
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
     sampleData<-clusterMatrix(smSimCE)
     alList<-plotClusters(sampleData)
-    alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
+    alCol<-ClusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
    #these should be same plots:
     x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE,plot=plotAll)
     x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE,plot=plotAll)

@@ -13,7 +13,7 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' and clustering information.
 #'
 #' @docType class
-#' @aliases ClusterExperiment ClusterExperiment-class clusterExperiment
+#' @aliases ClusterExperiment ClusterExperiment-class ClusterExperiment
 #'
 #' @description In addition to the slots of the \code{SingleCellExperiment}
 #' class, the \code{ClusterExperiment} object has the additional slots described
@@ -142,7 +142,7 @@ setValidity("ClusterExperiment", function(object) {
 	return(TRUE)
 })
 
-#' @description The constructor \code{clusterExperiment} creates an object of
+#' @description The constructor \code{ClusterExperiment} creates an object of
 #' the class \code{ClusterExperiment}. However, the typical way of creating
 #' these objects is the result of a call to \code{\link{clusterMany}} or
 #' \code{\link{clusterSingle}}.
@@ -168,56 +168,56 @@ setValidity("ClusterExperiment", function(object) {
 #'sce <- matrix(data=rnorm(200), ncol=10)
 #'labels <- gl(5, 2)
 #'
-#'cc <- clusterExperiment(sce, as.numeric(labels), transformation =
+#'cc <- ClusterExperiment(sce, as.numeric(labels), transformation =
 #'function(x){x})
 #'
 #' @rdname ClusterExperiment-class
 #' @export
 setGeneric(
-  name = "clusterExperiment",
+  name = "ClusterExperiment",
   def = function(sce,  clusters,...) {
-    standardGeneric("clusterExperiment")
+    standardGeneric("ClusterExperiment")
   }
 )
 #' @rdname ClusterExperiment-class
 #' @export
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("matrix","ANY"),
   definition = function(sce, clusters, ...){
-    clusterExperiment(SummarizedExperiment(sce), clusters, ...)
+    ClusterExperiment(SummarizedExperiment(sce), clusters, ...)
   })
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("SummarizedExperiment", "ANY"),
   definition = function(sce, clusters, ...){
-  clusterExperiment(as(sce, "SingleCellExperiment"),clusters,...)
+  ClusterExperiment(as(sce, "SingleCellExperiment"),clusters,...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("SingleCellExperiment", "numeric"),
   definition = function(sce, clusters, ...){
     if(NCOL(sce) != length(clusters)) {
       stop("`clusters` must be a vector of length equal to the number of samples.")
     }
-  clusterExperiment(sce,matrix(clusters, ncol=1),...)
+  ClusterExperiment(sce,matrix(clusters, ncol=1),...)
 })
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","character"),
   definition = function(sce, clusters,...){
-    clusterExperiment(sce,matrix(clusters,ncol=1),...)
+    ClusterExperiment(sce,matrix(clusters,ncol=1),...)
     })
 #' @rdname ClusterExperiment-class
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","factor"),
   definition = function(sce, clusters,...){
     clusters <- as.character(clusters)
-    clusterExperiment(sce,clusters,...)
+    ClusterExperiment(sce,clusters,...)
   })
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
@@ -242,17 +242,17 @@ setMethod(
 #' @param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)
 #' @param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see Slots)
 #' @param merge_method character, Sets the \code{merge_method} slot (see Slots)
-#' @details The \code{clusterExperiment} constructor function gives
+#' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
 #'   "cluster1","cluster2", etc.
 #' @details Note that the validity check when creating a new
 #'   \code{ClusterExperiment} object with \code{new} is less extensive than when
-#'   using \code{clusterExperiment} function with
+#'   using \code{ClusterExperiment} function with
 #'   \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
-#'   \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
+#'   \code{ClusterExperiment} to create new \code{ClusterExperiment} objects.
 setMethod(
-  f = "clusterExperiment",
+  f = "ClusterExperiment",
   signature = signature("SingleCellExperiment","matrix"),
   definition = function(sce, clusters,
                         transformation=function(x){x},
@@ -342,7 +342,7 @@ setMethod(
   })
 
 
-################ clusterFunction class
+################ ClusterFunction class
 
 #' @title Class ClusterFunction
 #'   
@@ -350,7 +350,7 @@ setMethod(
 #'   be used for clustering in the clustering algorithms in this package.
 #'   
 #' @docType class
-#' @aliases ClusterFunction ClusterFunction-class clusterFunction
+#' @aliases ClusterFunction ClusterFunction-class ClusterFunction
 #' @slot clusterFUN a function defining the clustering function. See details for
 #'   required arguments.
 #' @slot inputType a character defining what type of input \code{clusterFUN}
@@ -361,7 +361,7 @@ setMethod(
 #' @slot classifyFUN a function that takes as input new data and the output of
 #'   \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster
 #'   assignments of the new data.  Note that the function should assume that the
-#'   input 'x' is not the same samples that were input to the clusterFunction
+#'   input 'x' is not the same samples that were input to the ClusterFunction
 #'   (but can assume that it is the same number of features/columns). Used in
 #'   subsampling clustering. If given value \code{NULL} then subsampling can
 #'   only be \code{"InSample"}, see \code{\link{subsampleClustering}}.
@@ -478,10 +478,10 @@ setValidity("ClusterFunction", function(object) {
 	#----
 	# function arguments are as needed
 	#----
-	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to clusterFunction doesn't contain 'x'")
-		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to clusterFunction doesn't contain 'diss'")	
-	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to clusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
-	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to clusterFunction doesn't contain", paste(.required01Args,collapse=","))
+	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to ClusterFunction doesn't contain 'x'")
+		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to ClusterFunction doesn't contain 'diss'")	
+	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
+	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to ClusterFunction doesn't contain", paste(.required01Args,collapse=","))
 	
 	
 	if(object@checkFunctions){ #user can skip the check.
@@ -492,10 +492,10 @@ setValidity("ClusterFunction", function(object) {
 	return(TRUE)
   })
 
-#'@description The constructor \code{clusterFunction} creates an object of the
+#'@description The constructor \code{ClusterFunction} creates an object of the
 #'  class \code{ClusterFunction}.
 #'  
-#'@param clusterFUN function bassed to slot \code{clusterFUN}.
+#'@param clusterFUN function passed to slot \code{clusterFUN}.
 #'@param inputType character for slot \code{inputType}
 #'@param algorithmType character for slot \code{inputType}
 #'@param classifyFUN function for slot \code{classifyFUN}
@@ -504,22 +504,22 @@ setValidity("ClusterFunction", function(object) {
 #'@param requiredArgs character for slot \code{requiredArgs}
 #'@param checkFunctions logical for whether to check the input functions with
 #'  \code{internalFunctionsCheck}
-#'@param ... arguments passed to different methods of \code{clusterFunction}  
+#'@param ... arguments passed to different methods of \code{ClusterFunction}  
 #'@return A \code{ClusterFunction} object.
 #'
-#' @aliases clusterFunction
+#' @aliases ClusterFunction
 #' @rdname ClusterFunction-class
 #' @export
 setGeneric(
-	name = "clusterFunction",
+	name = "ClusterFunction",
 	def = function(clusterFUN,...) {
-	  standardGeneric("clusterFunction")
+	  standardGeneric("ClusterFunction")
 	}
 )
 #' @rdname ClusterFunction-class
 #' @export
 setMethod(
-	f = "clusterFunction",
+	f = "ClusterFunction",
 	signature = signature("function"),
 	definition = function(clusterFUN, inputType,outputType,algorithmType,inputClassifyType=NA_character_,requiredArgs=NA_character_,classifyFUN=NULL,checkFunctions=TRUE){
 		out <- new("ClusterFunction",
@@ -535,3 +535,47 @@ setMethod(
 		return(out)
 	}
 )
+
+
+
+
+#' @title Class SingleCellFilter
+#'
+#' @description \code{SingleCellFilter} is a class that extends
+#' \code{SingleCellExperiment} and is used to store filters on the data
+#'
+#' @docType class
+#' @aliases SingleCellFilter SingleCellFilter-class 
+#'
+#' @description In addition to the slots of the \code{SingleCellExperiment}
+#' class, the \code{SingleCellFilter} object has the additional slots described
+#' in the Slots section.
+#'
+#' @slot filters a numeric matrix where each column gives a summary statistics 
+#'   calculated per gene that can be used for filtering of genes.
+#' @details \code{filters}
+#'
+#' @name SingleCellFilter-class
+#' @rdname SingleCellFilter-class
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
+#' @export
+#'
+setClass(
+  Class = "SingleCellFilter",
+  contains = "SingleCellExperiment",
+  slots = list(
+    filters="matrix"
+    )
+)
+
+setValidity("SingleCellFilter", function(object) {
+    ####
+    #test that filters right dimension
+    ####
+	if(NROW(object@filters)!=NROW(object)) 
+		return("number of rows of filters matrix must be equal to number of rows of object.")
+	if(is.null(colnames(object@filters)) || duplicated(colnames(object@filters))) 
+		return("filters matrix must have unique column names.")
+	if(!is.numeric(object@filters)) return("filters matrix must be numeric.")
+	return(TRUE)
+})

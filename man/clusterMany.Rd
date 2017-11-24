@@ -4,34 +4,35 @@
 \name{clusterMany,matrix-method}
 \alias{clusterMany,matrix-method}
 \alias{clusterMany}
-\alias{clusterMany,list-method}
+\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
-  nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
+\S4method{clusterMany}{matrix}(x, dimReduce, nVarDims = NA, nPCADims = NA,
+  transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
-  findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
-  minSizes = 1, verbose = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
-  run = TRUE, ...)
+\S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
+  alphas = 0.1, findBestK = FALSE, sequential = FALSE,
+  removeSil = FALSE, subsample = FALSE, silCutoff = 0,
+  distFunction = NA, betas = 0.9, minSizes = 1, dimReduce,
+  nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE,
+  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
 
-\S4method{clusterMany}{SummarizedExperiment}(x, dimReduce = "none",
-  nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
+\S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
 \S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be: matrix (with
 genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
+or a \code{ClusterExperiment} object.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
@@ -144,8 +145,7 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \value{
-If \code{run=TRUE} and the input is either a matrix, a 
-  \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, 
+If \code{run=TRUE} and the input is not a list of data matrices, 
   will return a \code{ClusterExperiment} object, where the results are stored
   as clusterings with clusterTypes \code{clusterMany}. Depending on 
   \code{eraseOld} argument above, this will either delete existing such 

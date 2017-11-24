@@ -4,7 +4,7 @@
 \name{plotDendrogram,ClusterExperiment-method}
 \alias{plotDendrogram,ClusterExperiment-method}
 \alias{plotDendrogram}
-\title{Plot dendrogram of clusterExperiment object}
+\title{Plot dendrogram of ClusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
@@ -65,7 +65,7 @@ available for 'ape' package >= 4.1-0.6).}
 A dendrogram is plotted. Nothing is returned.
 }
 \description{
-Plots the dendrogram saved in a clusterExperiment object
+Plots the dendrogram saved in a ClusterExperiment object
 }
 \details{
 If \code{leafType="clusters"}, the plotting function will work best

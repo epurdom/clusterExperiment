@@ -132,7 +132,7 @@
 \item{x, object}{a ClusterExperiment object.}
 
 \item{..., i, j, drop}{Forwarded to the
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} method.}
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} method.}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
@@ -201,6 +201,6 @@ the co-clustering matrix are lost.
 Note that redefining the transformation function via
   \code{transformation(x)<-} will check the validity of the transformation on
   the data assay. If the assay is large, this may be time consuming. Consider
-  using a call to clusterExperiment, which has the option as to whether to
+  using a call to ClusterExperiment, which has the option as to whether to
   check the validity of the transformation.
 }

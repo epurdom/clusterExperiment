@@ -5,7 +5,7 @@
 #'
 #' @aliases combineMany
 #'
-#' @param x a matrix or \code{\link{clusterExperiment}} object.
+#' @param x a matrix or \code{\link{ClusterExperiment}} object.
 #' @param whichClusters a numeric or character vector that specifies which
 #'   clusters to compare (missing if x is a matrix)
 #' @param clusterFunction the clustering to use (passed to
@@ -155,7 +155,7 @@ setMethod(
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
-    newObj <- clusterExperiment(x, outlist$clustering,
+    newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="combineMany",checkTransformAndAssay=FALSE)
     #add "c" to name of cluster

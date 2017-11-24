@@ -28,6 +28,10 @@ test_that("makeDimReduce works as promised",{
   expect_equal(abs(reducedDim(dr2,"PCA")[,1:4]), abs(reducedDim(dr2,"PCA")))
   
 })
+
+test_that("SingleCellFilter class works as expected",{
+
+}
   # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))
   #
   # expect_equal(dim(transformData(cc,dimReduce="var",nVarDims=3)), c(3,NCOL(assay(cc))))

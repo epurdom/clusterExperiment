@@ -437,7 +437,7 @@ This makes sense only for counts.")
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
     if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
-    newObj <- clusterExperiment(x, outlist$clustering,
+    newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
                                 checkTransformAndAssay=FALSE)

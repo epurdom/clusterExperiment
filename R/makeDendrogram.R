@@ -15,7 +15,7 @@
 #'   dimensionality reduction to perform before clustering. Options are 
 #'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 #'   details. The option "coCluster" will use the co-Clustering matrix stored 
-#'   in the 'coClustering' slot of the \code{clusterExperiment} object.
+#'   in the 'coClustering' slot of the \code{ClusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
@@ -108,7 +108,7 @@ setMethod(
 	}
 	else{
 		if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'dimReduce'")
-			if(is.null(dimnames(x@coClustering))) stop("This clusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
+			if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
 		outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
 		
 	}

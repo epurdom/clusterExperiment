@@ -42,12 +42,12 @@
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-#   Note: .addBackSEInfo calls clusterExperiment (i.e. validates)
+#   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
     return(retval)
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-clusterExperiment(as(oldObj,"SingleCellExperiment"),
+  retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),

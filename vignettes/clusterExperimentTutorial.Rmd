@@ -271,7 +271,7 @@ In the next section, we will describe more about the options we could adjust in 
 rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
 ```
 
-Notice that we save the output over our original object. This is the standard way to work with the `clusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
+Notice that we save the output over our original object. This is the standard way to work with the `ClusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
 
 We can compare the results of our changes with the `whichClusters` command to explicitly choose the clusterings we want to plot:
 
@@ -1384,7 +1384,7 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 ## RSEC {#RSEC}
 
- `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
+ `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `ClusterExperiment` object as you would get from following the workflow. 
 
 We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
 

@@ -1,6 +1,6 @@
 context("RSEC")
 source("create_objects.R")
-test_that("`RSEC` works with matrix, clusterExperiment, summarizedExperiment",{
+test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 	##these examples don't do dendrogram/merge because all -1 after combineMany
 	##only tests clusterMany, combineMany parts.
 	##so can't do expect_silent, because returns NOTE about that issue.

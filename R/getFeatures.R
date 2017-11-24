@@ -354,9 +354,9 @@ This makes sense only for counts.")
 
 #' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
-	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+	if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
-	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object")
+	if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
 		#test mergeClusters actually subset of the cluster says merged
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))

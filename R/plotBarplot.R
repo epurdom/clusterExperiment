@@ -20,7 +20,7 @@
 #'   the 1st cluster of clusters matrix
 #' @param legend.title label for legend. By default or if equal NULL the column
 #'   name of the 2st cluster of clusters matrix
-#' @param labels if object is a clusterExperiment object, then labels defines
+#' @param labels if object is a ClusterExperiment object, then labels defines
 #'   whether the clusters will be identified by their names values in
 #'   clusterLegend (labels="names", the default) or by their clusterIds value in
 #'   clusterLegend (labels="ids").

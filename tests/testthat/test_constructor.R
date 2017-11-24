@@ -8,21 +8,21 @@ test_that("saved rsecFluidigm is still valid object", {
 		  })
 
 		  
-test_that("`clusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
-            expect_error(clusterExperiment(mat), "is missing, with no default")
-			expect_error(clusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
-            expect_error(clusterExperiment(mat, numLabels[1:2]),
+test_that("`ClusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
+            expect_error(ClusterExperiment(mat), "is missing, with no default")
+			expect_error(ClusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
+            expect_error(ClusterExperiment(mat, numLabels[1:2]),
                          "must be a matrix of rows equal")
-            expect_error(clusterExperiment(as.data.frame(mat), numLabels),
+            expect_error(ClusterExperiment(as.data.frame(mat), numLabels),
                          "unable to find an inherited method for function")
             #test character input
-            ccChar<-clusterExperiment(mat, chLabels)
+            ccChar<-ClusterExperiment(mat, chLabels)
             expect_is(primaryCluster(ccChar),"numeric")
             expect_is(primaryClusterNamed(ccChar),"character")
             expect_equal(sort(unique(primaryClusterNamed(ccChar))),sort(unique(chLabels)))
 
             #test factor input
-            clusterExperiment(mat, numLabels)
+            ClusterExperiment(mat, numLabels)
 
             expect_is(cc, "ClusterExperiment")
             expect_is(cc, "SummarizedExperiment")
@@ -40,7 +40,7 @@ test_that("`clusterExperiment` constructor works with matrix and SummarizedExper
             
             show(ccSE)
 			
-			ccSCE<-clusterExperiment(sce,as.numeric(numLabels))
+			ccSCE<-ClusterExperiment(sce,as.numeric(numLabels))
 			###Need to add things specific to sce, but first need to build a sce object with new things.
 			
 })
@@ -73,7 +73,7 @@ test_that("adding clusters work as promised",{
   primaryClusterIndex(c1) <- 3
   expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
   
-  ####check adding a clusterExperiment to existing CE
+  ####check adding a ClusterExperiment to existing CE
   expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
   c3<-addClusters(ccSE,ccSE)
   expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
@@ -223,7 +223,7 @@ test_that("check clusterLegend, remove unclustered cells work as promised", {
     
     #no -1 in primary cluster
     matTemp<-abs(labMat)
-    ccTemp<-clusterExperiment(mat,matTemp,transformation=function(x){x})
+    ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x})
     expect_equal(ccTemp, removeUnclustered(ccTemp)) 
     
 	###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?

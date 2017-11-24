@@ -65,7 +65,7 @@ setMethod(
 	#fix order of samples so same
 	newOrder<-rank(x@orderSamples[j])
 	#browser()
-    out<- clusterExperiment(
+    out<- ClusterExperiment(
 sce=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
@@ -156,7 +156,7 @@ setMethod(
 #' @details Note that redefining the transformation function via
 #'   \code{transformation(x)<-} will check the validity of the transformation on
 #'   the data assay. If the assay is large, this may be time consuming. Consider
-#'   using a call to clusterExperiment, which has the option as to whether to
+#'   using a call to ClusterExperiment, which has the option as to whether to
 #'   check the validity of the transformation.
 #' @aliases transformation<-
 setReplaceMethod(

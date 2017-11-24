@@ -6,6 +6,7 @@
 \alias{RSEC-methods}
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
+\alias{RSEC,SingleCellExperiment-method}
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
@@ -20,6 +21,8 @@
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
   ncores = 1, random.seed = NULL, run = TRUE)
 
+\S4method{RSEC}{SingleCellExperiment}(x, ...)
+
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
 \S4method{RSEC}{data.frame}(x, ...)
@@ -30,7 +33,8 @@
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be: matrix (with
 genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
+or a \code{ClusterExperiment} object.}
 
 \item{isCount}{logical. Whether the data are in counts, in which case the 
 default \code{transFun} argument is set as log2(x+1). This is simply a 
@@ -124,7 +128,7 @@ workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow 
 clusterTypes.}
 
-\item{rerunClusterMany}{logical. If the object is a clusterExperiment object,
+\item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
 determines whether to rerun the clusterMany step. Useful if want to try
 different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
@@ -136,6 +140,6 @@ the clusterings from the steps of RSEC
 \description{
 Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 Clustering) for single cell sequencing data. This is a wrapper function
-around the existing clusterExperiment workflow that results in the output of
+around the existing ClusterExperiment workflow that results in the output of
 RSEC.
 }

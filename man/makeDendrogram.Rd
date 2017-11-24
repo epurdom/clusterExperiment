@@ -32,15 +32,7 @@ primaryCluster.}
 dimensionality reduction to perform before clustering. Options are 
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 details. The option "coCluster" will use the co-Clustering matrix stored 
-in the 'coClustering' slot of the \code{clusterExperiment} object.}
-
-\item{ndims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{dimReduce}}
-
-\item{ignoreUnassignedVar}{logical indicating whether dimensionality reduction
-via top feature variability (i.e. 'var','cv','mad') should ignore
-unassigned samples in the primary clustering for calculation of the top
-features.}
+in the 'coClustering' slot of the \code{ClusterExperiment} object.}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only
 relevant for sample clustering. See details.}

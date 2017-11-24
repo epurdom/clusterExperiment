@@ -68,7 +68,7 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
 }
 )
-test_that("'Dendro' contrasts works for clusterExperiment object in `getBestFeatures`",{
+test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeatures`",{
   ## test dendrogram
   expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
                "must provide dendro")

@@ -63,7 +63,7 @@ NULL
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format clusterExperiment object, the result of running \code{\link{RSEC}} on 
+#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on 
 #' fluidigm data described in vignette and available in the \code{scRNAseq} 
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
@@ -81,7 +81,7 @@ NULL
 #' assays(se) <- list(normalized_counts=fq)
 #' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(clusterExperiment)
+#' library(ClusterExperiment)
 #' ncores<-1
 #' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,
 #'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",

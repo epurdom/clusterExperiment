@@ -186,7 +186,7 @@
 #'	})
 #'
 #' #make a new object
-#' cl2 <- clusterExperiment(assay(cl), clMatNew,
+#' cl2 <- ClusterExperiment(assay(cl), clMatNew,
 #' transformation=transformation(cl))
 #' plotClusters(cl2)
 #' @rdname plotClusters

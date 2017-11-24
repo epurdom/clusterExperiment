@@ -2,7 +2,7 @@
 #'
 #' @description Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 #' Clustering) for single cell sequencing data. This is a wrapper function
-#' around the existing clusterExperiment workflow that results in the output of
+#' around the existing ClusterExperiment workflow that results in the output of
 #' RSEC.
 #' @param k0s the k0 parameter for sequential clustering (see \code{\link{seqCluster}})
 #' @param combineProportion passed to \code{proportion} in \code{\link{combineMany}}
@@ -11,7 +11,7 @@
 #' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
-#' @param rerunClusterMany logical. If the object is a clusterExperiment object,
+#' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
 #'   without the computational costs of the clusterMany step.

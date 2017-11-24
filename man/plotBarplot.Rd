@@ -42,7 +42,7 @@ the plot. If x is a \code{\link{ClusterExperiment}} object,
 \item{...}{for \code{plotBarplot} arguments passed either to the method
 of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
 
-\item{labels}{if object is a clusterExperiment object, then labels defines
+\item{labels}{if object is a ClusterExperiment object, then labels defines
 whether the clusters will be identified by their names values in
 clusterLegend (labels="names", the default) or by their clusterIds value in
 clusterLegend (labels="ids").}

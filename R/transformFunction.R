@@ -14,7 +14,7 @@
 #' mat <- matrix(data=rnorm(200), ncol=10)
 #' mat[1,1] <- -1 #force a negative value
 #' labels <- gl(5, 2)
-#' cc <- clusterExperiment(mat, as.numeric(labels), transformation =
+#' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' z<-transformData(cc) 
 #' @export
@@ -113,7 +113,7 @@ setMethod(
 #' mat <- matrix(data=rnorm(200), ncol=10)
 #' mat[1,1] <- -1 #force a negative value
 #' labels <- gl(5, 2)
-#' cc <- clusterExperiment(mat, as.numeric(labels), transformation =
+#' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' #will transform data based on saved transformation
 #' x <- XXX(cc, dimReduce="PCA", nPCADims=3)

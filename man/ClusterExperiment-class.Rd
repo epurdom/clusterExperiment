@@ -4,44 +4,46 @@
 \name{ClusterExperiment-class}
 \alias{ClusterExperiment-class}
 \alias{ClusterExperiment}
-\alias{clusterExperiment}
-\alias{clusterExperiment}
-\alias{clusterExperiment,matrix,ANY-method}
-\alias{clusterExperiment,SummarizedExperiment,numeric-method}
-\alias{clusterExperiment,SummarizedExperiment,character-method}
-\alias{clusterExperiment,SummarizedExperiment,factor-method}
-\alias{clusterExperiment,SummarizedExperiment,matrix-method}
+\alias{ClusterExperiment}
+\alias{ClusterExperiment,matrix,ANY-method}
+\alias{ClusterExperiment,SummarizedExperiment,ANY-method}
+\alias{ClusterExperiment,SingleCellExperiment,numeric-method}
+\alias{ClusterExperiment,SingleCellExperiment,character-method}
+\alias{ClusterExperiment,SingleCellExperiment,factor-method}
+\alias{ClusterExperiment,SingleCellExperiment,matrix-method}
 \title{Class ClusterExperiment}
 \usage{
-clusterExperiment(se, clusters, ...)
+ClusterExperiment(sce, clusters, ...)
 
-\S4method{clusterExperiment}{matrix,ANY}(se, clusters, ...)
+\S4method{ClusterExperiment}{matrix,ANY}(sce, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,numeric}(se, clusters, ...)
+\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(sce, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,character}(se, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(sce, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,factor}(se, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,character}(sce, clusters, ...)
 
-\S4method{clusterExperiment}{SummarizedExperiment,matrix}(se, clusters,
-  transformation, primaryIndex = 1, clusterTypes = "User",
-  clusterInfo = NULL, orderSamples = 1:ncol(se), dendro_samples = NULL,
-  dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
-  coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
-  merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
-  merge_nodeMerge = NULL, merge_method = NA_character_,
-  checkTransformAndAssay = TRUE)
+\S4method{ClusterExperiment}{SingleCellExperiment,factor}(sce, clusters, ...)
+
+\S4method{ClusterExperiment}{SingleCellExperiment,matrix}(sce, clusters,
+  transformation = function(x) {     x }, primaryIndex = 1,
+  clusterTypes = "User", clusterInfo = NULL, orderSamples = 1:ncol(sce),
+  dendro_samples = NULL, dendro_index = NA_real_, dendro_clusters = NULL,
+  dendro_outbranch = NA, coClustering = NULL, merge_index = NA_real_,
+  merge_cutoff = NA_real_, merge_dendrocluster_index = NA_real_,
+  merge_nodeProp = NULL, merge_nodeMerge = NULL,
+  merge_method = NA_character_, checkTransformAndAssay = TRUE)
 }
 \arguments{
-\item{se}{a matrix or \code{SummarizedExperiment} containing the data to be
-clustered.}
+\item{sce}{a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
+containing the data to be clustered.}
 
 \item{clusters}{can be either a numeric or character vector, a factor, or a
 numeric matrix, containing the cluster labels.}
 
 \item{...}{The arguments \code{transformation}, \code{clusterTypes} and
 \code{clusterInfo} to be passed to the constructor for signature
-\code{SummarizedExperiment,matrix}.}
+\code{SingleCellExperiment,matrix}.}
 
 \item{transformation}{function. A function to transform the data before
 performing steps that assume normal-like data (i.e. constant variance), such
@@ -90,10 +92,10 @@ A \code{ClusterExperiment} object.
 }
 \description{
 \code{ClusterExperiment} is a class that extends
-\code{SummarizedExperiment} and is used to store the data
+\code{SingleCellExperiment} and is used to store the data
 and clustering information.
 
-In addition to the slots of the \code{SummarizedExperiment}
+In addition to the slots of the \code{SingleCellExperiment}
 class, the \code{ClusterExperiment} object has the additional slots described
 in the Slots section.
 
@@ -103,7 +105,7 @@ important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
 Methods section. For a comprehensive list of methods specific to this class
 see the Reference Manual.
 
-The constructor \code{clusterExperiment} creates an object of
+The constructor \code{ClusterExperiment} creates an object of
 the class \code{ClusterExperiment}. However, the typical way of creating
 these objects is the result of a call to \code{\link{clusterMany}} or
 \code{\link{clusterSingle}}.
@@ -112,16 +114,16 @@ Note that when subsetting the data, the co-clustering and
 dendrogram information are lost.
 }
 \details{
-The \code{clusterExperiment} constructor function gives
+The \code{ClusterExperiment} constructor function gives
   clusterLabels based on the column names of the input
-  matrix/SummarizedExperiment. If missing, will assign labels
+  matrix/SingleCellExperiment. If missing, will assign labels
   "cluster1","cluster2", etc.
 
 Note that the validity check when creating a new
   \code{ClusterExperiment} object with \code{new} is less extensive than when
-  using \code{clusterExperiment} function with
+  using \code{ClusterExperiment} function with
   \code{checkTransformAndAssay=TRUE} (the default). Users are advised to use
-  \code{clusterExperiment} to create new \code{ClusterExperiment} objects.
+  \code{ClusterExperiment} to create new \code{ClusterExperiment} objects.
 }
 \section{Slots}{
 
@@ -201,10 +203,10 @@ functions.}
 
 \examples{
 
-se <- matrix(data=rnorm(200), ncol=10)
+sce <- matrix(data=rnorm(200), ncol=10)
 labels <- gl(5, 2)
 
-cc <- clusterExperiment(se, as.numeric(labels), transformation =
+cc <- ClusterExperiment(sce, as.numeric(labels), transformation =
 function(x){x})
 
 }

@@ -313,7 +313,7 @@ setMethod(
       # if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
       #   stop("Error in the internal transformation of x")
       # }
-      # transFun <- transObj$transFun #need it later to create clusterExperimentObject
+      # transFun <- transObj$transFun #need it later to create ClusterExperimentObject
       
     }
     else{
@@ -358,11 +358,11 @@ setMethod(
                       nDims=nDims
     ))
     ##########
-    ## Convert to clusterExperiment Object
+    ## Convert to ClusterExperiment Object
     ##########
     if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
 	  	
-      retval <- clusterExperiment(origX, outlist$clustering,
+      retval <- ClusterExperiment(origX, outlist$clustering,
                 transformation=transFun,
                clusterInfo=clInfo, clusterTypes="clusterSingle",
 			    checkTransformAndAssay=FALSE)

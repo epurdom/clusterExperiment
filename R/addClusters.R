@@ -7,7 +7,7 @@
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
 #' @param clusterLabel label(s) for the clusters being added.
-#' @inheritParams clusterExperiment
+#' @inheritParams ClusterExperiment
 #' @details addClusters adds y to x, and is thus not symmetric in the two 
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
 #'   information, \code{coClustering}, and \code{orderSamples} are all kept from
@@ -32,7 +32,7 @@ setMethod(
   f = "addClusters",
   signature = signature("ClusterExperiment", "matrix"),
   definition = function(x, y, clusterTypes="User") {
-    ccObj<-clusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes,checkTransformAndAssay=FALSE)
+    ccObj<-ClusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes,checkTransformAndAssay=FALSE)
     addClusters(x,ccObj)
   }
 )
@@ -139,7 +139,7 @@ setMethod(
       dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichRemove])
     }
     
-    retval<-clusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
+    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
                               clusterTypes=newClusterType,
                               clusterInfo<-newClusterInfo,
                               primaryIndex=pIndex,

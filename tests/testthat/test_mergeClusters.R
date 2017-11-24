@@ -24,7 +24,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
 
   #check all methods run
-  for(method in clusterExperiment:::.availMergeMethods){
+  for(method in ClusterExperiment:::.availMergeMethods){
 	  clustMerged <- mergeClusters(clustWithDendro, mergeMethod=method, plotInfo="mergeMethod")
   }
   
@@ -85,7 +85,7 @@ test_that("saving merge info works",{
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="none", plotInfo=c("all"))
   
-  #on clusterExperiment
+  #on ClusterExperiment
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged@merge_dendrocluster_index,clustWithDendro@dendro_index+1)
   expect_equal(clustMerged@merge_dendrocluster_index,clustMerged@dendro_index)

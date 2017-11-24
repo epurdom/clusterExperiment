@@ -60,7 +60,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 	#---
 	#CE
 	#---
-	#test running on clusterExperiment Object -- should add the new clustering
+	#test running on ClusterExperiment Object -- should add the new clustering
 	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
 	                              subsample=FALSE, sequential=FALSE,
 	                              isCount=FALSE))
