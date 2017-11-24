@@ -254,7 +254,7 @@ listBuiltInFilterStats<-function(){c('var', 'cv', 'mad','mean','iqr','median')}
 #' @export
 setMethod(
   f = "makeFilterStats",
-  signature = "SingleCellExperiment",
+  signature = "SingleCellFilter",
   definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE)
 {
 
@@ -293,28 +293,7 @@ setMethod(
   if(doCV){
 	  filterStatData<-cbind(filterStatData, "cv"=sqrt(filterStatData[,"var"])/filterStatData[,"mean"])
   }
-  
-  # for(st in filterStats){
-  # 	  if(st!="cv"){
-  # 		  function
-  # 	  }
-  # 	  #-------------
-  # 	  # if add other functions, add if statements here
-  # 	  if(dr=="PCA") out<-try(.pcaDimRed(x,md=md,isPct=isPct,rowvars=rowvars))
-  # 	  ##-------
-  #
-  # 	  if(!inherits(out,"try-error")) reducedDim(object,dimReduce) <- out
-  # 	  else{
-  # 		  currErrors<-c(currErrors,paste("\t",dr,":",out,sep=""))
-  # 	  }
-  # }
-  # if(length(currErrors)>0){
-  # 	  if(length(currErrors)==length(dimReduce))
-  # 		  stop(paste("No dimensionality reduction techniques were successful:",currErrors,sep="\n"))
-  # 	  else{
-  # 	  	warning(paste("The following dimensionality reduction techniques hit errors:",currErrors,sep="\n"))
-  # 	  }
-  # }
+  filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
   return(object)
 
 }
