@@ -596,11 +596,17 @@ setGeneric(
 setMethod(
 	f = "SingleCellFilter",
 	signature = signature("SingleCellExperiment"),
-	definition = function(object,filterStats=NULL){
-		if(!is.null(filter) & is.null(dim(filterStats))){
-			filterStats<-matrix(filterStats,ncol=1)
-			colnames(filterStats)<-"UserFilter"
-		}
+	definition = function(object,filterStats=NULL,filterNames=NULL){
+	if(!is.null(filterStats) & is.null(dim(filterStats))){
+		filterStats<-matrix(filterStats,ncol=1)
+	}
+	if(!is.null(filterNames)){
+		if(length(filterNames)==ncol(filterStats)) 
+			colnames(filterStats)<-filterNames
+		else if(length(filterNames)==1)
+			colnames(filterStats)<-paste(filterNames,1:ncol(filterStats),sep="")
+		else stop("filterNames must be of same length as number of columns of filterStats")
+	}
 	out <- new("SingleCellFilter",
 		  object,
          filterStats=filterStats
@@ -609,30 +615,21 @@ setMethod(
 	
 })
 
-#' @aliases ClusterFunction
-#' @rdname ClusterFunction-class
-#' @export
-setGeneric(
-	name = "SingleCellFilter",
-	def = function(object,...) {
-	  standardGeneric("SingleCellFilter")
-	}
-)
-
 #' @rdname ClusterFunction-class
 #' @export
 setMethod(
 	f = "SingleCellFilter",
-	signature = signature("SingleCellExperiment"),
-	definition = function(object,filterStats=NULL){
-		if(!is.null(filterStats) & is.null(dim(filterStats))){
-			filterStats<-matrix(filterStats,ncol=1)
-			colnames(filterStats)<-"UserFilter"
-		}
-	out <- new("SingleCellFilter",
-		  object,
-         filterStats=filterStats
-		 )
-	return(out)
+	signature = signature("SummarizedExperiment"),
+	definition = function(object,...){
+		SingleCellFilter(as(object,"SingleCellExperiment"),...)
+	})
+#' @rdname ClusterFunction-class
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("matrix"),
+	definition = function(object,...){
+		SingleCellFilter(SingleCellExperiment(object),...)
+	})
+
 	
-})		

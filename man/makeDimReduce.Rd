@@ -6,6 +6,8 @@
 \alias{makeDimReduce,matrix-method}
 \alias{makeDimReduce,SummarizedExperiment-method}
 \alias{makeDimReduce,ClusterExperiment-method}
+\alias{listBuiltInDimReduce}
+\alias{makeFilterStats,matrix-method}
 \title{Calculate dimensionality reduction of data}
 \usage{
 \S4method{makeDimReduce}{SingleCellExperiment}(object, dimReduce = "PCA",
@@ -16,6 +18,10 @@
 \S4method{makeDimReduce}{SummarizedExperiment}(object, ...)
 
 \S4method{makeDimReduce}{ClusterExperiment}(object, ...)
+
+listBuiltInDimReduce()
+
+\S4method{makeFilterStats}{matrix}(object, ...)
 }
 \arguments{
 \item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}

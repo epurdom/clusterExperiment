@@ -10,9 +10,8 @@
 \alias{SingleCellFilter}
 \alias{ClusterFunction}
 \alias{SingleCellFilter,SingleCellExperiment-method}
-\alias{SingleCellFilter}
-\alias{ClusterFunction}
-\alias{SingleCellFilter,SingleCellExperiment-method}
+\alias{SingleCellFilter,SummarizedExperiment-method}
+\alias{SingleCellFilter,matrix-method}
 \title{Class ClusterFunction}
 \usage{
 internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
@@ -25,11 +24,12 @@ ClusterFunction(clusterFUN, ...)
 
 SingleCellFilter(object, ...)
 
-\S4method{SingleCellFilter}{SingleCellExperiment}(object, filterStats = NULL)
+\S4method{SingleCellFilter}{SingleCellExperiment}(object, filterStats = NULL,
+  filterNames = NULL)
 
-SingleCellFilter(object, ...)
+\S4method{SingleCellFilter}{SummarizedExperiment}(object, ...)
 
-\S4method{SingleCellFilter}{SingleCellExperiment}(object, filterStats = NULL)
+\S4method{SingleCellFilter}{matrix}(object, ...)
 }
 \arguments{
 \item{clusterFUN}{function passed to slot \code{clusterFUN}.}

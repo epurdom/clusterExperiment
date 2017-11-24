@@ -11,7 +11,7 @@
   if(!is.numeric(assay(object))) {
     return("The data must be numeric.")
   }
-  if(any(is.na(assay(object)))) {
+  if(anyNA(assay(object))) {
     return("NA values are not allowed.")
   }
   return(TRUE)
@@ -25,7 +25,7 @@
       stop(paste("User-supplied `transformation` produces error on the input data
                  matrix:\n",tX))
     }
-    if(any(is.na(tX))) {
+    if(anyNA(tX)) {
       return("NA values after transforming data matrix are not allowed.")
     }
 	return(TRUE)

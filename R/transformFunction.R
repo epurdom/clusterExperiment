@@ -8,7 +8,6 @@
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
 #'   the transformation function defined in x. 
 #'
-#' @importFrom matrixStats rowVars
 #'
 #' @examples
 #' mat <- matrix(data=rnorm(200), ncol=10)
@@ -26,7 +25,7 @@ setMethod(
 	  x <- try(transFun(object), silent=TRUE)
 	  if(inherits(x, "try-error"))
 	    stop("User-supplied `transFun` produces the following error on the input data matrix:\n",x)
-	  if(any(is.na(x)))
+	  if(anyNA(x))
 	    stop("User-supplied `transFun` produces NA values")
 	  return(x)
   }
@@ -96,6 +95,7 @@ setMethod(
 #' #will transform data based on saved transformation
 #' x <- makeDimReduce(cc, dimReduce="PCA", nPCADims=3)
 #' @export
+#' @importFrom matrixStats rowVars
 setMethod(
   f = "makeDimReduce",
   signature = "SingleCellExperiment",
@@ -106,14 +106,14 @@ setMethod(
   ##Check user inputs
   ###################
   #check valid options for dimReduce
-  validDim<-c("PCA")
+  validDim<-listBuiltInDimReduce()
   dimReduce<-unique(dimReduce)
   if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(dimReduce))
   if(length(maxDims)!=length(dimReduce)) stop("'maxDims' must be of same length as 'dimReduce'")
 	  
-  ######Check dimensions
+  ######Check dimensions and valid argument
   for(dr in dimReduce){
-	  dr<-match.arg(dr,validDim)
+	  dr<-match.arg(dr,validDim) 
 	  if(is.na(maxDims) || maxDims>NROW(object) || maxDims > NCOL(object)){
 		  maxDims<-min(c(NROW(object),NCOL(object)))
 	  }
@@ -121,9 +121,6 @@ setMethod(
 
 
   }
-  
-
-  	  
   ###################
   ##Clean up data:
   ###################
@@ -206,7 +203,12 @@ setMethod(
 }
 )
 
+#' @rdname makeDimReduce
+#' @export
+listBuiltInDimReduce<-function(){c("PCA")}
+
 #' @importFrom RSpectra svds
+#' @importFrom stats prcomp
 .pcaDimRed<-function(x,md,isPct,rowvars){
 	.pca <- function(x, center=TRUE, scale=FALSE, k) {
 	  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
@@ -238,6 +240,117 @@ setMethod(
 
 
 
+#' @rdname makeFilterStats
+#' @export
+listBuiltInFilterStats<-function(){c('var', 'cv', 'mad','mean','iqr','median')}
+#' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
+.matchToStats<-SimpleList(
+	'var'=matrixStats::rowVars,
+	'mad'=matrixStats::rowMads,
+	'mean'=matrixStats::rowMeans2,
+	'iqr'=matrixStats::rowIQRs,
+	'median'=matrixStats::rowMedians)
+	
+#' @export
+setMethod(
+  f = "makeFilterStats",
+  signature = "SingleCellExperiment",
+  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE)
+{
+
+  ###################
+  ##Check user inputs
+  ###################
+  #check valid options for dimReduce
+  validDim<-listBuiltInFilterStats()
+  filterStats<-unique(filterStats)
+  if(!all(filterStats %in% validDim)){
+	  stop("Not all of the filterStats given are valid")
+  }
+  
+  ###################
+  ##Clean up data:
+  ###################
+  #transform data
+  x<-transformData(object,transFun=transFun,isCount=isCount)
+
+  ###################
+  ##Do loop over filterStats values:
+  ###################
+  currErrors<-c()
+  if('cv' %in% filterStats){
+	  #if cv, add var and mean since calculating anyway and make cv last one
+	  filterStats<-unique(c(filterStats,"var","mean"))
+	  doCV<-TRUE
+	  whCV<-grep('cv',filterStats)
+	  filterStats<-c(filterStats[-whCV])
+  }
+  else doCV<-FALSE
+  filterStatData<-sapply(filterStats,function(statName){
+	  f<-.matchToStats[[statName]]
+	  f(x)
+  })
+  if(doCV){
+	  filterStatData<-cbind(filterStatData, "cv"=sqrt(filterStatData[,"var"])/filterStatData[,"mean"])
+  }
+  
+  # for(st in filterStats){
+  # 	  if(st!="cv"){
+  # 		  function
+  # 	  }
+  # 	  #-------------
+  # 	  # if add other functions, add if statements here
+  # 	  if(dr=="PCA") out<-try(.pcaDimRed(x,md=md,isPct=isPct,rowvars=rowvars))
+  # 	  ##-------
+  #
+  # 	  if(!inherits(out,"try-error")) reducedDim(object,dimReduce) <- out
+  # 	  else{
+  # 		  currErrors<-c(currErrors,paste("\t",dr,":",out,sep=""))
+  # 	  }
+  # }
+  # if(length(currErrors)>0){
+  # 	  if(length(currErrors)==length(dimReduce))
+  # 		  stop(paste("No dimensionality reduction techniques were successful:",currErrors,sep="\n"))
+  # 	  else{
+  # 	  	warning(paste("The following dimensionality reduction techniques hit errors:",currErrors,sep="\n"))
+  # 	  }
+  # }
+  return(object)
+
+}
+)
+#' @rdname makeDimReduce
+#' @export
+setMethod(
+  f = "makeFilterStats",
+  signature = "matrix",
+  definition = function(object,...)
+{
+	makeFilterStats(SummarizedExperiment(object),...)
+}
+)
+#' @rdname makeFilterStats
+#' @export
+setMethod(
+  f = "makeFilterStats",
+  signature = "SummarizedExperiment",
+  definition = function(object,...)
+{
+	makeFilterStats(as(object,"SingleCellExperiment"),...)
+}
+)
+#' @rdname makeFilterStats
+#' @export
+setMethod(
+  f = "makeFilterStats",
+  signature = "ClusterExperiment",
+  definition = function(object,...)
+{
+	out<-makeFilterStats(as(object,"SingleCellExperiment"),transFun=transformation(object),...)
+	return(.addBackSEInfo(newObj=object,oldObj=out))
+}
+)
+
 
 #' @details \code{ignoreUnassignedVar} has no impact for PCA reduction, which
 #'   will always use all samples. At all times, regardless of the value of
@@ -246,7 +359,6 @@ setMethod(
 #' @details  \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a
 #'   vector of values, in which case a list will be returned with the
 #'   appropriate datasets as elements of the list.
-#' @importFrom stats var mad sd prcomp
 #' @param nVarDims Numeric (integer) vector giving the number of features (e.g.
 #'   genes) to keep, based on variance/cv/mad variability.
 #' @param dimReduce Character vector specifying the dimensionality reduction to

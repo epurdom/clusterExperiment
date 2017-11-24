@@ -73,7 +73,7 @@ setMethod(f = "getClusterManyParams",
 		yy<-listByParams[,kk]
 		v<-sapply(strsplit(yy,"="),function(zz){if(length(zz)>1).subset2(zz,2) else zz}) #deal with problem if no "=", e.g. 'noDimReduce' ...
 		numV<-suppressWarnings(as.numeric(v))
-		if(any(is.na(numV))) return(v) else return(numV)
+		if(anyNA(numV)) return(v) else return(numV)
 	})
 	
 	##Deal with dim Reduce that can be multiple labels

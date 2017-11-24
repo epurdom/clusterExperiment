@@ -191,7 +191,7 @@ setMethod(
   definition = function(x,
       dimReduce,nVarDims=NA,nPCADims=NA, transFun=NULL,isCount=FALSE, ...
   ){
-	if(missing(dimReduce) || any(is.na(nPCADims))) dimReduce<-"none"
+	if(missing(dimReduce) || anyNA(nPCADims)) dimReduce<-"none"
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	if(any(dimReduce!="none")){
 		nPCADims<-na.omit(nPCADims)
@@ -369,7 +369,7 @@ setMethod(
 			  if(length(whNADim)>0){
 				  param[whNADim,"nDimReduce"]<-maxDimValues[whNADim]
 			  }
-			  if(any(is.na(param[,"nDimReduce"]))) stop("Internal coding error: didn't get rid of NA dimReduce in checks")
+			  if(anyNA(param[,"nDimReduce"])) stop("Internal coding error: didn't get rid of NA dimReduce in checks")
 			  whAbove<-which(param[,"nDimReduce"]>maxDimValues)
 			  if(length(whAbove)>0){
 				  param[whAbove,"nDimReduce"]<-maxDimValues[whAbove]

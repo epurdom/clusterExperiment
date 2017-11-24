@@ -208,7 +208,7 @@ setMethod(
     uniqs <- na.omit(unique(as.vector(X)))
     if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
     isobsX<-abs(is.na(X)-1)
-    if(any(is.na(X))){
+    if(anyNA(X)){
       X[is.na(X)]<-uniqValue
     }
     U <- X == uniqs[1]
@@ -223,11 +223,11 @@ setMethod(
     uniqs <- na.omit(union(X, Y))
     if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
     isobsX<-abs(is.na(X)-1)
-    if(any(is.na(X))){
+    if(anyNA(X)){
       X[is.na(X)]<-uniqValue
     }
     isobsY<-abs(is.na(Y)-1)
-    if(any(is.na(Y))){
+    if(anyNA(Y)){
       Y[is.na(Y)]<-uniqValue
     }
     H <- t(X == uniqs[1]) %*% (Y == uniqs[1])

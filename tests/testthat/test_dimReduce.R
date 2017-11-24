@@ -30,25 +30,65 @@ test_that("makeDimReduce works as promised",{
 })
 
 test_that("SingleCellFilter class works as expected",{
+	
+	#when there are no filters
 	expect_silent(scf<-SingleCellFilter(sce))
 	expect_silent(filterNames(scf))
 	expect_null(filterStats(scf))
-	expect_error(filterStat(scf,type="Filter1"),"There are no filter statistics saved for this object")
-	
-	filter<-rnorm(nrow(sce))
-	expect_silent(SingleCellFilter(sce,filterStats=filter))
+	expect_error(filterStats(scf,type="Filter1"),"There are no filter statistics saved for this object")
 	
 	set.seed(352)
-	filter<-matrix(rnorm(2*nrow(sce)),ncol=2)
+	filter<-rnorm(nrow(sce))
+	filter2<-matrix(rnorm(2*nrow(sce)),ncol=2)
+
+	#tests on adding unnamed filters
+	expect_error(SingleCellFilter(sce,filterStats=filter2),"filterStats matrix must have unique column names")
 	expect_error(SingleCellFilter(sce,filterStats=filter),"filterStats matrix must have unique column names")
-	colnames(filter)<-c("Filter1","Filter2")
-	expect_silent(scf<-SingleCellFilter(sce,filterStats=filter))
+	expect_silent(SingleCellFilter(sce,filterStats=filter,filterNames=c("Filter1")))
+	expect_silent(scf1<-SingleCellFilter(sce,filterStats=filter2,filterNames=c("Filter1","Filter2")))
+	expect_silent(scf2<-SingleCellFilter(sce,filterStats=filter2,filterNames=c("Filter")))
+	expect_equal(scf1,scf2)
 	
+	#value type of replace:
+	expect_silent(scf<-SingleCellFilter(sce))
+	expect_silent(filterStats(scf,type="Filter1")<-filter)
+	expect_equal(colnames(filterStats(scf)),"Filter1")
+
+	expect_silent(scf<-SingleCellFilter(sce))
+	expect_silent(filterStats(scf,type=c("Filter1","Filter2"))<-filter2)
+	expect_equal(colnames(filterStats(scf)),c("Filter1","Filter2"))
+
+	#matrix type of replace:	
+	expect_silent(scf<-SingleCellFilter(sce))
+	expect_error(filterStats(scf)<-filter,"must give matrix of values with column names")
+	expect_silent(scf<-SingleCellFilter(sce))
+	expect_error(filterStats(scf)<-filter2,"must give matrix of values with column names")
+
+	####Now work with existing filters
+	colnames(filter2)<-c("Filter1","Filter2")
+	expect_silent(scf<-SingleCellFilter(sce,filterStats=filter2))
 	expect_silent(filterNames(scf))
-	expect_equal(filterStats(scf),filter)
-	expect_equal(filterStat(scf,type="Filter1"),filter[,"Filter1"])
-	expect_error(filterStat(scf,type="Myfilter"),"is not the name of a filter statistic held by the object")
-	expect_error(filterStat(scf,type=1),"unable to find an inherited method")
+	expect_equal(filterStats(scf),filter2)
+	expect_equal(filterStats(scf,type="Filter1"),filter2[,"Filter1"])
+	expect_error(filterStats(scf,type="Myfilter"),"None of the values of 'type' argument are valid filter names")
+	expect_error(filterStats(scf,type=1),"unable to find an inherited method")
+
+	##Check Replace with existing filters in place and check actually change them, etc.
+	expect_silent(scf<-SingleCellFilter(sce,filterStats=filter2))
+	filter3<-filter2+1
+	expect_silent(filterStats(scf) <- filter3)
+	expect_equal(filterStats(scf),filter3)
+
+	expect_silent(scf<-SingleCellFilter(sce,filterStats=filter2))
+	filter4<-filter2+5
+	colnames(filter4)[2]<-"Myfilter"
+	expect_silent(filterStats(scf) <- filter4)
+	expect_equal(filterStats(scf),cbind(filter4[,"Filter1",drop=FALSE],filter2[,"Filter2",drop=FALSE],filter4[,"Myfilter",drop=FALSE]))
+
+	#Need more checks about replacement, etc.
+	
+})
+test_that("filterData works as expected",{
 	
 	###Cutoff filter
 	tf<-filter[,"Filter1"]>1

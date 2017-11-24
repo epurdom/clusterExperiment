@@ -1,4 +1,9 @@
-
+setGeneric(
+  name = "makeFilterStats",
+  def=function(object,...){
+    standardGeneric("makeFilterStats")
+  }
+)
 setGeneric(
   name = "makeDimReduce",
   def=function(object,...){

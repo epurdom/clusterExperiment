@@ -4,28 +4,16 @@
 \name{SingleCellFilter-methods}
 \alias{SingleCellFilter-methods}
 \alias{SingleCellFilter}
-\alias{filterStats,SingleCellFilter-method}
-\alias{filterStat}
-\alias{filterStat,SingleCellFilter,character-method}
-\alias{filterNames}
+\alias{filterStats<-,SingleCellFilter-method}
 \alias{filterNames,SingleCellFilter-method}
-\alias{filterData}
 \alias{filterData,SingleCellFilter-method}
 \title{Helper methods for the SingleCellFilter class}
 \usage{
-filterStats(object, ...)
+\S4method{filterStats}{SingleCellFilter,character}(object, type)
 
-\S4method{filterStats}{SingleCellFilter}(object)
-
-filterStat(object, type, ...)
-
-\S4method{filterStat}{SingleCellFilter,character}(object, type)
-
-filterNames(object, ...)
+\S4method{filterStats}{SingleCellFilter}(object, type, ...) <- value
 
 \S4method{filterNames}{SingleCellFilter}(object)
-
-filterData(object, ...)
 
 \S4method{filterData}{SingleCellFilter}(object, type, cutoff, percentile,
   absolute = FALSE, keepLarge = TRUE)
@@ -45,4 +33,7 @@ filterData(object, ...)
 }
 \description{
 This is a collection of helper methods for the SingleCellFilter class.
+}
+\details{
+Note that the replacement functions never actually completely replace the slot \code{filterStats}; they update existing filters of the same name and add filters with new names to the existing filters.
 }
