@@ -27,7 +27,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
             expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing))
             expect_true(all(clusterTypes(clustNothing)=="clusterMany"))
 
-            #test running on clusterExperiment Object -- should add the new clustering
+            #test running on ClusterExperiment Object -- should add the new clustering
             expect_silent(clustNothing3 <- clusterMany(ccSE, ks=c(3,4),clusterFunction="pam",
                                          subsample=FALSE, sequential=FALSE,
                                          isCount=FALSE,verbose=FALSE))

@@ -40,8 +40,8 @@ colnames(sData)<-c("A","B","C")
 colnames(gData)<-c("a","b","c")
 mData<-list(first=c(1,2,3),second=c("Information"))
 se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
-cc <- clusterExperiment(mat, labMat, transformation = function(x){x})
-ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
+cc <- ClusterExperiment(mat, labMat, transformation = function(x){x})
+ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
 sce<-as(se,"SingleCellExperiment")
 
 
@@ -83,10 +83,10 @@ reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
 
 
 #make a new object with -1 values
-ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
+ceSim<-ClusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)
 
-ceSimData<-clusterExperiment(seSimData,clMatNew,transformation=function(x){x})
+ceSimData<-ClusterExperiment(seSimData,clMatNew,transformation=function(x){x})
 clusterTypes(ceSimData)<-clusterTypes(test)
 
 rm(test)

@@ -542,7 +542,7 @@ setMethod(
 #' @title Class SingleCellFilter
 #'
 #' @description \code{SingleCellFilter} is a class that extends
-#' \code{SingleCellExperiment} and is used to store filters on the data
+#' \code{SingleCellExperiment} and is used to store filterStats on the data
 #'
 #' @docType class
 #' @aliases SingleCellFilter SingleCellFilter-class 
@@ -551,9 +551,9 @@ setMethod(
 #' class, the \code{SingleCellFilter} object has the additional slots described
 #' in the Slots section.
 #'
-#' @slot filters a numeric matrix where each column gives a summary statistics 
+#' @slot filterStats a numeric matrix where each column gives a summary statistics 
 #'   calculated per gene that can be used for filtering of genes.
-#' @details \code{filters}
+#' @details \code{filterStats}
 #'
 #' @name SingleCellFilter-class
 #' @rdname SingleCellFilter-class
@@ -564,18 +564,75 @@ setClass(
   Class = "SingleCellFilter",
   contains = "SingleCellExperiment",
   slots = list(
-    filters="matrix"
+    filterStats="matrixOrNULL"
     )
 )
 
 setValidity("SingleCellFilter", function(object) {
     ####
-    #test that filters right dimension
+    #test that filterStats right dimension
     ####
-	if(NROW(object@filters)!=NROW(object)) 
-		return("number of rows of filters matrix must be equal to number of rows of object.")
-	if(is.null(colnames(object@filters)) || duplicated(colnames(object@filters))) 
-		return("filters matrix must have unique column names.")
-	if(!is.numeric(object@filters)) return("filters matrix must be numeric.")
+	if(!is.null(object@filterStats)){
+		if(NROW(object@filterStats)!=NROW(object)) 
+			return("number of rows of filterStats matrix must be equal to number of rows of object.")
+		if(is.null(colnames(object@filterStats)) || duplicated(colnames(object@filterStats))) 
+			return("filterStats matrix must have unique column names.")
+		if(!is.numeric(object@filterStats)) return("filterStats matrix must be numeric.")
+	}
 	return(TRUE)
 })
+
+#' @aliases ClusterFunction
+#' @rdname ClusterFunction-class
+#' @export
+setGeneric(
+	name = "SingleCellFilter",
+	def = function(object,...) {
+	  standardGeneric("SingleCellFilter")
+	}
+)
+#' @rdname ClusterFunction-class
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("SingleCellExperiment"),
+	definition = function(object,filterStats=NULL){
+		if(!is.null(filter) & is.null(dim(filterStats))){
+			filterStats<-matrix(filterStats,ncol=1)
+			colnames(filterStats)<-"UserFilter"
+		}
+	out <- new("SingleCellFilter",
+		  object,
+         filterStats=filterStats
+		 )
+	return(out)
+	
+})
+
+#' @aliases ClusterFunction
+#' @rdname ClusterFunction-class
+#' @export
+setGeneric(
+	name = "SingleCellFilter",
+	def = function(object,...) {
+	  standardGeneric("SingleCellFilter")
+	}
+)
+
+#' @rdname ClusterFunction-class
+#' @export
+setMethod(
+	f = "SingleCellFilter",
+	signature = signature("SingleCellExperiment"),
+	definition = function(object,filterStats=NULL){
+		if(!is.null(filterStats) & is.null(dim(filterStats))){
+			filterStats<-matrix(filterStats,ncol=1)
+			colnames(filterStats)<-"UserFilter"
+		}
+	out <- new("SingleCellFilter",
+		  object,
+         filterStats=filterStats
+		 )
+	return(out)
+	
+})		

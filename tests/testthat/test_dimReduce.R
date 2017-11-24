@@ -30,7 +30,27 @@ test_that("makeDimReduce works as promised",{
 })
 
 test_that("SingleCellFilter class works as expected",{
-
+	expect_silent(scf<-SingleCellFilter(sce))
+	expect_silent(filterNames(scf))
+	expect_null(filterStats(scf))
+	expect_error(filterStat(scf,type="Filter1"),"There are no filter statistics saved for this object")
+	
+	filter<-rnorm(nrow(sce))
+	expect_silent(SingleCellFilter(sce,filterStats=filter))
+	
+	set.seed(352)
+	filter<-matrix(rnorm(2*nrow(sce)),ncol=2)
+	expect_error(SingleCellFilter(sce,filterStats=filter),"filterStats matrix must have unique column names")
+	colnames(filter)<-c("Filter1","Filter2")
+	expect_silent(scf<-SingleCellFilter(sce,filterStats=filter))
+	
+	expect_silent(filterNames(scf))
+	expect_equal(filterStats(scf),filter)
+	expect_equal(filterStat(scf,type="Filter1"),filter[,"Filter1"])
+	expect_error(filterStat(scf,type="Myfilter"),"is not the name of a filter statistic held by the object")
+	expect_error(filterStat(scf,type=1),"unable to find an inherited method")
+	
+	filterData
 }
   # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))
   #

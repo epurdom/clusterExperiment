@@ -544,7 +544,7 @@ setMethod(
 	      clInfo <- mapply(pList, out, FUN=function(x, y){
 	        c(list(choicesParam=x), clusterInfo(y))
 	      }, SIMPLIFY=FALSE)
-		  outval <- clusterExperiment(x, clusters=clMat,
+		  outval <- ClusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
 			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
 

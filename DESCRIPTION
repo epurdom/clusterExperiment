@@ -50,6 +50,7 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperClusterFunction.R'
+    'AllHelperFilter.R'
     'JiashinJiCode.R'
     'addClusters.R'
     'internalClusterFunctions.R'
