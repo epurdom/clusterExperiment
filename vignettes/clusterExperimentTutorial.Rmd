@@ -1093,7 +1093,7 @@ We see even here, the default of $\alpha=0.1$ was perhaps too conservative since
 However, the distances based on correlation calculated directly on the data, such as we created above, are also often used for clustering expression data directly (i.e. without the subsampling step). But they are unlikely to have dissimilarities as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
 
 ```{r visualizeSpearmanDist}
-dSp<-spearDist(t(transform(ce,dimReduce="mad",nVarDims=1000)))
+dSp<-spearDist(t(transformData(ce,dimReduce="mad",nVarDims=1000)))
 plotHeatmap(dSp,isSymmetric=TRUE,colorScale=rev(seqPal5))
 ```
 
@@ -1504,7 +1504,7 @@ plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","
 
 The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom`[@Law:2014ff] correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
 
-If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
+If instead `isCount=FALSE`, then `limma` is performed on `transformData(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
 Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 

@@ -193,33 +193,21 @@ setMethod(
                         transFun=NULL,isCount=FALSE,
                         ...
   ){
-	  if(missing(dimReduce)) dimReduce<-"none"
-	  if(any(dim(x)==0)) stop("x must have non zero dimensions")
-    origX <- x
-	  
-	  ###Need to change .transData function to return a 'SingleCellExperiment' class object rather than list
-    transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transFun,
-                           isCount=isCount)
-						   
-    x <- transObj$x
-    if(!is.null(dim(x)) && NCOL(x)!=NCOL(origX)) {
-      stop("Error in the internal transformation of x")
-    }
-    transFun <- transObj$transFun #need it later to create clusterExperimentObject
-
-    if(!is.null(dim(x))) {
-      x <- list(dataset1=x)
-    } #if npcs=NA, then .transData returns a matrix.
-	out<-as(origX,"SingleCellExperiment")
-	##Note: need to not separate out the different k of PCA into a matrix
-	##Need to go back and deal with the 
-	reducedDims(out)<-x
-	return(clusterMany(out,...))
-	
-
-  }
-
+	if(missing(dimReduce) || any(is.na(nPCADims))) dimReduce<-"none"
+	if(any(dim(x)==0)) stop("x must have non zero dimensions")
+	origX <- x
+	if(any(dimReduce!="none")){
+		if(length(nPCADims)==1 && is.na(nPCADims)) stop("Must give nPCADims if choose a dimReduce option not equal to 'none'")
+		nPCADims<-na.omit(nPCADims)
+		maxDims<-max(nPCADims)
+		###continually add the dimReduce on top of existing. When have more options, need to check that they don't delete over each other.
+		for(dr in dimReduce[dimReduce!="none"]){
+			x<-try(makeDimReduce(x,dimReduce=dr, maxDims=maxDims))
+			if(inherits(x, "try-error")) stop("running makeDimReduce on",dr,"with maxDims=",maxDims,"produced the following error:",x)
+		}
+	}
+	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,...))
+}
 )
 
 # ###Make it into a SingleCellExperiment class -- even though don't have assay???
@@ -257,8 +245,8 @@ setMethod(
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, distFunction=NA,
                         betas=0.9, minSizes=1,
-                        dimReduce,nVarDims=NA,nPCADims=NA,
-                        transFun=NULL,isCount=FALSE,
+                         dimReduce,nVarDims=NA,nPCADims=NA,
+                         transFun=NULL,isCount=FALSE,
                         verbose=FALSE,
                         mainClusterArgs=NULL,
                         subsampleArgs=NULL,
@@ -267,16 +255,23 @@ setMethod(
                         ...
   )
   {
+	transFun<-.makeTransFun(transFun=transFun,isCount=isCount)  
     paramMatrix<-NULL
 	if(length(x@reducedDims)==0){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellExperiment object without the args of dimReduce, etc. ...
-	    outval <- clusterMany(assay(x),...)
+	    return(clusterMany(assay(x),...))
 	}
     else{
 		###############
+	    #Check inputs of dimReduce slots
+		###############
+	    ##TO DO: need to deal with dimReduce="none". And make sure transformed data is used!
+		
+		doNone<-"none" %in% dimReduce
+		if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
 		if(!missing(dimReduce)){
-			###To Do: Add something to check that match requested dimReduceValues
 			if(any(!dimReduce %in%reducedDimNames(x))){
+				##For now, IF there is a reducedDim slot, then will not try to patch in ones that are missing.
 				warning("Not all of dimReduce value match a reducedDimNames of the 'SingleCellExperiment' object, will ignore them:",paste(dimReduce[!dimReduce %in%reducedDimNames(x)],collapse=","))
 				dimReduce<-dimReduce[dimReduce %in%reducedDimNames(x)]
 			}
@@ -284,32 +279,27 @@ setMethod(
 		else{
 			dimReduce<-reducedDimNames(x)
 		}
+	  	maxDimValues<-sapply(reducedDims(x)[dimReduce],ncol)
+		if(all(nPCADims > max(maxDimValues))) stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+			###Add in the variance filter after add it to the slot.
 		
-		dataList <- reducedDims(x)[dimReduce]
-
-		##Need to grab the different nPCAVar values and make dataList into an extended list
-		##Only do it for dimReduce methods for which it makes sense....
-		
-		##If request k for which not calculated, give warning, tell them to redo the correction
-		
-		###Add in the variance filter after add it to the slot.
-		
-		###############
 	    if(!is.null(random.seed)){
 	        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
 	            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
 	        }
 	    }
-	    dataName <- names(dataList)
+		###############
+	    #Start creating the combinations
+		###############
 	    if(is.null(paramMatrix)){
-			
-	      param <- expand.grid(dataset=dataName, 
-	                         k=ks, alpha=alphas, findBestK=findBestK, 
-							 beta=betas, minSize=minSizes,
-	                         sequential=sequential, distFunction=distFunction,
-	                         removeSil=removeSil, subsample=subsample,
-	                         clusterFunction=clusterFunction, silCutoff=silCutoff)
-	      #After expanding, add in dimReduce, nDim (not before, so as to not get combinations that don't make sense. Or would it be better to do that in the combination checking part)
+		  if(doNone) dimReduce<-c(dimReduce,"none")
+	      param <- expand.grid(dimReduce=dimReduce,
+		    nDimReduce=nPCADims, k=ks, alpha=alphas, findBestK=findBestK, 
+			beta=betas, minSize=minSizes,
+	        sequential=sequential, distFunction=distFunction,
+	        removeSil=removeSil, subsample=subsample,
+	        clusterFunction=clusterFunction,silCutoff=silCutoff)
+
 		  ###########
 	      #Check param matrix:
 	      #don't vary them across ones that don't matter (i.e. 0-1 versus K);
@@ -318,6 +308,9 @@ setMethod(
 	      ###########
 		  paramAlgTypes<-algorithmType(param[,"clusterFunction"])
 		  if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
+		  #---
+		  #type K fixes
+		  #---
 	      typeK <- which( paramAlgTypes=="K")
 	      if(length(typeK)>0){
 	        param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here        
@@ -344,18 +337,32 @@ setMethod(
 	          }
 	        }
 	      }
+		  #---
+		  # type01 combinations
+		  #---
 	      type01 <- which( paramAlgTypes=="01")
 	      if(length(type01)>0){
 	        param[type01,"findBestK"] <- FALSE
 	        param[type01,"removeSil"] <- FALSE
 	        param[type01,"silCutoff"] <- 0
 	      }
-		  ##Turn off distFunction for those that subsample, because will use that of co-occurance
+		  #---
+		  #Turn off distFunction for some combinations
+		  #---
+		  #those that subsample, because will distance that of co-occurance
 	      whSubsample<-which(param[,"subsample"])
 	      if(length(whSubsample)>0){
 	        param[whSubsample,"distFunction"]<-NA
 	      }
-		  ###Check value alpha, beta values
+		  #those that subsample, because will distance that of co-occurance
+	      whDimReduce<-which(param[,"dimReduce"]!="none")
+	      if(length(whDimReduce)>0){
+	        param[whDimReduce,"distFunction"]<-NA
+	      }
+
+		  #---
+		  #Check value alpha, beta values
+		  #---
 	      alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
 		  if(length(alpha01)>0){
 			  stop("alpha value must be in (0,1)")
@@ -367,8 +374,27 @@ setMethod(
 			  param[beta01,"beta"]<-NA
 		  }
 
+  		  #---
+		  # deal with nDimReduce NA or larger than the size of the dataset
+		  # set it to the maximum value possible.
+		  #---
+		  maxDimValues<-maxDimValues[param[,"dimReduce"]]
+		  #if NA, means do the largest possible dimension saved for that method
+		  whNADim<-which(is.na(param[,"nDimReduce"]))
+		  if(length(whNADim)>0){
+			  param[whNADim,"nDimReduce"]<-maxDimValues[whNADim]
+		  }
+		  if(any(is.na(param[,"nDimReduce"]))) stop("Internal coding error: didn't get rid of NA dimReduce in checks")
+		  whAbove<-which(param[,"nDimReduce"]>maxDimValues)
+		  if(length(whAbove)>0){
+			  param[whAbove,"nDimReduce"]<-maxDimValues[whAbove]
+		  }
+		  #now turn to NA is when dimReduce="none"
+		  whNone<-which(param[,"dimReduce"]=="none")
+		  if(length(whNone)>0){
+			  param[whNone,"nDimReduce"]<-NA
+		  }
 	      param <- unique(param)
-
 	      #####
 	      #deal with those that are invalid combinations:
 		  # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
@@ -399,7 +425,7 @@ setMethod(
 	          else param<-param[-whInvalid,]
 			
 			}
-
+		  
 	      #####
 	      #require at least 2 combinations:
 	      #####
@@ -434,7 +460,7 @@ setMethod(
 	  }
 
 	    if(verbose) {
-	      cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method.\n")
+	      cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method,",sum(param[,"subsample"]),"use subsampling method\n")
 	    }
 		if(is.null(mainClusterArgs)) mainClusterArgs<-list(clusterArgs=list())
 		if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
@@ -447,7 +473,8 @@ setMethod(
 	      subsample <- as.logical(gsub(" ","",par["subsample"]))
 	      findBestK <- as.logical(gsub(" ","",par["findBestK"]))
 	      clusterFunction <- as.character(par[["clusterFunction"]])
-	      distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
+	      dimReduce<-as.character(par[["dimReduce"]])
+		  distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
 	      if(!is.na(par[["k"]])){
 	        if(sequential) {
 	          seqArgs[["k0"]] <- par[["k"]]
@@ -470,13 +497,16 @@ setMethod(
 	        set.seed(random.seed)
 	      }
 		  ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
-	      if(!is.null(distFunction)){
-	        diss<- allDist[[paste(as.character(par[["dataset"]]),distFunction,sep="--")]]
-	        clusterSingle(x=dataList[[as.character(par[["dataset"]])]], diss=diss,subsample=subsample, dimReduce="none",
+		  dat<-if(dimReduce=="none") transformData(x,transFun=transFun) else t(reducedDim(x,dimReduce)[,1:par[["nDimReduce"]]] )
+		  if(!is.null(distFunction)){
+  			#need to update here when have filter (see below)
+	        diss<- allDist[[distFunction]]
+	        clusterSingle(x=dat, diss=diss,subsample=subsample, dimReduce="none",
 	                      mainClusterArgs=mainClusterArgs,
 	                      subsampleArgs=subsampleArgs, seqArgs=seqArgs,
 	                      sequential=sequential, transFun=function(x){x},checkDiss=FALSE)       }
-	      else clusterSingle(x=dataList[[as.character(par[["dataset"]])]], subsample=subsample,
+	      else
+		  clusterSingle(x=dat, subsample=subsample,
 	                 mainClusterArgs=mainClusterArgs, dimReduce="none",
 	                 subsampleArgs=subsampleArgs, seqArgs=seqArgs,
 	                 sequential=sequential, transFun=function(x){x},checkDiss=FALSE) 
@@ -486,18 +516,19 @@ setMethod(
 	      if(any(!is.na(param[,"distFunction"]))){
 	        distParam<-unique(param[,c("dataset","distFunction")])
 	        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
-        
-	          allDist<-lapply(1:nrow(distParam),function(ii){
-	            distFun<-as.character(distParam[ii,"distFunction"])
-	            dataName<-as.character(distParam[ii,"dataset"])
-				algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" #be conservative and check for the 01 type if any of clusterFunctions are 01.
-	            distMat<-.makeDiss(dataList[[dataName]],distFunction=distFun,checkDiss=TRUE,algType=algCheckType)
-				# fun<-get(distFun,envir=globalenv())
-				#             distMat<-as.matrix(fun(t(dataList[[dataName]])))
-				#             .checkDistFunction(distMat) #check it here!
-	            return(distMat)
-	          })
-	        names(allDist)<-paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+		    ##Assume only take distances on original data (or filtered version of it)
+        	#need to update here when have filter
+			dat<-assay(x)
+			allDist<-lapply(1:nrow(distParam),function(ii){
+			distFun<-as.character(distParam[ii,"distFunction"])
+				#be conservative and check for the 01 type if any of clusterFunctions are 01.
+				algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" 
+				distMat<-.makeDiss(dat, distFunction=distFun, checkDiss=TRUE, algType=algCheckType)
+				return(distMat)
+			})
+			#need to update here when have filter
+			##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
+	        names(allDist)<-distParam[,"distFunction"]			
 
 	      }
 
@@ -527,11 +558,7 @@ setMethod(
 	      clInfo <- mapply(pList, out, FUN=function(x, y){
 	        c(list(choicesParam=x), clusterInfo(y))
 	      }, SIMPLIFY=FALSE)
-
-	      # return(list(clMat=clMat, clusterInfo=clInfo, paramMatrix=param,
-	      #             mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
-	      #             subsampleArgs=subsampleArgs))
-		  outval <- clusterExperiment(origX, clusters=clMat,
+		  outval <- clusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
 			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
 
@@ -539,17 +566,19 @@ setMethod(
 	      if(verbose) {
 	        cat("Returning Parameter Combinations without running them (to run them choose run=TRUE)\n")
 	      }
-	      outval<-list(paramMatrix=param, mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,
-	                  subsampleArgs=subsampleArgs))
+	      outval<-list(paramMatrix=param, mainClusterArgs=mainClusterArgs, seqArgs=seqArgs,subsampleArgs=subsampleArgs)
 	    }
+		return(outval)
 	}
-    if(class(outval)=="ClusterExperiment") {
-		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-        return(retval)
-    }  
-    else {
-      return(outval)
-    }
+	# # #do I need this?? Do I loose information somewhere?
+	#     if(class(outval)=="ClusterExperiment") {
+	# 	# retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+	# 	#         return(retval)
+	#
+	#     }
+	#     else {
+	#       return(outval)
+	#     }
   }
 )
 

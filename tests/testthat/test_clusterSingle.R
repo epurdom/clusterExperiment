@@ -12,9 +12,8 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
             expect_is(clustNothing, "SummarizedExperiment")
 
             #test clusterLabel
-            expect_silent(clustNothing2 <- clusterSingle(mat, mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-                                          subsample=FALSE, sequential=FALSE,
-                                          isCount=FALSE,clusterLabel="myownClustering"))
+            expect_silent(clustNothing2 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction="pam"), subsample=FALSE, 
+				sequential=FALSE, isCount=FALSE, clusterLabel="myownClustering"))
             expect_equal(clusterLabels(clustNothing2),"myownClustering")
             
             

@@ -57,6 +57,34 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
 
  
           })
+test_that("`clusterMany` works with SingleCellExperiment", {
+		sceSimDataDimRed
+  #check with sce that has dimRed:
+  expect_silent(clustNothing2 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction=listBuiltInFunctions(),
+                             subsample=FALSE, sequential=FALSE,
+                             isCount=FALSE,verbose=FALSE))
+  expect_equal(colData(clustNothing2),colData(sceSimDataDimRed))
+  expect_equal(rownames(clustNothing2),rownames(sceSimDataDimRed))
+  expect_equal(colnames(clustNothing2),colnames(sceSimDataDimRed))
+  expect_equal(metadata(clustNothing2),metadata(sceSimDataDimRed))
+  expect_equal(rowData(clustNothing2),rowData(sceSimDataDimRed))
+  expect_equal(reducedDims(clustNothing2),reducedDims(sceSimDataDimRed))
+
+  #check picking a single dimReduce same as apply directly to matrix 
+  expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), ks=c(3,4),clusterFunction="pam", dimReduce="none",
+                             subsample=FALSE, sequential=FALSE,
+                             isCount=FALSE,verbose=FALSE))
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="PCA",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+
+  #check picking dimReduce="none" same as apply directly to matrix 
+  expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+})
+
 test_that("`clusterMany` works changing parameters", {
   #check dim reduce
   expect_silent(cc <- clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var","cv","mad"),clusterFunction="pam",

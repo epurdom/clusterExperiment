@@ -20,7 +20,7 @@
     #############
     #check transform
     #############
-    tX <- try(transform(object),silent=TRUE)
+    tX <- try(transformData(object),silent=TRUE)
     if(inherits(tX, "try-error")){
       stop(paste("User-supplied `transformation` produces error on the input data
                  matrix:\n",tX))

@@ -1,3 +1,10 @@
+
+setGeneric(
+  name = "makeDimReduce",
+  def=function(object,...){
+    standardGeneric("makeDimReduce")
+  }
+)
 setGeneric(
   name = "plotClusterLegend",
   def=function(object,...){
@@ -269,14 +276,12 @@ setGeneric(
     standardGeneric("transformation<-")
   }
 )
-# don't need this because a standard generic already exists
-# setGeneric(
-#   name = "transform",
-#   def = function(x,...) {
-#     standardGeneric("transform")
-#   }
-# )
-setGeneric("transform")
+setGeneric(
+  name = "transformData",
+  def = function(object,...) {
+    standardGeneric("transformData")
+  }
+)
 
 setGeneric(
   name = "clusterMatrix",

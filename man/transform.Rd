@@ -74,11 +74,11 @@ cc <- clusterExperiment(mat, as.numeric(labels), transformation =
 function(x){x^2}) #define transformation as x^2
 
 #transform and take top 3 dimensions
-x <- transform(cc, dimReduce="PCA", nPCADims=3)
+x <- transformData(cc, dimReduce="PCA", nPCADims=3)
 
 #transform and take return untransformed, top 5 features, and top 10 features
-y <- transform(cc, dimReduce="var", nVarDims=c(NA, 5, 10))
+y <- transformData(cc, dimReduce="var", nVarDims=c(NA, 5, 10))
 names(y)
 
-z<-transform(cc) #just return tranformed data
+z<-transformData(cc) #just return tranformed data
 }

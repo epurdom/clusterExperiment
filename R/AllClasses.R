@@ -305,7 +305,7 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    tmp<-.makeColors(clusters, colors=bigPalette)
+    tmp<-.makeColors(clusters, colors=massivePalette)
     clusterLegend<-tmp$colorList
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)

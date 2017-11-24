@@ -77,7 +77,7 @@
 #'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
 #'   means that the log2(1+count) will be used as the transformation, like for
 #'   the matrix case as well as the voom calculation, and will NOT use the 
-#'   transformation stored in the object. If FALSE, then transform(x) will be 
+#'   transformation stored in the object. If FALSE, then transformData(x) will be 
 #'   given to the input and will be used for both \code{makeDendrogram} and 
 #'   \code{getBestFeatures}, with no voom correction.
 #'   
@@ -427,7 +427,7 @@ This makes sense only for counts.")
     else propTable<-NULL
   }
   else propTable<-NULL
-  outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
+  outlist <- mergeClusters(x=if(!isCount) transformData(x) else assay(x),
                            cl=cl, nodePropTable=propTable,
                            dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)

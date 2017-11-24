@@ -10,7 +10,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
   clustWithDendro <- makeDendrogram(cl1)
   #matrix version
-  mergedList <- mergeClusters(x=transform(cl1), isCount=FALSE,
+  mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotInfo="mergeMethod")
@@ -36,7 +36,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
 	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name")
 
-  expect_error(mergeClusters(x=transform(clustWithDendro), isCount=FALSE,
+  expect_error(mergeClusters(x=transformData(clustWithDendro), isCount=FALSE,
                                cl=primaryCluster(clustWithDendro),plot="none",
                                mergeMethod="adjP",
                                dendro=clustWithDendro@dendro_samples),
@@ -64,23 +64,23 @@ test_that("saving merge info works",{
   clusterLegend(cl1)[[1]]<-test
   clustWithDendro <- makeDendrogram(cl1)
   #matrix version
-  mergedList <- mergeClusters(x=transform(cl1), isCount=FALSE,
+  mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotInfo="none")
   
   ##check giving nodePropTable
-  mergedList2<- mergeClusters(x=transform(cl1), isCount=FALSE,
+  mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1), nodePropTable=mergedList$propDE,
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="Storey", plotInfo="none")
   expect_equal(mergedList2$propDE[,"adjP"],mergedList$propDE[,"adjP"])
-  mergedListStorey<-mergeClusters(x=transform(cl1), isCount=FALSE,
+  mergedListStorey<-mergeClusters(x=transformData(cl1), isCount=FALSE,
                                   cl=primaryCluster(cl1), 
                                   dendro=clustWithDendro@dendro_clusters,
                                   mergeMethod="Storey", plotInfo="mergeMethod")
   expect_equal(mergedList2$propDE[,"Storey"],mergedListStorey$propDE[,"Storey"])  
-  mergedList2Redo<- mergeClusters(x=transform(cl1), isCount=FALSE,
+  mergedList2Redo<- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1), nodePropTable=mergedList2$propDE,
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="none", plotInfo=c("all"))

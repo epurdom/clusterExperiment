@@ -514,7 +514,7 @@ setMethod(
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
-	  # blankData<-makeBlankData(transform(object),geneByContrast,nBlankLines=nBlankLines)
+	  # blankData<-makeBlankData(transformData(object),geneByContrast,nBlankLines=nBlankLines)
       blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
 
 

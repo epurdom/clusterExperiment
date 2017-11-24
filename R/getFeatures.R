@@ -278,7 +278,7 @@ with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
               dat <- assay(x)
             } else {
-              dat <- transform(x)
+              dat <- transformData(x)
             }
             
             getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,

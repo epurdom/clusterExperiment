@@ -209,24 +209,24 @@ setMethod(
 #' @importFrom cluster silhouette
 .postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
 {
-  doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
-  k<-clusterArgs[["k"]]
-  if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
-  if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
-  if(findBestK){
-    if(missing(kRange)){
-      if(!is.null(k)) kRange<-(k-2):(k+20)
-      else kRange<-2:20
-    }
-    if(any(kRange<2)){
-      kRange<-kRange[kRange>=2]
-      if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
-    }
+	doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
+	k<-clusterArgs[["k"]]
+	if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
+	if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
+	if(findBestK){
+	if(missing(kRange)){
+	  if(!is.null(k)) kRange<-(k-2):(k+20)
+	  else kRange<-2:20
+	}
+	if(any(kRange<2)){
+	  kRange<-kRange[kRange>=2]
+	  if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
+	}
 	ks<-kRange 
-  }
-  else ks<-k
-  if(any(ks>= N)) ks<-ks[ks<N]
-  clusters<-lapply(ks,FUN=function(currk){
+	}
+	else ks<-k
+	if(any(ks>= N)) ks<-ks[ks<N]
+	clusters<-lapply(ks,FUN=function(currk){
 		cl<-do.call(clusterFunction@clusterFUN,c(list(k=currk),clusterArgs))
 		if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
 		return(cl)

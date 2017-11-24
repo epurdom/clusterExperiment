@@ -34,7 +34,7 @@
 #'   dimensionality reduction to perform before clustering. Options are 
 #'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 #'   details.
-#' @param ndims integer An integer identifying how many dimensions to reduce to 
+#' @param nDims integer An integer identifying how many dimensions to reduce to 
 #'   in the reduction specified by \code{dimReduce}
 #' @param clusterLabel a string used to describe the clustering. By default it
 #'   is equal to "clusterSingle", to indicate that this clustering is the result
@@ -234,11 +234,28 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
+  signature = signature(x = "SingleCellExperiment",diss="missing"),
+  definition = function(x, dimReduce="none", nDims=NA,...) {
+	if(dimReduce=="none" || length(reduceDims(x))==0 || !dimReduce %in% reducedDimNames(x)) 
+		outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
+	else{
+		if(is.na(nDims)) nDims<-ncol(reduceDim(x,type=dimReduce))
+		outval<-clusterSingle(reduceDim(x,type=dimReduce)[,1:nDims],dimReduce="none",...)
+	}
+	#add back in the SingleCellExperiment stuff lost
+	retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+	return(retval)
+  }
+)
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
   signature = signature(x = "matrixOrNULL",diss="matrixOrNULL"),
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
-      ndims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
+      nDims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
@@ -266,29 +283,37 @@ setMethod(
 	## Handle dimensionality reduction:
 	##########
 	###Don't do this until do the checks, because takes some time.
+	transObj<-NULL
     if(input %in% c("X")){
       N <- dim(x)[2]
       origX <- x #ngenes x nsamples
       ##########
       ##transformation to data x that will be input to clustering
       ##########
-      dimReduce <- match.arg(dimReduce) #should be only 1
-      if(length(ndims)>1) {
-        stop("clusterSingle only handles one choice of dimensions. If you want to compare multiple choices, try clusterMany")
+      dimReduce <- match.arg(dimReduce) #should be only 1 for clusterSingle
+      if(length(nDims)>1 || length(dimReduce)>1) {
+        stop("clusterSingle only handles one choice of dimensions or dimReduce. If you want to compare multiple choices, try clusterMany")
       }
-      if(!is.na(ndims) & dimReduce=="none") {
-        warning("specifying ndims has no effect if dimReduce==`none`")
+      if(!is.na(nDims) & dimReduce=="none") {
+        warning("specifying nDims has no effect if dimReduce==`none`")
       }
-      nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-      nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), ndims, NA)
-      transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
-                             dimReduce=dimReduce, transFun=transFun,
-                             isCount=isCount)
-      x <- transObj$x
-      if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
-        stop("Error in the internal transformation of x")
-      }
-      transFun <- transObj$transFun #need it later to create clusterExperimentObject
+	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
+	  if(dimReduce=="none"){
+		  x<-transformData(x,transFun=transFun)
+	  }
+	  else if(dimReduce=="PCA"){
+		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims==nDims, transFun=transFun)
+		  x<-reducedDim(transObj,type=dimReduce)
+	  }
+      # nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), nDims, NA)
+      # transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
+      #                        dimReduce=dimReduce, transFun=transFun,
+      #                        isCount=isCount)
+      # x <- transObj$x
+      # if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
+      #   stop("Error in the internal transformation of x")
+      # }
+      # transFun <- transObj$transFun #need it later to create clusterExperimentObject
       
     }
     else{
@@ -330,22 +355,27 @@ setMethod(
                       subsampleArgs = subsampleArgs,
                       seqArgs = seqArgs,
                       dimReduce=dimReduce,
-                      ndims=ndims
+                      nDims=nDims
     ))
     ##########
     ## Convert to clusterExperiment Object
     ##########
     if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
+	  	
       retval <- clusterExperiment(origX, outlist$clustering,
-                                  transformation=transFun,
-                                  clusterInfo=clInfo,
-                                  clusterTypes="clusterSingle",checkTransformAndAssay=FALSE)
-      clusterLabels(retval)<-clusterLabel
+                transformation=transFun,
+               clusterInfo=clInfo, clusterTypes="clusterSingle",
+			    checkTransformAndAssay=FALSE)
+	  clusterLabels(retval)<-clusterLabel
       if(!sequential & subsample) {
         retval@coClustering<-1-finalClusterList$diss
 		ch<-.checkCoClustering(retval)
 		if(!is.logical(ch)) stop(ch)
       }
+	  if(!is.null(transObj)){
+		  #add in the dimReduce stuff
+		  retval<-.addBackSEInfo(newObj=retval,oldObj=transObj)
+	  }
       return(retval)
     }
     else{
