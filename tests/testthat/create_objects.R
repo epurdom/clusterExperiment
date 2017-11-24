@@ -86,8 +86,8 @@ reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
 ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)
 
-ceSimCont<-clusterExperiment(seSimData,clMatNew,transformation=function(x){x})
-clusterTypes(ceSimCont)<-clusterTypes(test)
+ceSimData<-clusterExperiment(seSimData,clMatNew,transformation=function(x){x})
+clusterTypes(ceSimData)<-clusterTypes(test)
 
 rm(test)
 #################################

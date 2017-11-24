@@ -2,25 +2,30 @@ context("Dimensionality Reduction")
 source("create_objects.R")
 
 test_that("makeDimReduce works as promised",{
-
-  #check makeDimReduce with CE object
-  expect_silent(dr<-makeDimReduce(cc,dimReduce="PCA",maxDims=3))
-  expect_equal(dim(reducedDim(dr,"PCA")), c(NCOL(assay(cc)),3))
-  expect_silent(dr2<-makeDimReduce(cc,dimReduce="PCA",maxDims=0.5))
-  expect_equal(dim(reducedDim(dr2,"PCA")), c(NCOL(assay(cc)),4))
-  
   # check for all objects that get expected
-  true3<-reducedDim(sceSimDataDimRed,"PCA")[,1:3]
-  expect_silent(dr3<-makeDimReduce(simData,dimReduce="PCA",maxDims=3))
-  expect_equal(true3,reducedDim(dr3,"PCA"))
-  expect_silent(dr3<-makeDimReduce(seSimData,dimReduce="PCA",maxDims=3))
-  expect_equal(true3,reducedDim(dr3,"PCA"))
-  expect_silent(dr3<-makeDimReduce(sceSimData,dimReduce="PCA",maxDims=3))
-  expect_equal(true3,reducedDim(dr3,"PCA"))
+  nDim<-3
+  true3<-abs(reducedDim(sceSimDataDimRed,"PCA")[,1:nDim])
 
-  #check don't lose them
-  expect_silent(dr<-makeDimReduce(sceSimDataDimRed,dimReduce="PCA",maxDims=3))
-  expect_equal(reducedDim(sceSimDataDimRed,"PCA"),reducedDim(dr,"PCA"))
+  #note: cc gives rownames to everything, so need to unname it
+  expect_silent(dr3<-makeDimReduce(ceSimData,dimReduce="PCA",maxDims=nDim))
+  expect_equal(unname(true3),unname(abs(reducedDim(dr3,"PCA"))))
+
+  expect_silent(dr3<-makeDimReduce(simData,dimReduce="PCA",maxDims=nDim))
+  expect_equal(true3,abs(reducedDim(dr3,"PCA")))
+
+  expect_silent(dr3<-makeDimReduce(seSimData,dimReduce="PCA",maxDims=nDim))
+  expect_equal(true3,abs(reducedDim(dr3,"PCA")))
+
+  expect_silent(dr3<-makeDimReduce(sceSimData,dimReduce="PCA",maxDims=nDim))
+  expect_equal(true3,abs(reducedDim(dr3,"PCA")))
+
+  #check don't lose them if call on existing object
+  expect_silent(dr<-makeDimReduce(sceSimDataDimRed,dimReduce="PCA",maxDims=nDim))
+  expect_equal(reducedDims(sceSimDataDimRed),reducedDims(dr))
+
+  #check with maxDims<1 (picks 4 of dimensions apparently -- never checked was correct)
+  expect_silent(dr2<-makeDimReduce(cc,dimReduce="PCA",maxDims=0.5))
+  expect_equal(abs(reducedDim(dr2,"PCA")[,1:4]), abs(reducedDim(dr2,"PCA")))
   
 })
   # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))

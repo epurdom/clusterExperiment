@@ -86,27 +86,20 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
 
   #check picking certain dims in single dimReduce same as apply directly to matrix 
+  #and that get right reducedDim returned
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA"
-  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
-  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
 	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
-      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(NCOL(clusterMatrix(clustNothing)),4)
-  expect_equal(NCOL(clusterMatrix(clustNothing3)),4)
-  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+  expect_equal(abs(reducedDim(clustNothing,"PCA")), abs(reducedDim(sceSimDataDimRed,"PCA")[,1:6]))
 
-
-  #check returning reduceDims 
-  expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
-  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
-  expect_equal(reducedDim(clustNothing,"PCA"), reducedDim(sceSimDataDimRed,"PCA")[,1:6])
-  
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	  ks=c(3,4),nPCADims=c(5:6),
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
       clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(NCOL(clusterMatrix(clustNothing3)),4)
   expect_equal(reducedDim(clustNothing3,"PCA"), reducedDim(sceSimDataDimRed,"PCA"))
+
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
   #check picking dimReduce="none" same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
