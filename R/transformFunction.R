@@ -71,42 +71,20 @@ setMethod(
 #####Function to calculate the dimReduce matrices.
 
 
-#nPCADims=NA,nVarDims=NA,dimReduce="none",ignoreUnassignedVar=FALSE
-
-#function to transform assay data into clustering data (or other normal-like data input)
-#Note for developers:
-# .transData (unlike transform() ) returns a list:
-# 1st element is the transformed data
-# if npcs=NA or length of npcs=1, transformed data is matrix; otherwise returns list of data matrices.
-# 2nd element is the transformation function
-# The 2nd element is useful if function allows user to say isCount=TRUE so you can then actually get the transformation function out for defining ClusterExperiment Object)
-# 3rd element is the index of most variable features choosen (if dimReduce="var") and returns a simple matrix otherwise NULL
-# 'clustering' argument is a vector of clustering values; if not null, then the -1 values in the clustering vector are ignored in doing the reduction for the var methods.
-#' @param nPCADims Numeric vector giving the number of PC dimensions to use in
-#'   PCA dimensionality reduction. If NA no PCA dimensionality reduction is
-#'   done. nPCADims can also take values between (0,1) to indicate keeping the
+#' @name makeDimReduce
+#' @title Calculate dimensionality reduction of data
+#' @description A Function for performing and storing common dimensionality reduction techniques
+#' @param dimReduce a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
+#' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
+#' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
+#'   \code{maxDims} can also take values between (0,1) to indicate keeping the
 #'   number of PCA dimensions necessary to account for that proportion of the
-#'   variance.
-
-#' If \code{dimReduce="none"} the
-#'   transformed matrix is returned. Otherwise, the user can request
-#'   dimensionality reduction of the transformed data via \code{dimReduce}.
-#'   'PCA' refers to PCA of the transformed data with the top nPCADims kept.
-#'   'var', 'cv', and 'mad' refers to keeping the top most variable features, as
-#'   defined by taking the variance, the mad, or the coefficient of variation
-#'   (respectively) across all samples. nVarDims defines how many such features
-#'   to keep for any of 'var','cv', or 'mad'; note that the number of features
-#'   must be the same for all of these options (they cannot be set separately).
-#' @details The PCA uses prcomp on \code{t(assay(x))} with \code{center=TRUE}
-#'   and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
-#'   it is performing PCA on the correlation matrix of the features.
-#' @details \code{ignoreUnassignedVar} has no impact for PCA reduction, which
-#'   will always use all samples. At all times, regardless of the value of
-#'   \code{ignoreUnassignedVar}, a matrix with the same number of columns of
-#'   \code{assay(x)} (i.e. the same number of samples) will be returned.
-#' @details  \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a
-#'   vector of values, in which case a list will be returned with the
-#'   appropriate datasets as elements of the list.
+#'   variance. \code{maxDims} should be of same length as \code{dimReduce}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each). 
+#' @param transFun a function that will be used to transform the data before performing dimensionality reduction. If \code{object} is a \code{ClusterExperiment} object, then the value of \code{transformation} slot will be used and the user cannot give a value for \code{transFun}.
+#' @param isCount logical. If \code{transFun} is not given, and \code{isCount=TRUE}, then the \code{transFun} will be assumed to be \code{log(x+1)}.
+#' @return a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
+#' @details The PCA method uses either \code{prcomp} from the \code{stats} package or  \code{svds} from the \code{RSpectra} package to perform PCA. Both are called on \code{t(assay(x))} with \code{center=TRUE} and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
+#'   it is performing PCA on the correlation matrix of the features. 
 #'
 #' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{dimReduce}.
 #' @examples
@@ -116,9 +94,8 @@ setMethod(
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' #will transform data based on saved transformation
-#' x <- XXX(cc, dimReduce="PCA", nPCADims=3)
+#' x <- makeDimReduce(cc, dimReduce="PCA", nPCADims=3)
 #' @export
-#' @importFrom RSpectra svds
 setMethod(
   f = "makeDimReduce",
   signature = "SingleCellExperiment",
@@ -197,7 +174,39 @@ setMethod(
 
 }
 )
+#' @rdname makeDimReduce
+#' @export
+setMethod(
+  f = "makeDimReduce",
+  signature = "matrix",
+  definition = function(object,...)
+{
+	makeDimReduce(SummarizedExperiment(object),...)
+}
+)
+#' @rdname makeDimReduce
+#' @export
+setMethod(
+  f = "makeDimReduce",
+  signature = "SummarizedExperiment",
+  definition = function(object,...)
+{
+	makeDimReduce(as(object,"SingleCellExperiment"),...)
+}
+)
+#' @rdname makeDimReduce
+#' @export
+setMethod(
+  f = "makeDimReduce",
+  signature = "ClusterExperiment",
+  definition = function(object,...)
+{
+	out<-makeDimReduce(as(object,"SingleCellExperiment"),transFun=transformation(object),...)
+	return(.addBackSEInfo(newObj=object,oldObj=out))
+}
+)
 
+#' @importFrom RSpectra svds
 .pcaDimRed<-function(x,md,isPct,rowvars){
 	.pca <- function(x, center=TRUE, scale=FALSE, k) {
 	  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
@@ -224,36 +233,19 @@ setMethod(
 }
 
 
-setMethod(
-  f = "makeDimReduce",
-  signature = "matrix",
-  definition = function(object,...)
-{
-	makeDimReduce(SummarizedExperiment(object),...)
-}
-)
-setMethod(
-  f = "makeDimReduce",
-  signature = "SummarizedExperiment",
-  definition = function(object,...)
-{
-	makeDimReduce(as(object,"SingleCellExperiment"),...)
-}
-)
-setMethod(
-  f = "makeDimReduce",
-  signature = "ClusterExperiment",
-  definition = function(object,...)
-{
-	out<-makeDimReduce(as(object,"SingleCellExperiment"),transFun=transformation(object),...)
-	return(.addBackSEInfo(newObj=object,oldObj=out))
-}
-)
 
 
 
 
 
+
+#' @details \code{ignoreUnassignedVar} has no impact for PCA reduction, which
+#'   will always use all samples. At all times, regardless of the value of
+#'   \code{ignoreUnassignedVar}, a matrix with the same number of columns of
+#'   \code{assay(x)} (i.e. the same number of samples) will be returned.
+#' @details  \code{dimReduce}, \code{nPCADims}, \code{nVarDims} can all be a
+#'   vector of values, in which case a list will be returned with the
+#'   appropriate datasets as elements of the list.
 #' @importFrom stats var mad sd prcomp
 #' @param nVarDims Numeric (integer) vector giving the number of features (e.g.
 #'   genes) to keep, based on variance/cv/mad variability.

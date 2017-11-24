@@ -50,7 +50,49 @@ test_that("SingleCellFilter class works as expected",{
 	expect_error(filterStat(scf,type="Myfilter"),"is not the name of a filter statistic held by the object")
 	expect_error(filterStat(scf,type=1),"unable to find an inherited method")
 	
-	filterData
+	###Cutoff filter
+	tf<-filter[,"Filter1"]>1
+	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1))
+	expect_equal(NROW(f1),sum(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+
+	tf<-abs(filter[,"Filter1"])>1
+	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,absolute=TRUE))
+	expect_equal(NROW(f1),sum(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	
+	tf<-abs(filter[,"Filter1"])<1
+	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,keepLarge=FALSE,absolute=TRUE))
+	expect_equal(NROW(f1),sum(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	tf<-filter[,"Filter1"]<1
+	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,keepLarge=FALSE,absolute=FALSE))
+	expect_equal(NROW(f1),sum(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	
+	#percentile number filter
+	tf<-order(filter[,"Filter1"],decreasing=FALSE)[1:10]
+	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10))
+	expect_equal(NROW(f1),length(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+
+	tf<-order(abs(filter[,"Filter1"]),decreasing=FALSE)[1:10]
+	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,absolute=TRUE))
+	expect_equal(NROW(f1),length(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	
+	tf<-order(abs(filter[,"Filter1"]),decreasing=TRUE)[1:10]
+	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=TRUE))
+	expect_equal(NROW(f1),length(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	tf<-order((filter[,"Filter1"]),decreasing=TRUE)[1:10]
+	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=FALSE))
+	expect_equal(NROW(f1),length(tf))
+	expect_equal(assay(f1),assay(scf)[tf,])
+	
+	###Need to add test for percentile in (0,1)
+	
+	
 }
   # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=c(8,0.5,3))[[2]]), c(4,NCOL(assay(cc))))
   #
