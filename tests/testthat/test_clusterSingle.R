@@ -2,7 +2,7 @@ context("clusterSingle")
 source("create_objects.R")
 
 
-test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
+test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
           SummarizedExperiments", {
   #---
   #Matrix
@@ -57,6 +57,19 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 
+	#---
+	#CE
+	#---
+	#test running on clusterExperiment Object -- should add the new clustering
+	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
+	                              subsample=FALSE, sequential=FALSE,
+	                              isCount=FALSE))
+	expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
+	expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
+
+})
+
+test_that("`clusterSingle` works with dimReduce", {
   	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
 		dimReduce="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
@@ -83,25 +96,19 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
         subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+  	expect_silent(clustNothing6 <- clusterSingle(seSimData,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing5))
 
   	expect_warning(clustNothing4 <- clusterSingle(sceSimData,
 		dimReduce="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
 
-	#---
-	#CE
-	#---
-	#test running on clusterExperiment Object -- should add the new clustering
-	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
-	                              subsample=FALSE, sequential=FALSE,
-	                              isCount=FALSE))
-	expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
-	expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
 
 })
-
-
 		  # > clustSeqHier_v2 <- clusterSingle(simData,
 		  # + sequential=FALSE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
 		  # + clusterFunction="kmeans", clusterArgs=list(nstart=10)),

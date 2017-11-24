@@ -122,31 +122,36 @@ setMethod(
 setMethod(
   f = "makeDimReduce",
   signature = "SingleCellExperiment",
-  definition = function(object,dimReduce="PCA",maxDims=100,transFun=NULL,isCount=FALSE)
+  definition = function(object,dimReduce="PCA",maxDims=500,transFun=NULL,isCount=FALSE)
 {
 
   ###################
   ##Check user inputs
   ###################
   #check valid options for dimReduce
-  dimReduce<-match.arg(dimReduce)
-  
+  validDim<-c("PCA")
+  dimReduce<-unique(dimReduce)
+  if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(dimReduce))
+  if(length(maxDims)!=length(dimReduce)) stop("'maxDims' must be of same length as 'dimReduce'")
+	  
   ######Check dimensions
-  if(is.na(maxDims) || maxDims>NROW(object) || maxDims > NCOL(object)){
-	  maxDims<-min(c(NROW(object),NCOL(object)))
-  }
-  if(maxDims<=0)  stop("the number of dimReduce dimensions must be a value strictly greater than 0")
+  for(dr in dimReduce){
+	  dr<-match.arg(dr,validDim)
+	  if(is.na(maxDims) || maxDims>NROW(object) || maxDims > NCOL(object)){
+		  maxDims<-min(c(NROW(object),NCOL(object)))
+	  }
+	  if(maxDims<=0)  stop("the number of dimReduce dimensions must be a value strictly greater than 0")
 
-  pctReturn <- maxDims < 1
 
-  #check if already calculated -- note, currently no way to check if have already done if maxDims<1
-  if(dimReduce %in% reducedDimNames(object)){
-	  if(!pctReturn & maxDims<=ncol(reducedDim(object,type=dimReduce))) return(object)
   }
   
+
+  	  
+  ###################
+  ##Clean up data:
+  ###################
   #transform data
   x<-transformData(object,transFun=transFun,isCount=isCount)
-
   #---------
   #Check zero variance genes before doing dimReduce:
   #---------
@@ -157,38 +162,66 @@ setMethod(
     }
     warning("Found features with zero variance.\nMost likely these are features with 0 across all samples.\nThey will be removed from dimensionality reduction step.")
   }
-  
-  ###################
-  ##Now PCA specific
-  ## if add other functions, spin this off into separate function
-  ###################
-  
-  ##-------
-  # Calculate the pca
-  ##-------
-  if(pctReturn) {
-    prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
-    prvar<-prcObj$sdev^2 #variance of each component
-    prvar<-prvar/sum(prvar)
-    prc<-prcObj$x
-    if(NROW(prc) != NCOL(x)) stop("Internal error in coding of principal components.")
-    maxDims <- which(cumsum(prvar)>maxDims)[1] #pick first pca coordinate with variance > value
-    prc <- prc[,seq_len(maxDims)]
-  }
-  else {
-	prc <- .pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE, k=maxDims)
-    if(any(maxDims > NROW(prc)))
-      stop("Internal error in coding of principal components.")
-  }
 
   ###################
-  #Add to SingleCellExperiment object from the results.
+  ##Do loop over dimReduce values:
   ###################
-  reducedDim(object,dimReduce) <- prc
+  currErrors<-c()
+  for(kk in 1:length(dimReduce)){
+	  dr<-dimReduce[[kk]]
+	  md<-maxDims[[kk]]
+	  isPct <- md < 1
+	  #check if already calculated
+	  #note, currently no way to check if have already done if md<1
+	  if(dr %in% reducedDimNames(object)){
+		  if(!isPct & md<=ncol(reducedDim(object,type=dr))) next
+	  }
+	  #-------------
+	  # if add other functions, add if statements here
+	  if(dr=="PCA") out<-try(.pcaDimRed(x,md=md,isPct=isPct,rowvars=rowvars))
+	  ##-------
+	  	  
+	  if(!inherits(out,"try-error")) reducedDim(object,dimReduce) <- out
+	  else{
+		  currErrors<-c(currErrors,paste("\t",dr,":",out,sep=""))
+	  }	  
+  }
+  if(length(currErrors)>0){
+	  if(length(currErrors)==length(dimReduce)) 
+		  stop(paste("No dimensionality reduction techniques were successful:",currErrors,sep="\n"))
+	  else{
+	  	warning(paste("The following dimensionality reduction techniques hit errors:",currErrors,sep="\n"))
+	  }
+  }
   return(object)
 
 }
 )
+
+.pcaDimRed<-function(x,md,isPct,rowvars){
+	.pca <- function(x, center=TRUE, scale=FALSE, k) {
+	  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
+	  pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
+	  rownames(pc_raw) <- rownames(x)
+	  return(pc_raw)
+	}
+	if(isPct) {
+		prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
+		prvar<-prcObj$sdev^2 #variance of each component
+		prvar<-prvar/sum(prvar)
+		prc<-prcObj$x
+		if(NROW(prc) != NCOL(x)) stop("Internal error in coding of principal components.")
+		md <- which(cumsum(prvar)>md)[1] #pick first pca coordinate with variance > value
+		prc <- prc[,seq_len(md)]
+	}
+	else {
+		prc <- .pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE, k=md)
+		if(any(md > NROW(prc)))
+		  stop("Internal error in coding of principal components.")
+	}
+	
+}
+
 
 setMethod(
   f = "makeDimReduce",
@@ -217,12 +250,6 @@ setMethod(
 )
 
 
-.pca <- function(x, center=TRUE, scale=FALSE, k) {
-  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
-  pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
-  rownames(pc_raw) <- rownames(x)
-  return(pc_raw)
-}
 
 
 

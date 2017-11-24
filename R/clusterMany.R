@@ -189,52 +189,22 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
   definition = function(x,
-                        dimReduce,nVarDims=NA,nPCADims=NA,
-                        transFun=NULL,isCount=FALSE,
-                        ...
+      dimReduce,nVarDims=NA,nPCADims=NA, transFun=NULL,isCount=FALSE, ...
   ){
 	if(missing(dimReduce) || any(is.na(nPCADims))) dimReduce<-"none"
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
-	origX <- x
 	if(any(dimReduce!="none")){
 		if(length(nPCADims)==1 && is.na(nPCADims)) stop("Must give nPCADims if choose a dimReduce option not equal to 'none'")
 		nPCADims<-na.omit(nPCADims)
 		maxDims<-max(nPCADims)
-		###continually add the dimReduce on top of existing. When have more options, need to check that they don't delete over each other.
-		for(dr in dimReduce[dimReduce!="none"]){
-			x<-try(makeDimReduce(x,dimReduce=dr, maxDims=maxDims))
-			if(inherits(x, "try-error")) stop("running makeDimReduce on",dr,"with maxDims=",maxDims,"produced the following error:",x)
-		}
+		x<-makeDimReduce(x,dimReduce=dimReduce[dimReduce!="none"], maxDims=maxDims)
+	}
+	else{
+		x<-SingleCellExperiment(x)
 	}
 	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,...))
 }
 )
-
-# ###Make it into a SingleCellExperiment class -- even though don't have assay???
-# ###Or get rid of list option, and just make the matrix version deal with this???
-# #' @rdname clusterMany
-# #' @export
-# setMethod(
-#   f = "clusterMany",
-#   signature = signature(x = "list"),
-#   definition = function(x,...){
-# 	  #turn list of datasets into a SingleCellExperiment class
-#
-# 	  #this should be part of validObject of SingleCellExperiment class
-#     # if(!all(sapply(data, function(y){is.matrix(y) || is.data.frame(y)}))) {
-#     #   stop("if data is a list, it must be a list with each element of the list a data.frame or matrix")
-#     # }
-#     # #check all same number of observations: Why do we have this check?? Why does it matter??
-#     # if(!length(unique(sapply(data,NCOL)))==1) {
-#     #   stop("All data sets must have the same number of observations")
-#     # }
-#
-# 	# #might need this
-# 	# if(is.null(names(data))) {
-# 	#       names(data) <- paste("dataset",1:length(data),sep="")
-# 	#     }
-#   }
-#  )
 
 #' @rdname clusterMany
 #' @export
@@ -257,37 +227,47 @@ setMethod(
   {
 	transFun<-.makeTransFun(transFun=transFun,isCount=isCount)  
     paramMatrix<-NULL
-	if(length(x@reducedDims)==0){
+    if(!is.null(random.seed)){
+        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
+            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
+        }
+    }
+	if(length(x@reducedDims)==0 & !all(dimReduce=="none")){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellExperiment object without the args of dimReduce, etc. ...
 	    return(clusterMany(assay(x),...))
 	}
     else{
-		###############
-	    #Check inputs of dimReduce slots
-		###############
 	    ##TO DO: need to deal with dimReduce="none". And make sure transformed data is used!
 		
-		doNone<-"none" %in% dimReduce
-		if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
+		###############
+	    #Check inputs of dimReduce slots
+		###############  
 		if(!missing(dimReduce)){
+			doNone<-"none" %in% dimReduce
+			if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
+		}
+		else{
+			doNone<-FALSE
+			dimReduce<-reducedDimNames(x)
+		}
+		if(length(dimReduce)>0){
+			##For now, IF there is a reducedDim slot, then will not try to patch in ones that are missing.
 			if(any(!dimReduce %in%reducedDimNames(x))){
-				##For now, IF there is a reducedDim slot, then will not try to patch in ones that are missing.
 				warning("Not all of dimReduce value match a reducedDimNames of the 'SingleCellExperiment' object, will ignore them:",paste(dimReduce[!dimReduce %in%reducedDimNames(x)],collapse=","))
 				dimReduce<-dimReduce[dimReduce %in%reducedDimNames(x)]
 			}
+			maxDimValues<-sapply(reducedDims(x)[dimReduce],ncol)
+			if(length(na.omit(nPCADims))>0 && all(na.omit(nPCADims) > max(maxDimValues))) stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+	  	
 		}
 		else{
-			dimReduce<-reducedDimNames(x)
+			nPCADims<-NA
+			maxDimValues<-NA #indicates that only "none" will be done
 		}
-	  	maxDimValues<-sapply(reducedDims(x)[dimReduce],ncol)
-		if(all(nPCADims > max(maxDimValues))) stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
-			###Add in the variance filter after add it to the slot.
-		
-	    if(!is.null(random.seed)){
-	        if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
-	            if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
-	        }
-	    }
+		###############
+	    #Check inputs of variance filter after add it to the slot.
+		###############  
+
 		###############
 	    #Start creating the combinations
 		###############
@@ -378,16 +358,18 @@ setMethod(
 		  # deal with nDimReduce NA or larger than the size of the dataset
 		  # set it to the maximum value possible.
 		  #---
-		  maxDimValues<-maxDimValues[param[,"dimReduce"]]
-		  #if NA, means do the largest possible dimension saved for that method
-		  whNADim<-which(is.na(param[,"nDimReduce"]))
-		  if(length(whNADim)>0){
-			  param[whNADim,"nDimReduce"]<-maxDimValues[whNADim]
-		  }
-		  if(any(is.na(param[,"nDimReduce"]))) stop("Internal coding error: didn't get rid of NA dimReduce in checks")
-		  whAbove<-which(param[,"nDimReduce"]>maxDimValues)
-		  if(length(whAbove)>0){
-			  param[whAbove,"nDimReduce"]<-maxDimValues[whAbove]
+		  if(length(na.omit(maxDimValues))>0){
+			  maxDimValues<-maxDimValues[param[,"dimReduce"]]
+			  #if NA, means do the largest possible dimension saved for that method
+			  whNADim<-which(is.na(param[,"nDimReduce"]))
+			  if(length(whNADim)>0){
+				  param[whNADim,"nDimReduce"]<-maxDimValues[whNADim]
+			  }
+			  if(any(is.na(param[,"nDimReduce"]))) stop("Internal coding error: didn't get rid of NA dimReduce in checks")
+			  whAbove<-which(param[,"nDimReduce"]>maxDimValues)
+			  if(length(whAbove)>0){
+				  param[whAbove,"nDimReduce"]<-maxDimValues[whAbove]
+			  }
 		  }
 		  #now turn to NA is when dimReduce="none"
 		  whNone<-which(param[,"dimReduce"]=="none")

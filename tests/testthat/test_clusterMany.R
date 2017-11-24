@@ -58,11 +58,15 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
  
           })
 test_that("`clusterMany` works with SingleCellExperiment", {
-		sceSimDataDimRed
   #check with sce that has dimRed:
-  expect_silent(clustNothing2 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction=listBuiltInFunctions(),
-                             subsample=FALSE, sequential=FALSE,
-                             isCount=FALSE,verbose=FALSE))
+  #takes a while with all functions, but sometimes turn up surprises.
+  #for some reason if do clusterFunction=listBuiltInFunctions(), 
+  #    expect_silent gets warning, but not if run myself.
+  for(kk in 1:length(listBuiltInFunctions)){
+	  expect_silent(clustNothing2 <- clusterMany(sceSimDataDimRed,
+		   ks=c(3,4),clusterFunction=listBuiltInFunctions()[[kk]],
+	       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))  	
+  }
   expect_equal(colData(clustNothing2),colData(sceSimDataDimRed))
   expect_equal(rownames(clustNothing2),rownames(sceSimDataDimRed))
   expect_equal(colnames(clustNothing2),colnames(sceSimDataDimRed))
@@ -71,18 +75,28 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_equal(reducedDims(clustNothing2),reducedDims(sceSimDataDimRed))
 
   #check picking a single dimReduce same as apply directly to matrix 
-  expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), ks=c(3,4),clusterFunction="pam", dimReduce="none",
-                             subsample=FALSE, sequential=FALSE,
-                             isCount=FALSE,verbose=FALSE))
-  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="PCA",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
-  
+  expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), 
+  	ks=c(3,4),clusterFunction="pam", dimReduce="none",
+    subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
+	ks=c(3,4),clusterFunction="pam", dimReduce="PCA",
+	subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
   #check picking dimReduce="none" same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
-  
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+
+  #check picking nPCADims same as apply directly to matrix 
+  expect_silent(clustNothing <- clusterMany(simData, 
+	  ks=c(3,4),nPCADims=c(5:6),
+  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
+	  ks=c(3,4),nPCADims=c(5:6),dimReduce="none",
+      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+
 })
 
 test_that("`clusterMany` works changing parameters", {
