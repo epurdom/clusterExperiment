@@ -4,53 +4,102 @@ source("create_objects.R")
 
 test_that("`clusterSingle` works with matrix, ClusterExperiment objects, and
           SummarizedExperiments", {
-            expect_silent(clustNothing <- clusterSingle(mat, 
-                                       subsample=FALSE, sequential=FALSE,
-                                       mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"), isCount=FALSE))
-            expect_equal(clusterLabels(clustNothing),"clusterSingle")
-            expect_is(clustNothing, "ClusterExperiment")
-            expect_is(clustNothing, "SummarizedExperiment")
+  #---
+  #Matrix
+  #---
+	expect_silent(clustNothing <- clusterSingle(mat, 
+	                           subsample=FALSE, sequential=FALSE,
+	                           mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"), isCount=FALSE))
+	expect_equal(clusterLabels(clustNothing),"clusterSingle")
+	expect_is(clustNothing, "ClusterExperiment")
+	expect_is(clustNothing, "SummarizedExperiment")
 
-            #test clusterLabel
-            expect_silent(clustNothing2 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction="pam"), subsample=FALSE, 
-				sequential=FALSE, isCount=FALSE, clusterLabel="myownClustering"))
-            expect_equal(clusterLabels(clustNothing2),"myownClustering")
-            
-            
-            #test default 01 distance
-            expect_silent(x1 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight"),
-                                          subsample=FALSE, sequential=FALSE,
-                                          isCount=FALSE))
-			#error because not 01 distance
-            expect_error(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight",distFunction=function(x){dist(x,method="manhattan")}),
-                                       subsample=FALSE, sequential=FALSE,isCount=FALSE),"distance function must give values between 0 and 1")
-            
-			#test default K distance
-			expect_silent(x2 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3),clusterFunction="hierarchicalK"),subsample=FALSE, sequential=FALSE, isCount=FALSE))
-             
-            #warn wrong arguments
-            expect_warning(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3,alpha=0.1),clusterFunction="tight"),
-                              subsample=FALSE, sequential=FALSE,
-                              ,isCount=FALSE),"arguments passed via clusterArgs to the clustering function tight are not all applicable")
-            #turn off warning
-            expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3,alpha=0.1),checkArgs=FALSE,clusterFunction="tight"),
-                              subsample=FALSE, sequential=FALSE,
-                              ,isCount=FALSE))
-            
-			###Apply to SE
-            expect_silent(clustNothing2 <- clusterSingle(se, mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-                                          subsample=FALSE, sequential=FALSE,
-                                          isCount=FALSE))
-            expect_equal(clusterMatrix(clustNothing2), clusterMatrix(clustNothing))
+	#test clusterLabel
+	expect_silent(clustNothing2 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction="pam"), subsample=FALSE, 
+		sequential=FALSE, isCount=FALSE, clusterLabel="myownClustering"))
+	expect_equal(clusterLabels(clustNothing2),"myownClustering")
 
-            #test running on clusterExperiment Object -- should add the new clustering
-            expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
-                                          subsample=FALSE, sequential=FALSE,
-                                          isCount=FALSE))
-            expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
-            expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
 
-          })
+	#test default 01 distance
+	expect_silent(x1 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight"),
+	                              subsample=FALSE, sequential=FALSE,
+	                              isCount=FALSE))
+	#error because not 01 distance
+	expect_error(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight",distFunction=function(x){dist(x,method="manhattan")}),
+	                           subsample=FALSE, sequential=FALSE,isCount=FALSE),"distance function must give values between 0 and 1")
+
+	#test default K distance
+	expect_silent(x2 <- clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3),clusterFunction="hierarchicalK"),subsample=FALSE, sequential=FALSE, isCount=FALSE))
+ 
+	#warn wrong arguments
+	expect_warning(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3,alpha=0.1),clusterFunction="tight"),
+	                  subsample=FALSE, sequential=FALSE,
+	                  ,isCount=FALSE),"arguments passed via clusterArgs to the clustering function tight are not all applicable")
+	#turn off warning
+	expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3,alpha=0.1),checkArgs=FALSE,clusterFunction="tight"),
+	                  subsample=FALSE, sequential=FALSE,
+	                  ,isCount=FALSE))
+
+  #---
+  #SE/SCE
+  #---
+	###Apply to SE
+	expect_silent(clustNothing2 <- clusterSingle(se,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+	    subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing2), clusterMatrix(clustNothing))
+
+	###Apply to SCE
+	expect_silent(clustNothing3 <- clusterSingle(sce, mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+	    subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing2), clusterMatrix(clustNothing3))
+	expect_silent(clustNothing3 <- clusterSingle(sce,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
+		dimReduce="PCA", nDims=NA,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimData,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+
+  	expect_warning(clustNothing4 <- clusterSingle(sceSimData,
+		dimReduce="PCA", nDims=NA,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
+
+	#---
+	#CE
+	#---
+	#test running on clusterExperiment Object -- should add the new clustering
+	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
+	                              subsample=FALSE, sequential=FALSE,
+	                              isCount=FALSE))
+	expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
+	expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
+
+})
 
 
 		  # > clustSeqHier_v2 <- clusterSingle(simData,

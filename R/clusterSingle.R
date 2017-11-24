@@ -236,11 +236,11 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "SingleCellExperiment",diss="missing"),
   definition = function(x, dimReduce="none", nDims=NA,...) {
-	if(dimReduce=="none" || length(reduceDims(x))==0 || !dimReduce %in% reducedDimNames(x)) 
+	if(dimReduce=="none" || length(reducedDims(x))==0 || !dimReduce %in% reducedDimNames(x)) 
 		outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
 	else{
-		if(is.na(nDims)) nDims<-ncol(reduceDim(x,type=dimReduce))
-		outval<-clusterSingle(reduceDim(x,type=dimReduce)[,1:nDims],dimReduce="none",...)
+		if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
+		outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)
 	}
 	#add back in the SingleCellExperiment stuff lost
 	retval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -302,8 +302,8 @@ setMethod(
 		  x<-transformData(x,transFun=transFun)
 	  }
 	  else if(dimReduce=="PCA"){
-		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims==nDims, transFun=transFun)
-		  x<-reducedDim(transObj,type=dimReduce)
+		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims=nDims, transFun=transFun)
+		  x<-t(reducedDim(transObj,type=dimReduce))
 	  }
       # nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), nDims, NA)
       # transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
