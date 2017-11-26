@@ -242,7 +242,7 @@ listBuiltInDimReduce<-function(){c("PCA")}
 
 #' @rdname makeFilterStats
 #' @export
-listBuiltInFilterStats<-function(){c('var', 'cv', 'mad','mean','iqr','median')}
+listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
 #' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
 .matchToStats<-SimpleList(
 	'var'=matrixStats::rowVars,
@@ -286,12 +286,12 @@ setMethod(
   ###################
   ##Do loop over filterStats values:
   ###################
-  if('cv' %in% filterStats){
+  if('abscv' %in% filterStats){
 	  #origfilterStats<-filterStats
-  #if cv, add var and mean since calculating anyway and make cv last one
+  #if abscv, add var and mean since calculating anyway and make abscv last one
 	  filterStats<-unique(c(filterStats,"var","mean"))
 	  doCV<-TRUE
-	  whCV<-grep('cv',filterStats)
+	  whCV<-grep('abscv',filterStats)
 	  filterStats<-c(filterStats[-whCV])
   }
   else doCV<-FALSE
@@ -300,7 +300,7 @@ setMethod(
 	  f(x)
   })
   if(doCV){
-	  filterStatData<-cbind(filterStatData, "cv"=sqrt(filterStatData[,"var"])/filterStatData[,"mean"])
+	  filterStatData<-cbind(filterStatData, "abscv"=sqrt(filterStatData[,"var"])/abs(filterStatData[,"mean"]))
 	  #filterStatData<-filterStatData[,origfilterStats] #put it in order, though user shouldn't depend on it.
   }
   filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
@@ -353,7 +353,7 @@ setMethod(
 		else{
 			whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
 			if(length(whAssigned)>0){
-				out<-makeFilterStats(object[,whAssigned],transFun=transformation(object),...)
+				out<-makeFilterStats(object[,whAssigned],...)
 				
 			}
 			else stop("No unassigned samples for clustering",clusterLabels(object)[whCluster])
@@ -362,7 +362,9 @@ setMethod(
 	else{
 		out<-makeFilterStats(as(object,"SingleCellFilter"),transFun=transformation(object),...)
 	}
+#	
 	filterStats(object)<-filterStats(out)
+	return(object)
 }
 )
 

@@ -200,7 +200,7 @@ setMethod(
 		x<-makeDimReduce(x,dimReduce=dimReduce[dimReduce!="none"], maxDims=maxDims,transFun=transFun,isCount=isCount)
 	}
 	else{
-		x<-SingleCellExperiment(x)
+		x<-SingleCellFilter(x)
 	}
 	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,transFun=transFun,isCount=isCount,...))
 }
@@ -210,7 +210,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "SingleCellExperiment"),
+  signature = signature(x = "SingleCellFilter"),
   definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
                         sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                         silCutoff=0, distFunction=NA,
@@ -233,7 +233,7 @@ setMethod(
         }
     }
 	if(length(x@reducedDims)==0 & !all(dimReduce=="none")){
-		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellExperiment object without the args of dimReduce, etc. ...
+		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellFilter object without the args of dimReduce, etc. ...
 	    outval<-clusterMany(assay(x),...)
 		if(class(outval)=="ClusterExperiment") {
 			outval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -256,7 +256,7 @@ setMethod(
 		if(length(dimReduce)>0){
 			##For now, IF there is a reducedDim slot, then will not try to patch in ones that are missing.
 			if(any(!dimReduce %in%reducedDimNames(x))){
-				warning("Not all of dimReduce value match a reducedDimNames of the 'SingleCellExperiment' object, will ignore them:",paste(dimReduce[!dimReduce %in%reducedDimNames(x)],collapse=","))
+				warning("Not all of dimReduce value match a reducedDimNames of the 'SingleCellFilter' object, will ignore them:",paste(dimReduce[!dimReduce %in%reducedDimNames(x)],collapse=","))
 				dimReduce<-dimReduce[dimReduce %in%reducedDimNames(x)]
 			}
 			maxDimValues<-sapply(reducedDims(x)[dimReduce],ncol)
@@ -594,6 +594,16 @@ setMethod(
 	  clusterMany(as(x,"SingleCellExperiment"),...)
   }
   )
+
+#' @rdname clusterMany
+#' @export
+setMethod(
+f = "clusterMany",
+signature = signature(x = "SingleCellExperiment"),
+definition = function(x, ...){
+  clusterMany(as(x,"SingleCellFilter"),...)
+}
+)
   
 
 #' @export

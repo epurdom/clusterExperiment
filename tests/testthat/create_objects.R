@@ -81,7 +81,9 @@ set.seed(5252)
 tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
 
-
+scfSimData<-as(sceSimData,"SingleCellFilter")
+set.seed(2237589)
+filterStats(scfSimData)<-matrix(rnorm(2*nrow(scfSimData)))
 #make a new object with -1 values
 ceSim<-ClusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)

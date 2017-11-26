@@ -392,7 +392,7 @@ This makes sense only for counts.")
   #2) Node name which now should be a merge cluster id
   ##################
   newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
-  #browser()
+  #
 
   #Solve 1) First:
   #Find the correspondence between old and new

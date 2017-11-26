@@ -463,7 +463,7 @@ This makes sense only for counts.")
 		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
 		origOldToNew<-outlist$oldClToNew
 		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-			#browser()
+			#
 			currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
 			#-----
 			##Match merge Ids in mergeTable to columns of origOldToNew

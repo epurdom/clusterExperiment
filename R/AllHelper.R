@@ -64,9 +64,9 @@ setMethod(
     })
 	#fix order of samples so same
 	newOrder<-rank(x@orderSamples[j])
-	#browser()
+	#
     out<- ClusterExperiment(
-sce=as(selectMethod("[",c("SingleCellFilter","ANY","numeric"))(x,i,j),"SingleCellFilter"),#have to explicitly give the inherintence... not great.
+object=as(selectMethod("[",c("SingleCellFilter","ANY","numeric"))(x,i,j),"SingleCellFilter"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
                primaryIndex = x@primaryIndex,

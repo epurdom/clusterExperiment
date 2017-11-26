@@ -70,6 +70,50 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 })
 
 test_that("`clusterSingle` works with dimReduce", {
+	#existing
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
+		dimReduce="PCA", nDims=NA,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+
+	#new
+  	expect_silent(clustNothing4 <- clusterSingle(sceSimData,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+        subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+  	expect_silent(clustNothing6 <- clusterSingle(seSimData,
+		dimReduce="PCA", nDims=3,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing5))
+
+  	expect_warning(clustNothing4 <- clusterSingle(sceSimData,
+		dimReduce="PCA", nDims=NA,
+		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
+		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
+
+
+})
+
+test_that("`clusterSingle` works with filtering", {
+	#existing
   	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
 		dimReduce="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 

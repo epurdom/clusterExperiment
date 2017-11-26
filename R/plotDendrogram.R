@@ -159,7 +159,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
 		if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
 		namesClusterTips<-names(clusterTips)
-		#browser()
+		#
 	
 		if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
 		phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)

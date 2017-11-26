@@ -1,12 +1,11 @@
 #' General wrapper method to cluster the data
 #' 
-#' Given input data, \code{\link{SummarizedExperiment}}, 
-#' \code{\link{SingleCellExperiment}} or \code{\link{ClusterExperiment}} object,
+#' Given input data, 
 #'  this function will find clusters, based on a single specification of parameters.
 #' 
 #' @param x the data on which to run the clustering (features in rows), or a
-#'   \code{\link{SummarizedExperiment}}, or \code{\link{SingleCellExperiment}}, 
-#'   or \code{\link{ClusterExperiment}}
+#'   \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
+#'   \code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
 #'   on which to run the clustering.
@@ -117,9 +116,7 @@
 #'   \code{kRange} to not depend on \code{k} and to be fixed across all of the
 #'   sequential steps by setting \code{kRange} explicitly in the
 #'   \code{mainClusterArgs} list.} }
-#' @return A \code{\link{ClusterExperiment}} object if input was \code{x} a
-#'   matrix (or \code{assay} of a \code{ClusterExperiment} or
-#'   \code{SummarizedExperiment}/\code{SingleCellExperiment} object).
+#' @return A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
 #' @return If input was \code{diss}, then the result is a list with values 
 #'   \itemize{ \item{clustering: }{The vector of clustering results} 
 #'   \item{clusterInfo: }{A list with information about the parameters run in
@@ -198,17 +195,6 @@ setMethod(
   }
 )
 
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
-  signature = signature(x = "SingleCellExperiment", diss="missing"),
-  definition = function(x, ...) {
-    outval <- clusterSingle(assay(x),  ...)
-    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
-    return(retval)
-  }
-)
 
 
 #' @rdname clusterSingle
@@ -222,11 +208,13 @@ setMethod(
   signature = signature(x = "ClusterExperiment", diss="missing"),
   definition = function(x, replaceCoClustering=FALSE,...) {
 
-    outval <- clusterSingle(assay(x),transFun=transformation(x),...)
+    outval <- clusterSingle(as(x,"SingleCellFilter"),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusters(retval)
 	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
+	#make sure save the calculated information
+	retval<-.addBackSEInfo(newObj=retval,oldObj=outval) 
 	return(retval)
   }
 )
@@ -234,19 +222,41 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "SingleCellExperiment",diss="missing"),
+  signature = signature(x = "SingleCellExperiment", diss="missing"),
+  definition = function(x, ...) {
+    return(clusterSingle(as(x,"SingleCellFilter"),  ...) )
+  }
+)
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "SingleCellFilter",diss="missing"),
   definition = function(x, dimReduce="none", nDims=NA,...) {
-	if(dimReduce=="none" || length(reducedDims(x))==0 || !dimReduce %in% reducedDimNames(x)) 
+	isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
+	isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
+	if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
+	#go to matrix version using assay(x)
+	if(dimReduce=="none" || (!isDimReduced & !isFilter)) 
 		outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
 	else{
-		if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-		outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)
+		if(isDimReduced){
+			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
+			outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)			
+		}
+		if(isFilter){
+			#Need to think how can pass options to filterData...
+			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
+			outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			
+		}
 	}
 	#add back in the SingleCellExperiment stuff lost
 	retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 	return(retval)
   }
 )
+
+
 #' @rdname clusterSingle
 #' @export
 setMethod(
@@ -254,7 +264,8 @@ setMethod(
   signature = signature(x = "matrixOrNULL",diss="matrixOrNULL"),
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
-      isCount=FALSE,transFun=NULL, dimReduce=c("none","PCA","var","cv","mad"),
+      isCount=FALSE,transFun=NULL,
+	  dimReduce=c("none",listBuiltInDimReduce(),listBuiltInFilterStats()),
       nDims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
@@ -301,9 +312,13 @@ setMethod(
 	  if(dimReduce=="none"){
 		  x<-transformData(x,transFun=transFun)
 	  }
-	  else if(dimReduce=="PCA"){
+	  else if(dimReduce%in%listBuiltInDimReduce()){
 		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims=nDims, transFun=transFun)
 		  x<-t(reducedDim(transObj,type=dimReduce))
+	  }
+	  else if(dimReduce %in% listBuiltInFilterStats()){
+		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun)
+		  x<-filterData(transObj,type=dimReduce,percentile=nDims)	  	
 	  }
       # nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), nDims, NA)
       # transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,

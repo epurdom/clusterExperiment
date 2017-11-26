@@ -75,7 +75,7 @@ setMethod(
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
     if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
-#    browser()
+#    
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
@@ -351,7 +351,7 @@ setMethod(
     #     #combineEdgeFinal[combineEdgeFinal[,1]==0,1]<-0
     #     combineEdgeFinal[combineEdge[,1]==0,1]<-length(whTips)+1
     #     phyloObj<-list(edge=combineEdgeFinal,tip.label=as.character(1:))
-    #     browser()
+    #     
     #     #phylo4(combineEdgeFinal)
     
     
