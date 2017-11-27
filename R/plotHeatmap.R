@@ -52,19 +52,7 @@
 #' @param showFeatureNames Logical as to whether show feature names.
 #' @param colorScale palette of colors for the color scale of the heatmap.
 #' @param clusterLegend Assignment of colors to the clusters. If \code{NULL},
-#'   \code{sampleData} columns will be assigned colors internally.
-#'   \code{clusterLegend} should be list of length equal to
-#'   \code{ncol(sampleData)} with names equal to the colnames of
-#'   \code{sampleData}. Each element of the list should be a either the format
-#'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
-#'   corresponding to the levels of the column of \code{sampleData}), or should
-#'   be format of \code{ClusterExperiment}. This takes the place of argument
-#'   \code{annColors} from \code{aheatmap}. Color assignments to the rows/genes 
-#'   should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
-#'   an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
-#'   \emph{named} list describing groupings of genes (see details) then the colors 
-#'   for those groups can be given in \code{clusterLegend} under the name 
-#'   "Gene Group".
+#'   \code{sampleData} columns will be assigned colors internally. See details for more.
 #' @param alignSampleData Logical as to whether should align the colors of the
 #'   \code{sampleData} (only if \code{clusterLegend} not given and
 #'   \code{sampleData} is not \code{NULL}).
@@ -145,19 +133,18 @@
 #'   clusterings will be shown closest to data (i.e. on bottom).
 #' @details If \code{data} is a \code{ClusterExperiment} object,
 #'   \code{clusterFeaturesData} is not a dataset, but instead indicates which
-#'   features should be shown in the heatmap. "var" selects the
-#'   \code{nFeatures} most variable genes (based on
-#'   \code{transformation(assay(data))}); "PCA" results in a heatmap of the top
-#'   \code{nFeatures} PCAs of the \code{transformation(assay(data))}.
-#'   clusterFeaturesData can also be a vector of characters or integers,
-#'   indicating the rownames or indices respectively of \code{assay(data)} that
-#'   should be shown. For all of these options, the features are clustered based
-#'   on the \code{visualizeData} data. Finally, in the \code{ClusterExperiment}
-#'   version of \code{plotHeatmap}, \code{clusterFeaturesData} can be a list of
-#'   indices or rownames, indicating that the features should be grouped
+#'   features should be shown in the heatmap. In this case \code{clusterFeatures} can be one of the following:
+#' \itemize{
+#' \item{"all"}{ All rows/genes will be shown}
+#' \item{character giving dimensionality reduction}{Should match one of values saved in \code{reducedDims} slot or a builtin function in \code{listBuiltInDimReduce()}. \code{nFeatures} then gives the number of dimensions to show. The heatmap will then be of the dimension reduction vectors}
+#' \item{character giving filtering}{ Should match one of values saved in \code{filterStats} slot or a builtin function in \code{listBuiltInFilterStats()}. \code{nFeatures} gives the number of genes to keep after filtering.}
+#' \item{character giving gene/row names}{ }
+#' \item{vector of integers giving row indices}{ }
+#' \item{a list of indices or rownames}{This is used to indicate that the features should be grouped
 #'   according to the elements of the list, with blank (white) space between
 #'   them (see \code{\link{makeBlankData}} for more details). In this case, no
-#'   clustering is done of the features.
+#'   clustering is done of the features.}
+#' }
 #' @details If \code{breaks} is a numeric value between 0 and 1, then
 #'   \code{breaks} is assumed to indicate the upper quantile (on the log scale)
 #'   at which the heatmap color scale should stop. For example, if
@@ -172,6 +159,20 @@
 #'   (this might be a problem for RStudio if you want to pop it out into a large
 #'   window...). Also, plotting to a pdf adds a blank page; see help pages of
 #'   \code{\link[NMF]{aheatmap}} for how to turn this off.
+#' @details \code{clusterLegend} takes the place of argument
+#'   \code{annColors} from \code{aheatmap} for giving colors to the annotation 
+#' on the heatmap. \code{clusterLegend} should be list of length equal to
+#'   \code{ncol(sampleData)} with names equal to the colnames of
+#'   \code{sampleData}. Each element of the list should be a either the format
+#'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
+#'   corresponding to the levels of the column of \code{sampleData}), or should
+#'   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment} object.
+#' Color assignments to the rows/genes 
+#'   should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
+#'   an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
+#'   \emph{named} list describing groupings of genes then the colors 
+#'   for those groups can be given in \code{clusterLegend} under the name 
+#'   "Gene Group".
 #' @details If you have a factor with many levels, it is important to note that
 #'   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
 #'   \code{sampleData}, and in fact runs out of colors and the remaining levels
