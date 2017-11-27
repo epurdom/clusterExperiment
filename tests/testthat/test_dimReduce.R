@@ -91,41 +91,47 @@ test_that("SingleCellFilter class works as expected",{
 test_that("filterData works as expected",{
 	
 	###Cutoff filter
-	tf<-filter[,"Filter1"]>1
+	set.seed(352)
+	filter2<-matrix(rnorm(2*nrow(sce)),ncol=2)
+	colnames(filter2)<-c("Filter1","Filter2")
+	expect_silent(filterStats(scf)<-filter2)
+	
+
+	tf<-filter2[,"Filter1"]>1
 	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1))
 	expect_equal(NROW(f1),sum(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 
-	tf<-abs(filter[,"Filter1"])>1
+	tf<-abs(filter2[,"Filter1"])>1
 	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,absolute=TRUE))
 	expect_equal(NROW(f1),sum(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 	
-	tf<-abs(filter[,"Filter1"])<1
+	tf<-abs(filter2[,"Filter1"])<1
 	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,keepLarge=FALSE,absolute=TRUE))
 	expect_equal(NROW(f1),sum(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
-	tf<-filter[,"Filter1"]<1
+	tf<-filter2[,"Filter1"]<1
 	expect_silent(f1<-filterData(scf,type="Filter1",cutoff=1,keepLarge=FALSE,absolute=FALSE))
 	expect_equal(NROW(f1),sum(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 	
 	#percentile number filter
-	tf<-order(filter[,"Filter1"],decreasing=FALSE)[1:10]
+	tf<-order(filter2[,"Filter1"],decreasing=FALSE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 
-	tf<-order(abs(filter[,"Filter1"]),decreasing=FALSE)[1:10]
+	tf<-order(abs(filter2[,"Filter1"]),decreasing=FALSE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,absolute=TRUE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 	
-	tf<-order(abs(filter[,"Filter1"]),decreasing=TRUE)[1:10]
+	tf<-order(abs(filter2[,"Filter1"]),decreasing=TRUE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=TRUE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
-	tf<-order((filter[,"Filter1"]),decreasing=TRUE)[1:10]
+	tf<-order((filter2[,"Filter1"]),decreasing=TRUE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=FALSE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
@@ -133,7 +139,8 @@ test_that("filterData works as expected",{
 	###Need to add test for percentile in (0,1)
 	
 	
-}
+})
+
 test_that("makeFilterStats works as promised",{
 	expect_silent(fs<-makeFilterStats(mat,filterStats="var"))
 	expect_silent(fs<-makeFilterStats(mat,filterStats=c("mean","var")))

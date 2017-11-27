@@ -46,7 +46,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #CE object with mixture of workflow and other types
     x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
     x2<-plotClusters(object=removeClusters(ceSim,"User"),resetColors=TRUE)
-    whP<-ClusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
+    whP<-clusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices

@@ -31,8 +31,7 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
 
     #test running on ClusterExperiment Object -- should add the new clustering
     expect_silent(clustNothing3 <- clusterMany(ccSE, ks=c(3,4),clusterFunction="pam",
-                                 subsample=FALSE, sequential=FALSE,
-                                 isCount=FALSE,verbose=FALSE))
+                                 subsample=FALSE, sequential=FALSE,verbose=FALSE))
     expect_true(nClusterings(clustNothing3) == nClusterings(ccSE) + 2)
     expect_equal(colData(clustNothing3),colData(ccSE))
     expect_equal(rownames(clustNothing3),rownames(ccSE))
@@ -42,16 +41,13 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
     
     expect_silent(test <- clusterSingle(se,  subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=4)),isCount=FALSE))
     expect_silent(clustNothing3<- clusterMany(test, ks=c(3,4),clusterFunction="pam",
-                                   subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                                   isCount=FALSE))
+                                   subsample=FALSE, sequential=FALSE,verbose=FALSE))
     expect_silent(clustNothing4<- clusterMany(clustNothing3, ks=c(3:4),clusterFunction="pam",
-                                   subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                                   isCount=FALSE,eraseOld=TRUE))
+                                   subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=TRUE))
     expect_equal(clustNothing3,clustNothing4)
 
     clustNothing5<- clusterMany(clustNothing3, ks=c(5:6),clusterFunction="pam",
-                                   subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                                   isCount=FALSE,eraseOld=FALSE)
+                                   subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=FALSE)
     expect_equal(NCOL(clusterMatrix(clustNothing5)),5)
 
     ppIndex<-workflowClusterDetails(clustNothing5)
@@ -179,7 +175,7 @@ test_that("`getClusterManyParams` works", {
 	paramSub<-getClusterManyParams(cc,whichClusters=3:4)
 	expect_equal(colnames(paramSub),c("clusteringIndex", "dimReduce","nFilter"))
 	expect_true(is.data.frame(paramSub))
-	expect_equal(sort(unique(paramAll[,"nFilter"]),na.last=TRUE),c(10,NA))
+	expect_equal(sort(unique(paramSub[,"nFilter"]),na.last=TRUE),c(10,NA))
 	
 	expect_warning(getClusterManyParams(cc,whichClusters=1:5),"some clusters indicated in 'whichClusters' do not have type 'clusterMany'")
 	expect_warning(getClusterManyParams(cc,whichClusters=1),"did not return any clusters of type 'clusterMany'")

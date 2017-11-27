@@ -1,6 +1,6 @@
-#library(clusterExperiment)
-library(devtools)
-load_all()
+library(clusterExperiment)
+# library(devtools)
+# load_all()
 data(simData)
 if(ncol(simData) != 300) {
   stop("not current version of simData")
@@ -43,7 +43,7 @@ se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
 cc <- ClusterExperiment(mat, labMat, transformation = function(x){x})
 ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
 sce<-as(se,"SingleCellExperiment")
-
+scf<-as(sce,"SingleCellFilter")
 
 
 #################################

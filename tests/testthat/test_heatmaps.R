@@ -25,7 +25,7 @@ test_that("`plotHeatmap` works with matrix objects", {
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
     sampleData<-clusterMatrix(smSimCE)
     alList<-plotClusters(sampleData)
-    alCol<-ClusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
+    alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
    #these should be same plots:
     x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE,plot=plotAll)
     x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE,plot=plotAll)
@@ -127,6 +127,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
   ## expect error because no row names in smSimCE
   expect_error(plotHeatmap(smSimCE, visualizeData="transform", clusterFeaturesData=paste("Gene",3:5), nFeatures=3), "Cannot give feature names in clusterFeaturesData unless")
   ##set rownames and should work
+  smSimCE2<-smSimCE
   row.names(smSimCE2)<-paste("Gene",1:NROW(smSimCE))
   expect_silent(plotHeatmap(smSimCE2, visualizeData="transform", clusterFeaturesData=paste("Gene",3:5), nFeatures=3))
 

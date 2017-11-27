@@ -90,7 +90,7 @@ setMethod(
   signature = signature(x = "matrix", whichClusters = "missing"),
   definition = function(x, whichClusters, proportion,
                         clusterFunction="hierarchical01",
-                        propUnassigned=.5, minSize=5) {
+                        propUnassigned=.5, minSize=5,...) {
 
   clusterMat <- x
   if(proportion == 1) {
@@ -118,9 +118,14 @@ setMethod(
     #fix those pairs that have no clusterings for which they are both not '-1'
     diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
     sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
+	clustArgs<-list(alpha=1-proportion)
+	clustArgs<-c(clustArgs,list(...))
+	if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
+		clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
+	}
     cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
                    minSize=minSize, format="vector",
-                   clusterArgs=list(alpha=1-proportion,  evalClusterMethod=c("average")))
+                   clusterArgs=clustArgs)
 
     if(is.character(cl)) {
       stop("coding error -- mainClustering should return numeric vector")

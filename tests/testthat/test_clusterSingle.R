@@ -124,7 +124,7 @@ test_that("`clusterSingle` works with filtering", {
     expect_warning(clusterSingle(mat, 
                               subsample=FALSE, sequential=FALSE,
                               dimReduce="var", nDims=NROW(mat)+1, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
-                 "the number of most features requested after filtering is larger than the number of features. Will not do any filtering")
+                 "the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
     expect_warning(clusterSingle(mat, 
                               subsample=FALSE, sequential=FALSE,
                               dimReduce="none",nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),

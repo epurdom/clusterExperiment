@@ -24,7 +24,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
 
   #check all methods run
-  for(method in ClusterExperiment:::.availMergeMethods){
+  for(method in clusterExperiment:::.availMergeMethods){
 	  clustMerged <- mergeClusters(clustWithDendro, mergeMethod=method, plotInfo="mergeMethod")
   }
   
@@ -55,60 +55,66 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 
 
 test_that("saving merge info works",{
-  cl1 <- clusterSingle(smSimData, 
-                       subsample=FALSE, sequential=FALSE,
-                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
+  expect_silent(cl1 <- clusterSingle(smSimData, 
+       subsample=FALSE, sequential=FALSE, 
+	   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+	   isCount=FALSE))
   #for some reason, clusterSingle not giving reasonable names
   test<-clusterLegend(cl1)[[1]]
   test[,"name"]<-test[,"clusterIds"]
   clusterLegend(cl1)[[1]]<-test
-  clustWithDendro <- makeDendrogram(cl1)
+  expect_silent(clustWithDendro <- makeDendrogram(cl1,dimReduce="none"))
   #matrix version
-  mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
+  expect_silent(mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="adjP", plotInfo="none")
+                              mergeMethod="adjP", plotInfo="none"))
   
   ##check giving nodePropTable
-  mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+  expect_silent(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1), nodePropTable=mergedList$propDE,
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="Storey", plotInfo="none")
+                              mergeMethod="Storey", plotInfo="none"))
   expect_equal(mergedList2$propDE[,"adjP"],mergedList$propDE[,"adjP"])
-  mergedListStorey<-mergeClusters(x=transformData(cl1), isCount=FALSE,
+  expect_silent(mergedListStorey<-mergeClusters(x=transformData(cl1), isCount=FALSE,
                                   cl=primaryCluster(cl1), 
                                   dendro=clustWithDendro@dendro_clusters,
-                                  mergeMethod="Storey", plotInfo="mergeMethod")
+                                  mergeMethod="Storey", plotInfo="mergeMethod"))
   expect_equal(mergedList2$propDE[,"Storey"],mergedListStorey$propDE[,"Storey"])  
-  mergedList2Redo<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+  expect_silent(mergedList2Redo<- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1), nodePropTable=mergedList2$propDE,
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="none", plotInfo=c("all"))
+                              mergeMethod="none", plotInfo=c("all")))
   
   #on ClusterExperiment
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE)
+  clustMerged <- mergeClusters(clustWithDendro,
+	   mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged@merge_dendrocluster_index,clustWithDendro@dendro_index+1)
   expect_equal(clustMerged@merge_dendrocluster_index,clustMerged@dendro_index)
   expect_equal(clustMerged@merge_index,1)
   #add to existing with different method
-  clustMerged2 <- mergeClusters(clustMerged, mergeMethod="Storey",plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE)
+  clustMerged2 <- mergeClusters(clustMerged, mergeMethod="Storey",
+  	plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged2@merge_dendrocluster_index,clustMerged@dendro_index+1)
   expect_equal(clustMerged2@merge_dendrocluster_index,clustMerged2@dendro_index)
   expect_equal(clustMerged2@merge_index,1)
   #rerun previous with different cutoff -- no new calculations
-  clustMerged3 <- mergeClusters(clustMerged2, mergeMethod="Storey",plotInfo="none",cutoff=0.05,plot=FALSE,calculateAll=FALSE)
+  clustMerged3 <- mergeClusters(clustMerged2, mergeMethod="Storey",
+  	plotInfo="none",cutoff=0.05,plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged3@merge_dendrocluster_index,clustMerged2@dendro_index+1)
   expect_equal(clustMerged3@merge_dendrocluster_index,clustMerged3@dendro_index)
   expect_equal(clustMerged3@merge_index,1)
-  clustMerged4 <- mergeClusters(clustMerged3, mergeMethod="Storey",plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE)
+  clustMerged4 <- mergeClusters(clustMerged3, mergeMethod="Storey",
+  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged3@dendro_index+1)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged4@dendro_index)
   expect_equal(clustMerged4@merge_index,1)
   expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,2,1,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
   #check really gets clusterIds and not names
-  clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6]
-  clustMerged5 <- mergeClusters(clustMerged3, mergeMethod="Storey",plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE)
+  expect_silent(clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6])
+  clustMerged5 <- mergeClusters(clustMerged3, mergeMethod="Storey",
+  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE)
   expect_equal(clustMerged4@merge_nodeMerge,clustMerged5@merge_nodeMerge)
   #helpful for debugging:
   # plotDendrogram(clustMerged,show.node=TRUE,show.tip.label=TRUE)

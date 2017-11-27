@@ -111,6 +111,7 @@ wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 ```
 
+
 ## Clustering with RSEC
 
 We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `nPCADims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`combineMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 

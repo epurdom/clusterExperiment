@@ -205,8 +205,6 @@ test_that("subsetting works as promised",{
   expect_equal(filterStats(scf[1:10,]),head(filterStats(scf),10))
 })
 
-
-###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem? Need to go back to this....
 test_that("check clusterLegend, remove unclustered cells work as promised", {
     
     ##########
@@ -214,13 +212,13 @@ test_that("check clusterLegend, remove unclustered cells work as promised", {
     
     #no -1 in primary cluster
     matTemp<-abs(labMat)
-    ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x})
+    expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
     expect_equal(ccTemp, removeUnclustered(ccTemp)) 
     
 	###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
     #-1 in primary cluster
 	whUn<-which(primaryCluster(ccSE) <0)
-    ccR<-removeUnclustered(ccSE)
+    expect_silent(ccR<-removeUnclustered(ccSE))
     expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 	
     ###Check retain SE info
@@ -234,10 +232,10 @@ test_that("check clusterLegend, remove unclustered cells work as promised", {
     ##########
     #clusterLegend
     x<-clusterLegend(cc)
-    clusterLegend(cc)<-x
-    c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
-    clusterLegend(c4)[1:2]<-x[1:2]
-    clusterLegend(c4)[[1]]<-x[[1]]
+    expect_silent(clusterLegend(cc)<-x)
+    expect_silent(c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+    expect_silent(clusterLegend(c4)[1:2]<-x[1:2])
+    expect_silent(clusterLegend(c4)[[1]]<-x[[1]])
 #add wrong dimensions:
     expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
     expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
