@@ -48,8 +48,8 @@ test_that("`makeDendrogram` with dimReduce options", {
     expect_equal(x,x2)
     makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
     makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("abscv"),ndims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("abscv"),ndims=3,ignoreUnassigned=TRUE)
     makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
     makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
     

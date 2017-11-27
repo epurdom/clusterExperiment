@@ -115,6 +115,8 @@ setMethod(
   for(dr in dimReduce){
 	  dr<-match.arg(dr,validDim) 
 	  if(is.na(maxDims) || maxDims>NROW(object) || maxDims > NCOL(object)){
+		  if(!is.na(maxDims) & (maxDims>NROW(object) || maxDims > NCOL(object)))
+			  warning("User requested more dimensionality reduction dimensions than the minimimum of number of rows and columns. Will return all dimensions.")
 		  maxDims<-min(c(NROW(object),NCOL(object)))
 	  }
 	  if(maxDims<=0)  stop("the number of dimReduce dimensions must be a value strictly greater than 0")

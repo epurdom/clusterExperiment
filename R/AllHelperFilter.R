@@ -82,7 +82,7 @@ setMethod( "filterNames","SingleCellFilter",function(object){colnames(object@fil
 #' @importFrom stats quantile
 setMethod( "filterData","SingleCellFilter",
 	function(object,type,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
-	stat<-if(absolute) abs(filterStat(object,type)) else filterStat(object,type)
+	stat<-if(absolute) abs(filterStats(object,type)) else filterStats(object,type)
 	if(missing(cutoff) & missing(percentile)) stop("must provide one of cutoff or percentile")
 	if(!missing(cutoff) & !missing(percentile)) stop("can only provide one of cutoff or percentile")
 	if(!missing(cutoff)){
@@ -95,7 +95,11 @@ setMethod( "filterData","SingleCellFilter",
 		}
 		else{
 			if(percentile>=1){
-				whKeep<- order(stat,decreasing=ifelse(keepLarge,FALSE,TRUE))[1:percentile]
+				if(percentile>NROW(object)){
+					warning("the number of most features requested after filtering is larger than the number of features. Will not do any filtering")
+					whKeep<-1:NROW(object)
+				}
+				else whKeep<- order(stat,decreasing=ifelse(keepLarge,FALSE,TRUE))[1:percentile]
 			}
 			else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
 		}

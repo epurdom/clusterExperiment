@@ -36,11 +36,11 @@ or a \code{ClusterExperiment} object.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 details.}
 
 \item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
+(when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
 included, then the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 

@@ -61,9 +61,11 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 	#CE
 	#---
 	#test running on ClusterExperiment Object -- should add the new clustering
-	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
+	expect_error(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
 	                              subsample=FALSE, sequential=FALSE,
-	                              isCount=FALSE))
+	                              isCount=FALSE),"setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed")
+	expect_silent(clustNothing3 <- clusterSingle(clustNothing2, mainClusterArgs=list(clusterArgs=list(k=4),clusterFunction="pam"), 
+	                              subsample=FALSE, sequential=FALSE ))
 	expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
 	expect_equal(length(table(primaryCluster(clustNothing3))),4,info="Check reset primary cluster after run clusterSingle")
 
@@ -113,43 +115,27 @@ test_that("`clusterSingle` works with dimReduce", {
 })
 
 test_that("`clusterSingle` works with filtering", {
-	#existing
-  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
-		dimReduce="PCA", nDims=3,
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-        subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+    ####Existing ####
+	#check var reduction
+    expect_silent(clusterSingle(mat, 
+                            subsample=FALSE, sequential=FALSE,
+                            dimReduce="var", nDims=3,
+                            mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
+    expect_warning(clusterSingle(mat, 
+                              subsample=FALSE, sequential=FALSE,
+                              dimReduce="var", nDims=NROW(mat)+1, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
+                 "the number of most features requested after filtering is larger than the number of features. Will not do any filtering")
+    expect_warning(clusterSingle(mat, 
+                              subsample=FALSE, sequential=FALSE,
+                              dimReduce="none",nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
+                   "specifying nDims has no effect if dimReduce==`none`")
 
-  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
-		dimReduce="PCA", nDims=NA,
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")),
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-        subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
-
-  	expect_silent(clustNothing4 <- clusterSingle(sceSimData,
-		dimReduce="PCA", nDims=3,
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-        subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
-  	expect_silent(clustNothing6 <- clusterSingle(seSimData,
-		dimReduce="PCA", nDims=3,
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing5))
-
-  	expect_warning(clustNothing4 <- clusterSingle(sceSimData,
-		dimReduce="PCA", nDims=NA,
-		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
-		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
+   expect_silent(clusterSingle(mat, 
+                                subsample=FALSE, sequential=FALSE, dimReduce="abscv",
+                                nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
+    expect_silent(clusterSingle(mat, 
+                                subsample=FALSE, sequential=FALSE, dimReduce="mad",
+                                nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
 
 
 })
@@ -208,8 +194,10 @@ test_that("Different options algorithms of `mainClustering` ", {
   #check giving wrong parameters gives warning:
   expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1),
       minSize=5, removeSil=TRUE),"do not match the algorithmType")
-  expect_error(mainClustering(mat, clusterFunction="tight", clusterArgs=list(k=3),
-	      minSize=5, removeSil=TRUE),"must supply arguments alpha")
+  expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1,k=3),
+      minSize=5, removeSil=TRUE),"do not match the algorithmType")
+  expect_error(mainClustering(mat, clusterFunction="tight", 
+	      minSize=5),"must supply arguments alpha")
   expect_error(mainClustering(mat, clusterFunction="pam", clusterArgs=list(alpha=0.1),
 			      minSize=5, removeSil=TRUE),"must supply arguments k")
   expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(k=3,alpha=0.1),
@@ -260,7 +248,7 @@ test_that("Different options of mainClustering",{
 })
 
 test_that("Different options of subsampling",{
-	clustSubsample <- clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE)
+	expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
 
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
@@ -296,9 +284,10 @@ test_that("Different options of subsampling",{
     ## get NA values
 	set.seed(1045)
     expect_error(clusterSingle(mat, 
-                               subsample=TRUE, sequential=FALSE,
-                               subsampleArgs=list(resamp.num=20,clusterArgs=list(k=3),classifyMethod="OutOfSample"),
-                               mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),"NA values found in dissimilarity matrix")
+       subsample=TRUE, sequential=FALSE,
+       subsampleArgs=list(resamp.num=20,clusterArgs=list(k=3),clusterFunction="pam",
+	   classifyMethod="OutOfSample"),
+       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),"NA values found in dissimilarity matrix")
     
     #warnings in missing args in subsample -- should borrow from mainClusterArgs .
     expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(clusterFunction="pam",resamp.num=3),  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE),
@@ -352,7 +341,7 @@ test_that("Different options of seqCluster",{
     
 })
 
-test_that("Different options of `clusterSingle` ", {
+test_that("Different direct options of `clusterSingle` ", {
   #check isCount
   expect_silent(clusterSingle(smSimCount,
                            subsample=FALSE, sequential=FALSE,
@@ -360,37 +349,6 @@ test_that("Different options of `clusterSingle` ", {
   expect_error(clusterSingle(smSimData, 
                           subsample=FALSE, sequential=FALSE,
                           mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"),isCount=TRUE),"User-supplied `transFun` produces NA values",info="test error handling for isCount=TRUE when can't take log")
-
-
-  #check pca reduction
-  expect_silent(clusterSingle(mat, 
-                          subsample=FALSE, sequential=FALSE, dimReduce="PCA",
-                          ndims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
-  expect_error(clusterSingle(mat, 
-                            subsample=FALSE, sequential=FALSE, dimReduce="PCA",
-                            ndims=NROW(simData)+1,
-                            mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),"the number of PCA dimensions must be strictly less than the number of rows of input data matrix")
-
-  #check var reduction
-  expect_silent(clusterSingle(mat, 
-                          subsample=FALSE, sequential=FALSE,
-                          dimReduce="var", ndims=3,
-                          mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
-  expect_error(clusterSingle(mat, 
-                            subsample=FALSE, sequential=FALSE,
-                            dimReduce="var", ndims=NROW(mat)+1, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
-               "the number of most variable features must be strictly less than the number of rows of input data matrix")
-  expect_warning(clusterSingle(mat, 
-                            subsample=FALSE, sequential=FALSE,
-                            dimReduce="none",ndims =3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
-                 "specifying ndims has no effect if dimReduce==`none`")
-
- expect_silent(clusterSingle(mat, 
-                              subsample=FALSE, sequential=FALSE, dimReduce="cv",
-                              ndims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
-  expect_silent(clusterSingle(mat, 
-                              subsample=FALSE, sequential=FALSE, dimReduce="mad",
-                              ndims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
   
 
 })

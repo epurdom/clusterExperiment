@@ -30,7 +30,7 @@
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  dimReduce = c("none", "PCA", "var", "cv", "mad"), nDims = NA,
+  dimReduce = c("none", "PCA", "var", "abscv", "mad"), nDims = NA,
   clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
@@ -47,7 +47,7 @@ on which to run the clustering.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 details.}
 
 \item{nDims}{integer An integer identifying how many dimensions to reduce to 

@@ -78,7 +78,7 @@ setMethod(f = "getClusterManyParams",
 	
 	##Deal with dim Reduce that can be multiple labels
 	##This has to be manually updated when have new values in transform!
-	dimChoices<-toupper(c("PCA","var","mad","cv"))
+	dimChoices<-toupper(c("PCA","var","mad","abscv"))
 	dimValues <- c("noDimReduce",paste("n",dimChoices,"Features",sep=""))
 	whDimReduce<-which(sapply(nameList,function(yy){any(yy %in% dimValues)}))
 	if(length(whDimReduce)>1) stop("coding error: not expecting to have more than one dimReduce parameter")

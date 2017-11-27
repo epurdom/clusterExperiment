@@ -151,8 +151,8 @@ test_that("makeFilterStats works as promised",{
 	expect_equal(sort(filterNames(fs)),sort(c("mean","var")))
 	expect_silent(fs<-makeFilterStats(fs,filterStats=c("var")))
 	expect_equal(sort(filterNames(fs)),sort(c("mean","var")))
-	expect_silent(fs<-makeFilterStats(fs,filterStats=c("cv")))
-	expect_equal(sort(filterNames(fs)),sort(c("mean","var","cv")))
+	expect_silent(fs<-makeFilterStats(fs,filterStats=c("abscv")))
+	expect_equal(sort(filterNames(fs)),sort(c("mean","var","abscv")))
 	
 	expect_silent(fs<-makeFilterStats(scf,filterStats="var"))
 	expect_silent(fs<-makeFilterStats(scf,filterStats=c("mean","var")))
@@ -162,12 +162,12 @@ test_that("makeFilterStats works as promised",{
 })
   #
   # expect_equal(dim(transformData(cc,dimReduce="var",nFilter=3)), c(3,NCOL(assay(cc))))
-  # expect_equal(dim(transformData(cc,dimReduce="cv",nFilter=3)), c(3,NCOL(assay(cc))))
+  # expect_equal(dim(transformData(cc,dimReduce="abscv",nFilter=3)), c(3,NCOL(assay(cc))))
   # expect_equal(dim(transformData(cc,dimReduce="mad",nFilter=3)), c(3,NCOL(assay(cc))))
   #
   # expect_equal(dim(transformData(cc,dimReduce="PCA",nPCADims=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
   # expect_equal(dim(transformData(cc,dimReduce="var",nFilter=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
-  # expect_equal(dim(transformData(cc,dimReduce="cv",nFilter=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
+  # expect_equal(dim(transformData(cc,dimReduce="abscv",nFilter=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
   # expect_equal(dim(transformData(cc,dimReduce="mad",nFilter=3,ignoreUnassigned=TRUE)), c(3,NCOL(assay(cc))))
   #
   # expect_equal(dim(transformData(cc,dimReduce=c("PCA","var"),nFilter=2)),c(2,NCOL(assay(cc))))
@@ -183,7 +183,7 @@ test_that("makeFilterStats works as promised",{
   # expect_equal(dim(transformData(cc,dimReduce=c("PCA"),nPCADims=NA,nFilter=3)),dim(assay(cc)))
   # expect_equal(length(transformData(cc,dimReduce=c("PCA"),nPCADims=c(NA,3),nFilter=4)),2)
   #
-  # expect_equal(length(transformData(cc,dimReduce=c("var","cv","mad"),nPCADims=c(NA,3),nFilter=4)),3)
-  # expect_equal(length(transformData(cc,dimReduce=c("var","cv","mad"),nPCADims=c(NA,3),nFilter=c(2,4))),6)
-  # expect_equal(dim(transformData(cc,dimReduce=c("PCA","var","cv"),nPCADims=c(3),nFilter=NA)),c(3,NCOL(assay(cc))))
+  # expect_equal(length(transformData(cc,dimReduce=c("var","abscv","mad"),nPCADims=c(NA,3),nFilter=4)),3)
+  # expect_equal(length(transformData(cc,dimReduce=c("var","abscv","mad"),nPCADims=c(NA,3),nFilter=c(2,4))),6)
+  # expect_equal(dim(transformData(cc,dimReduce=c("PCA","var","abscv"),nPCADims=c(3),nFilter=NA)),c(3,NCOL(assay(cc))))
   # expect_equal(dim(transformData(cc,dimReduce=c("PCA"),nPCADims=c(3),nFilter=2)),c(3,NCOL(assay(cc))))

@@ -38,7 +38,7 @@
 #'   distances give 0-1 values for the distance (and hence are possible for both
 #'   type "01" and "K" algorithms).
 #' @param nFilter vector of the number of the most variable features to keep 
-#'   (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
+#'   (when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
 #'   included, then the full dataset will also be included.
 #' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified 
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be
@@ -552,7 +552,7 @@ setMethod(
 		  else if(dimReduce %in% reducedDimNames(x)) 
 			  dat<-t(reducedDim(x,dimReduce)[,1:par[["nDimReduce"]]] ) 
 		  else if(dimReduce %in% filterNames(x)) 
-			  dat<-filterData(x,type=dimReduce,percentile=par[["nFilter"]])
+			  dat<-assay(filterData(x,type=dimReduce,percentile=par[["nFilter"]]))
 		  else stop("Internal error: dimReduce value that not in filterNames or reducedDimNames")
 		  #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
 		  if(!is.null(distFunction)){

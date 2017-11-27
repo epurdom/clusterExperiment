@@ -13,7 +13,7 @@
 #'   relevant for sample clustering. See details.
 #' @param dimReduce character A character identifying what type of 
 #'   dimensionality reduction to perform before clustering. Options are 
-#'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+#'   "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 #'   details. The option "coCluster" will use the co-Clustering matrix stored 
 #'   in the 'coClustering' slot of the \code{ClusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
@@ -68,8 +68,8 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","cv","var","PCA","coCluster","none"),
-                        ndims=if(dimReduce%in%c("mad","cv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
+  definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","abscv","var","PCA","coCluster","none"),
+                        ndims=if(dimReduce%in%c("mad","abscv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster

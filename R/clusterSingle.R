@@ -31,7 +31,7 @@
 #'   before clustering.
 #' @param dimReduce character A character identifying what type of 
 #'   dimensionality reduction to perform before clustering. Options are 
-#'   "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
+#'   "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 #'   details.
 #' @param nDims integer An integer identifying how many dimensions to reduce to 
 #'   in the reduction specified by \code{dimReduce}
@@ -320,7 +320,7 @@ setMethod(
 	  }
 	  else if(dimReduce %in% listBuiltInFilterStats()){
 		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
-		  x<-filterData(transObj,type=dimReduce,percentile=nDims)	  	
+		  x<-assay(filterData(transObj,type=dimReduce,percentile=nDims))
 	  }
     }
     else{
