@@ -27,7 +27,7 @@ setMethod(
     f = "RSEC",
     signature = signature(x = "matrix"),
     definition = function(x, isCount=FALSE,transFun=NULL,
-        dimReduce="PCA",nVarDims=NA,
+        dimReduce="PCA",nFilter=NA,
         nPCADims=c(50), k0s=4:15,
         clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
@@ -42,13 +42,13 @@ setMethod(
 {
     if(dimReduce=="none"){
         nPCADims<-NA
-        nVarDims<-NA
+        nFilter<-NA
     }
     if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
 ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
-                    dimReduce=dimReduce,nVarDims=nVarDims,nPCADims=nPCADims,
+                    dimReduce=dimReduce,nFilter=nFilter,nPCADims=nPCADims,
                     mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					

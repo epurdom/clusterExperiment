@@ -256,7 +256,7 @@ test_that("check clusterLegend, remove unclustered cells work as promised", {
 test_that("accessing transformed data works as promised",{
   expect_is(transformation(ccSE),"function")
   expect_equal(transformData(cc), transformation(cc)(assay(cc)))
-}
+})
 
 test_that("workflow functions work",
           {

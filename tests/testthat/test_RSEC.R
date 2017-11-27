@@ -31,7 +31,7 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  expect_silent(ceOut<-clusterMany(x=assay(seSimCount),ks=4:5,clusterFunction="tight",alphas=0.1,betas=0.9,minSizes=1,
   isCount=TRUE, dimReduce="none", transFun = NULL,
  sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
-                 nVarDims=NA,nPCADims=NA,
+                 nFilter=NA,nPCADims=NA,
                  mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
  ))

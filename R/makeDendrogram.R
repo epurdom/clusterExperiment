@@ -94,9 +94,9 @@ setMethod(
 	    }
 	    origX <- assay(x)
 	    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-	    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
+	    nFilter <- ifelse(dimReduce=="var", ndims, NA)
 	    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #ifelse doesn't work with NULL
-	    transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
+	    transObj <- .transData(origX, nPCADims=nPCADims, nFilter=nFilter,
 	                           dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
 	    dat <- transObj$x
 		if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {

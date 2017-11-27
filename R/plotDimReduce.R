@@ -112,7 +112,7 @@ definition = function(object, whichClusters,
 	####Dim reduction stuff:
 	if(length(whichDims)<2) stop("whichDims must be a vector of length at least 2 giving the which dimensions of the dimensionality reduction to plot")
 
-	transObj <- .transData(assay(object), nPCADims=max(whichDims), nVarDims=NA,
+	transObj <- .transData(assay(object), nPCADims=max(whichDims), nFilter=NA,
                            dimReduce=dimReduce, transFun=transformation(object),clustering=cluster)
 						  
 	dat <- t(transObj$x[whichDims,])

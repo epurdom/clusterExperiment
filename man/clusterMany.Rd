@@ -10,19 +10,19 @@
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce, nVarDims = NA, nPCADims = NA,
+\S4method{clusterMany}{matrix}(x, dimReduce, nFilter = NA, nPCADims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
   alphas = 0.1, findBestK = FALSE, sequential = FALSE,
   removeSil = FALSE, subsample = FALSE, silCutoff = 0,
   distFunction = NA, betas = 0.9, minSizes = 1, dimReduce,
-  nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE,
+  nFilter = NA, nPCADims = NA, transFun = NULL, isCount = FALSE,
   verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
-  nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
+  nFilter = NA, nPCADims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
@@ -39,7 +39,7 @@ dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
 details.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep 
+\item{nFilter}{vector of the number of the most variable features to keep 
 (when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
 included, then the full dataset will also be included.}
 

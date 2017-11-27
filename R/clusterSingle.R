@@ -180,7 +180,7 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrixOrNULL",diss="missing"),
   definition = function(x, diss,...) {
-    	clusterSingle(x=x,diss=NULL,...)
+	  clusterSingle(x=x,diss=NULL,...)
  
 })
 
@@ -207,7 +207,8 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "ClusterExperiment", diss="missing"),
   definition = function(x, replaceCoClustering=FALSE,...) {
-
+	if(any(c("transFun","isCount") %in% names(list(...)))) 
+		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
     outval <- clusterSingle(as(x,"SingleCellFilter"),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
@@ -271,6 +272,7 @@ setMethod(
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
     ##########
+	
  	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss)
 	if(is.character(checkOut)) stop(checkOut)
 	else {
@@ -301,6 +303,7 @@ setMethod(
       ##########
       ##transformation to data x that will be input to clustering
       ##########
+	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount) #need this later to build clusterExperiment object
       dimReduce <- match.arg(dimReduce) #should be only 1 for clusterSingle
       if(length(nDims)>1 || length(dimReduce)>1) {
         stop("clusterSingle only handles one choice of dimensions or dimReduce. If you want to compare multiple choices, try clusterMany")
@@ -308,28 +311,17 @@ setMethod(
       if(!is.na(nDims) & dimReduce=="none") {
         warning("specifying nDims has no effect if dimReduce==`none`")
       }
-	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
 	  if(dimReduce=="none"){
 		  x<-transformData(x,transFun=transFun)
 	  }
 	  else if(dimReduce%in%listBuiltInDimReduce()){
-		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims=nDims, transFun=transFun)
+		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims=nDims, transFun=transFun,isCount=isCount)
 		  x<-t(reducedDim(transObj,type=dimReduce))
 	  }
 	  else if(dimReduce %in% listBuiltInFilterStats()){
-		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun)
+		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
 		  x<-filterData(transObj,type=dimReduce,percentile=nDims)	  	
 	  }
-      # nVarDims <- ifelse(dimReduce %in% c("var","cv","mad"), nDims, NA)
-      # transObj <- .transData(x, nPCADims=nPCADims, nVarDims=nVarDims,
-      #                        dimReduce=dimReduce, transFun=transFun,
-      #                        isCount=isCount)
-      # x <- transObj$x
-      # if(is.null(dim(x)) || NCOL(x)!=NCOL(origX)) {
-      #   stop("Error in the internal transformation of x")
-      # }
-      # transFun <- transObj$transFun #need it later to create ClusterExperimentObject
-      
     }
     else{
       if(any(dimReduce!="none")) stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
@@ -365,7 +357,6 @@ setMethod(
                       whyStop = outlist$whyStop,
                       subsample = subsample,
                       sequential = sequential,
-                      clusterFunction = clusterFunction,
                       mainClusterArgs = mainClusterArgs,
                       subsampleArgs = subsampleArgs,
                       seqArgs = seqArgs,

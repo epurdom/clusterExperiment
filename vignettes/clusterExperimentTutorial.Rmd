@@ -354,7 +354,7 @@ Here is our call to `clusterMany`:
 
 ```{r clusterMany}
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
-      isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
+      isCount=TRUE,dimReduce=c("PCA","var"),nFilter=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 ```
 
@@ -362,7 +362,7 @@ In this call to `clusterMany` we made the follow choices about what to vary:
 
 * set `dimReduce=c("PCA", "var")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
 * For PCA reduction, choose 5,15, and 50 principal components for the reduced data set (set `nPCADims=c(5,15,50)`)
-* For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
+* For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nFilter=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
 
 By giving only a single value to the relative argument, we keep the other possible options fixed, for example: 
@@ -564,7 +564,7 @@ would be equivalent to the following individual steps:
 ```{r stepCode,eval=FALSE}
 ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5),
 	clusterFunction="hierarchical01", sequential=TRUE,subsample=TRUE,
-         dimReduce="PCA",nVarDims=c(50,10))
+         dimReduce="PCA",nFilter=c(50,10))
 ce<-combineMany(ce, proportion=0.7, minSize=5)
 ce<-makeDendrogram(ce,dimReduce="mad",ndims=500)
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05,plot=FALSE)
@@ -1024,7 +1024,7 @@ Recall that arguments in `clusterMany` that take on multiple values mean that th
 * `clusterFunction` The clustering functions to be tried in the *main clustering step*. Recall if `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the matrix $D$ created from subsampling the data. Otherwise, `clusterFunction` is the clustering method that will be used directly on the data. 
 * `ks` The argument 'ks' is interpreted differently for different choices of the other parameters *and can differ from between parameter combinations!*. If `sequential=TRUE` is part of the parameter combination, `ks` defines the argument `k0` of sequential clustering (see `?seqCluster`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set `k` of both the main clustering step (and by default that of the subsampled data), and is only relevant if `clusterFunction` is of type "K". When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in the documentation of `clusterMany` for more).
 * `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA","var","mad","cv", and/or "none". "PCA" indicates clustering on the top principal components. "var","mad",and "cv" indicate clustering on the top most variable features, as determined by either "var", "mad" or "cv" per gene. And "none" indicates the whole data set should be used (which is usually going to be computationally intractable). If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
-    * `nVarDims`
+    * `nFilter`
     * `nPCADims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the standard R function `dist`, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
 * `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `mainClustering` part of clustering). 
@@ -1050,7 +1050,7 @@ ks             | sequential=TRUE |  seqCluster   |  k0
 -              | sequential=FALSE, findBestK=FALSE, subsample=TRUE | subsampleClustering | k
 -               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | mainClustering | kRange
 dimReduce      | none            | transform     | dimReduce
-nVarDims       | dimReduce in 'mad','cv','var' | transform | nVarDims
+nFilter       | dimReduce in 'mad','cv','var' | transform | nFilter
 nPCADims       | dimReduce='PCA' | transform     | nPCADims
 clusterFunction| none            | mainClustering      | clusterFunction    
 minSizes       | none            | mainClustering      | minSize
@@ -1093,7 +1093,7 @@ We see even here, the default of $\alpha=0.1$ was perhaps too conservative since
 However, the distances based on correlation calculated directly on the data, such as we created above, are also often used for clustering expression data directly (i.e. without the subsampling step). But they are unlikely to have dissimilarities as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
 
 ```{r visualizeSpearmanDist}
-dSp<-spearDist(t(transformData(ce,dimReduce="mad",nVarDims=1000)))
+dSp<-spearDist(t(transformData(ce,dimReduce="mad",nFilter=1000)))
 plotHeatmap(dSp,isSymmetric=TRUE,colorScale=rev(seqPal5))
 ```
 
@@ -1128,7 +1128,7 @@ In the following we consider expanding our original clustering choices to consid
 checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,
                         removeSil=c(TRUE,FALSE), isCount=TRUE,
                         dimReduce=c("PCA","var"),
-                        nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
+                        nFilter=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```
 
@@ -1143,7 +1143,7 @@ We can now run this, either by giving the information in `checkParam$paramMatrix
 
 ```{r clusterManyCheckParam2,eval=FALSE}
 # ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, mainClusterArgs=checkParam$mainClusterArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
-ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
+ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nFilter=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
 ```
 
 Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
@@ -1397,7 +1397,7 @@ tabl <- "
 *clusterMany*| sequential=TRUE | k0s              | ks | RSEC only sets 'k0', no other k 
 - | distFunction=NA | clusterFunction | |
 - | removeSil=FALSE | dimReduce | | 
-- | subsample=TRUE | nVarDims | | 
+- | subsample=TRUE | nFilter | | 
 - |  silCutoff=0 | nPCADims | | 
 - |  | alphas | |
 - |  | betas | |

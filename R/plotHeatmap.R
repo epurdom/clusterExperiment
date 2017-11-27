@@ -361,7 +361,7 @@ setMethod(
 		      dimReduce<-"none"
 		    }
 		 
-			transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nVarDims = nFeatures,dimReduce = dimReduce)
+			transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nFilter = nFeatures,dimReduce = dimReduce)
 		    if(dimReduce%in%"PCA") wh<-1:nFeatures
 		    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
 			if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
