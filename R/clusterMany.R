@@ -189,7 +189,7 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
   definition = function(x,
-      dimReduce,nPCADims=NA, transFun=NULL,isCount=FALSE, ...
+      dimReduce="none",nPCADims=NA, transFun=NULL,isCount=FALSE, ...
   ){
 	
 	if(missing(dimReduce) || anyNA(nPCADims)) dimReduce<-"none"
@@ -217,7 +217,7 @@ setMethod(
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			
 		}
 		if(isFilter){
-			filtNam<-dimReduce[dimReduce %in% filterNames(x)]
+			filtNam<-dimReduce[dimReduce %in% listBuiltInFilterStats()]
 			#Need to think how can pass options to filterData...
   		  	x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)  	
 		}
@@ -235,18 +235,19 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "SingleCellFilter"),
-  definition = function(x, ks=NA, clusterFunction, alphas=0.1, findBestK=FALSE,
-                        sequential=FALSE, removeSil=FALSE, subsample=FALSE,
-                        silCutoff=0, distFunction=NA,
-                        betas=0.9, minSizes=1,
-                         dimReduce,nFilter=NA,nPCADims=NA,
-                         transFun=NULL,isCount=FALSE,
-                        verbose=FALSE,
-                        mainClusterArgs=NULL,
-                        subsampleArgs=NULL,
-                        seqArgs=NULL,
-                        ncores=1, random.seed=NULL, run=TRUE,
-                        ...
+  definition = function(x, ks=NA, clusterFunction, 
+	  dimReduce="none",nFilter=NA,nPCADims=NA,
+	  alphas=0.1, findBestK=FALSE,
+      sequential=FALSE, removeSil=FALSE, subsample=FALSE,
+      silCutoff=0, distFunction=NA,
+      betas=0.9, minSizes=1,
+      transFun=NULL,isCount=FALSE,
+      verbose=FALSE,
+      mainClusterArgs=NULL,
+      subsampleArgs=NULL,
+      seqArgs=NULL,
+      ncores=1, random.seed=NULL, run=TRUE,
+      ...
   )
   {
 	inputArgs<-as.list(environment()) #need so can pass all the args, not just the ...
@@ -266,26 +267,23 @@ setMethod(
 		return(outval)
 	}
     else{
-	    ##TO DO: need to deal with dimReduce="none". And make sure transformed data is used!
+	    ##TO DO: Make sure transformed data is used!
 		###############
 	    #Check inputs of dimReduce slots
+		##NOTE: For now, IF there is a reducedDim slot, then will not try 
+		##to patch in ones that are missing.
+		##This means can list some that want to be calculated. 
+		##Either do all of them ahead of time or let all of them be done 
+		##during call to clusterMany...
 		###############  
-		if(!missing(dimReduce)){
-			doNone<-"none" %in% dimReduce
-			if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
-		}
-		else{
-			doNone<-FALSE
-			dimReduce<-c(reducedDimNames(x),filterNames(x))
-		}
+		doNone<-"none" %in% dimReduce
+		if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
 		if(length(dimReduce)>0){
-			##For now, IF there is a reducedDim slot, then will not try to patch in ones that are missing.
-			##This means can list some that want to be calculated. Either do all of them ahead of time or let all of them be done during call to clusterMany...
 			if(any(!dimReduce %in% c(reducedDimNames(x),filterNames(x)))){
 				warning("Not all of dimReduce value match a reducedDimNames or filterNames of the 'SingleCellFilter' object. Will ignore them:",paste(dimReduce[!dimReduce %in%c(reducedDimNames(x),filterNames(x))],collapse=","))
 				dimReduce<-dimReduce[dimReduce %in%c(reducedDimNames(x),filterNames(x))]
 			}
-			maxDimValues<-sapply(reducedDims(x)[dimReduce],ncol)
+			maxDimValues<-sapply(reducedDims(x)[dimReduce[dimReduce %in%reducedDimNames(x)]],ncol)
 			if(length(na.omit(nPCADims))>0 && all(na.omit(nPCADims) > max(maxDimValues))) 
 				stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
 			
