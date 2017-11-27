@@ -164,11 +164,21 @@ test_that("plotDimReduce works",{
 	cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 	removeSil=c(TRUE,FALSE))
-	clusterLegend(cl)[[primaryClusterIndex(cl)]][,"name"]<-LETTERS[1:5]
-	plotDimReduce(cl,legend="bottomright")
-	plotDimReduce(cl,legend=TRUE)
-
+	expect_silent(plotDimReduce(cl,legend="bottomright"))
+	expect_silent(plotDimReduce(cl,legend=TRUE))
+	clusterLegend(cl)[["nDimReduce=10,k=4,findBestK=0,removeSil=1"]][,"name"]<-LETTERS[1:4]
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE))
+	
+	#test on object that doesn't have saved:
+	clD<-plotDimReduce(ceSimData,dimReduce="PCA")
+	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
+	
 	#higher dims.
-	plotDimReduce(cl,legend=TRUE,whichDims=1:4)
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=1:4))
+	expect_error(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=158:200),"Invalid value for 'whichDims'")
+	#force it to recalculate:
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=51:58))
+	
+	
 	
 })

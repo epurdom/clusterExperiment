@@ -57,7 +57,7 @@
 #   f = "clusterLabels",
 #   signature = signature(x = "ClusterExperiment",whichClusters="missing"),
 #   definition = function(x, whichClusters){
-#     clusterLabels(x,whichClusters=1:nClusters(x))
+#     clusterLabels(x,whichClusters=1:nClusterings(x))
 #   }
 # )
 # #' @export

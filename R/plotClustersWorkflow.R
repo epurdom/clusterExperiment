@@ -64,8 +64,8 @@
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), existingColors=FALSE,
-  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
+  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=FALSE,
+  nSizeResult=ceiling(nClusterings(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
 	  allClusterMany<-which(clusterTypes(object)=="clusterMany")

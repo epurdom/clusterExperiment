@@ -14,7 +14,7 @@
 \S4method{plotDimReduce}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{plotDimReduce}{ClusterExperiment,numeric}(object, whichClusters,
-  dimReduce = c("PCA"), whichDims = c(1:2), plotUnassigned = TRUE,
+  dimReduce = "PCA", whichDims = c(1:2), plotUnassigned = TRUE,
   legend = TRUE, legendTitle = "", clusterLegend = NULL,
   unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
   ylab = NULL, ...)
@@ -26,8 +26,7 @@
 
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
-\item{dimReduce}{What dimensionality reduction method to use (currently only
-PCA). See \code{\link{transform}} for how this is implemented.}
+\item{dimReduce}{What dimensionality reduction method to use. Should match either a \code{reducedDimNames(x)} or one of the built-in functions of \code{\link{builtInDimReduce}()}}
 
 \item{whichDims}{vector of length 2 giving the indices of which dimensions to
 show. The first value goes on the x-axis and the second on the y-axis.}
@@ -77,5 +76,5 @@ removeSil=c(TRUE,FALSE))
 plotDimReduce(cl,legend="bottomright")
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{transform}}
+\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{builtInDimReduce()}}
 }

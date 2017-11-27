@@ -9,9 +9,9 @@
 \usage{
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
   whichClusters = c("mergeClusters", "combineMany"),
-  whichClusterMany = NULL, nBlankLines = ceiling(nClusters(object) * 0.05),
-  existingColors = FALSE, nSizeResult = ceiling(nClusters(object) * 0.02),
-  clusterLabels = TRUE, clusterManyLabels = TRUE,
+  whichClusterMany = NULL, nBlankLines = ceiling(nClusterings(object) *
+  0.05), existingColors = FALSE, nSizeResult = ceiling(nClusterings(object)
+  * 0.02), clusterLabels = TRUE, clusterManyLabels = TRUE,
   sortBy = c("highlighted", "clusterMany"), highlightOnTop = TRUE, ...)
 }
 \arguments{

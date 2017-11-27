@@ -9,9 +9,7 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = c("mad", "abscv", "var",
-  "PCA", "coCluster", "none"), nDims = if (dimReduce \%in\% c("mad", "abscv",
-  "var")) 500 else if (dimReduce == "none") NA else 50,
+  whichCluster = "primaryCluster", dimReduce = "mad", nDims,
   ignoreUnassignedVar = TRUE, unassignedSamples = c("outgroup", "cluster"),
   ...)
 
@@ -30,13 +28,16 @@ which cluster should be used to make the dendrogram. Default is
 primaryCluster.}
 
 \item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-details. The option "coCluster" will use the co-Clustering matrix stored 
+dimensionality reduction to perform before clustering. Can be either a value stored in either of reducedDims or filterStats slot or a built-in diminsionality reduction/filtering. The option "coCluster" will use the co-Clustering matrix stored}
+
+\item{nDims}{The number of dimensions to keep from \code{dimReduce}. If missing see details for default values.
 in the 'coClustering' slot of the \code{ClusterExperiment} object.}
 
-\item{nDims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{dimReduce}}
+\item{ignoreUnassignedVar}{logical. Whether filtering statistics should ignore
+the unassigned samples within the clustering. Only relevant if 'dimReduce' 
+matches one of built-in filtering statistics in \code{\link{builtInFilterStats()}}. 
+In which case the clustering identified in \code{whichCluster} is passed to
+\code{makeFilterStats}. See \code{\link{makeFilterStats}}  for more details.}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only
 relevant for sample clustering. See details.}
@@ -80,6 +81,8 @@ permitted for the \code{@dendro_samples} slot.
 
 If any merge information is stored in the input object, it will be
   erased by a call to mergeDendrogram.
+
+If \code{nDims} is missing, it will be given a default value depending on the value of \code{dimReduce}. If \code{dimReduce} is set to a filtering statistic, \code{nDims} is arbitrarily set to 500. If \code{dimReduce} matches a dimensionality reduction value saved in \code{x}, then the number of columns of this matrix. If not, and \code{dimReduce} matches a value of \code{listBuiltInDimReduce()}, then arbirarily set to 50.
 }
 \examples{
 data(simData)
@@ -93,4 +96,7 @@ hcl <- makeDendrogram(cl)
 plotDendrogram(hcl)
 plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 
+}
+\seealso{
+makeFilterStats, makeDimReduce
 }

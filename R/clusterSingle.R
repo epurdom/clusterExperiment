@@ -212,7 +212,7 @@ setMethod(
     outval <- clusterSingle(as(x,"SingleCellFilter"),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
-	primaryClusterIndex(retval)<-nClusters(retval)
+	primaryClusterIndex(retval)<-nClusterings(retval)
 	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
 	#make sure save the calculated information
 	retval<-.addBackSEInfo(newObj=retval,oldObj=outval) 

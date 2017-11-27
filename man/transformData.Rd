@@ -12,7 +12,7 @@ Provides the transformed data (as defined by the object)}
 \usage{
 \S4method{transformData}{matrix}(object, transFun = NULL, isCount = FALSE)
 
-\S4method{transformData}{ClusterExperiment}(object)
+\S4method{transformData}{ClusterExperiment}(object, ...)
 
 \S4method{transformData}{SingleCellExperiment}(object, ...)
 

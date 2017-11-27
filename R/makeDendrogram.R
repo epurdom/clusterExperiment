@@ -12,9 +12,8 @@
 #' @param unassignedSamples how to handle unassigned samples("-1") ; only
 #'   relevant for sample clustering. See details.
 #' @param dimReduce character A character identifying what type of 
-#'   dimensionality reduction to perform before clustering. Options are 
-#'   "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-#'   details. The option "coCluster" will use the co-Clustering matrix stored 
+#'   dimensionality reduction to perform before clustering. Can be either a value stored in either of reducedDims or filterStats slot or a built-in diminsionality reduction/filtering. The option "coCluster" will use the co-Clustering matrix stored 
+#' @param nDims The number of dimensions to keep from \code{dimReduce}. If missing see details for default values.
 #'   in the 'coClustering' slot of the \code{ClusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
@@ -48,6 +47,7 @@
 #' permitted for the \code{@dendro_samples} slot.
 #' @details If any merge information is stored in the input object, it will be
 #'   erased by a call to mergeDendrogram.
+#' @details If \code{nDims} is missing, it will be given a default value depending on the value of \code{dimReduce}. If \code{dimReduce} is set to a filtering statistic, \code{nDims} is arbitrarily set to 500. If \code{dimReduce} matches a dimensionality reduction value saved in \code{x}, then the number of columns of this matrix. If not, and \code{dimReduce} matches a value of \code{listBuiltInDimReduce()}, then arbirarily set to 50. 
 #' @return If x is a matrix, a list with two dendrograms, one in which the
 #' leaves are clusters and one in which the leaves are samples. If x is a
 #' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
@@ -78,7 +78,7 @@ setMethod(
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
 #    
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information

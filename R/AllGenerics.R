@@ -1,27 +1,8 @@
-setGeneric(
-  name = "makeFilterStats",
-  def=function(object,...){
-    standardGeneric("makeFilterStats")
-  }
-)
-setGeneric(
-  name = "makeDimReduce",
-  def=function(object,...){
-    standardGeneric("makeDimReduce")
-  }
-)
-setGeneric(
-  name = "plotClusterLegend",
-  def=function(object,...){
-    standardGeneric("plotClusterLegend")
-  }
-)
-setGeneric(
-  name = "tableClusters",
-  def=function(x,whichClusters,...){
-    standardGeneric("tableClusters")
-  }
-)
+setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
+setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
+setGeneric(name="makeDimReduce", function(object,...){ standardGeneric("makeDimReduce")})
+setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
+setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric(
   name = "nodeMergeInfo",
   def=function(x,...){
@@ -182,9 +163,9 @@ setGeneric(
 		standardGeneric("getClusterManyParams")
 	})
 setGeneric(
-  name = "nClusters",
+  name = "nClusterings",
   def = function(x) {
-    standardGeneric("nClusters")
+    standardGeneric("nClusterings")
   }
 )
 

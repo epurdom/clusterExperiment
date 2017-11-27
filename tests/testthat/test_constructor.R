@@ -29,7 +29,7 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 
             expect_equal(nSamples(cc),ncol(mat))
             expect_equal(nFeatures(cc),nrow(mat))
-            expect_equal(nClusters(cc),2)
+            expect_equal(nClusterings(cc),2)
             expect_equal(NCOL(clusterMatrix(ccSE)), NCOL(labMat))
             
             expect_equal(colData(ccSE),colData(se)) 
@@ -64,9 +64,9 @@ test_that("adding clusters work as promised",{
   expect_equal(metadata(c1),metadata(se)) 
   expect_equal(rowData(c1),rowData(se)) 
   #Other checks
-  expect_equal(NCOL(clusterMatrix(c1)), nClusters(ccSE)+1)
+  expect_equal(NCOL(clusterMatrix(c1)), nClusterings(ccSE)+1)
   expect_equal(unname(clusterTypes(c1)), unname(c(clusterTypes(ccSE),"newUser")))
-  expect_equal(length(clusterInfo(c1)), nClusters(ccSE)+1)
+  expect_equal(length(clusterInfo(c1)), nClusterings(ccSE)+1)
   expect_equal(primaryCluster(c1), primaryCluster(ccSE))
   primaryClusterIndex(c1) <- 3
   expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
@@ -74,9 +74,9 @@ test_that("adding clusters work as promised",{
   ####check adding a ClusterExperiment to existing CE
   expect_error(addClusters(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
   c3<-addClusters(ccSE,ccSE)
-  expect_equal(NCOL(clusterMatrix(c3)), nClusters(ccSE)*2)
-  expect_equal(length(clusterTypes(c3)), nClusters(ccSE)*2)
-  expect_equal(length(clusterInfo(c3)), nClusters(ccSE)*2)
+  expect_equal(NCOL(clusterMatrix(c3)), nClusterings(ccSE)*2)
+  expect_equal(length(clusterTypes(c3)), nClusterings(ccSE)*2)
+  expect_equal(length(clusterInfo(c3)), nClusterings(ccSE)*2)
   expect_equal(primaryCluster(c3), primaryCluster(ccSE))
   ###Check retain SE info
   expect_equal(colData(c3),colData(se)) 
@@ -89,11 +89,11 @@ test_that("adding clusters work as promised",{
   clusterLabels(c3)[1:2]<-c("User1","User2")
   clusterLabels(c3)[1]<-"User4"
   expect_error(clusterLabels(c3)[1]<-"User2","cannot have duplicated clusterLabels")
-  expect_equal(length(clusterLabels(c3)),nClusters(ccSE)*2)
+  expect_equal(length(clusterLabels(c3)),nClusterings(ccSE)*2)
   
   ###check adding matrix of clusters
   c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
-  newLeng<-2*nClusters(ccSE)
+  newLeng<-2*nClusterings(ccSE)
   expect_equal(NCOL(clusterMatrix(c4)), newLeng)
   expect_equal(length(clusterTypes(c4)), newLeng)
   expect_equal(length(clusterInfo(c4)), newLeng)
@@ -113,9 +113,9 @@ test_that("removing clusters work as promised",{
   #single cluster
   c4<-addClusters(ccSE,clusterMatrix(ccSE),clusterTypes="New")
   c5<-removeClusters(c4,1)
-  expect_equal(NCOL(clusterMatrix(c5)), nClusters(c4)-1)
-  expect_equal(length(clusterTypes(c5)), nClusters(c4)-1)
-  expect_equal(length(clusterInfo(c5)), nClusters(c4)-1)
+  expect_equal(NCOL(clusterMatrix(c5)), nClusterings(c4)-1)
+  expect_equal(length(clusterTypes(c5)), nClusterings(c4)-1)
+  expect_equal(length(clusterInfo(c5)), nClusterings(c4)-1)
   expect_equal(primaryCluster(c4), primaryCluster(removeClusters(c4,2)))
   ###Check retain SE info 
   expect_equal(colData(c5),colData(se)) 
@@ -126,9 +126,9 @@ test_that("removing clusters work as promised",{
   
   #vector clusters
   c6<-removeClusters(c4,c(1,3))
-  expect_equal(NCOL(clusterMatrix(c6)), nClusters(c4)-2)
-  expect_equal(length(clusterTypes(c6)), nClusters(c4)-2)
-  expect_equal(length(clusterInfo(c6)), nClusters(c4)-2)
+  expect_equal(NCOL(clusterMatrix(c6)), nClusterings(c4)-2)
+  expect_equal(length(clusterTypes(c6)), nClusterings(c4)-2)
+  expect_equal(length(clusterInfo(c6)), nClusterings(c4)-2)
   ###Check retain SE info 
   expect_equal(colData(c6),colData(se)) 
   expect_equal(rownames(c6),rownames(se)) 
@@ -136,12 +136,12 @@ test_that("removing clusters work as promised",{
   expect_equal(metadata(c6),metadata(se)) 
   expect_equal(rowData(c6),rowData(se)) 
   
-  expect_error(removeClusters(c4,c(1,nClusters(c4)+1)),"invalid indices")
+  expect_error(removeClusters(c4,c(1,nClusterings(c4)+1)),"invalid indices")
   
   c7<-removeClusters(c4,"User") #two have "user" label
-  expect_equal(NCOL(clusterMatrix(c7)), nClusters(c4)-2)
-  expect_equal(length(clusterTypes(c7)), nClusters(c4)-2)
-  expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
+  expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)
+  expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
+  expect_equal(length(clusterInfo(c7)), nClusterings(c4)-2)
   
 
   

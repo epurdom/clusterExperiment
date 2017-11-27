@@ -16,6 +16,8 @@
 \alias{transformation}
 \alias{transformation<-,ClusterExperiment,function-method}
 \alias{transformation<-}
+\alias{nClusterings,ClusterExperiment-method}
+\alias{nClusterings}
 \alias{nClusters,ClusterExperiment-method}
 \alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
@@ -80,7 +82,9 @@
 
 \S4method{transformation}{ClusterExperiment,`function`}(object) <- value
 
-\S4method{nClusters}{ClusterExperiment}(x)
+\S4method{nClusterings}{ClusterExperiment}(x)
+
+\S4method{nClusters}{ClusterExperiment}(x, ignoreUnassigned = TRUE)
 
 \S4method{nFeatures}{ClusterExperiment}(x)
 
@@ -138,6 +142,8 @@
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
 
+\item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
+
 \item{whichClusters}{optional argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
@@ -157,8 +163,10 @@ labels).
 \code{transformation} prints the function used to transform the data
 prior to clustering.
 
-\code{nClusters} returns the number of clusterings (i.e., ncol of
+\code{nClusterings} returns the number of clusterings (i.e., ncol of
 clusterMatrix).
+
+\code{nClusters} returns the number of clusters per clustering
 
 \code{nFeatures} returns the number of features (same as `nrow`).
 

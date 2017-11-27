@@ -6,6 +6,7 @@ Changes:
 * removed `transformation` as a required argument to `clusterExperiment`
 * capitalized constructor functions `ClusterFunction()` and `ClusterExperiment()` to be consistent with other packages naming conventions.
 * Changed argument `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
+* Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
 
 Bugs:
 * converted automatic assignment of colors based on `massivePalette` so won't run out on toy examples.

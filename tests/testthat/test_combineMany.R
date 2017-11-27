@@ -22,7 +22,7 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
             shared3 <- combineMany(clustNothing, "workflow",proportion=1)
             expect_equal(shared2, shared3)
 
-            shared4 <- combineMany(clustNothing, 1:nClusters(clustNothing),proportion=1)
+            shared4 <- combineMany(clustNothing, 1:nClusterings(clustNothing),proportion=1)
             expect_equal(shared3, shared4)
 
             shared5 <- combineMany(clustNothing, "workflow",

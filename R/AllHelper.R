@@ -174,17 +174,35 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{nClusters} returns the number of clusterings (i.e., ncol of
+#' @return \code{nClusterings} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
 #' @export
-#' @aliases nClusters
+#' @aliases nClusterings
 setMethod(
-  f = "nClusters",
+  f = "nClusterings",
   signature = "ClusterExperiment",
   definition = function(x){
     return(NCOL(clusterMatrix(x)))
   }
 )
+
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{nClusters} returns the number of clusters per clustering
+#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering. 
+#' @export
+#' @aliases nClusters
+setMethod(
+  f = "nClusters",
+  signature = "ClusterExperiment",
+  definition = function(x,ignoreUnassigned=TRUE){
+	  if(ignoreUnassigned){
+		  return(apply(clusterMatrix(x),2,function(x){length(unique(x[x>0]))}))
+	  }
+	  else return(apply(clusterMatrix(x),2,function(x){length(unique(x))}))
+  }
+)
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{nFeatures} returns the number of features (same as `nrow`).
 #' @aliases nFeatures

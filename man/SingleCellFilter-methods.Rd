@@ -7,7 +7,7 @@
 \alias{filterStats,SingleCellFilter,missing-method}
 \alias{filterStats<-,SingleCellFilter-method}
 \alias{filterNames,SingleCellFilter-method}
-\alias{filterData,SingleCellFilter-method}
+\alias{filterNames<-,SingleCellFilter-method}
 \title{Helper methods for the SingleCellFilter class}
 \usage{
 \S4method{filterStats}{SingleCellFilter,character}(object, type)
@@ -18,21 +18,7 @@
 
 \S4method{filterNames}{SingleCellFilter}(object)
 
-\S4method{filterData}{SingleCellFilter}(object, type, cutoff, percentile,
-  absolute = FALSE, keepLarge = TRUE)
-}
-\arguments{
-\item{object}{a SingleCellFilter object}
-
-\item{type}{character indicating which filter statistic to use. Must match a single filter statistic in \code{object}}
-
-\item{cutoff}{numeric. A value at which to filter the rows (genes) for the test statistic}
-
-\item{percentile}{numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep}
-
-\item{absolute}{whether to take the absolute value of the filter statistic}
-
-\item{keepLarge}{logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic.}
+\S4method{filterNames}{SingleCellFilter}(object) <- value
 }
 \description{
 This is a collection of helper methods for the SingleCellFilter class.
