@@ -123,7 +123,7 @@ setMethod(
 		else if(dimReduce %in% reducedDimNames(x))
 			dat<-t(reducedDim(x,type=dimReduce)[,1:nDims])
 		else if(dimReduceName %in% filterNames(x))
-			dat<-assay(filterData(x,type=dimReduceName,percentile=nDims))
+			dat<-transformData(filterData(x,type=dimReduceName,percentile=nDims))
 		else
 			stop("'x' does not contain the given 'dimReduce' value nor does 'dimReduce' value match any built-in filters or dimensionality reduction options.")
 	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)

@@ -201,6 +201,8 @@ test_that("subsetting works as promised",{
   expect_equal(metadata(x4),metadata(se[3,])) 
   expect_equal(rowData(x4),rowData(se[3,])) 
   
+  
+  expect_equal(filterStats(scf[1:10,]),head(filterStats(scf),10))
 })
 
 

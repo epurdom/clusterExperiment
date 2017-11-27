@@ -545,7 +545,7 @@ setMethod(
 		  else if(dimReduce %in% reducedDimNames(x)) 
 			  dat<-t(reducedDim(x,dimReduce)[,1:par[["nDimReduce"]]] ) 
 		  else if(dimReduce %in% filterNames(x)) 
-			  dat<-assay(filterData(x,type=dimReduce,percentile=par[["nFilter"]]))
+			  dat<-transformaData(filterData(x,type=dimReduce,percentile=par[["nFilter"]]))
 		  else stop("Internal error: dimReduce value that not in filterNames or reducedDimNames")
 		  #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
 		  if(!is.null(distFunction)){

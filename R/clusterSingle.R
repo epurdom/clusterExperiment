@@ -320,7 +320,7 @@ setMethod(
 	  }
 	  else if(dimReduce %in% listBuiltInFilterStats()){
 		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
-		  x<-assay(filterData(transObj,type=dimReduce,percentile=nDims))
+		  x<-transformData(filterData(transObj,type=dimReduce,percentile=nDims))
 	  }
     }
     else{

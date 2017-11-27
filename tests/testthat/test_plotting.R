@@ -175,7 +175,7 @@ test_that("plotDimReduce works",{
 	
 	#higher dims.
 	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=1:4))
-	expect_error(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=158:200),"Invalid value for 'whichDims'")
+	expect_error(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
 	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=51:58))
 	

@@ -262,10 +262,12 @@ setMethod(
     signature = signature(data = "SingleCellExperiment"),
     definition = function(data, isCount=FALSE,transFun=NULL,...
     ){
-      transformation<-.transData(assay(data),isCount=isCount,transFun=transFun,dimReduce="none")$transFun
-      fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
-      fakeCE<-ClusterExperiment(data,fakeCL,transformation=transformation,checkTransformAndAssay=FALSE)
-      if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'ClusterExperiment'")
+     #get transformation function
+	 transformation<-.makeTransFun(transFun=transFun,isCount=isCount) 
+	 fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
+     fakeCE<-ClusterExperiment(data, fakeCL,transformation=transformation, 
+		  checkTransformAndAssay=FALSE)
+     if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'ClusterExperiment'")
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 
@@ -283,13 +285,13 @@ setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
-                        clusterSamplesData=c("dendrogramValue","hclust","orderSamplesValue","primaryCluster"),
-                        clusterFeaturesData=c("var","all","PCA"), nFeatures=NULL,
-                        visualizeData=c("transformed","centeredAndScaled","original"),
-                        whichClusters= c("primary","workflow","all","none"),
-                        sampleData=NULL,clusterFeatures=TRUE, nBlankLines=2,
-                        colorScale,
-                       ...
+    clusterSamplesData=c("dendrogramValue", "hclust", "orderSamplesValue", "primaryCluster"),
+    clusterFeaturesData="var", nFeatures=NA,
+    visualizeData=c("transformed","centeredAndScaled","original"),
+    whichClusters= c("primary","workflow","all","none"),
+    sampleData=NULL,clusterFeatures=TRUE, nBlankLines=2,
+    colorScale,
+   ...
   ){
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
@@ -320,9 +322,9 @@ setMethod(
     ####
     ##Transform data and determine which features to use
     ####
-	clusterFeaturesData <- .convertTry(clusterFeaturesData,
-                                   try(match.arg(clusterFeaturesData),
-                                       silent=TRUE))
+	# clusterFeaturesData <- .convertTry(clusterFeaturesData,
+	#                                    try(match.arg(clusterFeaturesData),
+	#                                        silent=TRUE))
 
     if(is.list(clusterFeaturesData)){
       groupFeatures<-clusterFeaturesData
@@ -334,45 +336,58 @@ setMethod(
 	    	heatData<-assay(data)
 	    }
 		else{
-		    if(all(clusterFeaturesData %in% c("var","all","PCA"))){ #
-		        dimReduce=switch(clusterFeaturesData,
-		                         "var"="var",
-		                        "PCA"="PCA",
-		                        "all"="none")
-		        if(is.null(nFeatures)) nFeatures<-min(switch(clusterFeaturesData,"var"=500,"all"=nFeatures(data),"PCA"=50),nFeatures(data))
-		        wh<-1:NROW(data)
-		    }
-		    else{
-		      if(is.character(clusterFeaturesData)){#gene names
-		        if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
-		        else{
-		          wh<-match(clusterFeaturesData,rownames(data))
-		          if(all(is.na(wh))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
-		          if(any(is.na(wh))){
-		            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
-		            wh<-na.omit(wh)
-		          }
-		        }
-		      }
-		      else{
-		          if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
-		          wh<-clusterFeaturesData
-		      }
-		      dimReduce<-"none"
-		    }
-		 
-			transObj<-.transData(transFun = transformation(data), x=assay(data[wh,]), nPCADims=nFeatures,nFilter = nFeatures,dimReduce = dimReduce)
-		    if(dimReduce%in%"PCA") wh<-1:nFeatures
-		    if(dimReduce=="var") wh<-transObj$whMostVar #give indices that will pull
-			if(all(clusterFeaturesData=="PCA")) heatData<-transObj$x
-		    else{
-				#note, transObj is already been limited to the wh.
+			possibleDimReduce<-c(reducedDimNames(data),listBuiltInDimReduce())
+			possibleFilter<-c(filterNames(data),listBuiltInFilterStats())
+			if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleDimReduce){
+				##### Dimensionality reduction ####
+				if(!clusterFeaturesData %in% reducedDimNames(data)){
+					data<-makeDimReduce(data,dimReduce=clusterFeaturesData,maxDims=nFeatures)
+				}
+				heatData<-t(reducedDim(data,type=clusterFeaturesData))
+			}
+			else{
+				#remaining options subset the data, 
+				#either by filtering or by user-specified genes
+				#These operations will filter the input data object to only the relevant genes
+				if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleFilter){
+					##### Filter ####
+					if(!clusterFeaturesData %in% filterNames(data)){
+						data<-makeFilterStats(data,filterStats=clusterFeaturesData)
+					}
+					if(is.na(nFeatures)) nFeatures<-min(NROW(data),500)
+					data<-filterData(data,type=clusterFeaturesData,percentile=nFeatures)
+				}
+			    else{
+					### Other character values ####
+					if(is.character(clusterFeaturesData)){#gene names
+				        if(length(clusterFeaturesData)==1 && clusterFeaturesData=="all") 
+							whRows<-1:NROW(data)
+						else{
+							### Give specific genes to use ####
+							if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
+					        else{
+					          whRows<-match(clusterFeaturesData,rownames(data))
+							  if(all(is.na(whRows))) stop("None of the feature names in clusterFeaturesData match rownames(assay(data))")
+					          if(any(is.na(whRows))){
+					            warning("Not all of the feature names in clusterFeaturesData match rownames(assay(data))")
+					            whRows<-na.omit(whRows)
+					          }
+							}
+				        }
+					}
+					else{
+					  ### Numeric row indices ####
+					  if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+					  whRows<-clusterFeaturesData
+					}
+					data<-data[whRows,]
+				}
 				heatData<-switch(visualizeData,
-		                    "original"=assay(data[wh,]),
-		                    "transformed"=transObj$x,
-		                    "centeredAndScaled"=t(scale(t(transObj$x),center=TRUE,scale=TRUE))
-		                    )
-			}	
+		                    "original"=assay(data),
+		                    "transformed"=transformData(data),
+		                    "centeredAndScaled"=t(scale(t(transformData(data)), center=TRUE, scale=TRUE))
+		        )
+			}
 		}
 	}
 	else{
@@ -477,6 +492,7 @@ setMethod(
               if(is.null(data@dendro_samples)){
                 clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
 				if(inherits(clusterSamplesData, "try-error")){
+					#browser()
 					warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
 					clusterSamplesData<-"primaryCluster"
 				}
@@ -486,8 +502,8 @@ setMethod(
               }
           }
 		  if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
-              wh<-which(primaryCluster(data) %in% c(-1,-2))
-			  if(length(wh)==nSamples(data) || length(unique(primaryCluster(data)[-wh]))==1){
+              whUnassign<-which(primaryCluster(data) %in% c(-1,-2))
+			  if(length(whUnassign)==nSamples(data) || length(unique(primaryCluster(data)[-whUnassign]))==1){
 				  #in this case, all -1/-2 or same cluster, just do heatmap with hclust
 				  warning("Cannot order by primary cluster because all one cluster and/or all clustering values are -1/-2. Using standard hiearchical clustering.")
 				  clusterSamplesData<-"hclust"
@@ -500,24 +516,24 @@ setMethod(
 			  }
           }
           if(is.character(clusterSamplesData) && clusterSamplesData=="hclust"){
-              #if hclust, then use the visualizeData data, unless visualizeData data is original, in which case use transformed
-              clusterSamplesData <- heatData
-              if(is.character(visualizeData)) {
-                if(visualizeData=="original") {
-                  transObj$x
-                }
-              }
+              #if hclust, then use the visualizeData data
+			  #unless visualizeData data is original, in which case use transformed (and possibly filtered)
+			  if(is.character(visualizeData) && visualizeData=="original") 
+				  clusterSamplesData<-transformData(data)
+			  else clusterSamplesData<-heatData
           }
       }
       else stop("clusterSamplesData must be either character, or vector of indices of samples")
     }
+	
+	#################
+	###Deal with grouping of genes
+	#################
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
-      groupFeatures<-lapply(groupFeatures,function(x){match(x,wh)})
-	  # blankData<-makeBlankData(transformData(object),geneByContrast,nBlankLines=nBlankLines)
-      blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
-
-
+      groupFeatures<-lapply(groupFeatures,function(x){match(x,whRows)})
+	  blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
+	  #replace heatData with one with blanks -- won't cluster them now...
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       clusterFeatures<-FALSE

@@ -78,6 +78,13 @@ setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
 	    colnames(object@filterStats) <- value
 		validObject(object)
 		return(object) 
-	  }
-	)
+	 }
+)
 	
+	
+setMethod("[", c("SingleCellFilter", "ANY", "ANY"), function(x, i, j, ..., drop=TRUE) {
+    out<-callNextMethod()
+	out@filterStats<-filterStats(out)[i, , drop=FALSE]
+    
+	return(out)
+})
