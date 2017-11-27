@@ -29,7 +29,9 @@ setMethod( "filterStats",c("SingleCellFilter","missing"),
 	})	
 
 #' @rdname SingleCellFilter-methods
-#' @details Note that the replacement functions never actually completely replace the slot \code{filterStats}; they update existing filters of the same name and add filters with new names to the existing filters. 
+#' @details Note that the replacement functions never actually completely
+#'   replace the slot \code{filterStats}; they update existing filters of the
+#'   same name and add filters with new names to the existing filters.
 #' @export
 setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,value) {
 	if(missing(type)){
@@ -82,9 +84,28 @@ setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
 )
 	
 	
+#' @rdname SingleCellFilter-methods
+#' @export
 setMethod("[", c("SingleCellFilter", "ANY", "ANY"), function(x, i, j, ..., drop=TRUE) {
     out<-callNextMethod()
 	out@filterStats<-filterStats(out)[i, , drop=FALSE]
     
 	return(out)
 })
+
+##Code from SingleCellExperiment:::
+scat <- function(fmt, vals=character(), exdent=2, ...) {
+    vals <- ifelse(nzchar(vals), vals, "''")
+    lbls <- paste(S4Vectors:::selectSome(vals), collapse=" ")
+    txt <- sprintf(fmt, length(vals), lbls)
+    cat(strwrap(txt, exdent=exdent, ...), sep="\n")
+}
+
+.scf_show <- function(object) {
+    callNextMethod()
+    scat("filterNames(%d): %s\n", filterNames(object))
+}
+
+#' @rdname SingleCellFilter-methods
+#' @export
+setMethod("show", "SingleCellFilter", .scf_show)

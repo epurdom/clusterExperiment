@@ -6,8 +6,8 @@
 #' 
 #' @aliases clusterMany
 #'   
-#' @param x the data matrix on which to run the clustering. Can be object of the following classes: matrix (with
-#'   genes in rows), 
+#' @param x the data matrix on which to run the clustering. Can be object of the
+#'   following classes: matrix (with genes in rows), 
 #'   \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
 #'   \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
@@ -86,29 +86,29 @@
 #'   there is no gain in computational complexity (i.e. each subsampled 
 #'   co-occurence matrix is recalculated for each set of parameters).
 #'   
-#' @details The argument \code{ks} is interpreted differently for different
+#' @details The argument \code{ks} is interpreted differently for different 
 #'   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
-#'   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
-#'   values are the \code{k} values for \strong{both} the mainClustering and
-#'   subsampling step (i.e. assigned to the \code{subsampleArgs} and
-#'   \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and
-#'   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
-#'   \code{subsampleArgs}. The passing of these arguments via
-#'   \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
-#'   Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an
+#'   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks} 
+#'   values are the \code{k} values for \strong{both} the mainClustering and 
+#'   subsampling step (i.e. assigned to the \code{subsampleArgs} and 
+#'   \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and 
+#'   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in 
+#'   \code{subsampleArgs}. The passing of these arguments via 
+#'   \code{subsampleArgs} will only have an effect if `subsample=TRUE`. 
+#'   Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an 
 #'   effect when the clusterFunction argument includes a clustering algorithm of
-#'   type "K". When/if "findBestK=TRUE", \code{ks} also defines the
-#'   \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange} is
-#'   specified by the user via the \code{mainClusterArgs}; note this means that the
-#'   default option of setting \code{kRange} that depends on the input \code{k}
-#'   (see \code{\link{mainClustering}}) is not available in \code{clusterMany}, only
-#'   in \code{\link{clusterSingle}}.
-#' @details If the input is a \code{ClusterExperiment} object, current
-#'   implementation is that existing \code{orderSamples},\code{coClustering} or
+#'   type "K". When/if "findBestK=TRUE", \code{ks} also defines the 
+#'   \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange}
+#'   is specified by the user via the \code{mainClusterArgs}; note this means
+#'   that the default option of setting \code{kRange} that depends on the input
+#'   \code{k} (see \code{\link{mainClustering}}) is not available in
+#'   \code{clusterMany}, only in \code{\link{clusterSingle}}.
+#' @details If the input is a \code{ClusterExperiment} object, current 
+#'   implementation is that existing \code{orderSamples},\code{coClustering} or 
 #'   the many dendrogram slots will be retained.
-#' @return If \code{run=TRUE} and the input is not a list of data matrices, 
-#'   will return a \code{ClusterExperiment} object, where the results are stored
-#'   as clusterings with clusterTypes \code{clusterMany}. Depending on 
+#' @return If \code{run=TRUE} and the input is not a list of data matrices, will
+#'   return a \code{ClusterExperiment} object, where the results are stored as
+#'   clusterings with clusterTypes \code{clusterMany}. Depending on 
 #'   \code{eraseOld} argument above, this will either delete existing such 
 #'   objects, or change the clusterTypes of existing objects. See argument 
 #'   \code{eraseOld} above. Arbitrarily the first clustering is set as the 
@@ -122,8 +122,8 @@
 #'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
 #'   clustering, where each column is a possible parameter set by the user and 
 #'   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
-#'   corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{ a 
-#'   list of (possibly modified) arguments to mainClusterArgs} 
+#'   corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+#'   a list of (possibly modified) arguments to mainClusterArgs} 
 #'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
 #'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
 #'   arguments to subsampleArgs} }
@@ -191,7 +191,6 @@ setMethod(
   definition = function(x,
       dimReduce="none",nPCADims=NA, transFun=NULL,isCount=FALSE, ...
   ){
-	
 	if(missing(dimReduce) || anyNA(nPCADims)) dimReduce<-"none"
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	dimReduce<-unique(dimReduce)
@@ -256,9 +255,13 @@ setMethod(
     }
 	if(length(x@reducedDims)==0 & is.null(filterStats(x)) & !all(dimReduce=="none")){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellFilter object without the args of dimReduce, etc. ...
-	    outval<-do.call(clusterMany,list(x=assay(x),inputArgs[!names(inputArgs)%in%"x"],...))
+		outval<-do.call(clusterMany,c(list(x=assay(x)),inputArgs[!names(inputArgs)%in%"x"]))
 		if(class(outval)=="ClusterExperiment") {
-			outval<-.addBackSEInfo(newObj=outval,oldObj=x)
+			#lost anything about the meta data, etc.
+			retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+			#but now have lost the reducedDim etc.!
+			filterStats(retval)<-filterStats(outval)
+			reducedDims(retval)<-reducedDims(outval)
 		}
 		return(outval)
 	}
@@ -611,7 +614,6 @@ setMethod(
 		  outval <- ClusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
 			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
-
 	    } else{
 	      if(verbose) {
 	        cat("Returning Parameter Combinations without running them (to run them choose run=TRUE)\n")

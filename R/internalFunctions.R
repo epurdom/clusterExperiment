@@ -1,3 +1,7 @@
+.mynote<-function(x){
+	message(paste("Note:",x))
+}
+
 .eraseMerge<-function(x){
   x@merge_index<-NA_real_
   x@merge_dendrocluster_index<-NA_real_

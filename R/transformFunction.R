@@ -214,14 +214,14 @@ setMethod(
 listBuiltInDimReduce<-function(){c("PCA")}
 
 #' @importFrom RSpectra svds
+.pca <- function(x, center=TRUE, scale=FALSE, k) {
+  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
+  pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
+  rownames(pc_raw) <- rownames(x)
+  return(pc_raw)
+}
 #' @importFrom stats prcomp
-.pcaDimRed<-function(x,md,isPct,rowvars){
-	.pca <- function(x, center=TRUE, scale=FALSE, k) {
-	  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
-	  pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
-	  rownames(pc_raw) <- rownames(x)
-	  return(pc_raw)
-	}
+.pcaDimRed<-function(x,md,isPct,rowvars){	
 	if(isPct) {
 		prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
 		prvar<-prcObj$sdev^2 #variance of each component

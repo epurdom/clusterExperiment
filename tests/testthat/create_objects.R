@@ -45,6 +45,11 @@ ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
 sce<-as(se,"SingleCellExperiment")
 scf<-as(sce,"SingleCellFilter")
 
+scfFull<-scf
+set.seed(352)
+filterStats(scfFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scf)),ncol=2)
+set.seed(124)
+reducedDim(scfFull,type="Red1")<-matrix(rnorm(2*ncol(scf)),ncol=2)
 
 #################################
 ###Larger sized objects based on simData/simCount:

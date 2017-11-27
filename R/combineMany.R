@@ -197,7 +197,7 @@ setMethod(
   definition = function(x, whichClusters, ...){
     wh<-.TypeIntoIndices(x,"clusterMany")
     if(length(wh)>0){
-      note("no clusters specified to combine, using results from clusterMany")
+      .mynote("no clusters specified to combine, using results from clusterMany")
       combineMany(x, whichClusters = "clusterMany",...)
     }
     else{

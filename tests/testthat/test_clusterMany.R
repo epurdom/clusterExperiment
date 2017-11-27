@@ -120,6 +120,28 @@ test_that("`clusterMany` works changing parameters", {
   expect_silent(cc <- clusterMany(mat, ks=c(3,4),nFilter=c(10,15),nPCADim=c(3,4),
   	dimReduce=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
     subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+	expect_equal(sort(reducedDimNames(cc)),sort(c("PCA")))
+	expect_equal(sort(filterNames(cc)),sort(c("var","abscv","mean","mad")))
+
+	expect_silent(cc2 <- clusterMany(se, ks=c(3,4),nFilter=c(10,15),nPCADim=c(3,4),
+	dimReduce=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+expect_equal(sort(reducedDimNames(cc2)),sort(c("PCA")))
+expect_equal(sort(filterNames(cc2)),sort(c("var","abscv","mean","mad")))
+
+	expect_silent(cc3 <- clusterMany(scf, ks=c(3,4),nFilter=c(10,15),nPCADim=c(3,4),
+	dimReduce=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+expect_equal(sort(reducedDimNames(cc3)),sort(c("PCA")))
+expect_equal(sort(filterNames(cc3)),sort(c("var","abscv","mean","mad")))
+
+	#test using existing values 
+	expect_silent(cc4 <- clusterMany(scfFull, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
+	dimReduce=c("none","Red1","Filter1","Filter2"),clusterFunction="pam",
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+expect_equal(sort(reducedDimNames(cc4)),sort(c("Red1")))
+expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
+
   #check returning paramMatrix
   expect_silent(param <- clusterMany(mat, 
 	  ks=c(3,4),nFilter=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),

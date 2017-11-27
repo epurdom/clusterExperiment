@@ -72,7 +72,7 @@ NULL
 #' #code used to create rsecFluidigm:
 #' \dontrun{
 #' library(scRNAseq)
-#'data("fluidigm")
+#' data("fluidigm")
 #' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
 #' wh_zero <- which(rowSums(assay(se))==0)
 #' pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
@@ -87,7 +87,7 @@ NULL
 #'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
 #'  combineMinSize=3))
 #' packageVersion("clusterExperiment")
-#' devtools::use_data(rsecFluidigm)
+#' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 
 ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
@@ -99,5 +99,8 @@ NULL
 # 170.428   5.408  61.705
 # > packageVersion("clusterExperiment")
 # [1] ‘1.3.3.9001’
+
+# devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
+
 
 NULL

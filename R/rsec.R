@@ -104,9 +104,9 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
       	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
 		
 	}
-	else note("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
+	else .mynote("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
   }
-  else note("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+  else .mynote("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
   return(ce) 
 }
 #' @export

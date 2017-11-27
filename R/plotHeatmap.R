@@ -1,36 +1,39 @@
 #' Heatmap for showing clustering results and more
-#'
-#' Make heatmap with color scale from one matrix and hiearchical clustering of
-#' samples/features from another. Also built in functionality for showing the
-#' clusterings with the heatmap. Builds on \code{\link[NMF]{aheatmap}} function
+#' 
+#' Make heatmap with color scale from one matrix and hiearchical clustering of 
+#' samples/features from another. Also built in functionality for showing the 
+#' clusterings with the heatmap. Builds on \code{\link[NMF]{aheatmap}} function 
 #' of \code{NMF} package.
-#'
+#' 
 #' @docType methods
-#' @param sampleData If input to \code{data} is either a \code{\link{ClusterExperiment}},or
-#'   \code{SummarizedExperiment} object or \code{SingleCellExperiment}, then \code{sampleData} must index the
-#'   sampleData stored as a \code{DataFrame} in \code{colData} slot of the
-#'   object. Whether that data is continuous or not will be determined by the
-#'   properties of \code{colData} (no user input is needed). If input to \code{data} is matrix,
-#'   \code{sampleData} is a matrix of additional data on the samples to show
-#'   above heatmap. In this case, unless indicated by \code{whSampleDataCont},
-#'   \code{sampleData} will be converted into factors, even if numeric. ``-1''
-#'   indicates the sample was not assigned to a cluster and gets color
-#'   `unassignedColor' and ``-2`` gets the color 'missingColor'.
-#' @param data data to use to determine the heatmap. Can be a matrix,
-#'   \code{\link{ClusterExperiment}}, \code{\link[SingleCellExperiment]{SingleCellExperiment}}or
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
-#'   interpretation of parameters depends on the type of the input to \code{data}.
+#' @param sampleData If input to \code{data} is either a
+#'   \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
+#'   \code{SingleCellExperiment}, then \code{sampleData} must index the 
+#'   sampleData stored as a \code{DataFrame} in \code{colData} slot of the 
+#'   object. Whether that data is continuous or not will be determined by the 
+#'   properties of \code{colData} (no user input is needed). If input to
+#'   \code{data} is matrix, \code{sampleData} is a matrix of additional data on
+#'   the samples to show above heatmap. In this case, unless indicated by
+#'   \code{whSampleDataCont}, \code{sampleData} will be converted into factors,
+#'   even if numeric. ``-1'' indicates the sample was not assigned to a cluster
+#'   and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.
+#' @param data data to use to determine the heatmap. Can be a matrix, 
+#'   \code{\link{ClusterExperiment}},
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}}or 
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The 
+#'   interpretation of parameters depends on the type of the input to
+#'   \code{data}.
 #' @param whSampleDataCont Which of the \code{sampleData} columns are continuous
-#'   and should not be converted to counts. \code{NULL} indicates no additional
+#'   and should not be converted to counts. \code{NULL} indicates no additional 
 #'   \code{sampleData}. Only used if \code{data} input is matrix.
 #' @param visualizeData either a character string, indicating what form of the 
 #'   data should be used for visualizing the data (i.e. for making the 
 #'   color-scale), or a data.frame/matrix with same number of samples as 
-#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
+#'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to 
 #'   clusterFeaturesData will be ignored.
-#' @param clusterSamplesData If \code{data} is a matrix,
-#'   \code{clusterSamplesData} is either a matrix that will be used by
-#'   \code{hclust} to define the hiearchical clustering of samples (e.g.
+#' @param clusterSamplesData If \code{data} is a matrix, 
+#'   \code{clusterSamplesData} is either a matrix that will be used by 
+#'   \code{hclust} to define the hiearchical clustering of samples (e.g. 
 #'   normalized data) or a pre-existing dendrogram that clusters the samples. If
 #'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
 #'   should be either character or integers or logical which indicates how (and 
@@ -51,128 +54,134 @@
 #' @param showSampleNames Logical as to whether show sample names.
 #' @param showFeatureNames Logical as to whether show feature names.
 #' @param colorScale palette of colors for the color scale of the heatmap.
-#' @param clusterLegend Assignment of colors to the clusters. If \code{NULL},
-#'   \code{sampleData} columns will be assigned colors internally. See details for more.
-#' @param alignSampleData Logical as to whether should align the colors of the
-#'   \code{sampleData} (only if \code{clusterLegend} not given and
+#' @param clusterLegend Assignment of colors to the clusters. If \code{NULL}, 
+#'   \code{sampleData} columns will be assigned colors internally. See details
+#'   for more.
+#' @param alignSampleData Logical as to whether should align the colors of the 
+#'   \code{sampleData} (only if \code{clusterLegend} not given and 
 #'   \code{sampleData} is not \code{NULL}).
-#' @param breaks Either a vector of breaks (should be equal to length 52), or a
+#' @param breaks Either a vector of breaks (should be equal to length 52), or a 
 #'   number between 0 and 1, indicating that the breaks should be equally spaced
-#'   (based on the range in the data) upto the `breaks' quantile, see
+#'   (based on the range in the data) upto the `breaks' quantile, see 
 #'   \code{\link{setBreaks}}
-#' @param unassignedColor color assigned to cluster values of '-1'
+#' @param unassignedColor color assigned to cluster values of '-1' 
 #'   ("unassigned").
 #' @param missingColor color assigned to cluster values of '-2' ("missing").
 #' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}. 
 #'   For the other signatures, passed to the method for signature \code{matrix}.
-#'   Not all arguments can be passed to \code{aheatmap} effectively, see details.
-#' @param nFeatures integer indicating how many features should be used (if
+#'   Not all arguments can be passed to \code{aheatmap} effectively, see
+#'   details.
+#' @param nFeatures integer indicating how many features should be used (if 
 #'   \code{clusterFeaturesData} is 'var' or 'PCA').
-#' @param isSymmetric logical. if TRUE indicates that the input matrix is
-#'   symmetric. Useful when plotting a co-clustering matrix or other sample by
+#' @param isSymmetric logical. if TRUE indicates that the input matrix is 
+#'   symmetric. Useful when plotting a co-clustering matrix or other sample by 
 #'   sample matrices (e.g., correlation).
 #' @param overRideClusterLimit logical. Whether to override the internal limit 
 #'   that only allows 10 clusterings/annotations. If overridden, may result in 
-#'   incomprehensible errors from \code{aheatmap}. Only override this if you have a
-#'   very large plotting device and want to see if \code{aheatmap} can render it.
-#' @param plot logical indicating whether to plot the heatmap. Mainly useful for 
-#'  package mantaince to avoid calls to aheatmap on unit tests that take a long time.
+#'   incomprehensible errors from \code{aheatmap}. Only override this if you
+#'   have a very large plotting device and want to see if \code{aheatmap} can
+#'   render it.
+#' @param plot logical indicating whether to plot the heatmap. Mainly useful for
+#'   package mantaince to avoid calls to aheatmap on unit tests that take a long
+#'   time.
 #' @inheritParams clusterSingle
-#'
-#' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
-#'   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for
-#'   different matrix inputs, separating out the color scale visualization and
-#'   the clustering of the samples/features. 2) to visualize the clusters and
-#'   meta data with the heatmap. The intended use case is to allow the user to
-#'   visualize the original count scale of the data (on the log-scale), but
+#'   
+#' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw 
+#'   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for 
+#'   different matrix inputs, separating out the color scale visualization and 
+#'   the clustering of the samples/features. 2) to visualize the clusters and 
+#'   meta data with the heatmap. The intended use case is to allow the user to 
+#'   visualize the original count scale of the data (on the log-scale), but 
 #'   create the hierarchical clustering on another, more appropriate dataset for
 #'   clustering, such as normalized data. Similarly, some of the palettes in the
-#'   package were developed assuming that the visualization might be on
-#'   unscaled/uncentered data, rather than the residual from the mean of the
-#'   gene, and thus palettes need to take on a greater range of relevant values
+#'   package were developed assuming that the visualization might be on 
+#'   unscaled/uncentered data, rather than the residual from the mean of the 
+#'   gene, and thus palettes need to take on a greater range of relevant values 
 #'   so as to show meaningful comparisons with genes on very different scales.
-#' @details If \code{data} is a \code{ClusterExperiment} object,
-#'   \code{visualizeData} indicates what kind of transformation should be done
+#' @details If \code{data} is a \code{ClusterExperiment} object, 
+#'   \code{visualizeData} indicates what kind of transformation should be done 
 #'   to \code{assay(data)} for calculating the color scale. The features will be
 #'   clustered based on these data as well. A different data.frame or matrix can
-#'   be given for the visualization. For example, if the
-#'   \code{ClusterExperiment} object contains normalized data, but the user
-#'   wishes that the color scale be based on the log-counts for easier
-#'   interpretation, \code{visualizeData} could be set to be the
+#'   be given for the visualization. For example, if the 
+#'   \code{ClusterExperiment} object contains normalized data, but the user 
+#'   wishes that the color scale be based on the log-counts for easier 
+#'   interpretation, \code{visualizeData} could be set to be the 
 #'   \code{log2(counts + 1)}.
 #' @details If \code{data} is a \code{ClusterExperiment} object, 
 #'   \code{clusterSamplesData} can be used to indicate the type of clustering 
 #'   for the samples. If equal to `dendrogramValue` the dendrogram stored in 
-#'   \code{data} will be used; if dendrogram is missing, a new one will be
-#'   created based on the \code{primaryCluster} of data using
+#'   \code{data} will be used; if dendrogram is missing, a new one will be 
+#'   created based on the \code{primaryCluster} of data using 
 #'   \code{\link{makeDendrogram}}, assuming no errors are created (if errors are
-#'   created, then \code{clusterSamplesData} will be set to "primaryCluster").
+#'   created, then \code{clusterSamplesData} will be set to "primaryCluster"). 
 #'   If \code{clusterSamplesData} is equal to "hclust", then standard 
-#'   hierachical clustering of the transformed data will be used. If
-#'   \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of
+#'   hierachical clustering of the transformed data will be used. If 
+#'   \code{clusterSamplesData} is equal to 'orderSamplesValue' no clustering of 
 #'   the samples will be done, and instead the samples will be ordered as in the
-#'   slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is
-#'   equal to 'primaryCluster', again no clustering will be done, and instead
-#'   the samples will be ordered based on grouping the samples to match the
-#'   primaryCluster of \code{data}; however, if the primaryCluster of
-#'   \code{data} is only one cluster or consists soley of -1/-2 values,
-#'   \code{clusterSamplesData} will be set to "hclust". If
+#'   slot \code{orderSamples} of \code{data}. If \code{clusterSamplesData} is 
+#'   equal to 'primaryCluster', again no clustering will be done, and instead 
+#'   the samples will be ordered based on grouping the samples to match the 
+#'   primaryCluster of \code{data}; however, if the primaryCluster of 
+#'   \code{data} is only one cluster or consists soley of -1/-2 values, 
+#'   \code{clusterSamplesData} will be set to "hclust". If 
 #'   \code{clusterSamplesData}  is not a character value, 
-#'   \code{clusterSamplesData} can be a integer valued vector giving the order
+#'   \code{clusterSamplesData} can be a integer valued vector giving the order 
 #'   of the samples.
-#' @details If \code{data} is a matrix, then \code{sampleData} is a data.frame
-#'   of annotation data to be plotted above the heatmap and
-#'   \code{whSampleDataCont} gives the index of the column(s) of this dataset
-#'   that should be consider continuous. Otherwise the annotation data for
-#'   \code{sampleData} will be forced into a factor (which will be nonsensical
-#'   for continous data). If \code{data} is a \code{ClusterExperiment} object,
-#'   \code{sampleData} should refer to a index or column name of the
-#'   \code{colData} slot of \code{data}. In this case \code{sampleData} will be
-#'   added to any choices of clusterings chosen by the \code{whichClusters}
-#'   argument (if any). If both clusterings and sample data are chosen, the
+#' @details If \code{data} is a matrix, then \code{sampleData} is a data.frame 
+#'   of annotation data to be plotted above the heatmap and 
+#'   \code{whSampleDataCont} gives the index of the column(s) of this dataset 
+#'   that should be consider continuous. Otherwise the annotation data for 
+#'   \code{sampleData} will be forced into a factor (which will be nonsensical 
+#'   for continous data). If \code{data} is a \code{ClusterExperiment} object, 
+#'   \code{sampleData} should refer to a index or column name of the 
+#'   \code{colData} slot of \code{data}. In this case \code{sampleData} will be 
+#'   added to any choices of clusterings chosen by the \code{whichClusters} 
+#'   argument (if any). If both clusterings and sample data are chosen, the 
 #'   clusterings will be shown closest to data (i.e. on bottom).
-#' @details If \code{data} is a \code{ClusterExperiment} object,
-#'   \code{clusterFeaturesData} is not a dataset, but instead indicates which
-#'   features should be shown in the heatmap. In this case \code{clusterFeatures} can be one of the following:
-#' \itemize{
-#' \item{"all"}{ All rows/genes will be shown}
-#' \item{character giving dimensionality reduction}{Should match one of values saved in \code{reducedDims} slot or a builtin function in \code{listBuiltInDimReduce()}. \code{nFeatures} then gives the number of dimensions to show. The heatmap will then be of the dimension reduction vectors}
-#' \item{character giving filtering}{ Should match one of values saved in \code{filterStats} slot or a builtin function in \code{listBuiltInFilterStats()}. \code{nFeatures} gives the number of genes to keep after filtering.}
-#' \item{character giving gene/row names}{ }
-#' \item{vector of integers giving row indices}{ }
-#' \item{a list of indices or rownames}{This is used to indicate that the features should be grouped
-#'   according to the elements of the list, with blank (white) space between
-#'   them (see \code{\link{makeBlankData}} for more details). In this case, no
-#'   clustering is done of the features.}
-#' }
-#' @details If \code{breaks} is a numeric value between 0 and 1, then
-#'   \code{breaks} is assumed to indicate the upper quantile (on the log scale)
-#'   at which the heatmap color scale should stop. For example, if
-#'   \code{breaks=0.9}, then the breaks will evenly spaced up until the 0.9
-#'   upper quantile of \code{data}, and then all values after the
-#'   0.9 quantile will be absorbed by the upper-most color bin. This can help to
-#'   reduce the visual impact of a few highly expressed genes (features). 
+#' @details If \code{data} is a \code{ClusterExperiment} object, 
+#'   \code{clusterFeaturesData} is not a dataset, but instead indicates which 
+#'   features should be shown in the heatmap. In this case
+#'   \code{clusterFeatures} can be one of the following: \itemize{ \item{"all"}{
+#'   All rows/genes will be shown} \item{character giving dimensionality
+#'   reduction}{Should match one of values saved in \code{reducedDims} slot or a
+#'   builtin function in \code{listBuiltInDimReduce()}. \code{nFeatures} then
+#'   gives the number of dimensions to show. The heatmap will then be of the
+#'   dimension reduction vectors} \item{character giving filtering}{ Should
+#'   match one of values saved in \code{filterStats} slot or a builtin function
+#'   in \code{listBuiltInFilterStats()}. \code{nFeatures} gives the number of
+#'   genes to keep after filtering.} \item{character giving gene/row names}{ } 
+#'   \item{vector of integers giving row indices}{ } \item{a list of indices or
+#'   rownames}{This is used to indicate that the features should be grouped 
+#'   according to the elements of the list, with blank (white) space between 
+#'   them (see \code{\link{makeBlankData}} for more details). In this case, no 
+#'   clustering is done of the features.} }
+#' @details If \code{breaks} is a numeric value between 0 and 1, then 
+#'   \code{breaks} is assumed to indicate the upper quantile (on the log scale) 
+#'   at which the heatmap color scale should stop. For example, if 
+#'   \code{breaks=0.9}, then the breaks will evenly spaced up until the 0.9 
+#'   upper quantile of \code{data}, and then all values after the 0.9 quantile
+#'   will be absorbed by the upper-most color bin. This can help to reduce the
+#'   visual impact of a few highly expressed genes (features).
 #' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the 
 #'   hood. This allows you to plot multiple heatmaps via 
 #'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if 
 #'   you change the size of your plot window in an interactive session of R 
 #'   (this might be a problem for RStudio if you want to pop it out into a large
-#'   window...). Also, plotting to a pdf adds a blank page; see help pages of
+#'   window...). Also, plotting to a pdf adds a blank page; see help pages of 
 #'   \code{\link[NMF]{aheatmap}} for how to turn this off.
-#' @details \code{clusterLegend} takes the place of argument
-#'   \code{annColors} from \code{aheatmap} for giving colors to the annotation 
-#' on the heatmap. \code{clusterLegend} should be list of length equal to
-#'   \code{ncol(sampleData)} with names equal to the colnames of
-#'   \code{sampleData}. Each element of the list should be a either the format
-#'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
-#'   corresponding to the levels of the column of \code{sampleData}), or should
-#'   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment} object.
-#' Color assignments to the rows/genes 
-#'   should also be passed via \code{clusterLegend} (assuming \code{annRow} is 
-#'   an argument passed to \code{...}). If \code{clusterFeaturesData} is a 
-#'   \emph{named} list describing groupings of genes then the colors 
-#'   for those groups can be given in \code{clusterLegend} under the name 
-#'   "Gene Group".
+#' @details \code{clusterLegend} takes the place of argument \code{annColors}
+#'   from \code{aheatmap} for giving colors to the annotation on the heatmap.
+#'   \code{clusterLegend} should be list of length equal to 
+#'   \code{ncol(sampleData)} with names equal to the colnames of 
+#'   \code{sampleData}. Each element of the list should be a either the format 
+#'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names 
+#'   corresponding to the levels of the column of \code{sampleData}), or should 
+#'   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
+#'   object. Color assignments to the rows/genes should also be passed via
+#'   \code{clusterLegend} (assuming \code{annRow} is an argument passed to
+#'   \code{...}). If \code{clusterFeaturesData} is a \emph{named} list
+#'   describing groupings of genes then the colors for those groups can be given
+#'   in \code{clusterLegend} under the name "Gene Group".
 #' @details If you have a factor with many levels, it is important to note that
 #'   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
 #'   \code{sampleData}, and in fact runs out of colors and the remaining levels

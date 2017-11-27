@@ -14,21 +14,21 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #############################################################
 
 #' @title Class SingleCellFilter
-#'
-#' @description \code{SingleCellFilter} is a class that extends
-#' \code{SingleCellExperiment} and is used to store filterStats on the data
-#'
+#'   
+#' @description \code{SingleCellFilter} is a class that extends 
+#'   \code{SingleCellExperiment} and is used to store filterStats on the data
+#'   
 #' @docType class
-#' @aliases SingleCellFilter SingleCellFilter-class 
-#'
-#' @description In addition to the slots of the \code{SingleCellExperiment}
-#' class, the \code{SingleCellFilter} object has the additional slots described
-#' in the Slots section.
-#'
-#' @slot filterStats a numeric matrix where each column gives a summary statistics 
-#'   calculated per gene that can be used for filtering of genes.
+#' @aliases SingleCellFilter SingleCellFilter-class
+#'   
+#' @description In addition to the slots of the \code{SingleCellExperiment} 
+#'   class, the \code{SingleCellFilter} object has the additional slots
+#'   described in the Slots section.
+#'   
+#' @slot filterStats a numeric matrix where each column gives a summary
+#'   statistics calculated per gene that can be used for filtering of genes.
 #' @details \code{filterStats}
-#'
+#'   
 #' @name SingleCellFilter-class
 #' @rdname SingleCellFilter-class
 #' @importClassesFrom SingleCellExperiment SingleCellExperiment
@@ -64,8 +64,12 @@ setGeneric(
 	}
 )
 #' @rdname SingleCellFilter-class
-#' @param object input either matrix, SingleCellExperiment, or SummarizedExperiment
-#' @param filterStats either vector of a single filtering statistic or matrix of filtering statistics, each column corresponding to a filtering statistic. If \code{filterNames=NULL}, column names of this matrix are the names given to the filter statistics.
+#' @param object input either matrix, SingleCellExperiment, or
+#'   SummarizedExperiment
+#' @param filterStats either vector of a single filtering statistic or matrix of
+#'   filtering statistics, each column corresponding to a filtering statistic.
+#'   If \code{filterNames=NULL}, column names of this matrix are the names given
+#'   to the filter statistics.
 #' @param filterNames a character vector of names for the filtering statistics.
 #' @export
 setMethod(
@@ -248,23 +252,23 @@ setValidity("ClusterExperiment", function(object) {
 	return(TRUE)
 })
 
-#' @description The constructor \code{ClusterExperiment} creates an object of
-#' the class \code{ClusterExperiment}. However, the typical way of creating
-#' these objects is the result of a call to \code{\link{clusterMany}} or
-#' \code{\link{clusterSingle}}.
-#'
-#' @description Note that when subsetting the data, the co-clustering and
-#' dendrogram information are lost.
-#'
-#'@param object a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
-#' containing the data that was clustered.
-#'@param clusters can be either a numeric or character vector, a factor, or a
-#'numeric matrix, containing the cluster labels.
-#'@param transformation function. A function to transform the data before
-#'performing steps that assume normal-like data (i.e. constant variance), such
-#'as the log.
-#'@param ... The arguments \code{transformation}, \code{clusterTypes} and
-#'  \code{clusterInfo} to be passed to the constructor for signature
+#'@description The constructor \code{ClusterExperiment} creates an object of the
+#'  class \code{ClusterExperiment}. However, the typical way of creating these
+#'  objects is the result of a call to \code{\link{clusterMany}} or 
+#'  \code{\link{clusterSingle}}.
+#'  
+#'@description Note that when subsetting the data, the co-clustering and 
+#'  dendrogram information are lost.
+#'  
+#'@param object a matrix or \code{SummarizedExperiment} or
+#'  \code{SingleCellExperiment} containing the data that was clustered.
+#'@param clusters can be either a numeric or character vector, a factor, or a 
+#'  numeric matrix, containing the cluster labels.
+#'@param transformation function. A function to transform the data before 
+#'  performing steps that assume normal-like data (i.e. constant variance), such
+#'  as the log.
+#'@param ... The arguments \code{transformation}, \code{clusterTypes} and 
+#'  \code{clusterInfo} to be passed to the constructor for signature 
 #'  \code{SingleCellExperiment,matrix}.
 #'
 #'@return A \code{ClusterExperiment} object.
@@ -326,28 +330,32 @@ setMethod(
     ClusterExperiment(object,clusters,...)
   })
 #'@rdname ClusterExperiment-class
-#'@param clusterTypes a string describing the nature of the clustering. The
-#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-#'  reserved for the clustering coming from the package workflow and should not
+#'@param clusterTypes a string describing the nature of the clustering. The 
+#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are 
+#'  reserved for the clustering coming from the package workflow and should not 
 #'  be used when creating a new object with the constructor.
 #'@param clusterInfo a list with information on the clustering (see Slots).
 #'@param primaryIndex integer. Sets the `primaryIndex` slot (see Slots).
-#'@param orderSamples a vector of integers. Sets the `orderSamples` slot (see
+#'@param orderSamples a vector of integers. Sets the `orderSamples` slot (see 
 #'  Slots).
 #'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
-#'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
+#'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see 
 #'  Slots).
-#' @param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
-#' @param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see Slots).
-#' @param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
-#' @param checkTransformAndAssay logical. Whether to check the content of the
-#'   assay and given transformation function for whether they are valid.
-#' @param merge_index integer. Sets the \code{merge_index} slot (see Slots)
-#' @param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
-#' @param merge_dendrocluster_index integer. Sets the \code{merge_dendrocluster_index} slot (see Slots)
-#' @param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)
-#' @param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see Slots)
-#' @param merge_method character, Sets the \code{merge_method} slot (see Slots)
+#'@param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
+#'@param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see
+#'  Slots).
+#'@param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
+#'@param checkTransformAndAssay logical. Whether to check the content of the 
+#'  assay and given transformation function for whether they are valid.
+#'@param merge_index integer. Sets the \code{merge_index} slot (see Slots)
+#'@param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
+#'@param merge_dendrocluster_index integer. Sets the
+#'  \code{merge_dendrocluster_index} slot (see Slots)
+#'@param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see
+#'  Slots)
+#'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
+#'  Slots)
+#'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -463,78 +471,78 @@ setMethod(
 #' @aliases ClusterFunction ClusterFunction-class ClusterFunction
 #' @slot clusterFUN a function defining the clustering function. See details for
 #'   required arguments.
-#' @slot inputType a character defining what type of input \code{clusterFUN}
+#' @slot inputType a character defining what type of input \code{clusterFUN} 
 #'   takes. Must be one of either "diss","X", or "either"
-#' @slot algorithmType a character defining what type of clustering algorithm
-#'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
+#' @slot algorithmType a character defining what type of clustering algorithm 
+#'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN} 
 #'   must take the corresponding required arguments (see details below).
-#' @slot classifyFUN a function that takes as input new data and the output of
-#'   \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster
+#' @slot classifyFUN a function that takes as input new data and the output of 
+#'   \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster 
 #'   assignments of the new data.  Note that the function should assume that the
-#'   input 'x' is not the same samples that were input to the ClusterFunction
-#'   (but can assume that it is the same number of features/columns). Used in
-#'   subsampling clustering. If given value \code{NULL} then subsampling can
+#'   input 'x' is not the same samples that were input to the ClusterFunction 
+#'   (but can assume that it is the same number of features/columns). Used in 
+#'   subsampling clustering. If given value \code{NULL} then subsampling can 
 #'   only be \code{"InSample"}, see \code{\link{subsampleClustering}}.
-#' @slot inputClassifyType the input type for the classification function (if
+#' @slot inputClassifyType the input type for the classification function (if 
 #'   not NULL); like \code{inputType}, must be one of "diss","X", or "either"
-#' @slot outputType the type of output given by \code{clusterFUN}. Must either
-#'   be "vector" or "list". If "vector" then the output should be a vector of
-#'   length equal to the number of observations   with integer-valued elements
+#' @slot outputType the type of output given by \code{clusterFUN}. Must either 
+#'   be "vector" or "list". If "vector" then the output should be a vector of 
+#'   length equal to the number of observations   with integer-valued elements 
 #'   identifying them to different clusters; the vector assignments should be in
-#'   the same order as the original input of the data. Samples that are not
-#'   assigned to any cluster should be given a '-1' value.  If "list", then it
-#'   must be a list equal to the length of the number of clusters, and the
-#'   elements of the list contain the indices of the samples in that cluster.
-#'   Any indices not in any of the list elements are assumed to be -1. The main
-#'   advantage of "list" is that it can preserve the order of the clusters if
-#'   the \code{clusterFUN} desires to do so. In which case the \code{orderBy}
-#'   argument of \code{\link{mainClustering}} can preserve this ordering (default is
-#'   to order by size).
-#' @slot requiredArgs Any additional required arguments for \code{clusterFUN}
+#'   the same order as the original input of the data. Samples that are not 
+#'   assigned to any cluster should be given a '-1' value.  If "list", then it 
+#'   must be a list equal to the length of the number of clusters, and the 
+#'   elements of the list contain the indices of the samples in that cluster. 
+#'   Any indices not in any of the list elements are assumed to be -1. The main 
+#'   advantage of "list" is that it can preserve the order of the clusters if 
+#'   the \code{clusterFUN} desires to do so. In which case the \code{orderBy} 
+#'   argument of \code{\link{mainClustering}} can preserve this ordering
+#'   (default is to order by size).
+#' @slot requiredArgs Any additional required arguments for \code{clusterFUN} 
 #'   (beyond those required of all \code{clusterFUN}, described in details).
-#' @slot checkFunctions logical. If TRUE, the validity check of the
-#'   \code{ClusterFunction} object will check the \code{clusterFUN} with simple
+#' @slot checkFunctions logical. If TRUE, the validity check of the 
+#'   \code{ClusterFunction} object will check the \code{clusterFUN} with simple 
 #'   toy data using the function \code{internalFunctionCheck}.
-#' @details Required arguments for \code{clusterFUN}: \itemize{ \item{"x or
+#' @details Required arguments for \code{clusterFUN}: \itemize{ \item{"x or 
 #'   diss"}{either \code{x} and/or \code{diss} depending on \code{inputType}. If
-#'   \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
-#'   assay(CEObj) would give)} \item{"checkArgs"}{logical argument. If
-#'   \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
-#'   passed in \code{...} are valid and return an error if not; otherwise, no
-#'   error will be given, but the check should be done and only valid arguments
+#'   \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like 
+#'   assay(CEObj) would give)} \item{"checkArgs"}{logical argument. If 
+#'   \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments 
+#'   passed in \code{...} are valid and return an error if not; otherwise, no 
+#'   error will be given, but the check should be done and only valid arguments 
 #'   in \code{...} passed along. This is necessary for the function to work with
-#'   \code{clusterMany} which passes all arguments to all functions without
-#'   checking. } \item{"cluster.only"}{logical argument. If
-#'   \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the
-#'   vector of cluster assignments (or list if \code{outputType="list"}). If
-#'   \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named
-#'   list where one of the elements entitled \code{clustering} contains the
-#'   vector described above (no list!); anything else needed by the
-#'   \code{classifyFUN} to classify new data should be contained in the output
-#'   list as well. \code{cluster.only} is set internally depending on whether
-#'   \code{classifyFUN} will be used by subsampling or only for clustering the
-#'   final product.} \item{"..."}{Any additional arguments specific to the
+#'   \code{clusterMany} which passes all arguments to all functions without 
+#'   checking. } \item{"cluster.only"}{logical argument. If 
+#'   \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the 
+#'   vector of cluster assignments (or list if \code{outputType="list"}). If 
+#'   \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named 
+#'   list where one of the elements entitled \code{clustering} contains the 
+#'   vector described above (no list!); anything else needed by the 
+#'   \code{classifyFUN} to classify new data should be contained in the output 
+#'   list as well. \code{cluster.only} is set internally depending on whether 
+#'   \code{classifyFUN} will be used by subsampling or only for clustering the 
+#'   final product.} \item{"..."}{Any additional arguments specific to the 
 #'   algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT
-#'   passed via arguments to \code{clusterFUN}} \item{"Other required
-#'   arguments"}{\code{clusterFUN} must also accept arguments required for its
+#'   passed via arguments to \code{clusterFUN}} \item{"Other required 
+#'   arguments"}{\code{clusterFUN} must also accept arguments required for its 
 #'   \code{algorithmType} (see Details below).} }
 #'   
 #'   
 #' @details \code{algorithmType}: Type "01" is for clustering functions that 
-#'   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
-#'   from subclustering) with 1 indicating more dissimilarity between samples.
-#'   "01" algorithm types must also have \code{inputType} equal to
-#'   \code{"diss"}. It is also generally expected that "01" algorithms use the
-#'   0-1 nature of the input to set criteria as to where to find clusters. "01"
-#'   functions must take as an argument \code{alpha} between 0 and 1 to
-#'   determine the clusters, where larger values of \code{alpha} require less
-#'   similarity between samples in the same cluster. "K" is for clustering
-#'   functions that require an argument \code{k} (the number of clusters), but
-#'   arbitrary \code{inputType}.  On the other hand, "K" algorithms are assumed
-#'   to need a predetermined 'k' and are also assumed to cluster all samples to
-#'   a cluster. If not, the post-processing steps in \code{\link{mainClustering}} such
-#'   as \code{findBestK} and \code{removeSil} may not operate correctly since
-#'   they rely on silhouette distances.
+#'   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g. 
+#'   from subclustering) with 1 indicating more dissimilarity between samples. 
+#'   "01" algorithm types must also have \code{inputType} equal to 
+#'   \code{"diss"}. It is also generally expected that "01" algorithms use the 
+#'   0-1 nature of the input to set criteria as to where to find clusters. "01" 
+#'   functions must take as an argument \code{alpha} between 0 and 1 to 
+#'   determine the clusters, where larger values of \code{alpha} require less 
+#'   similarity between samples in the same cluster. "K" is for clustering 
+#'   functions that require an argument \code{k} (the number of clusters), but 
+#'   arbitrary \code{inputType}.  On the other hand, "K" algorithms are assumed 
+#'   to need a predetermined 'k' and are also assumed to cluster all samples to 
+#'   a cluster. If not, the post-processing steps in
+#'   \code{\link{mainClustering}} such as \code{findBestK} and \code{removeSil}
+#'   may not operate correctly since they rely on silhouette distances.
 #' @name ClusterFunction-class
 #' @aliases ClusterFunction
 #' @rdname ClusterFunction-class

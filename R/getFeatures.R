@@ -272,8 +272,7 @@ setMethod(f = "getBestFeatures",
             }
             
             if(isCount) {
-              note(
-                "If `isCount=TRUE` the data will be transformed with voom() rather than
+              .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
               dat <- assay(x)

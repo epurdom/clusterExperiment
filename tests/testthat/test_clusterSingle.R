@@ -72,70 +72,102 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 })
 
 test_that("`clusterSingle` works with dimReduce", {
-	#existing
+	#existing dim reduce values
   	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
 		dimReduce="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
+	expect_equal(sort(reducedDimNames(clustNothing4)),sort(c("PCA","TSNE")))
 	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
         subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
 
-  	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
+	#test nDims=NA
+  	expect_silent(clustNothing1 <- clusterSingle(sceSimDataDimRed,
 		dimReduce="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")),
+	expect_equal(sort(reducedDimNames(clustNothing4)),sort(c("PCA","TSNE")))
+	expect_silent(clustNothing2 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")),
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
         subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
+	expect_equal(clusterMatrix(clustNothing1), clusterMatrix(clustNothing2))
 
-	#new
-  	expect_silent(clustNothing4 <- clusterSingle(sceSimData,
+	#blank scf object
+  	expect_silent(clustNothing6 <- clusterSingle(sceSimData,
 		dimReduce="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_silent(clustNothing5 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
+	expect_equal(sort(reducedDimNames(clustNothing6)),sort(c("PCA")))
+	expect_silent(clustNothing7 <- clusterSingle(t(reducedDim(sceSimDataDimRed,"PCA")[,1:3]),
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
         subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing4), clusterMatrix(clustNothing5))
-  	expect_silent(clustNothing6 <- clusterSingle(seSimData,
+	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing7))
+	
+  	expect_silent(clustNothing8 <- clusterSingle(seSimData,
 		dimReduce="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
-	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing5))
+	expect_equal(sort(reducedDimNames(clustNothing8)),sort(c("PCA")))
+	expect_equal(clusterMatrix(clustNothing8), clusterMatrix(clustNothing7))
 
-  	expect_warning(clustNothing4 <- clusterSingle(sceSimData,
+  	expect_warning(clusterSingle(sceSimData,
 		dimReduce="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
 
 
+
 })
 
+
+
 test_that("`clusterSingle` works with filtering", {
-    ####Existing ####
-	#check var reduction
-    expect_silent(clusterSingle(mat, 
-                            subsample=FALSE, sequential=FALSE,
-                            dimReduce="var", nDims=3,
-                            mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
-    expect_warning(clusterSingle(mat, 
-                              subsample=FALSE, sequential=FALSE,
-                              dimReduce="var", nDims=NROW(mat)+1, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
+    ####Check built in functions ####
+	for(fs in listBuiltInFilterStats()){
+	    expect_silent(clusterSingle(mat, 
+	        subsample=FALSE, sequential=FALSE, dimReduce=fs,
+	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+	 	   isCount=FALSE))
+		
+	}
+    expect_warning(clusterSingle(mat,  subsample=FALSE, sequential=FALSE,
+           dimReduce="var", nDims=NROW(mat)+1,
+		   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), 
+		 isCount=FALSE),
                  "the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
     expect_warning(clusterSingle(mat, 
-                              subsample=FALSE, sequential=FALSE,
-                              dimReduce="none",nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
+      subsample=FALSE, sequential=FALSE,
+      dimReduce="none",nDims=3, 
+	  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
                    "specifying nDims has no effect if dimReduce==`none`")
 
-   expect_silent(clusterSingle(mat, 
-                                subsample=FALSE, sequential=FALSE, dimReduce="abscv",
-                                nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
-    expect_silent(clusterSingle(mat, 
-                                subsample=FALSE, sequential=FALSE, dimReduce="mad",
-                                nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE))
+    #check returns filterStats
+    expect_silent(cc <- clusterSingle(mat, 
+    subsample=FALSE, sequential=FALSE,
+    dimReduce="var", nDims=3,
+    mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
+  	expect_equal(sort(filterNames(cc)),"var")
+
+    expect_silent(cc2 <- clusterSingle(se,
+    subsample=FALSE, sequential=FALSE,
+    dimReduce="var", nDims=3,
+    mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
+  	expect_equal(sort(filterNames(cc2)),"var")
+
+  	expect_silent(cc3 <- clusterSingle(scf, 
+    subsample=FALSE, sequential=FALSE,
+    dimReduce="var", nDims=3,
+    mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
+  	expect_equal(sort(filterNames(cc3)),"var")
+	
+  	#test using existing values 
+  	expect_silent(cc4 <- clusterSingle(scfFull,
+    subsample=FALSE, sequential=FALSE,
+    dimReduce="var", nDims=3,
+    mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
+  expect_equal(sort(filterNames(cc4)),sort(c("var","Filter1","Filter2")))
 
 
 })

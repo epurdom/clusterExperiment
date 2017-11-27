@@ -398,9 +398,9 @@ setMethod(f = "mergeClusters",
   }
   else{
     cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
-    note("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x))
+    .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
   }
-  if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
+  if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
 	if(!x@dendro_outbranch){
@@ -436,7 +436,7 @@ This makes sense only for counts.")
   ##Did anything change??
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
-    if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
+    if(!didMerge) .mynote("merging with these parameters did not result in any clusters being merged.")
     newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 

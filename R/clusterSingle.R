@@ -195,6 +195,15 @@ setMethod(
   }
 )
 
+#' @rdname clusterSingle
+#' @export
+setMethod(
+  f = "clusterSingle",
+  signature = signature(x = "SingleCellExperiment", diss="missing"),
+  definition = function(x, ...) {
+    return(clusterSingle(as(x,"SingleCellFilter"),  ...) )
+  }
+)
 
 
 #' @rdname clusterSingle
@@ -223,23 +232,22 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "SingleCellExperiment", diss="missing"),
-  definition = function(x, ...) {
-    return(clusterSingle(as(x,"SingleCellFilter"),  ...) )
-  }
-)
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
   signature = signature(x = "SingleCellFilter",diss="missing"),
   definition = function(x, dimReduce="none", nDims=NA,...) {
 	isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
 	isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
 	if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
-	#go to matrix version using assay(x)
-	if(dimReduce=="none" || (!isDimReduced & !isFilter)) 
+	if(dimReduce=="none" || (!isDimReduced && !isFilter)){
+		#go to matrix version using assay(x) and will calculate dimReduce etc.
 		outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
+		#add back in the SingleCellExperiment stuff lost
+		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+		#but now need the filter/dimReduce
+		if(dimReduce!="none"){
+			if(dimReduce %in% filterNames(outval)) filterStats(retval)<-filterStats(outval)
+			if(dimReduce %in% reducedDimNames(outval)) reducedDims(retval)<-reducedDims(outval)
+		}
+	}
 	else{
 		if(isDimReduced){
 			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
@@ -250,9 +258,10 @@ setMethod(
 			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
 			outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			
 		}
-	}
-	#add back in the SingleCellExperiment stuff lost
-	retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+		#add back in the SingleCellExperiment stuff lost
+		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+	
+	}	
 	return(retval)
   }
 )
@@ -322,6 +331,7 @@ setMethod(
 		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
 		  x<-transformData(filterData(transObj,type=dimReduce,percentile=nDims))
 	  }
+	  else stop("invalid value for dimReduce -- not in builtin filter or dimReduce function")
     }
     else{
       if(any(dimReduce!="none")) stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")

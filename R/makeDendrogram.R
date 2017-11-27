@@ -1,7 +1,6 @@
 #' @title Make hierarchy of set of clusters
 #'   
 #' @aliases makeDendrogram,ClusterExperiment-method
-
 #' @description Makes a dendrogram of a set of clusters based on hclust on the 
 #'   medoids of the cluster.
 #' @param x data to define the medoids from. Matrix and 
@@ -9,49 +8,62 @@
 #' @param cluster A numeric vector with cluster assignments. If x is a 
 #'   ClusterExperiment object, cluster is automatically the primaryCluster(x). 
 #'   ``-1'' indicates the sample was not assigned to a cluster.
-#' @param unassignedSamples how to handle unassigned samples("-1") ; only
+#' @param unassignedSamples how to handle unassigned samples("-1") ; only 
 #'   relevant for sample clustering. See details.
 #' @param dimReduce character A character identifying what type of 
-#'   dimensionality reduction to perform before clustering. Can be either a value stored in either of reducedDims or filterStats slot or a built-in diminsionality reduction/filtering. The option "coCluster" will use the co-Clustering matrix stored 
-#' @param nDims The number of dimensions to keep from \code{dimReduce}. If missing see details for default values.
-#'   in the 'coClustering' slot of the \code{ClusterExperiment} object.
+#'   dimensionality reduction to perform before clustering. Can be either a
+#'   value stored in either of reducedDims or filterStats slot or a built-in
+#'   diminsionality reduction/filtering. The option "coCluster" will use the
+#'   co-Clustering matrix stored
+#' @param nDims The number of dimensions to keep from \code{dimReduce}. If
+#'   missing see details for default values. in the 'coClustering' slot of the
+#'   \code{ClusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed 
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for 
-#'   signature \code{matrix}. For plotDendrogram, passed to
+#'   signature \code{matrix}. For plotDendrogram, passed to 
 #'   \code{\link{plot.dendrogram}}.
-#' @param ignoreUnassignedVar logical. Whether filtering statistics should ignore
-#' the unassigned samples within the clustering. Only relevant if 'dimReduce' 
-#' matches one of built-in filtering statistics in \code{\link{builtInFilterStats()}}. 
-#' In which case the clustering identified in \code{whichCluster} is passed to
-#' \code{makeFilterStats}. See \code{\link{makeFilterStats}}  for more details.
+#' @param ignoreUnassignedVar logical. Whether filtering statistics should
+#'   ignore the unassigned samples within the clustering. Only relevant if
+#'   'dimReduce' matches one of built-in filtering statistics in
+#'   \code{\link{builtInFilterStats()}}. In which case the clustering identified
+#'   in \code{whichCluster} is passed to \code{makeFilterStats}. See
+#'   \code{\link{makeFilterStats}}  for more details.
 #' @inheritParams clusterSingle
-#' @details The function returns two dendrograms (as a list if x is a matrix or
-#' in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
-#' is created by applying \code{\link{hclust}} to the medoids of each cluster.
-#' In the sample dendrogram the clusters are again clustered, but now the
-#' samples are also part of the resulting dendrogram. This is done by giving
-#' each sample the value of the medoid of its cluster.
-#'
-#' @details The argument \code{unassignedSamples} governs what is done with
-#' unassigned samples (defined by a -1 cluster value). If unassigned=="cluster",
-#' then the dendrogram is created by hclust of the expanded medoid data plus the
-#' original unclustered observations. If \code{unassignedSamples} is "outgroup",
-#' then all unassigned samples are put as an outgroup. If the \code{x} object is
-#' a matrix, then \code{unassignedSamples} can also be "remove", to indicate
-#' that samples with "-1" should be discarded. This is not a permitted option,
-#' however, when \code{x} is a \code{ClusterExperiment} object, because it would
-#' return a dendrogram with less samples than \code{NCOL(x)}, which is not
-#' permitted for the \code{@dendro_samples} slot.
-#' @details If any merge information is stored in the input object, it will be
+#' @details The function returns two dendrograms (as a list if x is a matrix or 
+#'   in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
+#'   is created by applying \code{\link{hclust}} to the medoids of each cluster.
+#'   In the sample dendrogram the clusters are again clustered, but now the 
+#'   samples are also part of the resulting dendrogram. This is done by giving 
+#'   each sample the value of the medoid of its cluster.
+#'   
+#' @details The argument \code{unassignedSamples} governs what is done with 
+#'   unassigned samples (defined by a -1 cluster value). If
+#'   unassigned=="cluster", then the dendrogram is created by hclust of the
+#'   expanded medoid data plus the original unclustered observations. If
+#'   \code{unassignedSamples} is "outgroup", then all unassigned samples are put
+#'   as an outgroup. If the \code{x} object is a matrix, then
+#'   \code{unassignedSamples} can also be "remove", to indicate that samples
+#'   with "-1" should be discarded. This is not a permitted option, however,
+#'   when \code{x} is a \code{ClusterExperiment} object, because it would return
+#'   a dendrogram with less samples than \code{NCOL(x)}, which is not permitted
+#'   for the \code{@dendro_samples} slot.
+#' @details If any merge information is stored in the input object, it will be 
 #'   erased by a call to mergeDendrogram.
-#' @details If \code{nDims} is missing, it will be given a default value depending on the value of \code{dimReduce}. If \code{dimReduce} is set to a filtering statistic, \code{nDims} is arbitrarily set to 500. If \code{dimReduce} matches a dimensionality reduction value saved in \code{x}, then the number of columns of this matrix. If not, and \code{dimReduce} matches a value of \code{listBuiltInDimReduce()}, then arbirarily set to 50. 
-#' @return If x is a matrix, a list with two dendrograms, one in which the
-#' leaves are clusters and one in which the leaves are samples. If x is a
-#' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
-#'
+#' @details If \code{nDims} is missing, it will be given a default value
+#'   depending on the value of \code{dimReduce}. If \code{dimReduce} is set to a
+#'   filtering statistic, \code{nDims} is arbitrarily set to 500. If
+#'   \code{dimReduce} matches a dimensionality reduction value saved in
+#'   \code{x}, then the number of columns of this matrix. If not, and
+#'   \code{dimReduce} matches a value of \code{listBuiltInDimReduce()}, then
+#'   arbirarily set to 50.
+#' @return If x is a matrix, a list with two dendrograms, one in which the 
+#'   leaves are clusters and one in which the leaves are samples. If x is a 
+#'   ClusterExperiment object, the dendrograms are saved in the appropriate
+#'   slots.
+#'   
 #' @export
 #' @seealso makeFilterStats, makeDimReduce
 #' @examples
