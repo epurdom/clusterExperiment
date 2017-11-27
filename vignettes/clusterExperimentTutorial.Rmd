@@ -488,7 +488,7 @@ For this reason, we often find the need for an additional clustering step that m
 As an example, here we use the 500 most variable genes to make the cluster hierarchy (note we can make different choices here than we did in the clustering).
 
 ```{r makeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="var",nDims=500)
 plotDendrogram(ce)
 ```
 
@@ -566,7 +566,7 @@ ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5
 	clusterFunction="hierarchical01", sequential=TRUE,subsample=TRUE,
          dimReduce="PCA",nFilter=c(50,10))
 ce<-combineMany(ce, proportion=0.7, minSize=5)
-ce<-makeDendrogram(ce,dimReduce="mad",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="mad",nDims=500)
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05,plot=FALSE)
 ```
 
@@ -1084,7 +1084,7 @@ We will also compare using different algorithms for clustering. Currently, `clus
 To illustrate this point, we show an example of the $D$ matrix from subsampling. To do this we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly; it gives the output $D$ from the sampling in the "coClustering" slot of `ce` when we set `replaceCoCluster=TRUE` (and therefore we save it as a separate object, so that it doesn't write over the existing "coClustering" slot in `ce`). Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
+ceSub<-clusterSingle(ce,dimReduce="mad",nDims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
@@ -1199,10 +1199,10 @@ We provide a method for doing this that consists of two steps. Making a hierarch
 
 `makeDendrogam` performs hierarchical clustering of the cluster medoids (after transformation of the data) and provides a dendrogram that will order the samples according to this clustering of the clusters. The hierarchical ordering of the dendrograms is saved internally in the `ClusterExperiment` object.
 
-Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `dimReduce` and the number of dimensions via `ndims`.
+Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `dimReduce` and the number of dimensions via `nDims`.
 
 ```{r makeDendrogram_reducedFeatures}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
+ce<-makeDendrogram(ce,dimReduce="var",nDims=500)
 plotDendrogram(ce)
 ```
  Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
@@ -1219,7 +1219,7 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
 ```{r remakeMakeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
+ce<-makeDendrogram(ce,dimReduce="var",nDims=500,
                    whichCluster="combineMany,final")
 ```
 
@@ -1413,7 +1413,7 @@ tabl <- "
 *combineMany*  | propUnassigned = *(default)* | combineProportion | proportion 
 -  | combineMinSize    | minSize | |
 *makeDendrogram* | ignoreUnassignedVar=TRUE | dendroReduce      | dimReduce | 
--  | unassignedSamples= *(default)* | dendroNDims       | ndims |  
+-  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
 *mergeClusters*   | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 
 -  |  | isCount | | argument used for both mergeMethod and clusterMany 

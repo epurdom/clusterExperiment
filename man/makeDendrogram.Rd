@@ -9,10 +9,11 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = c("mad", "abscv", "var", "PCA",
-  "coCluster", "none"), ndims = if (dimReduce \%in\% c("mad", "abscv", "var"))
-  500 else if (dimReduce == "none") NA else 50, ignoreUnassignedVar = TRUE,
-  unassignedSamples = c("outgroup", "cluster"), ...)
+  whichCluster = "primaryCluster", dimReduce = c("mad", "abscv", "var",
+  "PCA", "coCluster", "none"), nDims = if (dimReduce \%in\% c("mad", "abscv",
+  "var")) 500 else if (dimReduce == "none") NA else 50,
+  ignoreUnassignedVar = TRUE, unassignedSamples = c("outgroup", "cluster"),
+  ...)
 
 \S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
   "cluster", "remove"), ...)
@@ -33,6 +34,9 @@ dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 details. The option "coCluster" will use the co-Clustering matrix stored 
 in the 'coClustering' slot of the \code{ClusterExperiment} object.}
+
+\item{nDims}{integer An integer identifying how many dimensions to reduce to 
+in the reduction specified by \code{dimReduce}}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only
 relevant for sample clustering. See details.}

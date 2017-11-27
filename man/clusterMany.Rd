@@ -4,44 +4,43 @@
 \name{clusterMany,matrix-method}
 \alias{clusterMany,matrix-method}
 \alias{clusterMany}
-\alias{clusterMany,SingleCellExperiment-method}
+\alias{clusterMany,SingleCellFilter-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
+\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce, nFilter = NA, nPCADims = NA,
+\S4method{clusterMany}{matrix}(x, dimReduce = "none", nPCADims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
-  alphas = 0.1, findBestK = FALSE, sequential = FALSE,
-  removeSil = FALSE, subsample = FALSE, silCutoff = 0,
-  distFunction = NA, betas = 0.9, minSizes = 1, dimReduce,
-  nFilter = NA, nPCADims = NA, transFun = NULL, isCount = FALSE,
-  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE, ...)
+\S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
+  dimReduce = "none", nFilter = NA, nPCADims = NA, alphas = 0.1,
+  findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
+  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
+  minSizes = 1, transFun = NULL, isCount = FALSE, verbose = FALSE,
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
   nFilter = NA, nPCADims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
+\S4method{clusterMany}{SingleCellExperiment}(x, ...)
+
 \S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
-\item{x}{the data matrix on which to run the clustering. Can be: matrix (with
-genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
-or a \code{ClusterExperiment} object.}
+\item{x}{the data matrix on which to run the clustering. Can be object of the following classes: matrix (with
+genes in rows), 
+\code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+\code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
 "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 details.}
-
-\item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
-included, then the full dataset will also be included.}
 
 \item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 
 in \code{dimReduce}). If NA is included, then the full dataset will also be
@@ -67,6 +66,10 @@ different choices of other parameters).}
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
+
+\item{nFilter}{vector of the number of the most variable features to keep 
+(when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
+included, then the full dataset will also be included.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
 type '01'. Determines tightness required in creating clusters from the

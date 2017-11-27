@@ -632,6 +632,8 @@ setMethod(
   definition = function(x, dimReduce="none", nFilter=NA, nPCADims=NA,
                         eraseOld=FALSE, ...)
   {
+  	if(any(c("transFun","isCount") %in% names(list(...)))) 
+  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
     outval<-clusterMany(assay(x), dimReduce=dimReduce, nFilter=nFilter,
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {

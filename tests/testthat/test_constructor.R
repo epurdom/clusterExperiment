@@ -51,8 +51,6 @@ test_that("whichClusters works with clusterMatrix",{
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="workflow")),12)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters=1:3)),3)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="dendro")),0)
-	 dend<-makeDendrogram(ceSim)
-	 expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
 })
  
 test_that("adding clusters work as promised",{
@@ -145,16 +143,7 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusters(c4)-2)
   expect_equal(length(clusterInfo(c7)), nClusters(c4)-2)
   
-  #When have dendrogram
-  cl1 <- clusterSingle(smSimData, subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
-  leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
-  leg[,"name"]<-letters[1:6]
-  clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
-  clustWithDendro <- makeDendrogram(cl1)
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none")
-  removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
-  removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
-  
+
   
 })
 
@@ -175,9 +164,6 @@ test_that("subsetting works as promised",{
   expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
   expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
 
-  #test works if have dendrogram attached:
-  x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
-  x[1:3,1:2]
   
   
   ##########

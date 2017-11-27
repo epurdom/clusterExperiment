@@ -27,6 +27,25 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     cc1<-addClusters(cc,fakeCluster)
     primaryClusterIndex(cc1)<-3
     expect_error(makeDendrogram(cc1),"Only 1 cluster given")
+	
+	#check whichClusters for clusterMatrix
+ 	expect_silent(dend<-makeDendrogram(ceSim))
+	expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
+	
+    #Check remove clusters when have dendrogram
+    cl1 <- clusterSingle(smSimData, subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
+    leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+    leg[,"name"]<-letters[1:6]
+    clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
+    clustWithDendro <- makeDendrogram(cl1)
+    clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none")
+    removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
+    removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
+  
+    #test subsetting works if have dendrogram attached:
+    x<-makeDendrogram(ccSE,dimReduce="PCA",nDims=3)
+    x[1:3,1:2]
+  
 })
 
 test_that("`makeDendrogram` preserves the colData and rowData of SE", {
@@ -42,16 +61,16 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 })
 
 test_that("`makeDendrogram` with dimReduce options", {
-    x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
-	expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
-    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
+    x<-makeDendrogram(ccSE,dimReduce="PCA",nDims=3)
+	expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),nDims=3))
+    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),nDims=3,ignoreUnassigned=TRUE)
     expect_equal(x,x2)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("abscv"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("abscv"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("var"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("var"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("abscv"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("abscv"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,dimReduce=c("mad"),nDims=3,ignoreUnassigned=TRUE)
     
 })
 test_that("`makeDendrogram` works with whichCluster", {

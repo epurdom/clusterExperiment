@@ -31,10 +31,10 @@
   rerunClusterMany = FALSE, ...)
 }
 \arguments{
-\item{x}{the data matrix on which to run the clustering. Can be: matrix (with
-genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{\link{SummarizedExperiment}} object, a \code{\link{SingleCellExperiment}} 
-or a \code{ClusterExperiment} object.}
+\item{x}{the data matrix on which to run the clustering. Can be object of the following classes: matrix (with
+genes in rows), 
+\code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+\code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
 \item{isCount}{logical. Whether the data are in counts, in which case the 
 default \code{transFun} argument is set as log2(x+1). This is simply a 
@@ -85,7 +85,7 @@ are left unassigned.}
 
 \item{dendroReduce}{passed to \code{dimReduce} in \code{\link{makeDendrogram}}}
 
-\item{dendroNDims}{passed to \code{ndims} in \code{\link{makeDendrogram}}}
+\item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 
 \item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
 

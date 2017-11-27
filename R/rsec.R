@@ -8,7 +8,7 @@
 #' @param combineProportion passed to \code{proportion} in \code{\link{combineMany}}
 #' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
 #' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
-#' @param dendroNDims passed to \code{ndims} in \code{\link{makeDendrogram}}
+#' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
@@ -91,7 +91,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 		args1<-c(args1,"dimReduce"=passedArgs$dendroReduce)
 		if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
 	}
-  	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"ndims"=passedArgs$dendroNDims)
+  	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
 		  dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
 
 		#mergeClusters

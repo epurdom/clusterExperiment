@@ -1,5 +1,6 @@
 setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
+setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
@@ -70,40 +71,13 @@ setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,v
 setMethod( "filterNames","SingleCellFilter",function(object){colnames(object@filterStats)})		
 
 
-
 #' @rdname SingleCellFilter-methods
-#' @param object a SingleCellFilter object
-#' @param type character indicating which filter statistic to use. Must match a single filter statistic in \code{object}
-#' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
-#' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
-#' @param absolute whether to take the absolute value of the filter statistic
-#' @param keepLarge logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic. 
 #' @export
-#' @importFrom stats quantile
-setMethod( "filterData","SingleCellFilter",
-	function(object,type,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
-	stat<-if(absolute) abs(filterStats(object,type)) else filterStats(object,type)
-	if(missing(cutoff) & missing(percentile)) stop("must provide one of cutoff or percentile")
-	if(!missing(cutoff) & !missing(percentile)) stop("can only provide one of cutoff or percentile")
-	if(!missing(cutoff)){
-		whKeep<- if(keepLarge) which(stat>cutoff) else which(cutoff > stat)
-	}
-	if(!missing(percentile)){
-		if(0<percentile & percentile <1){
-			quantile<- quantile(stat,probs=if(keepLarge) percentile else 1-percentile)
-			whKeep<-if(keepLarge) which(stat>quantile) else which(stat<quantile)
-		}
-		else{
-			if(percentile>=1){
-				if(percentile>NROW(object)){
-					warning("the number of most features requested after filtering is larger than the number of features. Will not do any filtering")
-					whKeep<-1:NROW(object)
-				}
-				else whKeep<- order(stat,decreasing=ifelse(keepLarge,FALSE,TRUE))[1:percentile]
-			}
-			else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
-		}
-	}
-	object[whKeep,]
-
-})		
+setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
+	    if(length(value)!=NCOL(filterStats(object))) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
+	    colnames(object@filterStats) <- value
+		validObject(object)
+		return(object) 
+	  }
+	)
+	

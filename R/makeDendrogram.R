@@ -23,8 +23,12 @@
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for 
 #'   signature \code{matrix}. For plotDendrogram, passed to
 #'   \code{\link{plot.dendrogram}}.
+#' @param ignoreUnassignedVar logical. Whether filtering statistics should ignore
+#' the unassigned samples within the clustering. Only relevant if 'dimReduce' 
+#' matches one of built-in filtering statistics in \code{\link{builtInFilterStats()}}. 
+#' In which case the clustering identified in \code{whichCluster} is passed to
+#' \code{makeFilterStats}. See \code{\link{makeFilterStats}}  for more details.
 #' @inheritParams clusterSingle
-#' @inheritParams transform
 #' @details The function returns two dendrograms (as a list if x is a matrix or
 #' in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
 #' is created by applying \code{\link{hclust}} to the medoids of each cluster.
@@ -42,7 +46,6 @@
 #' however, when \code{x} is a \code{ClusterExperiment} object, because it would
 #' return a dendrogram with less samples than \code{NCOL(x)}, which is not
 #' permitted for the \code{@dendro_samples} slot.
-#'
 #' @details If any merge information is stored in the input object, it will be
 #'   erased by a call to mergeDendrogram.
 #' @return If x is a matrix, a list with two dendrograms, one in which the
@@ -50,7 +53,7 @@
 #' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
 #'
 #' @export
-#'
+#' @seealso makeFilterStats, makeDimReduce
 #' @examples
 #' data(simData)
 #'
@@ -69,7 +72,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","abscv","var","PCA","coCluster","none"),
-                        ndims=if(dimReduce%in%c("mad","abscv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
+                        nDims=if(dimReduce%in%c("mad","abscv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
@@ -86,25 +89,57 @@ setMethod(
     ########
     dimReduce <- match.arg(dimReduce)
 	if(dimReduce!="coCluster"){
-	    if(length(ndims) > 1) {
+	    if(length(nDims) > 1) {
 	      stop("makeDendrogram only handles one choice of dimensions.")
 	    }
-	    if(!is.na(ndims) & dimReduce=="none") {
-	      warning("specifying ndims has no effect if dimReduce==`none`")
+	    if(!is.na(nDims) & dimReduce=="none") {
+	      warning("specifying nDims has no effect if dimReduce==`none`")
 	    }
-	    origX <- assay(x)
-	    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-	    nFilter <- ifelse(dimReduce=="var", ndims, NA)
-	    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #ifelse doesn't work with NULL
-	    transObj <- .transData(origX, nPCADims=nPCADims, nFilter=nFilter,
-	                           dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
-	    dat <- transObj$x
-		if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
-	      stop("Error in the internal transformation of x")
-	    }
+		#need to change name of dimReduce to make it match the 
+		#clustering information if that option chosen.
+		dimReduceName<-dimReduce
+		if(ignoreUnassignedVar){
+			dimReduceName<-paste(dimReduce,clusterLabels(x)[whCl],sep="_")
+		}
+		###Figure out what data to use...
+		if(dimReduce=="none") dat<-transformData(x,transFun=transformation(x))
+		else{
+			if(!dimReduce %in% reducedDimNames(x) & dimReduce %in% listBuiltInDimReduce()){
+				x<-makeDimReduce(x,dimReduce=dimReduce,maxDims=nDims,transFun=transformation(x))
+			}
+			else if(!dimReduceName %in% filterNames(x) & dimReduce %in% listBuiltInFilterStats()){
+				x<-makeFilterStats(x,filterStat=dimReduce,
+				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
+			}
+
+			if(dimReduce %in% reducedDimNames(x)){
+				dat<-t(reducedDim(x,type=dimReduce)[,1:nDims])
+			}
+			else if(dimReduceName %in% listBuiltInFilterStats()){
+				dat<-filterData(x,type=dimReduce,percentile=nDims)
+			}
+			else{
+				stop("'x' does not contain the given 'dimReduce' value nor does 'dimReduce' value match any built-in filters or dimensionality reduction options.")
+			}
+		}
+		isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
+		isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
+		if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
+		#go to matrix version using assay(x)
+		if(dimReduce=="none" || (!isDimReduced & !isFilter)) 
+			outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
+		else{
+			if(isDimReduced){
+				if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
+				outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)			
+			}
+			if(isFilter){
+				#Need to think how can pass options to filterData...
+				if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
+				outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			
+			}
+		}
 	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
-	    	
-	
 	}
 	else{
 		if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'dimReduce'")

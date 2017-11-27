@@ -7,7 +7,7 @@
 \title{Get parameter values of clusterMany clusters}
 \usage{
 \S4method{getClusterManyParams}{ClusterExperiment}(x,
-  whichClusters = "clusterMany")
+  whichClusters = "clusterMany", simplify = TRUE)
 }
 \arguments{
 \item{x}{a ClusterExperiment object that contains clusterings from running
@@ -16,6 +16,9 @@
 \item{whichClusters}{The indices (or clusterLabels) of those clusters whose
 labels will be parsed to determine the parameters; should be subset of the
 clusterMany results.}
+
+\item{simplify}{logical. Whether to simplify the output so as to remove 
+features that do not change across the clusterings.}
 }
 \value{
 Returns a data.frame where the column names are the parameter names,
@@ -36,7 +39,8 @@ The method simply parses the \code{clusterLabels} of the indicated
   those clusterings with a 'clusterMany' clusterType. If the user has
   manipulated the clusterLabels manually or manually identified the
   clusterType of a clustering as 'clusterMany', this function may create
-  unexpected results or errors.
+  unexpected results or errors. Similarly, it cannot be used on 'clusterMany'
+  results from an old iteration (e.g. that have type 'clusterMany.1')
 
 Specifically, it splits the label of each clustering by the
   character ",", as indicating the different parameters; this should return a

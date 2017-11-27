@@ -380,8 +380,7 @@ setMethod(
 #' @export
 #' @rdname ClusterExperiment-methods
 #' @aliases clusterLabels<-
-setReplaceMethod(
-  f = "clusterLabels",
+setReplaceMethod( f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
@@ -406,8 +405,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterLegend<-
-setReplaceMethod(
-    f = "clusterLegend",
+setReplaceMethod( f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
         object@clusterLegend<-unname(value)
@@ -430,8 +428,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases orderSamples<-
-setReplaceMethod(
-    f = "orderSamples",
+setReplaceMethod( f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
 		object@orderSamples<-value
@@ -444,8 +441,7 @@ setReplaceMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterTypes<-
-setReplaceMethod(
-    f = "clusterTypes",
+setReplaceMethod( f = "clusterTypes",
     signature = signature(object="ClusterExperiment", value="character"),
     definition = function(object,value) {
         object@clusterTypes<-value
@@ -459,8 +455,7 @@ setReplaceMethod(
 
 #' @aliases tableClusters
 #' @rdname ClusterExperiment-methods
-setMethod(
-  f = "tableClusters",
+setMethod( f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="character"),
   definition = function(x, whichClusters,...)
   {
@@ -472,8 +467,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
-setMethod(
-    f = "tableClusters",
+setMethod( f = "tableClusters",
     signature = signature(x = "ClusterExperiment",whichClusters="missing"),
     definition = function(x, whichClusters,...)
     {
@@ -483,8 +477,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
-setMethod(
-  f = "tableClusters",
+setMethod( f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
   definition = function(x, whichClusters,...)
   { 

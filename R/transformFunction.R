@@ -35,7 +35,9 @@ setMethod(
 setMethod(
   f = "transformData",
   signature = "ClusterExperiment",
-  definition = function(object) {
+  definition = function(object,...) {
+  	if(any(c("transFun","isCount") %in% names(list(...)))) 
+  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
 	  return(transformData(assay(object),transFun=transformation(object)))
   }
 )
@@ -200,6 +202,8 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(object,...)
 {
+	if(any(c("transFun","isCount") %in% names(list(...)))) 
+		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
 	out<-makeDimReduce(as(object,"SingleCellExperiment"),transFun=transformation(object),...)
 	return(.addBackSEInfo(newObj=object,oldObj=out))
 }
@@ -342,23 +346,37 @@ setMethod(
 )
 #' @rdname makeFilterStats
 #' @export
-#' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done.
+#' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.
+#' @details \code{whichClusterIgnoreUnassigned} indicates that the filtering statistics should be calculated based on filtering statistics that do not samples that are unassigned by the designated clustering. The name given to the filter in this case is of the form \code{<filterStats>_<clusterLabel>}, i.e. the clustering label of the clustering is appended to the filtering statistics standard name.
+#'
+
 setMethod(
   f = "makeFilterStats",
   signature = "ClusterExperiment",
-  definition = function(object,whichClusterIgnoreUnassigned=NULL,...)
+  definition = function(object,whichClusterIgnoreUnassigned=NULL,filterStats=listBuiltInFilterStats(),...)
 {
+	if(any(c("transFun","isCount") %in% names(list(...)))) 
+		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
+	filterStats<-unique(filterStats)
 	if(!is.null(whichClusterIgnoreUnassigned)){
 		whCluster<-.TypeIntoIndices(object,whichClusterIgnoreUnassigned)
 		if(length(whCluster)>1) warning("'whichClusterIgnoreUnassigned' corresponds to multiple clusterings. Ignoring input")
 		else if(length(whCluster)==0) warning("'whichClusterIgnoreUnassigned' does not correspond to a clustering. Ignoring input")
 		else{
-			whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
-			if(length(whAssigned)>0){
-				out<-makeFilterStats(object[,whAssigned],...)
+			#give new names to filters to indicate based on clustering.
+			newNames<-paste(filterStats,clusterLabels(object)[whCluster],sep="_")
+			whDo<-which(!newNames %in% filterNames(object))
+			if(length(whDo)>0){
+				whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
+				if(length(whAssigned)>0){
+					out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],...)
+					whNew<-match(filterStats[whDo],filterNames(out))
+					filterNames(out)[whNew]<-newNames[whDo]	
+				}
+				else 
+					stop("All samples are unassigned for clustering", clusterLabels(object)[whCluster])
 				
 			}
-			else stop("No unassigned samples for clustering",clusterLabels(object)[whCluster])
 		}
 	}
 	else{
@@ -371,3 +389,41 @@ setMethod(
 )
 
 
+#' @name filterData
+#' @title Filter SingleCellFilter object
+#' @description Function for filtering SingleCellFilter object based on the internally saved filtering statistics.
+#' @param object a SingleCellFilter object
+#' @param type character indicating which filter statistic to use. Must match a single filter statistic in \code{object}
+#' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
+#' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
+#' @param absolute whether to take the absolute value of the filter statistic
+#' @param keepLarge logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic. 
+#' @export
+#' @importFrom stats quantile
+setMethod( "filterData","SingleCellFilter",
+	function(object,type,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
+	stat<-if(absolute) abs(filterStats(object,type)) else filterStats(object,type)
+	if(missing(cutoff) & missing(percentile)) stop("must provide one of cutoff or percentile")
+	if(!missing(cutoff) & !missing(percentile)) stop("can only provide one of cutoff or percentile")
+	if(!missing(cutoff)){
+		whKeep<- if(keepLarge) which(stat>cutoff) else which(cutoff > stat)
+	}
+	if(!missing(percentile)){
+		if(0<percentile & percentile <1){
+			quantile<- quantile(stat,probs=if(keepLarge) percentile else 1-percentile)
+			whKeep<-if(keepLarge) which(stat>quantile) else which(stat<quantile)
+		}
+		else{
+			if(percentile>=1){
+				if(percentile>NROW(object)){
+					warning("the number of most features requested after filtering is larger than the number of features. Will not do any filtering")
+					whKeep<-1:NROW(object)
+				}
+				else whKeep<- order(stat,decreasing=ifelse(keepLarge,FALSE,TRUE))[1:percentile]
+			}
+			else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
+		}
+	}
+	object[whKeep,]
+
+})	

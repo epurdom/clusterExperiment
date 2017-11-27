@@ -41,7 +41,7 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,dimReduce="none",
  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
 
- expect_silent(dendOut<-makeDendrogram(combOut,dimReduce="none",ndims=NA))
+ expect_silent(dendOut<-makeDendrogram(combOut,dimReduce="none",nDims=NA))
  expect_equal(dendOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
 
