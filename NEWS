@@ -2,6 +2,7 @@ Changes in version 1.5.0-9003.1 ( Release date: )
 ==============
 
 Changes:
+* `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
 * removed `transformation` as a required argument to `clusterExperiment`
 * capitalized constructor functions `ClusterFunction()` and `ClusterExperiment()` to be consistent with other packages naming conventions.
 * Changed argument `ndims` to `nDims` in `clusterSingle` to keep consistency.

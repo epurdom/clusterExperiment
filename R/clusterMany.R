@@ -194,21 +194,19 @@ setMethod(
 	
 	if(missing(dimReduce) || anyNA(nPCADims)) dimReduce<-"none"
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
-	
+	dimReduce<-unique(dimReduce)
+	doNone<-any(dimReduce=="none")
 	#check can given dimReduce values match built in options.
-	isDimReduced<- sum(dimReduce %in% listBuiltInDimReduce())>0
-	isFilter<-sum(dimReduce %in% listBuiltInFilterStats())>0
-	if(any(dimReduce!="none") & !isDimReduced & !isFilter){
-	  dimReduce<-dimReduce[dimReduce!="none"]
-	  if(length(dimReduce)==0)
-		  stop("dimReduce values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Option 'none' also not given, so nothing to do.")
-	  else warning("dimReduce values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Ignoring options.")
-	}		
-	if(any(dimReduce!="none")){
-		#limit them to only ones that can be calcualted
-		dimReduce<-dimReduce[dimReduce %in% c(listBuiltInFilterStats(),listBuiltInDimReduce())]
-		if(isDimReduced){
-			dimNam<-dimReduce[dimReduce %in% listBuiltInDimReduce()]
+	dimNam<-dimReduce[dimReduce %in% listBuiltInDimReduce()]
+	filtNam<-dimReduce[dimReduce %in% listBuiltInFilterStats()]
+	nValid<-length(c(dimNam,filtNam))
+	if(doNone) nValid<-nValid+1
+	if(!doNone & length(dimNam)==0 & length(filtNam)==0)
+		  stop("dimReduce values given are not in built-in dimensionality reduction or built-in filters (and there is no such stored objects if a SingleCellFilter object). Option 'none' also not given, so nothing to do.")
+	else if(length(dimReduce)!=nValid)
+		warning("Some dimReduce values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Ignoring options.")
+	if(length(dimNam)>0 | length(filtNam)>0){
+		if(length(dimNam)>0){
 			nPCADims<-na.omit(nPCADims)
 			if(length(nPCADims)==0) 
 				stop("Must give nPCADims values if choose a dimReduce option not equal to 'none'")
@@ -216,12 +214,10 @@ setMethod(
 			x<-makeDimReduce(x,dimReduce=dimNam,
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			
 		}
-		if(isFilter){
-			filtNam<-dimReduce[dimReduce %in% listBuiltInFilterStats()]
+		if(length(filtNam)>0){
 			#Need to think how can pass options to filterData...
-  		  	x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)  	
+		  	x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)  	
 		}
-		
 	}
 	else{
 		x<-SingleCellFilter(x)
@@ -306,7 +302,6 @@ setMethod(
 		###############
 	    #Check inputs of variance filter after add it to the slot.
 		###############  
-
 
 		###############
 	    #Start creating the combinations
