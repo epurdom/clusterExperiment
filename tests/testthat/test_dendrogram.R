@@ -5,13 +5,13 @@ source("create_objects.R")
 
 test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test matrix version
-    makeDendrogram(mat, primaryCluster(cc))
-    makeDendrogram(mat, primaryCluster(cc), unassigned="cluster")
-    makeDendrogram(mat, primaryCluster(cc), unassigned="remove")
+    expect_silent(makeDendrogram(mat, primaryCluster(cc)))
+    expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="cluster"))
+    expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="remove"))
 
     #test CE version
-    makeDendrogram(cc)
-    makeDendrogram(cc, unassigned="cluster")
+    expect_silent(makeDendrogram(cc))
+    expect_silent(makeDendrogram(cc, unassigned="cluster"))
     expect_error(makeDendrogram(cc, unassigned="remove"))
 
     #test matrix version

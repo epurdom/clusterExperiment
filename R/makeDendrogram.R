@@ -71,8 +71,9 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","abscv","var","PCA","coCluster","none"),
-                        nDims=if(dimReduce%in%c("mad","abscv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
+  definition = function(x, whichCluster="primaryCluster",dimReduce="mad",
+                    nDims,ignoreUnassignedVar=TRUE,
+					unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
@@ -87,58 +88,44 @@ setMethod(
     ########
     ##Transform the data
     ########
-    dimReduce <- match.arg(dimReduce)
+    if(length(dimReduce)>1) stop('makeDendrogram only takes one choice of "dimReduce" as argument')
 	if(dimReduce!="coCluster"){
+	    #need to change name of dimReduce to make it match the 
+		#clustering information if that option chosen.
+		dimReduceName<-dimReduce
+		if(ignoreUnassignedVar){
+			dimReduceName<-paste(dimReduce,clusterLabels(x)[whCl],sep="_")
+		}
+		if(missing(nDims)){
+		  	if(dimReduce%in%listBuiltInFilterStats() || dimReduceName %in% filterNames(x))
+				nDims<-min(500,NROW(x))
+			else if(dimReduce %in% reducedDimNames(x))
+				nDims<-ncol(reducedDim(x,type=dimReduce))
+			else if(dimReduce%in%listBuiltInDimReduce()) nDims<-50
+			else nDims<-NA
+		}
 	    if(length(nDims) > 1) {
 	      stop("makeDendrogram only handles one choice of dimensions.")
 	    }
 	    if(!is.na(nDims) & dimReduce=="none") {
 	      warning("specifying nDims has no effect if dimReduce==`none`")
 	    }
-		#need to change name of dimReduce to make it match the 
-		#clustering information if that option chosen.
-		dimReduceName<-dimReduce
-		if(ignoreUnassignedVar){
-			dimReduceName<-paste(dimReduce,clusterLabels(x)[whCl],sep="_")
-		}
-		###Figure out what data to use...
-		if(dimReduce=="none") dat<-transformData(x,transFun=transformation(x))
-		else{
-			if(!dimReduce %in% reducedDimNames(x) & dimReduce %in% listBuiltInDimReduce()){
-				x<-makeDimReduce(x,dimReduce=dimReduce,maxDims=nDims,transFun=transformation(x))
+		###Calculate filters/dimReduce if needed...
+		if(!dimReduce %in% reducedDimNames(x) & dimReduce %in% listBuiltInDimReduce()){
+				x<-makeDimReduce(x,dimReduce=dimReduce,maxDims=nDims)
 			}
-			else if(!dimReduceName %in% filterNames(x) & dimReduce %in% listBuiltInFilterStats()){
+		else if(!dimReduceName %in% filterNames(x) & dimReduce %in% listBuiltInFilterStats()){
 				x<-makeFilterStats(x,filterStat=dimReduce,
 				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
 			}
-
-			if(dimReduce %in% reducedDimNames(x)){
-				dat<-t(reducedDim(x,type=dimReduce)[,1:nDims])
-			}
-			else if(dimReduceName %in% listBuiltInFilterStats()){
-				dat<-filterData(x,type=dimReduce,percentile=nDims)
-			}
-			else{
-				stop("'x' does not contain the given 'dimReduce' value nor does 'dimReduce' value match any built-in filters or dimensionality reduction options.")
-			}
-		}
-		isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
-		isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
-		if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
-		#go to matrix version using assay(x)
-		if(dimReduce=="none" || (!isDimReduced & !isFilter)) 
-			outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
-		else{
-			if(isDimReduced){
-				if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-				outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)			
-			}
-			if(isFilter){
-				#Need to think how can pass options to filterData...
-				if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-				outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			
-			}
-		}
+		if(dimReduce=="none") 
+			dat<-transformData(x)
+		else if(dimReduce %in% reducedDimNames(x))
+			dat<-t(reducedDim(x,type=dimReduce)[,1:nDims])
+		else if(dimReduceName %in% filterNames(x))
+			dat<-assay(filterData(x,type=dimReduceName,percentile=nDims))
+		else
+			stop("'x' does not contain the given 'dimReduce' value nor does 'dimReduce' value match any built-in filters or dimensionality reduction options.")
 	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
 	}
 	else{

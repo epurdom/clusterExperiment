@@ -202,6 +202,9 @@ test_that("subsetting works as promised",{
   expect_equal(rowData(x4),rowData(se[3,])) 
   
 })
+
+
+###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem? Need to go back to this....
 test_that("check clusterLegend, remove unclustered cells work as promised", {
     
     ##########

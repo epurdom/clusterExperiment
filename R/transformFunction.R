@@ -380,7 +380,7 @@ setMethod(
 		}
 	}
 	else{
-		out<-makeFilterStats(as(object,"SingleCellFilter"),transFun=transformation(object),...)
+		out<-makeFilterStats(as(object,"SingleCellFilter"),filterStats=filterStats,transFun=transformation(object),...)
 	}
 #	
 	filterStats(object)<-filterStats(out)
