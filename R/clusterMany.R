@@ -259,21 +259,29 @@ setMethod(
         }
     }
 	#browser()
-	if(length(x@reducedDims)==0 & is.null(filterStats(x)) & !all(dimReduce=="none")){
+	anyFilterSaved<-!is.null(filterStats(x)) && any(dimReduce %in% filterNames(x))
+	anyDimSaved<-length(reducedDims(x))>0 && any(dimReduce %in% reducedDimNames(x))
+	anyFilter<-!is.null(filterStats(x))
+	anyDim<-length(reducedDims(x))>0 
+	anyDimBuiltIn<-any(dimReduce %in% listBuiltInDimReduce())
+	anyFilterBuiltIn<-any(dimReduce %in% listBuiltInFilterStats())
+	if(!anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
+		stop("'dimReduce' does not match any stored or builtin filtering statistics or dimensionality reduction")
+	if(!all(dimReduce=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellFilter object without the args of dimReduce, etc. ...
+		## Note that if no Filter saved, and asked for filter
 		outval<-do.call(clusterMany,c(list(x=assay(x)),inputArgs[!names(inputArgs)%in%"x"]))
 		if(class(outval)=="ClusterExperiment") {
-			#lost anything about the meta data, etc.
+			#lost anything about the meta data, old filtering/dimReduce
 			retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-			#but now have lost the reducedDim etc.!
-			filterStats(retval)<-filterStats(outval)
-			reducedDims(retval)<-reducedDims(outval)
+			#but now have lost the newly calculated reducedDim etc.!
+			if(anyFilterBuiltIn) filterStats(retval)<-filterStats(outval)
+			if(anyDimBuiltIn) reducedDims(retval)<-reducedDims(outval)
 			
 		}
 		return(retval)
 	}
     else{
-	    ##TO DO: Make sure transformed data is used!
 		###############
 	    #Check inputs of dimReduce slots
 		##NOTE: For now, IF there is a reducedDim slot, then will not try 
@@ -282,16 +290,21 @@ setMethod(
 		##Either do all of them ahead of time or let all of them be done 
 		##during call to clusterMany...
 		###############  
-		doNone<-"none" %in% dimReduce
+	  	doNone<-"none" %in% dimReduce
 		if(doNone) dimReduce<-dimReduce[-grep("none",dimReduce)]
 		if(length(dimReduce)>0){
 			if(any(!dimReduce %in% c(reducedDimNames(x),filterNames(x)))){
-				warning("Not all of dimReduce value match a reducedDimNames or filterNames of the 'SingleCellFilter' object. Will ignore them:",paste(dimReduce[!dimReduce %in%c(reducedDimNames(x),filterNames(x))],collapse=","))
 				dimReduce<-dimReduce[dimReduce %in%c(reducedDimNames(x),filterNames(x))]
+				if(length(dimReduce)>0) warning("Not all of dimReduce value match a reducedDimNames or filterNames of the 'SingleCellFilter' object. Will ignore them:",paste(dimReduce[!dimReduce %in%c(reducedDimNames(x),filterNames(x))],collapse=","))
+				else stop("No dimReduce value was given that matches stored reducedDimNames or filterNames of the object.")
 			}
-			maxDimValues<-sapply(reducedDims(x)[dimReduce[dimReduce %in%reducedDimNames(x)]],ncol)
-			if(length(na.omit(nPCADims))>0 && all(na.omit(nPCADims) > max(maxDimValues))) 
-				stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+			#check if nPCA values
+			if(any(dimReduce %in% reducedDimNames(x))){
+				maxDimValues<-sapply(reducedDims(x)[dimReduce[dimReduce %in%reducedDimNames(x)]],ncol)
+				if(length(na.omit(nPCADims))>0 && all(na.omit(nPCADims) > max(maxDimValues))) 
+					stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+				
+			}
 			
 			#check if give nFilter if filterNames and no NA values
 			if(any(dimReduce %in% filterNames(x))){
@@ -309,9 +322,6 @@ setMethod(
 			nFilter<-NA
 			maxDimValues<-NA #indicates that only "none" will be done
 		}
-		###############
-	    #Check inputs of variance filter after add it to the slot.
-		###############  
 
 		###############
 	    #Start creating the combinations
@@ -404,7 +414,7 @@ setMethod(
 		  # set it to the maximum value possible.
 		  #---
 		  whDimReduce<-which(param[,"dimReduce"] %in% reducedDimNames(x))
-		  if(length(na.omit(maxDimValues[whDimReduce]))>0){
+		  if(length(whDimReduce)>0 && length(na.omit(maxDimValues[whDimReduce]))>0){
 			  #if NA, means do the largest possible dimension saved for that method
 			  whNADim<-intersect(which(is.na(param[,"nDimReduce"])),whDimReduce)
 			  maxDimValues<-maxDimValues[param[whNADim,"dimReduce"]]

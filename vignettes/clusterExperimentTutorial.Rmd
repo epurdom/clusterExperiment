@@ -290,7 +290,7 @@ The clusterings with the `.1` appended to the labels are the previous `combineMa
 In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
 
 ```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineMinSize=3)
+rsecFluidigm<-RSEC(rsecFluidigm,combineMinSize=3)
 ```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
@@ -307,7 +307,7 @@ As mentioned above, there are several types of tests that can be performed to id
 
 ```{r getBestFeatures}
 pairsAllRSEC<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05,
-                          number=nrow(rsecFluidigm),isCount=TRUE)
+                          number=nrow(rsecFluidigm))
 head(pairsAllRSEC)
 ```
 
@@ -1115,9 +1115,10 @@ Notice to calculate the distance in the above plot, we made use of the `transfor
 **Comparing distance functions with `clusterMany`** Now that we have defined the distances we want to compare in our global environment, we can give these to the argument "distFunction" in `clusterMany`. They should be given as character strings giving the names of the functions. For computational ease for this vignette, we will just choose the dimensionality reduction to be the top 1000 features based on MAD and set K=8 or $\alpha=0.45$. We will save these results as a separate object so as to not disrupt the earlier workflow.
 
 ```{r clusterManyDiffDist,fig.width=15,fig.height=6}
-ceDist<-clusterMany(ce, k=7:9, alpha=c(0.35,0.4,0.45), clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),findBestK=FALSE,
-               removeSil=c(FALSE),dist=c("corDist","spearDist"),
-               isCount=TRUE,dimReduce=c("mad"),nPCADims=1000,run=TRUE)
+ceDist<-clusterMany(ce, k=7:9, alpha=c(0.35,0.4,0.45), 
+	 clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
+	 findBestK=FALSE,removeSil=c(FALSE),dist=c("corDist","spearDist"),
+          dimReduce=c("mad"),nFilter=1000,run=TRUE)
 clusterLabels(ceDist)<-gsub("clusterFunction","alg",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("Dist","",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("distFunction","dist",clusterLabels(ceDist))

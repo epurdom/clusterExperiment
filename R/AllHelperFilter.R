@@ -30,11 +30,16 @@ setMethod( "filterStats",c("SingleCellFilter","missing"),
 
 #' @rdname SingleCellFilter-methods
 #' @details Note that the replacement functions never actually completely
-#'   replace the slot \code{filterStats}; they update existing filters of the
+#'   replace the slot \code{filterStats} unless the replacement value is NULL
+#'   They update existing filters of the
 #'   same name and add filters with new names to the existing filters.
 #' @export
 setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,value) {
 	if(missing(type)){
+		if(is.null(value)){
+			object@filterStats<-NULL
+			return(object)
+		}
 		if(!is.matrix(value) || is.null(colnames(value))){
 			stop("If not indicating a type in the replacement, must give matrix of values with column names")
 		}

@@ -21,7 +21,68 @@
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
 #' @inheritParams mergeClusters,matrix-method
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "SingleCellExperiment"),
+definition = function(x, ...){
+RSEC(as(x,"SingleCellFilter"),...)
 
+})
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "SummarizedExperiment"),
+definition = function(x, ...){
+	RSEC(as(x,"SingleCellExperiment"),...)
+
+})
+
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "data.frame"),
+definition = function(x,...){RSEC(data.matrix(x),...)}
+)
+
+
+#' @export
+#' @rdname RSEC
+setMethod(
+  f = "RSEC",
+  signature = signature(x = "SingleCellFilter"),
+  definition = function(x, ...){
+    outval <- RSEC(assay(x),  ...)
+    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
+    return(retval)
+
+  })
+
+
+#' @export
+#' @rdname RSEC
+setMethod(
+  f = "RSEC",
+  signature = signature(x = "ClusterExperiment"),
+  definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
+    if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
+      newObj <- RSEC(assay(x),  ...)
+      ##Check if pipeline already ran previously and if so increase
+      x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
+      if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
+      else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+    }
+    else{
+      retval<-.postClusterMany(x,...)
+    }
+
+    return(retval)
+  })
+
+#' @rdname RSEC
 #' @export
 setMethod(
     f = "RSEC",
@@ -109,52 +170,3 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
   else .mynote("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
   return(ce) 
 }
-#' @export
-#' @rdname RSEC
-setMethod(
-  f = "RSEC",
-  signature = signature(x = "SingleCellExperiment"),
-  definition = function(x, ...){
-    outval <- RSEC(assay(x),  ...)
-    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
-    return(retval)
-
-  })
-
-#' @export
-#' @rdname RSEC
-setMethod(
-f = "RSEC",
-signature = signature(x = "SummarizedExperiment"),
-definition = function(x, ...){
-	RSEC(as(x,"SingleCellExperiment"),...)
-
-})
-
-#' @export
-#' @rdname RSEC
-setMethod(
-f = "RSEC",
-signature = signature(x = "data.frame"),
-definition = function(x,...){RSEC(data.matrix(x),...)}
-)
-
-#' @export
-#' @rdname RSEC
-setMethod(
-  f = "RSEC",
-  signature = signature(x = "ClusterExperiment"),
-  definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
-    if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
-      newObj <- RSEC(assay(x),  ...)
-      ##Check if pipeline already ran previously and if so increase
-      x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
-      if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
-      else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    }
-    else{
-      retval<-.postClusterMany(x,...)
-    }
-
-    return(retval)
-  })
