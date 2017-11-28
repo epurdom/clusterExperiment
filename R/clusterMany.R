@@ -276,9 +276,9 @@ setMethod(
 			#but now have lost the newly calculated reducedDim etc.!
 			if(anyFilterBuiltIn) filterStats(retval)<-filterStats(outval)
 			if(anyDimBuiltIn) reducedDims(retval)<-reducedDims(outval)
-			
+			return(retval)
 		}
-		return(retval)
+		else return(outval)
 	}
     else{
 		###############

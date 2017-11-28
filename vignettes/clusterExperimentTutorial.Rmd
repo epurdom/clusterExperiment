@@ -1112,10 +1112,18 @@ We can see that the choice of $\alpha$ must be much higher (and we are likely to
 Notice to calculate the distance in the above plot, we made use of the `transform` function applied to our `ce` object to get the results of dimensionality reduction. The `transform` function gave us a data matrix back that has been transformed, and also reduced in dimensions, like would be done in our clustering routines. `transform` has similar parameters as seen in `clusterMany`,`makeDendrogram` or `clusterSingle` and is useful when you want to manually apply something to transformed and/or dimensionality reduced data; and you can be sure you are getting the same matrix of data back that the clustering algorithms are using.
 
 
-**Comparing distance functions with `clusterMany`** Now that we have defined the distances we want to compare in our global environment, we can give these to the argument "distFunction" in `clusterMany`. They should be given as character strings giving the names of the functions. For computational ease for this vignette, we will just choose the dimensionality reduction to be the top 1000 features based on MAD and set K=8 or $\alpha=0.45$. We will save these results as a separate object so as to not disrupt the earlier workflow.
+**Comparing distance functions with `clusterMany`** Now that we have defined the distances we want to compare in our global environment, we can give these to the argument "distFunction" in `clusterMany`. They should be given as character strings giving the names of the functions. For computational ease for this vignette, we will just choose the dimensionality reduction to be the top 1000 features based on MAD and set K=8 or $\alpha=0.45$. 
+
+Since we haven't yet calculated "mad" on this object, it hasn't been calculated yet. `clusterMany` does not let you mix and match between uncalculated and stored filters (or dimensionality reductions), so our first step is to store the mad results. We will save these results as a separate object so as to not disrupt the earlier workflow.
+
+```{r clusterManyDiffDist_calculateMad,fig.width=15,fig.height=6}
+ceDist<-makeFilterStats(ce,filterStats="mad")
+ceDist
+```
+
 
 ```{r clusterManyDiffDist,fig.width=15,fig.height=6}
-ceDist<-clusterMany(ce, k=7:9, alpha=c(0.35,0.4,0.45), 
+ceDist<-clusterMany(ceDist, k=7:9, alpha=c(0.35,0.4,0.45), 
 	 clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
 	 findBestK=FALSE,removeSil=c(FALSE),dist=c("corDist","spearDist"),
           dimReduce=c("mad"),nFilter=1000,run=TRUE)
@@ -1126,6 +1134,7 @@ clusterLabels(ceDist)<-gsub("hierarchical","hier",clusterLabels(ceDist))
 par(mar=c(1.1,15.1,1.1,1.1))
 plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 ```
+
 
 Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
