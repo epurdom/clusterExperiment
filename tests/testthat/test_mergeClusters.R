@@ -147,12 +147,12 @@ test_that("saving merge info works",{
   expect_false(is.null(nodeMergeInfo(clustMergedAll)))
   
   #should erase merge info if call dendrogram
-  expect_message(clustMergedErase<-makeDendrogram(clustMerged5))
+  expect_silent(clustMergedErase<-makeDendrogram(clustMerged5))
   expect_true(is.na(clustMergedErase@merge_index))
   expect_true(is.na(clustMergedErase@merge_dendrocluster_index))
   
   #should erase merge info if call dendrogram
-  expect_message(clustMergedErase2<-makeDendrogram(clustMergedAll))
+  expect_silent(clustMergedErase2<-makeDendrogram(clustMergedAll))
   expect_true(is.na(clustMergedErase2@merge_index))
   expect_true(is.na(clustMergedErase2@merge_dendrocluster_index))
 
@@ -203,8 +203,8 @@ test_that("`mergeClusters` works with unassignedSamples", {
 
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
-	expect_silent(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock","You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing"))
-	expect_silent(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name","You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing"))
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock","You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing"))
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name","You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing"))
 
 
 })
