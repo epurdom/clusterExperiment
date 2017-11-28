@@ -191,7 +191,12 @@ setMethod(
   definition = function(x,
       dimReduce="none",nPCADims=NA, transFun=NULL,isCount=FALSE, ...
   ){
-	if(missing(dimReduce) || anyNA(nPCADims)) dimReduce<-"none"
+	####Basically, matrix version calls makeDimReduce and makeFilterStats and then sends it to the SingleCellFilter version.
+	if(missing(dimReduce)) dimReduce<-"none"
+	# if(anyNA(nPCADims)){
+# 		if(!"none" in dimReduce) dimReduce<-c(dimReduce,"none")
+# 		nPCADims<-na.omit(nPCADims)
+# 	}
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	dimReduce<-unique(dimReduce)
 	doNone<-any(dimReduce=="none")
@@ -253,6 +258,7 @@ setMethod(
             if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
         }
     }
+	#browser()
 	if(length(x@reducedDims)==0 & is.null(filterStats(x)) & !all(dimReduce=="none")){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellFilter object without the args of dimReduce, etc. ...
 		outval<-do.call(clusterMany,c(list(x=assay(x)),inputArgs[!names(inputArgs)%in%"x"]))
@@ -613,6 +619,7 @@ setMethod(
 	      clInfo <- mapply(pList, out, FUN=function(x, y){
 	        c(list(choicesParam=x), clusterInfo(y))
 	      }, SIMPLIFY=FALSE)
+		  #browser()
 		  outval <- ClusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
 			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)

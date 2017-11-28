@@ -203,3 +203,283 @@ test_that("`getClusterManyParams` works", {
 	expect_warning(getClusterManyParams(cc,whichClusters=1),"did not return any clusters of type 'clusterMany'")
 	expect_warning(getClusterManyParams(cc,whichClusters="mergeClusters"),"did not return any clusters")
 })
+
+
+
+test_that("`clusterMany` consistent results (no transformation)", {
+	
+	#----
+	#check get the same result from previous times when transform the data
+	#Relies on having these checks in clusterSingle, so know clusterSingle is right
+    #----
+	#make it big enough can do pca and filter...
+	contData<-simData[,1:20]
+	expectTrans1<-round(contData[1,],2)
+    testSE<-SummarizedExperiment(contData)
+    testSCE<-as(testSE,"SingleCellExperiment")
+    testSCF<-as(testSCE,"SingleCellFilter")
+    
+	#matrix
+	expect_silent(ccVar<-clusterSingle(contData, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+	 	   isCount=FALSE))
+   	expect_silent(ccPCA<-clusterSingle(contData, 
+   	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+   	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+   	 	   isCount=FALSE))
+  	expect_silent(ccNone<-clusterSingle(contData, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=FALSE))
+	expect_silent(cm<-clusterMany(contData, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+    
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+	
+
+   #SE
+	expect_silent(ccVar<-clusterSingle(testSE, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
+  	expect_silent(ccPCA<-clusterSingle(testSE, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=FALSE))
+ 	expect_silent(ccNone<-clusterSingle(testSE, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=FALSE))
+	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+
+	
+   #SCE
+	expect_silent(ccVar<-clusterSingle(testSCE, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
+  	expect_silent(ccPCA<-clusterSingle(testSCE, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=FALSE))
+ 	expect_silent(ccNone<-clusterSingle(testSCE, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=FALSE))
+	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+	
+   #SCF
+	expect_silent(ccVar<-clusterSingle(testSCF, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
+  	expect_silent(ccPCA<-clusterSingle(testSCF, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=FALSE))
+ 	expect_silent(ccNone<-clusterSingle(testSCF, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=FALSE))
+	expect_silent(cm<-clusterMany(testSCF, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+
+   #CE
+	expect_silent(ccVar2<-clusterSingle(ccVar, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        nDims=3, clusterLabel="redo",
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(ccPCA2<-clusterSingle(ccPCA, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+	        nDims=3, clusterLabel="redo",
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(ccNone2<-clusterSingle(ccNone, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+	        nDims=NA,clusterLabel="redo",
+			 mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(cm2<-clusterMany(cm, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3))
+	expect_equal(nClusterings(cm2),6)	
+	expect_silent(params<-getClusterManyParams(cm2))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm2)[1,],2), expectTrans1) 
+    
+
+  
+})
+
+
+test_that("`clusterMany` consistent results (with transformation)", {
+	
+	#----
+	#check get the same result from previous times when transform the data
+	#Relies on tests in clusterSingle being right
+    #----
+	#make it big enough can do pca and filter...
+	countData<-simCount[,1:20]
+    testSE<-SummarizedExperiment(countData)
+    testSCE<-as(testSE,"SingleCellExperiment")
+    testSCF<-as(testSCE,"SingleCellFilter")
+	expectTrans1<-round(log2(countData[1,]+1),2)
+
+	#matrix
+	expect_silent(ccVar<-clusterSingle(countData, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+	 	   isCount=TRUE))
+   	expect_silent(ccPCA<-clusterSingle(countData, 
+   	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+   	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+   	 	   isCount=TRUE))
+  	expect_silent(ccNone<-clusterSingle(countData, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=TRUE))
+	expect_silent(cm<-clusterMany(countData, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+    
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+	
+
+   #SE
+	expect_silent(ccVar<-clusterSingle(testSE, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=TRUE))
+  	expect_silent(ccPCA<-clusterSingle(testSE, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=TRUE))
+ 	expect_silent(ccNone<-clusterSingle(testSE, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=TRUE))
+	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+
+	
+   #SCE
+	expect_silent(ccVar<-clusterSingle(testSCE, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=TRUE))
+  	expect_silent(ccPCA<-clusterSingle(testSCE, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=TRUE))
+ 	expect_silent(ccNone<-clusterSingle(testSCE, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=TRUE))
+	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+	
+   #SCF
+	expect_silent(ccVar<-clusterSingle(testSCF, 
+        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	   isCount=TRUE))
+  	expect_silent(ccPCA<-clusterSingle(testSCF, 
+  	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+  	 	   isCount=TRUE))
+ 	expect_silent(ccNone<-clusterSingle(testSCF, 
+ 	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+ 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+ 	 	   isCount=TRUE))
+	expect_silent(cm<-clusterMany(testSCF, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	expect_equal(nClusterings(cm),3)	
+	expect_silent(params<-getClusterManyParams(cm))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm)[1,],2), expectTrans1) 
+
+   #CE
+	expect_silent(ccVar2<-clusterSingle(ccVar, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        nDims=3, clusterLabel="redo",
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(ccPCA2<-clusterSingle(ccPCA, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+	        nDims=3, clusterLabel="redo",
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(ccNone2<-clusterSingle(ccNone, 
+	        subsample=FALSE, sequential=FALSE, dimReduce="none",
+	        nDims=NA,clusterLabel="redo",
+			 mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+	expect_silent(cm2<-clusterMany(cm, clusterFunction="pam",ks=3,
+	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
+	   	        nPCADims=3, nFilter=3))
+	expect_equal(nClusterings(cm2),6)	
+	expect_silent(params<-getClusterManyParams(cm2))	
+   
+	expect_equal(primaryCluster(ccPCA),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="PCA"]])
+	expect_equal(primaryCluster(ccVar),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="var"]])
+	expect_equal(primaryCluster(ccNone),clusterMatrix(cm2)[,params$clusteringIndex[params$dimReduce=="none"]])
+	expect_equal(round(transformData(cm2)[1,],2), expectTrans1) 
+    
+  
+})

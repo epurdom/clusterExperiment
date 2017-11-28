@@ -346,7 +346,7 @@ The standard clustering workflow steps are the following:
 
 These clustering steps are done in one function call by `RSEC`, described above, which is most straightforward usage. However, to understand the parameters available in `RSEC` it is useful to go through the steps individually. Furthermore `RSEC` has streamlined the workflow to concentrate on using the workflow with subsampling and sequential strategies, but going through the individual steps demonstrates how the user can make different choices. 
 
-Therefore in this section, we will go through these steps, but instead of using the parameters of `RSEC` that involve subsampling and are more computationally intensive, we will run through the same steps, only using just basic PAM clustering with no subsampling or sequential clustering. This is simply for the purpose of briefly understanding the intermediate steps that `RSEC` follows. Later sections will go through these steps in more detail and the particular choices embedded in `RSEC`. 
+Therefore in this section, we will go through these steps, but instead of using the parameters of `RSEC` that involve subsampling and are more computationally intensive, we will run through the same steps, only using just basic PAM clustering with no subsampling or sequential clustering. This is simply for the purpose of briefly understanding the intermediate steps that `RSEC` follows. Later sections will go through these steps in more detail and discuss the particular choices embedded in `RSEC`. 
 
 ## Step 1: Clustering with `clusterMany` {#step1}
 
@@ -363,14 +363,14 @@ ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
 
 In this call to `clusterMany` we made the follow choices about what to vary: 
 
-* set `dimReduce=c("PCA", "var")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
+* set `dimReduce=c("PCA", "var")` meaning run the clustering algorithm trying two different methods for dimensionality reduction: the top principal componetns and filtering to the top most variable genes
 * For PCA reduction, choose 5,15, and 50 principal components for the reduced data set (set `nPCADims=c(5,15,50)`)
-* For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nFilter=c(100,500,1000)`)
+* For most variable genes reduction, we choose 100, 500, and 1000 most variable genes (set `nFilter=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
 
 By giving only a single value to the relative argument, we keep the other possible options fixed, for example: 
 
-* we used 'pam' for all clustering (`clusterFunction`) 
+* we used 'pam' for all clustering (`clusterFunction="pam"`) 
 * we set `minSizes=5`. This is an argument that allows the user to set a minimum required size  and clusters of size less than that value will be ignored and samples assigned to them given the unassigned value of -1. The default of `1` would mean that this option is not used.
 
 We also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `identity`). 
@@ -381,6 +381,13 @@ We can visualize the resulting clusterings using the `plotClusters` command as w
 defaultMar<-par("mar")
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+
+ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
+      isCount=TRUE,dimReduce=c("PCA","var"),nFilter=c(100,500,1000),
+      nPCADims=c(5,15,50),run=TRUE)
+test<-getClusterManyParams(ce)
+ord<-order(test[,"k"],test[,"nFilter"],test[,"nDimReduce"])
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
