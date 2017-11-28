@@ -49,17 +49,6 @@ definition = function(x,...){RSEC(data.matrix(x),...)}
 )
 
 
-#' @export
-#' @rdname RSEC
-setMethod(
-  f = "RSEC",
-  signature = signature(x = "SingleCellFilter"),
-  definition = function(x, ...){
-    outval <- RSEC(assay(x),  ...)
-    retval <- .addBackSEInfo(newObj=outval,oldObj=x)
-    return(retval)
-
-  })
 
 
 #' @export
@@ -69,11 +58,18 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
-      newObj <- RSEC(assay(x),  ...)
+	  if(any(c("transFun","isCount") %in% names(list(...)))) 
+	  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
+      newObj <- RSEC(as(x,"SingleCellFilter"),  transFun=transformation(x),...)
       ##Check if pipeline already ran previously and if so increase
       x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
       if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
-      else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+      else{
+		  retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+		  
+	  }
+	  filterStats(retval)<-filterStats(newObj)
+	  reducedDims(retval)<-reducedDims(newObj)	  
     }
     else{
       retval<-.postClusterMany(x,...)
@@ -82,11 +78,21 @@ setMethod(
     return(retval)
   })
 
+#' @export
+#' @rdname RSEC
+setMethod(
+f = "RSEC",
+signature = signature(x = "matrix"),
+definition = function(x, ...){
+  return(RSEC(SingleCellExperiment(x),...))
+
+})
+
 #' @rdname RSEC
 #' @export
 setMethod(
     f = "RSEC",
-    signature = signature(x = "matrix"),
+    signature = signature(x = "SingleCellFilter"),
     definition = function(x, isCount=FALSE,transFun=NULL,
         dimReduce="PCA",nFilter=NA,
         nPCADims=c(50), k0s=4:15,
@@ -118,6 +124,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
     }
     return(ce)
 })
+
 .methodFormals <- function(f, signature = character()) {
 	#to find defaults of RSEC
 	#from this conversation:
@@ -135,7 +142,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
     genFormals
 }
 .postClusterMany<-function(ce,...){
-    defaultArgs<-.methodFormals("RSEC",signature="matrix")
+    defaultArgs<-.methodFormals("RSEC",signature="SingleCellFilter")
 	passedArgs<-list(...)
 	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
 	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
@@ -153,7 +160,8 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 		if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
 	}
   	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-		  dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
+	
+	dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
 
 		#mergeClusters
   if(!inherits(dendroTry,"try-error")){
@@ -167,6 +175,6 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 	}
 	else .mynote("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
   }
-  else .mynote("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry)
+  else .mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
   return(ce) 
 }

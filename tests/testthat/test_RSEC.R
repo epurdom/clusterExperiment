@@ -4,21 +4,35 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 	##these examples don't do dendrogram/merge because all -1 after combineMany
 	##only tests clusterMany, combineMany parts.
 	##so can't do expect_silent, because returns NOTE about that issue.
-	rsecOut1<-RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,
+		clusterFunction="tight", alphas=0.1,dendroReduce="none",
+        subsampleArgs=list(resamp.num=5),random.seed=495
+  	 	),"makeDendrogram encountered following error")
+   expect_message(rsecOut2<-RSEC(x=cc, dimReduce="none",k0s=4:5,
+   		clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5),random.seed=495
-  )
-   rsecOut2<-RSEC(x=cc, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495
-  )
-  rsecOut3<-RSEC(x=ccSE,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495)
-   rsecOut4<-RSEC(x=se,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495)
-#test rerunClusterMany argument:
-	    rsecOut5<-RSEC(rsecOut2,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=TRUE,subsampleArgs=list(resamp.num=5),random.seed=495)
-	   #makes dendrogram so important have here so has to catch defaults of RSEC...
-	    rsecOut6<-RSEC(rsecOut2,isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,subsampleArgs=list(resamp.num=5),random.seed=495)
-   })
+  	 	),"makeDendrogram encountered following error")
+  expect_message(rsecOut3<-RSEC(x=ccSE,
+	  dimReduce="none",k0s=4:5,clusterFunction="tight", 
+	  alphas=0.1,dendroReduce="none",
+       subsampleArgs=list(resamp.num=5),random.seed=495),
+	   "makeDendrogram encountered following error")
+   expect_message(rsecOut4<-RSEC(x=se,isCount=FALSE,dimReduce="none",
+   		k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+       subsampleArgs=list(resamp.num=5),random.seed=495),
+	   "makeDendrogram encountered following error")
+	   #test rerunClusterMany argument:
+	expect_message(rsecOut5<-RSEC(rsecOut2,dimReduce="none",
+		k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=TRUE,
+		subsampleArgs=list(resamp.num=5),random.seed=495),
+		"makeDendrogram encountered following error")
+    #makes dendrogram so important have here so has to catch defaults of RSEC...
+	expect_message(rsecOut6<-RSEC(rsecOut2,
+			dimReduce="none",k0s=4:5,clusterFunction="tight", 
+			alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,
+			subsampleArgs=list(resamp.num=5),random.seed=495),
+			"makeDendrogram encountered following error")
+})
 
 test_that("`RSEC` works through whole series of steps",{
 #bigger example where actually goes through all the steps, takes some time:
