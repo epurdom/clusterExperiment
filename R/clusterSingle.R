@@ -234,6 +234,7 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "SingleCellFilter",diss="missing"),
   definition = function(x, dimReduce="none", nDims=NA,...) {
+	  inputArgs<-list(...)
 	isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
 	isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
 	if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
@@ -250,13 +251,19 @@ setMethod(
 	}
 	else{
 		if(isDimReduced){
+			#don't transform PCA!	
+			if(any(names(inputArgs)%in%"transFun") )
+				inputArgs<-inputArgs[!names(inputArgs)%in%"transFun"]
+			if(any(names(inputArgs)%in%"isCount"))
+				inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
+			
 			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-			outval<-clusterSingle(t(reducedDim(x,type=dimReduce)[,1:nDims]),dimReduce="none",...)			
+				outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=dimReduce)[,1:nDims])),dimReduce="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
 		}
 		if(isFilter){
 			#Need to think how can pass options to filterData...
 			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-			outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			
+			outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			#do transform filtered data...
 		}
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -329,7 +336,7 @@ setMethod(
 	  }
 	  else if(dimReduce %in% listBuiltInFilterStats()){
 		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
-		  x<-transformData(filterData(transObj,type=dimReduce,percentile=nDims))
+		  x<-transformData(filterData(transObj,type=dimReduce,percentile=nDims), transFun=transFun,isCount=isCount)
 	  }
 	  else stop("invalid value for dimReduce -- not in builtin filter or dimReduce function")
     }

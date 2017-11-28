@@ -144,7 +144,16 @@ test_that("filterData works as expected",{
 test_that("makeFilterStats works as promised",{
 	expect_silent(fs<-makeFilterStats(mat,filterStats="var"))
 	expect_silent(fs<-makeFilterStats(mat,filterStats=c("mean","var")))
+
+	#does all:
 	expect_silent(fs<-makeFilterStats(mat))
+	for(ii in listBuiltInFilterStats()){
+		if(ii=="abscv"){
+			x<-abs(sqrt(apply(mat,1,var))/apply(mat,1,mean))
+			expect_equal(filterStats(fs,type=ii),unname(x))
+		}
+		else expect_equal(filterStats(fs,type=ii),unname(apply(mat,1,ii)))		
+	}
 
 
 	expect_silent(fs<-makeFilterStats(cc,filterStats="var"))
@@ -164,6 +173,29 @@ test_that("makeFilterStats works as promised",{
 	expect_silent(fs<-makeFilterStats(scf,filterStats="var"))
 	expect_silent(fs<-makeFilterStats(scf,filterStats=c("mean","var")))
 	expect_silent(fs<-makeFilterStats(scf))
+	
+	
+	###Check getting out correct ones.
+	contData<-simData[,1:20]
+    expect_silent(temp<-makeFilterStats(contData))
+	v<-apply(contData,1,var)
+	expect_equal(filterStats(temp,type="var"),v)
+	#should keep top 10
+	expect_silent(x<-filterData(temp,percentile=10,type="var",keepLarge=TRUE,absolute=FALSE))
+	whTop<-order(v,decreasing=TRUE)[1:10]
+	expect_equal(v[whTop],filterStats(x,type="var"))
+	expect_equal(contData[whTop,],unname(assay(x)))
+
+	###Check getting out correct ones.
+	countData<-simCount[,1:20]
+    expect_silent(temp<-makeFilterStats(countData,isCount=TRUE))
+	v<-apply(log2(countData+1),1,var)
+	expect_equal(filterStats(temp,type="var"),v)
+	#should keep top 10
+	expect_silent(x<-filterData(temp,percentile=10,type="var",keepLarge=TRUE,absolute=FALSE))
+	whTop<-order(v,decreasing=TRUE)[1:10]
+	expect_equal(v[whTop],filterStats(x,type="var"))
+	expect_equal(log2(countData[whTop,]+1),unname(transformData(x,isCount=TRUE)))
 	
 	
 })

@@ -262,8 +262,9 @@ setMethod(
 			#but now have lost the reducedDim etc.!
 			filterStats(retval)<-filterStats(outval)
 			reducedDims(retval)<-reducedDims(outval)
+			
 		}
-		return(outval)
+		return(retval)
 	}
     else{
 	    ##TO DO: Make sure transformed data is used!
@@ -548,7 +549,8 @@ setMethod(
 		  else if(dimReduce %in% reducedDimNames(x)) 
 			  dat<-t(reducedDim(x,dimReduce)[,1:par[["nDimReduce"]]] ) 
 		  else if(dimReduce %in% filterNames(x)) 
-			  dat<-transformData(filterData(x,type=dimReduce,percentile=par[["nFilter"]]))
+			  dat<-transformData( filterData(x, type=dimReduce, percentile=par[["nFilter"]]),
+		  				transFun=transFun)
 		  else stop("Internal error: dimReduce value that not in filterNames or reducedDimNames")
 		  #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
 		  if(!is.null(distFunction)){

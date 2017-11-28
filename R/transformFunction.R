@@ -398,7 +398,7 @@ setMethod(
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic
 #' @param keepLarge logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic. 
-#' @details Note that \code{filterData} returns a SingleCellFilter object. To get the actual data out use either assay
+#' @details Note that \code{filterData} returns a SingleCellFilter object. To get the actual data out use either assay or \code{\link{transformData}} if transformed data is desired.
 #' @return A SingleCellFilter object with the rows (genes) removed based on filters
 #' @export
 #' @importFrom stats quantile
@@ -421,7 +421,7 @@ setMethod( "filterData","SingleCellFilter",
 					warning("the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
 					whKeep<-1:NROW(object)
 				}
-				else whKeep<- order(stat,decreasing=ifelse(keepLarge,FALSE,TRUE))[1:percentile]
+				else whKeep<- order(stat,decreasing=ifelse(keepLarge,TRUE,FALSE))[1:percentile]
 			}
 			else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
 		}
