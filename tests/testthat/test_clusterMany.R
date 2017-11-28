@@ -144,6 +144,21 @@ expect_equal(sort(filterNames(cc3)),sort(c("var","abscv","mean","mad")))
 expect_equal(sort(reducedDimNames(cc4)),sort(c("Red1")))
 expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
 
+  expect_silent(ceReRun <- clusterMany(cc4, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
+  	dimReduce=c("none","Red1","Filter1","Filter2"),clusterFunction="pam",
+    subsample=FALSE, sequential=FALSE,verbose=FALSE))
+	expect_equal(sort(reducedDimNames(ceReRun)),sort(reducedDimNames(cc4)))
+	expect_equal(sort(filterNames(ceReRun)),sort(filterNames(cc4)))
+
+
+	#Only existing values 
+	expect_silent(cc4 <- clusterMany(scfFull, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
+	dimReduce=c("none","Red1","Filter1","Filter2"),clusterFunction="pam",
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+expect_equal(sort(reducedDimNames(cc4)),sort(c("Red1")))
+expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
+
+
 	#--------
 	# Mixing saved and unsaved (gives warnings/errors)
 	#--------
@@ -155,12 +170,18 @@ expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
 			dimReduce=c("var","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of dimReduce value match a reducedDimNames or filterNames")
 	expect_warning(clusterMany(scfFull, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
+			dimReduce=c("PCA","Filter1"),clusterFunction="pam",
+	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of dimReduce value match a reducedDimNames or filterNames")
+	expect_warning(clusterMany(scfFull, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
 		dimReduce=c("var","Filter1"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),
 		"Not all of dimReduce value match a reducedDimNames or filterNames")	
 	#repeat for ce 
 	expect_warning(clusterMany(cc4, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
 			dimReduce=c("PCA","Red1"),clusterFunction="pam",
+	  		subsample=FALSE, sequential=FALSE,verbose=FALSE),"Not all of dimReduce value match a reducedDimNames or filterNames")
+	expect_warning(clusterMany(cc4, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
+			dimReduce=c("PCA","Filter1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE),"Not all of dimReduce value match a reducedDimNames or filterNames")
 	expect_warning(clusterMany(cc4, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
 			dimReduce=c("var","Red1"),clusterFunction="pam",

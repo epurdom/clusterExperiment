@@ -258,7 +258,6 @@ setMethod(
             if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
         }
     }
-	#browser()
 	anyFilterSaved<-!is.null(filterStats(x)) && any(dimReduce %in% filterNames(x))
 	anyDimSaved<-length(reducedDims(x))>0 && any(dimReduce %in% reducedDimNames(x))
 	anyFilter<-!is.null(filterStats(x))
@@ -655,15 +654,23 @@ setMethod(
   {
   	if(any(c("transFun","isCount") %in% names(list(...)))) 
   		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-    outval<-clusterMany(assay(x), dimReduce=dimReduce, nFilter=nFilter,
+    outval<-clusterMany(as(x,"SingleCellFilter"), dimReduce=dimReduce, nFilter=nFilter,
                         nPCADims=nPCADims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
-      #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
+		
+	  #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
 
-      if(!is.null(x)) retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
-      else retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+      if(!is.null(x)){
+		  retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
+		  
+	  }
+      else{
+		  retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+	  }
+	  filterStats(retval)<-filterStats(outval)
+	  reducedDims(retval)<-reducedDims(outval)	  
 		  #both above check validity.
       return(retval)
     } else {
