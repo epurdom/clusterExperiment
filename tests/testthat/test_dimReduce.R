@@ -117,21 +117,21 @@ test_that("filterData works as expected",{
 	expect_equal(assay(f1),assay(scf)[tf,])
 	
 	#percentile number filter
-	tf<-order(filter2[,"Filter1"],decreasing=FALSE)[1:10]
+	tf<-order(filter2[,"Filter1"],decreasing=TRUE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 
-	tf<-order(abs(filter2[,"Filter1"]),decreasing=FALSE)[1:10]
+	tf<-order(abs(filter2[,"Filter1"]),decreasing=TRUE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,absolute=TRUE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
 	
-	tf<-order(abs(filter2[,"Filter1"]),decreasing=TRUE)[1:10]
+	tf<-order(abs(filter2[,"Filter1"]),decreasing=FALSE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=TRUE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])
-	tf<-order((filter2[,"Filter1"]),decreasing=TRUE)[1:10]
+	tf<-order((filter2[,"Filter1"]),decreasing=FALSE)[1:10]
 	expect_silent(f1<-filterData(scf,type="Filter1",percentile=10,keepLarge=FALSE,absolute=FALSE))
 	expect_equal(NROW(f1),length(tf))
 	expect_equal(assay(f1),assay(scf)[tf,])

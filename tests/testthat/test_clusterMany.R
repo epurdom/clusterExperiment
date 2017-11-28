@@ -247,7 +247,9 @@ expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
 	#--------
 	expect_silent(clusterMany(scfFull, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
 		dimReduce=c("Filter1"),clusterFunction="pam",
+  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
 	scfFull2<-makeFilterStats(scfFull,filterStat="var",isCount=FALSE)
+	
 	expect_silent(clusterMany(scfFull2, ks=c(3,4),nFilter=c(10,15),nPCADim=c(2),
 		dimReduce=c("var","Filter1"),clusterFunction="pam",
   		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))

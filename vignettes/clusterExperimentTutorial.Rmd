@@ -1187,7 +1187,7 @@ plotCoClustering(ce)
 We can also manually choose the set of clusters to use in `combineMany` with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
 
 ```{r combineMany_chooseClusters}
-wh<-grep("nVAR",clusterLabels(ce))
+wh<-getClusterManyParams(ce)$clusteringIndex[getClusterManyParams(ce)$dimReduce=="var"]
 ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3,
                 clusterLabel="combineMany,nVAR")
 plotCoClustering(ce)

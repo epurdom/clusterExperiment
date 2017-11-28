@@ -1,3 +1,5 @@
+###Note: any changes to this file should be at the END so as to not mess up the seed calls.
+
 library(clusterExperiment)
 # library(devtools)
 # load_all()
@@ -42,14 +44,7 @@ mData<-list(first=c(1,2,3),second=c("Information"))
 se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
 cc <- ClusterExperiment(mat, labMat, transformation = function(x){x})
 ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
-sce<-as(se,"SingleCellExperiment")
-scf<-as(sce,"SingleCellFilter")
 
-scfFull<-scf
-set.seed(352)
-filterStats(scfFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scf)),ncol=2)
-set.seed(124)
-reducedDim(scfFull,type="Red1")<-matrix(rnorm(2*ncol(scf)),ncol=2)
 
 #################################
 ###Larger sized objects based on simData/simCount:
@@ -68,6 +63,7 @@ seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,me
 
 test<- clusterMany(simCount,dimReduce="PCA",nPCADims=c(5,10,50), isCount=TRUE,
                          clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+						
 test<-addClusters(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
 clMatNew<-apply(clusterMatrix(test),2,function(x){
     wh<-sample(1:nSamples(test),size=10)
@@ -96,17 +92,24 @@ smSimCount<-simCount[1:20,whSamp]
 smSimCE<-ceSim[1:20,whSamp]
 smSimSE <- seSimData[1:20,whSamp]
 
+
+
 #################################
 ###Make reduce dimensions and filters
 #################################
+sce<-as(se,"SingleCellExperiment")
+scf<-as(sce,"SingleCellFilter")
+scfFull<-scf
+filterStats(scfFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scf)),ncol=2)
+reducedDim(scfFull,type="Red1")<-matrix(rnorm(2*ncol(scf)),ncol=2)
+
+
 library(Rtsne)
 sceSimData<-as(seSimData,"SingleCellExperiment")
 sceSimDataDimRed<-sceSimData
 pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
-set.seed(5252)
 tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
 
 scfSimData<-as(sceSimData,"SingleCellFilter")
-set.seed(2237589)
 filterStats(scfSimData,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scfSimData)),ncol=2)

@@ -264,7 +264,7 @@ setMethod(
 	anyDim<-length(reducedDims(x))>0 
 	anyDimBuiltIn<-any(dimReduce %in% listBuiltInDimReduce())
 	anyFilterBuiltIn<-any(dimReduce %in% listBuiltInFilterStats())
-	if(!anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
+	if(!all(dimReduce=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
 		stop("'dimReduce' does not match any stored or builtin filtering statistics or dimensionality reduction")
 	if(!all(dimReduce=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
 		###This will make it calculate the requested dimReduce values and then send it back to here as a SingleCellFilter object without the args of dimReduce, etc. ...
@@ -351,7 +351,7 @@ setMethod(
 	        #--------
 			#if findBestK make sure other arguments make sense:
 	        #--------
-	        whFindBestK <- which(param[,"findBestK"])
+			whFindBestK <- which(param[,"findBestK"])
 	        if(length(whFindBestK)>0){
 	          #by default make kRange in mainClustering equal to the ks. Note this will be true of ALL
 	          if(!"kRange" %in% names(mainClusterArgs)) {
@@ -495,18 +495,26 @@ setMethod(
 	        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
 	      }
 
+	      #####
 	      #give names to the parameter combinations.
+	      #####
 	      whVary <- which(apply(param,2,function(x){length(unique(x))>1}))
 	      if(length(whVary)>0) {
-	        cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-	        paste(colnames(param)[whVary],x,sep="=",collapse=",")})
+			  #for some reason, this code started changing TRUE/FALSE in to 1/0
+	        # cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
+	        # paste(colnames(param)[whVary],as.character(x),sep="=",collapse=",")})	
+			cnames<-sapply(1:nrow(param),function(ii){
+				paste(colnames(param)[whVary],as.character(param[ii,whVary]),sep="=",collapse=",")
+			})
 	      } else {
 	        stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
 	      }
 	      cnames <- gsub("dataset=","",cnames)
 	      cnames <- gsub("= ","=",cnames)
 	      cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
+		  #should I combine together nDimReduce and nFilter like they were before for the labels?
 	      rownames(param) <- cnames
+		  
 	  } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
 	      if(!run) {
 	        stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
@@ -628,7 +636,6 @@ setMethod(
 	      clInfo <- mapply(pList, out, FUN=function(x, y){
 	        c(list(choicesParam=x), clusterInfo(y))
 	      }, SIMPLIFY=FALSE)
-		  #browser()
 		  outval <- ClusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
 			                                    clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)

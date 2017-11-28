@@ -146,7 +146,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	    res<-do.call(clusterFunction@clusterFUN,argsClusterList)
 	}
 	if(algorithmType(clusterFunction)=="K") {
-		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy),postProcessArgs))
+		res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy,diss=diss),postProcessArgs))
 		###Note to self: .postProcessClusterK returns clusters in list form.
 	}
 
