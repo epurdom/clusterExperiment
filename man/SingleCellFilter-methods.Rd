@@ -4,6 +4,7 @@
 \name{SingleCellFilter-methods}
 \alias{SingleCellFilter-methods}
 \alias{filterStats,SingleCellFilter,character-method}
+\alias{filterStats}
 \alias{filterStats,SingleCellFilter,missing-method}
 \alias{filterStats<-,SingleCellFilter-method}
 \alias{filterStats<-}

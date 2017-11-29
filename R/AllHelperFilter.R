@@ -12,7 +12,7 @@ setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filter
 #' @param x A SingleCellFilter object
 #' @param object A SingleCellFilter object
 #' @param type a type of filter to retrieve. Should match the filter name.
-#' @aliases filterStats,SingleCellFilter,character-method
+#' @aliases filterStats,SingleCellFilter,character-method filterStats
 #' @export
 setMethod( "filterStats",c("SingleCellFilter","character"),
 	function(object,type){
