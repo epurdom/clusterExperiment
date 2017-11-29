@@ -161,16 +161,16 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 })
 
 test_that("plotDimReduce works",{
-	cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+	expect_silent(cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-	removeSil=c(TRUE,FALSE))
+	removeSil=c(TRUE,FALSE)))
 	expect_silent(plotDimReduce(cl,legend="bottomright"))
 	expect_silent(plotDimReduce(cl,legend=TRUE))
-	clusterLegend(cl)[["nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:4]
+	expect_silent(clusterLegend(cl)[["nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
 	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
 	#test on object that doesn't have saved:
-	clD<-plotDimReduce(ceSimData,dimReduce="PCA")
+	expect_silent(clD<-plotDimReduce(ceSimData,dimReduce="PCA"))
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 	
 	#higher dims.
