@@ -71,6 +71,7 @@ setGeneric(
 #'   If \code{filterNames=NULL}, column names of this matrix are the names given
 #'   to the filter statistics.
 #' @param filterNames a character vector of names for the filtering statistics.
+#' @param ... Values passed on the the 'SingleCellExperiment' method.
 #' @export
 setMethod(
 	f = "SingleCellFilter",

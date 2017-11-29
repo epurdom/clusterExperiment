@@ -136,7 +136,7 @@
 \item{x, object}{a ClusterExperiment object.}
 
 \item{..., i, j, drop}{Forwarded to the
-\code{\link[SingleCellFilter]{SingleCellFilter}} method.}
+\code{\link{SingleCellFilter}} method.}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what

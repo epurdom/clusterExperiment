@@ -447,7 +447,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
   }
 
 
-#' @importFrom ape node_height_clado node_height node_depth node_depth_edgelength is.ultrametric
+#' @importFrom ape node_height_clado node_height node_depth node_depth_edgelength is.ultrametric unrooted.xy
 ###Copy code from ape:plot.phylo so get how calculates x.lim. Just removed the plot parts.
 .calculatePlotPhylo<-function (x, type = "phylogram", use.edge.length = TRUE, node.pos = NULL, 
       show.tip.label = TRUE, show.node.label = FALSE, edge.color = "black", 
@@ -589,7 +589,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
               yy <- r * sin(theta)
           }, unrooted = {
               nb.sp <- .nodeDepth(Ntip, Nnode, z$edge, Nedge, node.depth)
-              XY <- if (use.edge.length) unrooted.xy(Ntip, Nnode, 
+              XY <- if (use.edge.length) ape::unrooted.xy(Ntip, Nnode, 
                   z$edge, z$edge.length, nb.sp, rotate.tree) else unrooted.xy(Ntip, 
                   Nnode, z$edge, rep(1, Nedge), nb.sp, rotate.tree)
               xx <- XY$M[, 1] - min(XY$M[, 1])

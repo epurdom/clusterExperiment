@@ -23,6 +23,8 @@ SingleCellFilter(object, ...)
 \item{object}{input either matrix, SingleCellExperiment, or
 SummarizedExperiment}
 
+\item{...}{Values passed on the the 'SingleCellExperiment' method.}
+
 \item{filterStats}{either vector of a single filtering statistic or matrix of
 filtering statistics, each column corresponding to a filtering statistic.
 If \code{filterNames=NULL}, column names of this matrix are the names given

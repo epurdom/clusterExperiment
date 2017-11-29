@@ -1,12 +1,22 @@
 #' @name transformData
 #' @title Transform the original data in a ClusterExperiment object
 #'
-#' Provides the transformed data (as defined by the object)
+#' @description Provides the transformed data
 #'
-#' @param _data a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.
-#'
+#' @param object a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.
+#' @param transFun a transformation function to be applied to the data. If the transformation 
+#' applied to the data creates an error or NA values, then the function will throw an error.
+#' If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+#' and giving this parameter will result in an error.
+#' @param isCount if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+# transformation as defined by \code{function(x){log2(x+1)}}, and \code{isCount=FALSE} 
+#' will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+#' If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+#' and giving this parameter will result in an error.
+#' @param ... Values passed on the the 'matrix' method.
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
-#'   the transformation function defined in x. 
+#'   the transformation function either defined in x (in the case of a 
+#' \code{ClusterExperiment} object) or by user given values for other classes. 
 #'
 #'
 #' @examples
@@ -81,8 +91,8 @@ setMethod(
 #'   \code{maxDims} can also take values between (0,1) to indicate keeping the
 #'   number of PCA dimensions necessary to account for that proportion of the
 #'   variance. \code{maxDims} should be of same length as \code{dimReduce}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each). 
-#' @param transFun a function that will be used to transform the data before performing dimensionality reduction. If \code{object} is a \code{ClusterExperiment} object, then the value of \code{transformation} slot will be used and the user cannot give a value for \code{transFun}.
-#' @param isCount logical. If \code{transFun} is not given, and \code{isCount=TRUE}, then the \code{transFun} will be assumed to be \code{log(x+1)}.
+#' @param ... Values passed on the the 'SingleCellExperiment' method.
+#' @inheritParams transformData
 #' @return a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
 #' @details The PCA method uses either \code{prcomp} from the \code{stats} package or  \code{svds} from the \code{RSpectra} package to perform PCA. Both are called on \code{t(assay(x))} with \code{center=TRUE} and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
 #'   it is performing PCA on the correlation matrix of the features. 
@@ -243,16 +253,6 @@ listBuiltInDimReduce<-function(){c("PCA")}
 
 
 
-#' @rdname makeFilterStats
-#' @export
-listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
-#' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
-.matchToStats<-SimpleList(
-	'var'=matrixStats::rowVars,
-	'mad'=matrixStats::rowMads,
-	'mean'=matrixStats::rowMeans2,
-	'iqr'=matrixStats::rowIQRs,
-	'median'=matrixStats::rowMedians)
 	
 #' @name makeFilterStats
 #' @title Calculate filtering statistics
@@ -261,7 +261,9 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
+#' @param ... Values passed on the the 'SingleCellFilter' method.
 #' @inheritParams makeDimReduce
+#' @inheritParams transformData
 #'
 #' @examples
 #' data(simData)
@@ -320,7 +322,7 @@ setMethod(
 
 }
 )
-#' @rdname makeDimReduce
+#' @rdname makeFilterStats
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -398,6 +400,16 @@ setMethod(
 	return(object)
 }
 )
+#' @rdname makeFilterStats
+#' @export
+listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
+#' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
+.matchToStats<-SimpleList(
+	'var'=matrixStats::rowVars,
+	'mad'=matrixStats::rowMads,
+	'mean'=matrixStats::rowMeans2,
+	'iqr'=matrixStats::rowIQRs,
+	'median'=matrixStats::rowMedians)
 
 
 #' @rdname makeFilterStats

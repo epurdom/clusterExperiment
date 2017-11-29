@@ -34,7 +34,7 @@
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
 \code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
 object.}
 
@@ -76,13 +76,15 @@ help pages of \code{\link{mainClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result

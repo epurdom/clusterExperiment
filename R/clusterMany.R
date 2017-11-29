@@ -8,7 +8,8 @@
 #'   
 #' @param x the data matrix on which to run the clustering. Can be object of the
 #'   following classes: matrix (with genes in rows), 
-#'   \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
 #'   \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
 #'   different choices of other parameters).

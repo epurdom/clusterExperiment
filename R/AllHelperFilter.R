@@ -4,11 +4,10 @@ setGeneric("filterNames<-", function(object,value) { standardGeneric("filterName
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
-#' Helper methods for the SingleCellFilter class
-#'
-#' This is a collection of helper methods for the SingleCellFilter class.
 #' @name SingleCellFilter-methods
-#' @aliases SingleCellFilter
+#' @title Helper methods for the SingleCellFilter class
+#'
+#' @description This is a collection of helper methods for the SingleCellFilter class.
 #' @rdname SingleCellFilter-methods
 #' @export
 setMethod( "filterStats",c("SingleCellFilter","character"),
@@ -90,6 +89,11 @@ setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
 	
 	
 #' @rdname SingleCellFilter-methods
+#' @param ...,i,j,drop Forwarded to the
+#'   \code{\link{SingleCellExperiment}} method.
+#' @param value The value to be substituted in the corresponding slot. See the
+#'   slot descriptions in \code{\link{SingleCellFilter}} for details on what
+#'   objects may be passed to these functions.
 #' @export
 setMethod("[", c("SingleCellFilter", "ANY", "ANY"), function(x, i, j, ..., drop=TRUE) {
     out<-callNextMethod()

@@ -30,7 +30,7 @@ setMethod(
 #' @param whichClusters which clusters to show on the plot
 #' @param dimReduce What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in 
-#'   functions of \code{\link{builtInDimReduce}()}
+#'   functions of \code{\link{listBuiltInDimReduce}()}
 #' @param whichDims vector of length 2 giving the indices of which dimensions to
 #'   show. The first value goes on the x-axis and the second on the y-axis.
 #' @param clusterLegend matrix with three columns and colnames
@@ -53,7 +53,7 @@ setMethod(
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
-#' @seealso \code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{builtInDimReduce()}}
+#' @seealso \code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInDimReduce}()}
 #' @rdname plotDimReduce
 #' @return A plot is created. Nothing is returned. 
 #' @examples

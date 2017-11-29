@@ -3,7 +3,6 @@
 \docType{methods}
 \name{SingleCellFilter-methods}
 \alias{SingleCellFilter-methods}
-\alias{SingleCellFilter}
 \alias{filterStats,SingleCellFilter,missing-method}
 \alias{filterStats<-,SingleCellFilter-method}
 \alias{filterNames,SingleCellFilter-method}
@@ -25,6 +24,14 @@
 \S4method{[}{SingleCellFilter,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{SingleCellFilter}(object)
+}
+\arguments{
+\item{..., i, j, drop}{Forwarded to the
+\code{\link{SingleCellExperiment}} method.}
+
+\item{value}{The value to be substituted in the corresponding slot. See the
+slot descriptions in \code{\link{SingleCellFilter}} for details on what
+objects may be passed to these functions.}
 }
 \description{
 This is a collection of helper methods for the SingleCellFilter class.

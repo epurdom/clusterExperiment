@@ -6,6 +6,7 @@
 \alias{RSEC-methods}
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
+\alias{RSEC,SingleCellExperiment-method}
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
@@ -36,7 +37,8 @@
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
 following classes: matrix (with genes in rows), 
-\code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
 \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
 \item{...}{For signature \code{list}, arguments to be passed on to mclapply 
@@ -55,13 +57,15 @@ determines whether to rerun the clusterMany step. Useful if want to try
 different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
 \item{dimReduce}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
@@ -137,7 +141,7 @@ however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 }
 \value{
-A \code{ClusterExperiment} object is returned containing all of 
+A \code{\link{ClusterExperiment}} object is returned containing all of 
 the clusterings from the steps of RSEC
 }
 \description{

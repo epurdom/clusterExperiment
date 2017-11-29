@@ -6,9 +6,7 @@
 \alias{transformData,ClusterExperiment-method}
 \alias{transformData,SingleCellExperiment-method}
 \alias{transformData,SummarizedExperiment-method}
-\title{Transform the original data in a ClusterExperiment object
-
-Provides the transformed data (as defined by the object)}
+\title{Transform the original data in a ClusterExperiment object}
 \usage{
 \S4method{transformData}{matrix}(object, transFun = NULL, isCount = FALSE)
 
@@ -19,11 +17,27 @@ Provides the transformed data (as defined by the object)}
 \S4method{transformData}{SummarizedExperiment}(object, ...)
 }
 \arguments{
-\item{_data}{a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.}
+\item{object}{a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.}
+
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
+
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
+
+\item{...}{Values passed on the the 'matrix' method.}
+}
+\description{
+Provides the transformed data
 }
 \details{
 The data matrix defined by \code{assay(x)} is transformed based on
-  the transformation function defined in x.
+  the transformation function either defined in x (in the case of a 
+\code{ClusterExperiment} object) or by user given values for other classes.
 }
 \examples{
 mat <- matrix(data=rnorm(200), ncol=10)

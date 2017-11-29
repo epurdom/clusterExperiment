@@ -15,11 +15,11 @@
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
 #'   without the computational costs of the clusterMany step.
-#' @return A \code{ClusterExperiment} object is returned containing all of 
+#' @return A \code{\link{ClusterExperiment}} object is returned containing all of 
 #' the clusterings from the steps of RSEC
 #' @inheritParams clusterMany,SingleCellFilter-method
 #' @name RSEC
-#' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method
+#' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method
 #' @inheritParams mergeClusters,matrix-method
 #' @export
 #' @rdname RSEC

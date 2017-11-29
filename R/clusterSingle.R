@@ -4,7 +4,7 @@
 #'  this function will find clusters, based on a single specification of parameters.
 #' 
 #' @param x the data on which to run the clustering (features in rows), or a
-#'   \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
 #'   \code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
@@ -23,12 +23,6 @@
 #'   (if \code{subsample=TRUE}), see help pages of 
 #'   \code{\link{subsampleClustering}}.
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}.
-#' @param isCount logical. Whether the data are in counts, in which case the 
-#'   default \code{transFun} argument is set as log2(x+1). This is simply a 
-#'   convenience to the user, and can be overridden by giving an explicit 
-#'   function to \code{transFun}.
-#' @param transFun function A function to use to transform the input data matrix
-#'   before clustering.
 #' @param dimReduce character A character identifying what type of 
 #'   dimensionality reduction to perform before clustering. Options are 
 #'   "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
@@ -42,6 +36,7 @@
 #'   valid.
 #' @param ... arguments to be passed on to the method for signature 
 #'   \code{matrix}.
+#' @inheritParams transformData
 #' @details \code{clusterSingle} is an 'expert-oriented' function, intended to
 #'   be used when a user wants to run a single clustering and/or have a great
 #'   deal of control over the clustering parameters. Most users will find

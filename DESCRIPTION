@@ -13,7 +13,8 @@ BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
     R (>= 3.4),
-    SingleCellExperiment
+    SingleCellExperiment,
+	SummarizedExperiment
 Imports:
     methods,
     NMF,

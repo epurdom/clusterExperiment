@@ -40,7 +40,7 @@ missing see details for default values. in the 'coClustering' slot of the
 \item{ignoreUnassignedVar}{logical. Whether filtering statistics should
 ignore the unassigned samples within the clustering. Only relevant if
 'dimReduce' matches one of built-in filtering statistics in
-\code{\link{builtInFilterStats()}}. In which case the clustering identified
+\code{\link{listBuiltInFilterStats}()}. In which case the clustering identified
 in \code{whichCluster} is passed to \code{makeFilterStats}. See
 \code{\link{makeFilterStats}}  for more details.}
 

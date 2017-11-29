@@ -28,7 +28,7 @@
 
 \item{dimReduce}{What dimensionality reduction method to use. Should match
 either a value in \code{reducedDimNames(object)} or one of the built-in 
-functions of \code{\link{builtInDimReduce}()}}
+functions of \code{\link{listBuiltInDimReduce}()}}
 
 \item{whichDims}{vector of length 2 giving the indices of which dimensions to
 show. The first value goes on the x-axis and the second on the y-axis.}
@@ -78,5 +78,5 @@ removeSil=c(TRUE,FALSE))
 plotDimReduce(cl,legend="bottomright")
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{builtInDimReduce()}}
+\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInDimReduce}()}
 }

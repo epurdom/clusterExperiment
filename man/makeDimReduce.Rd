@@ -7,7 +7,6 @@
 \alias{makeDimReduce,SummarizedExperiment-method}
 \alias{makeDimReduce,ClusterExperiment-method}
 \alias{listBuiltInDimReduce}
-\alias{makeFilterStats,matrix-method}
 \title{Calculate dimensionality reduction of data}
 \usage{
 \S4method{makeDimReduce}{SingleCellExperiment}(object, dimReduce = "PCA",
@@ -20,8 +19,6 @@
 \S4method{makeDimReduce}{ClusterExperiment}(object, ...)
 
 listBuiltInDimReduce()
-
-\S4method{makeFilterStats}{matrix}(object, ...)
 }
 \arguments{
 \item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}
@@ -33,9 +30,17 @@ listBuiltInDimReduce()
 number of PCA dimensions necessary to account for that proportion of the
 variance. \code{maxDims} should be of same length as \code{dimReduce}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each).}
 
-\item{transFun}{a function that will be used to transform the data before performing dimensionality reduction. If \code{object} is a \code{ClusterExperiment} object, then the value of \code{transformation} slot will be used and the user cannot give a value for \code{transFun}.}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{isCount}{logical. If \code{transFun} is not given, and \code{isCount=TRUE}, then the \code{transFun} will be assumed to be \code{log(x+1)}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
+
+\item{...}{Values passed on the the 'SingleCellExperiment' method.}
 }
 \value{
 a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.

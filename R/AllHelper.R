@@ -7,7 +7,7 @@
 #' the co-clustering matrix are lost.
 #' @export
 #' @param ...,i,j,drop Forwarded to the
-#'   \code{\link[SingleCellFilter]{SingleCellFilter}} method.
+#'   \code{\link{SingleCellFilter}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.

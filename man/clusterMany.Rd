@@ -34,7 +34,8 @@
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
 following classes: matrix (with genes in rows), 
-\code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
 \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
 \item{dimReduce}{character A character identifying what type of 
@@ -46,13 +47,15 @@ details.}
 in \code{dimReduce}). If NA is included, then the full dataset will also be
 included.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
 \item{...}{For signature \code{list}, arguments to be passed on to mclapply 
 (if ncores>1). For all the other signatures, arguments to be passed to the 
