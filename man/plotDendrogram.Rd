@@ -7,7 +7,7 @@
 \title{Plot dendrogram of clusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
-  leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
+  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
   "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
   "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
   removeOutbranch = TRUE, legend = c("side", "below", "none"), ...)

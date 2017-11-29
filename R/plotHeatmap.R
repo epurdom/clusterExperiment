@@ -378,6 +378,7 @@ setMethod(
     #Get clusterings
 	#---
     whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
+	#browser()
     if(length(whCl)>0){
       clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
     }

@@ -218,45 +218,53 @@
 ##Universal way to change character indication of clusterTypes into integer indices.
 ##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
-  if(!inherits(test,"try-error")){
-    if(test=="workflow"){
-      ppIndex<-workflowClusterDetails(x)
-      if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-        wh<-unlist(lapply(.workflowValues,function(tt){
-          ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
-        }))
-      }
-      else wh<-vector("integer",length=0)
-    }
-    if(test=="all"){
-      #put primary cluster first
-      ppcl<-primaryClusterIndex(x)
-      wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
-    }
-    if(test=="none") wh<-vector("integer",length=0)
-    if(test=="primaryCluster") wh<-primaryClusterIndex(x)
-	if(test=="dendro"){
-		wh<-dendroClusterIndex(x)
-		if(is.na(wh)) wh<-vector("integer",length=0)
-	}
-  }
-  else{
-    #first match to clusterTypes  
-    mClType<-match(whClusters,clusterTypes(x))  
-    mClLabel<-match(whClusters,clusterLabels(x))  
-    totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
-        if(is.na(type) & !is.na(lab)) return(lab)
-        if(is.na(type) & is.na(lab)) return(NA)
-        if(!is.na(type)){
-            return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
-        }
-    },SIMPLIFY=FALSE)
-    totalMatch<-unlist(totalMatch,use.names=FALSE)
+ if(is.numeric(whClusters)) wh<-whClusters
+	 else{
+		 test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
+		   if(!inherits(test,"try-error")){
+		     if(test=="workflow"){
+		       ppIndex<-workflowClusterDetails(x)
+		       if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
+		         wh<-unlist(lapply(.workflowValues,function(tt){
+		           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
+		         }))
+		       }
+		       else wh<-vector("integer",length=0)
+		     }
+		     if(test=="all"){
+		       #put primary cluster first
+		       ppcl<-primaryClusterIndex(x)
+		       wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
+		     }
+		     if(test=="none") wh<-vector("integer",length=0)
+		     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
+		 	if(test=="dendro"){
+		 		wh<-dendroClusterIndex(x)
+		 		if(is.na(wh)) wh<-vector("integer",length=0)
+		 	}
+		   }
+		   else{
+		     #first match to clusterTypes  
+		     mClType<-match(whClusters,clusterTypes(x))  
+		     mClLabel<-match(whClusters,clusterLabels(x))  
+		     totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
+		         if(is.na(type) & !is.na(lab)) return(lab)
+		         if(is.na(type) & is.na(lab)) return(NA)
+		         if(!is.na(type)){
+		             return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
+		         }
+		     },SIMPLIFY=FALSE)
+		     totalMatch<-unlist(totalMatch,use.names=FALSE)
     
-    if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
-    else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-  }
+		     if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
+		     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
+		   }
+	 } 
+  	 if(any(wh>nClusters(x) | wh<1)){
+		 wh<-wh[wh<=nClusters(x) & wh>0]
+		 
+  	 }
+#	 if(length(wh)>0) wh<-wh[is.integer(wh)]
   return(wh)
 }
 
@@ -294,13 +302,27 @@
 			#######
 			#find the -1/-2 internal node (if it exists)
 			#determine it as the one without 0-length tip edges.
+			#assumes all tips in the non-outbranch have 0-length (so max value is zero)
 			#######
 			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-			#find tip descendants of these:
+			#find tip descendants of each of these:
 			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-			rootChildNum<-sapply(rootChildLeng,min)
-			outbranchNode<-rootChild[rootChildNum>0]
+			
+			#Problem here!!! if there is single sample in a cluster, then could be a tip with length not equal to zero. Need to ignore these....how? If take the min, then a single zero length in outbranch will result in both having zeros...
+			#maybe should change function so have to provide a single name of a sample that is in outbranch so as to identify it that way. 
+			#for now, lets hope that never happens! i.e. that BOTH a single sample in a cluster and that outbranch has a zero length
+			rootChildNum<-sapply(rootChildLeng,min) #minimum length 
+			
+			#indicator of which child node is the 
+			whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
+			if(sum(whKeep)!=1){
+				#if both sides have a zero, then use max instead. 
+				rootChildNum<-sapply(rootChildLeng,max) #maximum length 
+				whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) 
+			}
+			if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
+			outbranchNode<-rootChild[!whKeep]
 			
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE

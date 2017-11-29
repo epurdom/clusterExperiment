@@ -225,7 +225,8 @@ setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment","missing"),
   definition = function(x,whichClusters) {
-    return(x@clusterMatrix)
+	  wh<-1:ncol(x@clusterMatrix)
+   return(clusterMatrix(x,whichClusters=wh))
   }
 )
 #' @rdname ClusterExperiment-methods
@@ -236,7 +237,9 @@ setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment","numeric"),
   definition = function(x,whichClusters) {
-    return(x@clusterMatrix[,whichClusters,drop=FALSE])
+	  mat<-x@clusterMatrix[,whichClusters,drop=FALSE]
+	  rownames(mat)<-colnames(x)
+    return(mat)
   }
 )
 #' @rdname ClusterExperiment-methods
