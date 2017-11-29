@@ -159,8 +159,8 @@
 #'
 #' #use clusterSingle to do just clustering k=3 with no subsampling
 #' clustNothing <- clusterSingle(simData, 
-#'     subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",
-#'     clusterArgs=list(k=3)))
+#'     subsample=FALSE, sequential=FALSE, 
+#'     mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #' #compare to standard pam
 #' cluster::pam(t(simData),k=3,cluster.only=TRUE)
 #' @aliases clusterSingle,missing,matrixOrNULL-method

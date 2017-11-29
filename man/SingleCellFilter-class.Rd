@@ -20,19 +20,23 @@ SingleCellFilter(object, ...)
 \S4method{SingleCellFilter}{matrix}(object, ...)
 }
 \arguments{
-\item{object}{input either matrix, SingleCellExperiment, or SummarizedExperiment}
+\item{object}{input either matrix, SingleCellExperiment, or
+SummarizedExperiment}
 
-\item{filterStats}{either vector of a single filtering statistic or matrix of filtering statistics, each column corresponding to a filtering statistic. If \code{filterNames=NULL}, column names of this matrix are the names given to the filter statistics.}
+\item{filterStats}{either vector of a single filtering statistic or matrix of
+filtering statistics, each column corresponding to a filtering statistic.
+If \code{filterNames=NULL}, column names of this matrix are the names given
+to the filter statistics.}
 
 \item{filterNames}{a character vector of names for the filtering statistics.}
 }
 \description{
-\code{SingleCellFilter} is a class that extends
-\code{SingleCellExperiment} and is used to store filterStats on the data
+\code{SingleCellFilter} is a class that extends 
+  \code{SingleCellExperiment} and is used to store filterStats on the data
 
-In addition to the slots of the \code{SingleCellExperiment}
-class, the \code{SingleCellFilter} object has the additional slots described
-in the Slots section.
+In addition to the slots of the \code{SingleCellExperiment} 
+  class, the \code{SingleCellFilter} object has the additional slots
+  described in the Slots section.
 }
 \details{
 \code{filterStats}
@@ -40,7 +44,7 @@ in the Slots section.
 \section{Slots}{
 
 \describe{
-\item{\code{filterStats}}{a numeric matrix where each column gives a summary statistics 
-calculated per gene that can be used for filtering of genes.}
+\item{\code{filterStats}}{a numeric matrix where each column gives a summary
+statistics calculated per gene that can be used for filtering of genes.}
 }}
 

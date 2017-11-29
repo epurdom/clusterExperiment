@@ -89,13 +89,10 @@ setMethod(
 #'
 #' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{dimReduce}.
 #' @examples
-#' mat <- matrix(data=rnorm(200), ncol=10)
-#' mat[1,1] <- -1 #force a negative value
-#' labels <- gl(5, 2)
-#' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
-#' function(x){x^2}) #define transformation as x^2
-#' #will transform data based on saved transformation
-#' x <- makeDimReduce(cc, dimReduce="PCA", nPCADims=3)
+#' data(simData)
+#' listBuiltInDimReduce()
+#' scf<-makeDimReduce(simData, dimReduce="PCA", maxDims=3)
+#' scf
 #' @export
 #' @importFrom matrixStats rowVars
 setMethod(
@@ -259,12 +256,21 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 	
 #' @name makeFilterStats
 #' @title Calculate filtering statistics
-#' @description Function for calculating, per row (gene), built-in statistical functions that might be used for filtering. 
+#' @description Function for calculating, per row (gene), built-in statistical 
+#'    functions that might be used for filtering. 
 #' @param object object from which user wants to calculate per-row statistics
-#' @param filterStats character vector of statistics to calculate. Must be one of the character values given by \code{listBuildInFilterStats()}.
+#' @param filterStats character vector of statistics to calculate. 
+#' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
 #' @inheritParams makeDimReduce
 #'
-#'
+#' @examples
+#' data(simData)
+#' listBuiltInFilterStats()
+#' scf<-makeFilterStats(simData,filterStats=c("var","mad"))
+#' scf
+#' scfFiltered<-filterData(scf,type="mad",percentile=10)
+#' scfFiltered
+#' assay(scfFiltered)[1:10,1:10]
 #' @rdname makeFilterStats
 #' @export
 setMethod(
@@ -347,7 +353,12 @@ setMethod(
 #' @rdname makeFilterStats
 #' @export
 #' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.
-#' @details \code{whichClusterIgnoreUnassigned} indicates that the filtering statistics should be calculated based on filtering statistics that do not samples that are unassigned by the designated clustering. The name given to the filter in this case is of the form \code{<filterStats>_<clusterLabel>}, i.e. the clustering label of the clustering is appended to the filtering statistics standard name.
+#' @details \code{whichClusterIgnoreUnassigned} is only an option when applied to a
+#' \code{ClusterExperiment} classs and indicates that the filtering statistics should be
+#' calculated based on samples that are unassigned by the
+#'  designated clustering. The name given to the filter in this case is of the form
+#'  \code{<filterStats>_<clusterLabel>}, i.e. the clustering label of the clustering is
+#'  appended to the standard name for the filtering statistic.
 #'
 
 setMethod(
@@ -389,11 +400,7 @@ setMethod(
 )
 
 
-#' @name filterData
-#' @title Filter SingleCellFilter object
-#' @description Function for filtering SingleCellFilter object based on the internally saved filtering statistics.
-#' @param object a SingleCellFilter object
-#' @param type character indicating which filter statistic to use. Must match a single filter statistic in \code{object}
+#' @rdname makeFilterStats
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic

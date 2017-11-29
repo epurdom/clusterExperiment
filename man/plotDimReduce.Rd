@@ -26,7 +26,9 @@
 
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
-\item{dimReduce}{What dimensionality reduction method to use. Should match either a \code{reducedDimNames(x)} or one of the built-in functions of \code{\link{builtInDimReduce}()}}
+\item{dimReduce}{What dimensionality reduction method to use. Should match
+either a value in \code{reducedDimNames(object)} or one of the built-in 
+functions of \code{\link{builtInDimReduce}()}}
 
 \item{whichDims}{vector of length 2 giving the indices of which dimensions to
 show. The first value goes on the x-axis and the second on the y-axis.}

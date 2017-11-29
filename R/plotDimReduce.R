@@ -29,8 +29,8 @@ setMethod(
 #' @param object a ClusterExperiment object
 #' @param whichClusters which clusters to show on the plot
 #' @param dimReduce What dimensionality reduction method to use. Should match
-#'   either a \code{reducedDimNames(x)} or one of the built-in functions of
-#'   \code{\link{builtInDimReduce}()}
+#'   either a value in \code{reducedDimNames(object)} or one of the built-in 
+#'   functions of \code{\link{builtInDimReduce}()}
 #' @param whichDims vector of length 2 giving the indices of which dimensions to
 #'   show. The first value goes on the x-axis and the second on the y-axis.
 #' @param clusterLegend matrix with three columns and colnames

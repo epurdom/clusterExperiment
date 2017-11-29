@@ -136,25 +136,25 @@
 #' #Example: clustering using pam with different dimensions of pca and different
 #' #k and whether remove negative silhouette values
 #' #check how many and what runs user choices will imply:
-#' checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-#' clusterFunction="pam",
+#' checkParams <- clusterMany(simData,dimReduce="PCA",  
+#' nPCADims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(head(checkParams$paramMatrix))
 #'
 #' #Now actually run it
-#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' cl <- clusterMany(simData,dimReduce="PCA", nPCADims=c(5,10,50),  isCount=FALSE,
 #' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
 #' head(colnames(clusterMatrix(cl)))
 #'
 #' #make names shorter for plotting
-#' clMat <- clusterMatrix(cl)
-#' colnames(clMat) <- gsub("TRUE", "T", colnames(clMat))
-#' colnames(clMat) <- gsub("FALSE", "F", colnames(clMat))
-#' colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
+#' clNames <- clusterLabels(cl)
+#' clNames <- gsub("TRUE", "T", clNames)
+#' clNames <- gsub("FALSE", "F", clNames)
+#' clNames <- gsub("k=NA,", "", clNames)
 #'
 #' par(mar=c(2, 10, 1, 1))
-#' plotClusters(clMat, axisLine=-2)
+#' plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 #'
 #'
 #' \dontrun{

@@ -50,11 +50,8 @@ The PCA method uses either \code{prcomp} from the \code{stats} package or  \code
   it is performing PCA on the correlation matrix of the features.
 }
 \examples{
-mat <- matrix(data=rnorm(200), ncol=10)
-mat[1,1] <- -1 #force a negative value
-labels <- gl(5, 2)
-cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
-function(x){x^2}) #define transformation as x^2
-#will transform data based on saved transformation
-x <- makeDimReduce(cc, dimReduce="PCA", nPCADims=3)
+data(simData)
+listBuiltInDimReduce()
+scf<-makeDimReduce(simData, dimReduce="PCA", maxDims=3)
+scf
 }

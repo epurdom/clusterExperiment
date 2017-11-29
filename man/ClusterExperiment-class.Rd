@@ -38,40 +38,41 @@ ClusterExperiment(object, clusters, ...)
   checkTransformAndAssay = TRUE)
 }
 \arguments{
-\item{object}{a matrix or \code{SummarizedExperiment} or \code{SingleCellExperiment}
-containing the data that was clustered.}
+\item{object}{a matrix or \code{SummarizedExperiment} or
+\code{SingleCellExperiment} containing the data that was clustered.}
 
-\item{clusters}{can be either a numeric or character vector, a factor, or a
+\item{clusters}{can be either a numeric or character vector, a factor, or a 
 numeric matrix, containing the cluster labels.}
 
-\item{...}{The arguments \code{transformation}, \code{clusterTypes} and
-\code{clusterInfo} to be passed to the constructor for signature
+\item{...}{The arguments \code{transformation}, \code{clusterTypes} and 
+\code{clusterInfo} to be passed to the constructor for signature 
 \code{SingleCellExperiment,matrix}.}
 
-\item{transformation}{function. A function to transform the data before
+\item{transformation}{function. A function to transform the data before 
 performing steps that assume normal-like data (i.e. constant variance), such
 as the log.}
 
 \item{primaryIndex}{integer. Sets the `primaryIndex` slot (see Slots).}
 
-\item{clusterTypes}{a string describing the nature of the clustering. The
-values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-reserved for the clustering coming from the package workflow and should not
+\item{clusterTypes}{a string describing the nature of the clustering. The 
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are 
+reserved for the clustering coming from the package workflow and should not 
 be used when creating a new object with the constructor.}
 
 \item{clusterInfo}{a list with information on the clustering (see Slots).}
 
-\item{orderSamples}{a vector of integers. Sets the `orderSamples` slot (see
+\item{orderSamples}{a vector of integers. Sets the `orderSamples` slot (see 
 Slots).}
 
 \item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
 
 \item{dendro_index}{numeric. Sets the \code{dendro_index} slot (see Slots).}
 
-\item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
+\item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see 
 Slots).}
 
-\item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see Slots).}
+\item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see
+Slots).}
 
 \item{coClustering}{matrix. Sets the \code{coClustering} slot (see Slots).}
 
@@ -79,15 +80,18 @@ Slots).}
 
 \item{merge_cutoff}{numeric. Sets the \code{merge_cutoff} slot (see Slots)}
 
-\item{merge_dendrocluster_index}{integer. Sets the \code{merge_dendrocluster_index} slot (see Slots)}
+\item{merge_dendrocluster_index}{integer. Sets the
+\code{merge_dendrocluster_index} slot (see Slots)}
 
-\item{merge_nodeProp}{data.frame. Sets the \code{merge_nodeProp} slot (see Slots)}
+\item{merge_nodeProp}{data.frame. Sets the \code{merge_nodeProp} slot (see
+Slots)}
 
-\item{merge_nodeMerge}{data.frame. Sets the \code{merge_nodeMerge} slot (see Slots)}
+\item{merge_nodeMerge}{data.frame. Sets the \code{merge_nodeMerge} slot (see
+Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
-\item{checkTransformAndAssay}{logical. Whether to check the content of the
+\item{checkTransformAndAssay}{logical. Whether to check the content of the 
 assay and given transformation function for whether they are valid.}
 }
 \value{
@@ -108,13 +112,13 @@ important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
 Methods section. For a comprehensive list of methods specific to this class
 see the Reference Manual.
 
-The constructor \code{ClusterExperiment} creates an object of
-the class \code{ClusterExperiment}. However, the typical way of creating
-these objects is the result of a call to \code{\link{clusterMany}} or
-\code{\link{clusterSingle}}.
+The constructor \code{ClusterExperiment} creates an object of the
+ class \code{ClusterExperiment}. However, the typical way of creating these
+ objects is the result of a call to \code{\link{clusterMany}} or 
+ \code{\link{clusterSingle}}.
 
-Note that when subsetting the data, the co-clustering and
-dendrogram information are lost.
+Note that when subsetting the data, the co-clustering and 
+ dendrogram information are lost.
 }
 \details{
 The \code{ClusterExperiment} constructor function gives

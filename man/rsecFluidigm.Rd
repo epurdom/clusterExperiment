@@ -25,11 +25,11 @@ wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 library(ClusterExperiment)
 ncores<-1
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,dimReduce="PCA",nPCADims=10,
 ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
  combineMinSize=3))
 packageVersion("clusterExperiment")
-devtools::use_data(rsecFluidigm)
+devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }
 \seealso{

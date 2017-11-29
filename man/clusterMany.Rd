@@ -32,8 +32,8 @@
 \S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
-\item{x}{the data matrix on which to run the clustering. Can be object of the following classes: matrix (with
-genes in rows), 
+\item{x}{the data matrix on which to run the clustering. Can be object of the
+following classes: matrix (with genes in rows), 
 \code{\link{SummarizedExperiment}}, \code{\link{SingleCellExperiment}} 
 \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
@@ -148,9 +148,9 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \value{
-If \code{run=TRUE} and the input is not a list of data matrices, 
-  will return a \code{ClusterExperiment} object, where the results are stored
-  as clusterings with clusterTypes \code{clusterMany}. Depending on 
+If \code{run=TRUE} and the input is not a list of data matrices, will
+  return a \code{ClusterExperiment} object, where the results are stored as
+  clusterings with clusterTypes \code{clusterMany}. Depending on 
   \code{eraseOld} argument above, this will either delete existing such 
   objects, or change the clusterTypes of existing objects. See argument 
   \code{eraseOld} above. Arbitrarily the first clustering is set as the 
@@ -164,8 +164,8 @@ If \code{run=TRUE} and the input is a list of data sets, a list with
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
   clustering, where each column is a possible parameter set by the user and 
   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
-  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{ a 
-  list of (possibly modified) arguments to mainClusterArgs} 
+  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+  a list of (possibly modified) arguments to mainClusterArgs} 
   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
   arguments to subsampleArgs} }
@@ -193,26 +193,26 @@ While the function allows for multiple values of clusterFunction,
   there is no gain in computational complexity (i.e. each subsampled 
   co-occurence matrix is recalculated for each set of parameters).
 
-The argument \code{ks} is interpreted differently for different
+The argument \code{ks} is interpreted differently for different 
   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
-  the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
-  values are the \code{k} values for \strong{both} the mainClustering and
-  subsampling step (i.e. assigned to the \code{subsampleArgs} and
-  \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and
-  \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
-  \code{subsampleArgs}. The passing of these arguments via
-  \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
-  Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an
+  the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks} 
+  values are the \code{k} values for \strong{both} the mainClustering and 
+  subsampling step (i.e. assigned to the \code{subsampleArgs} and 
+  \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and 
+  \code{\link{subsampleClustering}} unless \code{k} is set appropriately in 
+  \code{subsampleArgs}. The passing of these arguments via 
+  \code{subsampleArgs} will only have an effect if `subsample=TRUE`. 
+  Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an 
   effect when the clusterFunction argument includes a clustering algorithm of
-  type "K". When/if "findBestK=TRUE", \code{ks} also defines the
-  \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange} is
-  specified by the user via the \code{mainClusterArgs}; note this means that the
-  default option of setting \code{kRange} that depends on the input \code{k}
-  (see \code{\link{mainClustering}}) is not available in \code{clusterMany}, only
-  in \code{\link{clusterSingle}}.
+  type "K". When/if "findBestK=TRUE", \code{ks} also defines the 
+  \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange}
+  is specified by the user via the \code{mainClusterArgs}; note this means
+  that the default option of setting \code{kRange} that depends on the input
+  \code{k} (see \code{\link{mainClustering}}) is not available in
+  \code{clusterMany}, only in \code{\link{clusterSingle}}.
 
-If the input is a \code{ClusterExperiment} object, current
-  implementation is that existing \code{orderSamples},\code{coClustering} or
+If the input is a \code{ClusterExperiment} object, current 
+  implementation is that existing \code{orderSamples},\code{coClustering} or 
   the many dendrogram slots will be retained.
 }
 \examples{
@@ -221,25 +221,25 @@ data(simData)
 #Example: clustering using pam with different dimensions of pca and different
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
-checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-clusterFunction="pam",
+checkParams <- clusterMany(simData,dimReduce="PCA",  
+nPCADims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+cl <- clusterMany(simData,dimReduce="PCA", nPCADims=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))
 
 #make names shorter for plotting
-clMat <- clusterMatrix(cl)
-colnames(clMat) <- gsub("TRUE", "T", colnames(clMat))
-colnames(clMat) <- gsub("FALSE", "F", colnames(clMat))
-colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
+clNames <- clusterLabels(cl)
+clNames <- gsub("TRUE", "T", clNames)
+clNames <- gsub("FALSE", "F", clNames)
+clNames <- gsub("k=NA,", "", clNames)
 
 par(mar=c(2, 10, 1, 1))
-plotClusters(clMat, axisLine=-2)
+plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 
 
 \dontrun{

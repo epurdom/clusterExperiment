@@ -6,8 +6,8 @@
 \alias{clusterSingle,missing,matrixOrNULL-method}
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,ClusterExperiment,missing-method}
 \alias{clusterSingle,SingleCellExperiment,missing-method}
+\alias{clusterSingle,ClusterExperiment,missing-method}
 \alias{clusterSingle,SingleCellFilter,missing-method}
 \alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
@@ -18,10 +18,10 @@
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x, diss, ...)
+
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
-
-\S4method{clusterSingle}{SingleCellExperiment,missing}(x, diss, ...)
 
 \S4method{clusterSingle}{SingleCellFilter,missing}(x, dimReduce = "none",
   nDims = NA, ...)
@@ -207,8 +207,8 @@ data(simData)
 
 #use clusterSingle to do just clustering k=3 with no subsampling
 clustNothing <- clusterSingle(simData, 
-    subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",
-    clusterArgs=list(k=3)))
+    subsample=FALSE, sequential=FALSE, 
+    mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #compare to standard pam
 cluster::pam(t(simData),k=3,cluster.only=TRUE)
 }

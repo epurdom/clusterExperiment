@@ -8,6 +8,8 @@
 \alias{filterStats<-,SingleCellFilter-method}
 \alias{filterNames,SingleCellFilter-method}
 \alias{filterNames<-,SingleCellFilter-method}
+\alias{[,SingleCellFilter,ANY,ANY,ANY-method}
+\alias{show,SingleCellFilter-method}
 \title{Helper methods for the SingleCellFilter class}
 \usage{
 \S4method{filterStats}{SingleCellFilter,character}(object, type)
@@ -19,10 +21,17 @@
 \S4method{filterNames}{SingleCellFilter}(object)
 
 \S4method{filterNames}{SingleCellFilter}(object) <- value
+
+\S4method{[}{SingleCellFilter,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{show}{SingleCellFilter}(object)
 }
 \description{
 This is a collection of helper methods for the SingleCellFilter class.
 }
 \details{
-Note that the replacement functions never actually completely replace the slot \code{filterStats}; they update existing filters of the same name and add filters with new names to the existing filters.
+Note that the replacement functions never actually completely
+  replace the slot \code{filterStats} unless the replacement value is NULL
+  They update existing filters of the
+  same name and add filters with new names to the existing filters.
 }

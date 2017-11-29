@@ -10,7 +10,8 @@
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{combineMany}{matrix,missing}(x, whichClusters, proportion,
-  clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5)
+  clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5,
+  ...)
 
 \S4method{combineMany}{ClusterExperiment,numeric}(x, whichClusters,
   eraseOld = FALSE, clusterLabel = "combineMany", ...)
@@ -39,6 +40,9 @@ assignments equal to '-1' are assigned a '-1' cluster value as a last step
 \item{minSize}{minimum size required for a set of samples to be considered in
 a cluster because of shared clustering, passed to \code{\link{mainClustering}}}
 
+\item{...}{arguments to be passed on to the method for signature
+\code{matrix,missing}.}
+
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class 
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
 (clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
@@ -50,9 +54,6 @@ clusterTypes.}
 default it is equal to "combineMany", to indicate that this clustering is
 the result of a call to combineMany. However, a more informative label can
 be set (see vignette).}
-
-\item{...}{arguments to be passed on to the method for signature
-\code{matrix,missing}.}
 }
 \value{
 If x is a matrix, a list with values
