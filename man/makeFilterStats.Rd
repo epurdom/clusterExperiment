@@ -3,12 +3,14 @@
 \docType{methods}
 \name{makeFilterStats}
 \alias{makeFilterStats}
+\alias{makeFilterStats,SingleCellFilter-method}
 \alias{makeFilterStats,matrix-method}
 \alias{makeFilterStats,SummarizedExperiment-method}
 \alias{makeFilterStats,SingleCellExperiment-method}
 \alias{makeFilterStats,ClusterExperiment-method}
 \alias{listBuiltInFilterStats}
 \alias{filterData,SingleCellFilter-method}
+\alias{filterData}
 \title{Calculate filtering statistics}
 \usage{
 \S4method{makeFilterStats}{SingleCellFilter}(object,
@@ -49,6 +51,8 @@ and giving this parameter will result in an error.}
 \item{...}{Values passed on the the 'SingleCellFilter' method.}
 
 \item{whichClusterIgnoreUnassigned}{indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.}
+
+\item{type}{The type of filtering statistic to use to filter.}
 
 \item{cutoff}{numeric. A value at which to filter the rows (genes) for the test statistic}
 

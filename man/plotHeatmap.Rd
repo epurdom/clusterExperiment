@@ -4,6 +4,7 @@
 \name{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap}
+\alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,data.frame-method}
 \alias{plotHeatmap,ExpressionSet-method}
@@ -13,6 +14,9 @@
 \title{Heatmap for showing clustering results and more}
 \usage{
 \S4method{plotHeatmap}{SingleCellExperiment}(data, isCount = FALSE,
+  transFun = NULL, ...)
+
+\S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
   transFun = NULL, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,

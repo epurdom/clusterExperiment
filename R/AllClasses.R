@@ -73,6 +73,7 @@ setGeneric(
 #' @param filterNames a character vector of names for the filtering statistics.
 #' @param ... Values passed on the the 'SingleCellExperiment' method.
 #' @export
+#' @importFrom SummarizedExperiment assay assays SummarizedExperiment colData<-
 setMethod(
 	f = "SingleCellFilter",
 	signature = signature("SingleCellExperiment"),

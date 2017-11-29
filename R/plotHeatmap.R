@@ -281,6 +281,8 @@ setMethod(
       plotHeatmap(fakeCE,whichClusters="none",...)
 })
 
+#' @rdname plotHeatmap
+#' @export
 setMethod(
     f = "plotHeatmap",
     signature = signature(data = "SummarizedExperiment"),

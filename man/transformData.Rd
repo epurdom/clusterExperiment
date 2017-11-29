@@ -3,6 +3,7 @@
 \docType{methods}
 \name{transformData}
 \alias{transformData}
+\alias{transformData,matrix-method}
 \alias{transformData,ClusterExperiment-method}
 \alias{transformData,SingleCellExperiment-method}
 \alias{transformData,SummarizedExperiment-method}

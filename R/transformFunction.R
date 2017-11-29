@@ -26,6 +26,7 @@
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' z<-transformData(cc) 
+#' @aliases transformData,matrix-method
 #' @export
 setMethod(
   f = "transformData",
@@ -104,6 +105,7 @@ setMethod(
 #' scf<-makeDimReduce(simData, dimReduce="PCA", maxDims=3)
 #' scf
 #' @export
+#' @aliases makeDimReduce,SingleCellExperiment-method
 #' @importFrom matrixStats rowVars
 setMethod(
   f = "makeDimReduce",
@@ -274,6 +276,7 @@ listBuiltInDimReduce<-function(){c("PCA")}
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
 #' @rdname makeFilterStats
+#' @aliases makeFilterStats,SingleCellFilter-method
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -413,6 +416,8 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 
 
 #' @rdname makeFilterStats
+#' @aliases filterData
+#' @param type The type of filtering statistic to use to filter. 
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic

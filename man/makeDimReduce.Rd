@@ -3,6 +3,7 @@
 \docType{methods}
 \name{makeDimReduce}
 \alias{makeDimReduce}
+\alias{makeDimReduce,SingleCellExperiment-method}
 \alias{makeDimReduce,matrix-method}
 \alias{makeDimReduce,SummarizedExperiment-method}
 \alias{makeDimReduce,ClusterExperiment-method}

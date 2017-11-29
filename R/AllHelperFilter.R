@@ -9,6 +9,10 @@ setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filter
 #'
 #' @description This is a collection of helper methods for the SingleCellFilter class.
 #' @rdname SingleCellFilter-methods
+#' @param x A SingleCellFilter object
+#' @param object A SingleCellFilter object
+#' @param type a type of filter to retrieve. Should match the filter name.
+#' @aliases filterStats,SingleCellFilter,character-method
 #' @export
 setMethod( "filterStats",c("SingleCellFilter","character"),
 	function(object,type){
@@ -32,6 +36,7 @@ setMethod( "filterStats",c("SingleCellFilter","missing"),
 #'   replace the slot \code{filterStats} unless the replacement value is NULL
 #'   They update existing filters of the
 #'   same name and add filters with new names to the existing filters.
+#' @aliases filterStats<-
 #' @export
 setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,value) {
 	if(missing(type)){
@@ -73,11 +78,13 @@ setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,v
 })
 
 #' @rdname SingleCellFilter-methods
+#' @aliases filterNames
 #' @export
 setMethod( "filterNames","SingleCellFilter",function(object){colnames(object@filterStats)})		
 
 
 #' @rdname SingleCellFilter-methods
+#' @aliases filterNames<-
 #' @export
 setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
 	    if(length(value)!=NCOL(filterStats(object))) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
