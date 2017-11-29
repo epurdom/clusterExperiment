@@ -166,18 +166,18 @@ test_that("plotDimReduce works",{
 	removeSil=c(TRUE,FALSE))
 	expect_silent(plotDimReduce(cl,legend="bottomright"))
 	expect_silent(plotDimReduce(cl,legend=TRUE))
-	clusterLegend(cl)[["nDimReduce=10,k=4,findBestK=0,removeSil=1"]][,"name"]<-LETTERS[1:4]
-	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE))
+	clusterLegend(cl)[["nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:4]
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
 	#test on object that doesn't have saved:
 	clD<-plotDimReduce(ceSimData,dimReduce="PCA")
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 	
 	#higher dims.
-	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=1:4))
-	expect_error(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
+	expect_error(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
-	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=0,removeSil=1",legend=TRUE,whichDims=51:58))
+	expect_silent(plotDimReduce(cl,whichCluster="nDimReduce=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
 	
 	
 	
