@@ -38,7 +38,7 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
             expect_equal(metadata(ccSE),metadata(se)) 
             expect_equal(rowData(ccSE),rowData(se)) 
             
-            expect_silent(show(ccSE))
+            expect_output(show(ccSE))
 			
 			expect_silent(ccSCE<-ClusterExperiment(sce,as.numeric(numLabels)))
 			###Need to add things specific to sce, but first need to build a sce object with new things.
@@ -138,7 +138,7 @@ test_that("removing clusters work as promised",{
   
   expect_error(removeClusters(c4,c(1,nClusterings(c4)+1)),"invalid indices")
   
-  expect_silent(c7<-removeClusters(c4,"User") #two have "user" label)
+  expect_silent(c7<-removeClusters(c4,"User")) #two have "user" label
   expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)
   expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
   expect_equal(length(clusterInfo(c7)), nClusterings(c4)-2)
@@ -262,8 +262,8 @@ test_that("workflow functions work",
             expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
             expect_null(workflowClusters(cc,iteration=NA))
           
-  expect_silent(ceNew<-combineMany(ceSim,proportion=0.7))
-  expect_silent(ceNew<-combineMany(ceNew,proportion=0.3,clusterLabel="combineMany,v2"))
+  expect_message(ceNew<-combineMany(ceSim,proportion=0.7))
+  expect_message(ceNew<-combineMany(ceNew,proportion=0.3,clusterLabel="combineMany,v2"))
   expect_equal(clusterLabels(ceNew)[1:2],c("combineMany,v2","combineMany.1"))
   expect_equal(clusterTypes(ceNew)[1:2],c("combineMany","combineMany.1"))
   expect_silent(ceNew2<-setToCurrent(ceNew,whichCluster="combineMany.1"))
