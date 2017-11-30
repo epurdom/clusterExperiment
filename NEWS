@@ -6,7 +6,7 @@ Changes:
 	- `transform` is now `transformData`
 	- New functions `makeDimReduce` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
 	- New function `filterData` will return a `SingleCellFilter` object with the data filtered based on a filtering criteria
-	- New functions `listBuiltInDimReduce` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
+	- New functions `listBuiltInReduceDims` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
 	- Filtering on arbitrary statistics and user-defined dimensionality reduction can used in `clusterMany` and related functions, so long as they are saved in the appropriate slots of the object.
 * `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
 * removed `transformation` as a required argument to `clusterExperiment`

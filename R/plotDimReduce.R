@@ -30,7 +30,7 @@ setMethod(
 #' @param whichClusters which clusters to show on the plot
 #' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in 
-#'   functions of \code{\link{listBuiltInDimReduce}()}
+#'   functions of \code{\link{listBuiltInReduceDims}()}
 #' @param whichDims vector of length 2 giving the indices of which dimensions to
 #'   show. The first value goes on the x-axis and the second on the y-axis.
 #' @param clusterLegend matrix with three columns and colnames
@@ -53,14 +53,14 @@ setMethod(
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
-#' @seealso \code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInDimReduce}()}
+#' @seealso \code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInReduceDims}()}
 #' @rdname plotDimReduce
 #' @return A plot is created. Nothing is returned. 
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), reducedDim="PCA",
+#' cl <- clusterMany(simData, nReduceDims=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #'
@@ -115,7 +115,7 @@ definition = function(object, whichClusters,
 	if(length(whichDims)<2) 
 		stop("whichDims must be a vector of length at least 2 giving the which dimensions of the dimensionality reduction to plot")
 	redoDim<-FALSE
-	if(!reducedDim %in% reducedDimNames(object) & reducedDim %in% listBuiltInDimReduce()) redoDim<-TRUE
+	if(!reducedDim %in% reducedDimNames(object) & reducedDim %in% listBuiltInReduceDims()) redoDim<-TRUE
 	if(reducedDim %in% reducedDimNames(object)){ 
 		#check if ask for higher dim than available
 		if(max(whichDims)>NROW(object) || max(whichDims)>NCOL(object)) stop("Invalid value for whichDims: larger than row or column")

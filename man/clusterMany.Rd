@@ -11,11 +11,11 @@
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nDimReduce = NA,
+\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReduceDims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
-  reduceMethod = "none", nFilter = NA, nDimReduce = NA, alphas = 0.1,
+  reduceMethod = "none", nFilter = NA, nReduceDims = NA, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
   minSizes = 1, transFun = NULL, isCount = FALSE, verbose = FALSE,
@@ -23,7 +23,7 @@
   ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
-  nFilter = NA, nDimReduce = NA, eraseOld = FALSE, ...)
+  nFilter = NA, nReduceDims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
@@ -40,10 +40,10 @@ following classes: matrix (with genes in rows),
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInDimReduce() or listBuiltInFitlerStats OR 
+1) "none", 2) one of listBuiltInReduceDims() or listBuiltInFitlerStats OR 
 3) stored filtering or reducedDim values in the object.}
 
-\item{nDimReduce}{vector of the number of PCs to use (when 'PCA' is identified 
+\item{nReduceDims}{vector of the number of PCs to use (when 'PCA' is identified 
 in \code{reduceMethod}). If NA is included, then the full dataset will also be
 included.}
 
@@ -225,12 +225,12 @@ data(simData)
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
 checkParams <- clusterMany(simData,reduceMethod="PCA",  
-nDimReduce=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+nReduceDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,reduceMethod="PCA", nDimReduce=c(5,10,50),  isCount=FALSE,
+cl <- clusterMany(simData,reduceMethod="PCA", nReduceDims=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))

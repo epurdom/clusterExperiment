@@ -94,7 +94,7 @@ If \code{nDims} is missing, it will be given a default value
   filtering statistic, \code{nDims} is arbitrarily set to 500. If
   \code{reduceMethod} matches a dimensionality reduction value saved in
   \code{x}, then the number of columns of this matrix. If not, and
-  \code{reduceMethod} matches a value of \code{listBuiltInDimReduce()}, then
+  \code{reduceMethod} matches a value of \code{listBuiltInReduceDims()}, then
   arbirarily set to 50.
 }
 \examples{

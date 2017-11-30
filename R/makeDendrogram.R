@@ -57,7 +57,7 @@
 #'   filtering statistic, \code{nDims} is arbitrarily set to 500. If
 #'   \code{reduceMethod} matches a dimensionality reduction value saved in
 #'   \code{x}, then the number of columns of this matrix. If not, and
-#'   \code{reduceMethod} matches a value of \code{listBuiltInDimReduce()}, then
+#'   \code{reduceMethod} matches a value of \code{listBuiltInReduceDims()}, then
 #'   arbirarily set to 50.
 #' @return If x is a matrix, a list with two dendrograms, one in which the 
 #'   leaves are clusters and one in which the leaves are samples. If x is a 
@@ -113,7 +113,7 @@ setMethod(
 				nDims<-min(500,NROW(x))
 			else if(reduceMethod %in% reducedDimNames(x))
 				nDims<-ncol(reducedDim(x,type=reduceMethod))
-			else if(reduceMethod%in%listBuiltInDimReduce()) nDims<-50
+			else if(reduceMethod%in%listBuiltInReduceDims()) nDims<-50
 			else nDims<-NA
 		}
 	    if(length(nDims) > 1) {
@@ -123,7 +123,7 @@ setMethod(
 	      warning("specifying nDims has no effect if reduceMethod==`none`")
 	    }
 		###Calculate filters/reduceMethod if needed...
-		if(!reduceMethod %in% reducedDimNames(x) & reduceMethod %in% listBuiltInDimReduce()){
+		if(!reduceMethod %in% reducedDimNames(x) & reduceMethod %in% listBuiltInReduceDims()){
 				x<-makeDimReduce(x,reduceMethod=reduceMethod,maxDims=nDims)
 			}
 		else if(!reduceMethodName %in% filterNames(x) & reduceMethod %in% listBuiltInFilterStats()){

@@ -7,7 +7,7 @@
 \alias{makeDimReduce,matrix-method}
 \alias{makeDimReduce,SummarizedExperiment-method}
 \alias{makeDimReduce,ClusterExperiment-method}
-\alias{listBuiltInDimReduce}
+\alias{listBuiltInReduceDims}
 \title{Calculate dimensionality reduction of data}
 \usage{
 \S4method{makeDimReduce}{SingleCellExperiment}(object, reducedDims = "PCA",
@@ -19,7 +19,7 @@
 
 \S4method{makeDimReduce}{ClusterExperiment}(object, ...)
 
-listBuiltInDimReduce()
+listBuiltInReduceDims()
 }
 \arguments{
 \item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}
@@ -57,7 +57,7 @@ The PCA method uses either \code{prcomp} from the \code{stats} package or  \code
 }
 \examples{
 data(simData)
-listBuiltInDimReduce()
+listBuiltInReduceDims()
 scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 scf
 }

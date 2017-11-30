@@ -90,8 +90,10 @@ setMethod(
 #' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
 #' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
 #'   \code{maxDims} can also take values between (0,1) to indicate keeping the
-#'   number of PCA dimensions necessary to account for that proportion of the
-#'   variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each). 
+#'   number of dimensions necessary to account for that proportion of the
+#'   variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating 
+#'   the number of dimensions to keep for each method (if \code{maxDims} is of length 1, 
+#'   the same number of dimensions will be used for each). 
 #' @param ... Values passed on the the 'SingleCellExperiment' method.
 #' @inheritParams transformData
 #' @return a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
@@ -101,7 +103,7 @@ setMethod(
 #' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{reducedDims}.
 #' @examples
 #' data(simData)
-#' listBuiltInDimReduce()
+#' listBuiltInReduceDims()
 #' scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 #' scf
 #' @export
@@ -117,7 +119,7 @@ setMethod(
   ##Check user inputs
   ###################
   #check valid options for reducedDims
-  validDim<-listBuiltInDimReduce()
+  validDim<-listBuiltInReduceDims()
   reducedDims<-unique(reducedDims)
   if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(reducedDims))
   if(length(maxDims)!=length(reducedDims)) stop("'maxDims' must be of same length as 'reducedDims'")
@@ -220,7 +222,7 @@ setMethod(
 
 #' @rdname makeDimReduce
 #' @export
-listBuiltInDimReduce<-function(){c("PCA")}
+listBuiltInReduceDims<-function(){c("PCA")}
 
 #' @importFrom RSpectra svds
 .pca <- function(x, center=TRUE, scale=FALSE, k) {

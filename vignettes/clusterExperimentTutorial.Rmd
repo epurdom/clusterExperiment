@@ -386,7 +386,7 @@ ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
       isCount=TRUE,dimReduce=c("PCA","var"),nFilter=c(100,500,1000),
       nPCADims=c(5,15,50),run=TRUE)
 test<-getClusterManyParams(ce)
-ord<-order(test[,"k"],test[,"nFilter"],test[,"nDimReduce"])
+ord<-order(test[,"k"],test[,"nFilter"],test[,"nReduceDims"])
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
@@ -410,7 +410,7 @@ head(cmParams)
 We will set an order with first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
 
 ```{r plotCluster_newOrder}
-ord<-order(cmParams[,"dimReduce"],cmParams[,"nDimReduce"])
+ord<-order(cmParams[,"dimReduce"],cmParams[,"nReduceDims"])
 ind<-cmParams[ord,"clusteringIndex"]
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, sampleData=c("Biological_Condition","Published2"), axisLine=-1)
