@@ -212,7 +212,7 @@ setMethod(
 		if(length(dimNam)>0){
 			nReducedDims<-na.omit(nReducedDims)
 			if(length(nReducedDims)==0) 
-				stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none'")
+				stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
 			maxDims<-max(nReducedDims)
 			x<-makeReducedDims(x,reducedDims=dimNam,
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			

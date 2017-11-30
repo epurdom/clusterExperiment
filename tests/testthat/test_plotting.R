@@ -97,7 +97,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 
 
 test_that("plotClustersWorkflow", {
-	cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nPCADim=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+	cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
 	                       isCount=FALSE)
 	cc<-combineMany(cc,proportion=.7,whichClusters = "clusterMany")
