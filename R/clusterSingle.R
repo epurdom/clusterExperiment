@@ -315,6 +315,7 @@ setMethod(
       ##transformation to data x that will be input to clustering
       ##########
 	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount) #need this later to build clusterExperiment object
+	  reduceMethod<-match.arg(reduceMethod) #because this is matrix method, will always have to be a built in value.
       if(length(nDims)>1 || length(reduceMethod)>1) {
         stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
       }
