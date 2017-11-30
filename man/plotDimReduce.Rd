@@ -28,7 +28,7 @@
 
 \item{reducedDim}{What dimensionality reduction method to use. Should match
 either a value in \code{reducedDimNames(object)} or one of the built-in 
-functions of \code{\link{listBuiltInReduceDims}()}}
+functions of \code{\link{listBuiltInReducedDims}()}}
 
 \item{whichDims}{vector of length 2 giving the indices of which dimensions to
 show. The first value goes on the x-axis and the second on the y-axis.}
@@ -71,12 +71,12 @@ Plot a 2-dimensional representation of the data, color-code by a clustering.
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nReduceDims=c(5, 10, 50), reducedDim="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 
 plotDimReduce(cl,legend="bottomright")
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInReduceDims}()}
+\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInReducedDims}()}
 }

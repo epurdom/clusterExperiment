@@ -7,7 +7,7 @@
 \alias{makeDimReduce,matrix-method}
 \alias{makeDimReduce,SummarizedExperiment-method}
 \alias{makeDimReduce,ClusterExperiment-method}
-\alias{listBuiltInReduceDims}
+\alias{listBuiltInReducedDims}
 \title{Calculate dimensionality reduction of data}
 \usage{
 \S4method{makeDimReduce}{SingleCellExperiment}(object, reducedDims = "PCA",
@@ -19,7 +19,7 @@
 
 \S4method{makeDimReduce}{ClusterExperiment}(object, ...)
 
-listBuiltInReduceDims()
+listBuiltInReducedDims()
 }
 \arguments{
 \item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}
@@ -28,8 +28,10 @@ listBuiltInReduceDims()
 
 \item{maxDims}{Numeric vector of integer giving the number of PC dimensions to calculate. 
 \code{maxDims} can also take values between (0,1) to indicate keeping the
-number of PCA dimensions necessary to account for that proportion of the
-variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each).}
+number of dimensions necessary to account for that proportion of the
+variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating 
+the number of dimensions to keep for each method (if \code{maxDims} is of length 1, 
+the same number of dimensions will be used for each).}
 
 \item{transFun}{a transformation function to be applied to the data. If the transformation 
 applied to the data creates an error or NA values, then the function will throw an error.
@@ -57,7 +59,7 @@ The PCA method uses either \code{prcomp} from the \code{stats} package or  \code
 }
 \examples{
 data(simData)
-listBuiltInReduceDims()
+listBuiltInReducedDims()
 scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 scf
 }

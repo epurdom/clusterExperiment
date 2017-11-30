@@ -103,7 +103,7 @@ setMethod(
 #' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{reducedDims}.
 #' @examples
 #' data(simData)
-#' listBuiltInReduceDims()
+#' listBuiltInReducedDims()
 #' scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 #' scf
 #' @export
@@ -119,7 +119,7 @@ setMethod(
   ##Check user inputs
   ###################
   #check valid options for reducedDims
-  validDim<-listBuiltInReduceDims()
+  validDim<-listBuiltInReducedDims()
   reducedDims<-unique(reducedDims)
   if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(reducedDims))
   if(length(maxDims)!=length(reducedDims)) stop("'maxDims' must be of same length as 'reducedDims'")
@@ -222,7 +222,7 @@ setMethod(
 
 #' @rdname makeDimReduce
 #' @export
-listBuiltInReduceDims<-function(){c("PCA")}
+listBuiltInReducedDims<-function(){c("PCA")}
 
 #' @importFrom RSpectra svds
 .pca <- function(x, center=TRUE, scale=FALSE, k) {

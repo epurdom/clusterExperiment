@@ -45,7 +45,7 @@
 #' @references Finak, et al. MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data. Genome Biology (2015).
 #' @examples 
 #' data(simData)
-#' cl <- clusterMany(simData,nReduceDims=c(5,10,50),  reduceMethod="PCA",
+#' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #' #Pairs:

@@ -144,7 +144,7 @@
 #'   \code{clusterFeatures} can be one of the following: \itemize{ \item{"all"}{
 #'   All rows/genes will be shown} \item{character giving dimensionality
 #'   reduction}{Should match one of values saved in \code{reducedDims} slot or a
-#'   builtin function in \code{listBuiltInReduceDims()}. \code{nFeatures} then
+#'   builtin function in \code{listBuiltInReducedDims()}. \code{nFeatures} then
 #'   gives the number of dimensions to show. The heatmap will then be of the
 #'   dimension reduction vectors} \item{character giving filtering}{ Should
 #'   match one of values saved in \code{filterStats} slot or a builtin function
@@ -348,7 +348,7 @@ setMethod(
 	    	heatData<-assay(data)
 	    }
 		else{
-			possibleDimReduce<-c(reducedDimNames(data),listBuiltInReduceDims())
+			possibleDimReduce<-c(reducedDimNames(data),listBuiltInReducedDims())
 			possibleFilter<-c(filterNames(data),listBuiltInFilterStats())
 			if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleDimReduce){
 				##### Dimensionality reduction ####

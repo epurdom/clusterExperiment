@@ -25,7 +25,7 @@
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}.
 #' @param reduceMethod character A character identifying what type of 
 #'   dimensionality reduction to perform before clustering. Options are 
-#'   1) "none", 2) one of listBuiltInReduceDims() or listBuiltInFitlerStats OR 
+#'   1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
 #'   3) stored filtering or reducedDim values in the object. 
 #' @param nDims integer An integer identifying how many dimensions to reduce to 
 #'   in the reduction specified by \code{reduceMethod}
@@ -277,7 +277,7 @@ setMethod(
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL,
-	  reduceMethod=c("none",listBuiltInReduceDims(),listBuiltInFilterStats()),
+	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
       nDims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
@@ -324,7 +324,7 @@ setMethod(
 	  if(reduceMethod=="none"){
 		  x<-transformData(x,transFun=transFun)
 	  }
-	  else if(reduceMethod%in%listBuiltInReduceDims()){
+	  else if(reduceMethod%in%listBuiltInReducedDims()){
 		  transObj<-makeDimReduce(x,reduceMethod=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
 		  x<-t(reducedDim(transObj,type=reduceMethod))
 	  }

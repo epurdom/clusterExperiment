@@ -38,9 +38,9 @@
 #'   also give distances to evaluate via \code{distFunction} unless all
 #'   distances give 0-1 values for the distance (and hence are possible for both
 #'   type "01" and "K" algorithms).
-#' @param nFilter vector of the number of the most variable features to keep 
+#' @param nFilterDims vector of the number of the most variable features to keep 
 #'   (when "var", "abscv", or "mad" is identified in \code{reduceMethod}). 
-#' @param nReduceDims vector of the number of dimensions to use (when 
+#' @param nReducedDims vector of the number of dimensions to use (when 
 #'	\code{reduceMethod} gives a dimensionality reduction method). 
 #' @param eraseOld logical. Only relevant if input \code{x} is of class 
 #'   \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
@@ -136,12 +136,12 @@
 #' #k and whether remove negative silhouette values
 #' #check how many and what runs user choices will imply:
 #' checkParams <- clusterMany(simData,reduceMethod="PCA",  
-#' nReduceDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+#' nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(head(checkParams$paramMatrix))
 #'
 #' #Now actually run it
-#' cl <- clusterMany(simData,reduceMethod="PCA", nReduceDims=c(5,10,50),  isCount=FALSE,
+#' cl <- clusterMany(simData,reduceMethod="PCA", nReducedDims=c(5,10,50),  isCount=FALSE,
 #' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
 #' head(colnames(clusterMatrix(cl)))
@@ -180,7 +180,7 @@
 # #we give those to clusterMany as well.
 # checkParamsMat <- checkParams$paramMatrix[-c(1,2),]
 #
-# clSmaller <- clusterMany(simData, nReduceDims=c(5,10,50),  reduceMethod="PCA",
+# clSmaller <- clusterMany(simData, nReducedDims=c(5,10,50),  reduceMethod="PCA",
 # paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
 # seqArgs=checkParams$seqArgs, mainClusterArgs=checkParams$mainClusterArgs)
 #' @export 
@@ -188,19 +188,19 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
   definition = function(x,
-      reduceMethod="none",nReduceDims=NA, transFun=NULL,isCount=FALSE, ...
+      reduceMethod="none",nReducedDims=NA, transFun=NULL,isCount=FALSE, ...
   ){
 	####Basically, matrix version calls makeDimReduce and makeFilterStats and then sends it to the SingleCellFilter version.
 	if(missing(reduceMethod)) reduceMethod<-"none"
-	# if(anyNA(nReduceDims)){
+	# if(anyNA(nReducedDims)){
 # 		if(!"none" in reduceMethod) reduceMethod<-c(reduceMethod,"none")
-# 		nReduceDims<-na.omit(nReduceDims)
+# 		nReducedDims<-na.omit(nReducedDims)
 # 	}
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	reduceMethod<-unique(reduceMethod)
 	doNone<-any(reduceMethod=="none")
 	#check can given reduceMethod values match built in options.
-	dimNam<-reduceMethod[reduceMethod %in% listBuiltInReduceDims()]
+	dimNam<-reduceMethod[reduceMethod %in% listBuiltInReducedDims()]
 	filtNam<-reduceMethod[reduceMethod %in% listBuiltInFilterStats()]
 	nValid<-length(c(dimNam,filtNam))
 	if(doNone) nValid<-nValid+1
@@ -210,10 +210,10 @@ setMethod(
 		warning("Some reduceMethod values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Ignoring options.")
 	if(length(dimNam)>0 | length(filtNam)>0){
 		if(length(dimNam)>0){
-			nReduceDims<-na.omit(nReduceDims)
-			if(length(nReduceDims)==0) 
-				stop("Must give nReduceDims values if choose a reduceMethod option not equal to 'none'")
-			maxDims<-max(nReduceDims)
+			nReducedDims<-na.omit(nReducedDims)
+			if(length(nReducedDims)==0) 
+				stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none'")
+			maxDims<-max(nReducedDims)
 			x<-makeDimReduce(x,reduceMethod=dimNam,
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			
 		}
@@ -225,7 +225,7 @@ setMethod(
 	else{
 		x<-SingleCellFilter(x)
 	}
-	return(clusterMany(x,reduceMethod=reduceMethod,nReduceDims=nReduceDims,transFun=transFun,isCount=isCount,...))
+	return(clusterMany(x,reduceMethod=reduceMethod,nReducedDims=nReducedDims,transFun=transFun,isCount=isCount,...))
 }
 )
 
@@ -235,7 +235,7 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "SingleCellFilter"),
   definition = function(x, ks=NA, clusterFunction, 
-	  reduceMethod="none",nFilter=NA,nReduceDims=NA,
+	  reduceMethod="none",nFilterDims=NA,nReducedDims=NA,
 	  alphas=0.1, findBestK=FALSE,
       sequential=FALSE, removeSil=FALSE, subsample=FALSE,
       silCutoff=0, distFunction=NA,
@@ -261,8 +261,8 @@ setMethod(
 	anyDimSaved<-length(reducedDims(x))>0 && any(reduceMethod %in% reducedDimNames(x))
 	anyFilter<-!is.null(filterStats(x))
 	anyDim<-length(reducedDims(x))>0 
-	anyDimBuiltIn<-any(reduceMethod %in% listBuiltInReduceDims())
-	anyFilterBuiltIn<-any(reduceMethod %in% listBuiltInFilterStats())
+	anyDimBuiltIn<-any(reduceMethod %in% listBuiltInReducedDims())
+	anyFilterBuiltIn<-any(reduceMethod %in% listBuiltInFilterDimsStats())
 	if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
 		stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
 	if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
@@ -299,25 +299,25 @@ setMethod(
 			#check if nPCA values
 			if(any(reduceMethod %in% reducedDimNames(x))){
 				maxDimValues<-sapply(reducedDims(x)[reduceMethod[reduceMethod %in%reducedDimNames(x)]],ncol)
-				if(length(na.omit(nReduceDims))>0 && all(na.omit(nReduceDims) > max(maxDimValues))) 
-					stop("The values of nReduceDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+				if(length(na.omit(nReducedDims))>0 && all(na.omit(nReducedDims) > max(maxDimValues))) 
+					stop("The values of nReducedDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
 				
 			}
 			
-			#check if give nFilter if filterNames and no NA values
+			#check if give nFilterDims if filterNames and no NA values
 			if(any(reduceMethod %in% filterNames(x))){
-				if(!missing(nFilter) && any(is.na(nFilter))){
-					warning("NA values have no meaning for the argument nFilter and will be ignored")		
-					nFilter<-na.omit(nFilter)
+				if(!missing(nFilterDims) && any(is.na(nFilterDims))){
+					warning("NA values have no meaning for the argument nFilterDims and will be ignored")		
+					nFilterDims<-na.omit(nFilterDims)
 				}
-				if(missing(nFilter) || length(nFilter)==0){
-					stop("no valid nFilter values given, but reduceMethod values given indicate a filterStat to be used.")
+				if(missing(nFilterDims) || length(nFilterDims)==0){
+					stop("no valid nFilterDims values given, but reduceMethod values given indicate a filterStat to be used.")
 				}
 			}
 		}
 		else{
-			nReduceDims<-NA
-			nFilter<-NA
+			nReducedDims<-NA
+			nFilterDims<-NA
 			maxDimValues<-NA #indicates that only "none" will be done
 		}
 
@@ -327,7 +327,7 @@ setMethod(
 	    if(is.null(paramMatrix)){
 		  if(doNone) reduceMethod<-c(reduceMethod,"none")
 	      param <- expand.grid(reduceMethod=reduceMethod,
-		    nReduceDims=nReduceDims, nFilter=nFilter,k=ks, alpha=alphas, findBestK=findBestK, 
+		    nReducedDims=nReducedDims, nFilterDims=nFilterDims,k=ks, alpha=alphas, findBestK=findBestK, 
 			beta=betas, minSize=minSizes,
 	        sequential=sequential, distFunction=distFunction,
 	        removeSil=removeSil, subsample=subsample,
@@ -408,35 +408,35 @@ setMethod(
 		  }
 
   		  #---
-		  # deal with nReduceDims NA or larger than the size of the dataset
+		  # deal with nReducedDims NA or larger than the size of the dataset
 		  # set it to the maximum value possible.
 		  #---
 		  whDimReduce<-which(param[,"reduceMethod"] %in% reducedDimNames(x))
 		  if(length(whDimReduce)>0 && length(na.omit(maxDimValues[whDimReduce]))>0){
 			  #if NA, means do the largest possible dimension saved for that method
-			  whNADim<-intersect(which(is.na(param[,"nReduceDims"])),whDimReduce)
+			  whNADim<-intersect(which(is.na(param[,"nReducedDims"])),whDimReduce)
 			  maxDimValues<-maxDimValues[param[whNADim,"reduceMethod"]]
 			  if(length(whNADim)>0){
-				  param[whNADim,"nReduceDims"]<-maxDimValues
+				  param[whNADim,"nReducedDims"]<-maxDimValues
 			  }
-			  if(anyNA(param[whDimReduce,"nReduceDims"])) stop("Internal coding error: didn't get rid of NA reduceMethod in checks")
-			  whAbove<-intersect(which(param[,"nReduceDims"]>maxDimValues),whDimReduce)
+			  if(anyNA(param[whDimReduce,"nReducedDims"])) stop("Internal coding error: didn't get rid of NA reduceMethod in checks")
+			  whAbove<-intersect(which(param[,"nReducedDims"]>maxDimValues),whDimReduce)
 			  if(length(whAbove)>0){
-				  param[whAbove,"nReduceDims"]<-maxDimValues[whAbove]
+				  param[whAbove,"nReducedDims"]<-maxDimValues[whAbove]
 			  }
 		  }
 		  #now turn to NA is when reduceMethod a dim reduce
 		  whOther<-which(!param[,"reduceMethod"]%in% reducedDimNames(x))
 		  if(length(whOther)>0){
-			  param[whOther,"nReduceDims"]<-NA
+			  param[whOther,"nReducedDims"]<-NA
 		  }
 		  
   		  #---
-		  # deal with nFilter NA or larger than the size of the dataset
+		  # deal with nFilterDims NA or larger than the size of the dataset
 		  # set it to the maximum value possible.
 		  #---
 		  whFilter<-which(param[,"reduceMethod"] %in% filterNames(x))
-		  whTooLarge<-intersect(which(param[,"nFilter"]>NROW(x)),whFilter)
+		  whTooLarge<-intersect(which(param[,"nFilterDims"]>NROW(x)),whFilter)
 		  if(length(whTooLarge)>0){
 			  param[whTooLarge,"reduceMethod"]<-"none"
 		  }
@@ -444,7 +444,7 @@ setMethod(
 		  #now turn to NA is when reduceMethod a dim reduce
 		  whOther<-which(!param[,"reduceMethod"]%in% filterNames(x))
 		  if(length(whOther)>0){
-			  param[whOther,"nFilter"]<-NA
+			  param[whOther,"nFilterDims"]<-NA
 		  }
 		  		  
 				  
@@ -484,9 +484,9 @@ setMethod(
 			}
 		  
 		  
-	      if(any(!is.na(param[,"nFilter"]) & !is.na(param[,"nReduceDims"]))) 
-			  stop("Internal error: failed to properly remove inconsistent nFilter, nReduceDims combination.")
-	      if(any(is.na(param[,"nFilter"]) & is.na(param[,"nReduceDims"] & !param[,"reduceMethod"] %in% "none"))) stop("Internal error: NA in both nFilter, nReduceDims combination without equal to 'none'")
+	      if(any(!is.na(param[,"nFilterDims"]) & !is.na(param[,"nReducedDims"]))) 
+			  stop("Internal error: failed to properly remove inconsistent nFilterDims, nReducedDims combination.")
+	      if(any(is.na(param[,"nFilterDims"]) & is.na(param[,"nReducedDims"] & !param[,"reduceMethod"] %in% "none"))) stop("Internal error: NA in both nFilterDims, nReducedDims combination without equal to 'none'")
 	      #####
 	      #require at least 2 combinations:
 	      #####
@@ -511,7 +511,7 @@ setMethod(
 	      cnames <- gsub("dataset=","",cnames)
 	      cnames <- gsub("= ","=",cnames)
 	      cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
-		  #should I combine together nReduceDims and nFilter like they were before for the labels?
+		  #should I combine together nReducedDims and nFilterDims like they were before for the labels?
 	      rownames(param) <- cnames
 		  
 	  } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
@@ -569,9 +569,9 @@ setMethod(
 		  if(reduceMethod=="none") 
 			  dat<-transformData(x,transFun=transFun) 
 		  else if(reduceMethod %in% reducedDimNames(x)) 
-			  dat<-t(reducedDim(x,reduceMethod)[,1:par[["nReduceDims"]]] ) 
+			  dat<-t(reducedDim(x,reduceMethod)[,1:par[["nReducedDims"]]] ) 
 		  else if(reduceMethod %in% filterNames(x)) 
-			  dat<-transformData( filterData(x, type=reduceMethod, percentile=par[["nFilter"]]),
+			  dat<-transformData( filterData(x, type=reduceMethod, percentile=par[["nFilterDims"]]),
 		  				transFun=transFun)
 		  else stop("Internal error: reduceMethod value that not in filterNames or reducedDimNames")
 		  #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
@@ -655,13 +655,13 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x, reduceMethod="none", nFilter=NA, nReduceDims=NA,
+  definition = function(x, reduceMethod="none", nFilterDims=NA, nReducedDims=NA,
                         eraseOld=FALSE, ...)
   {
   	if(any(c("transFun","isCount") %in% names(list(...)))) 
   		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-    outval<-clusterMany(as(x,"SingleCellFilter"), reduceMethod=reduceMethod, nFilter=nFilter,
-                        nReduceDims=nReduceDims, transFun=transformation(x), ...)
+    outval<-clusterMany(as(x,"SingleCellFilter"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
+                        nReducedDims=nReducedDims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
 		
 	  #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'

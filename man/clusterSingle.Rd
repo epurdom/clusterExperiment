@@ -29,8 +29,9 @@
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  reduceMethod = c("none", listBuiltInReduceDims(), listBuiltInFilterStats()),
-  nDims = NA, clusterLabel = "clusterSingle", checkDiss = TRUE)
+  reduceMethod = c("none", listBuiltInReducedDims(),
+  listBuiltInFilterStats()), nDims = NA, clusterLabel = "clusterSingle",
+  checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
@@ -51,7 +52,7 @@ existing coClustering object in the slot \code{coClustering}.}
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReduceDims() or listBuiltInFitlerStats OR 
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
 3) stored filtering or reducedDim values in the object.}
 
 \item{nDims}{integer An integer identifying how many dimensions to reduce to 

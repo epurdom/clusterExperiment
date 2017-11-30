@@ -97,7 +97,7 @@ If \code{whichClusters = "workflow"}, then the most recent two
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nReduceDims=c(5, 10, 50), reduceMethod="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 

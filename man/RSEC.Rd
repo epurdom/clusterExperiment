@@ -26,9 +26,9 @@
 \S4method{RSEC}{matrix}(x, ...)
 
 \S4method{RSEC}{SingleCellFilter}(x, isCount = FALSE, transFun = NULL,
-  reduceMethod = "PCA", nFilter = NA, nReduceDims = c(50), k0s = 4:15,
-  clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, combineProportion = 0.7,
+  reduceMethod = "PCA", nFilterDims = NA, nReducedDims = c(50),
+  k0s = 4:15, clusterFunction = "hierarchical01", alphas = c(0.1, 0.2,
+  0.3), betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
   mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
@@ -69,16 +69,14 @@ and giving this parameter will result in an error.}
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReduceDims() or listBuiltInFitlerStats OR 
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
 3) stored filtering or reducedDim values in the object.}
 
-\item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "abscv", or "mad" is identified in \code{reduceMethod}). If NA is 
-included, then the full dataset will also be included.}
+\item{nFilterDims}{vector of the number of the most variable features to keep 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
-\item{nReduceDims}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{reduceMethod}). If NA is included, then the full dataset will also be
-included.}
+\item{nReducedDims}{vector of the number of dimensions to use (when 
+\code{reduceMethod} gives a dimensionality reduction method).}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 

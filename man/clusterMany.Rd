@@ -11,19 +11,20 @@
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReduceDims = NA,
+\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReducedDims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
-  reduceMethod = "none", nFilter = NA, nReduceDims = NA, alphas = 0.1,
-  findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
-  minSizes = 1, transFun = NULL, isCount = FALSE, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  ncores = 1, random.seed = NULL, run = TRUE, ...)
+  reduceMethod = "none", nFilterDims = NA, nReducedDims = NA,
+  alphas = 0.1, findBestK = FALSE, sequential = FALSE,
+  removeSil = FALSE, subsample = FALSE, silCutoff = 0,
+  distFunction = NA, betas = 0.9, minSizes = 1, transFun = NULL,
+  isCount = FALSE, verbose = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
+  run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
-  nFilter = NA, nReduceDims = NA, eraseOld = FALSE, ...)
+  nFilterDims = NA, nReducedDims = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
@@ -40,12 +41,11 @@ following classes: matrix (with genes in rows),
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReduceDims() or listBuiltInFitlerStats OR 
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
 3) stored filtering or reducedDim values in the object.}
 
-\item{nReduceDims}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{reduceMethod}). If NA is included, then the full dataset will also be
-included.}
+\item{nReducedDims}{vector of the number of dimensions to use (when 
+\code{reduceMethod} gives a dimensionality reduction method).}
 
 \item{transFun}{a transformation function to be applied to the data. If the transformation 
 applied to the data creates an error or NA values, then the function will throw an error.
@@ -70,9 +70,8 @@ clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 
-\item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "abscv", or "mad" is identified in \code{reduceMethod}). If NA is 
-included, then the full dataset will also be included.}
+\item{nFilterDims}{vector of the number of the most variable features to keep 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
 type '01'. Determines tightness required in creating clusters from the
@@ -225,12 +224,12 @@ data(simData)
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
 checkParams <- clusterMany(simData,reduceMethod="PCA",  
-nReduceDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,reduceMethod="PCA", nReduceDims=c(5,10,50),  isCount=FALSE,
+cl <- clusterMany(simData,reduceMethod="PCA", nReducedDims=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))

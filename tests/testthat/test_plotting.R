@@ -68,7 +68,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
 
   #test CE version
-  test<- clusterMany(simCount,reduceMethod="PCA",nReduceDims=c(5,10,50), isCount=TRUE,
+  test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)) #no colData in test
   expect_error(plotClusters(test,sampleData=as.data.frame(colData(ceSim))),"no colData for object data")
   expect_error(plotClusters(ceSim,sampleData=as.data.frame(colData(ceSim))),"invalid values for pulling sampleData")
@@ -97,7 +97,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 
 
 test_that("plotClustersWorkflow", {
-	cc<-clusterMany(mat, ks=c(3,4),nFilter=c(10,15),nPCADim=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+	cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nPCADim=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
 	                       isCount=FALSE)
 	cc<-combineMany(cc,proportion=.7,whichClusters = "clusterMany")
@@ -161,23 +161,23 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 })
 
 test_that("plotDimReduce works",{
-	expect_silent(cl <- clusterMany(simData, nReduceDims=c(5, 10, 50), reduceMethod="PCA",
+	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 	removeSil=c(TRUE,FALSE)))
 	expect_silent(plotDimReduce(cl,legend="bottomright"))
 	expect_silent(plotDimReduce(cl,legend=TRUE))
-	expect_silent(clusterLegend(cl)[["nReduceDims=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
-	expect_silent(plotDimReduce(cl,whichCluster="nReduceDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
+	expect_silent(clusterLegend(cl)[["nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
+	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
 	#test on object that doesn't have saved:
 	expect_silent(clD<-plotDimReduce(ceSimData,reduceMethod="PCA"))
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 	
 	#higher dims.
-	expect_silent(plotDimReduce(cl,whichCluster="nReduceDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
-	expect_error(plotDimReduce(cl,whichCluster="nReduceDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
+	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
+	expect_error(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
-	expect_silent(plotDimReduce(cl,whichCluster="nReduceDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
+	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
 	
 	
 	

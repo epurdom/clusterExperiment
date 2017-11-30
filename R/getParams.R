@@ -34,7 +34,7 @@
 #' @examples
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nReduceDims=c(5, 10, 50), reduceMethod="PCA",
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #' getClusterManyParams(cl)
@@ -116,7 +116,7 @@ setMethod(f = "getClusterManyParams",
 # 	else{
 # 		##First, create variable giving type of reduceMethod
 # 		reduceMethod<-nameList[[whDimReduce]]
-# 		nameList[[whDimReduce]]<-"nReduceDims"
+# 		nameList[[whDimReduce]]<-"nReducedDims"
 # 		nms<-sapply(nameList,function(n){
 # 			n<-unique(n)
 # 			if(length(n)>1) stop(paste("found the following multiple values for the parameter name:",paste(n,collapse=",")))
