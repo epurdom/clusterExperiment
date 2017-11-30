@@ -33,9 +33,9 @@
 \item{y}{additional clusters to add to x. Can be a ClusterExperiment object
 or a matrix/vector of clusters.}
 
-\item{clusterTypes}{a string describing the nature of the clustering. The
-values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
-reserved for the clustering coming from the package workflow and should not
+\item{clusterTypes}{a string describing the nature of the clustering. The 
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are 
+reserved for the clustering coming from the package workflow and should not 
 be used when creating a new object with the constructor.}
 
 \item{clusterLabel}{label(s) for the clusters being added.}
@@ -64,7 +64,7 @@ addClusters adds y to x, and is thus not symmetric in the two
 
 \code{removeClusters} removes the clusters given by
  \code{whichRemove}. If all clusters are implied, then returns a
- \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. If the
+ \code{\link{SingleCellFilter}} object. If the
  \code{primaryCluster} is one of the clusters removed, the
  \code{primaryClusterIndex} is set to 1 and the dendrogram and cooccurance
  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.

@@ -86,7 +86,7 @@ breaks should be calculated.}
 \item{whichCluster}{which cluster to plot cluster legend}
 
 \item{clusterNames}{vector of names for the clusters; vector should have names 
-that correspond to the clusterIds in the clusterExperiment object. If this 
+that correspond to the clusterIds in the ClusterExperiment object. If this 
 argument is missing, will use the names in the "name" column of the clusterLegend 
 slot of the object.}
 

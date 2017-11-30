@@ -1,3 +1,26 @@
+Changes in version 1.5.0-9006 ( Release date: )
+==============
+
+Changes:
+* This version consists of a major update of how dimensionality reduction and filtering is done. The class has been updated to extend the new `SingleCellExperiment` class, which save the dimensionality reductions. Furthermore we extend that class to also save filtering statistics (`SingleCellFilter`). This has created a massive change under-the-hood in functions that allow dimensionality reduction and filtering. Changes to function names:
+	- `transform` is now `transformData`
+	- New functions `makeReducedDims` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
+	- New function `filterData` will return a `SingleCellFilter` object with the data filtered based on a filtering criteria
+	- New functions `listBuiltInReducedDims` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
+	- Filtering on arbitrary statistics and user-defined dimensionality reduction can used in `clusterMany` and related functions, so long as they are saved in the appropriate slots of the object.
+* Changed the following functions/arguments to be consistent with SingleCellExperiment naming conventions.
+	- Capitalized constructor functions. Now: `ClusterFunction()` and `ClusterExperiment()` 
+	- `nPCADims` now changed to `nReducedDims` in clusterMany-related functions
+	- `nVarDims` now changed to `nFilterDims` in clusterMany-related functions
+	- `dimReduce` argument now changed to `reduceMethod` across functions
+	- `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
+	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
+* `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
+* removed `transformation` as a required argument to `ClusterExperiment`. Now sets with default of `function(x){x}`.
+
+Bugs:
+* converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.
+
 Changes in version 1.5.0-9002 ( Release date: )
 ==============
 Changes:

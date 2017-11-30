@@ -1,5 +1,5 @@
 ############
-## Checks that make up validity of clusterExperiment:
+## Checks that make up validity of ClusterExperiment:
 ############
 .checkAssays<-function(object){
     # ############
@@ -11,7 +11,7 @@
   if(!is.numeric(assay(object))) {
     return("The data must be numeric.")
   }
-  if(any(is.na(assay(object)))) {
+  if(anyNA(assay(object))) {
     return("NA values are not allowed.")
   }
   return(TRUE)
@@ -20,12 +20,12 @@
     #############
     #check transform
     #############
-    tX <- try(transform(object),silent=TRUE)
+    tX <- try(transformData(object),silent=TRUE)
     if(inherits(tX, "try-error")){
       stop(paste("User-supplied `transformation` produces error on the input data
                  matrix:\n",tX))
     }
-    if(any(is.na(tX))) {
+    if(anyNA(tX)) {
       return("NA values after transforming data matrix are not allowed.")
     }
 	return(TRUE)
@@ -271,11 +271,11 @@
 #' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
 #' #Note it doesn't pass if inputType="either" because no catches for x=NULL
 #' internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
-#' myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
+#' myCF<-ClusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 #' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
 #' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
 #' @details \code{internalFunctionCheck} is the function that is called by the 
-#'   validity check of the \code{clusterFunction} constructor (if 
+#'   validity check of the \code{ClusterFunction} constructor (if 
 #'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
 #'   to be able to test their functions and debug them, which is difficult to do
 #'   with a S4 validity function.

@@ -1,6 +1,6 @@
-#' @title Plot dendrogram of clusterExperiment object
+#' @title Plot dendrogram of ClusterExperiment object
 #'   
-#' @description Plots the dendrogram saved in a clusterExperiment object
+#' @description Plots the dendrogram saved in a ClusterExperiment object
 #'   
 #' @param x a \code{\link{ClusterExperiment}} object.
 #' @param leafType if "samples" the dendrogram has one leaf per sample,
@@ -113,7 +113,7 @@ setMethod(
 				mergeMethod<-x@merge_method
 			}
 		}
-		else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from clusterExperiment object
+		else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from ClusterExperiment object
 		else mergeMethod<-"none"
 	} else{
 		warning("There is no information about merging -- will ignore input to 'mergeInfo'")
@@ -159,7 +159,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
 		if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
 		namesClusterTips<-names(clusterTips)
-		#browser()
+		#
 	
 		if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
 		phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)
@@ -447,7 +447,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
   }
 
 
-#' @importFrom ape node_height_clado node_height node_depth node_depth_edgelength is.ultrametric
+#' @importFrom ape node_height_clado node_height node_depth node_depth_edgelength is.ultrametric unrooted.xy
 ###Copy code from ape:plot.phylo so get how calculates x.lim. Just removed the plot parts.
 .calculatePlotPhylo<-function (x, type = "phylogram", use.edge.length = TRUE, node.pos = NULL, 
       show.tip.label = TRUE, show.node.label = FALSE, edge.color = "black", 
@@ -589,7 +589,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
               yy <- r * sin(theta)
           }, unrooted = {
               nb.sp <- .nodeDepth(Ntip, Nnode, z$edge, Nedge, node.depth)
-              XY <- if (use.edge.length) unrooted.xy(Ntip, Nnode, 
+              XY <- if (use.edge.length) ape::unrooted.xy(Ntip, Nnode, 
                   z$edge, z$edge.length, nb.sp, rotate.tree) else unrooted.xy(Ntip, 
                   Nnode, z$edge, rep(1, Nedge), nb.sp, rotate.tree)
               xx <- XY$M[, 1] - min(XY$M[, 1])

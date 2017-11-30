@@ -249,7 +249,7 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
 	isPositive<-all(na.omit(data)>=0)
 	isNegative<-all(na.omit(data)<=0)
-#	browser()
+#	
     #get arround bug in aheatmap
     #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
     #TO DO: might not need any more with updated aheatmap.
@@ -263,7 +263,7 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
         if(length(breaks)==1){
 			if(breaks<1){
 			  if(breaks<0.5) breaks<-1-breaks
-			#	  browser()
+			#	  
 			  uppQ<-if(isPositive) quantile(data[which(data>0)],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
 			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
 			  
@@ -367,7 +367,7 @@ seqPal1<-rev(brewer.pal(11, "Spectral"))
 #' @param whichCluster which cluster to plot cluster legend
 #' @param title title for the clusterLegend plot
 #' @param clusterNames vector of names for the clusters; vector should have names 
-#'  that correspond to the clusterIds in the clusterExperiment object. If this 
+#'  that correspond to the clusterIds in the ClusterExperiment object. If this 
 #'  argument is missing, will use the names in the "name" column of the clusterLegend 
 #'  slot of the object.
 #' @param ... arguments passed to legend

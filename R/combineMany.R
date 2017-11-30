@@ -5,7 +5,7 @@
 #'
 #' @aliases combineMany
 #'
-#' @param x a matrix or \code{\link{clusterExperiment}} object.
+#' @param x a matrix or \code{\link{ClusterExperiment}} object.
 #' @param whichClusters a numeric or character vector that specifies which
 #'   clusters to compare (missing if x is a matrix)
 #' @param clusterFunction the clustering to use (passed to
@@ -56,7 +56,7 @@
 #' @examples
 #' data(simData)
 #'
-#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #'
@@ -90,7 +90,7 @@ setMethod(
   signature = signature(x = "matrix", whichClusters = "missing"),
   definition = function(x, whichClusters, proportion,
                         clusterFunction="hierarchical01",
-                        propUnassigned=.5, minSize=5) {
+                        propUnassigned=.5, minSize=5,...) {
 
   clusterMat <- x
   if(proportion == 1) {
@@ -118,9 +118,14 @@ setMethod(
     #fix those pairs that have no clusterings for which they are both not '-1'
     diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
     sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
+	clustArgs<-list(alpha=1-proportion)
+	clustArgs<-c(clustArgs,list(...))
+	if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
+		clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
+	}
     cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
                    minSize=minSize, format="vector",
-                   clusterArgs=list(alpha=1-proportion,  evalClusterMethod=c("average")))
+                   clusterArgs=clustArgs)
 
     if(is.character(cl)) {
       stop("coding error -- mainClustering should return numeric vector")
@@ -155,7 +160,7 @@ setMethod(
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
 
     outlist <- combineMany(clusterMat, ...)
-    newObj <- clusterExperiment(x, outlist$clustering,
+    newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="combineMany",checkTransformAndAssay=FALSE)
     #add "c" to name of cluster
@@ -192,7 +197,7 @@ setMethod(
   definition = function(x, whichClusters, ...){
     wh<-.TypeIntoIndices(x,"clusterMany")
     if(length(wh)>0){
-      note("no clusters specified to combine, using results from clusterMany")
+      .mynote("no clusters specified to combine, using results from clusterMany")
       combineMany(x, whichClusters = "clusterMany",...)
     }
     else{
@@ -208,7 +213,7 @@ setMethod(
     uniqs <- na.omit(unique(as.vector(X)))
     if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
     isobsX<-abs(is.na(X)-1)
-    if(any(is.na(X))){
+    if(anyNA(X)){
       X[is.na(X)]<-uniqValue
     }
     U <- X == uniqs[1]
@@ -223,11 +228,11 @@ setMethod(
     uniqs <- na.omit(union(X, Y))
     if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
     isobsX<-abs(is.na(X)-1)
-    if(any(is.na(X))){
+    if(anyNA(X)){
       X[is.na(X)]<-uniqValue
     }
     isobsY<-abs(is.na(Y)-1)
-    if(any(is.na(Y))){
+    if(anyNA(Y)){
       Y[is.na(Y)]<-uniqValue
     }
     H <- t(X == uniqs[1]) %*% (Y == uniqs[1])

@@ -20,7 +20,7 @@
 #'   the 1st cluster of clusters matrix
 #' @param legend.title label for legend. By default or if equal NULL the column
 #'   name of the 2st cluster of clusters matrix
-#' @param labels if object is a clusterExperiment object, then labels defines
+#' @param labels if object is a ClusterExperiment object, then labels defines
 #'   whether the clusters will be identified by their names values in
 #'   clusterLegend (labels="names", the default) or by their clusterIds value in
 #'   clusterLegend (labels="ids").
@@ -46,7 +46,7 @@
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #'

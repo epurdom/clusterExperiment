@@ -28,7 +28,7 @@ cat("Results for test of",version,"\n",file=outfile)
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Running clusterMany...",file=outfile,append=TRUE)
 # Old version: 
-# cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+# cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
 #                  ks=4:8, clusterFunction="hierarchical01",
 #                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
 #                  ncores=ncores, subsampleArgs=list(resamp.num=20,
@@ -38,9 +38,10 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
-cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
-                 beta=0.9, minSize=5, mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
+                 beta=0.9, minSize=5,
+				 mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
                  ncores=ncores, subsampleArgs=list(resamp.num=20,largeDataset=FALSE,
@@ -52,7 +53,7 @@ tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
 cat("done.\n",file=outfile,append=TRUE)
 cat(paste("Ellapsed Time:",tm[3]/60,"minutes\n"),file=outfile,append=TRUE)
-cat(paste("Number of clusters:",nClusters(cl),"\n"),file=outfile,append=TRUE)
+cat(paste("Number of clusters:",nClusterings(cl),"\n"),file=outfile,append=TRUE)
 cat(paste("Number of genes of Assay:",nrow(cl),"\n"),file=outfile,append=TRUE)
 cat(paste("Number of samples of Assay:",ncol(cl),"\n"),file=outfile,append=TRUE)
 

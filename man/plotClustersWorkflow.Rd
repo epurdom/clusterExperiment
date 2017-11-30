@@ -9,9 +9,9 @@
 \usage{
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
   whichClusters = c("mergeClusters", "combineMany"),
-  whichClusterMany = NULL, nBlankLines = ceiling(nClusters(object) * 0.05),
-  existingColors = FALSE, nSizeResult = ceiling(nClusters(object) * 0.02),
-  clusterLabels = TRUE, clusterManyLabels = TRUE,
+  whichClusterMany = NULL, nBlankLines = ceiling(nClusterings(object) *
+  0.05), existingColors = FALSE, nSizeResult = ceiling(nClusterings(object)
+  * 0.02), clusterLabels = TRUE, clusterManyLabels = TRUE,
   sortBy = c("highlighted", "clusterMany"), highlightOnTop = TRUE, ...)
 }
 \arguments{
@@ -84,7 +84,7 @@ This plot is solely intended to make it easier to use the
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 cl <- combineMany(cl, proportion=0.7)
