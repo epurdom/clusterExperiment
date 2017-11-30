@@ -28,7 +28,7 @@ setMethod(
   
 #' @param object a ClusterExperiment object
 #' @param whichClusters which clusters to show on the plot
-#' @param dimReduce What dimensionality reduction method to use. Should match
+#' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in 
 #'   functions of \code{\link{listBuiltInDimReduce}()}
 #' @param whichDims vector of length 2 giving the indices of which dimensions to
@@ -60,7 +60,7 @@ setMethod(
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), dimReduce="PCA",
+#' cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #'
@@ -70,7 +70,7 @@ setMethod(
 f = "plotDimReduce",
 signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
 definition = function(object, whichClusters,
-	dimReduce="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
+	reducedDim="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
 	clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
 {
 	if(length(whichClusters)!=1) stop("whichClusters must identify a single clustering.")
@@ -115,19 +115,19 @@ definition = function(object, whichClusters,
 	if(length(whichDims)<2) 
 		stop("whichDims must be a vector of length at least 2 giving the which dimensions of the dimensionality reduction to plot")
 	redoDim<-FALSE
-	if(!dimReduce %in% reducedDimNames(object) & dimReduce %in% listBuiltInDimReduce()) redoDim<-TRUE
-	if(dimReduce %in% reducedDimNames(object)){ 
+	if(!reducedDim %in% reducedDimNames(object) & reducedDim %in% listBuiltInDimReduce()) redoDim<-TRUE
+	if(reducedDim %in% reducedDimNames(object)){ 
 		#check if ask for higher dim than available
 		if(max(whichDims)>NROW(object) || max(whichDims)>NCOL(object)) stop("Invalid value for whichDims: larger than row or column")
-		if(max(whichDims)>ncol(reducedDim(object,type=dimReduce))) redoDim<-TRUE
+		if(max(whichDims)>ncol(reducedDim(object,type=reducedDim))) redoDim<-TRUE
 	}	
 		
-	if(redoDim) object<-makeDimReduce(object,dimReduce=dimReduce,maxDims=max(whichDims))
-	if(dimReduce %in% reducedDimNames(object)){
+	if(redoDim) object<-makeDimReduce(object,reducedDim=reducedDim,maxDims=max(whichDims))
+	if(reducedDim %in% reducedDimNames(object)){
 		
-		dat<-reducedDim(object,type=dimReduce)[,whichDims]
+		dat<-reducedDim(object,type=reducedDim)[,whichDims]
 	}
-	else stop("'dimReduce' does not match saved dimensionality reduction nor built in methods.")
+	else stop("'reducedDim' does not match saved dimensionality reduction nor built in methods.")
 
 	if(length(whichDims)==2){
 		if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])

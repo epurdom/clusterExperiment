@@ -23,13 +23,13 @@
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
 
-\S4method{clusterSingle}{SingleCellFilter,missing}(x, dimReduce = "none",
+\S4method{clusterSingle}{SingleCellFilter,missing}(x, reduceMethod = "none",
   nDims = NA, ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  dimReduce = c("none", listBuiltInDimReduce(), listBuiltInFilterStats()),
+  reduceMethod = c("none", listBuiltInDimReduce(), listBuiltInFilterStats()),
   nDims = NA, clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
@@ -49,13 +49,13 @@ on which to run the clustering.}
 subsampling is returned in the coClustering object and replaces any
 existing coClustering object in the slot \code{coClustering}.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-details.}
+1) "none", 2) one of listBuiltInDimReduce() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
 
 \item{nDims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{dimReduce}}
+in the reduction specified by \code{reduceMethod}}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is

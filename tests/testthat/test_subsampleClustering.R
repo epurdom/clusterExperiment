@@ -20,9 +20,9 @@ test_that("`subsampleClustering` works", {
 	expect_identical(subInSampleLarge,subInSample)
 	
 	#test in passing to subsampleArgs
-	rsecOut1<-RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+	rsecOut1<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
        subsampleArgs=list(resamp.num=5, largeDataset=TRUE),random.seed=495)
-   	rsecOut2<-RSEC(x=mat, isCount=FALSE,dimReduce="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
+   	rsecOut2<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
           subsampleArgs=list(resamp.num=5, largeDataset=FALSE),random.seed=495)
 	expect_identical(clusterMatrix(rsecOut1),clusterMatrix(rsecOut2))
   

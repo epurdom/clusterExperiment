@@ -26,7 +26,7 @@
 \S4method{RSEC}{matrix}(x, ...)
 
 \S4method{RSEC}{SingleCellFilter}(x, isCount = FALSE, transFun = NULL,
-  dimReduce = "PCA", nFilter = NA, nPCADims = c(50), k0s = 4:15,
+  reduceMethod = "PCA", nFilter = NA, nDimReduce = c(50), k0s = 4:15,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 1, combineProportion = 0.7,
   combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
@@ -67,14 +67,18 @@ applied to the data creates an error or NA values, then the function will throw 
 If object is of class \code{ClusterExperiment}, the stored transformation will be used 
 and giving this parameter will result in an error.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-details.}
+1) "none", 2) one of listBuiltInDimReduce() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
 
 \item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}). If NA is 
 included, then the full dataset will also be included.}
+
+\item{nDimReduce}{vector of the number of PCs to use (when 'PCA' is identified 
+in \code{reduceMethod}). If NA is included, then the full dataset will also be
+included.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
@@ -102,7 +106,7 @@ are left unassigned.}
 
 \item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
 
-\item{dendroReduce}{passed to \code{dimReduce} in \code{\link{makeDendrogram}}}
+\item{dendroReduce}{passed to \code{reduceMethod} in \code{\link{makeDendrogram}}}
 
 \item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 

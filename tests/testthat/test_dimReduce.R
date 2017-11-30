@@ -7,24 +7,24 @@ test_that("makeDimReduce works as promised",{
   true3<-abs(reducedDim(sceSimDataDimRed,"PCA")[,1:nDim])
 
   #note: cc gives rownames to everything, so need to unname it
-  expect_silent(dr3<-makeDimReduce(ceSimData,dimReduce="PCA",maxDims=nDim))
+  expect_silent(dr3<-makeDimReduce(ceSimData,reduceMethod="PCA",maxDims=nDim))
   expect_equal(unname(true3),unname(abs(reducedDim(dr3,"PCA"))))
 
-  expect_silent(dr3<-makeDimReduce(simData,dimReduce="PCA",maxDims=nDim))
+  expect_silent(dr3<-makeDimReduce(simData,reduceMethod="PCA",maxDims=nDim))
   expect_equal(true3,abs(reducedDim(dr3,"PCA")))
 
-  expect_silent(dr3<-makeDimReduce(seSimData,dimReduce="PCA",maxDims=nDim))
+  expect_silent(dr3<-makeDimReduce(seSimData,reduceMethod="PCA",maxDims=nDim))
   expect_equal(true3,abs(reducedDim(dr3,"PCA")))
 
-  expect_silent(dr3<-makeDimReduce(sceSimData,dimReduce="PCA",maxDims=nDim))
+  expect_silent(dr3<-makeDimReduce(sceSimData,reduceMethod="PCA",maxDims=nDim))
   expect_equal(true3,abs(reducedDim(dr3,"PCA")))
 
   #check don't lose them if call on existing object
-  expect_silent(dr<-makeDimReduce(sceSimDataDimRed,dimReduce="PCA",maxDims=nDim))
+  expect_silent(dr<-makeDimReduce(sceSimDataDimRed,reduceMethod="PCA",maxDims=nDim))
   expect_equal(reducedDims(sceSimDataDimRed),reducedDims(dr))
 
   #check with maxDims<1 (picks 4 of dimensions apparently -- never checked was correct)
-  expect_silent(dr2<-makeDimReduce(cc,dimReduce="PCA",maxDims=0.5))
+  expect_silent(dr2<-makeDimReduce(cc,reduceMethod="PCA",maxDims=0.5))
   expect_equal(abs(reducedDim(dr2,"PCA")[,1:4]), abs(reducedDim(dr2,"PCA")))
   
 })

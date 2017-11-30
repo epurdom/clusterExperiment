@@ -80,29 +80,29 @@ setMethod(
 }
 
 
-#####Function to calculate the dimReduce matrices.
+#####Function to calculate the reducedDim matrices.
 
 
 #' @name makeDimReduce
 #' @title Calculate dimensionality reduction of data
 #' @description A Function for performing and storing common dimensionality reduction techniques
-#' @param dimReduce a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
+#' @param reducedDims a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
 #' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
 #' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
 #'   \code{maxDims} can also take values between (0,1) to indicate keeping the
 #'   number of PCA dimensions necessary to account for that proportion of the
-#'   variance. \code{maxDims} should be of same length as \code{dimReduce}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each). 
+#'   variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each). 
 #' @param ... Values passed on the the 'SingleCellExperiment' method.
 #' @inheritParams transformData
 #' @return a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
 #' @details The PCA method uses either \code{prcomp} from the \code{stats} package or  \code{svds} from the \code{RSpectra} package to perform PCA. Both are called on \code{t(assay(x))} with \code{center=TRUE} and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
 #'   it is performing PCA on the correlation matrix of the features. 
 #'
-#' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{dimReduce}.
+#' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{reducedDims}.
 #' @examples
 #' data(simData)
 #' listBuiltInDimReduce()
-#' scf<-makeDimReduce(simData, dimReduce="PCA", maxDims=3)
+#' scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 #' scf
 #' @export
 #' @aliases makeDimReduce,SingleCellExperiment-method
@@ -110,27 +110,27 @@ setMethod(
 setMethod(
   f = "makeDimReduce",
   signature = "SingleCellExperiment",
-  definition = function(object,dimReduce="PCA",maxDims=500,transFun=NULL,isCount=FALSE)
+  definition = function(object,reducedDims="PCA",maxDims=500,transFun=NULL,isCount=FALSE)
 {
 
   ###################
   ##Check user inputs
   ###################
-  #check valid options for dimReduce
+  #check valid options for reducedDims
   validDim<-listBuiltInDimReduce()
-  dimReduce<-unique(dimReduce)
-  if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(dimReduce))
-  if(length(maxDims)!=length(dimReduce)) stop("'maxDims' must be of same length as 'dimReduce'")
+  reducedDims<-unique(reducedDims)
+  if(length(maxDims)==1) maxDims<-rep(maxDims,length=length(reducedDims))
+  if(length(maxDims)!=length(reducedDims)) stop("'maxDims' must be of same length as 'reducedDims'")
 	  
   ######Check dimensions and valid argument
-  for(dr in dimReduce){
+  for(dr in reducedDims){
 	  dr<-match.arg(dr,validDim) 
 	  if(is.na(maxDims) || maxDims>NROW(object) || maxDims > NCOL(object)){
 		  if(!is.na(maxDims) & (maxDims>NROW(object) || maxDims > NCOL(object)))
 			  warning("User requested more dimensionality reduction dimensions than the minimimum of number of rows and columns. Will return all dimensions.")
 		  maxDims<-min(c(NROW(object),NCOL(object)))
 	  }
-	  if(maxDims<=0)  stop("the number of dimReduce dimensions must be a value strictly greater than 0")
+	  if(maxDims<=0)  stop("the number of reducedDims dimensions must be a value strictly greater than 0")
 
 
   }
@@ -140,7 +140,7 @@ setMethod(
   #transform data
   x<-transformData(object,transFun=transFun,isCount=isCount)
   #---------
-  #Check zero variance genes before doing dimReduce:
+  #Check zero variance genes before doing reducedDims:
   #---------
   rowvars <- matrixStats::rowVars(x)
   if(any(rowvars==0)) {
@@ -151,11 +151,11 @@ setMethod(
   }
 
   ###################
-  ##Do loop over dimReduce values:
+  ##Do loop over reducedDims values:
   ###################
   currErrors<-c()
-  for(kk in 1:length(dimReduce)){
-	  dr<-dimReduce[[kk]]
+  for(kk in 1:length(reducedDims)){
+	  dr<-reducedDims[[kk]]
 	  md<-maxDims[[kk]]
 	  isPct <- md < 1
 	  #check if already calculated
@@ -168,13 +168,13 @@ setMethod(
 	  if(dr=="PCA") out<-try(.pcaDimRed(x,md=md,isPct=isPct,rowvars=rowvars))
 	  ##-------
 	  	  
-	  if(!inherits(out,"try-error")) reducedDim(object,dimReduce) <- out
+	  if(!inherits(out,"try-error")) reducedDim(object,reducedDims) <- out
 	  else{
 		  currErrors<-c(currErrors,paste("\t",dr,":",out,sep=""))
 	  }	  
   }
   if(length(currErrors)>0){
-	  if(length(currErrors)==length(dimReduce)) 
+	  if(length(currErrors)==length(reducedDims)) 
 		  stop(paste("No dimensionality reduction techniques were successful:",currErrors,sep="\n"))
 	  else{
 	  	warning(paste("The following dimensionality reduction techniques hit errors:",currErrors,sep="\n"))
@@ -287,7 +287,7 @@ setMethod(
   ###################
   ##Check user inputs
   ###################
-  #check valid options for dimReduce
+  #check valid options for reducedDims
   validDim<-listBuiltInFilterStats()
   filterStats<-unique(filterStats)
   if(!all(filterStats %in% validDim)){

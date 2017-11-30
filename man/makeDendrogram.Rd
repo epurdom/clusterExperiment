@@ -9,7 +9,7 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", dimReduce = "mad", nDims,
+  whichCluster = "primaryCluster", reduceMethod = "mad", nDims,
   ignoreUnassignedVar = TRUE, unassignedSamples = c("outgroup", "cluster"),
   ...)
 
@@ -27,19 +27,19 @@
 which cluster should be used to make the dendrogram. Default is 
 primaryCluster.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Can be either a
 value stored in either of reducedDims or filterStats slot or a built-in
 diminsionality reduction/filtering. The option "coCluster" will use the
 co-Clustering matrix stored}
 
-\item{nDims}{The number of dimensions to keep from \code{dimReduce}. If
+\item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing see details for default values. in the 'coClustering' slot of the
 \code{ClusterExperiment} object.}
 
 \item{ignoreUnassignedVar}{logical. Whether filtering statistics should
 ignore the unassigned samples within the clustering. Only relevant if
-'dimReduce' matches one of built-in filtering statistics in
+'reduceMethod' matches one of built-in filtering statistics in
 \code{\link{listBuiltInFilterStats}()}. In which case the clustering identified
 in \code{whichCluster} is passed to \code{makeFilterStats}. See
 \code{\link{makeFilterStats}}  for more details.}
@@ -90,11 +90,11 @@ If any merge information is stored in the input object, it will be
   erased by a call to mergeDendrogram.
 
 If \code{nDims} is missing, it will be given a default value
-  depending on the value of \code{dimReduce}. If \code{dimReduce} is set to a
+  depending on the value of \code{reduceMethod}. If \code{reduceMethod} is set to a
   filtering statistic, \code{nDims} is arbitrarily set to 500. If
-  \code{dimReduce} matches a dimensionality reduction value saved in
+  \code{reduceMethod} matches a dimensionality reduction value saved in
   \code{x}, then the number of columns of this matrix. If not, and
-  \code{dimReduce} matches a value of \code{listBuiltInDimReduce()}, then
+  \code{reduceMethod} matches a value of \code{listBuiltInDimReduce()}, then
   arbirarily set to 50.
 }
 \examples{

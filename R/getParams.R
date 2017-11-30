@@ -34,7 +34,7 @@
 #' @examples
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), dimReduce="PCA",
+#' cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #' getClusterManyParams(cl)
@@ -102,10 +102,10 @@ setMethod(f = "getClusterManyParams",
 # dimChoices<-toupper(c("PCA","var","mad","abscv"))
 # dimValues <- c("noDimReduce",paste("n",dimChoices,"Features",sep=""))
 # whDimReduce<-which(sapply(nameList,function(yy){any(yy %in% dimValues)}))
-# if(length(whDimReduce)>1) stop("coding error: not expecting to have more than one dimReduce parameter")
+# if(length(whDimReduce)>1) stop("coding error: not expecting to have more than one reduceMethod parameter")
 # if(length(whDimReduce)==1){
 # 	if(length(unique(nameList[[whDimReduce]]))==1){
-# 		#only single value for dimReduce, so works like normal; use standard code
+# 		#only single value for reduceMethod, so works like normal; use standard code
 # 		nms<-sapply(nameList,unique)
 # 		if(nms[[whDimReduce]]=="noDimReduce"){
 # 			#if no Dim reduction on all, then just remove (would this even show up in clusterLabel)
@@ -114,8 +114,8 @@ setMethod(f = "getClusterManyParams",
 # 		}
 # 	}
 # 	else{
-# 		##First, create variable giving type of dimReduce
-# 		dimReduceType<-nameList[[whDimReduce]]
+# 		##First, create variable giving type of reduceMethod
+# 		reduceMethod<-nameList[[whDimReduce]]
 # 		nameList[[whDimReduce]]<-"nDimReduce"
 # 		nms<-sapply(nameList,function(n){
 # 			n<-unique(n)
@@ -123,25 +123,25 @@ setMethod(f = "getClusterManyParams",
 # 			return(n)
 # 		})
 # 		##Fix up any that had 'noDimReduce' to be NA in vals and then make it numeric
-# 		if(any(dimReduceType=="noDimReduce")){
-# 			whNoDim<-which(dimReduceType=="noDimReduce")
+# 		if(any(reduceMethod=="noDimReduce")){
+# 			whNoDim<-which(reduceMethod=="noDimReduce")
 # 			vals[[whDimReduce]][whNoDim]<-NA
 # 			vals[[whDimReduce]]<-as.numeric(vals[[whDimReduce]])
 # 		}
-# 		##add dimReduceType to values
-# 		dimReduceType<-gsub("Features","",dimReduceType)
+# 		##add reduceMethod to values
+# 		reduceMethod<-gsub("Features","",reduceMethod)
 # 		for(dimMethod in dimChoices){
-# 			dimReduceType[dimReduceType==paste("n",dimMethod,sep="")]<-dimMethod
+# 			reduceMethod[reduceMethod==paste("n",dimMethod,sep="")]<-dimMethod
 # 		}
-# 		dimReduceType[dimReduceType=="noDimReduce"]<-"none"
+# 		reduceMethod[reduceMethod=="noDimReduce"]<-"none"
 #
 # 		if(whDimReduce==1){
-# 			nms<-c("dimReduce",nms)
-# 			vals<-c(list(dimReduceType),vals)
+# 			nms<-c("reduceMethod",nms)
+# 			vals<-c(list(reduceMethod),vals)
 # 		}
 # 		else{
 # 			nms<-c(nms[1:(whDimReduce)],"typeDimReduce",nms[whDimReduce:length(nms)])
-# 			vals<-c(vals[1:(whDimReduce)],list(dimReduceType),vals[whDimReduce:length(nms)])
+# 			vals<-c(vals[1:(whDimReduce)],list(reduceMethod),vals[whDimReduce:length(nms)])
 # 		}
 # 	}
 #

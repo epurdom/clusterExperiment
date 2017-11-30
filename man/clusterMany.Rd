@@ -11,18 +11,18 @@
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce = "none", nDimReduce = NA,
+\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nDimReduce = NA,
   transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
-  dimReduce = "none", nFilter = NA, nDimReduce = NA, alphas = 0.1,
+  reduceMethod = "none", nFilter = NA, nDimReduce = NA, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
   minSizes = 1, transFun = NULL, isCount = FALSE, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
   ncores = 1, random.seed = NULL, run = TRUE, ...)
 
-\S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
+\S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilter = NA, nDimReduce = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
@@ -38,13 +38,13 @@ following classes: matrix (with genes in rows),
 \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
 \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-details.}
+1) "none", 2) one of listBuiltInDimReduce() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
 
 \item{nDimReduce}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{dimReduce}). If NA is included, then the full dataset will also be
+in \code{reduceMethod}). If NA is included, then the full dataset will also be
 included.}
 
 \item{transFun}{a transformation function to be applied to the data. If the transformation 
@@ -71,7 +71,7 @@ functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 
 \item{nFilter}{vector of the number of the most variable features to keep 
-(when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}). If NA is 
 included, then the full dataset will also be included.}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
@@ -224,13 +224,13 @@ data(simData)
 #Example: clustering using pam with different dimensions of pca and different
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
-checkParams <- clusterMany(simData,dimReduce="PCA",  
+checkParams <- clusterMany(simData,reduceMethod="PCA",  
 nDimReduce=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,dimReduce="PCA", nDimReduce=c(5,10,50),  isCount=FALSE,
+cl <- clusterMany(simData,reduceMethod="PCA", nDimReduce=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))

@@ -7,7 +7,7 @@
 #' @param k0s the k0 parameter for sequential clustering (see \code{\link{seqCluster}})
 #' @param combineProportion passed to \code{proportion} in \code{\link{combineMany}}
 #' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
-#' @param dendroReduce passed to \code{dimReduce} in \code{\link{makeDendrogram}}
+#' @param dendroReduce passed to \code{reduceMethod} in \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
@@ -94,8 +94,8 @@ setMethod(
     f = "RSEC",
     signature = signature(x = "SingleCellFilter"),
     definition = function(x, isCount=FALSE,transFun=NULL,
-        dimReduce="PCA",nFilter=NA,
-        nPCADims=c(50), k0s=4:15,
+        reduceMethod="PCA",nFilter=NA,
+        nDimReduce=c(50), k0s=4:15,
         clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
         combineProportion=0.7, combineMinSize=5,
@@ -107,15 +107,15 @@ setMethod(
         ncores=1, random.seed=NULL, run=TRUE
     )
 {
-    if(dimReduce=="none"){
-        nPCADims<-NA
+    if(reduceMethod=="none"){
+        nDimReduce<-NA
         nFilter<-NA
     }
     if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
 ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
                     sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
-                    dimReduce=dimReduce,nFilter=nFilter,nPCADims=nPCADims,
+                    reduceMethod=reduceMethod,nFilter=nFilter,nDimReduce=nDimReduce,
                     mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					
@@ -156,7 +156,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 	##makeDendrogram
   	args1<-list()
   	if("dendroReduce" %in% names(passedArgs)){
-		args1<-c(args1,"dimReduce"=passedArgs$dendroReduce)
+		args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce)
 		if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
 	}
   	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)

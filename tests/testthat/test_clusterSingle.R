@@ -73,10 +73,10 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 
 })
 
-test_that("`clusterSingle` works with dimReduce", {
+test_that("`clusterSingle` works with reduceMethod", {
 	#existing dim reduce values
   	expect_silent(clustNothing4 <- clusterSingle(sceSimDataDimRed,
-		dimReduce="PCA", nDims=3,
+		reduceMethod="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(sort(reducedDimNames(clustNothing4)),sort(c("PCA","TSNE")))
@@ -87,7 +87,7 @@ test_that("`clusterSingle` works with dimReduce", {
 
 	#test nDims=NA
   	expect_silent(clustNothing1 <- clusterSingle(sceSimDataDimRed,
-		dimReduce="PCA", nDims=NA,
+		reduceMethod="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(sort(reducedDimNames(clustNothing4)),sort(c("PCA","TSNE")))
@@ -98,7 +98,7 @@ test_that("`clusterSingle` works with dimReduce", {
 
 	#blank scf object
   	expect_silent(clustNothing6 <- clusterSingle(sceSimData,
-		dimReduce="PCA", nDims=3,
+		reduceMethod="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(sort(reducedDimNames(clustNothing6)),sort(c("PCA")))
@@ -108,7 +108,7 @@ test_that("`clusterSingle` works with dimReduce", {
 	expect_equal(clusterMatrix(clustNothing6), clusterMatrix(clustNothing7))
 	
   	expect_silent(clustNothing8 <- clusterSingle(seSimData,
-		dimReduce="PCA", nDims=3,
+		reduceMethod="PCA", nDims=3,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 	expect_equal(sort(reducedDimNames(clustNothing8)),sort(c("PCA")))
@@ -117,7 +117,7 @@ test_that("`clusterSingle` works with dimReduce", {
 	expect_equal(primaryCluster(clustNothing8),rep(c(1,2,3),each=100))
 
   	expect_warning(clusterSingle(sceSimData,
-		dimReduce="PCA", nDims=NA,
+		reduceMethod="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"), 
 		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
 		
@@ -130,45 +130,45 @@ test_that("`clusterSingle` works with filtering", {
     ####Check built in functions ####
 	for(fs in listBuiltInFilterStats()){
 	    expect_silent(clusterSingle(mat, 
-	        subsample=FALSE, sequential=FALSE, dimReduce=fs,
+	        subsample=FALSE, sequential=FALSE, reduceMethod=fs,
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=FALSE))
 		
 	}
     expect_warning(clusterSingle(mat,  subsample=FALSE, sequential=FALSE,
-           dimReduce="var", nDims=NROW(mat)+1,
+           reduceMethod="var", nDims=NROW(mat)+1,
 		   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), 
 		 isCount=FALSE),
                  "the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
     expect_warning(clusterSingle(mat, 
       subsample=FALSE, sequential=FALSE,
-      dimReduce="none",nDims=3, 
+      reduceMethod="none",nDims=3, 
 	  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
-                   "specifying nDims has no effect if dimReduce==`none`")
+                   "specifying nDims has no effect if reduceMethod==`none`")
 
     #check returns filterStats
     expect_silent(cc <- clusterSingle(mat, 
     subsample=FALSE, sequential=FALSE,
-    dimReduce="var", nDims=3,
+    reduceMethod="var", nDims=3,
     mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
   	expect_equal(sort(filterNames(cc)),"var")
 
     expect_silent(cc2 <- clusterSingle(se,
     subsample=FALSE, sequential=FALSE,
-    dimReduce="var", nDims=3,
+    reduceMethod="var", nDims=3,
     mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
   	expect_equal(sort(filterNames(cc2)),"var")
 
   	expect_silent(cc3 <- clusterSingle(scf, 
     subsample=FALSE, sequential=FALSE,
-    dimReduce="var", nDims=3,
+    reduceMethod="var", nDims=3,
     mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
   	expect_equal(sort(filterNames(cc3)),"var")
 	
   	#test using existing values 
   	expect_silent(cc4 <- clusterSingle(scfFull,
     subsample=FALSE, sequential=FALSE,
-    dimReduce="var", nDims=3,
+    reduceMethod="var", nDims=3,
     mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE))
   expect_equal(sort(filterNames(cc4)),sort(c("var","Filter1","Filter2")))
 
@@ -194,14 +194,14 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 	
 	#matrix
 	expect_silent(cc<-clusterSingle(contData, 
-	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=FALSE))
     expect_equal(primaryCluster(cc),c(1,2,2,1,3,3,1,3,1,2,3,3,2,1,1,3,2,2,3,2))
 	expect_equal(round(transformData(cc)[1,],2), expectTrans1) 
 	
 	expect_silent(cc<-clusterSingle(contData, 
-	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=FALSE))
     expect_equal(primaryCluster(cc),c(1,2,2,1,3,3,1,3,1,2,3,3,2,1,1,3,2,2,3,2))
@@ -209,7 +209,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
    #SE
    expect_silent(cc2<-clusterSingle(testSE, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=FALSE))
    expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -217,21 +217,21 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 	
    #SCE
    expect_silent(cc3<-clusterSingle(testSCE, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=FALSE))
    expect_equal(primaryCluster(cc3),primaryCluster(cc))
 	
    #SCF
    expect_silent(cc4<-clusterSingle(testSCF, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=FALSE))
    expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
    #CE
    expect_silent(cc5<-clusterSingle(cc, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
    expect_equal(primaryCluster(cc5),primaryCluster(cc))
     
@@ -244,7 +244,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
   #matrix
   expect_silent(cc<-clusterSingle(contData, 
-        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=FALSE))
   expect_equal(primaryCluster(cc),c(1,2,1,2,1,3,2,2,2,1,3,3,3,1,2,3,3,2,3,1)) 
@@ -253,7 +253,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
   #SE
   expect_silent(cc2<-clusterSingle(testSE, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
   expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -261,21 +261,21 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
   #SCE
   expect_silent(cc3<-clusterSingle(testSCE, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
   expect_equal(primaryCluster(cc3),primaryCluster(cc))
 
   #SCF
   expect_silent(cc4<-clusterSingle(testSCF, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
   expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
   #CE
   expect_silent(cc5<-clusterSingle(cc, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
   expect_equal(primaryCluster(cc5),primaryCluster(cc))
 
@@ -286,7 +286,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
 	#matrix
 	expect_silent(cc<-clusterSingle(contData, 
-	      subsample=FALSE, sequential=FALSE, dimReduce="none",
+	      subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	      nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
 	expect_equal(primaryCluster(cc),c(1,2,3,1,2,3,1,2,1,2,3,2,3,3,1,3,3,3,2,2)) 
@@ -295,7 +295,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
 	#SE
 	expect_silent(cc2<-clusterSingle(testSE, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
 	expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -303,21 +303,21 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 
 	#SCE
 	expect_silent(cc3<-clusterSingle(testSCE, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
 	expect_equal(primaryCluster(cc3),primaryCluster(cc))
 
 	#SCF
 	expect_silent(cc4<-clusterSingle(testSCF, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
 	expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
 	#CE
 	expect_silent(cc5<-clusterSingle(cc, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
 	expect_equal(primaryCluster(cc5),primaryCluster(cc))
    
@@ -341,7 +341,7 @@ test_that("`clusterSingle` consistent results (with transformation)", {
 	
 	#matrix
 	expect_silent(cc<-clusterSingle(countData, 
-	        subsample=FALSE, sequential=FALSE, dimReduce="var",
+	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=TRUE))
    expect_equal(primaryCluster(cc),c(1,1,2,1,2,1,2,2,3,2,1,3,1,3,1,1,2,3,2,2))
@@ -349,7 +349,7 @@ test_that("`clusterSingle` consistent results (with transformation)", {
    
    #SE
    expect_silent(cc2<-clusterSingle(testSE, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=TRUE))
    expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -357,21 +357,21 @@ test_that("`clusterSingle` consistent results (with transformation)", {
 	
    #SCE
    expect_silent(cc3<-clusterSingle(testSCE, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=TRUE))
    expect_equal(primaryCluster(cc3),primaryCluster(cc))
 	
    #SCF
    expect_silent(cc4<-clusterSingle(testSCF, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=TRUE))
    expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
    #CE
    expect_silent(cc5<-clusterSingle(cc, 
-        subsample=FALSE, sequential=FALSE, dimReduce="var",
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
    expect_equal(primaryCluster(cc5),primaryCluster(cc))
     
@@ -384,7 +384,7 @@ test_that("`clusterSingle` consistent results (with transformation)", {
 
   #matrix
   expect_silent(cc<-clusterSingle(countData, 
-        subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=TRUE))
   expect_equal(primaryCluster(cc),c(1,2,3,3,1,3,1,3,3,3,3,2,3,2,3,3,3,2,2,3)) 
@@ -392,7 +392,7 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
  
   #SE
   expect_silent(cc2<-clusterSingle(testSE, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
   expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -400,21 +400,21 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
   #SCE
   expect_silent(cc3<-clusterSingle(testSCE, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
   expect_equal(primaryCluster(cc3),primaryCluster(cc))
 
   #SCF
   expect_silent(cc4<-clusterSingle(testSCF, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
   expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
   #CE
   expect_silent(cc5<-clusterSingle(cc, 
-       subsample=FALSE, sequential=FALSE, dimReduce="PCA",
+       subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
   expect_equal(primaryCluster(cc5),primaryCluster(cc))
 
@@ -425,14 +425,14 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
 	#matrix
 	expect_silent(cc<-clusterSingle(countData, 
-	      subsample=FALSE, sequential=FALSE, dimReduce="none",
+	      subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	      nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
 	expect_equal(primaryCluster(cc),c(1,2,1,2,1,2,1,2,3,1,2,3,2,3,2,2,2,3,3,1)) 
 
 	#SE
 	expect_silent(cc2<-clusterSingle(testSE, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
 	expect_equal(primaryCluster(cc2),primaryCluster(cc))
@@ -440,21 +440,21 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
 	#SCE
 	expect_silent(cc3<-clusterSingle(testSCE, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
 	expect_equal(primaryCluster(cc3),primaryCluster(cc))
 
 	#SCF
 	expect_silent(cc4<-clusterSingle(testSCF, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
 	expect_equal(primaryCluster(cc4),primaryCluster(cc))
 
 	#CE
 	expect_silent(cc5<-clusterSingle(cc, 
-	     subsample=FALSE, sequential=FALSE, dimReduce="none",
+	     subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	     nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),clusterLabel="redoCS"))
 	expect_equal(primaryCluster(cc5),primaryCluster(cc))
    

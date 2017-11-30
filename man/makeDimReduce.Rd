@@ -10,7 +10,7 @@
 \alias{listBuiltInDimReduce}
 \title{Calculate dimensionality reduction of data}
 \usage{
-\S4method{makeDimReduce}{SingleCellExperiment}(object, dimReduce = "PCA",
+\S4method{makeDimReduce}{SingleCellExperiment}(object, reducedDims = "PCA",
   maxDims = 500, transFun = NULL, isCount = FALSE)
 
 \S4method{makeDimReduce}{matrix}(object, ...)
@@ -24,12 +24,12 @@ listBuiltInDimReduce()
 \arguments{
 \item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}
 
-\item{dimReduce}{a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.}
+\item{reducedDims}{a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.}
 
 \item{maxDims}{Numeric vector of integer giving the number of PC dimensions to calculate. 
 \code{maxDims} can also take values between (0,1) to indicate keeping the
 number of PCA dimensions necessary to account for that proportion of the
-variance. \code{maxDims} should be of same length as \code{dimReduce}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each).}
+variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating the number of dimensions to keep for each method (if \code{maxDims} is of length 1, the same number of dimensions will be used for each).}
 
 \item{transFun}{a transformation function to be applied to the data. If the transformation 
 applied to the data creates an error or NA values, then the function will throw an error.
@@ -46,7 +46,7 @@ and giving this parameter will result in an error.}
 \value{
 a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
 
-A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{dimReduce}.
+A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{reducedDims}.
 }
 \description{
 A Function for performing and storing common dimensionality reduction techniques
@@ -58,6 +58,6 @@ The PCA method uses either \code{prcomp} from the \code{stats} package or  \code
 \examples{
 data(simData)
 listBuiltInDimReduce()
-scf<-makeDimReduce(simData, dimReduce="PCA", maxDims=3)
+scf<-makeDimReduce(simData, reducedDims="PCA", maxDims=3)
 scf
 }

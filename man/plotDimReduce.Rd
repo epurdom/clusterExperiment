@@ -14,7 +14,7 @@
 \S4method{plotDimReduce}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{plotDimReduce}{ClusterExperiment,numeric}(object, whichClusters,
-  dimReduce = "PCA", whichDims = c(1:2), plotUnassigned = TRUE,
+  reducedDim = "PCA", whichDims = c(1:2), plotUnassigned = TRUE,
   legend = TRUE, legendTitle = "", clusterLegend = NULL,
   unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
   ylab = NULL, ...)
@@ -26,7 +26,7 @@
 
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
-\item{dimReduce}{What dimensionality reduction method to use. Should match
+\item{reducedDim}{What dimensionality reduction method to use. Should match
 either a value in \code{reducedDimNames(object)} or one of the built-in 
 functions of \code{\link{listBuiltInDimReduce}()}}
 
@@ -71,7 +71,7 @@ Plot a 2-dimensional representation of the data, color-code by a clustering.
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), dimReduce="PCA",
+cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), reducedDim="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 

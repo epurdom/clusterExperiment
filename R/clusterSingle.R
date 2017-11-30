@@ -23,12 +23,12 @@
 #'   (if \code{subsample=TRUE}), see help pages of 
 #'   \code{\link{subsampleClustering}}.
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}.
-#' @param dimReduce character A character identifying what type of 
+#' @param reduceMethod character A character identifying what type of 
 #'   dimensionality reduction to perform before clustering. Options are 
-#'   "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
-#'   details.
+#'   1) "none", 2) one of listBuiltInDimReduce() or listBuiltInFitlerStats OR 
+#'   3) stored filtering or reducedDim values in the object. 
 #' @param nDims integer An integer identifying how many dimensions to reduce to 
-#'   in the reduction specified by \code{dimReduce}
+#'   in the reduction specified by \code{reduceMethod}
 #' @param clusterLabel a string used to describe the clustering. By default it
 #'   is equal to "clusterSingle", to indicate that this clustering is the result
 #'   of a call to \code{clusterSingle}.
@@ -228,20 +228,20 @@ setMethod(
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "SingleCellFilter",diss="missing"),
-  definition = function(x, dimReduce="none", nDims=NA,...) {
+  definition = function(x, reduceMethod="none", nDims=NA,...) {
 	  inputArgs<-list(...)
-	isDimReduced<- length(reducedDims(x))>0 && dimReduce %in% reducedDimNames(x)
-	isFilter<-length(filterStats(x))>0 && dimReduce %in% filterNames(x)
-	if(isDimReduced & isFilter) stop("dimReduce matches both reducedDimNames and filterNames")
-	if(dimReduce=="none" || (!isDimReduced && !isFilter)){
-		#go to matrix version using assay(x) and will calculate dimReduce etc.
-		outval<-clusterSingle(assay(x),dimReduce=dimReduce,nDims=nDims,...)
+	isDimReduced<- length(reducedDims(x))>0 && reduceMethod %in% reducedDimNames(x)
+	isFilter<-length(filterStats(x))>0 && reduceMethod %in% filterNames(x)
+	if(isDimReduced & isFilter) stop("reduceMethod matches both reducedDimNames and filterNames")
+	if(reduceMethod=="none" || (!isDimReduced && !isFilter)){
+		#go to matrix version using assay(x) and will calculate reduceMethod etc.
+		outval<-clusterSingle(assay(x),reduceMethod=reduceMethod,nDims=nDims,...)
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-		#but now need the filter/dimReduce
-		if(dimReduce!="none"){
-			if(dimReduce %in% filterNames(outval)) filterStats(retval)<-filterStats(outval)
-			if(dimReduce %in% reducedDimNames(outval)) reducedDims(retval)<-reducedDims(outval)
+		#but now need the filter/reducedDim
+		if(reduceMethod!="none"){
+			if(reduceMethod %in% filterNames(outval)) filterStats(retval)<-filterStats(outval)
+			if(reduceMethod %in% reducedDimNames(outval)) reducedDims(retval)<-reducedDims(outval)
 		}
 	}
 	else{
@@ -252,13 +252,13 @@ setMethod(
 			if(any(names(inputArgs)%in%"isCount"))
 				inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
 			
-			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-				outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=dimReduce)[,1:nDims])),dimReduce="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
+			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=reduceMethod))
+				outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,1:nDims])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
 		}
 		if(isFilter){
 			#Need to think how can pass options to filterData...
-			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=dimReduce))
-			outval<-clusterSingle(filterData(x,type=dimReduce,percentile=nDims),dimReduce="none",...)			#do transform filtered data...
+			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=reduceMethod))
+			outval<-clusterSingle(filterData(x,type=reduceMethod,percentile=nDims),reduceMethod="none",...)			#do transform filtered data...
 		}
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -277,7 +277,7 @@ setMethod(
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL,
-	  dimReduce=c("none",listBuiltInDimReduce(),listBuiltInFilterStats()),
+	  reduceMethod=c("none",listBuiltInDimReduce(),listBuiltInFilterStats()),
       nDims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
@@ -315,28 +315,27 @@ setMethod(
       ##transformation to data x that will be input to clustering
       ##########
 	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount) #need this later to build clusterExperiment object
-      dimReduce <- match.arg(dimReduce) #should be only 1 for clusterSingle
-      if(length(nDims)>1 || length(dimReduce)>1) {
-        stop("clusterSingle only handles one choice of dimensions or dimReduce. If you want to compare multiple choices, try clusterMany")
+      if(length(nDims)>1 || length(reduceMethod)>1) {
+        stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
       }
-      if(!is.na(nDims) & dimReduce=="none") {
-        warning("specifying nDims has no effect if dimReduce==`none`")
+      if(!is.na(nDims) & reduceMethod=="none") {
+        warning("specifying nDims has no effect if reduceMethod==`none`")
       }
-	  if(dimReduce=="none"){
+	  if(reduceMethod=="none"){
 		  x<-transformData(x,transFun=transFun)
 	  }
-	  else if(dimReduce%in%listBuiltInDimReduce()){
-		  transObj<-makeDimReduce(x,dimReduce=dimReduce, maxDims=nDims, transFun=transFun,isCount=isCount)
-		  x<-t(reducedDim(transObj,type=dimReduce))
+	  else if(reduceMethod%in%listBuiltInDimReduce()){
+		  transObj<-makeDimReduce(x,reduceMethod=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
+		  x<-t(reducedDim(transObj,type=reduceMethod))
 	  }
-	  else if(dimReduce %in% listBuiltInFilterStats()){
-		  transObj<-makeFilterStats(x,filterStat=dimReduce, transFun=transFun,isCount=isCount)
-		  x<-transformData(filterData(transObj,type=dimReduce,percentile=nDims), transFun=transFun,isCount=isCount)
+	  else if(reduceMethod %in% listBuiltInFilterStats()){
+		  transObj<-makeFilterStats(x,filterStat=reduceMethod, transFun=transFun,isCount=isCount)
+		  x<-transformData(filterData(transObj,type=reduceMethod,percentile=nDims), transFun=transFun,isCount=isCount)
 	  }
-	  else stop("invalid value for dimReduce -- not in builtin filter or dimReduce function")
+	  else stop("invalid value for reduceMethod -- not in built-in filter or reducedDim method")
     }
     else{
-      if(any(dimReduce!="none")) stop("dimReduce only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
+      if(any(reduceMethod!="none")) stop("reduceMethod only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
 	  N<-nrow(diss)
 	  if(!is.null(x)) origX<-x
     }
@@ -372,7 +371,7 @@ setMethod(
                       mainClusterArgs = mainClusterArgs,
                       subsampleArgs = subsampleArgs,
                       seqArgs = seqArgs,
-                      dimReduce=dimReduce,
+                      reduceMethod=reduceMethod,
                       nDims=nDims
     ))
     ##########
@@ -391,7 +390,7 @@ setMethod(
 		if(!is.logical(ch)) stop(ch)
       }
 	  if(!is.null(transObj)){
-		  #add in the dimReduce stuff
+		  #add in the reduceMethod stuff
 		  retval<-.addBackSEInfo(newObj=retval,oldObj=transObj)
 	  }
       return(retval)

@@ -43,7 +43,7 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
   
     #test subsetting works if have dendrogram attached:
-    x<-makeDendrogram(ccSE,dimReduce="PCA",nDims=3)
+    x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3)
     x[1:3,1:2]
   
 })
@@ -60,17 +60,17 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
 })
 
-test_that("`makeDendrogram` with dimReduce options", {
-    x<-makeDendrogram(ccSE,dimReduce="PCA",nDims=3)
-	expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),nDims=3))
-    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),nDims=3,ignoreUnassigned=TRUE)
+test_that("`makeDendrogram` with reduceMethod options", {
+    x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3)
+	expect_error(makeDendrogram(ccSE,reduceMethod=c("PCA","var"),nDims=3))
+    x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,ignoreUnassigned=TRUE)
     expect_equal(x,x2)
-    makeDendrogram(ccSE,dimReduce=c("var"),nDims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("var"),nDims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("abscv"),nDims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("abscv"),nDims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),nDims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=TRUE)
     
 })
 test_that("`makeDendrogram` works with whichCluster", {
@@ -160,7 +160,7 @@ test_that("plotDendrogram works with outgroup", {
   cl[1]<-3
   dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
   primaryClusterIndex(dend5)<-3
-  expect_error(makeDendrogram(dend5,dimReduce="none"),"Only 1 cluster given. Can not make a dendrogram.")
+  expect_error(makeDendrogram(dend5,reduceMethod="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
 

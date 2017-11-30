@@ -56,7 +56,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 
 test_that("saving merge info works",{
   expect_silent(cl1 <- clusterSingle(smSimData, 
-       subsample=FALSE, sequential=FALSE, dimReduce="none",
+       subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
 	   isCount=FALSE))
 	   #check cluster is same, otherwise won't get same results...
@@ -65,7 +65,7 @@ test_that("saving merge info works",{
   test<-clusterLegend(cl1)[[1]]
   test[,"name"]<-test[,"clusterIds"]
   clusterLegend(cl1)[[1]]<-test
-  expect_silent(clustWithDendro <- makeDendrogram(cl1,dimReduce="none"))
+  expect_silent(clustWithDendro <- makeDendrogram(cl1,reduceMethod="none"))
   #Old dendrogram:
   # > str(clustWithDendro@dendro_clusters)
   # --[dendrogram w/ 2 branches and 6 members at h = 1509]
@@ -199,7 +199,7 @@ test_that("`mergeClusters` works with unassignedSamples", {
 		 plotInfo="mergeMethod",leafType="clusters",plotType="colorblock"))
 	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name"))
 
-  expect_silent(clustWithDendro <- makeDendrogram(ceSim,dimReduce="mad",unassignedSamples = c("cluster")))
+  expect_silent(clustWithDendro <- makeDendrogram(ceSim,reduceMethod="mad",unassignedSamples = c("cluster")))
 
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
