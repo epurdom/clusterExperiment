@@ -5,7 +5,7 @@
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
-#' @param ... Values passed on the the 'SingleCellFilter' method.
+#' @param ... Values passed on the the 'SummarizedExperiment' method.
 #' @inheritParams makeReducedDims
 #' @inheritParams transformData
 #'
@@ -18,11 +18,11 @@
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
 #' @rdname makeFilterStats
-#' @aliases makeFilterStats,SingleCellFilter-method
+#' @aliases makeFilterStats,SummarizedExperiment-method
 #' @export
 setMethod(
   f = "makeFilterStats",
-  signature = "SingleCellFilter",
+  signature = "SummarizedExperiment",
   definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE)
 {
 
@@ -77,26 +77,7 @@ setMethod(
 	makeFilterStats(SummarizedExperiment(object),...)
 }
 )
-#' @rdname makeFilterStats
-#' @export
-setMethod(
-  f = "makeFilterStats",
-  signature = "SummarizedExperiment",
-  definition = function(object,...)
-{
-	makeFilterStats(as(object,"SingleCellExperiment"),...)
-}
-)
-#' @rdname makeFilterStats
-#' @export
-setMethod(
-  f = "makeFilterStats",
-  signature = "SingleCellExperiment",
-  definition = function(object,...)
-{
-	makeFilterStats(as(object,"SingleCellFilter"),...)
-}
-)
+
 #' @rdname makeFilterStats
 #' @export
 #' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.
@@ -107,7 +88,6 @@ setMethod(
 #'  \code{<filterStats>_<clusterLabel>}, i.e. the clustering label of the clustering is
 #'  appended to the standard name for the filtering statistic.
 #'
-
 setMethod(
   f = "makeFilterStats",
   signature = "ClusterExperiment",
@@ -138,7 +118,7 @@ setMethod(
 		}
 	}
 	else{
-		out<-makeFilterStats(as(object,"SingleCellFilter"),filterStats=filterStats,transFun=transformation(object),...)
+		out<-makeFilterStats(as(object,"SingleCellExperiment"),filterStats=filterStats,transFun=transformation(object),...)
 	}
 #	
 	filterStats(object)<-filterStats(out)
@@ -164,13 +144,13 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic
 #' @param keepLarge logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic. 
-#' @details Note that \code{filterData} returns a SingleCellFilter object. To get the actual data out use either assay or \code{\link{transformData}} if transformed data is desired.
-#' @return A SingleCellFilter object with the rows (genes) removed based on filters
+#' @details Note that \code{filterData} returns a SingleCellExperiment object. To get the actual data out use either assay or \code{\link{transformData}} if transformed data is desired.
+#' @return A SingleCellExperiment object with the rows (genes) removed based on filters
 #' @export
 #' @importFrom stats quantile
-setMethod( "filterData","SingleCellFilter",
+setMethod( "filterData","SingleCellExperiment",
 	function(object,type,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
-	stat<-if(absolute) abs(filterStats(object,type)) else filterStats(object,type)
+	stat<-if(absolute) abs(filterStats(object,type,checkValid=TRUE)) else filterStats(object,type,checkValid=TRUE)
 	if(missing(cutoff) & missing(percentile)) stop("must provide one of cutoff or percentile")
 	if(!missing(cutoff) & !missing(percentile)) stop("can only provide one of cutoff or percentile")
 	if(!missing(cutoff)){

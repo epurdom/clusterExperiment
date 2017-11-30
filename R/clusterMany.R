@@ -10,7 +10,7 @@
 #'   following classes: matrix (with genes in rows), 
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 #'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
-#'   \code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.
+#'   or \code{ClusterExperiment}.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
 #'   different choices of other parameters).
 #' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
@@ -190,7 +190,7 @@ setMethod(
   definition = function(x,
       reduceMethod="none",nReducedDims=NA, transFun=NULL,isCount=FALSE, ...
   ){
-	####Basically, matrix version calls makeReducedDims and makeFilterStats and then sends it to the SingleCellFilter version.
+	####Basically, matrix version calls makeReducedDims and makeFilterStats and then sends it to the SingleCellExperiment version.
 	if(missing(reduceMethod)) reduceMethod<-"none"
 	# if(anyNA(nReducedDims)){
 # 		if(!"none" in reduceMethod) reduceMethod<-c(reduceMethod,"none")
@@ -205,9 +205,9 @@ setMethod(
 	nValid<-length(c(dimNam,filtNam))
 	if(doNone) nValid<-nValid+1
 	if(!doNone & length(dimNam)==0 & length(filtNam)==0)
-		  stop("reduceMethod values given are not in built-in dimensionality reduction or built-in filters (and there is no such stored objects if a SingleCellFilter object). Option 'none' also not given, so nothing to do.")
+		  stop("reduceMethod values given are not in built-in dimensionality reduction or built-in filters (and there is no such stored objects if a SingleCellExperiment object). Option 'none' also not given, so nothing to do.")
 	else if(length(reduceMethod)!=nValid)
-		warning("Some reduceMethod values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Ignoring options.")
+		warning("Some reduceMethod values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellExperiment object). Ignoring options.")
 	if(length(dimNam)>0 | length(filtNam)>0){
 		if(length(dimNam)>0){
 			nReducedDims<-na.omit(nReducedDims)
@@ -223,7 +223,7 @@ setMethod(
 		}
 	}
 	else{
-		x<-SingleCellFilter(x)
+		x<-SingleCellExperiment(x)
 	}
 	return(clusterMany(x,reduceMethod=reduceMethod,nReducedDims=nReducedDims,transFun=transFun,isCount=isCount,...))
 }
@@ -233,7 +233,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "SingleCellFilter"),
+  signature = signature(x = "SingleCellExperiment"),
   definition = function(x, ks=NA, clusterFunction, 
 	  reduceMethod="none",nFilterDims=NA,nReducedDims=NA,
 	  alphas=0.1, findBestK=FALSE,
@@ -266,7 +266,7 @@ setMethod(
 	if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
 		stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
 	if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
-		###This will make it calculate the requested reduceMethod values and then send it back to here as a SingleCellFilter object without the args of reduceMethod, etc. ...
+		###This will make it calculate the requested reduceMethod values and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
 		## Note that if no Filter saved, and asked for filter
 		outval<-do.call(clusterMany,c(list(x=assay(x)),inputArgs[!names(inputArgs)%in%"x"]))
 		if(class(outval)=="ClusterExperiment") {
@@ -293,7 +293,7 @@ setMethod(
 		if(length(reduceMethod)>0){
 			if(any(!reduceMethod %in% c(reducedDimNames(x),filterNames(x)))){
 				reduceMethod<-reduceMethod[reduceMethod %in%c(reducedDimNames(x),filterNames(x))]
-				if(length(reduceMethod)>0) warning("Not all of reduceMethod value match a reducedDimNames or filterNames of the 'SingleCellFilter' object. Will ignore them:",paste(reduceMethod[!reduceMethod %in%c(reducedDimNames(x),filterNames(x))],collapse=","))
+				if(length(reduceMethod)>0) warning("Not all of reduceMethod value match a reducedDimNames or filterNames of the 'SingleCellExperiment' object. Will ignore them:",paste(reduceMethod[!reduceMethod %in%c(reducedDimNames(x),filterNames(x))],collapse=","))
 				else stop("No reduceMethod value was given that matches stored reducedDimNames or filterNames of the object.")
 			}
 			#check if nPCA values
@@ -660,7 +660,7 @@ setMethod(
   {
   	if(any(c("transFun","isCount") %in% names(list(...)))) 
   		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-    outval<-clusterMany(as(x,"SingleCellFilter"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
+    outval<-clusterMany(as(x,"SingleCellExperiment"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
                         nReducedDims=nReducedDims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
 		
@@ -695,16 +695,6 @@ setMethod(
   }
   )
 
-#' @rdname clusterMany
-#' @export
-setMethod(
-f = "clusterMany",
-signature = signature(x = "SingleCellExperiment"),
-definition = function(x, ...){
-  clusterMany(as(x,"SingleCellFilter"),...)
-}
-)
-  
 
 #' @export
 #' @rdname clusterMany

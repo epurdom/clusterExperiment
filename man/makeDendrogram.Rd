@@ -111,5 +111,5 @@ plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 
 }
 \seealso{
-makeFilterStats, makeDimReduce
+makeFilterStats, makeReducedDims
 }

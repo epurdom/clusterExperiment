@@ -6,9 +6,8 @@
 \alias{clusterSingle,missing,matrixOrNULL-method}
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
-\alias{clusterSingle,SingleCellFilter,missing-method}
+\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
@@ -18,13 +17,11 @@
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{SingleCellExperiment,missing}(x, diss, ...)
-
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
 
-\S4method{clusterSingle}{SingleCellFilter,missing}(x, reduceMethod = "none",
-  nDims = NA, ...)
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x,
+  reduceMethod = "none", nDims = NA, ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
@@ -35,8 +32,8 @@
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
-\code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples 

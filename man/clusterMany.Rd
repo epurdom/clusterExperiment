@@ -4,17 +4,16 @@
 \name{clusterMany,matrix-method}
 \alias{clusterMany,matrix-method}
 \alias{clusterMany}
-\alias{clusterMany,SingleCellFilter-method}
+\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
-\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
 \S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReducedDims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
+\S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
   reduceMethod = "none", nFilterDims = NA, nReducedDims = NA,
   alphas = 0.1, findBestK = FALSE, sequential = FALSE,
   removeSil = FALSE, subsample = FALSE, silCutoff = 0,
@@ -28,8 +27,6 @@
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
-\S4method{clusterMany}{SingleCellExperiment}(x, ...)
-
 \S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
@@ -37,7 +34,7 @@
 following classes: matrix (with genes in rows), 
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
-\code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
+or \code{ClusterExperiment}.}
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 

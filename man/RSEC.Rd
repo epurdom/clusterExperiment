@@ -7,15 +7,12 @@
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
 \alias{RSEC,SingleCellExperiment-method}
-\alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
-\alias{RSEC,SingleCellFilter-method}
+\alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
-\S4method{RSEC}{SingleCellExperiment}(x, ...)
-
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
 \S4method{RSEC}{data.frame}(x, ...)
@@ -25,7 +22,7 @@
 
 \S4method{RSEC}{matrix}(x, ...)
 
-\S4method{RSEC}{SingleCellFilter}(x, isCount = FALSE, transFun = NULL,
+\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
   reduceMethod = "PCA", nFilterDims = NA, nReducedDims = c(50),
   k0s = 4:15, clusterFunction = "hierarchical01", alphas = c(0.1, 0.2,
   0.3), betas = 0.9, minSizes = 1, combineProportion = 0.7,
@@ -39,7 +36,7 @@
 following classes: matrix (with genes in rows), 
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
-\code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
+or \code{ClusterExperiment}.}
 
 \item{...}{For signature \code{list}, arguments to be passed on to mclapply 
 (if ncores>1). For all the other signatures, arguments to be passed to the 

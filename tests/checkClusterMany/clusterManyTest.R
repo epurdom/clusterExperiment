@@ -1,4 +1,4 @@
-#Usage: nohup RScript clusterManyTest.R <tagString> <compareTo(optional)> &
+#Usage: nohup Rscript clusterManyTest.R <tagString> <compareTo(optional)> &
 # If get that corrupted file, probably copied from laptop or elsewhere that only has tag
 # Do git lfs checkout L5_sumExp.rda
 library(devtools)

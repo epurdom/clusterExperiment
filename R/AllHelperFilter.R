@@ -1,58 +1,85 @@
 setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
-setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
+# setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
-#' @name SingleCellFilter-methods
-#' @title Helper methods for the SingleCellFilter class
-#'
-#' @description This is a collection of helper methods for the SingleCellFilter class.
-#' @rdname SingleCellFilter-methods
-#' @param x A SingleCellFilter object
-#' @param object A SingleCellFilter object
-#' @param type a type of filter to retrieve. Should match the filter name.
-#' @aliases filterStats,SingleCellFilter,character-method filterStats
+#' @rdname makeFilterStats
+#' @aliases filterNames
 #' @export
-setMethod( "filterStats",c("SingleCellFilter","character"),
-	function(object,type){
-		if(is.null(object@filterStats)) stop("There are no filter statistics saved for this object")
-		if(!all(type %in% filterNames(object))){
-			type<-type[type%in%filterNames(object)]
-			if(length(type)==0) stop("None of the values of 'type' argument are valid filter names ")	
-			else	warning(paste("Not all values of '",type, "' are names of a filter statistic held by the object",sep=""))
-		} 
-		return(object@filterStats[,type] )
-	})	
-#' @rdname SingleCellFilter-methods
-#' @export
-setMethod( "filterStats",c("SingleCellFilter","missing"),
-	function(object,type){
-		return(object@filterStats)
-	})	
+setMethod( "filterNames","SummarizedExperiment",function(object,checkValid=FALSE){
+	if(!checkValid) colnames(rowData(object))
+	else{
+		whValid<-apply(rowData,2,is.numeric)
+		return(colnames(rowData(object))[whValid])
+	}
+})		
 
-#' @rdname SingleCellFilter-methods
+# #' @rdname makeFilterStats
+# #' @aliases filterNames<-
+# #' @export
+# setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
+# 	    if(length(value)!=NCOL(filterStats(object))) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
+# 	    colnames(object@filterStats) <- value
+# 		validObject(object)
+# 		return(object)
+# 	 }
+# )
+
+
+#' @param object A SummarizedExperiment object
+#' @param type a type of filter to retrieve. Should match the filter name.
+#' @aliases filterStats,SummarizedExperiment,character-method filterStats
+#' @rdname makeFilterStats
+#' @export
+setMethod( "filterStats",c("SummarizedExperiment","character"),
+	function(object,type,checkValid=FALSE){
+		if(ncol(rowData(object))==0) stop("There are no filter statistics saved for this object")
+		fn<-filterNames(object,checkValid=checkValid)
+		if(!all(type %in% fn)){
+			type<-type[type%in%fn]
+			if(length(type)==0){
+				if(checkValid) 
+					stop("None of the values of 'type' argument are valid filter names ")
+				else stop("None of the values of 'type' argument are names in rowData")
+			} 
+			else{
+				if(checkValid) 
+					warning(paste("Not all values of '",type, "' are names of a valid filtering statistic held in rowData",sep=""))
+				else warning(paste("Not all values of '",type, "' are names of a column of rowData",sep=""))
+			}
+		}
+		return(rowData[,type] )
+	})
+#' @rdname makeFilterStats
+#' @export
+setMethod( "filterStats",c("SummarizedExperiment","missing"),
+	function(object,type,checkValid=FALSE){
+		return(rowData(object)[,filterNames(object,checkValid=checkValid)])
+	})
+
+#' @rdname makeFilterStats
 #' @details Note that the replacement functions never actually completely
 #'   replace the slot \code{filterStats} unless the replacement value is NULL
 #'   They update existing filters of the
 #'   same name and add filters with new names to the existing filters.
 #' @aliases filterStats<-
 #' @export
-setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,value) {
+setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, ...,value) {
 	if(missing(type)){
-		if(is.null(value)){
-			object@filterStats<-NULL
-			return(object)
-		}
+		# if(is.null(value)){
+		# 	object@filterStats<-NULL
+		# 	return(object)
+		# }
 		if(!is.matrix(value) || is.null(colnames(value))){
 			stop("If not indicating a type in the replacement, must give matrix of values with column names")
 		}
 		type<-colnames(value)
 	}
     if(length(type)>1){
-    	if(!is.matrix(value) || ncol(value)!=length(type)) 
-			stop("If replacing several filter Stats at the same time, new value must be a matrix")
-		if(!is.null(colnames(value)) && !all(type==colnames(value))) 
+    	if(!is.matrix(value) || ncol(value)!=length(type))
+			stop("If replacing several filtering statistics at the same time, new value must be a matrix")
+		if(!is.null(colnames(value)) && !all(type==colnames(value)))
 			stop("If replacement value has names must match type")
 		colnames(value)<-type
     }
@@ -60,8 +87,8 @@ setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,v
 		value<-matrix(value,ncol=1)
 		colnames(value)<-type
 	}
-	fs <- filterStats(object) #existing filters
-	if(!is.null(fs)){
+	fs <- filterStats(object,checkValid=FALSE) #all rowData
+	if(ncol(fs)>0){
 	    whTypeExist<-which(type %in% colnames(fs))
 		if(length(whTypeExist)>0){
 			fs[,type[whTypeExist]] <- value[,whTypeExist,drop=FALSE]
@@ -69,59 +96,11 @@ setReplaceMethod("filterStats", "SingleCellFilter", function(object, type, ...,v
 	    whTypeNew<-which(!type %in% colnames(fs))
 		if(length(whTypeNew)>0){
 			fs<-cbind(fs,value[,whTypeNew,drop=FALSE])
-		}	
-	    object@filterStats <- fs		
+		}
+	    rowData(object) <- fs
 	}
-	else object@filterStats<-value
+	else rowData(object)<-value
     validObject(object)
     return(object)
 })
 
-#' @rdname SingleCellFilter-methods
-#' @aliases filterNames
-#' @export
-setMethod( "filterNames","SingleCellFilter",function(object){colnames(object@filterStats)})		
-
-
-#' @rdname SingleCellFilter-methods
-#' @aliases filterNames<-
-#' @export
-setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
-	    if(length(value)!=NCOL(filterStats(object))) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
-	    colnames(object@filterStats) <- value
-		validObject(object)
-		return(object) 
-	 }
-)
-	
-	
-#' @rdname SingleCellFilter-methods
-#' @param ...,i,j,drop Forwarded to the
-#'   \code{\link{SingleCellExperiment}} method.
-#' @param value The value to be substituted in the corresponding slot. See the
-#'   slot descriptions in \code{\link{SingleCellFilter}} for details on what
-#'   objects may be passed to these functions.
-#' @export
-setMethod("[", c("SingleCellFilter", "ANY", "ANY"), function(x, i, j, ..., drop=TRUE) {
-    out<-callNextMethod()
-	out@filterStats<-filterStats(out)[i, , drop=FALSE]
-    
-	return(out)
-})
-
-##Code from SingleCellExperiment:::
-scat <- function(fmt, vals=character(), exdent=2, ...) {
-    vals <- ifelse(nzchar(vals), vals, "''")
-    lbls <- paste(S4Vectors:::selectSome(vals), collapse=" ")
-    txt <- sprintf(fmt, length(vals), lbls)
-    cat(strwrap(txt, exdent=exdent, ...), sep="\n")
-}
-
-.scf_show <- function(object) {
-    callNextMethod()
-    scat("filterNames(%d): %s\n", filterNames(object))
-}
-
-#' @rdname SingleCellFilter-methods
-#' @export
-setMethod("show", "SingleCellFilter", .scf_show)

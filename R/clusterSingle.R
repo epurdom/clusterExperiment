@@ -4,8 +4,8 @@
 #'  this function will find clusters, based on a single specification of parameters.
 #' 
 #' @param x the data on which to run the clustering (features in rows), or a
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
-#'   \code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
+#'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
 #'   on which to run the clustering.
@@ -190,15 +190,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
-  signature = signature(x = "SingleCellExperiment", diss="missing"),
-  definition = function(x, ...) {
-    return(clusterSingle(as(x,"SingleCellFilter"),  ...) )
-  }
-)
+
 
 
 #' @rdname clusterSingle
@@ -213,7 +205,7 @@ setMethod(
   definition = function(x, replaceCoClustering=FALSE,...) {
 	if(any(c("transFun","isCount") %in% names(list(...)))) 
 		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-    outval <- clusterSingle(as(x,"SingleCellFilter"),transFun=transformation(x),...)
+    outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
@@ -227,7 +219,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "SingleCellFilter",diss="missing"),
+  signature = signature(x = "SingleCellExperiment",diss="missing"),
   definition = function(x, reduceMethod="none", nDims=NA,...) {
 	  inputArgs<-list(...)
 	isDimReduced<- length(reducedDims(x))>0 && reduceMethod %in% reducedDimNames(x)
