@@ -325,7 +325,7 @@ setMethod(
 		  x<-transformData(x,transFun=transFun)
 	  }
 	  else if(reduceMethod%in%listBuiltInReducedDims()){
-		  transObj<-makeDimReduce(x,reduceMethod=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
+		  transObj<-makeReducedDims(x,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
 		  x<-t(reducedDim(transObj,type=reduceMethod))
 	  }
 	  else if(reduceMethod %in% listBuiltInFilterStats()){

@@ -68,6 +68,8 @@ Collate:
     'mainClustering.R'
     'makeBlankData.R'
     'makeDendrogram.R'
+    'makeFilterStats.R'
+    'makeReducedDims.R'
     'mergeClusters.R'
     'plotBarplot.R'
     'plotClusters.R'

@@ -234,7 +234,7 @@ expect_equal(sort(filterNames(cc4)),sort(c("Filter1","Filter2")))
 	expect_silent(clusterMany(scfFull, ks=c(3,4),nFilterDims=c(10,15),nPCADim=c(2),
 		reduceMethod=c("Red1"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
-	scfFull2<-makeDimReduce(scfFull,reduceMethod="PCA",maxDims=10,isCount=FALSE)
+	scfFull2<-makeReducedDims(scfFull,reducedDims="PCA",maxDims=10,isCount=FALSE)
 	expect_silent(clusterMany(scfFull2, ks=c(3,4),nFilterDims=c(10),nPCADim=c(2),
 			reduceMethod=c("PCA","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))

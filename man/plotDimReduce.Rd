@@ -78,5 +78,5 @@ removeSil=c(TRUE,FALSE))
 plotDimReduce(cl,legend="bottomright")
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInReducedDims}()}
+\code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 }

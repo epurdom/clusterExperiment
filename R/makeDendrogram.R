@@ -124,7 +124,7 @@ setMethod(
 	    }
 		###Calculate filters/reduceMethod if needed...
 		if(!reduceMethod %in% reducedDimNames(x) & reduceMethod %in% listBuiltInReducedDims()){
-				x<-makeDimReduce(x,reduceMethod=reduceMethod,maxDims=nDims)
+				x<-makeDimReduce(x,reducedDims=reduceMethod,maxDims=nDims)
 			}
 		else if(!reduceMethodName %in% filterNames(x) & reduceMethod %in% listBuiltInFilterStats()){
 				x<-makeFilterStats(x,filterStat=reduceMethod,

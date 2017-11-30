@@ -190,7 +190,7 @@ setMethod(
   definition = function(x,
       reduceMethod="none",nReducedDims=NA, transFun=NULL,isCount=FALSE, ...
   ){
-	####Basically, matrix version calls makeDimReduce and makeFilterStats and then sends it to the SingleCellFilter version.
+	####Basically, matrix version calls makeReducedDims and makeFilterStats and then sends it to the SingleCellFilter version.
 	if(missing(reduceMethod)) reduceMethod<-"none"
 	# if(anyNA(nReducedDims)){
 # 		if(!"none" in reduceMethod) reduceMethod<-c(reduceMethod,"none")
@@ -214,7 +214,7 @@ setMethod(
 			if(length(nReducedDims)==0) 
 				stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none'")
 			maxDims<-max(nReducedDims)
-			x<-makeDimReduce(x,reduceMethod=dimNam,
+			x<-makeReducedDims(x,reducedDims=dimNam,
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			
 		}
 		if(length(filtNam)>0){
@@ -300,7 +300,7 @@ setMethod(
 			if(any(reduceMethod %in% reducedDimNames(x))){
 				maxDimValues<-sapply(reducedDims(x)[reduceMethod[reduceMethod %in%reducedDimNames(x)]],ncol)
 				if(length(na.omit(nReducedDims))>0 && all(na.omit(nReducedDims) > max(maxDimValues))) 
-					stop("The values of nReducedDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+					stop("The values of nReducedDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeReducedDims' to get larger number of components.")
 				
 			}
 			

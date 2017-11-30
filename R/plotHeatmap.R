@@ -353,7 +353,7 @@ setMethod(
 			if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleDimReduce){
 				##### Dimensionality reduction ####
 				if(!clusterFeaturesData %in% reducedDimNames(data)){
-					data<-makeDimReduce(data,reduceMethod=clusterFeaturesData,maxDims=nFeatures)
+					data<-makeReducedDims(data,reducedDims=clusterFeaturesData,maxDims=nFeatures)
 				}
 				heatData<-t(reducedDim(data,type=clusterFeaturesData))
 			}

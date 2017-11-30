@@ -4,7 +4,7 @@ Changes in version 1.5.0-9004 ( Release date: )
 Changes:
 * This version consists of a major update of how dimensionality reduction and filtering is done. The class has been updated to extend the new `SingleCellExperiment` class, which save the dimensionality reductions. Furthermore we extend that class to also save filtering statistics (`SingleCellFilter`). This has created a massive change under-the-hood in functions that allow dimensionality reduction and filtering. Changes to function names:
 	- `transform` is now `transformData`
-	- New functions `makeDimReduce` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
+	- New functions `makeReducedDims` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
 	- New function `filterData` will return a `SingleCellFilter` object with the data filtered based on a filtering criteria
 	- New functions `listBuiltInReducedDims` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
 	- Filtering on arbitrary statistics and user-defined dimensionality reduction can used in `clusterMany` and related functions, so long as they are saved in the appropriate slots of the object.

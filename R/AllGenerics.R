@@ -1,6 +1,6 @@
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
-setGeneric(name="makeDimReduce", function(object,...){ standardGeneric("makeDimReduce")})
+setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
 setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric(

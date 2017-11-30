@@ -53,7 +53,7 @@ setMethod(
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
-#' @seealso \code{\link{plot.default}}, \code{\link{makeDimReduce}}, \code{\link{listBuiltInReducedDims}()}
+#' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 #' @rdname plotDimReduce
 #' @return A plot is created. Nothing is returned. 
 #' @examples
@@ -122,7 +122,7 @@ definition = function(object, whichClusters,
 		if(max(whichDims)>ncol(reducedDim(object,type=reducedDim))) redoDim<-TRUE
 	}	
 		
-	if(redoDim) object<-makeDimReduce(object,reducedDim=reducedDim,maxDims=max(whichDims))
+	if(redoDim) object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims))
 	if(reducedDim %in% reducedDimNames(object)){
 		
 		dat<-reducedDim(object,type=reducedDim)[,whichDims]
