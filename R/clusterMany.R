@@ -41,7 +41,7 @@
 #' @param nFilter vector of the number of the most variable features to keep 
 #'   (when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
 #'   included, then the full dataset will also be included.
-#' @param nPCADims vector of the number of PCs to use (when 'PCA' is identified 
+#' @param nDimReduce vector of the number of PCs to use (when 'PCA' is identified 
 #'   in \code{dimReduce}). If NA is included, then the full dataset will also be
 #'   included.
 #' @param eraseOld logical. Only relevant if input \code{x} is of class 
@@ -138,12 +138,12 @@
 #' #k and whether remove negative silhouette values
 #' #check how many and what runs user choices will imply:
 #' checkParams <- clusterMany(simData,dimReduce="PCA",  
-#' nPCADims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+#' nDimReduce=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(head(checkParams$paramMatrix))
 #'
 #' #Now actually run it
-#' cl <- clusterMany(simData,dimReduce="PCA", nPCADims=c(5,10,50),  isCount=FALSE,
+#' cl <- clusterMany(simData,dimReduce="PCA", nDimReduce=c(5,10,50),  isCount=FALSE,
 #' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 #' print(cl)
 #' head(colnames(clusterMatrix(cl)))
@@ -182,7 +182,7 @@
 # #we give those to clusterMany as well.
 # checkParamsMat <- checkParams$paramMatrix[-c(1,2),]
 #
-# clSmaller <- clusterMany(simData, nPCADims=c(5,10,50),  dimReduce="PCA",
+# clSmaller <- clusterMany(simData, nDimReduce=c(5,10,50),  dimReduce="PCA",
 # paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
 # seqArgs=checkParams$seqArgs, mainClusterArgs=checkParams$mainClusterArgs)
 #' @export 
@@ -190,13 +190,13 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "matrix"),
   definition = function(x,
-      dimReduce="none",nPCADims=NA, transFun=NULL,isCount=FALSE, ...
+      dimReduce="none",nDimReduce=NA, transFun=NULL,isCount=FALSE, ...
   ){
 	####Basically, matrix version calls makeDimReduce and makeFilterStats and then sends it to the SingleCellFilter version.
 	if(missing(dimReduce)) dimReduce<-"none"
-	# if(anyNA(nPCADims)){
+	# if(anyNA(nDimReduce)){
 # 		if(!"none" in dimReduce) dimReduce<-c(dimReduce,"none")
-# 		nPCADims<-na.omit(nPCADims)
+# 		nDimReduce<-na.omit(nDimReduce)
 # 	}
 	if(any(dim(x)==0)) stop("x must have non zero dimensions")
 	dimReduce<-unique(dimReduce)
@@ -212,10 +212,10 @@ setMethod(
 		warning("Some dimReduce values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellFilter object). Ignoring options.")
 	if(length(dimNam)>0 | length(filtNam)>0){
 		if(length(dimNam)>0){
-			nPCADims<-na.omit(nPCADims)
-			if(length(nPCADims)==0) 
-				stop("Must give nPCADims values if choose a dimReduce option not equal to 'none'")
-			maxDims<-max(nPCADims)
+			nDimReduce<-na.omit(nDimReduce)
+			if(length(nDimReduce)==0) 
+				stop("Must give nDimReduce values if choose a dimReduce option not equal to 'none'")
+			maxDims<-max(nDimReduce)
 			x<-makeDimReduce(x,dimReduce=dimNam,
 				maxDims=maxDims,transFun=transFun,isCount=isCount)			
 		}
@@ -227,7 +227,7 @@ setMethod(
 	else{
 		x<-SingleCellFilter(x)
 	}
-	return(clusterMany(x,dimReduce=dimReduce,nPCADims=nPCADims,transFun=transFun,isCount=isCount,...))
+	return(clusterMany(x,dimReduce=dimReduce,nDimReduce=nDimReduce,transFun=transFun,isCount=isCount,...))
 }
 )
 
@@ -237,7 +237,7 @@ setMethod(
   f = "clusterMany",
   signature = signature(x = "SingleCellFilter"),
   definition = function(x, ks=NA, clusterFunction, 
-	  dimReduce="none",nFilter=NA,nPCADims=NA,
+	  dimReduce="none",nFilter=NA,nDimReduce=NA,
 	  alphas=0.1, findBestK=FALSE,
       sequential=FALSE, removeSil=FALSE, subsample=FALSE,
       silCutoff=0, distFunction=NA,
@@ -301,8 +301,8 @@ setMethod(
 			#check if nPCA values
 			if(any(dimReduce %in% reducedDimNames(x))){
 				maxDimValues<-sapply(reducedDims(x)[dimReduce[dimReduce %in%reducedDimNames(x)]],ncol)
-				if(length(na.omit(nPCADims))>0 && all(na.omit(nPCADims) > max(maxDimValues))) 
-					stop("The values of nPCADims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
+				if(length(na.omit(nDimReduce))>0 && all(na.omit(nDimReduce) > max(maxDimValues))) 
+					stop("The values of nDimReduce given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeDimReduce' to get larger number of components.")
 				
 			}
 			
@@ -318,7 +318,7 @@ setMethod(
 			}
 		}
 		else{
-			nPCADims<-NA
+			nDimReduce<-NA
 			nFilter<-NA
 			maxDimValues<-NA #indicates that only "none" will be done
 		}
@@ -329,7 +329,7 @@ setMethod(
 	    if(is.null(paramMatrix)){
 		  if(doNone) dimReduce<-c(dimReduce,"none")
 	      param <- expand.grid(dimReduce=dimReduce,
-		    nDimReduce=nPCADims, nFilter=nFilter,k=ks, alpha=alphas, findBestK=findBestK, 
+		    nDimReduce=nDimReduce, nFilter=nFilter,k=ks, alpha=alphas, findBestK=findBestK, 
 			beta=betas, minSize=minSizes,
 	        sequential=sequential, distFunction=distFunction,
 	        removeSil=removeSil, subsample=subsample,
@@ -657,13 +657,13 @@ setMethod(
 setMethod(
   f = "clusterMany",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x, dimReduce="none", nFilter=NA, nPCADims=NA,
+  definition = function(x, dimReduce="none", nFilter=NA, nDimReduce=NA,
                         eraseOld=FALSE, ...)
   {
   	if(any(c("transFun","isCount") %in% names(list(...)))) 
   		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
     outval<-clusterMany(as(x,"SingleCellFilter"), dimReduce=dimReduce, nFilter=nFilter,
-                        nPCADims=nPCADims, transFun=transformation(x), ...)
+                        nDimReduce=nDimReduce, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
 		
 	  #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'

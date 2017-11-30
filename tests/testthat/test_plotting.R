@@ -68,7 +68,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
 
   #test CE version
-  test<- clusterMany(simCount,dimReduce="PCA",nPCADims=c(5,10,50), isCount=TRUE,
+  test<- clusterMany(simCount,dimReduce="PCA",nDimReduce=c(5,10,50), isCount=TRUE,
                      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)) #no colData in test
   expect_error(plotClusters(test,sampleData=as.data.frame(colData(ceSim))),"no colData for object data")
   expect_error(plotClusters(ceSim,sampleData=as.data.frame(colData(ceSim))),"invalid values for pulling sampleData")
@@ -161,7 +161,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 })
 
 test_that("plotDimReduce works",{
-	expect_silent(cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+	expect_silent(cl <- clusterMany(simData, nDimReduce=c(5, 10, 50), dimReduce="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 	removeSil=c(TRUE,FALSE)))
 	expect_silent(plotDimReduce(cl,legend="bottomright"))

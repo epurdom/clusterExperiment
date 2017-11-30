@@ -11,11 +11,11 @@
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce = "none", nPCADims = NA,
+\S4method{clusterMany}{matrix}(x, dimReduce = "none", nDimReduce = NA,
   transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
-  dimReduce = "none", nFilter = NA, nPCADims = NA, alphas = 0.1,
+  dimReduce = "none", nFilter = NA, nDimReduce = NA, alphas = 0.1,
   findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
   subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
   minSizes = 1, transFun = NULL, isCount = FALSE, verbose = FALSE,
@@ -23,7 +23,7 @@
   ncores = 1, random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
-  nFilter = NA, nPCADims = NA, eraseOld = FALSE, ...)
+  nFilter = NA, nDimReduce = NA, eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
@@ -43,7 +43,7 @@ dimensionality reduction to perform before clustering. Options are
 "none","PCA", "var","abscv", and "mad". See \code{\link{transform}} for more 
 details.}
 
-\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 
+\item{nDimReduce}{vector of the number of PCs to use (when 'PCA' is identified 
 in \code{dimReduce}). If NA is included, then the full dataset will also be
 included.}
 
@@ -225,12 +225,12 @@ data(simData)
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
 checkParams <- clusterMany(simData,dimReduce="PCA",  
-nPCADims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+nDimReduce=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,dimReduce="PCA", nPCADims=c(5,10,50),  isCount=FALSE,
+cl <- clusterMany(simData,dimReduce="PCA", nDimReduce=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))

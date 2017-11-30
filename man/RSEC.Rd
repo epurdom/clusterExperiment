@@ -76,10 +76,6 @@ details.}
 (when "var", "abscv", or "mad" is identified in \code{dimReduce}). If NA is 
 included, then the full dataset will also be included.}
 
-\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{dimReduce}). If NA is included, then the full dataset will also be
-included.}
-
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in 

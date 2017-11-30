@@ -84,13 +84,13 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   #check picking certain dims in single dimReduce same as apply directly to matrix 
   #and that get right reducedDim returned
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
+	  ks=c(3,4),nDimReduce=c(5:6),dimReduce="PCA",
   	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(NCOL(clusterMatrix(clustNothing)),4)
   expect_equal(abs(reducedDim(clustNothing,"PCA")), abs(reducedDim(sceSimDataDimRed,"PCA")[,1:6]))
 
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="PCA",
+	  ks=c(3,4),nDimReduce=c(5:6),dimReduce="PCA",
       clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(NCOL(clusterMatrix(clustNothing3)),4)
   expect_equal(reducedDim(clustNothing3,"PCA"), reducedDim(sceSimDataDimRed,"PCA"))
@@ -102,12 +102,12 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", dimReduce="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
-  #checks that nPCADims ignored if dimReduce="none"
+  #checks that nDimReduce ignored if dimReduce="none"
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="none",
+	  ks=c(3,4),nDimReduce=c(5:6),dimReduce="none",
   	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	  ks=c(3,4),nPCADims=c(5:6),dimReduce="none",
+	  ks=c(3,4),nDimReduce=c(5:6),dimReduce="none",
       clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
 
@@ -358,7 +358,7 @@ test_that("`clusterMany` consistent results (no transformation)", {
   	 	   isCount=FALSE))
 	expect_silent(cm<-clusterMany(contData, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	   	        nDimReduce=3, nFilter=3,isCount=FALSE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
     
@@ -383,7 +383,7 @@ test_that("`clusterMany` consistent results (no transformation)", {
  	 	   isCount=FALSE))
 	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	   	        nDimReduce=3, nFilter=3,isCount=FALSE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -408,7 +408,7 @@ test_that("`clusterMany` consistent results (no transformation)", {
  	 	   isCount=FALSE))
 	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	   	        nDimReduce=3, nFilter=3,isCount=FALSE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -432,7 +432,7 @@ test_that("`clusterMany` consistent results (no transformation)", {
  	 	   isCount=FALSE))
 	expect_silent(cm<-clusterMany(testSCF, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=FALSE))
+	   	        nDimReduce=3, nFilter=3,isCount=FALSE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -456,7 +456,7 @@ test_that("`clusterMany` consistent results (no transformation)", {
 			 mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
 	expect_silent(cm2<-clusterMany(cm, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3))
+	   	        nDimReduce=3, nFilter=3))
 	expect_equal(nClusterings(cm2),6)	
 	expect_silent(params<-getClusterManyParams(cm2))	
    
@@ -498,7 +498,7 @@ test_that("`clusterMany` consistent results (with transformation)", {
   	 	   isCount=TRUE))
 	expect_silent(cm<-clusterMany(countData, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	   	        nDimReduce=3, nFilter=3,isCount=TRUE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
     
@@ -523,7 +523,7 @@ test_that("`clusterMany` consistent results (with transformation)", {
  	 	   isCount=TRUE))
 	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	   	        nDimReduce=3, nFilter=3,isCount=TRUE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -548,7 +548,7 @@ test_that("`clusterMany` consistent results (with transformation)", {
  	 	   isCount=TRUE))
 	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	   	        nDimReduce=3, nFilter=3,isCount=TRUE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -572,7 +572,7 @@ test_that("`clusterMany` consistent results (with transformation)", {
  	 	   isCount=TRUE))
 	expect_silent(cm<-clusterMany(testSCF, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3,isCount=TRUE))
+	   	        nDimReduce=3, nFilter=3,isCount=TRUE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -596,7 +596,7 @@ test_that("`clusterMany` consistent results (with transformation)", {
 			 mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
 	expect_silent(cm2<-clusterMany(cm, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, dimReduce=c("PCA","var","none"),
-	   	        nPCADims=3, nFilter=3))
+	   	        nDimReduce=3, nFilter=3))
 	expect_equal(nClusterings(cm2),6)	
 	expect_silent(params<-getClusterManyParams(cm2))	
    

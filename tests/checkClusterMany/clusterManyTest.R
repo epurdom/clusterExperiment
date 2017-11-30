@@ -28,7 +28,7 @@ cat("Results for test of",version,"\n",file=outfile)
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Running clusterMany...",file=outfile,append=TRUE)
 # Old version: 
-# cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+# cl <-clusterMany(l5, dimReduce = "PCA", nDimReduce = 50, isCount=TRUE,
 #                  ks=4:8, clusterFunction="hierarchical01",
 #                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
 #                  ncores=ncores, subsampleArgs=list(resamp.num=20,
@@ -38,7 +38,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
-cl <-clusterMany(l5, dimReduce = "PCA", nPCADims = 50, isCount=TRUE,
+cl <-clusterMany(l5, dimReduce = "PCA", nDimReduce = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5,
 				 mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
