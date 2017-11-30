@@ -262,7 +262,7 @@ setMethod(
 	anyFilter<-!is.null(filterStats(x))
 	anyDim<-length(reducedDims(x))>0 
 	anyDimBuiltIn<-any(reduceMethod %in% listBuiltInReducedDims())
-	anyFilterBuiltIn<-any(reduceMethod %in% listBuiltInFilterDimsStats())
+	anyFilterBuiltIn<-any(reduceMethod %in% listBuiltInFilterStats())
 	if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
 		stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
 	if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
