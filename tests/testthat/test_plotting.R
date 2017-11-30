@@ -170,7 +170,7 @@ test_that("plotDimReduce works",{
 	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
 	#test on object that doesn't have saved:
-	expect_silent(clD<-plotDimReduce(ceSimData,reduceMethod="PCA"))
+	expect_silent(clD<-plotDimReduce(ceSimData,reducedDim="PCA"))
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 	
 	#higher dims.
