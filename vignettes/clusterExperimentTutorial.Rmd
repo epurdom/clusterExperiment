@@ -111,16 +111,19 @@ wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 ```
 
+
 ## Clustering with RSEC
 
-We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `nPCADims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`combineMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
+We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`combineMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
 
 Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves by running the following code (or setting `eval=TRUE` in the .Rmd file) with the `ncores` option appropriately chosen for their machine. 
 
 
 ```{r RSEC, eval=FALSE}
 library(clusterExperiment)
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,ncores=5,combineMinSize=3,random.seed=176201))
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
+	reduceMethod="PCA", nReducedDims=10,combineMinSize=3,
+	ncores=1, random.seed=176201))
 ```
 
 Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
@@ -141,7 +144,7 @@ We can look at the object that was created.
 rsecFluidigm
 ```
 
-The print out tells us about the clustering(s) that were created (namely `r nClusters(rsecFluidigm)` clusterings) and which steps of the workflow have been called (all of them have because we used the wrapper `RSEC` that does the whole thing). Recall from our brief description above that RSEC clusters the data many times using different parameters before finding an consensus clustering. All of these intermediate clusterings are saved. Each of these intermediate clusterings used subsampling of the data and sequential clustering of the data to find the clustering, while the different clusterings represent the different parameters that were adjusted. 
+The print out tells us about the clustering(s) that were created (namely `r nClusterings(rsecFluidigm)` clusterings) and which steps of the workflow have been called (all of them have because we used the wrapper `RSEC` that does the whole thing). Recall from our brief description above that RSEC clusters the data many times using different parameters before finding an consensus clustering. All of these intermediate clusterings are saved. Each of these intermediate clusterings used subsampling of the data and sequential clustering of the data to find the clustering, while the different clusterings represent the different parameters that were adjusted. 
 
 We can see that `rsecFluidigm` has a built in (S4) class called  a `ClusterExperiment` object. This is a class built for this package and explained in the section on [ClusterExperiment Objects](#ceobjects). In the object `rsecFluidigm` the clusterings are stored along with corresponding information for each clustering. Furthermore, all of the information in the original `SummarizedExperiment` is retained. The print out also tells us information about the "primaryCluster" of `rsecFluidigm`. Each `ClusterExperiment` object has a "primaryCluster", which is the default cluster that the many functions will use unless specified by the user. We are told that the "primaryCluster" for `rsecFluidigm` is has the label "mergeClusters" -- which is the defaul label given to the last cluster of the `RSEC` function because the last call of the `RSEC` function is to `mergeClusters`. 
 
@@ -271,7 +274,7 @@ In the next section, we will describe more about the options we could adjust in 
 rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
 ```
 
-Notice that we save the output over our original object. This is the standard way to work with the `clusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
+Notice that we save the output over our original object. This is the standard way to work with the `ClusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
 
 We can compare the results of our changes with the `whichClusters` command to explicitly choose the clusterings we want to plot:
 
@@ -287,7 +290,7 @@ The clusterings with the `.1` appended to the labels are the previous `combineMa
 In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
 
 ```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineMinSize=3)
+rsecFluidigm<-RSEC(rsecFluidigm,combineMinSize=3)
 ```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
@@ -304,7 +307,7 @@ As mentioned above, there are several types of tests that can be performed to id
 
 ```{r getBestFeatures}
 pairsAllRSEC<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05,
-                          number=nrow(rsecFluidigm),isCount=TRUE)
+                          number=nrow(rsecFluidigm))
 head(pairsAllRSEC)
 ```
 
@@ -343,7 +346,7 @@ The standard clustering workflow steps are the following:
 
 These clustering steps are done in one function call by `RSEC`, described above, which is most straightforward usage. However, to understand the parameters available in `RSEC` it is useful to go through the steps individually. Furthermore `RSEC` has streamlined the workflow to concentrate on using the workflow with subsampling and sequential strategies, but going through the individual steps demonstrates how the user can make different choices. 
 
-Therefore in this section, we will go through these steps, but instead of using the parameters of `RSEC` that involve subsampling and are more computationally intensive, we will run through the same steps, only using just basic PAM clustering with no subsampling or sequential clustering. This is simply for the purpose of briefly understanding the intermediate steps that `RSEC` follows. Later sections will go through these steps in more detail and the particular choices embedded in `RSEC`. 
+Therefore in this section, we will go through these steps, but instead of using the parameters of `RSEC` that involve subsampling and are more computationally intensive, we will run through the same steps, only using just basic PAM clustering with no subsampling or sequential clustering. This is simply for the purpose of briefly understanding the intermediate steps that `RSEC` follows. Later sections will go through these steps in more detail and discuss the particular choices embedded in `RSEC`. 
 
 ## Step 1: Clustering with `clusterMany` {#step1}
 
@@ -354,20 +357,20 @@ Here is our call to `clusterMany`:
 
 ```{r clusterMany}
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
-      isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),
-      nPCADims=c(5,15,50),run=TRUE)
+      isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),
+      nReducedDims=c(5,15,50),run=TRUE)
 ```
 
 In this call to `clusterMany` we made the follow choices about what to vary: 
 
-* set `dimReduce=c("PCA", "var")` meaning run the clustering algorithm after both a dimensionality reduction to the top principal componetns, and also after filtering to the top most variable genes
-* For PCA reduction, choose 5,15, and 50 principal components for the reduced data set (set `nPCADims=c(5,15,50)`)
-* For most variable reduction, choose 100, 500, and 1000 most variable genes (set `nVarDims=c(100,500,1000)`)
+* set `reduceMethod=c("PCA", "var")` meaning run the clustering algorithm trying two different methods for dimensionality reduction: the top principal componetns and filtering to the top most variable genes
+* For PCA reduction, choose 5,15, and 50 principal components for the reduced data set (set `nReducedDims=c(5,15,50)`)
+* For most variable genes reduction, we choose 100, 500, and 1000 most variable genes (set `nFilterDims=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
 
 By giving only a single value to the relative argument, we keep the other possible options fixed, for example: 
 
-* we used 'pam' for all clustering (`clusterFunction`) 
+* we used 'pam' for all clustering (`clusterFunction="pam"`) 
 * we set `minSizes=5`. This is an argument that allows the user to set a minimum required size  and clusters of size less than that value will be ignored and samples assigned to them given the unassigned value of -1. The default of `1` would mean that this option is not used.
 
 We also set `isCount=TRUE` to indicate that our input data are counts. This means that operations for clustering and visualizations will internally transform the data as $log_2(x+1)$ (We could have alternatively explicitly set a transformation by giving a function to the  `transFun` argument, for example if we wanted $\sqrt(x)$ or $log(x+\epsilon)$ or just `identity`). 
@@ -378,6 +381,13 @@ We can visualize the resulting clusterings using the `plotClusters` command as w
 defaultMar<-par("mar")
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+
+ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
+      isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),
+      nReducedDims=c(5,15,50),run=TRUE)
+test<-getClusterManyParams(ce)
+ord<-order(test[,"k"],test[,"nFilterDims"],test[,"nReducedDims"])
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
@@ -400,7 +410,7 @@ head(cmParams)
 We will set an order with first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
 
 ```{r plotCluster_newOrder}
-ord<-order(cmParams[,"dimReduce"],cmParams[,"nDimReduce"])
+ord<-order(cmParams[,"reduceMethod"],cmParams[,"nReducedDims"])
 ind<-cmParams[ord,"clusteringIndex"]
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, sampleData=c("Biological_Condition","Published2"), axisLine=-1)
@@ -488,7 +498,7 @@ For this reason, we often find the need for an additional clustering step that m
 As an example, here we use the 500 most variable genes to make the cluster hierarchy (note we can make different choices here than we did in the clustering).
 
 ```{r makeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
+ce<-makeDendrogram(ce,reduceMethod="var",nDims=500)
 plotDendrogram(ce)
 ```
 
@@ -551,7 +561,7 @@ By choosing "dendrogramValue" for the clustering of the samples, we will be show
 The above explanation follows the simple example of PAM. The original RSEC result called `RSEC` which calls these steps internally. Many of the options described above can be set through a call to RSEC, but some are restricted for simplicity. A detail explanation of the differences can be found in the section [RSEC]{#RSEC} below. But briefly, the following RSEC command, which uses most of the arguments of `RSEC`:
 
 ```{r quasiRsecCode, eval=FALSE}
-rsecOut<-RSEC(se, dimReduce="PCA", nPCADims=c(50,10), k0s=4:15,
+rsecOut<-RSEC(se, reduceMethod="PCA", nReducedDims=c(50,10), k0s=4:15,
         alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9), minSizes=c(1,5), clusterFunction="hierarchical01",
         combineProportion=0.7, combineMinSize=5,
         dendroReduce="mad",dendroNDims=500,
@@ -564,9 +574,9 @@ would be equivalent to the following individual steps:
 ```{r stepCode,eval=FALSE}
 ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5),
 	clusterFunction="hierarchical01", sequential=TRUE,subsample=TRUE,
-         dimReduce="PCA",nVarDims=c(50,10))
+         reduceMethod="PCA",nFilterDims=c(50,10))
 ce<-combineMany(ce, proportion=0.7, minSize=5)
-ce<-makeDendrogram(ce,dimReduce="mad",ndims=500)
+ce<-makeDendrogram(ce,reduceMethod="mad",nDims=500)
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05,plot=FALSE)
 ```
 
@@ -583,7 +593,7 @@ Typing the name at the control prompt results in a quick summary of the object.
 ce
 ```
 
-This summary tells us the total number of clusterings (`r nClusters(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`. Often, if a function is not given a specific clustering (usually via an option `whichCluster` or `whichClusters`) the "primary" cluster is taken by default. 
+This summary tells us the total number of clusterings (`r nClusterings(ce)`), and gives some indication as to what parts of the standard workflow have been completed and stored in this object. It also gives information regarding the `primaryCluster` of the object. The `primaryCluster` is just one of the clusterings that has been chosen to be the "primary" clustering, meaning that by default various functions will turn to this clustering as the desired clustering to use. `clusterMany` arbitrarily sets the 'primaryCluster' to the first one, and each later step of the workflow sets the primary index to the most recent, but the user can set a specific clustering to be the primaryCluster with `primaryClusterIndex`. Often, if a function is not given a specific clustering (usually via an option `whichCluster` or `whichClusters`) the "primary" cluster is taken by default. 
 
 There are also additional commands to access the clusterings and their related information (type `help("ClusterExperiment-methods")` for more).
 
@@ -1023,9 +1033,9 @@ Recall that arguments in `clusterMany` that take on multiple values mean that th
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
 * `clusterFunction` The clustering functions to be tried in the *main clustering step*. Recall if `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the matrix $D$ created from subsampling the data. Otherwise, `clusterFunction` is the clustering method that will be used directly on the data. 
 * `ks` The argument 'ks' is interpreted differently for different choices of the other parameters *and can differ from between parameter combinations!*. If `sequential=TRUE` is part of the parameter combination, `ks` defines the argument `k0` of sequential clustering (see `?seqCluster`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set `k` of both the main clustering step (and by default that of the subsampled data), and is only relevant if `clusterFunction` is of type "K". When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in the documentation of `clusterMany` for more).
-* `dimReduce` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA","var","mad","cv", and/or "none". "PCA" indicates clustering on the top principal components. "var","mad",and "cv" indicate clustering on the top most variable features, as determined by either "var", "mad" or "cv" per gene. And "none" indicates the whole data set should be used (which is usually going to be computationally intractable). If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
-    * `nVarDims`
-    * `nPCADims`
+* `reduceMethod` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA","var","mad","abscv", and/or "none". "PCA" indicates clustering on the top principal components. "var","mad",and "abscv" indicate clustering on the top most variable features, as determined by either "var", "mad" or "abscv" per gene. And "none" indicates the whole data set should be used (which is usually going to be computationally intractable). If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
+    * `nFilterDims`
+    * `nReducedDims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the standard R function `dist`, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
 * `minSizes` these are integer values determining the minimum size required for a cluster (passed to the `mainClustering` part of clustering). 
 * `alphas` These are the $\alpha$ parameters for "01" clustering techniques; these values are only relevant if one of the `clusterFunction` values is a "01" clustering algorithm. The values given to `alphas` should be between 0 and 1, with smaller values indicating greater similarity required between the clusters. 
@@ -1049,9 +1059,9 @@ ks             | sequential=TRUE |  seqCluster   |  k0
 -    | sequential=FALSE, findBestK=FALSE, clusterFunction of type 'K' | mainClustering | k
 -              | sequential=FALSE, findBestK=FALSE, subsample=TRUE | subsampleClustering | k
 -               | sequential=FALSE, findBestK=TRUE, clusterFunction of type 'K' | mainClustering | kRange
-dimReduce      | none            | transform     | dimReduce
-nVarDims       | dimReduce in 'mad','cv','var' | transform | nVarDims
-nPCADims       | dimReduce='PCA' | transform     | nPCADims
+reduceMethod      | none            | transform     | reduceMethod
+nFilterDims       | reduceMethod in 'mad','cv','var' | transform | nFilterDims
+nReducedDims       | reduceMethod='PCA' | transform     | nReducedDims
 clusterFunction| none            | mainClustering      | clusterFunction    
 minSizes       | none            | mainClustering      | minSize
 distFunction   | subsample=FALSE | mainClustering      | distFunction
@@ -1084,7 +1094,7 @@ We will also compare using different algorithms for clustering. Currently, `clus
 To illustrate this point, we show an example of the $D$ matrix from subsampling. To do this we make use of the `clusterSingle` which is the workhorse mentioned above that runs a single clustering command directly; it gives the output $D$ from the sampling in the "coClustering" slot of `ce` when we set `replaceCoCluster=TRUE` (and therefore we save it as a separate object, so that it doesn't write over the existing "coClustering" slot in `ce`). Note that the result is $1-p_{ij}$ where $p_{ij}$ is the proportion of times sample $i$ and $j$ clustered together.
 
 ```{r visualizeSubsamplingD}
-ceSub<-clusterSingle(ce,dimReduce="mad",ndims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
+ceSub<-clusterSingle(ce,reduceMethod="mad",nDims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), replaceCoClustering=TRUE)
 plotCoClustering(ceSub,colorScale=rev(seqPal5))
 ```
 
@@ -1093,7 +1103,7 @@ We see even here, the default of $\alpha=0.1$ was perhaps too conservative since
 However, the distances based on correlation calculated directly on the data, such as we created above, are also often used for clustering expression data directly (i.e. without the subsampling step). But they are unlikely to have dissimilarities as low as seen in subsampling, even for well clustered samples. Here's a visualization of the correlation distance matrix we defined above (using Spearman's correlation) on the top 1000 most variable features:
 
 ```{r visualizeSpearmanDist}
-dSp<-spearDist(t(transform(ce,dimReduce="mad",nVarDims=1000)))
+dSp<-spearDist(t(transformData(ce,reduceMethod="mad",nFilterDims=1000)))
 plotHeatmap(dSp,isSymmetric=TRUE,colorScale=rev(seqPal5))
 ```
 
@@ -1102,12 +1112,21 @@ We can see that the choice of $\alpha$ must be much higher (and we are likely to
 Notice to calculate the distance in the above plot, we made use of the `transform` function applied to our `ce` object to get the results of dimensionality reduction. The `transform` function gave us a data matrix back that has been transformed, and also reduced in dimensions, like would be done in our clustering routines. `transform` has similar parameters as seen in `clusterMany`,`makeDendrogram` or `clusterSingle` and is useful when you want to manually apply something to transformed and/or dimensionality reduced data; and you can be sure you are getting the same matrix of data back that the clustering algorithms are using.
 
 
-**Comparing distance functions with `clusterMany`** Now that we have defined the distances we want to compare in our global environment, we can give these to the argument "distFunction" in `clusterMany`. They should be given as character strings giving the names of the functions. For computational ease for this vignette, we will just choose the dimensionality reduction to be the top 1000 features based on MAD and set K=8 or $\alpha=0.45$. We will save these results as a separate object so as to not disrupt the earlier workflow.
+**Comparing distance functions with `clusterMany`** Now that we have defined the distances we want to compare in our global environment, we can give these to the argument "distFunction" in `clusterMany`. They should be given as character strings giving the names of the functions. For computational ease for this vignette, we will just choose the dimensionality reduction to be the top 1000 features based on MAD and set K=8 or $\alpha=0.45$. 
+
+Since we haven't yet calculated "mad" on this object, it hasn't been calculated yet. `clusterMany` does not let you mix and match between uncalculated and stored filters (or dimensionality reductions), so our first step is to store the mad results. We will save these results as a separate object so as to not disrupt the earlier workflow.
+
+```{r clusterManyDiffDist_calculateMad,fig.width=15,fig.height=6}
+ceDist<-makeFilterStats(ce,filterStats="mad")
+ceDist
+```
+
 
 ```{r clusterManyDiffDist,fig.width=15,fig.height=6}
-ceDist<-clusterMany(ce, k=7:9, alpha=c(0.35,0.4,0.45), clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),findBestK=FALSE,
-               removeSil=c(FALSE),dist=c("corDist","spearDist"),
-               isCount=TRUE,dimReduce=c("mad"),nPCADims=1000,run=TRUE)
+ceDist<-clusterMany(ceDist, k=7:9, alpha=c(0.35,0.4,0.45), 
+	 clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
+	 findBestK=FALSE,removeSil=c(FALSE),dist=c("corDist","spearDist"),
+          reduceMethod=c("mad"),nFilterDims=1000,run=TRUE)
 clusterLabels(ceDist)<-gsub("clusterFunction","alg",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("Dist","",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("distFunction","dist",clusterLabels(ceDist))
@@ -1115,6 +1134,7 @@ clusterLabels(ceDist)<-gsub("hierarchical","hier",clusterLabels(ceDist))
 par(mar=c(1.1,15.1,1.1,1.1))
 plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 ```
+
 
 Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
@@ -1127,8 +1147,8 @@ In the following we consider expanding our original clustering choices to consid
 ```{r clusterManyCheckParam}
 checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,
                         removeSil=c(TRUE,FALSE), isCount=TRUE,
-                        dimReduce=c("PCA","var"),
-                        nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=FALSE)
+                        reduceMethod=c("PCA","var"),
+                        nFilterDims=c(100,500,1000),nReducedDims=c(5,15,50),run=FALSE)
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```
 
@@ -1143,7 +1163,7 @@ We can now run this, either by giving the information in `checkParam$paramMatrix
 
 ```{r clusterManyCheckParam2,eval=FALSE}
 # ce<-clusterMany(se,  paramMatrix=checkParam$paramMatrix, mainClusterArgs=checkParam$mainClusterArgs, seqArgs=checkParam$seqArgs,subsampleArgs=checkParam$subsampleArgs)
-ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,dimReduce=c("PCA","var"),nVarDims=c(100,500,1000),nPCADims=c(5,15,50),run=TRUE)
+ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRUE), isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),nReducedDims=c(5,15,50),run=TRUE)
 ```
 
 Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
@@ -1167,7 +1187,7 @@ plotCoClustering(ce)
 We can also manually choose the set of clusters to use in `combineMany` with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
 
 ```{r combineMany_chooseClusters}
-wh<-grep("nVAR",clusterLabels(ce))
+wh<-getClusterManyParams(ce)$clusteringIndex[getClusterManyParams(ce)$reduceMethod=="var"]
 ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3,
                 clusterLabel="combineMany,nVAR")
 plotCoClustering(ce)
@@ -1199,10 +1219,10 @@ We provide a method for doing this that consists of two steps. Making a hierarch
 
 `makeDendrogam` performs hierarchical clustering of the cluster medoids (after transformation of the data) and provides a dendrogram that will order the samples according to this clustering of the clusters. The hierarchical ordering of the dendrograms is saved internally in the `ClusterExperiment` object.
 
-Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `dimReduce` and the number of dimensions via `ndims`.
+Like clustering, the dendrogram can depend on what features are included from the data. The same options for clustering are available for the hierarchical clustering of the clusters, namely choices of dimensionality reduction via `reduceMethod` and the number of dimensions via `nDims`.
 
 ```{r makeDendrogram_reducedFeatures}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500)
+ce<-makeDendrogram(ce,reduceMethod="var",nDims=500)
 plotDendrogram(ce)
 ```
  Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
@@ -1219,7 +1239,7 @@ This is the clustering from combining only the clusterings from `clusterMany` th
 We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
 ```{r remakeMakeDendrogram}
-ce<-makeDendrogram(ce,dimReduce="var",ndims=500,
+ce<-makeDendrogram(ce,reduceMethod="var",nDims=500,
                    whichCluster="combineMany,final")
 ```
 
@@ -1384,7 +1404,7 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 ## RSEC {#RSEC}
 
- `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `clusterExperiment` object as you would get from following the workflow. 
+ `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `ClusterExperiment` object as you would get from following the workflow. 
 
 We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
 
@@ -1396,9 +1416,9 @@ tabl <- "
      | | *Name of Argument in original function (if different)* | *Notes*|
 *clusterMany*| sequential=TRUE | k0s              | ks | RSEC only sets 'k0', no other k 
 - | distFunction=NA | clusterFunction | |
-- | removeSil=FALSE | dimReduce | | 
-- | subsample=TRUE | nVarDims | | 
-- |  silCutoff=0 | nPCADims | | 
+- | removeSil=FALSE | reduceMethod | | 
+- | subsample=TRUE | nFilterDims | | 
+- |  silCutoff=0 | nReducedDims | | 
 - |  | alphas | |
 - |  | betas | |
 - |  | minSizes | |
@@ -1412,8 +1432,8 @@ tabl <- "
 - |  | transFun | |
 *combineMany*  | propUnassigned = *(default)* | combineProportion | proportion 
 -  | combineMinSize    | minSize | |
-*makeDendrogram* | ignoreUnassignedVar=TRUE | dendroReduce      | dimReduce | 
--  | unassignedSamples= *(default)* | dendroNDims       | ndims |  
+*makeDendrogram* | ignoreUnassignedVar=TRUE | dendroReduce      | reduceMethod | 
+-  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
 *mergeClusters*   | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 
 -  |  | isCount | | argument used for both mergeMethod and clusterMany 
@@ -1504,7 +1524,7 @@ plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","
 
 The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom`[@Law:2014ff] correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
 
-If instead `isCount=FALSE`, then `limma` is performed on `transform(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
+If instead `isCount=FALSE`, then `limma` is performed on `transformData(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
 
 Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 

@@ -42,7 +42,7 @@ the plot. If x is a \code{\link{ClusterExperiment}} object,
 \item{...}{for \code{plotBarplot} arguments passed either to the method
 of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
 
-\item{labels}{if object is a clusterExperiment object, then labels defines
+\item{labels}{if object is a ClusterExperiment object, then labels defines
 whether the clusters will be identified by their names values in
 clusterLegend (labels="names", the default) or by their clusterIds value in
 clusterLegend (labels="ids").}
@@ -97,7 +97,7 @@ If \code{whichClusters = "workflow"}, then the most recent two
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 

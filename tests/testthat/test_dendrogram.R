@@ -5,13 +5,13 @@ source("create_objects.R")
 
 test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test matrix version
-    makeDendrogram(mat, primaryCluster(cc))
-    makeDendrogram(mat, primaryCluster(cc), unassigned="cluster")
-    makeDendrogram(mat, primaryCluster(cc), unassigned="remove")
+    expect_silent(makeDendrogram(mat, primaryCluster(cc)))
+    expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="cluster"))
+    expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="remove"))
 
     #test CE version
-    makeDendrogram(cc)
-    makeDendrogram(cc, unassigned="cluster")
+    expect_silent(makeDendrogram(cc))
+    expect_silent(makeDendrogram(cc, unassigned="cluster"))
     expect_error(makeDendrogram(cc, unassigned="remove"))
 
     #test matrix version
@@ -27,6 +27,25 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     cc1<-addClusters(cc,fakeCluster)
     primaryClusterIndex(cc1)<-3
     expect_error(makeDendrogram(cc1),"Only 1 cluster given")
+	
+	#check whichClusters for clusterMatrix
+ 	expect_silent(dend<-makeDendrogram(ceSim))
+	expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
+	
+    #Check remove clusters when have dendrogram
+    cl1 <- clusterSingle(smSimData, subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE)
+    leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+    leg[,"name"]<-letters[1:6]
+    clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
+    clustWithDendro <- makeDendrogram(cl1)
+    clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none")
+    removeClusters(clustMerged,whichRemove="mergeClusters") #remove merged, keep one with dendrogram
+    removeClusters(clustMerged,whichRemove=2) #remove one with dendrogram
+  
+    #test subsetting works if have dendrogram attached:
+    x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3)
+    x[1:3,1:2]
+  
 })
 
 test_that("`makeDendrogram` preserves the colData and rowData of SE", {
@@ -41,17 +60,17 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
 })
 
-test_that("`makeDendrogram` with dimReduce options", {
-    x<-makeDendrogram(ccSE,dimReduce="PCA",ndims=3)
-	expect_error(makeDendrogram(ccSE,dimReduce=c("PCA","var"),ndims=3))
-    x2<-makeDendrogram(ccSE,dimReduce=c("PCA"),ndims=3,ignoreUnassigned=TRUE)
+test_that("`makeDendrogram` with reduceMethod options", {
+    x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3)
+	expect_error(makeDendrogram(ccSE,reduceMethod=c("PCA","var"),nDims=3))
+    x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,ignoreUnassigned=TRUE)
     expect_equal(x,x2)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("var"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("cv"),ndims=3,ignoreUnassigned=TRUE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=FALSE)
-    makeDendrogram(ccSE,dimReduce=c("mad"),ndims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=TRUE)
+    makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=FALSE)
+    makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=TRUE)
     
 })
 test_that("`makeDendrogram` works with whichCluster", {
@@ -141,7 +160,7 @@ test_that("plotDendrogram works with outgroup", {
   cl[1]<-3
   dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
   primaryClusterIndex(dend5)<-3
-  expect_error(makeDendrogram(dend5,dimReduce="none"),"Only 1 cluster given. Can not make a dendrogram.")
+  expect_error(makeDendrogram(dend5,reduceMethod="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
 

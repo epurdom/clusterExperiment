@@ -38,7 +38,7 @@
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
-.speccCF<-clusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector")
+.speccCF<-ClusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector")
 
 
 ##---------
@@ -63,7 +63,7 @@
   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
   return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }
-.kmeansCF<-clusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+.kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 #internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
 
 ##---------
@@ -80,7 +80,7 @@
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
   .genericClassify(x,clusterResult$medoids)
 } 
-.pamCF<-clusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
+.pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
 
 #internalFunctionCheck(.pamCluster,inputType="either",algType="K",outputType="vector")
 
@@ -97,7 +97,7 @@
 			  
     }
 
-.claraCF<-clusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+.claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
 
 
@@ -153,7 +153,7 @@
 	##Need to update this code so converts vector result into lists of indices ...
 	return(clusterListIndices)
 }
-.hier01CF<-clusterFunction(clusterFUN=.hier01Cluster, inputType="diss", algorithmType="01",outputType="list")
+.hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType="diss", algorithmType="01",outputType="list")
 
 ##---------
 ##hiearchicalK
@@ -164,7 +164,7 @@
     hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
     stats::cutree(hclustOut,k)
 }
-.hierKCF<-clusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
+.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
 
 #internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
@@ -228,7 +228,7 @@
 	return(res)
 
 }
-.tightCF<-clusterFunction(clusterFUN=.tightCluster, inputType="diss", algorithmType="01",outputType="list")
+.tightCF<-ClusterFunction(clusterFUN=.tightCluster, inputType="diss", algorithmType="01",outputType="list")
 
 
 #########

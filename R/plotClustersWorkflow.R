@@ -55,7 +55,7 @@
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #' cl <- combineMany(cl, proportion=0.7)
@@ -64,8 +64,8 @@
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), existingColors=FALSE,
-  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
+  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=FALSE,
+  nSizeResult=ceiling(nClusterings(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
 	  allClusterMany<-which(clusterTypes(object)=="clusterMany")

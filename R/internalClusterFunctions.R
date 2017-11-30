@@ -53,8 +53,8 @@
 	
 }
 .checkDissFunction<-function(D,algType=NA){
-	if(any(is.na(as.vector(D)))) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	if(any(is.na(D) | is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
+	if(anyNA(D)) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
 	if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
 	if(any(diag(D)!=0)) stop("Dissimilarity matrix must have zero values on the diagonal")
 	if(!all(D==t(D))) stop("Dissimilarity matrix must result in a symmetric matrix")

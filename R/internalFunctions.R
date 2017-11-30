@@ -1,3 +1,7 @@
+.mynote<-function(x){
+	message(paste("Note:",x))
+}
+
 .eraseMerge<-function(x){
   x@merge_index<-NA_real_
   x@merge_dendrocluster_index<-NA_real_
@@ -26,11 +30,11 @@
       retval@dendro_samples<-oldObj@dendro_samples
       retval@dendro_clusters<-oldObj@dendro_clusters
       retval@dendro_outbranch<-oldObj@dendro_outbranch
-      retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+      retval@dendro_index<-oldObj@dendro_index+nClusterings(newObj) #update index to where dendrogram from
     }
 	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
-      retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
-      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
+      retval@merge_index<-oldObj@merge_index+nClusterings(newObj) #update index to where merge from
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
       retval@merge_cutoff<-oldObj@merge_cutoff
       retval@merge_method<-oldObj@merge_method
@@ -42,12 +46,12 @@
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-#   Note: .addBackSEInfo calls clusterExperiment (i.e. validates)
+#   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
     return(retval)
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-clusterExperiment(as(oldObj,"SummarizedExperiment"),
+  retval<-ClusterExperiment(as(oldObj,"SingleCellFilter"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
@@ -234,7 +238,7 @@
 		     if(test=="all"){
 		       #put primary cluster first
 		       ppcl<-primaryClusterIndex(x)
-		       wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
+		       wh<-c(ppcl,c(1:nClusterings(x))[-ppcl])
 		     }
 		     if(test=="none") wh<-vector("integer",length=0)
 		     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
@@ -260,8 +264,8 @@
 		     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
 		   }
 	 } 
-  	 if(any(wh>nClusters(x) | wh<1)){
-		 wh<-wh[wh<=nClusters(x) & wh>0]
+  	 if(any(wh>nClusterings(x) | wh<1)){
+		 wh<-wh[wh<=nClusterings(x) & wh>0]
 		 
   	 }
 #	 if(length(wh)>0) wh<-wh[is.integer(wh)]
