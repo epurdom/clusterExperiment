@@ -106,7 +106,7 @@ setMethod(
 		#clustering information if that option chosen.
 		reduceMethodName<-reduceMethod
 		if(ignoreUnassignedVar){
-			reduceMethodName<-paste(reduceMethod,clusterLabels(x)[whCl],sep="_")
+			reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
 		}
 		#if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
 	    if(length(nDims) > 1) {
@@ -123,6 +123,7 @@ setMethod(
 				x<-makeFilterStats(x,filterStat=reduceMethod,
 				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
 			}
+			
 		if(reduceMethod=="none") 
 			dat<-transformData(x)
 		else if(isReducedDims(x,reduceMethod))

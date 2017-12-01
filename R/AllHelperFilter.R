@@ -1,5 +1,5 @@
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
-# setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
+#setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
@@ -67,12 +67,14 @@ setMethod( "filterNames","SummarizedExperiment",function(object){
 # #' @rdname makeFilterStats
 # #' @aliases filterNames<-
 # #' @export
-# setReplaceMethod("filterNames", "SingleCellFilter", function(object,value) {
-# 	    if(length(value)!=NCOL(filterStats(object))) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
-# 	    colnames(object@filterStats) <- value
-# 		validObject(object)
-# 		return(object)
-# 	 }
+# setReplaceMethod("filterNames", "SummarizedExperiment", function(object,value) {
+# 	fs<-filterStats(object)
+# 	if(length(value)!=NCOL(fs)) stop("value must be a vector of length equal to NCOL(filterStats(object)):",NCOL(filterStats(object)))
+# 	colnames(fs) <- value
+# 	filterStats(object)<-fs
+# 	validObject(object)
+# 	return(object)
+# 	}
 # )
 
 

@@ -97,22 +97,23 @@ setMethod(
 	if(!is.null(whichClusterIgnoreUnassigned)){
 		whCluster<-.TypeIntoIndices(object,whichClusterIgnoreUnassigned)
 		if(length(whCluster)>1) warning("'whichClusterIgnoreUnassigned' corresponds to multiple clusterings. Ignoring input")
-		else if(length(whCluster)==0) warning("'whichClusterIgnoreUnassigned' does not correspond to a clustering. Ignoring input")
+		else if(length(whCluster)==0) warning("'whichClusterIgnoreUnassigned' does not correspond to a clustering. Ignoring argument.")
 		else{
 			#give new names to filters to indicate based on clustering.
-			newNames<-paste(filterStats,clusterLabels(object)[whCluster],sep="_")
+			newNames<-.makeClusterFilterStats(filterStats,clusterLabels(object)[whCluster])
 			whDo<-which(!isFilterStats(object,newNames))
 			if(length(whDo)>0){
 				whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
 				if(length(whAssigned)>0){
 					out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],...)
-					whNew<-match(filterStats[whDo],filterNames(out))
-					filterNames(out)[whNew]<-newNames[whDo]	
+					whNew<-match(filterStats[whDo],colnames(rowData(out)))
+					colnames(rowData(out))[whNew]<-newNames[whDo]	
 				}
 				else 
 					stop("All samples are unassigned for clustering", clusterLabels(object)[whCluster])
 				
 			}
+			else return(object) #already calculated all of the requested values
 		}
 	}
 	else{
@@ -123,6 +124,9 @@ setMethod(
 	return(object)
 }
 )
+.makeClusterFilterStats<-function(filterStats,clusterName){
+	make.names(paste(filterStats,clusterName,sep="_"))
+}
 #' @rdname makeFilterStats
 #' @export
 listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
