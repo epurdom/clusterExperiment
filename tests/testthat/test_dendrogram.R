@@ -1,7 +1,7 @@
 context("Dendrogram")
 # library(devtools)
 # load_all()
-source("create_objects.R")
+
 
 test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #test matrix version

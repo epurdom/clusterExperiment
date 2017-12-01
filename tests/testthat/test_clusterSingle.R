@@ -1,5 +1,5 @@
 context("clusterSingle")
-source("create_objects.R")
+
 
 
 test_that("`clusterSingle` works with matrix, ClusterExperiment objects,

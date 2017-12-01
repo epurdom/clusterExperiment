@@ -1,5 +1,5 @@
 context("Dimensionality Reduction")
-source("create_objects.R")
+
 
 test_that("makeReducedDims works as promised",{
   # check for all objects that get expected
