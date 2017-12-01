@@ -182,3 +182,12 @@ test_that("plotDimReduce works",{
 	
 	
 })
+
+test_that("plotFeatureBoxplot works",{
+	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
+		clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+		removeSil=c(TRUE,FALSE)))
+	expect_silent(clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
+	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
+	expect_silent(plotFeatureBoxplot(ce))
+})
