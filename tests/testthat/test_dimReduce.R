@@ -33,20 +33,20 @@ test_that("Filter functions work as expected",{
 	
 	#when there are no filters
 	expect_silent(filterNames(sceSimData))
-	expect_equal(filterStats(sceSimData),rowData(sceSimData)[,"b",drop=FALSE])
-	expect_error(filterStats(sceSimData,type="Filter1"),"None of the values of 'type' argument are valid filter names")
+	expect_equal(clusterExperiment:::filterStats(sceSimData),rowData(sceSimData)[,"b",drop=FALSE])
+	expect_error(clusterExperiment:::filterStats(sceSimData,type="Filter1"),"None of the values of 'type' argument are valid filter names")
 	
 	##Redo when no rowData.
 	testSe<-SummarizedExperiment(mat)
 	expect_equal(length(filterNames(testSe)),0)
-	expect_equal(ncol(filterStats(testSe)),0)
-	expect_error(filterStats(testSe,type="Filter1"),"There are no filter statistics saved for this object")
+	expect_equal(ncol(clusterExperiment:::filterStats(testSe)),0)
+	expect_error(clusterExperiment:::filterStats(testSe,type="Filter1"),"There are no filter statistics saved for this object")
 	
 	##Redo when no valid filters.
 	testSe<-SummarizedExperiment(mat,rowData=gData[,c("a","c")])
 	expect_equal(length(filterNames(testSe)),0)
-	expect_equal(ncol(filterStats(testSe)),0)
-	expect_error(filterStats(testSe,type="Filter1"),"None of the values of 'type' argument are valid filter names")
+	expect_equal(ncol(clusterExperiment:::filterStats(testSe)),0)
+	expect_error(clusterExperiment:::filterStats(testSe,type="Filter1"),"None of the values of 'type' argument are valid filter names")
 	
 	set.seed(352)
 	filter<-rnorm(nrow(sce))
@@ -55,42 +55,42 @@ test_that("Filter functions work as expected",{
 	#tests on adding unnamed filters	
 	#value type of replace:
 	sceTest<-sce
-	expect_silent(filterStats(sceTest,type="Filter1")<-filter)
-	expect_equal(colnames(filterStats(sceTest)),c("b","Filter1"))
+	expect_silent(clusterExperiment:::filterStats(sceTest,type="Filter1")<-filter)
+	expect_equal(colnames(clusterExperiment:::filterStats(sceTest)),c("b","Filter1"))
 
 	sceTest<-sce
-	expect_silent(filterStats(sceTest,type=c("Filter1","Filter2"))<-filter2)
-	expect_equal(colnames(filterStats(sceTest)),c("b","Filter1","Filter2"))
+	expect_silent(clusterExperiment:::filterStats(sceTest,type=c("Filter1","Filter2"))<-filter2)
+	expect_equal(colnames(clusterExperiment:::filterStats(sceTest)),c("b","Filter1","Filter2"))
 
 	#matrix type of replace:	
 	sceTest<-sce
-	expect_error(filterStats(sceTest)<-filter,"must give matrix of values with column names")
+	expect_error(clusterExperiment:::filterStats(sceTest)<-filter,"must give matrix of values with column names")
 	sceTest<-sce
-	expect_error(filterStats(sceTest)<-filter2,"must give matrix of values with column names")
+	expect_error(clusterExperiment:::filterStats(sceTest)<-filter2,"must give matrix of values with column names")
 
 	####Now work with existing filters
 	colnames(filter2)<-c("Filter1","Filter2")
 	sceTest<-sce
-	expect_silent(filterStats(sceTest)<-filter2)
+	expect_silent(clusterExperiment:::filterStats(sceTest)<-filter2)
 	expect_silent(filterNames(sceTest))
-	expect_equal(filterStats(sceTest),DataFrame(b=rowData(sce)[,"b"],filter2))
-	expect_equal(filterStats(sceTest,type="Filter1"),DataFrame(filter2)[,"Filter1",drop=FALSE])
-	expect_error(filterStats(sceTest,type="Myfilter"),"None of the values of 'type' argument are valid filter names")
-	expect_error(filterStats(sceTest,type=1),"unable to find an inherited method")
+	expect_equal(clusterExperiment:::filterStats(sceTest),DataFrame(b=rowData(sce)[,"b"],filter2))
+	expect_equal(clusterExperiment:::filterStats(sceTest,type="Filter1"),DataFrame(filter2)[,"Filter1",drop=FALSE])
+	expect_error(clusterExperiment:::filterStats(sceTest,type="Myfilter"),"None of the values of 'type' argument are valid filter names")
+	expect_error(clusterExperiment:::filterStats(sceTest,type=1),"unable to find an inherited method")
 
 	##Check Replace with existing filters in place and check actually change them, etc.
 	sceTest<-SummarizedExperiment(assay(sce))
-	expect_silent(filterStats(sceTest)<-filter2)
+	expect_silent(clusterExperiment:::filterStats(sceTest)<-filter2)
 	filter3<-filter2+1
-	expect_silent(filterStats(sceTest) <- filter3)
-	expect_equal(filterStats(sceTest),DataFrame(filter3))
+	expect_silent(clusterExperiment:::filterStats(sceTest) <- filter3)
+	expect_equal(clusterExperiment:::filterStats(sceTest),DataFrame(filter3))
 
 	sceTest<-SummarizedExperiment(assay(sce))
-	expect_silent(filterStats(sceTest)<-filter2)
+	expect_silent(clusterExperiment:::filterStats(sceTest)<-filter2)
 	filter4<-filter2+5
 	colnames(filter4)[2]<-"Myfilter"
-	expect_silent(filterStats(sceTest) <- filter4)
-	expect_equal(filterStats(sceTest),DataFrame(filter4[,"Filter1",drop=FALSE],filter2[,"Filter2",drop=FALSE],filter4[,"Myfilter",drop=FALSE]))
+	expect_silent(clusterExperiment:::filterStats(sceTest) <- filter4)
+	expect_equal(clusterExperiment:::filterStats(sceTest),DataFrame(filter4[,"Filter1",drop=FALSE],filter2[,"Filter2",drop=FALSE],filter4[,"Myfilter",drop=FALSE]))
 
 	#Need more checks about replacement, etc.
 	
@@ -101,7 +101,7 @@ test_that("filterData works as expected",{
 	set.seed(352)
 	filter2<-matrix(rnorm(2*nrow(sceSimData)),ncol=2)
 	colnames(filter2)<-c("Filter1","Filter2")
-	expect_silent(filterStats(sceSimData)<-filter2)
+	expect_silent(clusterExperiment:::filterStats(sceSimData)<-filter2)
 	
 
 	tf<-filter2[,"Filter1"]>1
@@ -162,7 +162,7 @@ test_that("makeFilterStats works as promised",{
 		else x<-(unname(apply(mat,1,ii)))
 		x<-DataFrame(x)
 		colnames(x)<-ii
-		expect_equal(filterStats(fs,type=ii),x)
+		expect_equal(clusterExperiment:::filterStats(fs,type=ii),x)
 	}
 
 
@@ -188,22 +188,22 @@ test_that("makeFilterStats works as promised",{
 	contData<-simData[,1:20]
     expect_silent(temp<-makeFilterStats(contData))
 	v<-apply(contData,1,var)
-	expect_equal(filterStats(temp,type="var"),DataFrame("var"=v))
+	expect_equal(clusterExperiment:::filterStats(temp,type="var"),DataFrame("var"=v))
 	#should keep top 10
 	expect_silent(x<-filterData(temp,percentile=10,filterStats="var",keepLarge=TRUE,absolute=FALSE))
 	whTop<-order(v,decreasing=TRUE)[1:10]
-	expect_equal(DataFrame("var"=v[whTop]),filterStats(x,type="var"))
+	expect_equal(DataFrame("var"=v[whTop]),clusterExperiment:::filterStats(x,type="var"))
 	expect_equal(contData[whTop,],unname(assay(x)))
 
 	###Check getting out correct ones with transformation (isCount=TRUE)
 	countData<-simCount[,1:20]
     expect_silent(temp<-makeFilterStats(countData,isCount=TRUE))
 	v<-apply(log2(countData+1),1,var)
-	expect_equal(filterStats(temp,type="var"),DataFrame("var"=v))
+	expect_equal(clusterExperiment:::filterStats(temp,type="var"),DataFrame("var"=v))
 	#should keep top 10
 	expect_silent(x<-filterData(temp,percentile=10,filterStats="var",keepLarge=TRUE,absolute=FALSE))
 	whTop<-order(v,decreasing=TRUE)[1:10]
-	expect_equal(DataFrame("var"=v[whTop]),filterStats(x,type="var"))
+	expect_equal(DataFrame("var"=v[whTop]),clusterExperiment:::filterStats(x,type="var"))
 	expect_equal(log2(countData[whTop,]+1),unname(transformData(x,isCount=TRUE)))
 	
 	

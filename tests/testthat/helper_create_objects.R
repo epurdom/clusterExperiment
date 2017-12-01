@@ -99,7 +99,7 @@ smSimSE <- seSimData[1:20,whSamp]
 #################################
 sce<-as(se,"SingleCellExperiment")
 sceFull<-sce
-filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
+clusterExperiment:::filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
 reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
 
 
@@ -108,4 +108,4 @@ sceSimDataDimRed<-sceSimData
 pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
 tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
-filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
+clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)

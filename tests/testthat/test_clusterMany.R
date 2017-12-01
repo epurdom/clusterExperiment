@@ -200,7 +200,7 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
 	expect_silent(c1<-clusterMany(sceSimData2, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("PCA"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
-	expect_equal(filterStats(c1),filterStats(sceSimData2))
+	expect_equal(clusterExperiment:::filterStats(c1),clusterExperiment:::filterStats(sceSimData2))
 	expect_equal(reducedDimNames(c1),"PCA")
 	
 	sceSimData3<-sceFull
@@ -217,7 +217,7 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
 	expect_silent(c1<-clusterMany(ce5, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("PCA"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE))
-	expect_equal(filterStats(c1),filterStats(ce5))
+	expect_equal(clusterExperiment:::filterStats(c1),clusterExperiment:::filterStats(ce5))
 	expect_equal(reducedDimNames(c1),"PCA")
 	
 	ce6<-cc4
