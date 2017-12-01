@@ -1,5 +1,5 @@
 context("clusterMany")
-source("create_objects.R")
+
 
 test_that("`clusterMany` works with matrix, list of data, ClusterExperiment objects, and
           SummarizedExperiments", {

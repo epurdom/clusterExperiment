@@ -1,5 +1,3 @@
-setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
-#setGeneric("filterNames<-", function(object,value) { standardGeneric("filterNames<-")})
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
@@ -15,10 +13,10 @@ setGeneric("isPossibleReducedDims",function(object,...) standardGeneric("isPossi
 setGeneric("isPossibleFilterStats",function(object,...) standardGeneric("isPossibleFilterStats"))
 
 setMethod( "isPossibleFilterStats","SingleCellExperiment",function(object,type){
-	type %in% c(listBuiltInFilterStats,filterNames(object))
+	type %in% c(listBuiltInFilterStats(),filterNames(object))
 })
 setMethod( "isPossibleReducedDims","SingleCellExperiment",function(object,type){
-	type %in% c(listBuiltInReducedDims,reducedDimNames(object))
+	type %in% c(listBuiltInReducedDims(),reducedDimNames(object))
 })
 setMethod( "ncolReducedDims","SingleCellExperiment",function(object){
 	sapply(reducedDims(object),ncol)
@@ -47,22 +45,7 @@ setMethod( "anyValidReducedDims","SummarizedExperiment",function(object){
 	length(reducedDimNames(object))>0
 
 })		
-#' @rdname makeFilterStats
-#' @return \code{filterNames} returns a vector of the columns of the rowData that are considered valid filtering statistics. Currently any numeric column in rowData is a valid filtering statistic. 
-#' @aliases filterNames
-#' @export
-setMethod( "filterNames","SummarizedExperiment",function(object){
-	checkValid<-TRUE
-	if(!checkValid || ncol(rowData(object))==0) colnames(rowData(object))
-	else{
-		whValid<- sapply(rowData(object),is.numeric)
-		# #for now, do not allow NA values for valid filters.
-		# whNa<-which(apply(rowData,2,anyNA))
-		# whValid[whNA]<-FALSE
-		return(names(rowData(object))[whValid])
-		
-	}
-})		
+	
 
 # #' @rdname makeFilterStats
 # #' @aliases filterNames<-
@@ -130,13 +113,13 @@ setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, .
 	}
 	fs <- rowData(object) #all rowData
 	if(NCOL(fs)>0){
-	    whTypeExist<-which(type %in% colnames(fs))
+		whTypeExist<-which(type %in% colnames(fs))
 		if(length(whTypeExist)>0){
-			fs[,type[whTypeExist]] <- value[,whTypeExist,drop=FALSE]
+			fs[,type[whTypeExist]] <- DataFrame(value[,whTypeExist,drop=FALSE])
 		}
 	    whTypeNew<-which(!type %in% colnames(fs))
 		if(length(whTypeNew)>0){
-			fs<-cbind(fs,value[,whTypeNew,drop=FALSE])
+			fs<-DataFrame(fs,value[,whTypeNew,drop=FALSE])
 		}
 	    rowData(object) <- fs
 	}

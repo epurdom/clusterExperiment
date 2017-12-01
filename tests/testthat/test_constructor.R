@@ -1,5 +1,5 @@
 context("Constructor")
-source("create_objects.R")
+
 
 
 test_that("saved rsecFluidigm is still valid object", {

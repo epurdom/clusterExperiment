@@ -103,10 +103,9 @@ filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol
 reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
 
 
-library(Rtsne)
 sceSimData<-as(seSimData,"SingleCellExperiment")
 sceSimDataDimRed<-sceSimData
-pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
-tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
-reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
+pca_data <- matrix(rnorm(NCOL(sceSimData)*153),ncol=153)
+tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
+reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data, TSNE=tsne_data)
 filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)

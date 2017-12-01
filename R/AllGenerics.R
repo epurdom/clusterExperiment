@@ -1,3 +1,4 @@
+setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
 setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
 setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})

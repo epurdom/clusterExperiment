@@ -1,4 +1,5 @@
-#' @name makeFilterStats
+#' @name reduceFunctions
+#' @aliases reduceFunctions makeFilterStats
 #' @title Filtering statistics and Dimensionality Reduction Functions
 #' @description Functions for calculating and manipulating either filtering statistics, stored in rowData, or the dimensionality reduction results, stored in reducedDims.
 #' @param object object from which user wants to calculate per-row statistics
@@ -16,7 +17,7 @@
 #' scfFiltered<-filterData(scf,filterStats="mad",percentile=10)
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @aliases makeFilterStats,SummarizedExperiment-method
 #' @export
 setMethod(
@@ -65,7 +66,7 @@ setMethod(
 
 }
 )
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -76,7 +77,7 @@ setMethod(
 }
 )
 
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 #' @param whichClusterIgnoreUnassigned indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.
 #' @details \code{whichClusterIgnoreUnassigned} is only an option when applied to a
@@ -127,7 +128,7 @@ setMethod(
 .makeClusterFilterStats<-function(filterStats,clusterName){
 	make.names(paste(filterStats,clusterName,sep="_"))
 }
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
 #' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
@@ -139,7 +140,7 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 	'median'=matrixStats::rowMedians)
 
 
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @aliases filterData
 #' @param filterStats The filterStats of filtering statistic to use to filter. 
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
@@ -183,7 +184,7 @@ setMethod( "filterData","SummarizedExperiment",
 
 })	
 
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @param reduceMethod character. A method or methods for reducing the size of the data, either by filtering the rows (genes) or by a dimensionality reduction method. Must either be 1) must match the name of a built-in method, in which case if it is not already existing in the object will be passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or 2) must match a stored filtering statistic or dimensionality reduction in the object
 #' @param typeToShow character (optional). If given, should be one of "filterStats" or "reducedDims" to indicate of the values in the reduceMethod vector, only show those corresponding to "filterStats" or "reducedDims" options. 
 #' @return \code{defaultNDims} returns a numeric vector giving the default dimensions the methods in \code{clusterExperiment} will use for reducing the size of the data. If \code{typeToShow} is missing, the resulting vector will be equal to the length of \code{reduceMethod}. Otherwise, it will be a vector with all the unique valid default values for the \code{typeToShow} (note that different dimensionality reduction methods can have different maximal dimensions, so the result may not be of length one in this case).
@@ -207,3 +208,20 @@ setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,ty
 setMethod( "defaultNDims","matrix",function(object,...){
 	return(defaultNDims(SingleCellExperiment(object),...))
 })
+
+#' @rdname reduceFunctions
+#' @return \code{filterNames} returns a vector of the columns of the rowData that are considered valid filtering statistics. Currently any numeric column in rowData is a valid filtering statistic. 
+#' @aliases filterNames
+#' @export
+setMethod( "filterNames","SummarizedExperiment",function(object){
+	checkValid<-TRUE
+	if(!checkValid || ncol(rowData(object))==0) colnames(rowData(object))
+	else{
+		whValid<- sapply(rowData(object),is.numeric)
+		# #for now, do not allow NA values for valid filters.
+		# whNa<-which(apply(rowData,2,anyNA))
+		# whValid[whNA]<-FALSE
+		return(names(rowData(object))[whValid])
+		
+	}
+})	

@@ -1,6 +1,6 @@
 context("Non-heatmap related plot functions")
 
-source("create_objects.R")
+
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
