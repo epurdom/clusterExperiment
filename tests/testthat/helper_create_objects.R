@@ -3,7 +3,7 @@
 library(clusterExperiment)
 # library(devtools)
 # load_all()
-data(simData)
+data(simData, envir = environment())
 if(ncol(simData) != 300) {
   stop("not current version of simData")
   #get all kinds of annoyances because using old version.

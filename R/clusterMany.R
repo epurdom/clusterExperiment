@@ -596,15 +596,21 @@ setMethod(
 	    if(run){
 		##Calculate distances necessary only once
 	      if(any(!is.na(param[,"distFunction"]))){
-	        distParam<-unique(param[,c("dataset","distFunction")])
+			  ##Get the parameters that imply different datasets.
+	        distParam<-unique(param[,c("reduceMethod","nFilterDims","distFunction")])
 	        distParam<-distParam[!is.na(distParam[,"distFunction"]),]
 		    ##Assume only take distances on original data (or filtered version of it)
         	#need to update here when have filter
-			dat<-assay(x)
 			allDist<-lapply(1:nrow(distParam),function(ii){
-			distFun<-as.character(distParam[ii,"distFunction"])
+				distFun<-as.character(distParam[ii,"distFunction"])
 				#be conservative and check for the 01 type if any of clusterFunctions are 01.
 				algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" 
+				redM<-as.character(distParam[ii,"reduceMethod"])
+				if(redM=="none")  dat<-transformData(x,transFun=transFun) 
+		  		else if(isFilterStats(x,redM)) 
+		  			  dat<-transformData( filterData(x, filterStats=redM, 
+						  percentile=distParam[ii,"nFilterDims"]), transFun=transFun)
+		  		else stop("Internal error: distance should only be will full or filtered data")
 				distMat<-.makeDiss(dat, distFunction=distFun, checkDiss=TRUE, algType=algCheckType)
 				return(distMat)
 			})
