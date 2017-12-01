@@ -9,9 +9,9 @@
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
-  whichCluster = "primaryCluster", reduceMethod = "mad", nDims,
-  ignoreUnassignedVar = TRUE, unassignedSamples = c("outgroup", "cluster"),
-  ...)
+  whichCluster = "primaryCluster", reduceMethod = "mad",
+  nDims = defaultNDims(x, reduceMethod), ignoreUnassignedVar = TRUE,
+  unassignedSamples = c("outgroup", "cluster"), ...)
 
 \S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
   "cluster", "remove"), ...)

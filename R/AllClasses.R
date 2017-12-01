@@ -294,9 +294,6 @@ setMethod(
     if(is.null(clusterInfo)) {
       clusterInfo<-rep(list(NULL),length=NCOL(clusters))
     }
-    # if(is.null(merge_info)) {
-    #   merge_info<-list()
-    # }
     if(length(clusterTypes)!=NCOL(clusters)) {
       stop("clusterTypes must be of length equal to number of clusters in
            `clusters`")

@@ -89,8 +89,8 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-	cat("reducedDimNames:",if(length(reducedDimNames(object))>0) reducedDimNames(object) else "no reduced dims stored","\n")
-	cat("filterStats:",if(length(filterNames(object))>0) filterNames(object) else "no filtering stats stored","\n")
+	cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
+	cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
     cat("-----------\n")
     cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
     cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")

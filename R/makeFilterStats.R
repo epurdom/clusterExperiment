@@ -1,12 +1,11 @@
 #' @name makeFilterStats
-#' @title Calculate filtering statistics
-#' @description Function for calculating, per row (gene), built-in statistical 
-#'    functions that might be used for filtering. 
+#' @title Filtering statistics and Dimensionality Reduction Functions
+#' @description Functions for calculating and manipulating either filtering statistics, stored in rowData, or the dimensionality reduction results, stored in reducedDims.
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
 #' @param ... Values passed on the the 'SummarizedExperiment' method.
-#' @inheritParams makeReducedDims
+#' @return \code{makeFilterStats} returns a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the requested filtering statistics will be added to the \code{DataFrame} in the \code{rowData} slot and given names corresponding to the \code{filterStats} values. Warning: the function will overwrite existing columns in \code{rowData} with the same name. Columns in the \code{rowData} slot with different names should not be affected.
 #' @inheritParams transformData
 #'
 #' @examples
@@ -14,7 +13,7 @@
 #' listBuiltInFilterStats()
 #' scf<-makeFilterStats(simData,filterStats=c("var","mad"))
 #' scf
-#' scfFiltered<-filterData(scf,type="mad",percentile=10)
+#' scfFiltered<-filterData(scf,filterStats="mad",percentile=10)
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
 #' @rdname makeFilterStats
@@ -30,10 +29,9 @@ setMethod(
   ##Check user inputs
   ###################
   #check valid options for reducedDims
-  validDim<-listBuiltInFilterStats()
   filterStats<-unique(filterStats)
-  if(!all(filterStats %in% validDim)){
-	  stop("Not all of the filterStats given are valid")
+  if(!all(filterStats %in% listBuiltInFilterStats())){
+	  stop("Not all of the filterStats given are valid. Must be one of listBuiltInFilterStats().")
   }
   
   ###################
@@ -103,7 +101,7 @@ setMethod(
 		else{
 			#give new names to filters to indicate based on clustering.
 			newNames<-paste(filterStats,clusterLabels(object)[whCluster],sep="_")
-			whDo<-which(!newNames %in% filterNames(object))
+			whDo<-which(!isFilterStats(object,newNames))
 			if(length(whDo)>0){
 				whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
 				if(length(whAssigned)>0){
@@ -139,18 +137,23 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 
 #' @rdname makeFilterStats
 #' @aliases filterData
-#' @param type The type of filtering statistic to use to filter. 
+#' @param filterStats The filterStats of filtering statistic to use to filter. 
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic
 #' @param keepLarge logical whether to keep rows (genes) with large values of the test statistic or small values of the test statistic. 
 #' @details Note that \code{filterData} returns a SingleCellExperiment object. To get the actual data out use either assay or \code{\link{transformData}} if transformed data is desired.
-#' @return A SingleCellExperiment object with the rows (genes) removed based on filters
+#' @return \code{filterData} returns a SingleCellExperiment object with the rows (genes) removed based on filters
 #' @export
 #' @importFrom stats quantile
-setMethod( "filterData","SingleCellExperiment",
-	function(object,type,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
-	stat<-if(absolute) abs(filterStats(object,type,checkValid=TRUE)) else filterStats(object,type,checkValid=TRUE)
+setMethod( "filterData","SummarizedExperiment",
+	function(object,filterStats,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
+	stat<-filterStats(object,filterStats)
+	if(!is.null(dim(stat))){
+		if(NCOL(stat)==1) stat<-stat[,1]
+		else stop("Attempting to filtering on more than one filter statistic")
+	}
+	if(absolute) stat<-abs(stat)
 	if(missing(cutoff) & missing(percentile)) stop("must provide one of cutoff or percentile")
 	if(!missing(cutoff) & !missing(percentile)) stop("can only provide one of cutoff or percentile")
 	if(!missing(cutoff)){
@@ -158,7 +161,7 @@ setMethod( "filterData","SingleCellExperiment",
 	}
 	if(!missing(percentile)){
 		if(0<percentile & percentile <1){
-			quantile<- quantile(stat,probs=if(keepLarge) percentile else 1-percentile)
+			quantile<- quantile(stat,probs=if(keepLarge) percentile else 1-percentile,na.rm=TRUE)
 			whKeep<-if(keepLarge) which(stat>quantile) else which(stat<quantile)
 		}
 		else{
@@ -167,7 +170,7 @@ setMethod( "filterData","SingleCellExperiment",
 					warning("the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
 					whKeep<-1:NROW(object)
 				}
-				else whKeep<- order(stat,decreasing=ifelse(keepLarge,TRUE,FALSE))[1:percentile]
+				else whKeep<- order(stat,decreasing=ifelse(keepLarge,TRUE,FALSE),na.last=NA)[1:percentile]
 			}
 			else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
 		}
@@ -175,3 +178,28 @@ setMethod( "filterData","SingleCellExperiment",
 	object[whKeep,]
 
 })	
+
+#' @rdname makeFilterStats
+#' @param reduceMethod character. A method or methods for reducing the size of the data, either by filtering the rows (genes) or by a dimensionality reduction method. Must either be 1) must match the name of a built-in method, in which case if it is not already existing in the object will be passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or 2) must match a stored filtering statistic or dimensionality reduction in the object
+#' @param typeToShow character (optional). If given, should be one of "filterStats" or "reducedDims" to indicate of the values in the reduceMethod vector, only show those corresponding to "filterStats" or "reducedDims" options. 
+#' @return \code{defaultNDims} returns a numeric vector giving the default dimensions the methods in \code{clusterExperiment} will use for reducing the size of the data. If \code{typeToShow} is missing, the resulting vector will be equal to the length of \code{reduceMethod}. Otherwise, it will be a vector with all the unique valid default values for the \code{typeToShow} (note that different dimensionality reduction methods can have different maximal dimensions, so the result may not be of length one in this case).
+setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,typeToShow){
+	nDims<-rep(NA,length(reduceMethod))
+	isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
+	isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
+  	if(isFilter)
+		nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(500,NROW(object))
+	else if(isReducedDims(object,reduceMethod ))
+		nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
+	else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-50
+	if(!missing(typeToShow)){
+		if(typeToShow=="filterStats") nDims<-unique(nDims[isFilter])
+		if(typeToShow=="reducedDims") nDims<-unique(nDims[isRed])
+		if(length(nDims)==0) nDims<-NA
+	}
+	return(nDims)
+	
+})
+setMethod( "defaultNDims","matrix",function(object,...){
+	return(defaultNDims(SingleCellExperiment(object),...))
+})

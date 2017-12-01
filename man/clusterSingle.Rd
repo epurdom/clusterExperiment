@@ -21,14 +21,14 @@
   replaceCoClustering = FALSE, ...)
 
 \S4method{clusterSingle}{SingleCellExperiment,missing}(x,
-  reduceMethod = "none", nDims = NA, ...)
+  reduceMethod = "none", nDims = defaultNDims(reduceMethod), ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
   reduceMethod = c("none", listBuiltInReducedDims(),
-  listBuiltInFilterStats()), nDims = NA, clusterLabel = "clusterSingle",
-  checkDiss = TRUE)
+  listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
+  clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
@@ -53,7 +53,8 @@ dimensionality reduction to perform before clustering. Options are
 3) stored filtering or reducedDim values in the object.}
 
 \item{nDims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{reduceMethod}}
+in the reduction specified by \code{reduceMethod}. Defaults to output of
+\code{\link{defaultNDims}}}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is

@@ -109,4 +109,4 @@ sceSimDataDimRed<-sceSimData
 pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
 tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
-filterStats(sceSimDataSimData,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataSimData)),ncol=2)
+filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
