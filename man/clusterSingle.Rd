@@ -6,9 +6,8 @@
 \alias{clusterSingle,missing,matrixOrNULL-method}
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
-\alias{clusterSingle,SingleCellFilter,missing-method}
+\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
@@ -18,25 +17,23 @@
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{SingleCellExperiment,missing}(x, diss, ...)
-
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
 
-\S4method{clusterSingle}{SingleCellFilter,missing}(x, reduceMethod = "none",
-  nDims = NA, ...)
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x,
+  reduceMethod = "none", nDims = defaultNDims(x, reduceMethod), ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
   reduceMethod = c("none", listBuiltInReducedDims(),
-  listBuiltInFilterStats()), nDims = NA, clusterLabel = "clusterSingle",
-  checkDiss = TRUE)
+  listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
+  clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
-\code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
@@ -56,7 +53,8 @@ dimensionality reduction to perform before clustering. Options are
 3) stored filtering or reducedDim values in the object.}
 
 \item{nDims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{reduceMethod}}
+in the reduction specified by \code{reduceMethod}. Defaults to output of
+\code{\link{defaultNDims}}}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is

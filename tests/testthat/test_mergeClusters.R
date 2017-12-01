@@ -1,5 +1,5 @@
 context("mergeClusters")
-source("create_objects.R")
+
 
 test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   cl1 <- clusterSingle(smSimData, 
@@ -176,13 +176,13 @@ test_that("`mergeClusters` preserves the colData and rowData of SE", {
        subsample=FALSE, sequential=FALSE,                      
 	   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
 	   isCount=FALSE))
-  expect_silent(cl <- makeDendrogram(cl))
-  expect_message(cl <- mergeClusters(cl, mergeMethod = "adjP"))
+  expect_silent(clD <- makeDendrogram(cl))
+  expect_message(cl <- mergeClusters(clD, mergeMethod = "adjP"))
   expect_equal(colData(cl),colData(smSimSE))
   expect_equal(rownames(cl),rownames(smSimSE))
   expect_equal(colnames(cl),colnames(smSimSE))
   expect_equal(metadata(cl),metadata(smSimSE))
-  expect_equal(rowData(cl),rowData(smSimSE))
+  expect_equal(rowData(cl),rowData(clD))
 
 })
 

@@ -99,10 +99,10 @@ A \code{ClusterExperiment} object.
 }
 \description{
 \code{ClusterExperiment} is a class that extends
-\code{SingleCellFilter} and is used to store the data
+\code{SingleCellExperiment} and is used to store the data
 and clustering information.
 
-In addition to the slots of the \code{SingleCellFilter}
+In addition to the slots of the \code{SingleCellExperiment}
 class, the \code{ClusterExperiment} object has the additional slots described
 in the Slots section.
 

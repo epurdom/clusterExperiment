@@ -1,5 +1,5 @@
 context("PCA")
-source("create_objects.R")
+
 
 test_that("Fast PCA gives the same results as PCA", {
 

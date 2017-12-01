@@ -64,7 +64,7 @@ addClusters adds y to x, and is thus not symmetric in the two
 
 \code{removeClusters} removes the clusters given by
  \code{whichRemove}. If all clusters are implied, then returns a
- \code{\link{SingleCellFilter}} object. If the
+ \code{\link{SingleCellExperiment}} object. If the
  \code{primaryCluster} is one of the clusters removed, the
  \code{primaryClusterIndex} is set to 1 and the dendrogram and cooccurance
  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.

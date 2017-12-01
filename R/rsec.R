@@ -17,19 +17,10 @@
 #'   without the computational costs of the clusterMany step.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all of 
 #' the clusterings from the steps of RSEC
-#' @inheritParams clusterMany,SingleCellFilter-method
+#' @inheritParams clusterMany,SingleCellExperiment-method
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method
 #' @inheritParams mergeClusters,matrix-method
-#' @export
-#' @rdname RSEC
-setMethod(
-f = "RSEC",
-signature = signature(x = "SingleCellExperiment"),
-definition = function(x, ...){
-RSEC(as(x,"SingleCellFilter"),...)
-
-})
 #' @export
 #' @rdname RSEC
 setMethod(
@@ -60,7 +51,7 @@ setMethod(
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
 	  if(any(c("transFun","isCount") %in% names(list(...)))) 
 	  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-      newObj <- RSEC(as(x,"SingleCellFilter"),  transFun=transformation(x),...)
+      newObj <- RSEC(as(x,"SingleCellExperiment"),  transFun=transformation(x),...)
       ##Check if pipeline already ran previously and if so increase
       x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
       if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
@@ -92,10 +83,10 @@ definition = function(x, ...){
 #' @export
 setMethod(
     f = "RSEC",
-    signature = signature(x = "SingleCellFilter"),
+    signature = signature(x = "SingleCellExperiment"),
     definition = function(x, isCount=FALSE,transFun=NULL,
-        reduceMethod="PCA",nFilterDims=NA,
-        nReducedDims=c(50), k0s=4:15,
+        reduceMethod="PCA",nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
+        nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), k0s=4:15,
         clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
         combineProportion=0.7, combineMinSize=5,
@@ -142,7 +133,7 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
     genFormals
 }
 .postClusterMany<-function(ce,...){
-    defaultArgs<-.methodFormals("RSEC",signature="SingleCellFilter")
+    defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
 	passedArgs<-list(...)
 	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
 	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])

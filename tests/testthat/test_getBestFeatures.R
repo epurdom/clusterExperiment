@@ -1,5 +1,5 @@
 context("getBestFeatures")
-source("create_objects.R")
+
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", {

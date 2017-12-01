@@ -7,111 +7,6 @@ setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 
-#############################################################
-#############################################################
-############### SingleCellFilter Class  #####################
-#############################################################
-#############################################################
-
-#' @title Class SingleCellFilter
-#'   
-#' @description \code{SingleCellFilter} is a class that extends 
-#'   \code{SingleCellExperiment} and is used to store filterStats on the data
-#'   
-#' @docType class
-#' @aliases SingleCellFilter SingleCellFilter-class
-#'   
-#' @description In addition to the slots of the \code{SingleCellExperiment} 
-#'   class, the \code{SingleCellFilter} object has the additional slots
-#'   described in the Slots section.
-#'   
-#' @slot filterStats a numeric matrix where each column gives a summary
-#'   statistics calculated per gene that can be used for filtering of genes.
-#' @details \code{filterStats}
-#'   
-#' @name SingleCellFilter-class
-#' @rdname SingleCellFilter-class
-#' @importClassesFrom SingleCellExperiment SingleCellExperiment
-#' @export
-setClass(
-  Class = "SingleCellFilter",
-  contains = "SingleCellExperiment",
-  slots = list(
-    filterStats="matrixOrNULL"
-    )
-)
-
-setValidity("SingleCellFilter", function(object) {
-    ####
-    #test that filterStats right dimension
-    ####
-	if(!is.null(object@filterStats)){
-		if(NROW(object@filterStats)!=NROW(object)) 
-			return("number of rows of filterStats matrix must be equal to number of rows of object.")
-		if(is.null(colnames(object@filterStats)) || duplicated(colnames(object@filterStats))) 
-			return("filterStats matrix must have unique column names.")
-		if(!is.numeric(object@filterStats)) return("filterStats matrix must be numeric.")
-	}
-	return(TRUE)
-})
-
-#' @rdname SingleCellFilter-class
-#' @export
-setGeneric(
-	name = "SingleCellFilter",
-	def = function(object,...) {
-	  standardGeneric("SingleCellFilter")
-	}
-)
-#' @rdname SingleCellFilter-class
-#' @param object input either matrix, SingleCellExperiment, or
-#'   SummarizedExperiment
-#' @param filterStats either vector of a single filtering statistic or matrix of
-#'   filtering statistics, each column corresponding to a filtering statistic.
-#'   If \code{filterNames=NULL}, column names of this matrix are the names given
-#'   to the filter statistics.
-#' @param filterNames a character vector of names for the filtering statistics.
-#' @param ... Values passed on the the 'SingleCellExperiment' method.
-#' @export
-#' @importFrom SummarizedExperiment assay assays SummarizedExperiment colData<-
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("SingleCellExperiment"),
-	definition = function(object,filterStats=NULL,filterNames=NULL){
-	if(!is.null(filterStats) & is.null(dim(filterStats))){
-		filterStats<-matrix(filterStats,ncol=1)
-	}
-	if(!is.null(filterNames)){
-		if(length(filterNames)==ncol(filterStats)) 
-			colnames(filterStats)<-filterNames
-		else if(length(filterNames)==1)
-			colnames(filterStats)<-paste(filterNames,1:ncol(filterStats),sep="")
-		else stop("filterNames must be of same length as number of columns of filterStats")
-	}
-	out <- new("SingleCellFilter",
-		  object,
-         filterStats=filterStats
-		 )
-	return(out)
-	
-})
-#' @rdname SingleCellFilter-class
-#' @export
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("SummarizedExperiment"),
-	definition = function(object,...){
-		SingleCellFilter(as(object,"SingleCellExperiment"),...)
-	})
-#' @rdname SingleCellFilter-class
-#' @export
-setMethod(
-	f = "SingleCellFilter",
-	signature = signature("matrix"),
-	definition = function(object,...){
-		SingleCellFilter(SingleCellExperiment(object),...)
-	})
-
 
 	
 #############################################################
@@ -122,13 +17,13 @@ setMethod(
 #' @title Class ClusterExperiment
 #'
 #' @description \code{ClusterExperiment} is a class that extends
-#' \code{SingleCellFilter} and is used to store the data
+#' \code{SingleCellExperiment} and is used to store the data
 #' and clustering information.
 #'
 #' @docType class
 #' @aliases ClusterExperiment ClusterExperiment-class ClusterExperiment
 #'
-#' @description In addition to the slots of the \code{SingleCellFilter}
+#' @description In addition to the slots of the \code{SingleCellExperiment}
 #' class, the \code{ClusterExperiment} object has the additional slots described
 #' in the Slots section.
 #'
@@ -203,7 +98,7 @@ setMethod(
 #'
 setClass(
   Class = "ClusterExperiment",
-  contains = "SingleCellFilter",
+  contains = "SingleCellExperiment",
   slots = list(
     transformation="function",
     clusterMatrix = "matrix",
@@ -399,9 +294,6 @@ setMethod(
     if(is.null(clusterInfo)) {
       clusterInfo<-rep(list(NULL),length=NCOL(clusters))
     }
-    # if(is.null(merge_info)) {
-    #   merge_info<-list()
-    # }
     if(length(clusterTypes)!=NCOL(clusters)) {
       stop("clusterTypes must be of length equal to number of clusters in
            `clusters`")

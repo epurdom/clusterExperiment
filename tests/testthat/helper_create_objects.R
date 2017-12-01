@@ -3,7 +3,7 @@
 library(clusterExperiment)
 # library(devtools)
 # load_all()
-data(simData)
+data(simData, envir = environment())
 if(ncol(simData) != 300) {
   stop("not current version of simData")
   #get all kinds of annoyances because using old version.
@@ -98,18 +98,14 @@ smSimSE <- seSimData[1:20,whSamp]
 ###Make reduce dimensions and filters
 #################################
 sce<-as(se,"SingleCellExperiment")
-scf<-as(sce,"SingleCellFilter")
-scfFull<-scf
-filterStats(scfFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scf)),ncol=2)
-reducedDim(scfFull,type="Red1")<-matrix(rnorm(2*ncol(scf)),ncol=2)
+sceFull<-sce
+clusterExperiment:::filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
+reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
 
 
-library(Rtsne)
 sceSimData<-as(seSimData,"SingleCellExperiment")
 sceSimDataDimRed<-sceSimData
 pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
-tsne_data <- Rtsne(pca_data$x[,1:50], pca = FALSE)
-reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data$Y)
-
-scfSimData<-as(sceSimData,"SingleCellFilter")
-filterStats(scfSimData,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(scfSimData)),ncol=2)
+tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
+reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
+clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)

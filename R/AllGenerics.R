@@ -1,3 +1,7 @@
+setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
+setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
+setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
 setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})

@@ -10,7 +10,7 @@ setMethod(
   {
 	wh<-.TypeIntoIndices(object,whClusters=whichClusters)
 	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-	wh<-head(wh,2) #limit it to 2
+	if(length(wh)>1) stop("only a single clustering can be shown'whichClusters'")
     return(plotDimReduce(object,whichClusters=wh,...))
 
   })

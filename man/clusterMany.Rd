@@ -4,19 +4,19 @@
 \name{clusterMany,matrix-method}
 \alias{clusterMany,matrix-method}
 \alias{clusterMany}
-\alias{clusterMany,SingleCellFilter-method}
+\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
-\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
 \S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReducedDims = NA,
   transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{SingleCellFilter}(x, ks = NA, clusterFunction,
-  reduceMethod = "none", nFilterDims = NA, nReducedDims = NA,
-  alphas = 0.1, findBestK = FALSE, sequential = FALSE,
+\S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
+  reduceMethod = "none", nFilterDims = defaultNDims(x, reduceMethod, type =
+  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
+  "reducedDims"), alphas = 0.1, findBestK = FALSE, sequential = FALSE,
   removeSil = FALSE, subsample = FALSE, silCutoff = 0,
   distFunction = NA, betas = 0.9, minSizes = 1, transFun = NULL,
   isCount = FALSE, verbose = FALSE, mainClusterArgs = NULL,
@@ -24,11 +24,11 @@
   run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
-  nFilterDims = NA, nReducedDims = NA, eraseOld = FALSE, ...)
+  nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
+  nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
+  eraseOld = FALSE, ...)
 
 \S4method{clusterMany}{SummarizedExperiment}(x, ...)
-
-\S4method{clusterMany}{SingleCellExperiment}(x, ...)
 
 \S4method{clusterMany}{data.frame}(x, ...)
 }
@@ -37,7 +37,7 @@
 following classes: matrix (with genes in rows), 
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
-\code{\link{SingleCellFilter}}, or \code{ClusterExperiment}.}
+or \code{ClusterExperiment}.}
 
 \item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
