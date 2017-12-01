@@ -21,7 +21,7 @@
   replaceCoClustering = FALSE, ...)
 
 \S4method{clusterSingle}{SingleCellExperiment,missing}(x,
-  reduceMethod = "none", nDims = defaultNDims(reduceMethod), ...)
+  reduceMethod = "none", nDims = defaultNDims(x, reduceMethod), ...)
 
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
