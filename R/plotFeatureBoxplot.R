@@ -66,7 +66,7 @@ definition = function(object, whichCluster,feature,...)
 setMethod(
 f = "plotFeatureBoxplot",
 signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-definition = function(object, whichCluster, feature,unassignedColor=NULL,missingColor=NULL,main=NULL,...)
+definition = function(object, whichCluster, feature,ignoreUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,...)
 {
 	#get data:
 	dat<-transformData(object)[feature,]
@@ -82,7 +82,7 @@ definition = function(object, whichCluster, feature,unassignedColor=NULL,missing
 	}
 	#add missing if exist to end.
 	whMissing<-which(as.numeric(clLegend[,"clusterIds"])<0)
-	if(length(whMissing)>0){
+	if(length(whMissing)>0 & !ignoreUnassigned){
 		if(length(whNotMissing)>0) orderedLegend<-rbind(orderedLegend,clLegend[whMissing,])
 		else orderedLegend<-clLegend[whMissing,]
 		if(!is.null(unassignedColor) & any(orderedLegend[,"clusterIds"]=="-1")) 
@@ -101,7 +101,7 @@ definition = function(object, whichCluster, feature,unassignedColor=NULL,missing
 	}
 	if(!is.null(dim(col))){
 		if(ncol(cl)>1) stop("only a single cluster may be used in whichCluster")
-			else cl<-cl[,1]
+		else cl<-cl[,1]
 	}
 	if(is.null(main)){
 		if(!is.null(rownames(object))) main<-paste("Gene expression of",rownames(object)[feature])
