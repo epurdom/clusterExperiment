@@ -189,6 +189,6 @@ test_that("plotFeatureBoxplot works",{
 		removeSil=c(TRUE,FALSE)))
 	expect_silent(clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
 	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
-	expect_error(plotFeatureBoxplot(cc),"argument "feature" is missing, with no default")
+	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
 })

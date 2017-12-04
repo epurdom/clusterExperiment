@@ -3,7 +3,6 @@
 
 #' @rdname reduceFunctions
 #' @param reducedDims a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
-#' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
 #' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
 #'   \code{maxDims} can also take values between (0,1) to indicate keeping the
 #'   number of dimensions necessary to account for that proportion of the

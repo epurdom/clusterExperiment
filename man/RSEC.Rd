@@ -7,6 +7,7 @@
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
 \alias{RSEC,SingleCellExperiment-method}
+\alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}

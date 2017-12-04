@@ -1,7 +1,7 @@
 #' @name plotFeatureBoxplot
 #' @title Plot boxplot of feature values by cluster
 #' @description Plot a boxplot of the (transformed) values for a particular gene, separated by cluster
-#' @aliases plotFeatureBoxplot
+#' @aliases plotFeatureBoxplot plotFeatureBoxplot,ClusterExperiment,character,ANY-method
 #' @rdname plotFeatureBoxplot
 #' @export
 setMethod(
@@ -42,8 +42,6 @@ definition = function(object, whichCluster,feature,...)
 
 
   
-#' @param xlab Label for x axis
-#' @param ylab Label for y axis
 #' @param feature identification of feature to plot, either row name or index
 #' @param unassignedColor If not NULL, should be character value giving the
 #'   color for unassigned (-2) samples (overrides \code{clusterLegend}) default.

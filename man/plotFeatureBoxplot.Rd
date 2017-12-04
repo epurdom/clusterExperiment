@@ -3,6 +3,7 @@
 \docType{methods}
 \name{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot}
+\alias{plotFeatureBoxplot,ClusterExperiment,character,ANY-method}
 \alias{plotFeatureBoxplot,ClusterExperiment,missing,ANY-method}
 \alias{plotFeatureBoxplot,ClusterExperiment,numeric,character-method}
 \alias{plotFeatureBoxplot,ClusterExperiment,numeric,numeric-method}
@@ -22,6 +23,10 @@
   main = NULL, ...)
 }
 \arguments{
+\item{object}{a ClusterExperiment object}
+
+\item{whichCluster}{which clusters to show on the plot}
+
 \item{feature}{identification of feature to plot, either row name or index}
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
@@ -33,10 +38,6 @@ color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{main}{title of plot. If NULL, given default title.}
-
-\item{xlab}{Label for x axis}
-
-\item{ylab}{Label for y axis}
 }
 \value{
 A plot is created. The output of boxplot is returned

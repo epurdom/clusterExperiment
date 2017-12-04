@@ -7,19 +7,9 @@ setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("make
 setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
 setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
-setGeneric(
-  name = "nodeMergeInfo",
-  def=function(x,...){
-    standardGeneric("nodeMergeInfo")
-  }
-)
+setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
 
-setGeneric(
-  name = "getMergeCorrespond",
-  def=function(x,...){
-    standardGeneric("getMergeCorrespond")
-  }
-)
+setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
 setGeneric(
   name = "mergeClusterIndex",
   def=function(x,...){
@@ -238,13 +228,7 @@ setGeneric(
         standardGeneric("plotBarplot")
     }
 )
-setGeneric(
-    name="plotDimReduce",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotDimReduce")
-    }
-)
+setGeneric("plotDimReduce",function(object, whichCluster,...){ standardGeneric("plotDimReduce")})
 
 setGeneric(
   name="plotHeatmap",

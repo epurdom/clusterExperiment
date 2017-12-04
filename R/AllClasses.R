@@ -92,6 +92,7 @@ setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
 #' @import SingleCellExperiment
+#' @import SummarizedExperiment
 #' @import methods
 #' @importFrom dendextend as.phylo.dendrogram
 #' @export

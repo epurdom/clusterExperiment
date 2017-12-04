@@ -10,6 +10,7 @@
 \alias{filterData,SummarizedExperiment-method}
 \alias{filterData}
 \alias{defaultNDims,SingleCellExperiment-method}
+\alias{defaultNDims}
 \alias{filterNames,SummarizedExperiment-method}
 \alias{filterNames}
 \alias{makeReducedDims,SingleCellExperiment-method}
@@ -92,8 +93,6 @@ the number of dimensions to keep for each method (if \code{maxDims} is of length
 the same number of dimensions will be used for each).}
 
 \item{filterStats}{The filterStats of filtering statistic to use to filter.}
-
-\item{object}{input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object}
 
 \item{...}{Values passed on the the 'SingleCellExperiment' method.}
 }

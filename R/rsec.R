@@ -19,7 +19,7 @@
 #' the clusterings from the steps of RSEC
 #' @inheritParams clusterMany,SingleCellExperiment-method
 #' @name RSEC
-#' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method
+#' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method
 #' @inheritParams mergeClusters,matrix-method
 #' @export
 #' @rdname RSEC

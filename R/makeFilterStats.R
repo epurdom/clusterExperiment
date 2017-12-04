@@ -18,7 +18,7 @@
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
 #' @rdname reduceFunctions
-#' @aliases makeFilterStats,SummarizedExperiment-method
+#' @aliases makeFilterStats makeFilterStats,SummarizedExperiment-method
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -188,6 +188,7 @@ setMethod( "filterData","SummarizedExperiment",
 #' @param reduceMethod character. A method or methods for reducing the size of the data, either by filtering the rows (genes) or by a dimensionality reduction method. Must either be 1) must match the name of a built-in method, in which case if it is not already existing in the object will be passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or 2) must match a stored filtering statistic or dimensionality reduction in the object
 #' @param typeToShow character (optional). If given, should be one of "filterStats" or "reducedDims" to indicate of the values in the reduceMethod vector, only show those corresponding to "filterStats" or "reducedDims" options. 
 #' @return \code{defaultNDims} returns a numeric vector giving the default dimensions the methods in \code{clusterExperiment} will use for reducing the size of the data. If \code{typeToShow} is missing, the resulting vector will be equal to the length of \code{reduceMethod}. Otherwise, it will be a vector with all the unique valid default values for the \code{typeToShow} (note that different dimensionality reduction methods can have different maximal dimensions, so the result may not be of length one in this case).
+#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
 setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,typeToShow){
 	nDims<-rep(NA,length(reduceMethod))
 	isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
