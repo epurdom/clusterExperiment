@@ -1,11 +1,8 @@
 #####Function to calculate the reducedDim matrices.
 
 
-#' @name makeReducedDims
-#' @title Calculate dimensionality reduction of data
-#' @description A Function for performing and storing common dimensionality reduction techniques
+#' @rdname reduceFunctions
 #' @param reducedDims a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
-#' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
 #' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
 #'   \code{maxDims} can also take values between (0,1) to indicate keeping the
 #'   number of dimensions necessary to account for that proportion of the
@@ -14,18 +11,17 @@
 #'   the same number of dimensions will be used for each). 
 #' @param ... Values passed on the the 'SingleCellExperiment' method.
 #' @inheritParams transformData
-#' @return a SingleCellExperiment object with the indicated diminsionality reduction methods stored in the \code{reduceDims} slot.
 #' @details The PCA method uses either \code{prcomp} from the \code{stats} package or  \code{svds} from the \code{RSpectra} package to perform PCA. Both are called on \code{t(assay(x))} with \code{center=TRUE} and \code{scale=TRUE} (i.e. the feature are centered and scaled), so that
 #'   it is performing PCA on the correlation matrix of the features. 
 #'
-#' @return A \code{\link{SingleCellExperiment}} containing the dimensionality reduction in the corresponding slots with names corresponding to the name given in \code{reducedDims}.
+#' @return \code{makeReducedDims} returns a \code{\link{SingleCellExperiment}} containing the calculated dimensionality reduction in the \code{reduceDims} with names corresponding to the name given in \code{reducedDims}.
 #' @examples
 #' data(simData)
 #' listBuiltInReducedDims()
 #' scf<-makeReducedDims(simData, reducedDims="PCA", maxDims=3)
 #' scf
 #' @export
-#' @aliases makeReducedDims,SingleCellExperiment-method
+#' @aliases makeReducedDims,SingleCellExperiment-method makeReducedDims
 #' @importFrom matrixStats rowVars
 setMethod(
   f = "makeReducedDims",
@@ -104,7 +100,7 @@ setMethod(
 
 }
 )
-#' @rdname makeReducedDims
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -114,7 +110,7 @@ setMethod(
 	makeReducedDims(SummarizedExperiment(object),...)
 }
 )
-#' @rdname makeReducedDims
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -124,7 +120,7 @@ setMethod(
 	makeReducedDims(as(object,"SingleCellExperiment"),...)
 }
 )
-#' @rdname makeReducedDims
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -138,7 +134,7 @@ setMethod(
 }
 )
 
-#' @rdname makeReducedDims
+#' @rdname reduceFunctions
 #' @export
 listBuiltInReducedDims<-function(){c("PCA")}
 

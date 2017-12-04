@@ -1,6 +1,6 @@
 context("Non-heatmap related plot functions")
 
-source("create_objects.R")
+
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
@@ -181,4 +181,15 @@ test_that("plotDimReduce works",{
 	
 	
 	
+})
+
+test_that("plotFeatureBoxplot works",{
+	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
+		clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+		removeSil=c(TRUE,FALSE)))
+	expect_silent(clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
+	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
+	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
+	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
+	expect_silent(plotFeatureBoxplot(cc,ignoreUnassigned=TRUE,feature=rownames(cc)[2]))
 })

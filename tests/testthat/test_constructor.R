@@ -1,5 +1,5 @@
 context("Constructor")
-source("create_objects.R")
+
 
 
 test_that("saved rsecFluidigm is still valid object", {
@@ -202,7 +202,7 @@ test_that("subsetting works as promised",{
   expect_equal(rowData(x4),rowData(se[3,])) 
   
   
-  expect_equal(filterStats(scf[1:10,]),head(filterStats(scf),10))
+  expect_equal(clusterExperiment:::filterStats(sceSimData[1:10,]),head(clusterExperiment:::filterStats(sceSimData),10))
 })
 
 test_that("check clusterLegend, remove unclustered cells work as promised", {

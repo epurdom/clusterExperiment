@@ -7,7 +7,7 @@
 #' the co-clustering matrix are lost.
 #' @export
 #' @param ...,i,j,drop Forwarded to the
-#'   \code{\link{SingleCellFilter}} method.
+#'   \code{\link{SingleCellExperiment}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -37,7 +37,7 @@ setMethod(
   signature = c("ClusterExperiment", "ANY", "numeric"),
   definition = function(x, i, j, ..., drop=TRUE) {
     # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    # out<-selectMethod("[",c("SingleCellFilter","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
 	###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
 	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
@@ -66,7 +66,7 @@ setMethod(
 	newOrder<-rank(x@orderSamples[j])
 	#
     out<- ClusterExperiment(
-object=as(selectMethod("[",c("SingleCellFilter","ANY","numeric"))(x,i,j),"SingleCellFilter"),#have to explicitly give the inherintence... not great.
+object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
                primaryIndex = x@primaryIndex,
@@ -89,8 +89,8 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-	cat("reducedDimNames:",if(length(reducedDimNames(object))>0) reducedDimNames(object) else "no reduced dims stored","\n")
-	cat("filterStats:",if(length(filterNames(object))>0) filterNames(object) else "no filtering stats stored","\n")
+	cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
+	cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
     cat("-----------\n")
     cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
     cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")

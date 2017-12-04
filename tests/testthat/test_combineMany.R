@@ -1,5 +1,5 @@
 context("combineMany")
-source("create_objects.R")
+
 
 test_that("`combineMany` works with matrix and ClusterExperiment objects", {
     expect_silent(clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",

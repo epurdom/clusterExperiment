@@ -1,5 +1,5 @@
 context("RSEC")
-source("create_objects.R")
+
 test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 	##these examples don't do dendrogram/merge because all -1 after combineMany
 	##only tests clusterMany, combineMany parts.

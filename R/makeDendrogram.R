@@ -84,7 +84,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
-                    nDims,ignoreUnassignedVar=TRUE,
+                    nDims=defaultNDims(x,reduceMethod),ignoreUnassignedVar=TRUE,
 					unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
@@ -106,16 +106,9 @@ setMethod(
 		#clustering information if that option chosen.
 		reduceMethodName<-reduceMethod
 		if(ignoreUnassignedVar){
-			reduceMethodName<-paste(reduceMethod,clusterLabels(x)[whCl],sep="_")
+			reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
 		}
-		if(missing(nDims)){
-		  	if(reduceMethod%in%listBuiltInFilterStats() || reduceMethodName %in% filterNames(x))
-				nDims<-min(500,NROW(x))
-			else if(reduceMethod %in% reducedDimNames(x))
-				nDims<-ncol(reducedDim(x,type=reduceMethod))
-			else if(reduceMethod%in%listBuiltInReducedDims()) nDims<-50
-			else nDims<-NA
-		}
+		#if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
 	    if(length(nDims) > 1) {
 	      stop("makeDendrogram only handles one choice of dimensions.")
 	    }
@@ -123,19 +116,20 @@ setMethod(
 	      warning("specifying nDims has no effect if reduceMethod==`none`")
 	    }
 		###Calculate filters/reduceMethod if needed...
-		if(!reduceMethod %in% reducedDimNames(x) & reduceMethod %in% listBuiltInReducedDims()){
+		if(!isReducedDims(x,reduceMethod) & isBuiltInReducedDims(reduceMethod)){
 				x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims)
 			}
-		else if(!reduceMethodName %in% filterNames(x) & reduceMethod %in% listBuiltInFilterStats()){
+		else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
 				x<-makeFilterStats(x,filterStat=reduceMethod,
 				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
 			}
+			
 		if(reduceMethod=="none") 
 			dat<-transformData(x)
-		else if(reduceMethod %in% reducedDimNames(x))
+		else if(isReducedDims(x,reduceMethod))
 			dat<-t(reducedDim(x,type=reduceMethod)[,1:nDims])
-		else if(reduceMethodName %in% filterNames(x))
-			dat<-transformData(filterData(x,type=reduceMethodName,percentile=nDims))
+		else if(isFilterStats(x,reduceMethodName))
+			dat<-transformData(filterData(x,filterStats=reduceMethodName,percentile=nDims))
 		else
 			stop("'x' does not contain the given 'reduceMethod' value nor does 'reduceMethod' value match any built-in filters or dimensionality reduction options.")
 	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)

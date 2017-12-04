@@ -4,8 +4,8 @@
 #'  this function will find clusters, based on a single specification of parameters.
 #' 
 #' @param x the data on which to run the clustering (features in rows), or a
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}}, \code{\link{SingleCellExperiment}}, 
-#'   \code{\link{SingleCellFilter}} or \code{\link{ClusterExperiment}}
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
+#'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
 #'   on which to run the clustering.
@@ -28,7 +28,8 @@
 #'   1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
 #'   3) stored filtering or reducedDim values in the object. 
 #' @param nDims integer An integer identifying how many dimensions to reduce to 
-#'   in the reduction specified by \code{reduceMethod}
+#'   in the reduction specified by \code{reduceMethod}. Defaults to output of
+#'   \code{\link{defaultNDims}}
 #' @param clusterLabel a string used to describe the clustering. By default it
 #'   is equal to "clusterSingle", to indicate that this clustering is the result
 #'   of a call to \code{clusterSingle}.
@@ -190,15 +191,7 @@ setMethod(
   }
 )
 
-#' @rdname clusterSingle
-#' @export
-setMethod(
-  f = "clusterSingle",
-  signature = signature(x = "SingleCellExperiment", diss="missing"),
-  definition = function(x, ...) {
-    return(clusterSingle(as(x,"SingleCellFilter"),  ...) )
-  }
-)
+
 
 
 #' @rdname clusterSingle
@@ -213,7 +206,7 @@ setMethod(
   definition = function(x, replaceCoClustering=FALSE,...) {
 	if(any(c("transFun","isCount") %in% names(list(...)))) 
 		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-    outval <- clusterSingle(as(x,"SingleCellFilter"),transFun=transformation(x),...)
+    outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
     retval<-addClusters(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
@@ -227,12 +220,12 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "SingleCellFilter",diss="missing"),
-  definition = function(x, reduceMethod="none", nDims=NA,...) {
+  signature = signature(x = "SingleCellExperiment",diss="missing"),
+  definition = function(x, reduceMethod="none", nDims=defaultNDims(x,reduceMethod),...) {
 	  inputArgs<-list(...)
-	isDimReduced<- length(reducedDims(x))>0 && reduceMethod %in% reducedDimNames(x)
-	isFilter<-length(filterStats(x))>0 && reduceMethod %in% filterNames(x)
-	if(isDimReduced & isFilter) stop("reduceMethod matches both reducedDimNames and filterNames")
+	isDimReduced<- anyValidReducedDims(x) && isReducedDims(x,reduceMethod)
+	isFilter<-anyValidFilterStats(x) && isFilterStats(x,reduceMethod)
+	if(isDimReduced & isFilter) stop("reduceMethod matches both reducedDimNames and filtering statistic")
 	if(reduceMethod=="none" || (!isDimReduced && !isFilter)){
 		#go to matrix version using assay(x) and will calculate reduceMethod etc.
 		outval<-clusterSingle(assay(x),reduceMethod=reduceMethod,nDims=nDims,...)
@@ -240,8 +233,8 @@ setMethod(
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 		#but now need the filter/reducedDim
 		if(reduceMethod!="none"){
-			if(reduceMethod %in% filterNames(outval)) filterStats(retval)<-filterStats(outval)
-			if(reduceMethod %in% reducedDimNames(outval)) reducedDims(retval)<-reducedDims(outval)
+			if(isFilterStats(outval,reduceMethod)) filterStats(retval)<-filterStats(outval)
+			if(isReducedDims(outval,reduceMethod)) reducedDims(retval)<-reducedDims(outval)
 		}
 	}
 	else{
@@ -251,14 +244,13 @@ setMethod(
 				inputArgs<-inputArgs[!names(inputArgs)%in%"transFun"]
 			if(any(names(inputArgs)%in%"isCount"))
 				inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
-			
-			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=reduceMethod))
-				outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,1:nDims])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
+			if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
+			outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,1:nDims])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
 		}
 		if(isFilter){
 			#Need to think how can pass options to filterData...
-			if(is.na(nDims)) nDims<-ncol(reducedDim(x,type=reduceMethod))
-			outval<-clusterSingle(filterData(x,type=reduceMethod,percentile=nDims),reduceMethod="none",...)			#do transform filtered data...
+			if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
+			outval<-clusterSingle(filterData(x,filterStats=reduceMethod,percentile=nDims),reduceMethod="none",...)			#do transform filtered data...
 		}
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -278,7 +270,7 @@ setMethod(
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL,
 	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
-      nDims=NA,clusterLabel="clusterSingle",checkDiss=TRUE) {
+      nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
@@ -331,7 +323,7 @@ setMethod(
 	  }
 	  else if(reduceMethod %in% listBuiltInFilterStats()){
 		  transObj<-makeFilterStats(x,filterStat=reduceMethod, transFun=transFun,isCount=isCount)
-		  x<-transformData(filterData(transObj,type=reduceMethod,percentile=nDims), transFun=transFun,isCount=isCount)
+		  x<-transformData(filterData(transObj,filterStats=reduceMethod,percentile=nDims), transFun=transFun,isCount=isCount)
 	  }
 	  else stop("invalid value for reduceMethod -- not in built-in filter or reducedDim method")
     }

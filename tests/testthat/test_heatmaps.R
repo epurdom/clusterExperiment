@@ -1,7 +1,7 @@
 ##put separate so that not too long without output...
 context("Heatmap functions")
 
-source("create_objects.R")
+
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 test_that("`setBreaks`", {
@@ -50,11 +50,11 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
     expect_silent(plotHeatmap(cc,whichClusters="none"))
     expect_warning(plotHeatmap(cc,whichClusters="workflow",plot=plotAll) ,"whichClusters value does not match any clusters") #there are no workflow for this one
 
-    plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
+    	expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE),"More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
     expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,plot=plotAll),"given whichClusters value does not match any clusters")
 	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
-    plotHeatmap(smSimCE,whichClusters="all",
-		alignSampleData=FALSE,overRideClusterLimit=TRUE)
+    expect_warning(plotHeatmap(smSimCE,whichClusters="all",
+		alignSampleData=FALSE,overRideClusterLimit=TRUE))
 
  
     #test sampleData

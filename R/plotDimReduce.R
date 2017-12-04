@@ -1,17 +1,17 @@
+#' @name plotDimReduce
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a clustering.
-#' @aliases plotDimReduce
-#' @rdname plotDimReduce
+#' @aliases plotDimReduce plotDimReduce,ClusterExperiment,character-method
 #' @export
 setMethod(
   f = "plotDimReduce",
-  signature = signature(object = "ClusterExperiment",whichClusters="character"),
-  definition = function(object, whichClusters,...)
+  signature = signature(object = "ClusterExperiment",whichCluster="character"),
+  definition = function(object, whichCluster,...)
   {
-	wh<-.TypeIntoIndices(object,whClusters=whichClusters)
-	if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-	wh<-head(wh,2) #limit it to 2
-    return(plotDimReduce(object,whichClusters=wh,...))
+	wh<-.TypeIntoIndices(object,whClusters=whichCluster)
+	if(length(wh)==0) stop("invalid choice of 'whichCluster'")
+	if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
+    return(plotDimReduce(object,whichCluster=wh,...))
 
   })
   
@@ -19,15 +19,15 @@ setMethod(
 #' @export
 setMethod(
   f = "plotDimReduce",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
+  signature = signature(object = "ClusterExperiment",whichCluster="missing"),
+  definition = function(object, whichCluster,...)
   {
-    plotDimReduce(object,whichClusters="primaryCluster",...)
+    plotDimReduce(object,whichCluster="primaryCluster",...)
 
   })
   
 #' @param object a ClusterExperiment object
-#' @param whichClusters which clusters to show on the plot
+#' @param whichCluster which clusters to show on the plot
 #' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in 
 #'   functions of \code{\link{listBuiltInReducedDims}()}
@@ -35,7 +35,7 @@ setMethod(
 #'   show. The first value goes on the x-axis and the second on the y-axis.
 #' @param clusterLegend matrix with three columns and colnames
 #'   'clusterIds','name', and 'color' that give the color and name of the
-#'   clusters in whichClusters. If NULL, pulls the information from
+#'   clusters in whichCluster. If NULL, pulls the information from
 #'   \code{object}.
 #' @param legend either logical, indicating whether to plot legend, or character
 #'   giving the location of the legend (passed to \code{\link{legend}})
@@ -68,16 +68,16 @@ setMethod(
 #' @export
 setMethod(
 f = "plotDimReduce",
-signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-definition = function(object, whichClusters,
+signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
+definition = function(object, whichCluster,
 	reducedDim="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
 	clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
 {
-	if(length(whichClusters)!=1) stop("whichClusters must identify a single clustering.")
-	cluster<-clusterMatrix(object)[,whichClusters]
+	if(length(whichCluster)!=1) stop("whichCluster must identify a single clustering.")
+	cluster<-clusterMatrix(object)[,whichCluster]
 	if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
 	if(is.null(clusterLegend)){
-		clusterLegend<-clusterLegend(object)[[whichClusters]]
+		clusterLegend<-clusterLegend(object)[[whichCluster]]
 	}
 	else{
 		if(is.null(dim(clusterLegend)) || ncol(clusterLegend)!=3 || !all(c("clusterIds","name","color") %in% colnames(clusterLegend))) stop("clusterLegend must be a matrix with three columns and names 'clusterIds','name', and 'color'")
@@ -143,7 +143,7 @@ definition = function(object, whichClusters,
 		  else stop("legend must either be logical or character value.")
 		}
 		if(doLegend){
-		 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichClusters]
+		 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
 			legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
 		}
 		

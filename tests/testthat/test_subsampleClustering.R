@@ -1,5 +1,5 @@
 context("subsampleClustering")
-source("create_objects.R")
+
 test_that("`subsampleClustering` works", {
     set.seed(4897)
     subAll <- subsampleClustering(x=mat,clusterFunction="pam", 

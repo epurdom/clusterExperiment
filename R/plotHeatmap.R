@@ -348,11 +348,9 @@ setMethod(
 	    	heatData<-assay(data)
 	    }
 		else{
-			possibleDimReduce<-c(reducedDimNames(data),listBuiltInReducedDims())
-			possibleFilter<-c(filterNames(data),listBuiltInFilterStats())
-			if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleDimReduce){
+			if(length(clusterFeaturesData)==1 && isPossibleReducedDims(data,clusterFeaturesData)){
 				##### Dimensionality reduction ####
-				if(!clusterFeaturesData %in% reducedDimNames(data)){
+				if(!isReducedDims(data,clusterFeaturesData)){
 					data<-makeReducedDims(data,reducedDims=clusterFeaturesData,maxDims=nFeatures)
 				}
 				heatData<-t(reducedDim(data,type=clusterFeaturesData))
@@ -361,13 +359,13 @@ setMethod(
 				#remaining options subset the data, 
 				#either by filtering or by user-specified genes
 				#These operations will filter the input data object to only the relevant genes
-				if(length(clusterFeaturesData)==1 && clusterFeaturesData %in% possibleFilter){
+				if(length(clusterFeaturesData)==1 && isPossibleFilterStats(data, clusterFeaturesData) ){
 					##### Filter ####
-					if(!clusterFeaturesData %in% filterNames(data)){
+					if(!isFilterStats(data,clusterFeaturesData)){
 						data<-makeFilterStats(data,filterStats=clusterFeaturesData)
 					}
 					if(is.na(nFeatures)) nFeatures<-min(NROW(data),500)
-					data<-filterData(data,type=clusterFeaturesData,percentile=nFeatures)
+					data<-filterData(data,filterStats=clusterFeaturesData,percentile=nFeatures)
 				}
 			    else{
 					### Other character values ####
