@@ -47,7 +47,7 @@ setMethod( "anyValidReducedDims","SummarizedExperiment",function(object){
 })		
 	
 
-# #' @rdname makeFilterStats
+# #' @rdname reduceFunctions
 # #' @aliases filterNames<-
 # #' @export
 # setReplaceMethod("filterNames", "SummarizedExperiment", function(object,value) {
@@ -64,7 +64,7 @@ setMethod( "anyValidReducedDims","SummarizedExperiment",function(object){
 # #' @param object A SummarizedExperiment object
 # #' @param type a type of filter to retrieve. Should match the filter name.
 # #' @aliases filterStats,SummarizedExperiment,character-method filterStats
-# #' @rdname makeFilterStats
+# #' @rdname reduceFunctions
 setMethod( "filterStats",c("SummarizedExperiment","character"),
 	function(object,type){
 		if(ncol(rowData(object))==0) stop("There are no filter statistics saved for this object")
@@ -76,13 +76,13 @@ setMethod( "filterStats",c("SummarizedExperiment","character"),
 		}
 		return(rowData(object)[,type,drop=FALSE] )
 	})
-# #' @rdname makeFilterStats
+# #' @rdname reduceFunctions
 setMethod( "filterStats",c("SummarizedExperiment","missing"),
 	function(object,type){
 		return(rowData(object)[,filterNames(object),drop=FALSE])
 	})
 
-# #' @rdname makeFilterStats
+# #' @rdname reduceFunctions
 # #' @details Note that the replacement functions never actually completely
 # #'   replace the slot \code{filterStats} unless the replacement value is NULL
 # #'   They update existing filters of the

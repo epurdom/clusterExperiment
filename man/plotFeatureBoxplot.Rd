@@ -21,10 +21,6 @@
   whichCluster, feature, unassignedColor = NULL, missingColor = NULL, ...)
 }
 \arguments{
-\item{object}{a ClusterExperiment object}
-
-\item{whichCluster}{which cluster to use to separate the values}
-
 \item{feature}{identification of feature to plot, either row name or index}
 
 \item{...}{arguments passed to \code{\link{boxplot}}}

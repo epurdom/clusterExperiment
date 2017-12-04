@@ -1,7 +1,7 @@
 #####Function to calculate the reducedDim matrices.
 
 
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @param reducedDims a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.
 #' @param object input to use for the data for dimensionality reduction. Can be matrix, SummarizedExperiment, SingleCellExperiment, or ClusterExperiment object
 #' @param maxDims Numeric vector of integer giving the number of PC dimensions to calculate. 
@@ -101,7 +101,7 @@ setMethod(
 
 }
 )
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -111,7 +111,7 @@ setMethod(
 	makeReducedDims(SummarizedExperiment(object),...)
 }
 )
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -121,7 +121,7 @@ setMethod(
 	makeReducedDims(as(object,"SingleCellExperiment"),...)
 }
 )
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 setMethod(
   f = "makeReducedDims",
@@ -135,7 +135,7 @@ setMethod(
 }
 )
 
-#' @rdname makeFilterStats
+#' @rdname reduceFunctions
 #' @export
 listBuiltInReducedDims<-function(){c("PCA")}
 

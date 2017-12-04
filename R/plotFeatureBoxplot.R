@@ -42,8 +42,6 @@ definition = function(object, whichCluster,feature,...)
 
 
   
-#' @param object a ClusterExperiment object
-#' @param whichCluster which cluster to use to separate the values
 #' @param xlab Label for x axis
 #' @param ylab Label for y axis
 #' @param feature identification of feature to plot, either row name or index
@@ -52,6 +50,7 @@ definition = function(object, whichCluster,feature,...)
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param ... arguments passed to \code{\link{boxplot}}
+#' @inheritParams plotDimReduce
 #' @seealso \code{\link{boxplot}}
 #' @rdname plotFeatureBoxplot
 #' @return A plot is created. The output of boxplot is returned 

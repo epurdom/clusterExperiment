@@ -1,7 +1,7 @@
 #' @name reduceFunctions
-#' @aliases reduceFunctions makeFilterStats
 #' @title Filtering statistics and Dimensionality Reduction Functions
 #' @description Functions for calculating and manipulating either filtering statistics, stored in rowData, or the dimensionality reduction results, stored in reducedDims.
+#' @aliases reduceFunctions makeFilterStats
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
