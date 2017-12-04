@@ -49,6 +49,7 @@ definition = function(object, whichCluster,feature,...)
 #'   color for unassigned (-2) samples (overrides \code{clusterLegend}) default.
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
+#' @param main title of plot. If NULL, given default title.
 #' @param ... arguments passed to \code{\link{boxplot}}
 #' @inheritParams plotDimReduce
 #' @seealso \code{\link{boxplot}}
@@ -61,13 +62,13 @@ definition = function(object, whichCluster,feature,...)
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
-#' clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl)[1]]
+#' clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned = FALSE)[1]]
 #' plotFeatureBoxplot(cl,feature=1)
 #' @export
 setMethod(
 f = "plotFeatureBoxplot",
 signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-definition = function(object, whichCluster, feature,unassignedColor=NULL,missingColor=NULL,...)
+definition = function(object, whichCluster, feature,unassignedColor=NULL,missingColor=NULL,main=NULL,...)
 {
 	#get data:
 	dat<-transformData(object)[feature,]
@@ -104,6 +105,10 @@ definition = function(object, whichCluster, feature,unassignedColor=NULL,missing
 		if(ncol(cl)>1) stop("only a single cluster may be used in whichCluster")
 			else cl<-cl[,1]
 	}
+	if(is.null(main)){
+		if(!is.null(rownames(object))) main<-paste("Gene expression of",rownames(object)[feature])
+		else paste("Gene expression of feature number",feature)
+	}
 	cl<-factor(cl,levels=if(uniqueNames) clLegend[,"name"] else clLegend[,"clusterIds"])
-	invisible(boxplot(dat ~ cl, names=clLegend[,"name"],col=clLegend[,"color"],...))
+	invisible(boxplot(dat ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...))
 	})

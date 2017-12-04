@@ -18,7 +18,8 @@
   whichCluster, feature, ...)
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, unassignedColor = NULL, missingColor = NULL, ...)
+  whichCluster, feature, unassignedColor = NULL, missingColor = NULL,
+  main = NULL, ...)
 }
 \arguments{
 \item{feature}{identification of feature to plot, either row name or index}
@@ -30,6 +31,8 @@ color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{missingColor}{If not NULL, should be character value giving the color
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
+
+\item{main}{title of plot. If NULL, given default title.}
 
 \item{xlab}{Label for x axis}
 
@@ -48,7 +51,7 @@ data(simData)
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
-clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl)[1]]
+clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned = FALSE)[1]]
 plotFeatureBoxplot(cl,feature=1)
 }
 \seealso{
