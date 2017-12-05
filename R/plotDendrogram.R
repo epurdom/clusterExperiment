@@ -258,10 +258,20 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 					for(ii in 2:nclusters){
 						currMat<-clusterLegendMat[[ii]]
 						currCl<-cl[,ii]
+						
+						#note that because subset to those samples that are not -1/-2 on
+						# cl[,1], may have entire clusters in other columns of cl that disappear but still in color matrix with no entry in cl
+						#reduce down the currMat to accomodate that
+						whExist<-which(as.numeric(currMat[,"clusterIds"]) %in% currCl)
+						currMat<-currMat[whExist,]
+						
 						whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
 						
 						if(length(whExistingColor)>0){
+							#-----------
 							#reassign the cluster id to the one matching existing color id.
+							# only should affect names, not color of newClusterLegendMat
+							#-----------
 							matchNew<-match(currMat[whExistingColor,"color"],newClusterLegendMat[,"color"])
 							oldId<-currMat[whExistingColor,"clusterIds"]
 							newId<-newClusterLegendMat[matchNew,"clusterIds"]
@@ -280,8 +290,12 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 							#remove from current color scheme
 							currMat<-currMat[-whExistingColor,,drop=FALSE]
 						}
+						
 						if(nrow(currMat)>0){
-							## increase remaing ids 
+							#-----------
+							# for remaining, add to newClusterLegendMat 
+							# with ids increased to be unique
+							#-----------
 							maxNew<-max(as.vector(newCl))
 							oldId2<-currMat[,"clusterIds"]
 							newId2<-seq(from=maxNew+1,by=1,length=length(oldId2)) #replace with this in legend
@@ -292,8 +306,12 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 							## change ids in currMat
 							currMat[,"clusterIds"]<-newId2
 							## test correct that no overlap in ids or names or colors:
-							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])) stop("Internal coding error: still overlap in cluster Ids")
-							if(any(currMat[,"color"] %in% newClusterLegendMat[,"color"])) stop("Internal coding error: still overlap in color")
+							if(any(currMat[,"clusterIds"] %in% newClusterLegendMat[,"clusterIds"])){
+								stop("Internal coding error: still overlap in cluster Ids")
+							}
+							if(any(currMat[,"color"] %in% newClusterLegendMat[,"color"])){
+								stop("Internal coding error: still overlap in color")
+							} 
 							
 							## add to new cluster color legend
 							newClusterLegendMat<-rbind(newClusterLegendMat,currMat)
