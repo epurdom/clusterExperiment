@@ -15,6 +15,8 @@ Changes:
 	- `dimReduce` argument now changed to `reduceMethod` across functions
 	- `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
 	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
+	- `addClusters` to `addClusterings` and `removeClusters` to `removeClusterings`.
+	- `clusterInfo()` to `clusteringInfo()`
 * `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
 * removed `transformation` as a required argument to `ClusterExperiment`. Now sets with default of `function(x){x}`.
 

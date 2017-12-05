@@ -8,15 +8,15 @@
 #'   or a matrix/vector of clusters.
 #' @param clusterLabel label(s) for the clusters being added.
 #' @inheritParams ClusterExperiment
-#' @details addClusters adds y to x, and is thus not symmetric in the two 
+#' @details addClusterings adds y to x, and is thus not symmetric in the two 
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
 #'   information, \code{coClustering}, and \code{orderSamples} are all kept from
 #'   the x object, even if y is a ClusterExperiment.
 #'
 #' @return A \code{\link{ClusterExperiment}} object with the added clusters.
 #'
-#' @rdname addClusters
-#' @aliases addClusters removeClusters
+#' @rdname addClusterings
+#' @aliases addClusterings removeClusterings
 #' @export
 #' @examples
 #' data(simData)
@@ -27,20 +27,20 @@
 #' cl2 <- clusterSingle(simData, subsample=FALSE,
 #' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
 #'
-#' addClusters(cl1, cl2)
+#' addClusterings(cl1, cl2)
 setMethod(
-  f = "addClusters",
+  f = "addClusterings",
   signature = signature("ClusterExperiment", "matrix"),
   definition = function(x, y, clusterTypes="User") {
     ccObj<-ClusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes,checkTransformAndAssay=FALSE)
-    addClusters(x,ccObj)
+    addClusterings(x,ccObj)
   }
 )
 
-#' @rdname addClusters
+#' @rdname addClusterings
 #' @export
 setMethod(
-  f = "addClusters",
+  f = "addClusterings",
   signature = signature("ClusterExperiment", "ClusterExperiment"),
   definition = function(x, y) {
     if(!all(dim(assay(y)) == dim(assay(x))) || !all(assay(y) == assay(x))) {
@@ -65,78 +65,78 @@ setMethod(
   }
 )
 
-#' @rdname addClusters
+#' @rdname addClusterings
 #' @export
 #' @param ... Passed to signature \code{ClusterExperiment,matrix}.
 setMethod(
-  f = "addClusters",
+  f = "addClusterings",
   signature = signature("ClusterExperiment", "numeric"),
   definition = function(x, y, clusterLabel=NULL,...) {
     mat<-matrix(y,ncol=1)
     if(!is.null(clusterLabel)) colnames(mat)<-clusterLabel
-    addClusters(x,mat,...)
+    addClusterings(x,mat,...)
   }
 )
 
-#' @rdname addClusters
+#' @rdname addClusterings
 #' @export
 setMethod(
-  f = "removeClusters",
+  f = "removeClusterings",
   signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichRemove,exactMatch=TRUE) {
-    if(exactMatch) wh<-which(clusterTypes(x) %in% whichRemove)
+  definition = function(x, whichClusters,exactMatch=TRUE) {
+    if(exactMatch) wh<-which(clusterTypes(x) %in% whichClusters)
     else{
-      sapply(whichRemove,grep, clusterTypes(x))
+      sapply(whichClusters,grep, clusterTypes(x))
     }
-    removeClusters(x,wh)
+    removeClusterings(x,wh)
   }
 )
 
-#' @param exactMatch logical. Whether \code{whichRemove} must exactly match a
-#'   value of \code{clusterTypes(x)}. Only relevant if whichRemove is character.
-#' @param whichRemove which clusters to remove. Can be numeric or character. If
+#' @param exactMatch logical. Whether \code{whichClusters} must exactly match a
+#'   value of \code{clusterTypes(x)}. Only relevant if whichClusters is character.
+#' @param whichClusters which clusters to remove. Can be numeric or character. If
 #'   numeric, must give indices of \code{clusterMatrix(x)} to remove. If
 #'   character, should match a \code{clusterTypes} of x.
 #'
-#'@details \code{removeClusters} removes the clusters given by
-#'  \code{whichRemove}. If all clusters are implied, then returns a
+#'@details \code{removeClusterings} removes the clusters given by
+#'  \code{whichClusters}. If all clusters are implied, then returns a
 #'  \code{\link{SingleCellExperiment}} object. If the
 #'  \code{primaryCluster} is one of the clusters removed, the
 #'  \code{primaryClusterIndex} is set to 1 and the dendrogram and cooccurance
 #'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
-#' @rdname addClusters
+#' @rdname addClusterings
 #' @export
 setMethod(
-  f = "removeClusters",
+  f = "removeClusterings",
   signature = signature("ClusterExperiment","numeric"),
-  definition = function(x, whichRemove) {
-    if(any(whichRemove>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
-    if(length(whichRemove)==NCOL(clusterMatrix(x))){
+  definition = function(x, whichClusters) {
+    if(any(whichClusters>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
+    if(length(whichClusters)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
       return(as(x,"SingleCellExperiment"))
     }
     
-    newClLabels<-clusterMatrix(x)[,-whichRemove,drop=FALSE]
-    newClusterInfo<-clusterInfo(x)[-whichRemove]
-    newClusterType<-clusterTypes(x)[-whichRemove]
-    newClusterColors<-clusterLegend(x)[-whichRemove]
+    newClLabels<-clusterMatrix(x)[,-whichClusters,drop=FALSE]
+    newClusterInfo<-clusteringInfo(x)[-whichClusters]
+    newClusterType<-clusterTypes(x)[-whichClusters]
+    newClusterColors<-clusterLegend(x)[-whichClusters]
     dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
     dend_ind<-dendroClusterIndex(x)
     dend_out<-x@dendro_outbranch
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
-    if(primaryClusterIndex(x) %in% whichRemove) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),(1:NCOL(clusterMatrix(x)))[-whichRemove])
-    if(dendroClusterIndex(x) %in% whichRemove){
+    if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
+    else pIndex<-match(primaryClusterIndex(x),(1:NCOL(clusterMatrix(x)))[-whichClusters])
+    if(dendroClusterIndex(x) %in% whichClusters){
         dend_cl<-NULL
         dend_samples<-NULL
         dend_ind<-NA_real_
         dend_out<-NA
     }
     else{
-      dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichRemove])
+      dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichClusters])
     }
     
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
@@ -159,7 +159,7 @@ setMethod(
 #' @details \code{removeUnclustered} removes all samples that are unclustered
 #'   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
 #'   be unclustered in other clusters found in \code{clusterMatrix(x)}).
-#' @rdname addClusters
+#' @rdname addClusterings
 #' @aliases removeUnclustered
 #' @export
 setMethod(

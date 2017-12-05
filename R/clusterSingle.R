@@ -207,7 +207,7 @@ setMethod(
 	if(any(c("transFun","isCount") %in% names(list(...)))) 
 		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
     outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
-    retval<-addClusters(x,outval)
+    retval<-addClusterings(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
 	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering

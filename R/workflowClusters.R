@@ -174,7 +174,7 @@ setMethod(
                 #removes all past iterations, not just current, except for current iteration that upstream of new one
                 whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
                 if(length(whRm)==nClusterings(object)) return(NULL)
-                else object<-removeClusters(object,whRm) 
+                else object<-removeClusterings(object,whRm) 
             }
             else{
                 #otherwise, only current downstream ones that exist get updated number

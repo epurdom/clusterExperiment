@@ -44,8 +44,8 @@
 \alias{coClustering<-}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
-\alias{clusterInfo,ClusterExperiment-method}
-\alias{clusterInfo}
+\alias{clusteringInfo,ClusterExperiment-method}
+\alias{clusteringInfo}
 \alias{clusterLabels,ClusterExperiment-method}
 \alias{clusterLabels}
 \alias{clusterLabels<-,ClusterExperiment,character-method}
@@ -110,7 +110,7 @@
 
 \S4method{clusterTypes}{ClusterExperiment}(x)
 
-\S4method{clusterInfo}{ClusterExperiment}(x)
+\S4method{clusteringInfo}{ClusterExperiment}(x)
 
 \S4method{clusterLabels}{ClusterExperiment}(x)
 
@@ -191,7 +191,7 @@ of the clusters used to create dendrogram
 
 \code{clusterTypes} returns/sets the clusterTypes slot.
 
-\code{clusterInfo} returns the clusterInfo slot.
+\code{clusteringInfo} returns the clusterInfo slot.
 
 \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 

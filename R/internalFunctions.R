@@ -22,10 +22,10 @@
 }
 
 .addNewResult<-function(newObj,oldObj){
-    retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
+    retval<-addClusterings(newObj,oldObj) #want most recent addition on top of clusterMatrix
     #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
-    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusters lost dendro_index")
-    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusters lost merge_index")
+    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusterings lost dendro_index")
+    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusterings lost merge_index")
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
       retval@dendro_samples<-oldObj@dendro_samples
       retval@dendro_clusters<-oldObj@dendro_clusters
@@ -55,7 +55,7 @@
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusterInfo(newObj),
+                            clusterInfo=clusteringInfo(newObj),
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,

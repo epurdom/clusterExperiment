@@ -19,8 +19,8 @@
   whichCluster, feature, ...)
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, unassignedColor = NULL, missingColor = NULL,
-  main = NULL, ...)
+  whichCluster, feature, ignoreUnassigned = FALSE, unassignedColor = NULL,
+  missingColor = NULL, main = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}

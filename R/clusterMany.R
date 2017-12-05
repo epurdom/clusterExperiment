@@ -644,7 +644,7 @@ setMethod(
 	        names(x) <- colnames(param)
 	        return(x)})
 	      clInfo <- mapply(pList, out, FUN=function(x, y){
-	        c(list(choicesParam=x), clusterInfo(y))
+	        c(list(choicesParam=x), clusteringInfo(y))
 	      }, SIMPLIFY=FALSE)
 		  outval <- ClusterExperiment(x, clusters=clMat,
 			                                    transformation=transFun,
