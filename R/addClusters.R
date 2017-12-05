@@ -84,26 +84,21 @@ setMethod(
   f = "removeClusterings",
   signature = signature("ClusterExperiment","character"),
   definition = function(x, whichClusters,exactMatch=TRUE) {
-    if(exactMatch) wh<-which(clusterTypes(x) %in% whichClusters)
-    else{
-      sapply(whichClusters,grep, clusterTypes(x))
-    }
-    removeClusterings(x,wh)
+	  whichClusters<-.TypeIntoIndices(x,whichClusters)
+	  removeClusterings(x,whichClusters)
   }
 )
 
-#' @param exactMatch logical. Whether \code{whichClusters} must exactly match a
-#'   value of \code{clusterTypes(x)}. Only relevant if whichClusters is character.
-#' @param whichClusters which clusters to remove. Can be numeric or character. If
-#'   numeric, must give indices of \code{clusterMatrix(x)} to remove. If
-#'   character, should match a \code{clusterTypes} of x.
+#' @inheritParams ClusterExperiment-methods
 #'
 #'@details \code{removeClusterings} removes the clusters given by
-#'  \code{whichClusters}. If all clusters are implied, then returns a
-#'  \code{\link{SingleCellExperiment}} object. If the
+#'  \code{whichClusters}. If the
 #'  \code{primaryCluster} is one of the clusters removed, the
-#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and cooccurance
+#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
 #'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
+#' @return \code{removeClusterings} returns a \code{ClusterExperiment} object, 
+#'  unless all clusters are removed, in which case it returns a
+#'  \code{\link{SingleCellExperiment}} object.
 #' @rdname addClusterings
 #' @export
 setMethod(
