@@ -234,8 +234,8 @@ setMethod(
         plotArg<-TRUE #the default
 		if("plot" %in% names(args) ){
             whPlot<-which(names(args)=="plot")
+			plotArg<-args[[whPlot]]
             if(length(args)>length(whPlot)){
-              plotArg<-args[[whPlot]]
               args<-args[-whPlot]
             }
             else{
@@ -247,8 +247,8 @@ setMethod(
 		colPaletteArg<-massivePalette #the default
         if("colPalette" %in% names(args) ){
             whPlot<-which(names(args)=="colPalette")
+            colPaletteArg<-args[[whPlot]]
             if(length(args)>length(whPlot)){
-              colPaletteArg<-args[[whPlot]]
               args<-args[-whPlot]
             }
             else{
@@ -325,7 +325,7 @@ setMethod(
 		#------------
        	#now plot them
 		#------------
-		do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", plot=plotArg,clusterLabels=clusterLabels,sampleData=sampleData), args))
+		if(plotArg) do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", clusterLabels=clusterLabels,sampleData=sampleData), args))
 
     }
     else{
