@@ -445,12 +445,12 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		# if(packageVersion("ape")<'4.1.0.6') cols<-getColFun(colorMat,phyloObj,cols)
 		# if(packageVersion("ape")<'4.9.0.0' & packageVersion("ape")>='4.1.0.6') warning("If you have an ape package version between 4.1.0.6 and 5.0 installed, then the plotting of the clusters next to the dendrogram may not correctly use the colors in clusterLegend(object) nor have accurate legends." )
 		colInput<-function(n){cols}
-		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = treeWidth*dataPct/4, border = NA, lwd = 3,legend = legend, funcol = colInput)
+		width<-treeWidth*dataPct/nclusters
+		ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
 		
 		if(nclusters>1 & !is.null(colnames(cl))){
-			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=treeWidth*dataPct/4,length=ncol(cl))
-			diffX<-unique(diff(xloc))
-			xloc<-xloc+diffX/2
+			xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)
+			xloc<-xloc+width/2
 			ypos<-par("usr")[4]-0.025*diff(par("usr")[3:4])	
 			adj<-c(0,0)		
 			if("cex" %in% names(list(...))) labcex<-list(...)[["cex"]]
