@@ -446,9 +446,9 @@ This makes sense only for counts.")
     clusterLabels(newObj) <- clusterLabel
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
+	if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
+    #add merge slots manually here, because need joint object to dendro_index stuff, otherwise get validity errors
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
     retval@merge_method<-outlist$mergeMethod

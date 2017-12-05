@@ -34,13 +34,13 @@
     }
 	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
       retval@merge_index<-oldObj@merge_index+nClusterings(newObj) #update index to where merge from
-      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
       retval@merge_cutoff<-oldObj@merge_cutoff
       retval@merge_method<-oldObj@merge_method
     }
     if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
       retval@merge_nodeProp<-oldObj@merge_nodeProp
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
     }
     #put back orderSamples, coClustering
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
