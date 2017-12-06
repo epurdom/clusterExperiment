@@ -46,13 +46,16 @@ setMethod(
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param plotUnassigned logical as to whether unassigned (either -1 or -2
-#'   cluster values) should be plotted. If TRUE, and the color for -1 is set to
-#'   "white", will be coerced to "lightgrey". To change this, set a different
-#'   (non-white) color in \code{unassignedColor} argument.
+#'   cluster values) should be plotted. 
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
+#' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
+#'   "white", will be coerced to "lightgrey" regardless of user input to 
+#'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE}, 
+#'   the samples with -1/-2 will not be plotted, nor will the category show up in the 
+#'   legend.
 #' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 #' @rdname plotReducedDims
 #' @return A plot is created. Nothing is returned. 

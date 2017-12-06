@@ -48,6 +48,7 @@ definition = function(object, whichCluster,feature,...)
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param main title of plot. If NULL, given default title.
+#' @param plotUnassigned whether to plot the unassigned samples as a cluster (either -1 or -2)
 #' @param ... arguments passed to \code{\link{boxplot}}
 #' @inheritParams plotReducedDims
 #' @seealso \code{\link{boxplot}}
@@ -60,13 +61,13 @@ definition = function(object, whichCluster,feature,...)
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
-#' clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned = FALSE)[1]]
+#' clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,plotUnassigned = FALSE)[1]]
 #' plotFeatureBoxplot(cl,feature=1)
 #' @export
 setMethod(
 f = "plotFeatureBoxplot",
 signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-definition = function(object, whichCluster, feature,ignoreUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,assay=NULL,...)
+definition = function(object, whichCluster, feature,plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,assay=NULL,...)
 {
 	#get data:
 	if(is.null(assay)) dat<-transformData(object)[feature,]
@@ -88,7 +89,7 @@ definition = function(object, whichCluster, feature,ignoreUnassigned=FALSE,unass
 	}
 	#add missing if exist to end.
 	whMissing<-which(as.numeric(clLegend[,"clusterIds"])<0)
-	if(length(whMissing)>0 & !ignoreUnassigned){
+	if(length(whMissing)>0 & !plotUnassigned){
 		if(length(whNotMissing)>0) orderedLegend<-rbind(orderedLegend,clLegend[whMissing,])
 		else orderedLegend<-clLegend[whMissing,]
 		if(!is.null(unassignedColor) & any(orderedLegend[,"clusterIds"]=="-1")) 

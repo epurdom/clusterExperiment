@@ -133,29 +133,29 @@ test_that("plotting helpers", {
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    plotBarplot(object=clusterMatrix(ceSim)[,1:2])
+    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1:2]))
     #test vector version
-    plotBarplot(object=clusterMatrix(ceSim)[,1])
+    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1]))
     #check error
     expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
     
     #test CE version with no defaults
-    plotBarplot(ceSim)
+    expect_silent(plotBarplot(ceSim))
     #test CE version whichClusters arguments
-    plotBarplot(ceSim,whichClusters="workflow")
-    plotBarplot(ceSim,whichClusters="primaryCluster")
-    plotBarplot(ceSim)
+    expect_silent(plotBarplot(ceSim,whichClusters="workflow"))
+    expect_silent(plotBarplot(ceSim,whichClusters="primaryCluster"))
+    expect_silent(plotBarplot(ceSim))
 
     
     test<-ceSim
-    clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])]
+    expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])])
     #test character matrix version
-    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2])
+    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2]))
     #test character vector version
-    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1])
+    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1]))
     #test labels argument
-    plotBarplot(test,whichClusters=1:2,labels="id")
-    plotBarplot(test,whichClusters=1:2,labels="name")
+    expect_silent(plotBarplot(test,whichClusters=1:2,labels="id"))
+    expect_silent(plotBarplot(test,whichClusters=1:2,labels="name"))
     #plotBarplot(ceSim,whichClusters="primaryCluster")
     
 })

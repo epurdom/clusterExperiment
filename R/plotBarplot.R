@@ -148,27 +148,44 @@ setMethod(
 setMethod(
   f = "plotBarplot",
   signature = signature(object = "matrix",whichClusters="missing"),
-  definition = function(object, whichClusters, xNames=NULL, legNames=NULL, legend=ifelse(ncol(object)==2,TRUE,FALSE), xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=bigPalette,...){
+  definition = function(object, whichClusters, xNames=NULL, legNames=NULL, legend=ifelse(ncol(object)==2,TRUE,FALSE), xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=NULL,...){
 	if(ncol(object)>2) stop("if 'object' a matrix, must contain at most 2 clusters (i.e. 2 columns)")
 	clLeg<-object[,1]
 	if(is.null(xlab)) xlab<-colnames(object)[1]
+	if(ncol(object)==2){
+		clX<-object[,2]
+		x<-t(table(clLeg,clX))
+		nX<-nrow(x)
+		xnames<-rownames(x)
+	}
+	else{
+		x<-table(clLeg)
+		nX<-length(x)
+		xnames<-names(x)
+	}
+	#-----------
+	###Check colors given:
+	#-----------
+	if(is.null(colPalette)){
+		colPalette<-bigPalette[1:nX]
+		names(colPalette)<-xnames
+	}
+    if(is.null(names(colPalette)) & length(colPalette)>1) stop("must give names to colPalette") 
+	if(length(colPalette)==1){
+		if(ncol(object)==1){
+			colPalette<-rep(colPalette,length=nX)
+			names(colPalette)<-xnames
+		}
+		else stop("cannot give a single color to colPalette if comparing 2 clusters.")
+	} 
+	if(!all(xnames %in% names(colPalette))) stop("invalid names for colPalette")
+	colPalette<-colPalette[rownames(x)]
+
     if(ncol(object)==2){
 		pair<-TRUE
-		clX<-object[,2]
-	    x<-t(table(clLeg,clX)) #references is on the columns, alt on rows
-		if(is.null(legend.title)) legend.title<-colnames(object)[2]	
 		
-	   	
-	    if(is.null(names(colPalette)) & length(colPalette)>1) stop("must give names to colPalette") 
-		if(length(colPalette)==1){
-			if(ncol(object)==1){
-				colPalette<-rep(colPalette,length=nrow(object))
-				names(colPalette)<-rownames(x)
-			}
-			else stop("cannot give a single color to colPalette if comparing 2 clusters.")
-		} 
-		if(!all(rownames(x) %in% names(colPalette))) stop("invalid names for colPalette")
-		colPalette<-colPalette[rownames(x)]
+	     #references is on the columns, alt on rows
+		if(is.null(legend.title)) legend.title<-colnames(object)[2]	
 		###cols of x go along the x-axis ("Ref")
 		###rows of x divide up the cols of x ("Alt")
 		###Note: colPalette is of length of rows of x ("Alt")
@@ -221,9 +238,6 @@ setMethod(
 	    }
 	}
 	else{
-		x<-table(clLeg)
-	    if(is.null(names(colPalette))) colPalette<-rep(colPalette,length=length(x))   
-		else colPalette<-colPalette[names(x)]
 	    if(is.null(legNames)){
 			if("-1" %in% names(x)){
 				names(x)[names(x)=="-1"]<-"Not Assigned"
