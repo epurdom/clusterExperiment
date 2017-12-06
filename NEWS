@@ -14,6 +14,7 @@ Changes:
 	- `nVarDims` now changed to `nFilterDims` in clusterMany-related functions
 	- `dimReduce` argument now changed to `reduceMethod` across functions
 	- `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
+	- `plotDimReduce` to `plotReducedDims`
 	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
 	- `addClusters` to `addClusterings` and `removeClusters` to `removeClusterings`.
 	- `clusterInfo()` to `clusteringInfo()`

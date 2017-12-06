@@ -228,7 +228,7 @@ setGeneric(
         standardGeneric("plotBarplot")
     }
 )
-setGeneric("plotDimReduce",function(object, whichCluster,...){ standardGeneric("plotDimReduce")})
+setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
   name="plotHeatmap",

@@ -160,24 +160,24 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     
 })
 
-test_that("plotDimReduce works",{
+test_that("plotReducedDims works",{
 	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 	removeSil=c(TRUE,FALSE)))
-	expect_silent(plotDimReduce(cl,legend="bottomright"))
-	expect_silent(plotDimReduce(cl,legend=TRUE))
+	expect_silent(plotReducedDims(cl,legend="bottomright"))
+	expect_silent(plotReducedDims(cl,legend=TRUE))
 	expect_silent(clusterLegend(cl)[["nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
-	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
 	#test on object that doesn't have saved:
-	expect_silent(clD<-plotDimReduce(ceSimData,reducedDim="PCA"))
+	expect_silent(clD<-plotReducedDims(ceSimData,reducedDim="PCA"))
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 	
 	#higher dims.
-	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
-	expect_error(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
+	expect_error(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
-	expect_silent(plotDimReduce(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
 	
 	
 	
