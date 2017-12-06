@@ -263,7 +263,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 						# cl[,1], may have entire clusters in other columns of cl that disappear but still in color matrix with no entry in cl
 						#reduce down the currMat to accomodate that
 						whExist<-which(as.numeric(currMat[,"clusterIds"]) %in% currCl)
-						currMat<-currMat[whExist,]
+						currMat<-currMat[whExist, ,drop=FALSE]
 						
 						whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
 						

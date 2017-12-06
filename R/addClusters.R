@@ -83,9 +83,9 @@ setMethod(
 setMethod(
   f = "removeClusterings",
   signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichClusters,exactMatch=TRUE) {
+  definition = function(x, whichClusters,...) {
 	  whichClusters<-.TypeIntoIndices(x,whichClusters)
-	  removeClusterings(x,whichClusters)
+	  removeClusterings(x,whichClusters,...)
   }
 )
 
@@ -162,5 +162,37 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     return(x[,primaryCluster(x) >= 0])
+  }
+)
+
+
+#' @details \code{unassignSamples} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned) 
+#' @rdname addClusterings
+#' @aliases unassignSamples
+#' @export
+setMethod(
+  f = "unassignSamples",
+  signature = c("ClusterExperiment","numeric"),
+  definition = function(x,whichClusters,clustersToRemove) {
+	  if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
+	  cl<-clusterMatrix(x)[,whichClusters]
+	  if(is.numeric(clustersToRemove)){
+		  cl[cl %in% clustersToRemove]<- -1
+	  }
+	  else if(is.character(clustersToRemove)){
+	  	
+	  }
+	return(x[,primaryCluster(x) >= 0])
+	
+  }
+)
+#' @rdname addClusterings
+#' @export
+setMethod(
+  f = "unassignSamples",
+  signature = signature("ClusterExperiment","character"),
+  definition = function(x, whichClusters,...) {
+	  whichClusters<-.TypeIntoIndices(x,whichClusters)
+	  removeClusters(x,whichClusters,...)
   }
 )
