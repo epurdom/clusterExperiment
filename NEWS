@@ -8,12 +8,13 @@ Changes:
 	- New function `filterData` will return a `SingleCellFilter` object with the data filtered based on a filtering criteria
 	- New functions `listBuiltInReducedDims` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
 	- Filtering on arbitrary statistics and user-defined dimensionality reduction can used in `clusterMany` and related functions, so long as they are saved in the appropriate slots of the object.
-* Changed the following functions/arguments to be consistent with SingleCellExperiment naming conventions.
+* Changed the following functions/arguments to be consistent with SingleCellExperiment naming conventions and improve distinction between terminology of cluster and clustering.
 	- Capitalized constructor functions. Now: `ClusterFunction()` and `ClusterExperiment()` 
 	- `nPCADims` now changed to `nReducedDims` in clusterMany-related functions
 	- `nVarDims` now changed to `nFilterDims` in clusterMany-related functions
 	- `dimReduce` argument now changed to `reduceMethod` across functions
 	- `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
+	- `plotDimReduce` to `plotReducedDims`
 	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
 	- `addClusters` to `addClusterings` and `removeClusters` to `removeClusterings`.
 	- `clusterInfo()` to `clusteringInfo()`

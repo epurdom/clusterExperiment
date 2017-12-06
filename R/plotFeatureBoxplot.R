@@ -49,7 +49,7 @@ definition = function(object, whichCluster,feature,...)
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param main title of plot. If NULL, given default title.
 #' @param ... arguments passed to \code{\link{boxplot}}
-#' @inheritParams plotDimReduce
+#' @inheritParams plotReducedDims
 #' @seealso \code{\link{boxplot}}
 #' @rdname plotFeatureBoxplot
 #' @return A plot is created. The output of boxplot is returned 
@@ -66,10 +66,16 @@ definition = function(object, whichCluster,feature,...)
 setMethod(
 f = "plotFeatureBoxplot",
 signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-definition = function(object, whichCluster, feature,ignoreUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,...)
+definition = function(object, whichCluster, feature,ignoreUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,assay=NULL,...)
 {
 	#get data:
-	dat<-transformData(object)[feature,]
+	if(is.null(assay)) dat<-transformData(object)[feature,]
+	else{
+		if(!is.matrix(assay)) assay<-assays(object)[[assay]]
+		if(!all(dim(assay)==dim(object))) stop("input assay does not match the dimensions of object")
+		if(is.null(assay)) stop("assay value does not match an assay in object")
+		else dat<-assay[feature,]
+	}
 	
 	clLegend<-clusterLegend(object)[[whichCluster]]
 	uniqueNames<-length(unique(clLegend[,"name"]))==nrow(clLegend)
