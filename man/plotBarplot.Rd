@@ -25,7 +25,7 @@
 \S4method{plotBarplot}{matrix,missing}(object, whichClusters, xNames = NULL,
   legNames = NULL, legend = ifelse(ncol(object) == 2, TRUE, FALSE),
   xlab = NULL, legend.title = NULL, unassignedColor = "white",
-  missingColor = "grey", colPalette = bigPalette, ...)
+  missingColor = "grey", colPalette = NULL, ...)
 }
 \arguments{
 \item{object}{A matrix of with each column corresponding to a clustering

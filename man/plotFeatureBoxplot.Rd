@@ -19,7 +19,7 @@
   whichCluster, feature, ...)
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, ignoreUnassigned = FALSE, unassignedColor = NULL,
+  whichCluster, feature, plotUnassigned = FALSE, unassignedColor = NULL,
   missingColor = NULL, main = NULL, assay = NULL, ...)
 }
 \arguments{
@@ -30,6 +30,8 @@
 \item{feature}{identification of feature to plot, either row name or index}
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
+
+\item{plotUnassigned}{whether to plot the unassigned samples as a cluster (either -1 or -2)}
 
 \item{unassignedColor}{If not NULL, should be character value giving the
 color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
@@ -52,7 +54,7 @@ data(simData)
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
-clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned = FALSE)[1]]
+clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,plotUnassigned = FALSE)[1]]
 plotFeatureBoxplot(cl,feature=1)
 }
 \seealso{
