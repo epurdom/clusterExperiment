@@ -319,40 +319,18 @@ setGeneric(
     }
 )
 
-setGeneric(
-  name = "addClusters",
-  def = function(x, y,...) {
-    standardGeneric("addClusters")
-  }
-)
 
-setGeneric(
-  name = "removeClusters",
-  def = function(x, whichRemove,exactMatch=TRUE) {
-    standardGeneric("removeClusters")
-  }
-)
-
-setGeneric(
-  name = "removeUnclustered",
-  def = function(x) {
-    standardGeneric("removeUnclustered")
-  }
-)
-
-setGeneric(
-  name = "clusterInfo",
-  def = function(x) {
-    standardGeneric("clusterInfo")
-  }
-)
-
-setGeneric(
-  name = "combineMany",
-  def = function(x, whichClusters, ...) {
-    standardGeneric("combineMany")
-  }
-)
+setGeneric( name = "unassignSamples", def = function(x, whichClusters,...) {
+    standardGeneric("unassignSamples")})
+setGeneric( name = "addClusterings", def = function(x, y,...) {
+    standardGeneric("addClusterings")})
+setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
+    standardGeneric("removeClusterings")})
+setGeneric( name = "removeUnclustered", def = function(x) {
+	standardGeneric("removeUnclustered")})
+setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
+setGeneric( name = "combineMany", def = function(x, whichClusters, ...) {
+    standardGeneric("combineMany")})
 
 setGeneric(
   name = "clusterMatrixNamed",

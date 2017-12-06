@@ -20,11 +20,11 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
 
     #test proper error if only single cluster:
     fakeCluster<-rep(1,nSamples(cc))
-    expect_silent(cc1<-addClusters(cc,fakeCluster))
+    expect_silent(cc1<-addClusterings(cc,fakeCluster))
     expect_silent(primaryClusterIndex(cc1)<-3)
     expect_error(makeDendrogram(cc1),"Only 1 cluster given")
     fakeCluster[c(1:2)]<- -1
-    expect_silent(cc1<-addClusters(cc,fakeCluster))
+    expect_silent(cc1<-addClusterings(cc,fakeCluster))
     expect_silent(primaryClusterIndex(cc1)<-3)
     expect_error(makeDendrogram(cc1),"Only 1 cluster given")
 	
@@ -50,8 +50,8 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     #Check remove clusters when have dendrogram
 	#--------
 	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none"),"Merging will be done on ' clusterSingle ', with clustering index 1")
-    expect_silent(removeClusters(clustMerged,whichRemove="mergeClusters")) #remove merged, keep one with dendrogram
-    expect_silent(removeClusters(clustMerged,whichRemove=2)) #remove one with dendrogram
+    expect_silent(removeClusterings(clustMerged,whichClusters="mergeClusters")) #remove merged, keep one with dendrogram
+    expect_silent(removeClusterings(clustMerged,whichClusters=2)) #remove one with dendrogram
   
     #--------
 	#test subsetting works if have dendrogram attached:
@@ -140,7 +140,7 @@ test_that("plotDendrogram works with outgroup", {
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
   cl[1]<- -2
-  dend2<-addClusters(ccSE,cl,clusterLabel="newCluster")
+  dend2<-addClusterings(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend2)<-3
   dend2 <- makeDendrogram(dend2)
   plotDendrogram(dend2,leafType="clusters",plotType="colorblock")
@@ -150,7 +150,7 @@ test_that("plotDendrogram works with outgroup", {
   ## make only single sample -2
   cl<-clusterMatrix(ccSE)[,1]
   cl[1]<-1
-  dend3<-addClusters(ccSE,cl,clusterLabel="newCluster")
+  dend3<-addClusterings(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend3)<-3
   dend3 <- makeDendrogram(dend3)
   plotDendrogram(dend3,leafType="clusters",plotType="colorblock")
@@ -163,7 +163,7 @@ test_that("plotDendrogram works with outgroup", {
   # cl<-rep(-1,length=nSamples(ccSE))
   # cl[1]<-3
   # cl[2]<-1
-  # dend4<-addClusters(ccSE,cl,clusterLabel="missingCluster")
+  # dend4<-addClusterings(ccSE,cl,clusterLabel="missingCluster")
   # primaryClusterIndex(dend4)<-3
   # dend4 <- makeDendrogram(dend4)
   # plotDendrogram(dend4,leafType="clusters",plotType="colorblock")
@@ -174,7 +174,7 @@ test_that("plotDendrogram works with outgroup", {
   ## in case this changes, this test will catch that need to fix plotDendrogram, which makes assumption that not possible.
   cl<-rep(-1,length=nSamples(ccSE))
   cl[1]<-3
-  dend5<-addClusters(ccSE,cl,clusterLabel="missingCluster")
+  dend5<-addClusterings(ccSE,cl,clusterLabel="missingCluster")
   primaryClusterIndex(dend5)<-3
   expect_error(makeDendrogram(dend5,reduceMethod="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")

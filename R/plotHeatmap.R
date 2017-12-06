@@ -893,7 +893,7 @@ setMethod(
     fakeCE<-ClusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
-                              clusterInfo=clusterInfo(data),
+                              clusterInfo=clusteringInfo(data),
                               clusterTypes=clusterTypes(data),
                               orderSamples=orderSamples(data),
                               dendro_samples=data@dendro_samples,

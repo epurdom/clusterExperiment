@@ -61,7 +61,7 @@ setMethod(f = "getClusterManyParams",
 		}
 		
 	}
-	infoList<-clusterInfo(x)[wh]
+	infoList<-clusteringInfo(x)[wh]
 	params<-do.call("rbind",lapply(infoList,.subset2,"choicesParam"))
 	if(simplify){
 		# notAllNA<-which(apply(params,2,function(x){!all(is.na(x))}))
@@ -79,7 +79,7 @@ setMethod(f = "getClusterManyParams",
 ###Old code:
 
 #
-# labs<-clusterInfo(x)[wh]
+# labs<-clusteringInfo(x)[wh]
 # listByClusters<-strsplit(labs,",")
 #
 # listByParams<-sapply(1:length(listByClusters[[1]]),function(kk){

@@ -63,7 +63,7 @@ test_that("`combineMany` works when multiple runs of workflow", {
   expect_equal(shared6$clustering, primaryCluster(shared5))
 
 
-  expect_silent(clustNothing3 <- addClusters(clustNothing2, primaryCluster(shared5)))
+  expect_silent(clustNothing3 <- addClusterings(clustNothing2, primaryCluster(shared5)))
   expect_silent(shared7 <- combineMany(clustNothing3, "all",proportion=1))
   expect_silent(shared8 <- combineMany(clustNothing3, "workflow",proportion=1))
 })

@@ -370,11 +370,11 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterInfo} returns the clusterInfo slot.
-#' @aliases clusterInfo
+#' @return \code{clusteringInfo} returns the clusterInfo slot.
+#' @aliases clusteringInfo
 #' @export
 setMethod(
-  f = "clusterInfo",
+  f = "clusteringInfo",
   signature = "ClusterExperiment",
   definition = function(x) {
     out<-x@clusterInfo
@@ -518,7 +518,7 @@ setMethod( f = "tableClusters",
 #     if(type=="clusterMany"){
 #       #recreate the paramMatrix return value
 #       paramMatrix<-do.call("rbind",lapply(wwCC,function(ii){
-#         data.frame(index=ii,clusterInfo(x)[[ii]]["choicesParam"])
+#         data.frame(index=ii,clusteringInfo(x)[[ii]]["choicesParam"])
 #       }))
 #
 #     }
@@ -526,7 +526,7 @@ setMethod( f = "tableClusters",
 #
 #     }
 #     else{
-#       return(clusterInfo(x)[whCC])
+#       return(clusteringInfo(x)[whCC])
 #     }
 #   }
 # )

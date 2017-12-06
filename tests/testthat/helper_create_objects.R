@@ -64,7 +64,7 @@ seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,me
 test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                          clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
 						
-test<-addClusters(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
+test<-addClusterings(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
 clMatNew<-apply(clusterMatrix(test),2,function(x){
     wh<-sample(1:nSamples(test),size=10)
     x[wh]<- -1

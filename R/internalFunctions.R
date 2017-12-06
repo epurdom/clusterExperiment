@@ -22,10 +22,10 @@
 }
 
 .addNewResult<-function(newObj,oldObj){
-    retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
+    retval<-addClusterings(newObj,oldObj) #want most recent addition on top of clusterMatrix
     #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
-    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusters lost dendro_index")
-    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusters lost merge_index")
+    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusterings lost dendro_index")
+    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusterings lost merge_index")
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
       retval@dendro_samples<-oldObj@dendro_samples
       retval@dendro_clusters<-oldObj@dendro_clusters
@@ -34,13 +34,13 @@
     }
 	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
       retval@merge_index<-oldObj@merge_index+nClusterings(newObj) #update index to where merge from
-      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
       retval@merge_cutoff<-oldObj@merge_cutoff
       retval@merge_method<-oldObj@merge_method
     }
     if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
       retval@merge_nodeProp<-oldObj@merge_nodeProp
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
     }
     #put back orderSamples, coClustering
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
@@ -55,7 +55,7 @@
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusterInfo(newObj),
+                            clusterInfo=clusteringInfo(newObj),
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
