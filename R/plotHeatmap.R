@@ -852,7 +852,7 @@ setMethod(
 	      #############
 	      # add labels to clusters at top of heatmap
 	      #############
-		  if(!is.null(annCol)){
+		  if(!is.null(dim(annCol))){
 	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
 	        newNameList<-strsplit(newName,"\\.")[[1]]
 	        oldIndex<-as.numeric(newNameList[[3]])-1
