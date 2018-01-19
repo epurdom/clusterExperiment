@@ -1,4 +1,4 @@
-Changes in version 1.5.0-9006 ( Release date: )
+Changes in version 1.5.0-9010 ( Release date: )
 ==============
 
 Changes:
@@ -23,6 +23,9 @@ Changes:
 
 Bugs:
 * converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.
+* fixed minor bugs in `plotHeatmap` so that will 
+	- handle factor with only one value in annotation
+	- will plot labels when there is `NA` in the annotation
 
 Changes in version 1.5.0-9002 ( Release date: )
 ==============
