@@ -502,7 +502,6 @@ setMethod(
               if(is.null(data@dendro_samples)){
                 clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
 				if(inherits(clusterSamplesData, "try-error")){
-					#browser()
 					warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
 					clusterSamplesData<-"primaryCluster"
 				}
@@ -807,17 +806,23 @@ setMethod(
 		} 
 		prunedList<-lapply(whInAnnColors,function(ii){
 			nam<-names(annColors)[[ii]] #the name of variable
-			x<-annColors[[ii]] 
+			x<-annColors[[ii]] ##list of colors
 			levs<-levels(annCol[,nam])
 			if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
+			#Note to self:
+			#It appears that if there is only 1 level of a factor, aheatmap 
+			#doesn't plot it unless there are colors longer than 1
+			#But appears only problem with extra colors are just that the first ones must match the levels -- not being matched (or at least not well) to names of the colors. 
+			#So going to leave "extra" colors in place, but put them at the end.
 			if(is.null(names(x))){
 				#if user didn't give names to colors, assign them in order of levels
-				x<-x[1:length(levs)] #shorten if needed
+				#x<-x[1:length(levs)] #shorten if needed
 				names(x)<-levs
 			}
 			else{
 				if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
-				x<-x[levs]
+				whlevs<-match(levs,names(x))
+				x<-c(x[whlevs],x[-whlevs])
 			}
 			return(x)
 		})
