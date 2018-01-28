@@ -853,21 +853,26 @@ setMethod(
 	      # add labels to clusters at top of heatmap
 	      #############
 		  if(!is.null(dim(annCol))){
+			  browser()
 	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
-	        newNameList<-strsplit(newName,"\\.")[[1]]
-	        oldIndex<-as.numeric(newNameList[[3]])-1
-	        newNameList[[3]]<-oldIndex
-	        oldName<-paste(newNameList,collapse=".")
-	        grid::seekViewport(sprintf("aheatmap-%s",oldName))
-	        NMF:::vplayout(3,4:5)
-	        #grid::grid.rect()
-	        y <- seq(0,1,length=ncol(annCol))
-	        n<-ncol(annCol)
-	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-	        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-	        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-	        grid::upViewport() #close it
-	        grid::upViewport() #close it
+			#problems with development version of NMF
+	        newNameList<-try(strsplit(newName,"\\.")[[1]])
+			if(!inherits(newNameList,"try-error")){
+		        oldIndex<-as.numeric(newNameList[[3]])-1
+		        newNameList[[3]]<-oldIndex
+		        oldName<-paste(newNameList,collapse=".")
+		        grid::seekViewport(sprintf("aheatmap-%s",oldName))
+		        NMF:::vplayout(3,4:5)
+		        #grid::grid.rect()
+		        y <- seq(0,1,length=ncol(annCol))
+		        n<-ncol(annCol)
+		        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+		        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+		        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+		        grid::upViewport() #close it
+		        grid::upViewport() #close it
+			}
+
 	      }
 	  }
 	  else out<-NULL
