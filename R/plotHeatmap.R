@@ -853,8 +853,7 @@ setMethod(
 	      # add labels to clusters at top of heatmap
 	      #############
 		  if(!is.null(dim(annCol))){
-			  browser()
-	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
+			  newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
 			#problems with development version of NMF
 	        newNameList<-try(strsplit(newName,"\\.")[[1]])
 			if(!inherits(newNameList,"try-error")){
