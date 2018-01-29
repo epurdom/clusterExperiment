@@ -853,24 +853,41 @@ setMethod(
 	      # add labels to clusters at top of heatmap
 	      #############
 		  if(!is.null(dim(annCol))){
-			  newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
-			#problems with development version of NMF
-	        newNameList<-try(strsplit(newName,"\\.")[[1]])
-			if(!inherits(newNameList,"try-error")){
-		        oldIndex<-as.numeric(newNameList[[3]])-1
-		        newNameList[[3]]<-oldIndex
-		        oldName<-paste(newNameList,collapse=".")
-		        grid::seekViewport(sprintf("aheatmap-%s",oldName))
-		        NMF:::vplayout(3,4:5)
-		        #grid::grid.rect()
-		        y <- seq(0,1,length=ncol(annCol))
-		        n<-ncol(annCol)
-		        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-		        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-		        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-		        grid::upViewport() #close it
-		        grid::upViewport() #close it
+			treeOfViewports<-unlist(lapply(strsplit(as.character(grid::current.vpTree(all=TRUE)),"->"),strsplit,","))
+			wh<-sapply(treeOfViewports, function(x){
+							   length(grep(x,"pattern"="aheatmap-AHEATMAP.VP"))>0
+					  	 })
+			stringsViewports<-unlist(lapply(treeOfViewports[wh], 
+				function(x){
+					x[grep(x,"pattern"="aheatmap-AHEATMAP.VP")]
+				}))
+			stringsViewports<-gsub("viewport\\[","",stringsViewports)
+			stringsViewports<-gsub("\\(","",stringsViewports)
+			stringsViewports<-gsub("\\)","",stringsViewports)
+			stringsViewports<-gsub("\\]","",stringsViewports)
+			vals<-sapply(  strsplit(
+				stringsViewports,"[.]VP[.]"), .subset2,2)
+			vals<-suppressWarnings(as.numeric(vals))
+			XX<-max(vals,na.rm=TRUE) #incase something there that doesn't convert to numeric well. 	 
+			viewportName<-paste0("AHEATMAP.VP.",XX)
+			test<-try(grid::seekViewport(paste0("aheatmap-",viewportName)),silent=TRUE)
+			if(!inherits(test,"try-error")){
+  			  ###Now make a viewport related to this part of grid:
+  			  ##( The part of the grid that corresponds 
+				  ## to where the names should go)
+  			  #grid::grid.rect() #for developing -- see where grabbed.
+  			  newName<-paste0(viewportName,"-sideLabels")
+  		      grid::pushViewport(grid::viewport(layout.pos.row = 3, layout.pos.col = 4:5,  name = newName))
+  			  y <- seq(0,1,length=ncol(annCol))
+  			  n<-ncol(annCol)
+  			  y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+  			  #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+  			  grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+  			  grid::upViewport(0) #take it back up to the top.
+			 
 			}
+
+
 
 	      }
 	  }
