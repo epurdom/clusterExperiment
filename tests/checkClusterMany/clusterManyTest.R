@@ -27,7 +27,7 @@ outfile<-file.path(outpath,paste(nm,".Rout",sep=""))
 cat("Results for test of",version,"\n",file=outfile)
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Running clusterMany...",file=outfile,append=TRUE)
-# Old version: 
+# Old version:
 # cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
 #                  ks=4:8, clusterFunction="hierarchical01",
 #                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
