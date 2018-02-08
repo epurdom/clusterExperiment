@@ -85,11 +85,11 @@ and giving this parameter will result in an error.}
 
 \item{reducedDims}{a vector of character values indicating the methods of dimensionality reduction to be performed. Currently only "PCA" is implemented.}
 
-\item{maxDims}{Numeric vector of integer giving the number of PC dimensions to calculate. 
+\item{maxDims}{Numeric vector of integer giving the number of PC dimensions to calculate.
 \code{maxDims} can also take values between (0,1) to indicate keeping the
 number of dimensions necessary to account for that proportion of the
-variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating 
-the number of dimensions to keep for each method (if \code{maxDims} is of length 1, 
+variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating
+the number of dimensions to keep for each method (if \code{maxDims} is of length 1,
 the same number of dimensions will be used for each).}
 
 \item{filterStats}{The filterStats of filtering statistic to use to filter.}

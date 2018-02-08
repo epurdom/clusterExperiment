@@ -30,16 +30,16 @@ Imports:
     matrixStats,
     graphics,
     parallel,
-    RSpectra,
-	kernlab,
-	stringr
+    irlba,
+	  kernlab,
+	  stringr
 Suggests:
     BiocStyle,
     knitr,
     testthat,
-	scRNAseq,
+	  scRNAseq,
     MAST,
-	Rtsne
+	  Rtsne
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
