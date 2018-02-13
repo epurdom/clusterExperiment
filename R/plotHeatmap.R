@@ -84,6 +84,11 @@
 #' @param plot logical indicating whether to plot the heatmap. Mainly useful for
 #'   package mantaince to avoid calls to aheatmap on unit tests that take a long
 #'   time.
+#' @param symmetricBreaks logical as to whether the breaks created for the 
+#'  color scale should be symmetrical around 0
+#' @param capBreaksLegend logical as to whether the legend for the breaks should be capped. 
+#' Only relevant if \code{breaks} is a value < 1, in which case if \code{capBreaksLegend=TRUE},
+#' only the values between the quantiles indicated will show in the legend. 
 #' @inheritParams clusterSingle
 #'   
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw 
@@ -210,7 +215,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
 #' @export
 #'
 #' @examples
@@ -326,7 +331,7 @@ setMethod(
       colorScale <- seqPal5
       if(is.character(visualizeData)) {
         if (visualizeData == "centeredAndScaled") {
-          colorScale <- seqPal3
+          colorScale <- seqPal4
         }
       }
     }
@@ -449,6 +454,9 @@ setMethod(
 
 
     userList<-list(...)
+	if(!"symmetricBreaks" %in% names(userList) & visualizeData %in% c("centeredAndScaled","centered")){
+			userList$symmetricBreaks<-TRUE
+	}
     userAlign<-"alignSampleData" %in% names(userList) & !is.null(userList$alignSampleData)
     userLegend<-"clusterLegend" %in% names(userList) & !is.null(userList$clusterLegend)
 	if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
@@ -609,7 +617,9 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
+                          unassignedColor="white",missingColor="grey", 
+						  breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
+						  isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
     ){
 
 
@@ -842,7 +852,15 @@ setMethod(
       #############
       # put into aheatmap
       #############
-      breaks<-setBreaks(data=heatData,breaks=breaks)
+	  capBreaks<-length(breaks)<1 & capBreaksLegend 
+      breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks)
+	  if(capBreaks){ #so the legend is not so weird
+		  if(length(breaks)!=2) 
+			  stop("coding error in new breaks function")
+		  heatData[which(heatData<breaks[1])]<-breaks[1]
+		  heatData[which(heatData>breaks[2])]<-breaks[2]
+		  breaks<-seq(breaks[1],breaks[2],length=52)
+	  }
 	  if(plot){
 	      out<-NMF::aheatmap(heatData,
 	                         Rowv =Rowv,Colv = Colv,

@@ -20,6 +20,8 @@ Changes:
 	- `clusterInfo()` to `clusteringInfo()`
 * `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
 * removed `transformation` as a required argument to `ClusterExperiment`. Now sets with default of `function(x){x}`.
+* Adjusted color definitions of `seqPal2` and `seqPal4` to be completely symmetric.
+* Argument `existingColors` in `plotClustersWorkflow` now takes arguments `ignore`,`all`,`highlightOnly` similar to `plotClusters`
 
 Bugs:
 * converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.
@@ -27,6 +29,7 @@ Bugs:
 	- handle factor with only one value in annotation
 	- will plot annotation labels when there is `NA` in the annotation
 	- no longer calls internal function `NMF:::vplayout` in making those labels, more robust
+* fixed bug in how `plotClustersWorkflow` handled existing colors.
 
 Changes in version 1.5.0-9002 ( Release date: )
 ==============

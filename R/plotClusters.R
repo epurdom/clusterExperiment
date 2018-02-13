@@ -94,26 +94,30 @@
 #'   Specifically, a list with the following elements.
 #' \itemize{
 #'
-#' \item{\code{index}}{ a vector of length equal to \code{ncols(clusters)}
-#' giving the order of the columns to use to get the original clusters matrix
+#' \item{\code{orderSamples}}{ a vector of length equal to 
+#' \code{nrows(clusters)} giving the order of the samples (rows) to 
+#'  use to get the original clusters matrix
 #' into the order made by \code{plotClusters}.}
 #'
 #' \item{\code{colors}}{ matrix of color assignments for each element of
 #' original clusters matrix. Matrix is in the same order as original clusters
-#' matrix. The matrix \code{colors[index,]} is the matrix that can be given back
-#' to \code{plotClusters} to recreate the plot (see examples).}
+#' matrix. The matrix \code{colors[orderSamples,]} is the matrix that can be 
+#' given back to \code{plotClusters} to recreate the plot (see examples).}
 #'
 #' \item{\code{alignedClusterIds}}{ a matrix of integer valued cluster
 #' assignments that match the colors. This is useful if you want to have cluster
 #' identification numbers that are better aligned than that given in the
-#' original clusters. Again, the matrix is in same order as original input
-#' matrix.}
+#' original clusters. Again, the rows/samples are in same order as original 
+#' input matrix.}
 #'
 #' \item{\code{clusterLegend}}{ list of length equal to the number of columns of
 #' input matrix. The elements of the list are matrices, each with three columns
 #' named "Original","Aligned", and "Color" giving, respectively, the
 #' correspondence between the original cluster ids in \code{clusters}, the
 #' aligned cluster ids in \code{aligned}, and the color.}
+#' 
+#' \item{\code{origClusters}}{The original matrix of clusters given to
+#' \code{plotClusters}}
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson (based on the tracking plot in
