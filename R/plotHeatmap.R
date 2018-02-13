@@ -88,7 +88,7 @@
 #'  color scale should be symmetrical around 0
 #' @param capBreaksLegend logical as to whether the legend for the breaks should be capped. 
 #' Only relevant if \code{breaks} is a value < 1, in which case if \code{capBreaksLegend=TRUE},
-#' only the values between the quantiles indicated will show in the legend. 
+#' only the values between the quantiles requested will show in the color scale legend. 
 #' @inheritParams clusterSingle
 #'   
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw 
@@ -852,7 +852,7 @@ setMethod(
       #############
       # put into aheatmap
       #############
-	  capBreaks<-length(breaks)<1 & capBreaksLegend 
+	  capBreaks<-length(breaks)==1 & capBreaksLegend 
       breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks)
 	  if(capBreaks){ #so the legend is not so weird
 		  if(length(breaks)!=2) 
