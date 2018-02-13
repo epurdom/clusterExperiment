@@ -22,6 +22,8 @@ Changes:
 * removed `transformation` as a required argument to `ClusterExperiment`. Now sets with default of `function(x){x}`.
 * Adjusted color definitions of `seqPal2` and `seqPal4` to be completely symmetric.
 * Argument `existingColors` in `plotClustersWorkflow` now takes arguments `ignore`,`all`,`highlightOnly` similar to `plotClusters`
+* Argumnet `nodeColors` now available in `plotDendrogram`
+* Argument `contrastColors` now available in plotContrastHeatmap. Genes are now ordered by fold-change within each contrast.
 
 Bugs:
 * converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.

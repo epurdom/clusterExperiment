@@ -34,18 +34,25 @@
 #'   used to draw the color values of the clusters/samples next to the
 #'   dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 #'   available for 'ape' package >= 4.1-0.6).
+#' @param nodeColors named vector of colors to be plotted on a node in the dendrogram. 
+#' Names should match the name of the node (calls \code{\link[ape]{nodelabels}}). 
 #' @param clusterLabelAngle angle at which label of cluster will be drawn. Only
 #'	 applicable if \code{plotType="colorblock"}.
 #' @param mergeInfo What kind of information about merge to plot on dendrogram. If not 
 #' equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
 #' creates.
-#' @return A dendrogram is plotted. Nothing is returned. 
+#' @return A dendrogram is plotted. Returns (invisibly) a list with elements
+#' \itemize{
+#' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
+#' \item{\code{originalObject}}{ the \code{phylo} object before adjusting the node/tip labels. }
+#' }
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
 #'   is because the function colors the cluster labels based on the colors of
 #'   the clusterIds of the primaryCluster
-#' @importFrom ape plot.phylo
+#' @importFrom ape plot.phylo nodelabels
+#' @seealso \code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 #' @export
 #' 
 #' @examples
@@ -127,7 +134,7 @@ setMethod(
 		nodeColors<-nodeColors[!is.na(m)]
 		m<-m[!is.na(m)]
 		if(length(m)>0){
-			nodelabels(rep("",length(nodeColors)),m+length(phyloOut$originalObject$tip.label), frame = "c", bg = nodeColors,cex=1/par("cex"))
+			ape::nodelabels(rep("",length(nodeColors)),m+length(phyloOut$originalObject$tip.label), frame = "c", bg = nodeColors,cex=1/par("cex"))
 		}
 		else{warning("No names of node colors match node name, ignoring argument nodeColors")}
 	}
