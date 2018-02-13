@@ -32,7 +32,7 @@
 setMethod(
   f = "plotContrastHeatmap",
   signature = "ClusterExperiment",
-  definition = function(object,signifTable,whichCluster=NULL,contrastColors,...) {
+  definition = function(object,signifTable,whichCluster=NULL,contrastColors=NULL,...) {
     if(!all(c("IndexInOriginal","Contrast") %in% colnames(signifTable ))) stop("signifTable must have columns 'IndexInOriginal' and 'Contrast'")
     if(!is.numeric(signifTable$IndexInOriginal)) stop("Column 'IndexInOriginal' Must consist of numeric values")
     if(!all(signifTable$IndexInOriginal %in% 1:nrow(object))) stop("Column 'IndexInOriginal' must consist of indices that match the row indices of 'object'")

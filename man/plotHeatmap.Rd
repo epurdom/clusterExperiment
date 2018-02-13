@@ -37,7 +37,8 @@
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, alignSampleData = FALSE,
   unassignedColor = "white", missingColor = "grey", breaks = NA,
-  isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE, ...)
+  symmetricBreaks = FALSE, capBreaksLegend = FALSE, isSymmetric = FALSE,
+  overRideClusterLimit = FALSE, plot = TRUE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data,
   invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
@@ -141,6 +142,13 @@ for more.}
 number between 0 and 1, indicating that the breaks should be equally spaced
 (based on the range in the data) upto the `breaks' quantile, see 
 \code{\link{setBreaks}}}
+
+\item{symmetricBreaks}{logical as to whether the breaks created for the 
+color scale should be symmetrical around 0}
+
+\item{capBreaksLegend}{logical as to whether the legend for the breaks should be capped. 
+Only relevant if \code{breaks} is a value < 1, in which case if \code{capBreaksLegend=TRUE},
+only the values between the quantiles requested will show in the color scale legend.}
 
 \item{isSymmetric}{logical. if TRUE indicates that the input matrix is 
 symmetric. Useful when plotting a co-clustering matrix or other sample by 
@@ -360,7 +368,7 @@ Upper Limit")
 
 }
 \seealso{
-\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
+\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
 }
 \author{
 Elizabeth Purdom
