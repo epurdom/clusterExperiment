@@ -40,6 +40,8 @@ color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{main}{title of plot. If NULL, given default title.}
+
+\item{assay}{Identifies which assay in the \code{object} should be used for the data to be plotted.}
 }
 \value{
 A plot is created. The output of boxplot is returned

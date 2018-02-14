@@ -59,6 +59,8 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{clustersToRemove}{numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).}
 }
 \value{
 A \code{\link{ClusterExperiment}} object with the added clusters.

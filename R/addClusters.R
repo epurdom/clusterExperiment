@@ -167,6 +167,7 @@ setMethod(
 
 
 #' @details \code{unassignSamples} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned) 
+#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
 #' @rdname addClusterings
 #' @aliases unassignSamples
 #' @export
@@ -180,7 +181,7 @@ setMethod(
 		  cl[cl %in% clustersToRemove]<- -1
 	  }
 	  else if(is.character(clustersToRemove)){
-	  	
+		  stop("clustersToRemove must be numeric matching the clusterIds")
 	  }
 	return(x[,primaryCluster(x) >= 0])
 	
@@ -193,6 +194,6 @@ setMethod(
   signature = signature("ClusterExperiment","character"),
   definition = function(x, whichClusters,...) {
 	  whichClusters<-.TypeIntoIndices(x,whichClusters)
-	  removeClusters(x,whichClusters,...)
+	  unassignSamples(x,whichClusters,...)
   }
 )

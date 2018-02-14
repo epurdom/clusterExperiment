@@ -49,6 +49,7 @@ definition = function(object, whichCluster,feature,...)
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param main title of plot. If NULL, given default title.
 #' @param plotUnassigned whether to plot the unassigned samples as a cluster (either -1 or -2)
+#' @param assay Identifies which assay in the \code{object} should be used for the data to be plotted. 
 #' @param ... arguments passed to \code{\link{boxplot}}
 #' @inheritParams plotReducedDims
 #' @seealso \code{\link{boxplot}}
