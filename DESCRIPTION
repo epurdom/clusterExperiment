@@ -32,7 +32,8 @@ Imports:
     parallel,
     RSpectra,
 	kernlab,
-	stringr
+	stringr,
+	S4Vectors
 Suggests:
     BiocStyle,
     knitr,
