@@ -454,7 +454,7 @@ setMethod(
 
 
     userList<-list(...)
-	if(!"symmetricBreaks" %in% names(userList) & visualizeData %in% c("centeredAndScaled","centered")){
+	if(!"symmetricBreaks" %in% names(userList) && !externalData && visualizeData %in% c("centeredAndScaled","centered")){
 			userList$symmetricBreaks<-TRUE
 	}
     userAlign<-"alignSampleData" %in% names(userList) & !is.null(userList$alignSampleData)
