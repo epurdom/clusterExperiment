@@ -5,7 +5,6 @@
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
-#' @param ... Values passed on the the 'SummarizedExperiment' method.
 #' @return \code{makeFilterStats} returns a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the requested filtering statistics will be added to the \code{DataFrame} in the \code{rowData} slot and given names corresponding to the \code{filterStats} values. Warning: the function will overwrite existing columns in \code{rowData} with the same name. Columns in the \code{rowData} slot with different names should not be affected.
 #' @inheritParams transformData
 #' @rdname reduceFunctions
