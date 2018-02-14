@@ -139,7 +139,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   par(mar=c(0,0,0,0),omi=c(0,0,0,0))
   plot.new()
   plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
-  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=F)
+  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=FALSE)
   if(length(colPalette)>100){
 	  half<-ceiling(length(colPalette)/2)
 	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))

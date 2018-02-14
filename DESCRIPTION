@@ -33,7 +33,8 @@ Imports:
     RSpectra,
 	kernlab,
 	stringr,
-	S4Vectors
+	S4Vectors,
+	grDevices
 Suggests:
     BiocStyle,
     knitr,

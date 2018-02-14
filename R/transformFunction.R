@@ -14,6 +14,7 @@
 #' If object is of class \code{ClusterExperiment}, the stored transformation will be used 
 #' and giving this parameter will result in an error.
 #' @param ... Values passed on the the 'matrix' method.
+#' @return A DataFrame defined by \code{assay(x)} suitably transformed
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
 #'   the transformation function either defined in x (in the case of a 
 #' \code{ClusterExperiment} object) or by user given values for other classes. 
