@@ -34,18 +34,25 @@
 #'   used to draw the color values of the clusters/samples next to the
 #'   dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 #'   available for 'ape' package >= 4.1-0.6).
+#' @param nodeColors named vector of colors to be plotted on a node in the dendrogram. 
+#' Names should match the name of the node (calls \code{\link[ape]{nodelabels}}). 
 #' @param clusterLabelAngle angle at which label of cluster will be drawn. Only
 #'	 applicable if \code{plotType="colorblock"}.
 #' @param mergeInfo What kind of information about merge to plot on dendrogram. If not 
 #' equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
 #' creates.
-#' @return A dendrogram is plotted. Nothing is returned. 
+#' @return A dendrogram is plotted. Returns (invisibly) a list with elements
+#' \itemize{
+#' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
+#' \item{\code{originalObject}}{ the \code{phylo} object before adjusting the node/tip labels. }
+#' }
 #' @aliases plotDendrogram
 #' @details If \code{leafType="clusters"}, the plotting function will work best
 #'   if the clusters in the dendrogram correspond to the primary cluster. This
 #'   is because the function colors the cluster labels based on the colors of
 #'   the clusterIds of the primaryCluster
-#' @importFrom ape plot.phylo
+#' @importFrom ape plot.phylo nodelabels
+#' @seealso \code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 #' @export
 #' 
 #' @examples
@@ -67,7 +74,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -118,7 +125,20 @@ setMethod(
 	} else{
 		warning("There is no information about merging -- will ignore input to 'mergeInfo'")
 	}
-invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...))
+
+	phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
+	
+	if(!is.null(nodeColors)){
+		if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
+		m<-match(names(nodeColors),phyloOut$originalObject$node.label)
+		nodeColors<-nodeColors[!is.na(m)]
+		m<-m[!is.na(m)]
+		if(length(m)>0){
+			ape::nodelabels(rep("",length(nodeColors)),m+length(phyloOut$originalObject$tip.label), frame = "c", bg = nodeColors,cex=1/par("cex"))
+		}
+		else{warning("No names of node colors match node name, ignoring argument nodeColors")}
+	}
+	invisible(phyloOut)
     
   })
 
@@ -171,9 +191,12 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 	dataPct<-0.5
 	offsetDivide<-16
 	if(plotType=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if plotType='colorblock'")
+	origPhylo<-phyloObj #so can return
+	
   	###############
   	### For plotting of dendrogram for the merging
   	### Add information about the merging as node labels and change edge type
+	### Note: could probably have used nodelabels function and avoided some of this
   	###############
   	if(!is.null(mergePlotType) && mergePlotType %in% c("all",.availMergeMethods,"mergeMethod")){
           #####
@@ -461,7 +484,7 @@ invisible(.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,merg
 		
   	}
 	
-  	invisible(phyloObj)
+  	invisible(list(plottedObject=phyloObj,originalObject=origPhylo))
   }
 
 

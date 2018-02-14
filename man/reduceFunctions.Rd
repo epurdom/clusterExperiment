@@ -4,6 +4,7 @@
 \name{reduceFunctions}
 \alias{reduceFunctions}
 \alias{makeFilterStats}
+\alias{makeFilterStats,SummarizedExperiment-method}
 \alias{makeFilterStats,matrix-method}
 \alias{makeFilterStats,ClusterExperiment-method}
 \alias{listBuiltInFilterStats}
@@ -91,8 +92,6 @@ number of dimensions necessary to account for that proportion of the
 variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating 
 the number of dimensions to keep for each method (if \code{maxDims} is of length 1, 
 the same number of dimensions will be used for each).}
-
-\item{filterStats}{The filterStats of filtering statistic to use to filter.}
 
 \item{...}{Values passed on the the 'SingleCellExperiment' method.}
 }

@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 1.5.0-9008
+Version: 1.99.0
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -12,7 +12,7 @@ Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 3.4),
+    R (>= 3.4.2),
     SingleCellExperiment,
 	SummarizedExperiment
 Imports:
@@ -32,7 +32,9 @@ Imports:
     parallel,
     RSpectra,
 	kernlab,
-	stringr
+	stringr,
+	S4Vectors,
+	grDevices
 Suggests:
     BiocStyle,
     knitr,
@@ -76,9 +78,9 @@ Collate:
     'plotClustersWorkflow.R'
     'plotContrastHeatmap.R'
     'plotDendrogram.R'
-    'plotDimReduce.R'
     'plotFeatureBoxplot.R'
     'plotHeatmap.R'
+    'plotReduceDim.R'
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'

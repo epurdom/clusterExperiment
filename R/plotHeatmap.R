@@ -84,6 +84,11 @@
 #' @param plot logical indicating whether to plot the heatmap. Mainly useful for
 #'   package mantaince to avoid calls to aheatmap on unit tests that take a long
 #'   time.
+#' @param symmetricBreaks logical as to whether the breaks created for the 
+#'  color scale should be symmetrical around 0
+#' @param capBreaksLegend logical as to whether the legend for the breaks should be capped. 
+#' Only relevant if \code{breaks} is a value < 1, in which case if \code{capBreaksLegend=TRUE},
+#' only the values between the quantiles requested will show in the color scale legend. 
 #' @inheritParams clusterSingle
 #'   
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw 
@@ -210,7 +215,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
 #' @export
 #'
 #' @examples
@@ -326,7 +331,7 @@ setMethod(
       colorScale <- seqPal5
       if(is.character(visualizeData)) {
         if (visualizeData == "centeredAndScaled") {
-          colorScale <- seqPal3
+          colorScale <- seqPal4
         }
       }
     }
@@ -449,6 +454,9 @@ setMethod(
 
 
     userList<-list(...)
+	if(!"symmetricBreaks" %in% names(userList) && !externalData && visualizeData %in% c("centeredAndScaled","centered")){
+			userList$symmetricBreaks<-TRUE
+	}
     userAlign<-"alignSampleData" %in% names(userList) & !is.null(userList$alignSampleData)
     userLegend<-"clusterLegend" %in% names(userList) & !is.null(userList$clusterLegend)
 	if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
@@ -502,7 +510,6 @@ setMethod(
               if(is.null(data@dendro_samples)){
                 clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
 				if(inherits(clusterSamplesData, "try-error")){
-					#browser()
 					warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
 					clusterSamplesData<-"primaryCluster"
 				}
@@ -610,7 +617,9 @@ setMethod(
                           clusterFeatures=TRUE,showFeatureNames=FALSE,
                           colorScale=seqPal5,
                           clusterLegend=NULL,alignSampleData=FALSE,
-                          unassignedColor="white",missingColor="grey", breaks=NA,isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
+                          unassignedColor="white",missingColor="grey", 
+						  breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
+						  isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
     ){
 
 
@@ -807,17 +816,23 @@ setMethod(
 		} 
 		prunedList<-lapply(whInAnnColors,function(ii){
 			nam<-names(annColors)[[ii]] #the name of variable
-			x<-annColors[[ii]] 
+			x<-annColors[[ii]] ##list of colors
 			levs<-levels(annCol[,nam])
 			if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
+			#Note to self:
+			#It appears that if there is only 1 level of a factor, aheatmap 
+			#doesn't plot it unless there are colors longer than 1
+			#But appears only problem with extra colors are just that the first ones must match the levels -- not being matched (or at least not well) to names of the colors. 
+			#So going to leave "extra" colors in place, but put them at the end.
 			if(is.null(names(x))){
 				#if user didn't give names to colors, assign them in order of levels
-				x<-x[1:length(levs)] #shorten if needed
+				#x<-x[1:length(levs)] #shorten if needed
 				names(x)<-levs
 			}
 			else{
 				if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
-				x<-x[levs]
+				whlevs<-match(levs,names(x))
+				x<-c(x[whlevs],x[-whlevs])
 			}
 			return(x)
 		})
@@ -837,7 +852,15 @@ setMethod(
       #############
       # put into aheatmap
       #############
-      breaks<-setBreaks(data=heatData,breaks=breaks)
+	  capBreaks<-length(breaks)==1 & capBreaksLegend 
+      breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks)
+	  if(capBreaks){ #so the legend is not so weird
+		  if(length(breaks)!=2) 
+			  stop("coding error in new breaks function")
+		  heatData[which(heatData<breaks[1])]<-breaks[1]
+		  heatData[which(heatData>breaks[2])]<-breaks[2]
+		  breaks<-seq(breaks[1],breaks[2],length=52)
+	  }
 	  if(plot){
 	      out<-NMF::aheatmap(heatData,
 	                         Rowv =Rowv,Colv = Colv,
@@ -847,23 +870,43 @@ setMethod(
 	      #############
 	      # add labels to clusters at top of heatmap
 	      #############
+		  if(!is.null(dim(annCol))){
+			treeOfViewports<-unlist(lapply(strsplit(as.character(grid::current.vpTree(all=TRUE)),"->"),strsplit,","))
+			wh<-sapply(treeOfViewports, function(x){
+							   length(grep(x,"pattern"="aheatmap-AHEATMAP.VP"))>0
+					  	 })
+			stringsViewports<-unlist(lapply(treeOfViewports[wh], 
+				function(x){
+					x[grep(x,"pattern"="aheatmap-AHEATMAP.VP")]
+				}))
+			stringsViewports<-gsub("viewport\\[","",stringsViewports)
+			stringsViewports<-gsub("\\(","",stringsViewports)
+			stringsViewports<-gsub("\\)","",stringsViewports)
+			stringsViewports<-gsub("\\]","",stringsViewports)
+			vals<-sapply(  strsplit(
+				stringsViewports,"[.]VP[.]"), .subset2,2)
+			vals<-suppressWarnings(as.numeric(vals))
+			XX<-max(vals,na.rm=TRUE) #incase something there that doesn't convert to numeric well. 	 
+			viewportName<-paste0("AHEATMAP.VP.",XX)
+			test<-try(grid::seekViewport(paste0("aheatmap-",viewportName)),silent=TRUE)
+			if(!inherits(test,"try-error")){
+  			  ###Now make a viewport related to this part of grid:
+  			  ##( The part of the grid that corresponds 
+				  ## to where the names should go)
+  			  #grid::grid.rect() #for developing -- see where grabbed.
+  			  newName<-paste0(viewportName,"-sideLabels")
+  		      grid::pushViewport(grid::viewport(layout.pos.row = 3, layout.pos.col = 4:5,  name = newName))
+  			  y <- seq(0,1,length=ncol(annCol))
+  			  n<-ncol(annCol)
+  			  y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
+  			  #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
+  			  grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
+  			  grid::upViewport(0) #take it back up to the top.
+			 
+			}
 
-	      if(!any(is.na(annCol))){
-	        newName<-NMF:::vplayout(NULL) #will be 1 greater (hopefully!) this is fragile. Don't know if it will always work.
-	        newNameList<-strsplit(newName,"\\.")[[1]]
-	        oldIndex<-as.numeric(newNameList[[3]])-1
-	        newNameList[[3]]<-oldIndex
-	        oldName<-paste(newNameList,collapse=".")
-	        grid::seekViewport(sprintf("aheatmap-%s",oldName))
-	        NMF:::vplayout(3,4:5)
-	        #grid::grid.rect()
-	        y <- seq(0,1,length=ncol(annCol))
-	        n<-ncol(annCol)
-	        y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-	        #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-	        grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-	        grid::upViewport() #close it
-	        grid::upViewport() #close it
+
+
 	      }
 	  }
 	  else out<-NULL

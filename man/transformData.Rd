@@ -32,6 +32,9 @@ and giving this parameter will result in an error.}
 
 \item{...}{Values passed on the the 'matrix' method.}
 }
+\value{
+A DataFrame defined by \code{assay(x)} suitably transformed
+}
 \description{
 Provides the transformed data
 }

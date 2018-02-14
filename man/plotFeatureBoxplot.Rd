@@ -19,8 +19,8 @@
   whichCluster, feature, ...)
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, ignoreUnassigned = FALSE, unassignedColor = NULL,
-  missingColor = NULL, main = NULL, ...)
+  whichCluster, feature, plotUnassigned = FALSE, unassignedColor = NULL,
+  missingColor = NULL, main = NULL, assay = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -31,6 +31,8 @@
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
 
+\item{plotUnassigned}{whether to plot the unassigned samples as a cluster (either -1 or -2)}
+
 \item{unassignedColor}{If not NULL, should be character value giving the
 color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 
@@ -38,6 +40,8 @@ color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{main}{title of plot. If NULL, given default title.}
+
+\item{assay}{Identifies which assay in the \code{object} should be used for the data to be plotted.}
 }
 \value{
 A plot is created. The output of boxplot is returned

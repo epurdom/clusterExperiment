@@ -36,7 +36,7 @@ bigPalette
 
 massivePalette
 
-setBreaks(data, breaks = NA, makeSymmetric = FALSE)
+setBreaks(data, breaks = NA, makeSymmetric = FALSE, returnBreaks = TRUE)
 
 showHeatmapPalettes()
 
@@ -79,9 +79,12 @@ between 1 and length of \code{colPalette}. If missing, all colors plotted.}
 
 \item{breaks}{either vector of breaks, or number of breaks (integer) or a
 number between 0 and 1 indicating a quantile, between which evenly spaced
-breaks should be calculated.}
+breaks should be calculated. If missing or NA, will determine evenly spaced 
+breaks in the range of the data.}
 
 \item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
+
+\item{returnBreaks}{logical as to whether to return the vector of breaks. See details.}
 
 \item{whichCluster}{which cluster to plot cluster legend}
 
@@ -161,6 +164,8 @@ convertClusterLegend pulls out information stored in the
 
 \code{showPalette} will plot the \code{colPalette} colors with
   their labels and index.
+
+if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 
 \code{setBreaks} gives a set of breaks (of length 52) equally spaced
   between the boundaries of the data. If breaks is between 0 and 1, then the

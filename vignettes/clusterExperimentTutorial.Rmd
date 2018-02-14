@@ -245,14 +245,14 @@ As shown in this plot, the individual clusters of the `combineMany` ensembl clus
 
 **2D plot of clusters** Finally, we can plot a 2-dimensional representation of the data with PCA and color code the samples to get a sense of how the data cluster.
 
-```{r plotDimReduce}
-plotDimReduce(rsecFluidigm)
+```{r plotReducedDims}
+plotReducedDims(rsecFluidigm)
 ```
 
 We can also look at a higher number of dimensions (or different dimensions) by changing the parameter 'whichDims'.
 
-```{r plotDimReduceMany}
-plotDimReduce(rsecFluidigm,whichDims=c(1:4))
+```{r plotReducedDimsMany}
+plotReducedDims(rsecFluidigm,whichDims=c(1:4))
 ```
 
 In this case we can see that higher dimensions show us a greater amount of separation between the clusters than in just 2 dimensions.

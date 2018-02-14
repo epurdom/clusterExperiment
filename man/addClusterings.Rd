@@ -11,9 +11,9 @@
 \alias{removeClusterings,ClusterExperiment,numeric-method}
 \alias{removeUnclustered,ClusterExperiment-method}
 \alias{removeUnclustered}
-\alias{unassignSamples,ClusterExperiment,numeric-method}
-\alias{unassignSamples}
-\alias{unassignSamples,ClusterExperiment,character-method}
+\alias{removeClusters,ClusterExperiment,numeric-method}
+\alias{removeClusters}
+\alias{removeClusters,ClusterExperiment,character-method}
 \title{Functions to add/remove clusters to ClusterExperiment}
 \usage{
 \S4method{addClusterings}{ClusterExperiment,matrix}(x, y,
@@ -30,10 +30,10 @@
 
 \S4method{removeUnclustered}{ClusterExperiment}(x)
 
-\S4method{unassignSamples}{ClusterExperiment,numeric}(x, whichClusters,
+\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichClusters,
   clustersToRemove)
 
-\S4method{unassignSamples}{ClusterExperiment,character}(x, whichClusters, ...)
+\S4method{removeClusters}{ClusterExperiment,character}(x, whichClusters, ...)
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}
@@ -59,6 +59,8 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{clustersToRemove}{numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).}
 }
 \value{
 A \code{\link{ClusterExperiment}} object with the added clusters.
@@ -87,7 +89,7 @@ addClusterings adds y to x, and is thus not symmetric in the two
   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
   be unclustered in other clusters found in \code{clusterMatrix(x)}).
 
-\code{unassignSamples} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned)
+\code{removeClusters} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned)
 }
 \examples{
 data(simData)

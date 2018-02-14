@@ -1,28 +1,28 @@
-#' @name plotDimReduce
+#' @name plotReducedDims
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a clustering.
-#' @aliases plotDimReduce plotDimReduce,ClusterExperiment,character-method
+#' @aliases plotReducedDims plotReducedDims,ClusterExperiment,character-method
 #' @export
 setMethod(
-  f = "plotDimReduce",
+  f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
 	wh<-.TypeIntoIndices(object,whClusters=whichCluster)
 	if(length(wh)==0) stop("invalid choice of 'whichCluster'")
 	if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
-    return(plotDimReduce(object,whichCluster=wh,...))
+    return(plotReducedDims(object,whichCluster=wh,...))
 
   })
   
-#' @rdname plotDimReduce
+#' @rdname plotReducedDims
 #' @export
 setMethod(
-  f = "plotDimReduce",
+  f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="missing"),
   definition = function(object, whichCluster,...)
   {
-    plotDimReduce(object,whichCluster="primaryCluster",...)
+    plotReducedDims(object,whichCluster="primaryCluster",...)
 
   })
   
@@ -46,15 +46,18 @@ setMethod(
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param plotUnassigned logical as to whether unassigned (either -1 or -2
-#'   cluster values) should be plotted. If TRUE, and the color for -1 is set to
-#'   "white", will be coerced to "lightgrey". To change this, set a different
-#'   (non-white) color in \code{unassignedColor} argument.
+#'   cluster values) should be plotted. 
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
+#' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
+#'   "white", will be coerced to "lightgrey" regardless of user input to 
+#'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE}, 
+#'   the samples with -1/-2 will not be plotted, nor will the category show up in the 
+#'   legend.
 #' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
-#' @rdname plotDimReduce
+#' @rdname plotReducedDims
 #' @return A plot is created. Nothing is returned. 
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
@@ -64,10 +67,10 @@ setMethod(
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #'
-#' plotDimReduce(cl,legend="bottomright")
+#' plotReducedDims(cl,legend="bottomright")
 #' @export
 setMethod(
-f = "plotDimReduce",
+f = "plotReducedDims",
 signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
 definition = function(object, whichCluster,
 	reducedDim="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
@@ -85,8 +88,8 @@ definition = function(object, whichCluster,
 	}
 	clColor<-clusterLegend[,"color"]
 	names(clColor)<-clusterLegend[,"name"]
-	wh1<-which(clusterLegend[,"clusterIds"]==-1)
-	wh2<-which(clusterLegend[,"clusterIds"]==-2)
+	wh1<-which(clusterLegend[,"clusterIds"]=="-1")
+	wh2<-which(clusterLegend[,"clusterIds"]=="-2")
 	if(!is.null(unassignedColor) && is.character(unassignedColor)){
 		if(length(wh1)>0) clColor[wh1]<-unassignedColor
 	}
@@ -107,6 +110,7 @@ definition = function(object, whichCluster,
 		clusterLegend[wh2,"name"]<-"Missing"
 		clColor<-c(clColor[-wh2],clColor[wh2])
 	}
+	
 	clFactor<-factor(as.character(cluster),levels=clusterLegend[,"clusterIds"], labels=clusterLegend[,"name"])
 	
 	#################
@@ -143,6 +147,12 @@ definition = function(object, whichCluster,
 		  else stop("legend must either be logical or character value.")
 		}
 		if(doLegend){
+			if(!plotUnassigned){
+				wh1<-which(names(clColor)=="Unassigned")
+				wh2<-which(names(clColor)=="Missing")
+				if(length(wh1)>0) clColor<-clColor[-wh1]
+				if(length(wh2)>0) clColor<-clColor[-wh2]
+			}
 		 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
 			legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
 		}

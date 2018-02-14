@@ -228,7 +228,7 @@ setGeneric(
         standardGeneric("plotBarplot")
     }
 )
-setGeneric("plotDimReduce",function(object, whichCluster,...){ standardGeneric("plotDimReduce")})
+setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
   name="plotHeatmap",
@@ -320,8 +320,8 @@ setGeneric(
 )
 
 
-setGeneric( name = "unassignSamples", def = function(x, whichClusters,...) {
-    standardGeneric("unassignSamples")})
+setGeneric( name = "removeClusters", def = function(x, whichClusters,...) {
+    standardGeneric("removeClusters")})
 setGeneric( name = "addClusterings", def = function(x, y,...) {
     standardGeneric("addClusterings")})
 setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
