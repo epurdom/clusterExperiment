@@ -143,9 +143,52 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
   expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
   
-  ###Now test removing cluster assignment
-  # expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+  ##########
+  ###Check removing a cluster assignment
+  ########## 
+  c1<-ccSE
+  cL<-clusterLegend(c1)
+  ind<-primaryClusterIndex(c1)
+  cL[[ind]][,"name"]<-letters[1:nrow(cL[[ind]])]
+  clusterLegend(c1)<-cL
+  rmCl<-c(2,3)
+  rmNms<-cL[[ind]][cL[[ind]][,"clusterIds"] %in% as.character(rmCl),"name"]
+  x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmCl)
+  expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
+  newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
+  old<-clusterLegend(x)[[ind]]
+  oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+  expect_equal(oldnms,newnms)
   
+   x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmNms)
+   expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
+   newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
+   old<-clusterLegend(x)[[ind]]
+   oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+   expect_equal(oldnms,newnms)
+ 
+  
+  
+  ##########
+  #check removing unclustered samples
+  ##########
+  #no -1 in primary cluster
+  matTemp<-abs(labMat)
+  expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
+  expect_equal(ccTemp, removeUnclustered(ccTemp)) 
+  
+###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
+  #-1 in primary cluster
+whUn<-which(primaryCluster(ccSE) <0)
+  expect_silent(ccR<-removeUnclustered(ccSE))
+  expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
+
+  ###Check retain SE info
+  expect_equal(colData(ccR),colData(se[,-whUn]) )
+  expect_equal(rownames(ccR),rownames(se)) 
+  expect_equal(colnames(ccR),colnames(se[,-whUn])) 
+  expect_equal(metadata(ccR),metadata(se)) 
+  expect_equal(rowData(ccR),rowData(se)) 
   
 })
 
@@ -207,42 +250,19 @@ test_that("subsetting works as promised",{
   expect_equal(clusterExperiment:::filterStats(sceSimData[1:10,]),head(clusterExperiment:::filterStats(sceSimData),10))
 })
 
-test_that("check clusterLegend, remove unclustered cells work as promised", {
-    
-    ##########
-    #check removing unclustered
-    
-    #no -1 in primary cluster
-    matTemp<-abs(labMat)
-    expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
-    expect_equal(ccTemp, removeUnclustered(ccTemp)) 
-    
-	###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
-    #-1 in primary cluster
-	whUn<-which(primaryCluster(ccSE) <0)
-    expect_silent(ccR<-removeUnclustered(ccSE))
-    expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
-	
-    ###Check retain SE info
-    expect_equal(colData(ccR),colData(se[,-whUn]) )
-    expect_equal(rownames(ccR),rownames(se)) 
-    expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-    expect_equal(metadata(ccR),metadata(se)) 
-    expect_equal(rowData(ccR),rowData(se)) 
-
-
-    ##########
-    #clusterLegend
+test_that("check clusterLegend manipulations work as promised", {
     x<-clusterLegend(cc)
     expect_silent(clusterLegend(cc)<-x)
-    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New",clusterLabels=c("new1","new2"),clusterLegend=clusterLegend(ccSE)))
     expect_silent(clusterLegend(c4)[1:2]<-x[1:2])
     expect_silent(clusterLegend(c4)[[1]]<-x[[1]])
 #add wrong dimensions:
     expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
     expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
 	
+    ##########
 	#check adding clusterLegend directly to constructor
+    ##########
 	newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=clusterMatrix(cc),clusterLegend=clusterLegend(cc))
 	expect_equal(cc,newcc)
 
