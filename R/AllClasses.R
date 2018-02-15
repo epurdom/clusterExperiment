@@ -251,6 +251,7 @@ setMethod(
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots)
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
