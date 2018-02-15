@@ -192,7 +192,7 @@ setMethod(
 setMethod(
   f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove,clusterLabels) {
+  definition = function(x,whichClusters,clustersToRemove,clusterLabels=NULL) {
 	  if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
 		 makePrimary<-whichClusters==x@primaryIndex
 	  cl<-clusterMatrix(x)[,whichClusters]
@@ -209,7 +209,7 @@ setMethod(
 		  cl[cl %in% clustersToRemove]<- -1
 	  }
 	  else stop("clustersToRemove must be either character or numeric")
-	  if(missing(clusterLabels)){
+	  if(is.null(clusterLabels)){
 		  currlabel<-clusterLabels(x)[whichClusters]
 		  clusterLabels<-paste0(currlabel,"_unassignClusters")
 	  }

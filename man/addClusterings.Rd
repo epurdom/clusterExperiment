@@ -31,7 +31,7 @@
 \S4method{removeUnclustered}{ClusterExperiment}(x)
 
 \S4method{removeClusters}{ClusterExperiment,numeric}(x, whichClusters,
-  clustersToRemove, clusterLabelss)
+  clustersToRemove, clusterLabels)
 
 \S4method{removeClusters}{ClusterExperiment,character}(x, whichClusters, ...)
 }
