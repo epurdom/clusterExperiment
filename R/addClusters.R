@@ -134,19 +134,22 @@ setMethod(
       dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichClusters])
     }
     
-    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
-                              clusterTypes=newClusterType,
-                              clusterInfo<-newClusterInfo,
-                              primaryIndex=pIndex,
-                              dendro_samples=dend_samples,
-                              dendro_clusters=dend_cl,
-                            dendro_index=dend_ind,
-                            dendro_outbranch=dend_out,
-                            coClustering=coMat,
-                            orderSamples=orderSamples,
-							checkTransformAndAssay=FALSE
-                              )
-    clusterLegend(retval)<-newClusterColors
+    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
+		clusters=newClLabels,
+		transformation=transformation(x),
+        clusterTypes=newClusterType,
+		clusterInfo<-newClusterInfo,
+		primaryIndex=pIndex,
+		dendro_samples=dend_samples,
+		dendro_clusters=dend_cl,
+		dendro_index=dend_ind,
+		dendro_outbranch=dend_out,
+		coClustering=coMat,
+		orderSamples=orderSamples,
+		clusterLegend=newClusterColors,
+		checkTransformAndAssay=FALSE
+     )
+#    clusterLegend(retval)<-newClusterColors
     return(retval)
   }
 )
@@ -166,24 +169,32 @@ setMethod(
 )
 
 
-#' @details \code{removeClusters} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned) 
-#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
+#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned) 
+#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value). 
 #' @rdname addClusterings
 #' @aliases removeClusters
 #' @export
 setMethod(
   f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove) {
+  definition = function(x,whichClusters="primary",clustersToRemove,clusterLabel) {
 	  if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
 	  cl<-clusterMatrix(x)[,whichClusters]
+	  leg<-clusterLegend(x)[whichClusters]
 	  if(is.numeric(clustersToRemove)){
 		  cl[cl %in% clustersToRemove]<- -1
 	  }
 	  else if(is.character(clustersToRemove)){
 		  stop("clustersToRemove must be numeric matching the clusterIds")
 	  }
-	return(x[,primaryCluster(x) >= 0])
+	  if(missing(label)){
+		  currlabel<-clusterLabels(x)[whichClusters]
+		  clusterLabel<-paste0(currlabel,"_unassignClusters")
+	  }
+	  if(clusterLabel %in% clusterLabels(x)) stop("must give a 'clusterLabel' value that is not already assigned to a clustering")
+	  x<-addClusterings(x, cl,
+  clusterLabel = clusterLabel)
+	  #make the names the same as previously
 	
   }
 )

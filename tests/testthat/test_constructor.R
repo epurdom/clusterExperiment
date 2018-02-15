@@ -143,7 +143,9 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
   expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
   
-
+  ###Now test removing cluster assignment
+  # expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+  
   
 })
 
@@ -239,7 +241,21 @@ test_that("check clusterLegend, remove unclustered cells work as promised", {
 #add wrong dimensions:
     expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
     expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
-            
+	
+	#check adding clusterLegend directly to constructor
+	newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=clusterMatrix(cc),clusterLegend=clusterLegend(cc))
+	expect_equal(cc,newcc)
+
+	newCL<-clusterLegend(cc)
+	newCL[[1]][,"name"]<-letters[1:nrow(newCL[[1]])]
+	cc1<-cc
+	clusterLegend(cc1)<-newCL
+	newClusters<-convertClusterLegend(cc1,output="matrixNames")
+	newCL[[1]][,"clusterIds"]<-newCL[[1]][,"name"]
+	newCL[[1]][,"name"]<-LETTERS[1:nrow(newCL[[1]])]
+  newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=newClusters,clusterLegend=newCL) 
+  expect_equal(clusterLegend(newcc)[[1]][,c("name","color")], newCL[[1]][,c("name","color")])
+	     
 })
 
 test_that("accessing transformed data works as promised",{

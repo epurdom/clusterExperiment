@@ -944,11 +944,12 @@ setMethod(
                               dendro_index=data@dendro_index,
                               dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex,
+							  clusterLegend=clusterLegend(data),
 							  checkTransformAndAssay=FALSE
                               
                               
     )
-    clusterLegend(fakeCE)<-clusterLegend(data)
+   # clusterLegend(fakeCE)<-clusterLegend(data)
     colData(fakeCE)<-colData(data)
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
   })
