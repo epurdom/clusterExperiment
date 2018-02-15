@@ -18,22 +18,18 @@ Changes:
 	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
 	- `addClusters` to `addClusterings` and `removeClusters` to `removeClusterings`. New function `removeClusters` allows the user to actually ``remove" a cluster or clusters from a clustering by assigning samples in those clusters to `-1` value.
 	- `clusterInfo()` to `clusteringInfo()`
-* In addition these structural changes, the following updates are also included in this release
-	- `getClusterManyParams` now uses saved `clusterInfo` rather than `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
-	- removed `transformation` as a required argument to `ClusterExperiment`. Now sets with default of `function(x){x}`.
-	- Adjusted color definitions of `seqPal2` and `seqPal4` to be completely symmetric around center.
-	- Argument `existingColors` in `plotClustersWorkflow` now takes arguments `ignore`,`all`,`highlightOnly` similar to `plotClusters`
-	- Argumnet `nodeColors` now available in `plotDendrogram`
-	- Argument `contrastColors` now available in plotContrastHeatmap. Genes are now ordered by fold-change within each contrast.
+* In addition these structural changes, the following enhancements are also included in this release
 	- New function `plotClusterLegend` that will plot a legend for a clustering.
-	- `plotClusters` argument `existingColors` now allows for the option `firstOnly` 
-	- makeDendrogram now allows option 'coCluster' to the argument `dimReduce` indicating use of the coClustering matrix to build the dendrogram.
-	- makeDendrogram now has a method for building a dendrogram from an arbitrary distance function
-	- `showBigPalette` has been replaced with `showPalette` and now can show any palette of colors.
-	- Changed defaults in `plotDendrogram` so default is to do colorblock of samples.
-	- The colors in `bigPalette` have been changed and shuffled to reduce similar colors and `massivePalette` has been created by adding the non-grey colors from `colors()` so that `plotClusters` will not run out of colors.
-	- `clusterMatrix` function now returns cluster matrix with rownames corresponding to sample names.
-	- `convertClusterLegend` now takes argument `whichClusters`
+	- Color definition changes: `showBigPalette` has been replaced with `showPalette` and now can show any palette of colors.	Adjusted color definitions of `seqPal2` and `seqPal4` to be completely symmetric around center. The colors in `bigPalette` have been changed and shuffled to reduce similar colors and `massivePalette` has been created by adding all of the non-grey colors (in random order) from `colors()` so that `plotClusters` will not run out of colors.
+	- `getClusterManyParams`: now uses saved `clusterInfo` rather than more fragile `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
+	- `ClusterExperiment`: removed `transformation` as a required argument. Now sets with default of `function(x){x}`. Allows argument `clusterLegend` to define the clusterLegend slot in the constructor.
+	- `plotClustersWorkflow`: Argument `existingColors` in  now takes arguments `ignore`,`all`,`highlightOnly` similar to `plotClusters`
+	- `plotDendrogram`: Argument `nodeColors` now available.  Changed defaults so default is to do colorblock of samples.
+	- `plotContrastHeatmap`: Argument `contrastColors` now available to assign colors to the contrasts. Genes are now ordered by fold-change within each contrast.
+	- `plotClusters`: argument `existingColors` now allows for the option `firstOnly` 
+	- `makeDendrogram`: now allows option 'coCluster' to the argument `reduceMethod` indicating use of the coClustering matrix to build the dendrogram. `makeDendrogram` now also has a method for building a dendrogram from an arbitrary distance function
+	- `clusterMatrix`: now returns cluster matrix with rownames corresponding to sample names.
+	- `convertClusterLegend`: now takes argument `whichClusters`
 
 Bugs:
 * converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.
