@@ -192,7 +192,7 @@ setMethod(
 setMethod(
   f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove,clusterLabel) {
+  definition = function(x,whichClusters,clustersToRemove,clusterLabelss) {
 	  if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
 		 makePrimary<-whichClusters==x@primaryIndex
 	  cl<-clusterMatrix(x)[,whichClusters]
@@ -209,12 +209,12 @@ setMethod(
 		  cl[cl %in% clustersToRemove]<- -1
 	  }
 	  else stop("clustersToRemove must be either character or numeric")
-	  if(missing(clusterLabel)){
-		  currlabel<-clusterLabels(x)[whichClusters]
-		  clusterLabel<-paste0(currlabel,"_unassignClusters")
+	  if(missing(clusterLabels)){
+		  currlabel<-clusterLabelss(x)[whichClusters]
+		  clusterLabels<-paste0(currlabel,"_unassignClusters")
 	  }
-	  if(clusterLabel %in% clusterLabels(x)) 
-		  stop("must give a 'clusterLabel' value that is not already assigned to a clustering")
+	  if(clusterLabels %in% clusterLabelss(x)) 
+		  stop("must give a 'clusterLabels' value that is not already assigned to a clustering")
 	  newleg<-leg
 	  if(!"-1" %in% leg[,"clusterIds"] & any(cl== -1)){
 		  newleg<-rbind(newleg,c("-1","white","-1"))
@@ -223,7 +223,7 @@ setMethod(
 	  if(length(whRm)>0){
 		  newleg<-newleg[-whRm,,drop=FALSE]
 	  }
-	  return(addClusterings(x, cl,  clusterLabel = clusterLabel,clusterLegend=list(newleg),makePrimary=makePrimary))
+	  return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=list(newleg),makePrimary=makePrimary))
 	  
 	 
   }
