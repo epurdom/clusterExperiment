@@ -63,7 +63,7 @@ NULL
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format clusterExperiment object, the result of running \code{\link{RSEC}} on 
+#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on 
 #' fluidigm data described in vignette and available in the \code{scRNAseq} 
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
@@ -72,7 +72,7 @@ NULL
 #' #code used to create rsecFluidigm:
 #' \dontrun{
 #' library(scRNAseq)
-#'data("fluidigm")
+#' data("fluidigm")
 #' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
 #' wh_zero <- which(rowSums(assay(se))==0)
 #' pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
@@ -81,13 +81,13 @@ NULL
 #' assays(se) <- list(normalized_counts=fq)
 #' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(clusterExperiment)
+#' library(ClusterExperiment)
 #' ncores<-1
-#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,nPCADims=10,
+#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,reduceMethod="PCA",nReducedDims=10,
 #'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
 #'  combineMinSize=3))
 #' packageVersion("clusterExperiment")
-#' devtools::use_data(rsecFluidigm)
+#' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 
 ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
@@ -99,5 +99,8 @@ NULL
 # 170.428   5.408  61.705
 # > packageVersion("clusterExperiment")
 # [1] ‘1.3.3.9001’
+
+# devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
+
 
 NULL

@@ -13,7 +13,7 @@
   whichClusters = c("workflow", "all"), ...)
 
 \S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
-  existingColors = c("ignore", "all"), resetNames = FALSE,
+  existingColors = c("ignore", "all", "firstOnly"), resetNames = FALSE,
   resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
   clusterLabels = NULL, ...)
 
@@ -23,7 +23,7 @@
   orderSamples = NULL, sampleData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
-  colPalette = bigPalette, input = c("clusters", "colors"),
+  colPalette = massivePalette, input = c("clusters", "colors"),
   clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
   ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
   box = FALSE, ...)
@@ -49,8 +49,9 @@ of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
 \item{existingColors}{how to make use of the exiting colors in the
 \code{ClusterExperiment} object. 'ignore' will ignore them and assign new
 colors. 'firstOnly' will use the existing colors of only the 1st
-clustering, and then give new colors for the remaining (not implemented
-yet). 'all' will use all of the existing colors.}
+clustering, and then align the remaining clusters and give new colors for the 
+remaining only. 'all' will use 
+all of the existing colors.}
 
 \item{resetNames}{logical. Whether to reset the names of the clusters in
 \code{clusterLegend} to be the aligned integer-valued ids from
@@ -111,9 +112,10 @@ this percent overlap.}
 
 \item{startNewColors}{logical, indicating whether in aligning colors between
 rows of clusters, should the colors restart at beginning of colPalette as
-long as colors are not in immediately proceeding row (some of the colors at
-the end of bigPalette are a bit wonky, and so if you have a large clusters
-matrix, this can be useful).}
+long as colors are not in immediately proceeding row (the colors at the end 
+of \code{massivePalette} are all of \code{\link{colors}()} and many will be
+indistinguishable, so this option can be useful if you have a large cluster
+matrix).}
 
 \item{colPalette}{a vector of colors used for the different clusters. Must be
 as long as the maximum number of clusters found in any single
@@ -154,26 +156,30 @@ If \code{clusters} is a matrix, \code{plotClusters} returns
   Specifically, a list with the following elements.
 \itemize{
 
-\item{\code{index}}{ a vector of length equal to \code{ncols(clusters)}
-giving the order of the columns to use to get the original clusters matrix
+\item{\code{orderSamples}}{ a vector of length equal to 
+\code{nrows(clusters)} giving the order of the samples (rows) to 
+ use to get the original clusters matrix
 into the order made by \code{plotClusters}.}
 
 \item{\code{colors}}{ matrix of color assignments for each element of
 original clusters matrix. Matrix is in the same order as original clusters
-matrix. The matrix \code{colors[index,]} is the matrix that can be given back
-to \code{plotClusters} to recreate the plot (see examples).}
+matrix. The matrix \code{colors[orderSamples,]} is the matrix that can be 
+given back to \code{plotClusters} to recreate the plot (see examples).}
 
 \item{\code{alignedClusterIds}}{ a matrix of integer valued cluster
 assignments that match the colors. This is useful if you want to have cluster
 identification numbers that are better aligned than that given in the
-original clusters. Again, the matrix is in same order as original input
-matrix.}
+original clusters. Again, the rows/samples are in same order as original 
+input matrix.}
 
 \item{\code{clusterLegend}}{ list of length equal to the number of columns of
 input matrix. The elements of the list are matrices, each with three columns
 named "Original","Aligned", and "Color" giving, respectively, the
 correspondence between the original cluster ids in \code{clusters}, the
 aligned cluster ids in \code{aligned}, and the color.}
+
+\item{\code{origClusters}}{The original matrix of clusters given to
+\code{plotClusters}}
 }
 }
 \description{
@@ -193,7 +199,7 @@ If \code{whichClusters = "workflow"}, then the workflow clusterings
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 
@@ -224,7 +230,7 @@ resetOrder=TRUE, axisLine=-2)
 #first cluster:
 
 #see what the default colors are and their names
-showBigPalette(wh=1:5)
+showPalette(wh=1:5)
 
 #change "#E31A1C" to "#33A02C"
 newColorMat <- clusterLegend(cl)[[clOrder[1]]]
@@ -251,7 +257,7 @@ return(x)
 })
 
 #make a new object
-cl2 <- clusterExperiment(assay(cl), clMatNew,
+cl2 <- ClusterExperiment(assay(cl), clMatNew,
 transformation=transformation(cl))
 plotClusters(cl2)
 }

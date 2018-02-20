@@ -6,52 +6,76 @@
 \alias{RSEC-methods}
 \alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrix-method}
+\alias{RSEC,SingleCellExperiment-method}
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
+\alias{RSEC,matrix-method}
+\alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
-\S4method{RSEC}{matrix}(x, isCount = FALSE, transFun = NULL,
-  dimReduce = "PCA", nVarDims = NA, nPCADims = c(50), k0s = 4:15,
-  clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, combineProportion = 0.7,
-  combineMinSize = 5, dendroReduce = "mad", dendroNDims = 1000,
-  mergeMethod = "adjP", mergeCutoff = 0.05, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  ncores = 1, random.seed = NULL, run = TRUE)
-
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
 
 \S4method{RSEC}{data.frame}(x, ...)
 
 \S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE,
   rerunClusterMany = FALSE, ...)
+
+\S4method{RSEC}{matrix}(x, ...)
+
+\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
+  reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
+  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
+  "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
+  alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
+  combineProportion = 0.7, combineMinSize = 5, dendroReduce = "mad",
+  dendroNDims = 1000, mergeMethod = "adjP", mergeCutoff = 0.05,
+  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE)
 }
 \arguments{
-\item{x}{the data matrix on which to run the clustering. Can be: matrix (with
-genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+\item{x}{the data matrix on which to run the clustering. Can be object of the
+following classes: matrix (with genes in rows), 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
+or \code{ClusterExperiment}.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{...}{For signature \code{list}, arguments to be passed on to mclapply 
+(if ncores>1). For all the other signatures, arguments to be passed to the 
+method for signature \code{list}.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
+(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
+workflow results will have "\code{_i}" added to the clusterTypes value, 
+where \code{i} is one more than the largest such existing workflow 
+clusterTypes.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
+determines whether to rerun the clusterMany step. Useful if want to try
+different parameters for combining clusters after the clusterMany step,
+without the computational costs of the clusterMany step.}
+
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
+
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
+
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
-details.}
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep 
-(when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
-included, then the full dataset will also be included.}
+\item{nFilterDims}{vector of the number of the most variable features to keep 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
-\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{dimReduce}). If NA is included, then the full dataset will also be
-included.}
+\item{nReducedDims}{vector of the number of dimensions to use (when 
+\code{reduceMethod} gives a dimensionality reduction method).}
 
 \item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
 
@@ -79,9 +103,9 @@ are left unassigned.}
 
 \item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
 
-\item{dendroReduce}{passed to \code{dimReduce} in \code{\link{makeDendrogram}}}
+\item{dendroReduce}{passed to \code{reduceMethod} in \code{\link{makeDendrogram}}}
 
-\item{dendroNDims}{passed to \code{ndims} in \code{\link{makeDendrogram}}}
+\item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 
 \item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
 
@@ -112,30 +136,14 @@ rownames equal to the names of the resulting column names of clMat object
 that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
 however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
-
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply 
-(if ncores>1). For all the other signatures, arguments to be passed to the 
-method for signature \code{list}.}
-
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
-clusterTypes.}
-
-\item{rerunClusterMany}{logical. If the object is a clusterExperiment object,
-determines whether to rerun the clusterMany step. Useful if want to try
-different parameters for combining clusters after the clusterMany step,
-without the computational costs of the clusterMany step.}
 }
 \value{
-A \code{ClusterExperiment} object is returned containing all of 
+A \code{\link{ClusterExperiment}} object is returned containing all of 
 the clusterings from the steps of RSEC
 }
 \description{
 Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
 Clustering) for single cell sequencing data. This is a wrapper function
-around the existing clusterExperiment workflow that results in the output of
+around the existing ClusterExperiment workflow that results in the output of
 RSEC.
 }

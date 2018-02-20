@@ -1,7 +1,6 @@
 #' @title Make hierarchy of set of clusters
 #'   
 #' @aliases makeDendrogram,ClusterExperiment-method
-
 #' @description Makes a dendrogram of a set of clusters based on hclust on the 
 #'   medoids of the cluster.
 #' @param x data to define the medoids from. Matrix and 
@@ -9,43 +8,64 @@
 #' @param cluster A numeric vector with cluster assignments. If x is a 
 #'   ClusterExperiment object, cluster is automatically the primaryCluster(x). 
 #'   ``-1'' indicates the sample was not assigned to a cluster.
-#' @param unassignedSamples how to handle unassigned samples("-1") ; only
+#' @param unassignedSamples how to handle unassigned samples("-1") ; only 
 #'   relevant for sample clustering. See details.
+#' @param reduceMethod character A character identifying what type of 
+#'   dimensionality reduction to perform before clustering. Can be either a
+#'   value stored in either of reducedDims or filterStats slot or a built-in
+#'   diminsionality reduction/filtering. The option "coCluster" will use the
+#'   co-Clustering matrix stored
+#' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
+#'   missing see details for default values. in the 'coClustering' slot of the
+#'   \code{ClusterExperiment} object.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed 
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for 
-#'   signature \code{matrix}. For plotDendrogram, passed to
+#'   signature \code{matrix}. For plotDendrogram, passed to 
 #'   \code{\link{plot.dendrogram}}.
+#' @param ignoreUnassignedVar logical. Whether filtering statistics should
+#'   ignore the unassigned samples within the clustering. Only relevant if
+#'   'reduceMethod' matches one of built-in filtering statistics in
+#'   \code{\link{listBuiltInFilterStats}()}. In which case the clustering identified
+#'   in \code{whichCluster} is passed to \code{makeFilterStats}. See
+#'   \code{\link{makeFilterStats}}  for more details.
 #' @inheritParams clusterSingle
-#' @inheritParams transform
-#' @details The function returns two dendrograms (as a list if x is a matrix or
-#' in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
-#' is created by applying \code{\link{hclust}} to the medoids of each cluster.
-#' In the sample dendrogram the clusters are again clustered, but now the
-#' samples are also part of the resulting dendrogram. This is done by giving
-#' each sample the value of the medoid of its cluster.
-#'
-#' @details The argument \code{unassignedSamples} governs what is done with
-#' unassigned samples (defined by a -1 cluster value). If unassigned=="cluster",
-#' then the dendrogram is created by hclust of the expanded medoid data plus the
-#' original unclustered observations. If \code{unassignedSamples} is "outgroup",
-#' then all unassigned samples are put as an outgroup. If the \code{x} object is
-#' a matrix, then \code{unassignedSamples} can also be "remove", to indicate
-#' that samples with "-1" should be discarded. This is not a permitted option,
-#' however, when \code{x} is a \code{ClusterExperiment} object, because it would
-#' return a dendrogram with less samples than \code{NCOL(x)}, which is not
-#' permitted for the \code{@dendro_samples} slot.
-#'
-#' @details If any merge information is stored in the input object, it will be
+#' @details The function returns two dendrograms (as a list if x is a matrix or 
+#'   in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
+#'   is created by applying \code{\link{hclust}} to the medoids of each cluster.
+#'   In the sample dendrogram the clusters are again clustered, but now the 
+#'   samples are also part of the resulting dendrogram. This is done by giving 
+#'   each sample the value of the medoid of its cluster.
+#'   
+#' @details The argument \code{unassignedSamples} governs what is done with 
+#'   unassigned samples (defined by a -1 cluster value). If
+#'   unassigned=="cluster", then the dendrogram is created by hclust of the
+#'   expanded medoid data plus the original unclustered observations. If
+#'   \code{unassignedSamples} is "outgroup", then all unassigned samples are put
+#'   as an outgroup. If the \code{x} object is a matrix, then
+#'   \code{unassignedSamples} can also be "remove", to indicate that samples
+#'   with "-1" should be discarded. This is not a permitted option, however,
+#'   when \code{x} is a \code{ClusterExperiment} object, because it would return
+#'   a dendrogram with less samples than \code{NCOL(x)}, which is not permitted
+#'   for the \code{@dendro_samples} slot.
+#' @details If any merge information is stored in the input object, it will be 
 #'   erased by a call to mergeDendrogram.
-#' @return If x is a matrix, a list with two dendrograms, one in which the
-#' leaves are clusters and one in which the leaves are samples. If x is a
-#' ClusterExperiment object, the dendrograms are saved in the appropriate slots.
-#'
+#' @details If \code{nDims} is missing, it will be given a default value
+#'   depending on the value of \code{reduceMethod}. If \code{reduceMethod} is set to a
+#'   filtering statistic, \code{nDims} is arbitrarily set to 500. If
+#'   \code{reduceMethod} matches a dimensionality reduction value saved in
+#'   \code{x}, then the number of columns of this matrix. If not, and
+#'   \code{reduceMethod} matches a value of \code{listBuiltInReducedDims()}, then
+#'   arbirarily set to 50.
+#' @return If x is a matrix, a list with two dendrograms, one in which the 
+#'   leaves are clusters and one in which the leaves are samples. If x is a 
+#'   ClusterExperiment object, the dendrograms are saved in the appropriate
+#'   slots.
+#'   
 #' @export
-#'
+#' @seealso makeFilterStats, makeReducedDims
 #' @examples
 #' data(simData)
 #'
@@ -63,14 +83,15 @@
 setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",dimReduce=c("mad","cv","var","PCA","none"),
-                        ndims=if(dimReduce%in%c("mad","cv","var")) 500 else if(dimReduce=="none") NA else 50,ignoreUnassignedVar=TRUE,unassignedSamples=c("outgroup", "cluster"),...)
+  definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
+                    nDims=defaultNDims(x,reduceMethod),ignoreUnassignedVar=TRUE,
+					unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
-#    browser()
+    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+#    
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
@@ -79,33 +100,148 @@ setMethod(
     ########
     ##Transform the data
     ########
-    dimReduce <- match.arg(dimReduce)
-    if(length(ndims) > 1) {
-      stop("makeDendrogram only handles one choice of dimensions.")
-    }
-    if(!is.na(ndims) & dimReduce=="none") {
-      warning("specifying ndims has no effect if dimReduce==`none`")
-    }
-    origX <- assay(x)
-    nPCADims <- ifelse(dimReduce=="PCA", ndims, NA)
-    nVarDims <- ifelse(dimReduce=="var", ndims, NA)
-    dimReduceCl<-if(ignoreUnassignedVar) cl else NULL #ifelse doesn't work with NULL
-    transObj <- .transData(origX, nPCADims=nPCADims, nVarDims=nVarDims,
-                           dimReduce=dimReduce, transFun=transformation(x),clustering=dimReduceCl)
-    dat <- transObj$x
-	if(is.null(dim(dat)) || NCOL(dat) != NCOL(origX)) {
-      stop("Error in the internal transformation of x")
-    }
-    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
+    if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
+	if(reduceMethod!="coCluster"){
+	    #need to change name of reduceMethod to make it match the 
+		#clustering information if that option chosen.
+		reduceMethodName<-reduceMethod
+		if(ignoreUnassignedVar){
+			reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
+		}
+		#if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
+	    if(length(nDims) > 1) {
+	      stop("makeDendrogram only handles one choice of dimensions.")
+	    }
+	    if(!is.na(nDims) & reduceMethod=="none") {
+	      warning("specifying nDims has no effect if reduceMethod==`none`")
+	    }
+		###Calculate filters/reduceMethod if needed...
+		if(!isReducedDims(x,reduceMethod) & isBuiltInReducedDims(reduceMethod)){
+				x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims)
+			}
+		else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
+				x<-makeFilterStats(x,filterStat=reduceMethod,
+				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
+			}
+			
+		if(reduceMethod=="none") 
+			dat<-transformData(x)
+		else if(isReducedDims(x,reduceMethod))
+			dat<-t(reducedDim(x,type=reduceMethod)[,1:nDims])
+		else if(isFilterStats(x,reduceMethodName))
+			dat<-transformData(filterData(x,filterStats=reduceMethodName,percentile=nDims))
+		else
+			stop("'x' does not contain the given 'reduceMethod' value nor does 'reduceMethod' value match any built-in filters or dimensionality reduction options.")
+	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
+	}
+	else{
+		if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'reduceMethod'")
+			if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
+		outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
+		
+	}
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
-	
-	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
+
+	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"	
     ch<-.checkDendrogram(x)
 	if(!is.logical(ch)) stop(ch)
     return(x)
   })
+
+
+						
+#' @rdname makeDendrogram
+#' @export
+setMethod(
+  f = "makeDendrogram",
+  signature = "dist",
+  definition = function(x, cluster,
+                        unassignedSamples=c("outgroup", "cluster", "remove"),
+                        ...) {
+    unassigned <- match.arg(unassignedSamples)
+    cl <- cluster
+	nSamples<-attributes(x)$Size
+	if(nSamples != length(cl)) {
+	      stop("cluster must be the same length as the number of samples")
+    }
+	if(is.null(attributes(x)$Labels)) {
+      attributes(x)$Labels <- as.character(1:nSamples)
+    }
+
+	clNum<-.convertToNum(cl)
+  
+    #############
+    # Cluster dendrogram
+    #############
+    whKeep <- which(clNum >= 0) #remove -1, -2
+    if(length(whKeep) == 0) stop("all samples have clusterIds<0")
+    if(length(unique(cl[whKeep]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
+	clFactor <- factor(cl[whKeep])
+	
+	#each pair of clusters, need to get median of the distance values
+	#do a double by, just returning the values as a vector, and then take the median
+	medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
+		out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
+		names(out)<-levels(clFactor)
+		return(out)	
+	}))
+	diag(medoids)<-0 #incase the median of within is not zero...
+	rownames(medoids) <- levels(clFactor)
+	colnames(medoids) <- levels(clFactor)
+	nPerCluster <- table(clFactor)
+		    clusterD<-as.dendrogram(stats::hclust(as.dist(medoids),members=nPerCluster,...))	
+    #############
+    # Samples dendrogram
+    #############
+
+    #make fake dist with just medoids as value per sample (only for whKeep samples):
+    fakeData <- do.call("rbind",lapply(levels(clFactor), function(z){
+        ind <- which(clFactor == z) #indices of those in this cluster
+        med <- medoids[z,] #vector of mediod with other clusters
+		medExp<-rep(med,times=nPerCluster)
+        mat <- matrix(medExp, nrow=length(ind), ncol=sum(nPerCluster) ,byrow=TRUE)
+        rownames(mat) <- rownames(as.matrix(x)[whKeep,])[ind]
+        colnames(mat) <- colnames(as.matrix(x)[,whKeep])
+        return(mat)
+    }))
+    if(length(whKeep) != nSamples && unassigned != "remove"){
+		#need to add the unassigned samples into fakeData
+        outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
+        if(unassigned=="outgroup"){
+            #hard to use merge and then get the indices to go back to the same ones
+            #cheat and add large amount to the unassigned so that they don't cluster to
+            maxAss <- max(c(max(fakeData),max(outlierDat)))
+            offDiag<-matrix(maxAss+10^6,nrow=nrow(fakeData),ncol=ncol(outlierDat))
+			fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
+        }
+        
+        if(unassigned=="cluster"){
+            #add remaining distances to fake data and let them cluster
+			offDiag <- as.matrix(x)[whKeep,-whKeep,drop=FALSE]
+			#put in order of fake data, then outliers
+			offDiag<-offDiag[row.names(fakeData),,drop=FALSE]
+			
+			fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
+        }
+    }
+	#make sure fakeData in same order as original data so order.dendrogram will work
+	sampleNames<-attributes(x)$Labels
+	m<-na.omit(match(sampleNames,rownames(fakeData)))
+	fakeData<-fakeData[m,m]
+	fullD <- as.dendrogram(stats::hclust(as.dist(fakeData)), ...)
+	if(length(whKeep) != nSamples && unassigned == "outgroup"){
+        #need to get rid of super long outgroup arm
+        armLength <- max(attributes(fullD[[1]])$height,
+                         attributes(fullD[[2]])$height)
+        attributes(fullD)$height <- armLength + .1 * armLength
+    }
+  #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+    return(list(samples=fullD,clusters=clusterD))
+  })
+
+
 
 #' @rdname makeDendrogram
 #' @export
@@ -115,7 +251,6 @@ setMethod(
   definition = function(x, cluster,
                         unassignedSamples=c("outgroup", "cluster", "remove"),
                         ...) {
-   # browser()
     unassigned <- match.arg(unassignedSamples)
     cl <- cluster
     if(ncol(x) != length(cl)) {
@@ -124,31 +259,74 @@ setMethod(
     if(is.null(colnames(x))) {
       colnames(x) <- as.character(1:ncol(x))
     }
+	
 	clNum<-.convertToNum(cl)
   
-    # if(is.factor(cl)) {
-    #   warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-    #   cl<-as.numeric(as.character(cl))
-    # }
-    #dat <- t(x) #make like was in old code
-
     #############
     # Cluster dendrogram
     #############
-    whRm <- which(clNum >= 0) #remove -1, -2
-    if(length(whRm) == 0) stop("all samples have clusterIds<0")
-    if(length(unique(cl[whRm]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-	clFactor <- factor(cl[whRm])
-    medoids <- do.call("rbind", by(t(x[,whRm]), clFactor, function(z){apply(z, 2, median)}))
-    rownames(medoids) <- levels(clFactor)
-    nPerCluster <- table(clFactor)
+    whKeep <- which(clNum >= 0) #remove -1, -2
+    if(length(whKeep) == 0) stop("all samples have clusterIds<0")
+    if(length(unique(cl[whKeep]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
+	clFactor <- factor(cl[whKeep])
 	
-    clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
-    
+	medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
+		    rownames(medoids) <- levels(clFactor)
+		    nPerCluster <- table(clFactor)
+			    clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))	
+		
+
     #############
     # Samples dendrogram
     #############
-    ####Attempt to make separate hclust and paste together.
+
+    #make fake data with just medoids as value per sample:
+    dat <- t(x) #make like was in old code
+    fakeData <- do.call("rbind", lapply(levels(clFactor), function(z){
+        ind <- which(clFactor == z) #indices of those in this cluster
+        med <- medoids[z,]
+        mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
+        rownames(mat) <- rownames(dat[whKeep,])[ind]
+        return(mat)
+    }))
+    fakeData <- fakeData[rownames(dat[whKeep,]),] #why do I need this??
+    if(length(whKeep) != nrow(dat) && unassigned != "remove"){
+        if(unassigned=="outgroup"){
+            #hard to use merge and then get the indices to go back to the same ones
+            #cheat and add large amount to the unassigned so that they don't cluster to
+            outlierDat <- dat[-whKeep,,drop=FALSE]
+            maxAss <- max(dat[whKeep,,drop=FALSE])
+            outlierDat <- outlierDat + maxAss + 10e6
+            fakeData <- rbind(fakeData, outlierDat)
+            fakeData <- fakeData[rownames(dat),,drop=FALSE]
+            # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
+            # unassD<-as.dendrogram(stats::hclust(dist(dat[-whKeep,])))
+            # return(merge(fullD,unassD))
+            
+        }
+        
+        if(unassigned=="cluster"){
+            #add remaining to fake data and let them cluster
+            fakeData <- rbind(fakeData,dat[-whKeep,,drop=FALSE])
+            fakeData <- fakeData[rownames(dat),,drop=FALSE]
+            #return(as.dendrogram(stats::hclust(dist(fakeData))))
+        }
+    }
+	#make sure fakeData in same order as original data so order.dendrogram will work
+	fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
+	fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
+    if(length(whKeep) != nrow(dat) && unassigned == "outgroup"){
+        #need to get rid of super long outgroup arm
+        armLength <- max(attributes(fullD[[1]])$height,
+                         attributes(fullD[[2]])$height)
+        attributes(fullD)$height <- armLength + .1 * armLength
+    }
+  #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+    return(list(samples=fullD,clusters=clusterD))
+  })
+
+
+    ####Past Attempt for samples dendro: make separate hclust and paste together.
     #     #For each cluster, run hclust and convert to phylobase tree
     #     dendPerCl<-by(t(x[,whRm]),clFactor,function(z){.makePhylobaseTree(as.dendrogram(stats::hclust(dist(z)^2)),type="dendro")})
     #     clusterDPhybase<-.makePhylobaseTree(clusterD,type="dendro")
@@ -201,7 +379,7 @@ setMethod(
     #     #combineEdgeFinal[combineEdgeFinal[,1]==0,1]<-0
     #     combineEdgeFinal[combineEdge[,1]==0,1]<-length(whTips)+1
     #     phyloObj<-list(edge=combineEdgeFinal,tip.label=as.character(1:))
-    #     browser()
+    #     
     #     #phylo4(combineEdgeFinal)
     
     
@@ -229,54 +407,6 @@ setMethod(
 #     }
 #     orderSamples<-do.call("rbind",orderPerCl)
 #     orderSamples<-orderSamples[order(orderSamples[,"externalOrder"]),]
-
-    #make fake data with just medoids as value per sample:
-    dat <- t(x) #make like was in old code
-    fakeData <- do.call("rbind", lapply(levels(clFactor), function(x){
-        ind <- which(clFactor == x) #indices of those in this cluster
-        med <- medoids[x,]
-        mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
-        rownames(mat) <- rownames(dat[whRm,])[ind]
-        return(mat)
-    }))
-    fakeData <- fakeData[rownames(dat[whRm,]),]
-    if(length(whRm) != nrow(dat) && unassigned != "remove"){
-        if(unassigned=="outgroup"){
-            #hard to use merge and then get the indices to go back to the same ones
-            #cheat and add large amount to the unassigned so that they don't cluster to
-            outlierDat <- dat[-whRm,,drop=FALSE]
-            maxAss <- max(dat[whRm,,drop=FALSE])
-            outlierDat <- outlierDat + maxAss + 10e6
-            fakeData <- rbind(fakeData, outlierDat)
-            fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
-            # unassD<-as.dendrogram(stats::hclust(dist(dat[-whRm,])))
-            # return(merge(fullD,unassD))
-            
-        }
-        
-        if(unassigned=="cluster"){
-            #add remaining to fake data and let them cluster
-            fakeData <- rbind(fakeData,dat[-whRm,,drop=FALSE])
-            fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            #return(as.dendrogram(stats::hclust(dist(fakeData))))
-        }
-    }
-#	browser()
-	#make sure fakeData in same order as original data so order.dendrogram will work
-	fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
-	fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
-    if(length(whRm) != nrow(dat) && unassigned == "outgroup"){
-        #need to get rid of super long outgroup arm
-        armLength <- max(attributes(fullD[[1]])$height,
-                         attributes(fullD[[2]])$height)
-        attributes(fullD)$height <- armLength + .1 * armLength
-    }
-  #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
-    return(list(samples=fullD,clusters=clusterD))
-  })
-
-
 
 
 

@@ -1,6 +1,6 @@
 context("Non-heatmap related plot functions")
 
-source("create_objects.R")
+
 
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
@@ -45,7 +45,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
     #CE object with mixture of workflow and other types
     x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
-    x2<-plotClusters(object=removeClusters(ceSim,"User"),resetColors=TRUE)
+    x2<-plotClusters(object=removeClusterings(ceSim,"User"),resetColors=TRUE)
     whP<-clusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
@@ -68,7 +68,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
 
   #test CE version
-  test<- clusterMany(simCount,dimReduce="PCA",nPCADims=c(5,10,50), isCount=TRUE,
+  test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)) #no colData in test
   expect_error(plotClusters(test,sampleData=as.data.frame(colData(ceSim))),"no colData for object data")
   expect_error(plotClusters(ceSim,sampleData=as.data.frame(colData(ceSim))),"invalid values for pulling sampleData")
@@ -97,7 +97,7 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
 
 
 test_that("plotClustersWorkflow", {
-	cc<-clusterMany(mat, ks=c(3,4),nVarDim=c(10,15),nPCADim=c(3,4),dimReduce=c("none","PCA","var"),clusterFunction="pam",
+	cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
 	                       isCount=FALSE)
 	cc<-combineMany(cc,proportion=.7,whichClusters = "clusterMany")
@@ -118,48 +118,78 @@ test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="plotAndLegend")
   convertClusterLegend(smSimCE,output="matrixNames")
   convertClusterLegend(smSimCE,output="matrixColors")
+  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=c("cluster1"))
+  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=1:3)
+  convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=c("cluster1"))
+  expect_error(convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=1:3),"given whichClusters indicates more than 1 clustering which is not allowed for option")
+  
+  plotClusterLegend(smSimCE)
+  plotClusterLegend(smSimCE,whichCluster="cluster1")
+    showPalette()
+  showPalette(massivePalette)
 })
 
 
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    plotBarplot(object=clusterMatrix(ceSim)[,1:2])
+    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1:2]))
     #test vector version
-    plotBarplot(object=clusterMatrix(ceSim)[,1])
+    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1]))
     #check error
     expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
     
     #test CE version with no defaults
-    plotBarplot(ceSim)
+    expect_silent(plotBarplot(ceSim))
     #test CE version whichClusters arguments
-    plotBarplot(ceSim,whichClusters="workflow")
-    plotBarplot(ceSim,whichClusters="primaryCluster")
-    plotBarplot(ceSim)
+    expect_silent(plotBarplot(ceSim,whichClusters="workflow"))
+    expect_silent(plotBarplot(ceSim,whichClusters="primaryCluster"))
+    expect_silent(plotBarplot(ceSim))
 
     
     test<-ceSim
-    clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])]
+    expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])])
     #test character matrix version
-    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2])
+    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2]))
     #test character vector version
-    plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1])
+    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1]))
     #test labels argument
-    plotBarplot(test,whichClusters=1:2,labels="id")
-    plotBarplot(test,whichClusters=1:2,labels="name")
+    expect_silent(plotBarplot(test,whichClusters=1:2,labels="id"))
+    expect_silent(plotBarplot(test,whichClusters=1:2,labels="name"))
     #plotBarplot(ceSim,whichClusters="primaryCluster")
     
 })
 
-test_that("plotDimReduce works",{
-	cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+test_that("plotReducedDims works",{
+	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 	clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-	removeSil=c(TRUE,FALSE))
-	clusterLegend(cl)[[primaryClusterIndex(cl)]][,"name"]<-LETTERS[1:5]
-	plotDimReduce(cl,legend="bottomright")
-	plotDimReduce(cl,legend=TRUE)
-
-	#higher dims.
-	plotDimReduce(cl,legend=TRUE,whichDims=1:4)
+	removeSil=c(TRUE,FALSE)))
+	expect_silent(plotReducedDims(cl,legend="bottomright"))
+	expect_silent(plotReducedDims(cl,legend=TRUE))
+	expect_silent(clusterLegend(cl)[["nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 	
+	#test on object that doesn't have saved:
+	expect_silent(clD<-plotReducedDims(ceSimData,reducedDim="PCA"))
+	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
+	
+	#higher dims.
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
+	expect_error(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
+	#force it to recalculate:
+	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
+	
+	
+	
+})
+
+test_that("plotFeatureBoxplot works",{
+	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
+		clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+		removeSil=c(TRUE,FALSE)))
+	expect_silent(clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
+	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
+	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
+	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
+	expect_silent(plotFeatureBoxplot(cc,ignoreUnassigned=TRUE,feature=rownames(cc)[2]))
 })

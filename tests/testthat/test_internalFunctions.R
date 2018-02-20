@@ -1,5 +1,5 @@
 context("InternalFunctions")
-source("create_objects.R")
+
 
 test_that("`.TypeIntoIndices` works",{
     ccM<-combineMany(ceSim,proportion=.2,clusterLabel="mySpecialLabel")

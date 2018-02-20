@@ -9,10 +9,11 @@
 \usage{
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
   whichClusters = c("mergeClusters", "combineMany"),
-  whichClusterMany = NULL, nBlankLines = ceiling(nClusters(object) * 0.05),
-  existingColors = FALSE, nSizeResult = ceiling(nClusters(object) * 0.02),
-  clusterLabels = TRUE, clusterManyLabels = TRUE,
-  sortBy = c("highlighted", "clusterMany"), highlightOnTop = TRUE, ...)
+  whichClusterMany = NULL, nBlankLines = ceiling(nClusterings(object) *
+  0.05), existingColors = c("ignore", "all", "highlightOnly"),
+  nSizeResult = ceiling(nClusterings(object) * 0.02), clusterLabels = TRUE,
+  clusterManyLabels = TRUE, sortBy = c("highlighted", "clusterMany"),
+  highlightOnTop = TRUE, ...)
 }
 \arguments{
 \item{object}{A \code{ClusterExperiment} object on which
@@ -31,11 +32,7 @@ to clusterings of clusterType \code{clusterMany}.}
 \item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the highlighted clusterings.}
 
-\item{existingColors}{logical. If logical, whether the highlighted clusters
-should use colors matched to the clusterMany results, or should the stored
-colors in \code{ClusterExperiment} object be used. This argument has no
-effect on the colors of the clusterMany results, whose colors will be
-chosen based on the alignment of plotClusters.}
+\item{existingColors}{one of "ignore","all","highlightOnly". Whether the plot should use the stored colors in the \code{ClusterExperiment} object given. "highlightOnly" means only the highlighted clusters will use the stored colors, not the clusterMany clusterings.}
 
 \item{nSizeResult}{the number of rows each highlighted clustering should take up.
 Increasing the number increases the thickness of the rectangles
@@ -84,7 +81,7 @@ This plot is solely intended to make it easier to use the
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
-cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 cl <- combineMany(cl, proportion=0.7)

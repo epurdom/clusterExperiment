@@ -201,7 +201,7 @@ else {
 		  tempClusterDArgs<-mainClusterArgs
 		  tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
 		    	      
-		  res <- .clusterWrapper(x=x, subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
+		  res <- .clusterWrapper(x=x, diss=diss,subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
       }
       else{
           tempArgs<-mainClusterArgs

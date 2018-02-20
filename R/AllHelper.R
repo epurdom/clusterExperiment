@@ -7,7 +7,7 @@
 #' the co-clustering matrix are lost.
 #' @export
 #' @param ...,i,j,drop Forwarded to the
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} method.
+#'   \code{\link{SingleCellExperiment}} method.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -37,7 +37,7 @@ setMethod(
   signature = c("ClusterExperiment", "ANY", "numeric"),
   definition = function(x, i, j, ..., drop=TRUE) {
     # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    # out<-selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
 	###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
 	#Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
@@ -64,17 +64,19 @@ setMethod(
     })
 	#fix order of samples so same
 	newOrder<-rank(x@orderSamples[j])
-    out<- clusterExperiment(
-             se=as(selectMethod("[",c("SummarizedExperiment","ANY","numeric"))(x,i,j),"SummarizedExperiment"),#have to explicitly give the inherintence... not great.
+	#
+    out<- ClusterExperiment(
+object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
              clusters = newMat,
                transformation=x@transformation,
                primaryIndex = x@primaryIndex,
                clusterTypes = x@clusterTypes,
                clusterInfo=x@clusterInfo,
                orderSamples=newOrder,
+			   clusterLegend=newClLegend,
 			   checkTransformAndAssay=FALSE
     )
-	clusterLegend(out)<-newClLegend
+#	clusterLegend(out)<-newClLegend
     return(out)
   }
 )
@@ -88,7 +90,10 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-     cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
+	cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
+	cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
+    cat("-----------\n")
+    cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
     cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")
     cat("Table of clusters (of primary clustering):")
     print(table(primaryClusterNamed(object)))
@@ -155,7 +160,7 @@ setMethod(
 #' @details Note that redefining the transformation function via
 #'   \code{transformation(x)<-} will check the validity of the transformation on
 #'   the data assay. If the assay is large, this may be time consuming. Consider
-#'   using a call to clusterExperiment, which has the option as to whether to
+#'   using a call to ClusterExperiment, which has the option as to whether to
 #'   check the validity of the transformation.
 #' @aliases transformation<-
 setReplaceMethod(
@@ -173,17 +178,35 @@ setReplaceMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{nClusters} returns the number of clusterings (i.e., ncol of
+#' @return \code{nClusterings} returns the number of clusterings (i.e., ncol of
 #' clusterMatrix).
 #' @export
-#' @aliases nClusters
+#' @aliases nClusterings
 setMethod(
-  f = "nClusters",
+  f = "nClusterings",
   signature = "ClusterExperiment",
   definition = function(x){
     return(NCOL(clusterMatrix(x)))
   }
 )
+
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{nClusters} returns the number of clusters per clustering
+#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering. 
+#' @export
+#' @aliases nClusters
+setMethod(
+  f = "nClusters",
+  signature = "ClusterExperiment",
+  definition = function(x,ignoreUnassigned=TRUE){
+	  if(ignoreUnassigned){
+		  return(apply(clusterMatrix(x),2,function(x){length(unique(x[x>0]))}))
+	  }
+	  else return(apply(clusterMatrix(x),2,function(x){length(unique(x))}))
+  }
+)
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{nFeatures} returns the number of features (same as `nrow`).
 #' @aliases nFeatures
@@ -225,7 +248,8 @@ setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment","missing"),
   definition = function(x,whichClusters) {
-    return(x@clusterMatrix)
+	  wh<-1:ncol(x@clusterMatrix)
+   return(clusterMatrix(x,whichClusters=wh))
   }
 )
 #' @rdname ClusterExperiment-methods
@@ -236,7 +260,9 @@ setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment","numeric"),
   definition = function(x,whichClusters) {
-    return(x@clusterMatrix[,whichClusters,drop=FALSE])
+	  mat<-x@clusterMatrix[,whichClusters,drop=FALSE]
+	  rownames(mat)<-colnames(x)
+    return(mat)
   }
 )
 #' @rdname ClusterExperiment-methods
@@ -345,11 +371,11 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterInfo} returns the clusterInfo slot.
-#' @aliases clusterInfo
+#' @return \code{clusteringInfo} returns the clusterInfo slot.
+#' @aliases clusteringInfo
 #' @export
 setMethod(
-  f = "clusterInfo",
+  f = "clusteringInfo",
   signature = "ClusterExperiment",
   definition = function(x) {
     out<-x@clusterInfo
@@ -376,8 +402,7 @@ setMethod(
 #' @export
 #' @rdname ClusterExperiment-methods
 #' @aliases clusterLabels<-
-setReplaceMethod(
-  f = "clusterLabels",
+setReplaceMethod( f = "clusterLabels",
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value) {
     if(length(value)!=NCOL(clusterMatrix(object))) stop("value must be a vector of length equal to NCOL(clusterMatrix(object)):",NCOL(clusterMatrix(object)))
@@ -402,8 +427,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterLegend<-
-setReplaceMethod(
-    f = "clusterLegend",
+setReplaceMethod( f = "clusterLegend",
     signature = signature(object="ClusterExperiment", value="list"),
     definition = function(object, value) {
         object@clusterLegend<-unname(value)
@@ -426,8 +450,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases orderSamples<-
-setReplaceMethod(
-    f = "orderSamples",
+setReplaceMethod( f = "orderSamples",
     signature = signature(object="ClusterExperiment", value="numeric"),
     definition = function(object, value) {
 		object@orderSamples<-value
@@ -440,8 +463,7 @@ setReplaceMethod(
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterTypes<-
-setReplaceMethod(
-    f = "clusterTypes",
+setReplaceMethod( f = "clusterTypes",
     signature = signature(object="ClusterExperiment", value="character"),
     definition = function(object,value) {
         object@clusterTypes<-value
@@ -455,8 +477,7 @@ setReplaceMethod(
 
 #' @aliases tableClusters
 #' @rdname ClusterExperiment-methods
-setMethod(
-  f = "tableClusters",
+setMethod( f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="character"),
   definition = function(x, whichClusters,...)
   {
@@ -468,8 +489,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
-setMethod(
-    f = "tableClusters",
+setMethod( f = "tableClusters",
     signature = signature(x = "ClusterExperiment",whichClusters="missing"),
     definition = function(x, whichClusters,...)
     {
@@ -479,8 +499,7 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @export
-setMethod(
-  f = "tableClusters",
+setMethod( f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
   definition = function(x, whichClusters,...)
   { 
@@ -500,7 +519,7 @@ setMethod(
 #     if(type=="clusterMany"){
 #       #recreate the paramMatrix return value
 #       paramMatrix<-do.call("rbind",lapply(wwCC,function(ii){
-#         data.frame(index=ii,clusterInfo(x)[[ii]]["choicesParam"])
+#         data.frame(index=ii,clusteringInfo(x)[[ii]]["choicesParam"])
 #       }))
 #
 #     }
@@ -508,7 +527,7 @@ setMethod(
 #
 #     }
 #     else{
-#       return(clusterInfo(x)[whCC])
+#       return(clusteringInfo(x)[whCC])
 #     }
 #   }
 # )

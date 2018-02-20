@@ -77,7 +77,7 @@
 #'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
 #'   means that the log2(1+count) will be used as the transformation, like for
 #'   the matrix case as well as the voom calculation, and will NOT use the 
-#'   transformation stored in the object. If FALSE, then transform(x) will be 
+#'   transformation stored in the object. If FALSE, then transformData(x) will be 
 #'   given to the input and will be used for both \code{makeDendrogram} and 
 #'   \code{getBestFeatures}, with no voom correction.
 #'   
@@ -398,9 +398,9 @@ setMethod(f = "mergeClusters",
   }
   else{
     cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
-    note("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x))
+    .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
   }
-  if(isCount) note("If `isCount=TRUE` the data will be transformed with voom() rather than
+  if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
 	if(!x@dendro_outbranch){
@@ -427,7 +427,7 @@ This makes sense only for counts.")
     else propTable<-NULL
   }
   else propTable<-NULL
-  outlist <- mergeClusters(x=if(!isCount) transform(x) else assay(x),
+  outlist <- mergeClusters(x=if(!isCount) transformData(x) else assay(x),
                            cl=cl, nodePropTable=propTable,
                            dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
@@ -436,8 +436,8 @@ This makes sense only for counts.")
   ##Did anything change??
   if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
-    if(!didMerge) note("merging with these parameters did not result in any clusters being merged.")
-    newObj <- clusterExperiment(x, outlist$clustering,
+    if(!didMerge) .mynote("merging with these parameters did not result in any clusters being merged.")
+    newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
                                 checkTransformAndAssay=FALSE)
@@ -446,9 +446,9 @@ This makes sense only for counts.")
     clusterLabels(newObj) <- clusterLabel
     ##Check if pipeline already ran previously and if so increase
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
-    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
+	if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    #add merge slots manually here, because need joint object to dendro_index stuff, and other wise get validity errors
+    #add merge slots manually here, because need joint object to dendro_index stuff, otherwise get validity errors
     retval@merge_nodeProp<-propTable
     retval@merge_index<-1
     retval@merge_method<-outlist$mergeMethod
@@ -463,7 +463,7 @@ This makes sense only for counts.")
 		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
 		origOldToNew<-outlist$oldClToNew
 		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-			#browser()
+			#
 			currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
 			#-----
 			##Match merge Ids in mergeTable to columns of origOldToNew

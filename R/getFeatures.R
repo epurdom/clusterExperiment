@@ -272,13 +272,12 @@ setMethod(f = "getBestFeatures",
             }
             
             if(isCount) {
-              note(
-                "If `isCount=TRUE` the data will be transformed with voom() rather than
+              .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
               dat <- assay(x)
             } else {
-              dat <- transform(x)
+              dat <- transformData(x)
             }
             
             getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
@@ -354,9 +353,9 @@ This makes sense only for counts.")
 
 #' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
-	if(is.na(object@dendro_index)) stop("no dendrogram for this clusterExperiment Object")
+	if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
-	if(is.na(object@merge_index)) stop("no merging was done for this clusterExperiment Object")
+	if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
 		#test mergeClusters actually subset of the cluster says merged
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
@@ -392,7 +391,7 @@ This makes sense only for counts.")
   #2) Node name which now should be a merge cluster id
   ##################
   newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
-  #browser()
+  #
 
   #Solve 1) First:
   #Find the correspondence between old and new

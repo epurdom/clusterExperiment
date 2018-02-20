@@ -7,6 +7,7 @@
 \alias{clusterSingle,matrixOrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
+\alias{clusterSingle,SingleCellExperiment,missing-method}
 \alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
@@ -19,15 +20,20 @@
 \S4method{clusterSingle}{ClusterExperiment,missing}(x,
   replaceCoClustering = FALSE, ...)
 
+\S4method{clusterSingle}{SingleCellExperiment,missing}(x,
+  reduceMethod = "none", nDims = defaultNDims(x, reduceMethod), ...)
+
 \S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  dimReduce = c("none", "PCA", "var", "cv", "mad"), ndims = NA,
+  reduceMethod = c("none", listBuiltInReducedDims(),
+  listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
   clusterLabel = "clusterSingle", checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link{SummarizedExperiment}}, or \code{\link{ClusterExperiment}}
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
 \item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
@@ -40,6 +46,15 @@ on which to run the clustering.}
 \code{ClusterExperiment} object. If TRUE, the co-clustering resulting from
 subsampling is returned in the coClustering object and replaces any
 existing coClustering object in the slot \code{coClustering}.}
+
+\item{reduceMethod}{character A character identifying what type of 
+dimensionality reduction to perform before clustering. Options are 
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
+
+\item{nDims}{integer An integer identifying how many dimensions to reduce to 
+in the reduction specified by \code{reduceMethod}. Defaults to output of
+\code{\link{defaultNDims}}}
 
 \item{subsample}{logical as to whether to subsample via 
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
@@ -60,21 +75,15 @@ help pages of \code{\link{mainClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
 
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
-
-\item{dimReduce}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
-details.}
-
-\item{ndims}{integer An integer identifying how many dimensions to reduce to 
-in the reduction specified by \code{dimReduce}}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result
@@ -84,9 +93,7 @@ of a call to \code{clusterSingle}.}
 valid.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object if input was \code{x} a
-  matrix (or \code{assay} of a \code{ClusterExperiment} or
-  \code{SummarizedExperiment} object).
+A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
 
 If input was \code{diss}, then the result is a list with values 
   \itemize{ \item{clustering: }{The vector of clustering results} 
@@ -95,9 +102,8 @@ If input was \code{diss}, then the result is a list with values
   clustering} }
 }
 \description{
-Given input data, \code{\link{SummarizedExperiment}}, or 
-\code{\link{ClusterExperiment}} object, this function will find clusters, 
-based on a single specification of parameters.
+Given input data, 
+ this function will find clusters, based on a single specification of parameters.
 }
 \details{
 \code{clusterSingle} is an 'expert-oriented' function, intended to
@@ -202,8 +208,8 @@ data(simData)
 
 #use clusterSingle to do just clustering k=3 with no subsampling
 clustNothing <- clusterSingle(simData, 
-    subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",
-    clusterArgs=list(k=3)))
+    subsample=FALSE, sequential=FALSE, 
+    mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #compare to standard pam
 cluster::pam(t(simData),k=3,cluster.only=TRUE)
 }

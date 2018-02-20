@@ -1,22 +1,15 @@
-setGeneric(
-  name = "tableClusters",
-  def=function(x,whichClusters,...){
-    standardGeneric("tableClusters")
-  }
-)
-setGeneric(
-  name = "nodeMergeInfo",
-  def=function(x,...){
-    standardGeneric("nodeMergeInfo")
-  }
-)
+setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
+setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
+setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
+setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
+setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
+setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
+setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
+setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
+setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
 
-setGeneric(
-  name = "getMergeCorrespond",
-  def=function(x,...){
-    standardGeneric("getMergeCorrespond")
-  }
-)
+setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
 setGeneric(
   name = "mergeClusterIndex",
   def=function(x,...){
@@ -164,9 +157,9 @@ setGeneric(
 		standardGeneric("getClusterManyParams")
 	})
 setGeneric(
-  name = "nClusters",
+  name = "nClusterings",
   def = function(x) {
-    standardGeneric("nClusters")
+    standardGeneric("nClusterings")
   }
 )
 
@@ -235,13 +228,7 @@ setGeneric(
         standardGeneric("plotBarplot")
     }
 )
-setGeneric(
-    name="plotDimReduce",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotDimReduce")
-    }
-)
+setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
   name="plotHeatmap",
@@ -263,14 +250,12 @@ setGeneric(
     standardGeneric("transformation<-")
   }
 )
-# don't need this because a standard generic already exists
-# setGeneric(
-#   name = "transform",
-#   def = function(x,...) {
-#     standardGeneric("transform")
-#   }
-# )
-setGeneric("transform")
+setGeneric(
+  name = "transformData",
+  def = function(object,...) {
+    standardGeneric("transformData")
+  }
+)
 
 setGeneric(
   name = "clusterMatrix",
@@ -334,40 +319,18 @@ setGeneric(
     }
 )
 
-setGeneric(
-  name = "addClusters",
-  def = function(x, y,...) {
-    standardGeneric("addClusters")
-  }
-)
 
-setGeneric(
-  name = "removeClusters",
-  def = function(x, whichRemove,exactMatch=TRUE) {
-    standardGeneric("removeClusters")
-  }
-)
-
-setGeneric(
-  name = "removeUnclustered",
-  def = function(x) {
-    standardGeneric("removeUnclustered")
-  }
-)
-
-setGeneric(
-  name = "clusterInfo",
-  def = function(x) {
-    standardGeneric("clusterInfo")
-  }
-)
-
-setGeneric(
-  name = "combineMany",
-  def = function(x, whichClusters, ...) {
-    standardGeneric("combineMany")
-  }
-)
+setGeneric( name = "removeClusters", def = function(x, whichClusters,...) {
+    standardGeneric("removeClusters")})
+setGeneric( name = "addClusterings", def = function(x, y,...) {
+    standardGeneric("addClusterings")})
+setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
+    standardGeneric("removeClusterings")})
+setGeneric( name = "removeUnclustered", def = function(x) {
+	standardGeneric("removeUnclustered")})
+setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
+setGeneric( name = "combineMany", def = function(x, whichClusters, ...) {
+    standardGeneric("combineMany")})
 
 setGeneric(
   name = "clusterMatrixNamed",

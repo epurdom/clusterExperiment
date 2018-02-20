@@ -1,3 +1,52 @@
+Changes in version 1.99.0 ( Release date: 2018-02-15)
+==============
+
+Changes:
+* MAJOR CHANGE TO DEFINITION OF CLASS: This version consists of a major update of how dimensionality reduction and filtering is done. The class has been updated to extend the new `SingleCellExperiment` class, which save the dimensionality reductions. Furthermore, calculating of per-gene statistics, which are usually used for filtering, are stored in `colData` of the object and can be easily accessed and used for repeated filtering without recalculating. This has created a massive change under-the-hood in functions that allow dimensionality reduction and filtering. Changes to function names are the following:
+	- `transform` is now `transformData`
+	- New functions `makeReducedDims` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
+	- New function `filterData` will return the filtered data as a matrix
+	- New functions `listBuiltInReducedDims` and `listBuiltInFilterStats` give the list of currently available functions for dimensionality reduction and filtering statistics, respectively.
+	- Filtering on arbitrary statistics and user-defined dimensionality reduction can used in `clusterMany` and related functions, so long as they are saved in the appropriate slots of the object.
+* Changed the following functions/arguments to be consistent with SingleCellExperiment naming conventions and improve distinction between terminology of cluster and clustering.
+	- Capitalized constructor functions. Now: `ClusterFunction()` and `ClusterExperiment()` 
+	- `nPCADims` now changed to `nReducedDims` in clusterMany-related functions
+	- `nVarDims` now changed to `nFilterDims` in clusterMany-related functions
+	- `dimReduce` argument now changed to `reduceMethod` across functions
+	- `ndims` to `nDims` in `clusterSingle` and `makeDendrogram` to keep consistency.
+	- `plotDimReduce` to `plotReducedDims`
+	- Changed `nClusters` to `nClusterings` to better indicate purpose of function. `nClusters` now gives the number of clusters per clustering.
+	- `addClusters` to `addClusterings` and `removeClusters` to `removeClusterings`. New function `removeClusters` allows the user to actually ``remove" a cluster or clusters from a clustering by assigning samples in those clusters to `-1` value.
+	- `clusterInfo()` to `clusteringInfo()`
+* In addition these structural changes, the following enhancements are also included in this release
+	- New function `plotClusterLegend` that will plot a legend for a clustering.
+	- Color definition changes: `showBigPalette` has been replaced with `showPalette` and now can show any palette of colors.	Adjusted color definitions of `seqPal2` and `seqPal4` to be completely symmetric around center. The colors in `bigPalette` have been changed and shuffled to reduce similar colors and `massivePalette` has been created by adding all of the non-grey colors (in random order) from `colors()` so that `plotClusters` will not run out of colors.
+	- `getClusterManyParams`: now uses saved `clusterInfo` rather than more fragile `clusterLabels` to get parameters. The resulting output is formatted somewhat differently.
+	- `ClusterExperiment`: removed `transformation` as a required argument. Now sets with default of `function(x){x}`. Allows argument `clusterLegend` to define the clusterLegend slot in the constructor.
+	- `plotClustersWorkflow`: Argument `existingColors` in  now takes arguments `ignore`,`all`,`highlightOnly` similar to `plotClusters`
+	- `plotDendrogram`: Argument `nodeColors` now available.  Changed defaults so default is to do colorblock of samples.
+	- `plotContrastHeatmap`: Argument `contrastColors` now available to assign colors to the contrasts. Genes are now ordered by fold-change within each contrast.
+	- `plotClusters`: argument `existingColors` now allows for the option `firstOnly` 
+	- `makeDendrogram`: now allows option 'coCluster' to the argument `reduceMethod` indicating use of the coClustering matrix to build the dendrogram. `makeDendrogram` now also has a method for building a dendrogram from an arbitrary distance function
+	- `clusterMatrix`: now returns cluster matrix with rownames corresponding to sample names.
+	- `convertClusterLegend`: now takes argument `whichClusters`
+
+Bugs:
+* converted automatic assignment of colors in `clusterLegend` to be based on `massivePalette` so won't run out on toy examples.
+* fixed minor bugs in `plotHeatmap` so that will 
+	- handle factor with only one value in annotation
+	- will plot annotation labels when there is `NA` in the annotation
+	- no longer calls internal function `NMF:::vplayout` in making those labels, more robust
+* fixed bug in how `plotClustersWorkflow` handled existing colors.
+* Fixed so `diss` now passed to subsampling in calls to clusterSingle/clusterMany
+* Fixed so `plotClusters` now will not give incomprehensible error if given duplicates of a color
+* Fixed `plotDendrogram` so will not create blank plot.
+
+Changes in version 1.3.8 ( Release date: 2017-10-24)
+==============
+Changes:
+* Updates to documentation
+
 Changes in version 1.3.7 ( Release date: 2017-10-24)
 ==============
 Changes:

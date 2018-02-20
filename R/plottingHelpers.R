@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#'
+#' @param whichClusters which clusters to use
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'
@@ -33,25 +33,30 @@
 setMethod(
   f = "convertClusterLegend",
   signature = c("ClusterExperiment"),
-  definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors")){
+  definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors"),whichClusters=ifelse(output=="plotAndLegend","primary","all")){
     output<-match.arg(output)
+	whichClusters<-.TypeIntoIndices(object,whClusters=whichClusters)
+    if(length(whichClusters)==0) stop("given whichClusters value does not match any clusters")
+	
+	
     if(output=="aheatmapFormat"){
-      outval<-.convertToAheatmap(clusterLegend(object))
+      outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
     if(output%in% c("matrixNames","matrixColors")){
-      outval<-do.call("cbind",lapply(1:nClusters(object),function(ii){
-        cl<-clusterMatrix(object)[,ii]
-        colMat<-clusterLegend(object)[[ii]]
+      outval<-do.call("cbind",lapply(1:length(whichClusters),function(ii){
+        cl<-clusterMatrix(object)[,whichClusters,drop=FALSE][,ii]
+        colMat<-clusterLegend(object)[whichClusters][[ii]]
         m<-match(cl,colMat[,"clusterIds"])
         colReturn<-if(output=="matrixNames") "name" else "color"
         return(colMat[m,colReturn])
       }))
-	  colnames(outval)<-clusterLabels(object)
+	  colnames(outval)<-clusterLabels(object)[whichClusters]
 
     }
     if(output=="plotAndLegend"){
-      cl<-primaryCluster(object)
-      colMat<-clusterLegend(object)[[primaryClusterIndex(object)]]
+	  if(length(whichClusters)>1) stop("given whichClusters indicates more than 1 clustering which is not allowed for option 'plotAndLegend'")
+      cl<-clusterMatrix(object)[,whichClusters]
+      colMat<-clusterLegend(object)[[whichClusters]]
       clColor<-colMat[match(cl,colMat[,"clusterIds"]),"color"]
       legend<-colMat[,"name"]
       color<-colMat[,"color"]
@@ -88,42 +93,151 @@ setMethod(
 #'
 #' @name plottingFunctions
 #'
-#' @aliases bigPalette showBigPalette
+#' @aliases bigPalette showPalette
 #'
-#' @details \code{bigPalette} is a long palette of colors (length 62) used by
+#' @details \code{bigPalette} is a long palette of colors (length 58) used by
 #'   \code{\link{plotClusters}} and accompanying functions.
-#'   \code{showBigPalette} creates plot that gives index of each color in
-#'   bigPalette.
+#'   \code{showPalette} creates plot that gives index of each color in
+#'   a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
+#'   and the non-grey colors of \code{\link{colors}()} (length 487). 
+#'   \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
+#'   of a very large number of clusterings, each with many clusters, so that the code 
+#'  doesn't run out of colors. However, many of the colors will be very similar 
+#'  to each other.
 #'
-#' @param wh numeric. Which colors to plot. Must be a numeric vector with values
-#'   between 1 and 62.
-#' @details \code{showBigPalette} will plot the \code{bigPalette} functions with
+#' @param which numeric. Which colors to plot. Must be a numeric vector with values
+#'   between 1 and length of \code{colPalette}. If missing, all colors plotted.
+#' @param cex numeric value giving the cex for the text of the plot. 
+#' @param colPalette a vector of character colors. By default, the palette 
+#'  \code{bigPalette} is used
+#' @details \code{showPalette} will plot the \code{colPalette} colors with
 #'   their labels and index.
 #'
 #' @export
 #'
 #' @examples
-#' showBigPalette()
-showBigPalette<-function(wh=NULL){
+#' showPalette()
+#' showPalette(massivePalette,cex=0.6)
+showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   oldMar<-par("mar")
+  wh<-which
   if(is.null(wh)){
-    col<-.thisPal
-    wh<-1:length(col)
+    wh<-1:length(colPalette)
   }
-  else{ col<-.thisPal[wh]}
-  par(mar=c(2.1,2.1,2.1,2.1))
-  plot(1:length(col),y=1:length(col),pch=19,col=col,cex=3,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-  text(as.character(wh),x=1:length(col),y=1:length(col),pos=1,xpd=NA)
-  text(as.character(col),x=1:length(col),y=1:length(col),pos=1,offset=1.5,xpd=NA)
-  par(mar=oldMar)
+  else{ colPalette<-colPalette[wh]}
+  n<-ceiling(sqrt(length(colPalette)))
+  nblank<-n^2-length(colPalette)
+  xwide<-n
+  yup<-n
+  x1<-rep(c(1:xwide)-.5,yup)
+  x2<-rep(c(1:xwide)+.5,yup)
+  xtext<-rep(c(1:xwide),yup)
+  ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
+  ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
+  ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
+  
+  par(mar=c(0,0,0,0),omi=c(0,0,0,0))
+  plot.new()
+  plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
+  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=FALSE)
+  if(length(colPalette)>100){
+	  half<-ceiling(length(colPalette)/2)
+	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))
+	 adj.text<-adj.text[1:length(colPalette),]
+  }
+  else adj.text<-matrix(c(0.5,0),nrow=length(colPalette),ncol=2,byrow=TRUE)
+  for(i in 1:length(colPalette)){
+      text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
+      if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
+  }  	
 }
+
+#' @rdname plottingFunctions
+#' @export
+bigPalette<-c(
+	'#E31A1C',
+	'#1F78B4',
+	'#33A02C',
+	'#FF7F00',
+	'#6A3D9A',
+	'#B15928',
+	'#A6CEE3',
+	'#bd18ea',
+	'cyan',
+	'#B2DF8A',
+	'#FB9A99',
+	"deeppink4",
+	'#00B3FFFF',
+	'#CAB2D6',
+	'#FFFF99',
+	'#05188a',
+	'#CCFF00FF',
+	'cornflowerblue',
+	'#f4cc03',
+	'black',
+	'blueviolet',
+	'#4d0776',
+	'maroon3',
+	'blue',
+#	'grey',
+	'#E5D8BD',
+	'cadetblue4',
+	'#e5a25a',
+	"lightblue1",
+	'#F781BF',
+	'#FC8D62',
+	'#8DA0CB',
+	'#E78AC3',
+	'green3',
+	'#E7298A',
+	'burlywood3',
+	'#A6D854',
+	"firebrick",
+	'#FFFFCC',
+	"mediumpurple",
+	'#1B9E77',
+	'#FFD92F',
+	'deepskyblue4',
+	"yellow3",
+	'#00FFB2FF',
+	'#FDBF6F',
+	'#FDCDAC',
+	"gold3",
+	'#F4CAE4',
+	'#E6F5C9',
+	'#FF00E6FF',
+	'#7570B3',
+	"goldenrod",
+	'#85848f',
+	"lightpink3",
+	"olivedrab",
+#	"plum",
+#	"lightskyblue3",
+#	"mediumturquoise",
+	'cadetblue3'
+)
+
+#' @importFrom grDevices colors
+.rcolors<-function(){
+	#so sure that setting seed doesn't mess up when installing package
+	set.seed(23589)
+	return(sample(colors()[-c(152:361)]))
+}
+
+#' @rdname plottingFunctions
+#' @export
+massivePalette<-unique(c(bigPalette,.rcolors()))
+
+
 
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced
-#'   breaks should be calculated.
+#'   breaks should be calculated. If missing or NA, will determine evenly spaced 
+#'   breaks in the range of the data.
 #' @param makeSymmetric whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)
-#'
+#' @param returnBreaks logical as to whether to return the vector of breaks. See details.
+#' @details if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 #' @rdname plottingFunctions
 #'
 #' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced
@@ -134,103 +248,101 @@ showBigPalette<-function(wh=NULL){
 #'
 #' @examples
 #' setBreaks(data=simData,breaks=.9)
-setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
+setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
 	isPositive<-all(na.omit(data)>=0)
 	isNegative<-all(na.omit(data)<=0)
-#	browser()
+#	
     #get arround bug in aheatmap
     #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
     #TO DO: might not need any more with updated aheatmap.
     ncols<-51
+    minData<-min(data,na.rm=TRUE)
+    maxData<-max(data,na.rm=TRUE)
+    maxAbsData<-max(abs(data),na.rm=TRUE)
 	if(!is.vector(breaks)) stop("breaks argument must be a vector")
 	if(missing(breaks) || is.na(breaks)){
-		if(makeSymmetric & !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=ncols+1)
-		else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
+		#go from minimum to max
+		if(makeSymmetric & !isPositive & !isNegative){
+			breaks<-seq(-maxAbsData,maxAbsData,length=ncols+1)	
+			seconds<-c(-maxAbsData,maxAbsData)
+		} 
+		else{
+			breaks<-seq(minData,maxData,length=ncols+1)
+			seconds<-c(minData,maxData)
+		}
+		
 	}
 	else if(length(breaks)>0 && !is.na(breaks)){
         if(length(breaks)==1){
 			if(breaks<1){
 			  if(breaks<0.5) breaks<-1-breaks
-			#	  browser()
+			#	  
 			  uppQ<-if(isPositive) quantile(data[which(data>0)],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
 			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
 			  
 			  if(makeSymmetric & !isPositive & !isNegative){
+				  #make breaks symmetric around 0
 				  absq<-max(abs(c(lowQ,uppQ)),na.rm=TRUE)
 				  absm<-max(abs(c(min(data,na.rm=TRUE),max(data,na.rm=TRUE))))
 				  #is largest quantile also max of abs(data)?
 				  quantAllMax <- if( isTRUE( all.equal(round(absq,5), round(absm,5)))) TRUE else FALSE
-			      if(!quantAllMax) breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
-				  else breaks <- seq(absm,absm,length=ncols+1)
+			      if(!quantAllMax){
+					  breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
+					  seconds<-c(-absq,absq)
+				  }
+				  else{
+					  #equally spaced
+					  breaks <- seq(-absm,absm,length=ncols+1)
+					  seconds<-c(-absm,absm)
+				  }
 			  }
 			  else{
 				  #determine if those quantiles are min/max of data
-			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(min(data,na.rm=TRUE),5)))) TRUE else FALSE
-			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(max(data,na.rm=TRUE),5)))) TRUE else FALSE
-			      if(!quantMin & !quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,uppQ,length=ncols-1), max(data,na.rm=TRUE))
-			      if(!quantMin & quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,max(data,na.rm=TRUE),length=ncols))
-			      if(quantMin & !quantMax) breaks <- c(seq(min(data,na.rm=TRUE),uppQ,length=ncols), max(data,na.rm=TRUE))
-			      if(quantMin & quantMax) breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
-
+			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(minData,5)))) TRUE else FALSE
+			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(maxData,5)))) TRUE else FALSE
+				  
+			      if(!quantMin & !quantMax){
+					  breaks <- c(minData, seq(lowQ,uppQ,length=ncols-1), maxData)
+					  seconds<-c(lowQ,uppQ)
+				  }
+			      if(!quantMin & quantMax){
+					  breaks <- c(minData, seq(lowQ,maxData,length=ncols))
+					  seconds<-c(lowQ,maxData)
+				  }
+			      if(quantMin & !quantMax){
+					  breaks <- c(seq(minData,uppQ,length=ncols), maxData)
+				  	  seconds<-c(minData,uppQ)
+				  }
+			      if(quantMin & quantMax){
+					  breaks<-seq(minData,maxData,length=ncols+1)
+			      	  seconds<-c(minData,maxData)
+			      } 
 			  }
 			}
 	        else{ #breaks is number of breaks
 				if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum of colors will not be used")
-				if(makeSymmetric& !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=breaks)
-				else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=breaks)
+				if(makeSymmetric& !isPositive & !isNegative){
+					breaks<-seq(-maxAbsData,maxAbsData,length=breaks)	
+					seconds<-c(-maxAbsData,maxAbsData)
+				} 
+				else{
+					breaks<-seq(minData,maxData,length=breaks)
+					seconds<-c(minData,maxData)
+				}
 	    	}
         }
     }
 	if(!length(unique(breaks))==length(breaks)){
 		breaks<-sort(unique(breaks))
 		warning("setBreaks did not create unique breaks, and therefore the resulting breaks will not be of exactly the length requested. If you have replicable code that can recreate this warning, we would appreciate submitting it to the issues tracker on github (existing issue: #186)")
+		seconds<-c(min(breaks),max(breaks))
 	}
-    return(breaks)
+    if(returnBreaks) return(breaks)
+		else return(seconds)
 
 }
 
 
-.thisPal = c(
-	"#A6CEE3",#light blue
-	"#1F78B4",#dark blue
-	"#B2DF8A",#light green
-	"#33A02C",#dark green
-	"#FB9A99",#pink
-	"#E31A1C",#red
-	"#FDBF6F",#light orange
-	"#FF7F00",#orange
-	"#CAB2D6",#light purple
-	"#6A3D9A",#purple
-	"#FFFF99",#light yellow
-	"#B15928",#brown
-	"#bd18ea", #magenta
-	"#2ef4ca", #aqua
-	"#f4cced", #pink,
-	"#05188a", #navy,
-	"#f4cc03", #lightorange
-	"#e5a25a", #light brown
-	"#06f106", #bright green
-	"#85848f", #med gray
-	"#000000", #black
-	"#076f25", #dark green
-	"#93cd7f",#lime green
-	"#4d0776", #dark purple
-	"maroon3",
-	"blue",
-	"grey"
-		)
-.thisPal<-.thisPal[c(2,4,6,8,10,12,14,13,1,3,5,7,9,11,16,19,20,15,17,18,21:27)]
-.brewers<-RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info[,"category"]=="qual",]
-.brewers<-.brewers[c(1:3,6:8,4:5),]
-.thisPal<-c(.thisPal,palette(),unlist(sapply(1:nrow(.brewers),function(ii){RColorBrewer::brewer.pal(.brewers[ii,"maxcolors"], rownames(.brewers)[ii])})))
-.thisPal<-unique(.thisPal)
-.thisPal<-.thisPal[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
-.thisPal<-.thisPal[-34] #very similar to 2
-.thisPal<-.thisPal[-31] #very similar to 7
-
-#' @rdname plottingFunctions
-#' @export
-bigPalette<-.thisPal
 
 #' @rdname plottingFunctions
 #'
@@ -278,15 +390,110 @@ showHeatmapPalettes<-function(){
 seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
 #' @rdname plottingFunctions
 #' @export
-seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
-seqPal2<-(c("yellow","gold2",seqPal2))
+seqPal2<-colorRampPalette(c("yellow","orange","black","blue","dodgerblue"))(16)[-c(2,14)]
 seqPal2<-rev(seqPal2)
+#seqPal2<- colorRampPalette(c("yellow","orange","black","blue","dodgerblue"))(16)
+#seqPal2<-(c("yellow","gold2",seqPal2))
 #' @rdname plottingFunctions
 #' @export
 seqPal3<-rev(brewer.pal(11, "RdBu"))
 #' @rdname plottingFunctions
 #' @export
-seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
+#make it symmetric around white
+seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)[c(1:9,12,13,14,16)]
 #' @rdname plottingFunctions
 #' @export
 seqPal1<-rev(brewer.pal(11, "Spectral"))
+
+
+#' @export
+#' @param whichCluster which cluster to plot cluster legend
+#' @param title title for the clusterLegend plot
+#' @param clusterNames vector of names for the clusters; vector should have names 
+#'  that correspond to the clusterIds in the ClusterExperiment object. If this 
+#'  argument is missing, will use the names in the "name" column of the clusterLegend 
+#'  slot of the object.
+#' @param ... arguments passed to legend
+#' @rdname plottingFunctions
+#' @aliases plotClusterLegend
+setMethod(
+  f = "plotClusterLegend",
+  signature = c("ClusterExperiment"),
+  definition = function(object,whichCluster="primary",clusterNames,title,...){
+      whichCluster<-.TypeIntoIndices(object,whClusters=whichCluster)
+      if(length(whichCluster)==0) stop("given whichCluster value does not match any clusters")
+      if(length(whichCluster)>1) stop("given whichCluster indicates more than 1 clustering")
+	  legMat<-clusterLegend(object)[[whichCluster]]
+	 if(!missing(clusterNames)){
+		 if(is.null(names(clusterNames))) stop("clusterNames must be named vector")
+			 m<-match(legMat[,"clusterIds"],names(clusterNames))
+		 	 if(any(is.na(m))){
+				 whClusters<-which(legMat[,"clusterIds"]>0)
+				 if(any(is.na(m[whClusters]))) stop("not all clusters are found in names of clusterNames argument")
+				 else{ #give default names to -1 and -2
+					 whMiss1<-which(legMat[,"clusterIds"]== -1 & is.na(m))
+					 if(length(whMiss1)>0) clusterNames<-c(clusterNames,"-1"="Not assigned")
+					 whMiss2<-which(legMat[,"clusterIds"]== -2 & is.na(m))
+					 if(length(whMiss2)>0) clusterNames<-c(clusterNames,"-2"="Not clustered")
+				 }
+			 }
+			 m<-match(legMat[,"clusterIds"],names(clusterNames))
+		 	 clusterNames<-clusterNames[m]
+	 }
+	 else{
+		 clusterNames<-legMat[,"name"]
+	 } 	 
+	 if(missing(title)){
+		 title<-paste("Clusters of",clusterLabels(object)[whichCluster])
+	 }
+	 if(any(as.numeric(legMat[,"clusterIds"])<0)){
+		 #put -1/-2 last
+		 isNeg<-as.numeric(legMat[,"clusterIds"])<0
+		 ord<-c(which(!isNeg),which(isNeg))
+	 }
+	 else ord<-1:nrow(legMat)
+	  plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+	  legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+	  
+  
+ })
+
+
+ ###Old definition of bigPalette (.thisPal):
+ # bigPalette = c(
+ # 	"#A6CEE3",#1 light blue
+ # 	"#1F78B4",#2 dark blue
+ # 	"#B2DF8A",#3 light green
+ # 	"#33A02C",#4 dark green
+ # 	"#FB9A99",#5 pink
+ # 	"#E31A1C",#6 red
+ # 	"#FDBF6F",#7 light orange
+ # 	"#FF7F00",#8 orange
+ # 	"#CAB2D6",#9 light purple
+ # 	"#6A3D9A",#10 purple
+ # 	"#FFFF99",#11 light yellow
+ # 	"#B15928",#12 brown
+ # 	"#bd18ea", #13 magenta
+ # 	"#2ef4ca", #14 aqua
+ # 	"#f4cced", #15 pink,
+ # 	"#05188a", #16 navy,
+ # 	"#f4cc03", #17 lightorange
+ # 	"#e5a25a", #18 light brown
+ # 	"#06f106", #19 bright green
+ # 	"#85848f", #20 med gray
+ # 	"#000000", #21 black
+ # 	"#076f25", #22 dark green
+ # 	"#93cd7f",#23 lime green
+ # 	"#4d0776", #24 dark purple
+ # 	"maroon3",
+ # 	"blue",
+ # 	"grey"
+ # 		)
+ # bigPalette<-bigPalette[c(2,4,6,8,10,12,14,13,1,3,5,7,9,11,16,19,20,15,17,18,21:27)]
+ # .brewers<-RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info[,"category"]=="qual",]
+ # .brewers<-.brewers[c(1:3,6:8,4:5),]
+ # bigPalette<-c(bigPalette,palette()[-1],unlist(sapply(1:nrow(.brewers),function(ii){RColorBrewer::brewer.pal(.brewers[ii,"maxcolors"], rownames(.brewers)[ii])})))
+ # bigPalette<-unique(bigPalette)
+ # bigPalette<-bigPalette[-c(32,34,36,37,40,45:47,49:53,56,62:71,73,75,76,84,90,92 )] #remove because too similar to others
+ # bigPalette<-bigPalette[-34] #very similar to 2
+ # bigPalette<-bigPalette[-31] #very similar to 7

@@ -1,5 +1,5 @@
 ############
-## Checks that make up validity of clusterExperiment:
+## Checks that make up validity of ClusterExperiment:
 ############
 .checkAssays<-function(object){
     # ############
@@ -11,7 +11,7 @@
   if(!is.numeric(assay(object))) {
     return("The data must be numeric.")
   }
-  if(any(is.na(assay(object)))) {
+  if(anyNA(assay(object))) {
     return("NA values are not allowed.")
   }
   return(TRUE)
@@ -20,12 +20,12 @@
     #############
     #check transform
     #############
-    tX <- try(transform(object),silent=TRUE)
+    tX <- try(transformData(object),silent=TRUE)
     if(inherits(tX, "try-error")){
       stop(paste("User-supplied `transformation` produces error on the input data
                  matrix:\n",tX))
     }
-    if(any(is.na(tX))) {
+    if(anyNA(tX)) {
       return("NA values after transforming data matrix are not allowed.")
     }
 	return(TRUE)
@@ -189,58 +189,64 @@
 	return(TRUE)
 }
 
+
+.checkIndClusterLegend<-function(clusters,clusterLegend){
+    ####
+    #make so can call on arbitrary clusterLegend...not need to be object
+    ####
+    if(!is.null(names(clusterLegend))) return("clusterLegend should not have names")
+    if(length(clusterLegend) != NCOL(clusters)) {
+      return("`clusterLegend` must be list of same length as NCOL of
+               `clusterMatrix`")
+    }
+    testIsMatrix <- sapply(clusterLegend,
+                           function(x) {!is.null(dim(x))})
+    if(!all(testIsMatrix)) {
+      return("Each element of `clusterLegend` list must be a matrix")
+    }
+    testColorRows <- sapply(clusterLegend, function(x){nrow(x)})
+    testClusterMat <- apply(clusters, 2, function(x) {length(unique(x))})
+    if(!all(testColorRows == testClusterMat)) {
+      return("each element of `clusterLegend` must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in `clusterMatrix`")
+    }
+    testColorCols1 <- sapply(clusterLegend, function(x) {
+      "color" %in% colnames(x)})
+    testColorCols2 <- sapply(clusterLegend, function(x) {
+      "clusterIds" %in% colnames(x)})
+    testColorCols3 <- sapply(clusterLegend, function(x) {
+      "name" %in% colnames(x)})
+if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
+      return("each element of `clusterLegend` must be matrix with at least 3 columns, and at least 3 columns have names `clusterIds`, `color` and `name`")
+    }
+    
+#     testUniqueName <- sapply(clusterLegend, function(x) {
+#       any(duplicated(x[,"name"]))})
+#     if(any(testUniqueName)) return("the column")
+    testColorCols1 <- sapply(clusterLegend, function(x){is.character(x)})
+    if(!all(testColorCols1)) {
+      return("each element of `clusterLegend` must be matrix of character values")
+    }
+    testColorCols1 <- sapply(1:length(clusterLegend), function(ii){
+      col<-clusterLegend[[ii]]
+	  x<-clusters[,ii]
+	  y<-col[,"clusterIds"]
+	  if(is.numeric(x)){
+		  y<-as.numeric(y)
+	  }
+      
+      return(all(y %in% x) & all(x %in% y))
+    })
+    if( !all(testColorCols1)) {
+      return("each element of `clusterLegend` must be matrix with column
+             `clusterIds` matching the corresponding
+             clusterMatrix values")
+    }
+
+	return(TRUE)
+}
 .checkClusterLegend<-function(object){
-    ####
-    #test that @clusterLegend is proper form
-    ####
 	if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-	    if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
-	    if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
-	      return("`clusterLegend` must be list of same length as NCOL of
-	               `clusterMatrix`")
-	    }
-	    testIsMatrix <- sapply(object@clusterLegend,
-	                           function(x) {!is.null(dim(x))})
-	    if(!all(testIsMatrix)) {
-	      return("Each element of `clusterLegend` list must be a matrix")
-	    }
-	    testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
-	    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {length(unique(x))})
-	    if(!all(testColorRows == testClusterMat)) {
-	      return("each element of `clusterLegend` must be matrix with number of
-	               rows equal to the number of clusters (including -1 or -2 values)
-	               in `clusterMatrix`")
-	    }
-	    testColorCols1 <- sapply(object@clusterLegend, function(x) {
-	      "color" %in% colnames(x)})
-	    testColorCols2 <- sapply(object@clusterLegend, function(x) {
-	      "clusterIds" %in% colnames(x)})
-	    testColorCols3 <- sapply(object@clusterLegend, function(x) {
-	      "name" %in% colnames(x)})
-	    if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
-	      return("each element of `clusterLegend` must be matrix with at least 3
-	             columns, and at least 3 columns have names `clusterIds`,
-	             `color` and `name`")
-	    }
-	#     testUniqueName <- sapply(object@clusterLegend, function(x) {
-	#       any(duplicated(x[,"name"]))})
-	#     if(any(testUniqueName)) return("the column")
-	    testColorCols1 <- sapply(object@clusterLegend, function(x){is.character(x)})
-	    if(!all(testColorCols1)) {
-	      return("each element of `clusterLegend` must be matrix of character
-	             values")
-	    }
-	    testColorCols1 <- sapply(1:length(object@clusterLegend), function(ii){
-	      col<-object@clusterLegend[[ii]]
-	      x<-object@clusterMatrix[,ii]
-	      y<-as.numeric(col[,"clusterIds"])
-	      all(y %in% x)
-	    })
-	    if(!all(testColorCols1)) {
-	      return("each element of `clusterLegend` must be matrix with column
-	             `clusterIds` matching the corresponding integer valued
-	             clusterMatrix values")
-	    }
+		return(.checkIndClusterLegend(clusters=object@clusterMatrix,clusterLegend=object@clusterLegend))
 	}
 	return(TRUE)
 }
@@ -271,11 +277,11 @@
 #' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
 #' #Note it doesn't pass if inputType="either" because no catches for x=NULL
 #' internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
-#' myCF<-clusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
+#' myCF<-ClusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
 #' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
 #' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
 #' @details \code{internalFunctionCheck} is the function that is called by the 
-#'   validity check of the \code{clusterFunction} constructor (if 
+#'   validity check of the \code{ClusterFunction} constructor (if 
 #'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
 #'   to be able to test their functions and debug them, which is difficult to do
 #'   with a S4 validity function.

@@ -7,30 +7,36 @@
 \alias{convertClusterLegend,ClusterExperiment-method}
 \alias{convertClusterLegend}
 \alias{plottingFunctions}
-\alias{showBigPalette}
+\alias{showPalette}
 \alias{bigPalette}
+\alias{bigPalette}
+\alias{massivePalette}
 \alias{setBreaks}
-\alias{bigPalette}
 \alias{showHeatmapPalettes}
 \alias{seqPal5}
 \alias{seqPal2}
 \alias{seqPal3}
 \alias{seqPal4}
 \alias{seqPal1}
+\alias{plotClusterLegend,ClusterExperiment-method}
+\alias{plotClusterLegend}
 \title{Convert clusterLegend into useful formats}
-\format{An object of class \code{character} of length 60.}
+\format{An object of class \code{character} of length 56.}
 \usage{
 makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
 
 \S4method{convertClusterLegend}{ClusterExperiment}(object,
   output = c("plotAndLegend", "aheatmapFormat", "matrixNames",
-  "matrixColors"))
+  "matrixColors"), whichClusters = ifelse(output == "plotAndLegend",
+  "primary", "all"))
 
-showBigPalette(wh = NULL)
-
-setBreaks(data, breaks = NA, makeSymmetric = FALSE)
+showPalette(colPalette = bigPalette, which = NULL, cex = 1)
 
 bigPalette
+
+massivePalette
+
+setBreaks(data, breaks = NA, makeSymmetric = FALSE, returnBreaks = TRUE)
 
 showHeatmapPalettes()
 
@@ -43,6 +49,9 @@ seqPal3
 seqPal4
 
 seqPal1
+
+\S4method{plotClusterLegend}{ClusterExperiment}(object,
+  whichCluster = "primary", clusterNames, title, ...)
 }
 \arguments{
 \item{data}{matrix with samples on columns and features on rows.}
@@ -58,14 +67,35 @@ data is then fed to heatmap.)}
 
 \item{output}{character value, indicating desired type of conversion.}
 
-\item{wh}{numeric. Which colors to plot. Must be a numeric vector with values
-between 1 and 62.}
+\item{whichClusters}{which clusters to use}
+
+\item{colPalette}{a vector of character colors. By default, the palette 
+\code{bigPalette} is used}
+
+\item{which}{numeric. Which colors to plot. Must be a numeric vector with values
+between 1 and length of \code{colPalette}. If missing, all colors plotted.}
+
+\item{cex}{numeric value giving the cex for the text of the plot.}
 
 \item{breaks}{either vector of breaks, or number of breaks (integer) or a
 number between 0 and 1 indicating a quantile, between which evenly spaced
-breaks should be calculated.}
+breaks should be calculated. If missing or NA, will determine evenly spaced 
+breaks in the range of the data.}
 
 \item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
+
+\item{returnBreaks}{logical as to whether to return the vector of breaks. See details.}
+
+\item{whichCluster}{which cluster to plot cluster legend}
+
+\item{clusterNames}{vector of names for the clusters; vector should have names 
+that correspond to the clusterIds in the ClusterExperiment object. If this 
+argument is missing, will use the names in the "name" column of the clusterLegend 
+slot of the object.}
+
+\item{title}{title for the clusterLegend plot}
+
+\item{...}{arguments passed to legend}
 }
 \value{
 \code{makeBlankData} returns a list with items
@@ -122,13 +152,20 @@ Most of these functions are called internally by plotting
 convertClusterLegend pulls out information stored in the
   \code{clusterLegend} slot of the object and returns it in useful format.
 
-\code{bigPalette} is a long palette of colors (length 62) used by
+\code{bigPalette} is a long palette of colors (length 58) used by
   \code{\link{plotClusters}} and accompanying functions.
-  \code{showBigPalette} creates plot that gives index of each color in
-  bigPalette.
+  \code{showPalette} creates plot that gives index of each color in
+  a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
+  and the non-grey colors of \code{\link{colors}()} (length 487). 
+  \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
+  of a very large number of clusterings, each with many clusters, so that the code 
+ doesn't run out of colors. However, many of the colors will be very similar 
+ to each other.
 
-\code{showBigPalette} will plot the \code{bigPalette} functions with
+\code{showPalette} will plot the \code{colPalette} colors with
   their labels and index.
+
+if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 
 \code{setBreaks} gives a set of breaks (of length 52) equally spaced
   between the boundaries of the data. If breaks is between 0 and 1, then the
@@ -143,7 +180,8 @@ data(simData)
 x <- makeBlankData(simData[,1:10], groupsOfFeatures=list(c(5, 2, 3), c(20,
 34, 25)))
 plotHeatmap(x$dataWBlanks,clusterFeatures=FALSE)
-showBigPalette()
+showPalette()
+showPalette(massivePalette,cex=0.6)
 setBreaks(data=simData,breaks=.9)
 
 #show the palette colors

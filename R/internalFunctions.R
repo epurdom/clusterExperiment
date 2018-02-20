@@ -1,3 +1,7 @@
+.mynote<-function(x){
+	message(paste("Note:",x))
+}
+
 .eraseMerge<-function(x){
   x@merge_index<-NA_real_
   x@merge_dendrocluster_index<-NA_real_
@@ -18,40 +22,40 @@
 }
 
 .addNewResult<-function(newObj,oldObj){
-    retval<-addClusters(newObj,oldObj) #want most recent addition on top of clusterMatrix
+    retval<-addClusterings(newObj,oldObj) #want most recent addition on top of clusterMatrix
     #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
-    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusters lost dendro_index")
-    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusters lost merge_index")
+    if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusterings lost dendro_index")
+    if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusterings lost merge_index")
     if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
       retval@dendro_samples<-oldObj@dendro_samples
       retval@dendro_clusters<-oldObj@dendro_clusters
       retval@dendro_outbranch<-oldObj@dendro_outbranch
-      retval@dendro_index<-oldObj@dendro_index+nClusters(newObj) #update index to where dendrogram from
+      retval@dendro_index<-oldObj@dendro_index+nClusterings(newObj) #update index to where dendrogram from
     }
 	if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
-      retval@merge_index<-oldObj@merge_index+nClusters(newObj) #update index to where merge from
-      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusters(newObj) #update index to where merge from
+      retval@merge_index<-oldObj@merge_index+nClusterings(newObj) #update index to where merge from
       retval@merge_nodeMerge<-oldObj@merge_nodeMerge
       retval@merge_cutoff<-oldObj@merge_cutoff
       retval@merge_method<-oldObj@merge_method
     }
     if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
       retval@merge_nodeProp<-oldObj@merge_nodeProp
+      retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
     }
     #put back orderSamples, coClustering
     if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
     if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
     retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-#   Note: .addBackSEInfo calls clusterExperiment (i.e. validates)
+#   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
     return(retval)
 }
 
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-clusterExperiment(as(oldObj,"SummarizedExperiment"),
+  retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
                             clusters=clusterMatrix(newObj),
                             transformation=transformation(newObj),
                             clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusterInfo(newObj),
+                            clusterInfo=clusteringInfo(newObj),
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
@@ -65,9 +69,10 @@
                             merge_nodeMerge=newObj@merge_nodeMerge,
                             merge_method=newObj@merge_method,
                             primaryIndex=primaryClusterIndex(newObj),
+							clusterLegend=clusterLegend(newObj),
                             checkTransformAndAssay=FALSE
   )
-  clusterLegend(retval)<-clusterLegend(newObj)
+#  clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
 #Returns NULL if no sample data
@@ -199,15 +204,8 @@
 
     #convert ids into list of matrices:
     colorList<-lapply(1:ncol(clMat),function(ii){
-#         col<-colorMat[,ii]
-#         ids<-clMat[,ii]
-#         origids<-origClMat[,ii]
-#         uniqueIds<-unique(ids)
-#         mIds<-match(uniqueIds,ids)
-#         uniqueCols<-col[mIds]
-#         mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
-        mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
-        rownames(mat)<-mat[,"clusterIds"]
+mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
+        rownames(mat)<-NULL
         return(mat)
     })
     names(colorList)<-cNames
@@ -218,45 +216,53 @@
 ##Universal way to change character indication of clusterTypes into integer indices.
 ##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){
-  test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
-  if(!inherits(test,"try-error")){
-    if(test=="workflow"){
-      ppIndex<-workflowClusterDetails(x)
-      if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-        wh<-unlist(lapply(.workflowValues,function(tt){
-          ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
-        }))
-      }
-      else wh<-vector("integer",length=0)
-    }
-    if(test=="all"){
-      #put primary cluster first
-      ppcl<-primaryClusterIndex(x)
-      wh<-c(ppcl,c(1:nClusters(x))[-ppcl])
-    }
-    if(test=="none") wh<-vector("integer",length=0)
-    if(test=="primaryCluster") wh<-primaryClusterIndex(x)
-	if(test=="dendro"){
-		wh<-dendroClusterIndex(x)
-		if(is.na(wh)) wh<-vector("integer",length=0)
-	}
-  }
-  else{
-    #first match to clusterTypes  
-    mClType<-match(whClusters,clusterTypes(x))  
-    mClLabel<-match(whClusters,clusterLabels(x))  
-    totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
-        if(is.na(type) & !is.na(lab)) return(lab)
-        if(is.na(type) & is.na(lab)) return(NA)
-        if(!is.na(type)){
-            return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
-        }
-    },SIMPLIFY=FALSE)
-    totalMatch<-unlist(totalMatch,use.names=FALSE)
+ if(is.numeric(whClusters)) wh<-whClusters
+	 else{
+		 test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
+		   if(!inherits(test,"try-error")){
+		     if(test=="workflow"){
+		       ppIndex<-workflowClusterDetails(x)
+		       if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
+		         wh<-unlist(lapply(.workflowValues,function(tt){
+		           ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
+		         }))
+		       }
+		       else wh<-vector("integer",length=0)
+		     }
+		     if(test=="all"){
+		       #put primary cluster first
+		       ppcl<-primaryClusterIndex(x)
+		       wh<-c(ppcl,c(1:nClusterings(x))[-ppcl])
+		     }
+		     if(test=="none") wh<-vector("integer",length=0)
+		     if(test=="primaryCluster") wh<-primaryClusterIndex(x)
+		 	if(test=="dendro"){
+		 		wh<-dendroClusterIndex(x)
+		 		if(is.na(wh)) wh<-vector("integer",length=0)
+		 	}
+		   }
+		   else{
+		     #first match to clusterTypes  
+		     mClType<-match(whClusters,clusterTypes(x))  
+		     mClLabel<-match(whClusters,clusterLabels(x))  
+		     totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
+		         if(is.na(type) & !is.na(lab)) return(lab)
+		         if(is.na(type) & is.na(lab)) return(NA)
+		         if(!is.na(type)){
+		             return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
+		         }
+		     },SIMPLIFY=FALSE)
+		     totalMatch<-unlist(totalMatch,use.names=FALSE)
     
-    if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
-    else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-  }
+		     if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
+		     else wh<-na.omit(totalMatch) #silently ignore things that don't match.
+		   }
+	 } 
+  	 if(any(wh>nClusterings(x) | wh<1)){
+		 wh<-wh[wh<=nClusterings(x) & wh>0]
+		 
+  	 }
+#	 if(length(wh)>0) wh<-wh[is.integer(wh)]
   return(wh)
 }
 
@@ -294,13 +300,27 @@
 			#######
 			#find the -1/-2 internal node (if it exists)
 			#determine it as the one without 0-length tip edges.
+			#assumes all tips in the non-outbranch have 0-length (so max value is zero)
 			#######
 			rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-			#find tip descendants of these:
+			#find tip descendants of each of these:
 			rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
 			rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-			rootChildNum<-sapply(rootChildLeng,min)
-			outbranchNode<-rootChild[rootChildNum>0]
+			
+			#Problem here!!! if there is single sample in a cluster, then could be a tip with length not equal to zero. Need to ignore these....how? If take the min, then a single zero length in outbranch will result in both having zeros...
+			#maybe should change function so have to provide a single name of a sample that is in outbranch so as to identify it that way. 
+			#for now, lets hope that never happens! i.e. that BOTH a single sample in a cluster and that outbranch has a zero length
+			rootChildNum<-sapply(rootChildLeng,min) #minimum length 
+			
+			#indicator of which child node is the 
+			whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
+			if(sum(whKeep)!=1){
+				#if both sides have a zero, then use max instead. 
+				rootChildNum<-sapply(rootChildLeng,max) #maximum length 
+				whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) 
+			}
+			if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
+			outbranchNode<-rootChild[!whKeep]
 			
 			if(outbranchNode %in% trueInternal){
 				outbranchIsInternal<-TRUE

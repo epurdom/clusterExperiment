@@ -19,7 +19,7 @@
 #' @examples
 #' data(simData)
 #'
-#' cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+#' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #'
@@ -120,7 +120,7 @@ setMethod(
   definition = function(x,whichCluster,eraseOld=FALSE){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
@@ -149,7 +149,7 @@ setMethod(
   definition = function(x,whichCluster,clusterLabel){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) warning("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusters(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusters(x))
+    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     clusterTypes(x)[whCl]<-"final"
     if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
     primaryClusterIndex(x)<-whCl
@@ -173,8 +173,8 @@ setMethod(
             if(eraseOld){
                 #removes all past iterations, not just current, except for current iteration that upstream of new one
                 whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
-                if(length(whRm)==nClusters(object)) return(NULL)
-                else object<-removeClusters(object,whRm) 
+                if(length(whRm)==nClusterings(object)) return(NULL)
+                else object<-removeClusterings(object,whRm) 
             }
             else{
                 #otherwise, only current downstream ones that exist get updated number

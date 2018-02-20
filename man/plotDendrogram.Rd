@@ -4,13 +4,14 @@
 \name{plotDendrogram,ClusterExperiment-method}
 \alias{plotDendrogram,ClusterExperiment-method}
 \alias{plotDendrogram}
-\title{Plot dendrogram of clusterExperiment object}
+\title{Plot dendrogram of ClusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
-  leafType = c("clusters", "samples"), plotType = c("name", "colorblock",
+  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
   "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
   "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
-  removeOutbranch = TRUE, legend = "side", ...)
+  removeOutbranch = TRUE, legend = c("side", "below", "none"),
+  nodeColors = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
@@ -58,14 +59,21 @@ used to draw the color values of the clusters/samples next to the
 dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 available for 'ape' package >= 4.1-0.6).}
 
+\item{nodeColors}{named vector of colors to be plotted on a node in the dendrogram. 
+Names should match the name of the node (calls \code{\link[ape]{nodelabels}}).}
+
 \item{...}{arguments passed to the \code{\link{plot.phylo}} function of
 \code{ape} that plots the dendrogram.}
 }
 \value{
-A dendrogram is plotted. Nothing is returned.
+A dendrogram is plotted. Returns (invisibly) a list with elements
+\itemize{
+\item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
+\item{\code{originalObject}}{ the \code{phylo} object before adjusting the node/tip labels. }
+}
 }
 \description{
-Plots the dendrogram saved in a clusterExperiment object
+Plots the dendrogram saved in a ClusterExperiment object
 }
 \details{
 If \code{leafType="clusters"}, the plotting function will work best
@@ -87,4 +95,7 @@ cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE)
 plotDendrogram(cl) 
 plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 
+}
+\seealso{
+\code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 }

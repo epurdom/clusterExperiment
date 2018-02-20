@@ -4,55 +4,58 @@
 \name{clusterMany,matrix-method}
 \alias{clusterMany,matrix-method}
 \alias{clusterMany}
-\alias{clusterMany,list-method}
+\alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}
 \alias{clusterMany,data.frame-method}
 \title{Create a matrix of clustering across values of parameters}
 \usage{
-\S4method{clusterMany}{matrix}(x, dimReduce = "none", nVarDims = NA,
-  nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
+\S4method{clusterMany}{matrix}(x, reduceMethod = "none", nReducedDims = NA,
+  transFun = NULL, isCount = FALSE, ...)
 
-\S4method{clusterMany}{list}(x, ks = NA, clusterFunction, alphas = 0.1,
-  findBestK = FALSE, sequential = FALSE, removeSil = FALSE,
-  subsample = FALSE, silCutoff = 0, distFunction = NA, betas = 0.9,
-  minSizes = 1, verbose = FALSE, mainClusterArgs = NULL,
+\S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
+  reduceMethod = "none", nFilterDims = defaultNDims(x, reduceMethod, type =
+  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
+  "reducedDims"), alphas = 0.1, findBestK = FALSE, sequential = FALSE,
+  removeSil = FALSE, subsample = FALSE, silCutoff = 0,
+  distFunction = NA, betas = 0.9, minSizes = 1, transFun = NULL,
+  isCount = FALSE, verbose = FALSE, mainClusterArgs = NULL,
   subsampleArgs = NULL, seqArgs = NULL, ncores = 1, random.seed = NULL,
   run = TRUE, ...)
 
-\S4method{clusterMany}{ClusterExperiment}(x, dimReduce = "none",
-  nVarDims = NA, nPCADims = NA, eraseOld = FALSE, ...)
+\S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
+  nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
+  nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
+  eraseOld = FALSE, ...)
 
-\S4method{clusterMany}{SummarizedExperiment}(x, dimReduce = "none",
-  nVarDims = NA, nPCADims = NA, transFun = NULL, isCount = FALSE, ...)
+\S4method{clusterMany}{SummarizedExperiment}(x, ...)
 
 \S4method{clusterMany}{data.frame}(x, ...)
 }
 \arguments{
-\item{x}{the data matrix on which to run the clustering. Can be: matrix (with
-genes in rows), a list of datasets overwhich the clusterings should be run,
-a \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object.}
+\item{x}{the data matrix on which to run the clustering. Can be object of the
+following classes: matrix (with genes in rows), 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
+or \code{ClusterExperiment}.}
 
-\item{dimReduce}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of 
 dimensionality reduction to perform before clustering. Options are 
-"none","PCA", "var","cv", and "mad". See \code{\link{transform}} for more 
-details.}
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+3) stored filtering or reducedDim values in the object.}
 
-\item{nVarDims}{vector of the number of the most variable features to keep 
-(when "var", "cv", or "mad" is identified in \code{dimReduce}). If NA is 
-included, then the full dataset will also be included.}
+\item{nReducedDims}{vector of the number of dimensions to use (when 
+\code{reduceMethod} gives a dimensionality reduction method).}
 
-\item{nPCADims}{vector of the number of PCs to use (when 'PCA' is identified 
-in \code{dimReduce}). If NA is included, then the full dataset will also be
-included.}
+\item{transFun}{a transformation function to be applied to the data. If the transformation 
+applied to the data creates an error or NA values, then the function will throw an error.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
-\item{transFun}{function A function to use to transform the input data matrix
-before clustering.}
-
-\item{isCount}{logical. Whether the data are in counts, in which case the 
-default \code{transFun} argument is set as log2(x+1). This is simply a 
-convenience to the user, and can be overridden by giving an explicit 
-function to \code{transFun}.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
+will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
+If object is of class \code{ClusterExperiment}, the stored transformation will be used 
+and giving this parameter will result in an error.}
 
 \item{...}{For signature \code{list}, arguments to be passed on to mclapply 
 (if ncores>1). For all the other signatures, arguments to be passed to the 
@@ -66,6 +69,9 @@ different choices of other parameters).}
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
+
+\item{nFilterDims}{vector of the number of the most variable features to keep 
+(when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
 \item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
 type '01'. Determines tightness required in creating clusters from the
@@ -144,10 +150,9 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \value{
-If \code{run=TRUE} and the input is either a matrix, a 
-  \code{SummarizedExperiment} object, or a \code{ClusterExperiment} object, 
-  will return a \code{ClusterExperiment} object, where the results are stored
-  as clusterings with clusterTypes \code{clusterMany}. Depending on 
+If \code{run=TRUE} and the input is not a list of data matrices, will
+  return a \code{ClusterExperiment} object, where the results are stored as
+  clusterings with clusterTypes \code{clusterMany}. Depending on 
   \code{eraseOld} argument above, this will either delete existing such 
   objects, or change the clusterTypes of existing objects. See argument 
   \code{eraseOld} above. Arbitrarily the first clustering is set as the 
@@ -161,8 +166,8 @@ If \code{run=TRUE} and the input is a list of data sets, a list with
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
   clustering, where each column is a possible parameter set by the user and 
   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
-  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{ a 
-  list of (possibly modified) arguments to mainClusterArgs} 
+  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+  a list of (possibly modified) arguments to mainClusterArgs} 
   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
   arguments to subsampleArgs} }
@@ -190,26 +195,26 @@ While the function allows for multiple values of clusterFunction,
   there is no gain in computational complexity (i.e. each subsampled 
   co-occurence matrix is recalculated for each set of parameters).
 
-The argument \code{ks} is interpreted differently for different
+The argument \code{ks} is interpreted differently for different 
   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
-  the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
-  values are the \code{k} values for \strong{both} the mainClustering and
-  subsampling step (i.e. assigned to the \code{subsampleArgs} and
-  \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and
-  \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
-  \code{subsampleArgs}. The passing of these arguments via
-  \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
-  Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an
+  the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks} 
+  values are the \code{k} values for \strong{both} the mainClustering and 
+  subsampling step (i.e. assigned to the \code{subsampleArgs} and 
+  \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and 
+  \code{\link{subsampleClustering}} unless \code{k} is set appropriately in 
+  \code{subsampleArgs}. The passing of these arguments via 
+  \code{subsampleArgs} will only have an effect if `subsample=TRUE`. 
+  Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an 
   effect when the clusterFunction argument includes a clustering algorithm of
-  type "K". When/if "findBestK=TRUE", \code{ks} also defines the
-  \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange} is
-  specified by the user via the \code{mainClusterArgs}; note this means that the
-  default option of setting \code{kRange} that depends on the input \code{k}
-  (see \code{\link{mainClustering}}) is not available in \code{clusterMany}, only
-  in \code{\link{clusterSingle}}.
+  type "K". When/if "findBestK=TRUE", \code{ks} also defines the 
+  \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange}
+  is specified by the user via the \code{mainClusterArgs}; note this means
+  that the default option of setting \code{kRange} that depends on the input
+  \code{k} (see \code{\link{mainClustering}}) is not available in
+  \code{clusterMany}, only in \code{\link{clusterSingle}}.
 
-If the input is a \code{ClusterExperiment} object, current
-  implementation is that existing \code{orderSamples},\code{coClustering} or
+If the input is a \code{ClusterExperiment} object, current 
+  implementation is that existing \code{orderSamples},\code{coClustering} or 
   the many dendrogram slots will be retained.
 }
 \examples{
@@ -218,25 +223,25 @@ data(simData)
 #Example: clustering using pam with different dimensions of pca and different
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
-checkParams <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
-clusterFunction="pam",
+checkParams <- clusterMany(simData,reduceMethod="PCA",  
+nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
-cl <- clusterMany(simData,nPCADims=c(5,10,50),  dimReduce="PCA",
+cl <- clusterMany(simData,reduceMethod="PCA", nReducedDims=c(5,10,50),  isCount=FALSE,
 clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))
 
 #make names shorter for plotting
-clMat <- clusterMatrix(cl)
-colnames(clMat) <- gsub("TRUE", "T", colnames(clMat))
-colnames(clMat) <- gsub("FALSE", "F", colnames(clMat))
-colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
+clNames <- clusterLabels(cl)
+clNames <- gsub("TRUE", "T", clNames)
+clNames <- gsub("FALSE", "F", clNames)
+clNames <- gsub("k=NA,", "", clNames)
 
 par(mar=c(2, 10, 1, 1))
-plotClusters(clMat, axisLine=-2)
+plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 
 
 \dontrun{

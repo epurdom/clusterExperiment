@@ -16,6 +16,8 @@
 \alias{transformation}
 \alias{transformation<-,ClusterExperiment,function-method}
 \alias{transformation<-}
+\alias{nClusterings,ClusterExperiment-method}
+\alias{nClusterings}
 \alias{nClusters,ClusterExperiment-method}
 \alias{nClusters}
 \alias{nFeatures,ClusterExperiment-method}
@@ -42,8 +44,8 @@
 \alias{coClustering<-}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
-\alias{clusterInfo,ClusterExperiment-method}
-\alias{clusterInfo}
+\alias{clusteringInfo,ClusterExperiment-method}
+\alias{clusteringInfo}
 \alias{clusterLabels,ClusterExperiment-method}
 \alias{clusterLabels}
 \alias{clusterLabels<-,ClusterExperiment,character-method}
@@ -80,7 +82,9 @@
 
 \S4method{transformation}{ClusterExperiment,`function`}(object) <- value
 
-\S4method{nClusters}{ClusterExperiment}(x)
+\S4method{nClusterings}{ClusterExperiment}(x)
+
+\S4method{nClusters}{ClusterExperiment}(x, ignoreUnassigned = TRUE)
 
 \S4method{nFeatures}{ClusterExperiment}(x)
 
@@ -106,7 +110,7 @@
 
 \S4method{clusterTypes}{ClusterExperiment}(x)
 
-\S4method{clusterInfo}{ClusterExperiment}(x)
+\S4method{clusteringInfo}{ClusterExperiment}(x)
 
 \S4method{clusterLabels}{ClusterExperiment}(x)
 
@@ -132,11 +136,13 @@
 \item{x, object}{a ClusterExperiment object.}
 
 \item{..., i, j, drop}{Forwarded to the
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} method.}
+\code{\link{SingleCellExperiment}} method.}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
+
+\item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
 
 \item{whichClusters}{optional argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
@@ -157,8 +163,10 @@ labels).
 \code{transformation} prints the function used to transform the data
 prior to clustering.
 
-\code{nClusters} returns the number of clusterings (i.e., ncol of
+\code{nClusterings} returns the number of clusterings (i.e., ncol of
 clusterMatrix).
+
+\code{nClusters} returns the number of clusters per clustering
 
 \code{nFeatures} returns the number of features (same as `nrow`).
 
@@ -183,7 +191,7 @@ of the clusters used to create dendrogram
 
 \code{clusterTypes} returns/sets the clusterTypes slot.
 
-\code{clusterInfo} returns the clusterInfo slot.
+\code{clusteringInfo} returns the clusterInfo slot.
 
 \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
@@ -201,6 +209,6 @@ the co-clustering matrix are lost.
 Note that redefining the transformation function via
   \code{transformation(x)<-} will check the validity of the transformation on
   the data assay. If the assay is large, this may be time consuming. Consider
-  using a call to clusterExperiment, which has the option as to whether to
+  using a call to ClusterExperiment, which has the option as to whether to
   check the validity of the transformation.
 }

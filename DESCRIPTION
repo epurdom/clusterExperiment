@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 1.5.0
+Version: 1.99.0
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -12,13 +12,14 @@ Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 3.4),
-    SummarizedExperiment
+    R (>= 3.4.2),
+    SingleCellExperiment,
+	SummarizedExperiment
 Imports:
     methods,
     NMF,
     RColorBrewer,
-    ape,
+    ape (>= 5.0),
     phylobase,
     cluster,
     stats,
@@ -31,15 +32,19 @@ Imports:
     parallel,
     RSpectra,
 	kernlab,
-	stringr
+	stringr,
+	S4Vectors,
+	grDevices
 Suggests:
     BiocStyle,
     knitr,
     testthat,
 	scRNAseq,
-    MAST
+    MAST,
+	Rtsne
 VignetteBuilder: knitr
 LazyData: false
+LazyLoad: false
 RoxygenNote: 6.0.1
 biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
 Collate: 
@@ -48,6 +53,7 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperClusterFunction.R'
+    'AllHelperFilter.R'
     'JiashinJiCode.R'
     'addClusters.R'
     'internalClusterFunctions.R'
@@ -64,14 +70,17 @@ Collate:
     'mainClustering.R'
     'makeBlankData.R'
     'makeDendrogram.R'
+    'makeFilterStats.R'
+    'makeReducedDims.R'
     'mergeClusters.R'
     'plotBarplot.R'
     'plotClusters.R'
     'plotClustersWorkflow.R'
     'plotContrastHeatmap.R'
     'plotDendrogram.R'
-    'plotDimReduce.R'
+    'plotFeatureBoxplot.R'
     'plotHeatmap.R'
+    'plotReduceDim.R'
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'

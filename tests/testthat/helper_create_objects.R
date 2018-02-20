@@ -1,5 +1,9 @@
+###Note: any changes to this file should be at the END so as to not mess up the seed calls.
+
 library(clusterExperiment)
-data(simData)
+# library(devtools)
+# load_all()
+data(simData, envir = environment())
 if(ncol(simData) != 300) {
   stop("not current version of simData")
   #get all kinds of annoyances because using old version.
@@ -38,8 +42,9 @@ colnames(sData)<-c("A","B","C")
 colnames(gData)<-c("a","b","c")
 mData<-list(first=c(1,2,3),second=c("Information"))
 se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
-cc <- clusterExperiment(mat, labMat, transformation = function(x){x})
-ccSE<-clusterExperiment(se,labMat,transformation=function(x){x})
+cc <- ClusterExperiment(mat, labMat, transformation = function(x){x})
+ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
+
 
 #################################
 ###Larger sized objects based on simData/simCount:
@@ -56,9 +61,10 @@ colnames(gSimData)<-c("a","b","c")
 seSimData <- SummarizedExperiment(simData,colData=simSData,rowData=gSimData,metadata=mData)
 seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,metadata=mData)
 
-test<- clusterMany(simCount,dimReduce="PCA",nPCADims=c(5,10,50), isCount=TRUE,
+test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                          clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
-test<-addClusters(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
+						
+test<-addClusterings(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
 clMatNew<-apply(clusterMatrix(test),2,function(x){
     wh<-sample(1:nSamples(test),size=10)
     x[wh]<- -1
@@ -66,12 +72,13 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
     x[wh]<- -2
     return(x)
 })
+
 #make a new object with -1 values
-ceSim<-clusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
+ceSim<-ClusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
 clusterTypes(ceSim)<-clusterTypes(test)
 
-ceSimCont<-clusterExperiment(seSimData,clMatNew,transformation=function(x){x})
-clusterTypes(ceSimCont)<-clusterTypes(test)
+ceSimData<-ClusterExperiment(seSimData,clMatNew,transformation=function(x){x})
+clusterTypes(ceSimData)<-clusterTypes(test)
 
 rm(test)
 #################################
@@ -84,3 +91,21 @@ smSimData<-simData[1:20,whSamp]
 smSimCount<-simCount[1:20,whSamp]
 smSimCE<-ceSim[1:20,whSamp]
 smSimSE <- seSimData[1:20,whSamp]
+
+
+
+#################################
+###Make reduce dimensions and filters
+#################################
+sce<-as(se,"SingleCellExperiment")
+sceFull<-sce
+clusterExperiment:::filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
+reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
+
+
+sceSimData<-as(seSimData,"SingleCellExperiment")
+sceSimDataDimRed<-sceSimData
+pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
+tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
+reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
+clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)

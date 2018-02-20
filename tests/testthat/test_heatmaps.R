@@ -1,7 +1,7 @@
 ##put separate so that not too long without output...
 context("Heatmap functions")
 
-source("create_objects.R")
+
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 test_that("`setBreaks`", {
@@ -46,34 +46,35 @@ test_that("`plotHeatmap` works with matrix objects", {
 
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
 
-    plotHeatmap(cc)
-    plotHeatmap(cc,whichClusters="none")
+    expect_silent(plotHeatmap(cc))
+    expect_silent(plotHeatmap(cc,whichClusters="none"))
     expect_warning(plotHeatmap(cc,whichClusters="workflow",plot=plotAll) ,"whichClusters value does not match any clusters") #there are no workflow for this one
 
-    plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE)
-    expect_warning(plotHeatmap(smSimCE,whichClusters=1:15,plot=plotAll),"given whichClusters value does not match any clusters")
+    	expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE),"More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
+    expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,plot=plotAll),"given whichClusters value does not match any clusters")
 	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
-    plotHeatmap(smSimCE,whichClusters="all",alignSampleData=FALSE,overRideClusterLimit=TRUE)
+    expect_warning(plotHeatmap(smSimCE,whichClusters="all",
+		alignSampleData=FALSE,overRideClusterLimit=TRUE))
 
  
     #test sampleData
     expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
 
-    plotHeatmap(smSimCE,sampleData="all",overRideClusterLimit=TRUE)
-    plotHeatmap(smSimCE,sampleData="A",plot=plotAll)
-    plotHeatmap(smSimCE,sampleData=2:3,plot=plotAll)
+    expect_silent(plotHeatmap(smSimCE,sampleData="all"))
+    expect_silent(plotHeatmap(smSimCE,sampleData="A",plot=plotAll))
+    expect_silent(plotHeatmap(smSimCE,sampleData=2:3,plot=plotAll))
 
     #check that it pulls the names, not the clusterIds.
     clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
-    plotHeatmap(cc)
+    expect_silent(plotHeatmap(cc))
     
     #check user setting clusterLegend
 	x<-palette()[1:7]
 	names(x)<-clusterLegend(cc)$Cluster1[,"name"]
-    plotHeatmap(cc,clusterLegend=list("Cluster1"=x),plot=plotAll)
+    expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=x),plot=plotAll))
 
-    plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7]))
-	plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:4]),plot=plotAll)
+    expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7])))
+	expect_silent(plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:4]),plot=plotAll))
 
 	names(x)<-LETTERS[1:7]
 	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"do not cover all levels in the data")
@@ -107,28 +108,33 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
 
 test_that("`plotHeatmap` visualization choices/feature choices all work", {
 
-  plotHeatmap(smSimCE,visualizeData=smSimCount,plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="transformed",plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="original",plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="centeredAndScaled",plot=plotAll)
+  expect_silent(plotHeatmap(smSimCE,visualizeData=smSimCount,plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="transformed",plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="original",plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="centeredAndScaled",plot=plotAll))
   #even if visualizeData="orginal, still clsuter on transformed. Should make unit test out of below that get same:
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="hclust",plot=plotAll)
+  expect_silent(plotHeatmap(smSimCE, visualizeData="transformed", clusterSamplesData="hclust", 
+  	plot=plotAll))
   orderSamples(smSimCE)<-sample(1:nSamples(smSimCE))
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="orderSamplesValue",plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData="primaryCluster",plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="transformed",clusterSamplesData=c(3,4,5),plot=plotAll)
+  expect_silent(plotHeatmap(smSimCE, visualizeData="transformed", clusterSamplesData="orderSamplesValue", plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE, visualizeData="transformed", clusterSamplesData="primaryCluster", plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="transformed", clusterSamplesData=c(3,4,5), plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="transform", clusterFeaturesData="all", plot=plotAll))
+  
+  ###The following subset the genes
+  expect_silent(plotHeatmap(smSimCE,visualizeData="transform", clusterFeaturesData="var", nFeatures=3, plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,visualizeData="transform", clusterFeaturesData=3:5, nFeatures=3, plot=plotAll))
+  ## expect error because no row names in smSimCE
+  expect_error(plotHeatmap(smSimCE, visualizeData="transform", clusterFeaturesData=paste("Gene",3:5), nFeatures=3), "Cannot give feature names in clusterFeaturesData unless")
+  ##set rownames and should work
+  smSimCE2<-smSimCE
+  row.names(smSimCE2)<-paste("Gene",1:NROW(smSimCE))
+  expect_silent(plotHeatmap(smSimCE2, visualizeData="transform", clusterFeaturesData=paste("Gene",3:5), nFeatures=3))
 
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="all",plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="var",nFeatures=3,plot=plotAll)
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=3:5,nFeatures=3,plot=plotAll)
-  expect_error(plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3),"Cannot give feature names in clusterFeaturesData unless")
-  row.names(smSimCE)<-paste("Gene",1:NROW(smSimCE))
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData=paste("Gene",3:5),nFeatures=3)
-  plotHeatmap(smSimCE,visualizeData="transform",clusterFeaturesData="PCA",nFeatures=10,clusterSamplesData="hclust",plot=plotAll)
-
-  plotHeatmap(smSimCE,visualizeData="transform",clusterSamplesData="dendrogramValue",plot=plotAll)
+  expect_silent(plotHeatmap(smSimCE, visualizeData="transform", clusterFeaturesData="PCA", nFeatures=10, clusterSamplesData="hclust", plot=plotAll))
+ expect_silent(plotHeatmap(smSimCE, visualizeData="transform", clusterSamplesData="dendrogramValue", plot=plotAll))
   #test works with outside dataset
- plotHeatmap(smSimCE,visualizeData=assay(smSimCE)[1:10,],plot=plotAll)
+ expect_silent(plotHeatmap(smSimCE,visualizeData=assay(smSimCE)[1:10,],plot=plotAll))
  expect_error(plotHeatmap(smSimCE, visualizeData=assay(smSimCE)[,1:5]))
 })
 
@@ -137,7 +143,7 @@ test_that("`makeBlankData` works", {
 
   ##call directly
   gps<-list(c(3,6,7),c(2,1))
-  xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps)
+  expect_silent(xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps))
   expect_equal(nrow(xx$dataWBlanks),length(xx$rowNamesWBlanks))
   whBlankNames<-which(xx$rowNamesWBlanks=="")
   expect_equal(xx$rowNamesWBlanks[-whBlankNames],as.character(unlist(gps)) )
@@ -146,19 +152,20 @@ test_that("`makeBlankData` works", {
   expect_equal(whBlankRows,4)
 
   ##call within plotHeatmap (serves as test of NA capabilities)
-  plotHeatmap(smSimCE,clusterFeaturesData=gps)
-  plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99)
+  expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps))
+  expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99))
   expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
 })
 
 test_that("`plotCoClustering` works", {
   expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-  smMin1<-combineMany(smSimCE,whichClusters=10:13,proportion=.99)#gibes all -1, but creates coClustering
+  #following gives all -1, but creates coClustering
+  expect_silent(smMin1<-combineMany(smSimCE,whichClusters=10:13,proportion=.99))
 #  smMin1<-combineMany(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
-  plotCoClustering(smMin1,clusterSamplesData="hclust")
+  expect_silent(plotCoClustering(smMin1,clusterSamplesData="hclust"))
   ## Have changed so now changes it internally to primary cluster then hclust
   expect_warning(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue",plot=plotAll),
                "cannot make dendrogram from 'data'")
-  sm<-combineMany(smSimCE,whichClusters=1:4,proportion=.5)
-  plotCoClustering(sm,clusterSamplesData="dendrogramValue")
+  expect_silent(sm<-combineMany(smSimCE,whichClusters=1:4,proportion=.5))
+  expect_silent(plotCoClustering(sm,clusterSamplesData="dendrogramValue"))
 })

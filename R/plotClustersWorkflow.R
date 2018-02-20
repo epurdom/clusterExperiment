@@ -34,11 +34,7 @@
 #'   aligning step done by \code{plotClusters})
 #' @param highlightOnTop logical. Whether the highlighted clusters should be
 #'   plotted on the top of clusterMany results or underneath.
-#' @param existingColors logical. If logical, whether the highlighted clusters
-#'   should use colors matched to the clusterMany results, or should the stored
-#'   colors in \code{ClusterExperiment} object be used. This argument has no
-#'   effect on the colors of the clusterMany results, whose colors will be
-#'   chosen based on the alignment of plotClusters.
+#' @param existingColors one of "ignore","all","highlightOnly". Whether the plot should use the stored colors in the \code{ClusterExperiment} object given. "highlightOnly" means only the highlighted clusters will use the stored colors, not the clusterMany clusterings. 
 #' @param ... arguments passed to the matrix version of
 #'     \code{\link{plotClusters}}
 #' @details This plot is solely intended to make it easier to use the 
@@ -55,7 +51,7 @@
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nPCADims=c(5, 10, 50), dimReduce="PCA",
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #' cl <- combineMany(cl, proportion=0.7)
@@ -64,10 +60,11 @@
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusters(object)*.05), existingColors=FALSE,
-  nSizeResult=ceiling(nClusters(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
+  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=c("ignore","all","highlightOnly"),
+  nSizeResult=ceiling(nClusterings(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
 	  sortBy<-match.arg(sortBy)
+	  existingColors<-match.arg(existingColors)
 	  allClusterMany<-which(clusterTypes(object)=="clusterMany")
 	  if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
 	 if(is.null(whichClusterMany)){
@@ -80,8 +77,9 @@ setMethod(
  		whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
  		if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
  	}
-	 #result labels:
-       if(is.logical(clusterLabels)){
+	
+	 #result labels (yaxis):
+      if(is.logical(clusterLabels)){
  		  if(clusterLabels) clusterLabels<-clusterLabels(object)[whichClusters]
 		  else clusterLabels<-rep("",length(whichClusters))  
  	  }
@@ -91,8 +89,8 @@ setMethod(
 
  	   		}
  	  }
- 	 #clusterMany labels:
-        if(is.logical(clusterManyLabels)){
+ 	 #clusterMany labels (yaxis):
+      if(is.logical(clusterManyLabels)){
   		  if(clusterManyLabels) clusterManyLabels<-clusterLabels(object)[whichClusterMany]
 			  else clusterManyLabels<-rep("",length(whichClusterMany))
   	  }
@@ -103,30 +101,40 @@ setMethod(
   	   		}
   	  }
 
-
+	  ###Get the sorted index using the matrix version of plotClusters
+	  ### out is the result of plotClusters
 	 if(sortBy=="highlighted"){
 		 tempClusters<-clusterMatrix(object)[,c(whichClusters,whichClusterMany),drop=FALSE]
 		 out<-plotClusters(tempClusters,plot=FALSE)	 	
-		 cmM<-out$colors[,-c(1:length(whichClusters)),drop=FALSE]
+		 
 		 resM<-out$colors[,c(1:length(whichClusters)),drop=FALSE]
 	 }
 	 else{
-		 tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichClusters),drop=FALSE]
-		 out<-plotClusters(tempClusters,plot=FALSE)
-		 cmM<-out$colors[,c(1:length(whichClusterMany)),drop=FALSE]
-		 resM<-out$colors[,-c(1:length(whichClusterMany)),drop=FALSE]
+		tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichClusters),drop=FALSE]
+		out<-plotClusters(tempClusters,plot=FALSE)
 	 }
 	 
-	 if(existingColors){
-		 #don't use resM for the colors, but make one
-		 resMatch<-lapply(1:length(whichClusters),function(ii){
-			 x<-clusterMatrix(object)[,ii]
-			 col<-clusterLegend(object)[[ii]]
-			 m<-match(as.character(x),col[,"clusterIds"])
-			 return(col[m,"color"])
-		 })
-		 resM<-do.call("cbind",resMatch)
+	 ### Create color matrix
+	 ### resM is the highlighted clusters (columns the clusters)
+	 ### cmM is the clusterMany clusters (columns the clusters)
+	 
+	 if(existingColors!="ignore") 
+		 existingColorMat<-convertClusterLegend(object, whichClusters=c(whichClusterMany,whichClusters), output="matrixColors")
+	 
+	 if(existingColors %in% c("all","highlightOnly")){
+		 resM<-existingColorMat[,-c(1:length(whichClusterMany)),drop=FALSE]
 	 }
+	 else{
+	 	resM<-out$colors[,-c(1:length(whichClusterMany)),drop=FALSE]
+		
+	 }
+	 if(existingColors =="all"){
+		 cmM<-existingColorMat[,-c(1:length(whichClusters)),drop=FALSE]
+	 }
+	 else{
+		 cmM<-out$colors[,-c(1:length(whichClusters)),drop=FALSE] 
+	 }
+		
 	 
  	# make replication of results
  	 repResults<-lapply(1:ncol(resM),function(ii){
