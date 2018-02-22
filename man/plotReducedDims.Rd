@@ -27,7 +27,7 @@
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
 \item{reducedDim}{What dimensionality reduction method to use. Should match
-either a value in \code{reducedDimNames(object)} or one of the built-in 
+either a value in \code{reducedDimNames(object)} or one of the built-in
 functions of \code{\link{listBuiltInReducedDims}()}}
 
 \item{whichDims}{vector of length 2 giving the indices of which dimensions to
@@ -67,9 +67,9 @@ Plot a 2-dimensional representation of the data, color-code by a clustering.
 }
 \details{
 If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
-  "white", will be coerced to "lightgrey" regardless of user input to 
-  \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE}, 
-  the samples with -1/-2 will not be plotted, nor will the category show up in the 
+  "white", will be coerced to "lightgrey" regardless of user input to
+  \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
+  the samples with -1/-2 will not be plotted, nor will the category show up in the
   legend.
 }
 \examples{
