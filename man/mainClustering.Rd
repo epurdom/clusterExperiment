@@ -33,10 +33,10 @@ The available post-processing arguments for a \code{ClusterFunction} object
 depend on it's algorithm type and can be found by calling
 \code{getPostProcessingArgs}. See details below for documentation.}
 
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}
 
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
 on which to run the clustering}
 
 \item{distFunction}{a distance function to be applied to \code{D}. Only
@@ -47,23 +47,23 @@ required format of the distance function.}
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
 
-\item{minSize}{the minimum number of samples in a cluster. Clusters found 
-below this size will be discarded and samples in the cluster will be given 
+\item{minSize}{the minimum number of samples in a cluster. Clusters found
+below this size will be discarded and samples in the cluster will be given
 a cluster assignment of "-1" to indicate that they were not clustered.}
 
-\item{orderBy}{how to order the cluster (either by size or by maximum alpha 
-value). If orderBy="size" the numbering of the clusters are reordered by 
-the size of the cluster, instead of by the internal ordering of the 
+\item{orderBy}{how to order the cluster (either by size or by maximum alpha
+value). If orderBy="size" the numbering of the clusters are reordered by
+the size of the cluster, instead of by the internal ordering of the
 \code{clusterFUN} defined in the \code{ClusterFunction} object (an internal
 ordering is only possible if slot \code{outputType} of the
 \code{ClusterFunction} is \code{"list"}).}
 
 \item{format}{whether to return a list of indices in a cluster or a vector of
-clustering assignments. List is mainly for compatibility with sequential 
+clustering assignments. List is mainly for compatibility with sequential
 part.}
 
 \item{checkArgs}{logical as to whether should give warning if arguments given
-that don't match clustering choices given. Otherwise, inapplicable 
+that don't match clustering choices given. Otherwise, inapplicable
 arguments will be ignored without warning.}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is

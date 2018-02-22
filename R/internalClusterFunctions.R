@@ -8,7 +8,7 @@
     nfound<-length(clusterList)
     if(nfound>0){
         #make cluster ids in order of when found
-        for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i 
+        for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i
     }
     return(clust.id)
 }
@@ -20,19 +20,19 @@
   if(!is.null(x) & !is.null(diss)) input<-"both"
   if(is.null(x) & !is.null(diss)) input<-"diss"
   if(input %in% c("diss","both") & checkDiss) .checkDissFunction(diss,algType=algType)
-  if(input == "both" && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.") 
+  if(input == "both" && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.")
   if(!is.na(inputType)){
 	  if(input=="both"){
 		  if(inputType=="diss") input<-"diss"
 		  if(inputType=="X") input<-"X"
-		  if(inputType=="either") input<-"diss"	#if both given and both acceptable, use diss.	  
+		  if(inputType=="either") input<-"diss"	#if both given and both acceptable, use diss.
 	  }
 	  if(input == "diss" & inputType=="X") stop("given clusterFunction/classifyFuntion only takes a X matrix")
-	  #commented this out, because actually want the ability to use distFunction to make default diss if missing one. 
+	  #commented this out, because actually want the ability to use distFunction to make default diss if missing one.
 	#  if(input == "X" & inputType=="diss") stop("given clusterFunction/classifyFuntion only takes dissimilarity matrix")
-  	
+
   }
- 
+
   return(input)
 }
 .makeDiss<-function(x,distFunction,algType,checkDiss){
@@ -43,19 +43,19 @@
 	  }else if(is.na(distFunction)){
 	      distFunction<-switch(algType, "01"=function(x){(1-cor(t(x)))/2}, "K"=function(x){dist(x)})
 	  }else stop("if distFunction is not a function, it must be either NA or a character")
-  } 
-  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
+  }
+  D<-try(as(as.matrix(distFunction(t(x))), "sparseMatrix"))	#distances assumed to be of observations on rows
   if(inherits(D,"try-error")) stop("input distance function gives error when applied to x")
   if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("input distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
   if(checkDiss) .checkDissFunction(D,algType=algType)
   return(D)
-	  
-	
 }
 .checkDissFunction<-function(D,algType=NA){
 	if(anyNA(D)) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
-	if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
+	# because is.nan is not implemented for sparse matrices!
+  #if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
+  if(any(is.infinite(D))) stop("Dissimilarity matrix contains Infinite values.")
+  if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
 	if(any(diag(D)!=0)) stop("Dissimilarity matrix must have zero values on the diagonal")
 	if(!all(D==t(D))) stop("Dissimilarity matrix must result in a symmetric matrix")
 	if(algType=="01" & any(D>1)) stop("distance function must give values between 0 and 1 when algorithm type of the ClusterFunction object is '01'")
@@ -68,7 +68,7 @@
     clList<-tapply(1:length(vec),vec,function(x){x},simplify=FALSE)
 	whNotAssign<-which(sapply(clList,function(x){all(vec[x]== -1)}))
 	if(length(whNotAssign)>1) stop("Internal coding error in removing unclustered samples")
-    if(length(whNotAssign)>0) clList<-clList[-whNotAssign]	
+    if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
 }
 .clusterListToVector<-function(ll,N){
 	if(length(ll)==0) return(rep(-1,N))
@@ -80,9 +80,9 @@
 		clusterVec<-rep(-1,length=N)
 		clusterVec[clInd]<-clVal
 		return(clusterVec)
-		
+
 	}
-	
+
 }
 .orderByAlpha<-function(res,S)
 {
@@ -100,18 +100,18 @@
 .makeDataArgs<-function(dataInput,funInput,xData,dissData){
 	if(dataInput=="X"){
 		if(funInput=="diss") stop("Internal coding error: should have caught that wrong data input ('X') for this clusterFunction")
-  		argsClusterList<-switch(funInput,"X"=list(x=xData), "either"=list(diss=NULL,x=xData))	
+  		argsClusterList<-switch(funInput,"X"=list(x=xData), "either"=list(diss=NULL,x=xData))
 	}
 	if(dataInput=="diss"){
 		if(funInput=="X") stop("Internal coding error: should have caught that wrong data input ('diss') for this clusterFunction")
-  		argsClusterList<-switch(funInput,"diss"=list(diss=dissData), "either"=list(diss=dissData,x=NULL)	)	
+  		argsClusterList<-switch(funInput,"diss"=list(diss=dissData), "either"=list(diss=dissData,x=NULL)	)
 	}
-	return(argsClusterList)	
+	return(argsClusterList)
 }
 
 ###This function checks the mainClusterArgs and subsampleArgs to make sure make sense with combination of sequential, subsample, x, and diss given by the user. If error, returns a character string describing error, otherwise returns list with necessary information.
 .checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,mainClusterArgs,subsampleArgs,checkDiss,warn=checkDiss){
-	
+
 	########
  	#checks for mainClustering stuff
     ########
@@ -119,7 +119,7 @@
       #get clusterFunction for cluster D
   	  clusterFunction<-mainClusterArgs[["clusterFunction"]]
   	  if(is.character(clusterFunction)) clusterFunction<-getBuiltInFunction(clusterFunction)
-  	  
+
 	  #Following input commands will return only X or Diss because gave the inputType argument...
   	  input<-.checkXDissInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
 	  algType<-algorithmType(clusterFunction)
@@ -137,7 +137,7 @@
 	}
 	if(length(reqArgs)>0){
 		if(("clusterArgs"%in% names(mainClusterArgs) & !all(reqArgs %in% names(mainClusterArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(mainClusterArgs))) return(paste("For the clusterFunction algorithm type ('",algorithmType(clusterFunction),"') given in 'mainClusterArgs', must supply arguments:",reqArgs,"These must be supplied as elements of the list of 'clusterArgs' given in 'mainClusterArgs'"))
-	} 
+	}
     if(sequential){
 		#Reason, if subsample=FALSE, then need to change k of the mainClustering step for sequential. If subsample=TRUE, similarly set the k of mainClustering step to match that used in subsample. Either way, can't be predefined by user
     	  if("clusterArgs" %in% names(mainClusterArgs)){
@@ -157,7 +157,7 @@
     if(subsample){
     	#Reason: if subsampling, then the D from subsampling sent to the clusterFunction.
     	if(inputType(clusterFunction)=="X") return("If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is dissimilarity.")
-     	if("clusterFunction" %in% names(subsampleArgs)){	    
+     	if("clusterFunction" %in% names(subsampleArgs)){
 		  subsampleCF<-subsampleArgs[["clusterFunction"]]
 		  if(is.character(subsampleCF)) subsampleCF<-getBuiltInFunction(subsampleCF)
 		  subsampleAlgType<-algorithmType(subsampleCF)
@@ -196,7 +196,7 @@
 		##Check have required args for subsample. If missing, 'borrow' those args from mainClusterArgs.
 		##------
 		reqSubArgs<-requiredArgs(subsampleCF)
-  	
+
 		#Reason: sequential sets k for the subsampling via k0
 		if(sequential & length(reqSubArgs)>0) reqSubArgs<- reqSubArgs[-which(reqSubArgs=="k")]
 		if(length(reqSubArgs)>0){
@@ -210,10 +210,10 @@
 					if(!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
 						missingArgs<-reqSubArgs[!reqSubArgs%in%names(subsampleArgs[["clusterArgs"]])]
 						missingArgs<-missingArgs[missingArgs%in%mainReqArgs]
-						
+
 				    }
 					else missingArgs<-c()
-				} 	
+				}
 				else{
 					missingArgs<-reqSubArgs[reqSubArgs%in%mainReqArgs]
 				}
@@ -223,7 +223,7 @@
 				}
 			}
 			#now check if got everything needed...
-			if(("clusterArgs" %in% names(subsampleArgs) & !all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(subsampleArgs))) 					return(paste("For the clusterFunction algorithm type ('",algorithmType(subsampleCF),"') given in 'subsampleArgs', must supply arguments:",reqSubArgs,". These must be supplied as elements of the list of 'clusterArgs' given in 'subsampleArgs'"))	
+			if(("clusterArgs" %in% names(subsampleArgs) & !all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(subsampleArgs))) 					return(paste("For the clusterFunction algorithm type ('",algorithmType(subsampleCF),"') given in 'subsampleArgs', must supply arguments:",reqSubArgs,". These must be supplied as elements of the list of 'clusterArgs' given in 'subsampleArgs'"))
 	  	  }
 		  #Reason, if subsample=TRUE, user can't set distance function because use diss from subsampling.
 		    if(!is.null(mainClusterArgs) && "distFunction" %in% names(mainClusterArgs) && !is.na(mainClusterArgs[["distFunction"]])){
@@ -240,7 +240,7 @@
 			  	}
 		  	  if(!"clusterArgs" %in% names(subsampleArgs) ){
 		  	  	  subsampleArgs[["clusterArgs"]]<-list() #make it if doesn't exist
-		  	  }				 
+		  	  }
 		}
 	}
 	else{ #not subsample
@@ -248,7 +248,7 @@
 			#Reason: if subsample=FALSE, and sequential then need to adjust K in the mainClustering step, so need algorithm of type K
 	    	  if(algorithmType(clusterFunction) != "K"){
 	    		  return("if subsample=FALSE, sequentical clustering can only be implemented with a clusterFunction with algorithmType 'K'. See documentation of seqCluster.")
-	    		  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]	
+	    		  subsampleArgs<-subsampleArgs[-which(names(subsampleArgs)=="clusterFunction")]
 	    	  }
 		    #Reason: subsample=FALSE can't do sequential clustering and findBestK=TRUE because need to remove cluster based on testing many k and finding stable, and if not doing it over subsample, then do it over actual clustering
 		    if(algorithmType(clusterFunction) == "K"){
@@ -261,7 +261,7 @@
 	}
 
     return(list(inputClusterD=input,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs))
-  
+
 }
 
 

@@ -32,7 +32,8 @@ Imports:
     parallel,
     irlba,
 	  kernlab,
-	  stringr
+	  stringr,
+	  Matrix
 Suggests:
     BiocStyle,
     knitr,

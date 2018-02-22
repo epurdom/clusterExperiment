@@ -1,33 +1,33 @@
 #' @title Cluster distance matrix from subsampling
-#'   
+#'
 #' @description Given input data, this function will try to find the clusters
 #'   based on the given ClusterFunction object.
 #' @name mainClustering
-#'   
-#' @param x \code{p x n} data matrix on which to run the clustering (samples in 
+#'
+#' @param x \code{p x n} data matrix on which to run the clustering (samples in
 #'   columns).
-#' @param diss \code{n x n} data matrix of dissimilarities between the samples 
+#' @param diss \code{n x n} data matrix of dissimilarities between the samples
 #'   on which to run the clustering
 #' @param distFunction a distance function to be applied to \code{D}. Only
 #'   relevant if input is only \code{x} (a matrix of data), and
 #'   \code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
 #'   required format of the distance function.
-#' @param minSize the minimum number of samples in a cluster. Clusters found 
-#'   below this size will be discarded and samples in the cluster will be given 
+#' @param minSize the minimum number of samples in a cluster. Clusters found
+#'   below this size will be discarded and samples in the cluster will be given
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
-#' @param orderBy how to order the cluster (either by size or by maximum alpha 
-#'   value). If orderBy="size" the numbering of the clusters are reordered by 
-#'   the size of the cluster, instead of by the internal ordering of the 
+#' @param orderBy how to order the cluster (either by size or by maximum alpha
+#'   value). If orderBy="size" the numbering of the clusters are reordered by
+#'   the size of the cluster, instead of by the internal ordering of the
 #'   \code{clusterFUN} defined in the \code{ClusterFunction} object (an internal
 #'   ordering is only possible if slot \code{outputType} of the
 #'   \code{ClusterFunction} is \code{"list"}).
 #' @param format whether to return a list of indices in a cluster or a vector of
-#'   clustering assignments. List is mainly for compatibility with sequential 
+#'   clustering assignments. List is mainly for compatibility with sequential
 #'   part.
 #' @param clusterArgs arguments to be passed directly to the \code{clusterFUN}
 #'   slot of the \code{ClusterFunction} object
 #' @param checkArgs logical as to whether should give warning if arguments given
-#'   that don't match clustering choices given. Otherwise, inapplicable 
+#'   that don't match clustering choices given. Otherwise, inapplicable
 #'   arguments will be ignored without warning.
 #' @param returnData logical as to whether to return the \code{diss} or \code{x}
 #'   matrix in the output. If \code{FALSE} only the clustering vector is
@@ -42,10 +42,10 @@
 #'   exported function so as to be able to clearly document the arguments for
 #'   \code{mainClustering} which can be passed via the argument \code{mainClusterArgs} in
 #'   functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
-#'   
+#'
 #' @return mainClustering returns a vector of cluster assignments (if format="vector")
 #'   or a list of indices for each cluster (if format="list"). Clusters less
-#'   than minSize are removed. 
+#'   than minSize are removed.
 #'
 #' @examples
 #' data(simData)
@@ -55,7 +55,7 @@
 #' #change distance to manhattan distance
 #' cl4<-mainClustering(simData,clusterFunction="pam",clusterArgs=list(k=3),
 #'      distFunction=function(x){dist(x,method="manhattan")})
-#' 
+#'
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
 #' #clustering using single linkage:
@@ -86,7 +86,7 @@ setMethod(
   signature = signature(clusterFunction = "character"),
   definition = function(clusterFunction,...){
   	mainClustering(getBuiltInFunction(clusterFunction),...)
-	  
+
   }
  )
 #' @rdname mainClustering
@@ -110,6 +110,7 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	#######################
 	### Check input and Create distance if needed, and check it.
 	#######################
+
 	input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,algType=clusterFunction@algorithmType,checkDiss=checkDiss)
 	#K-post processing requires diss for the silhouette.
 	doKPostProcess<-FALSE
@@ -121,8 +122,8 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 		diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
 		if(clusterFunction@inputType=="diss") input<-"diss"
 	}
-	
-	
+
+
 	#-----
 	# Other Checks
 	#-----
@@ -133,13 +134,13 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 		 if(postProcessArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
 	 }
 	 if(length(reqArgs)>0 & !all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
-	 
-	 
+
+
 	#######################
 	####Run clustering:
 	#######################
 	if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-	
+
 	argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss)
 	argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
 	if(algorithmType(clusterFunction)=="01") {
@@ -209,7 +210,7 @@ setMethod(
 #' @importFrom cluster silhouette
 .postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
 {
-	doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
+	doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function...
 	k<-clusterArgs[["k"]]
 	if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
 	if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
@@ -222,7 +223,7 @@ setMethod(
 	  kRange<-kRange[kRange>=2]
 	  if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
 	}
-	ks<-kRange 
+	ks<-kRange
 	}
 	else ks<-k
 	if(any(ks>= N)) ks<-ks[ks<N]
@@ -257,8 +258,8 @@ setMethod(
 	else{
 		cl<-clusters[[1]]
 	}
-  
-  
+
+
   #make list of indices and put in order of silhouette width (of positive)
   clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
   if(doPostProcess){
@@ -275,7 +276,7 @@ setMethod(
   }
 
   return(clList)
-  
+
 }
 
 

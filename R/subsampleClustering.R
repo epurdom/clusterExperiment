@@ -101,6 +101,7 @@ setMethod(
 
 #' @rdname subsampleClustering
 #' @export
+#' @import Matrix
 setMethod(
    f = "subsampleClustering",
    signature = signature(clusterFunction = "ClusterFunction"),
@@ -203,30 +204,37 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         }
 		#classX is length N
         #classX has NA if method does not classify all of the data.
-		if(!largeDataset){
-			#current implementation
-			# returns TWO NxN matrices!!!
-            D <- outer(classX, classX, function(a, b) a == b)
-            Dinclude<-matrix(1,N,N)
-            whNA<-which(is.na(classX))
-            if(length(whNA)>0){
-                Dinclude[whNA,]<-0 #don't add them to the denominator either
-                Dinclude[,whNA]<-0
-                D[whNA,]<-0 #don't add to sum
-                D[,whNA]<-0
-            }
-            return(list(D=D,Dinclude=Dinclude))
+
+        if(!largeDataset){
+          #current implementation
+          # returns TWO NxN matrices!!!
+          D <- outer(classX, classX, function(a, b) a == b)
+          Dinclude<-matrix(1,N,N)
+          whNA<-which(is.na(classX))
+          if(length(whNA)>0){
+            Dinclude[whNA,]<-0 #don't add them to the denominator either
+            Dinclude[,whNA]<-0
+            D[whNA,]<-0 #don't add to sum
+            D[,whNA]<-0
+          }
+          return(list(D=D,Dinclude=Dinclude))
         }
         else{
-            #instead return
-			# 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
-			# 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
-			# What does this do with NAs? Removes them -- not included.
-            clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
-            clusterLengths<-tapply(1:N,classX,length)
-            return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
+          #use sparsity! FALSE=0; TRUE=1.
+          D <- outer(classX, classX, function(a, b) as.numeric(a == b))
+          D <- as(D, "sparseMatrix")
+          Dexclude <- Matrix(0, N, N)
+          whNA <- which(is.na(classX))
+          if(length(whNA)>0){
+            Dexclude[whNA,] <- 1 #don't add them to the denominator either
+            Dexclude[,whNA] <- 1
+            D[whNA,] <- 0 #don't add to sum
+            D[,whNA] <- 0
+          }
+          return(list(D=D, Dexclude=Dexclude))
         }
     }
+
     if(ncores==1){
         DList<-apply(idx,2,perSample)
     }
@@ -236,18 +244,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     #N large: get rid of these big matrices from memory
     if(!is.null(diss)){
 		idnames<-colnames(diss)
-		rm(diss)
 	}
     if(!is.null(x)){
 		idnames<-colnames(x)
-		rm(x)
 	}
-    rm(idx)
-    gc()
-
-    DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
-    DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-    Dbar <- DNum/DDenom
 
     if(!largeDataset){
         DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
@@ -255,85 +255,9 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         Dbar = DNum/DDenom
     }
     else{
-		#############
-		#Need to calculate number of times pairs together without building large NxN matrix
-		#could speed up if had C++ function to do this instead!
-		#############
-
-		#---------
-		#for a sample index ii, determine what other indices in the same sample with it
-		#ii an index of a sample
-		#clustVec the clusterIds as returned by above in DList
-		#clusterLengths the length of each cluster as returned by above in DList
-		otherIds<-function(idx,clustVec,clustLeng){
-            m<-which(clustVec==idx)
-            if(length(m)>1) stop("ids clustered in more than one cluster")
-            if(length(m)==0) return(NA) #sample not ever clustered
-            if(length(m)==1){
-                ends<-cumsum(clustLeng)
-                begins<-cumsum(c(1,head(clustLeng,-1)))
-                whCluster<-which(m<=ends & m>=begins)
-                if(length(whCluster)>1 | length(whCluster)==0) stop("error in coding: finding range of clusterids")
-                return(clustVec[seq(begins[whCluster],ends[whCluster],by=1)])
-            }
-        }
-        #Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
-
-		#---------
-		#For ii an index of a sample, calculates the number of times joint with every other sample with index > ii.
-		#clusterList is the results of subsampling, i.e. list with indices of clusters adjacent
-		#returns vector of length N-ii with the proportions
-		#---------
-        searchForPairs<-function(ii,clusterList){
-            #get list of those indices sample ii was sampled
-			whHave<-which(sapply(clusterList,function(ll){ii%in%ll$clusterIds}))
-			#calculate number of times sampled with (denominator)
-            sampledWithTab<-table(unlist(sapply(clusterList[whHave],.subset2,"clusterIds")))
-            #get those indices clustered with and tabulate
-			clusterWith<-lapply(clusterList[whHave],function(ll){
-                otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
-            })
-			if(doGC){#just to reduce memory since will be parallelized
-				rm(clusterList)
-				gc()
-			}
-			clusterWithTab<-table(unlist(clusterWith))
-            jointNames<-as.character(1:N)
-			whLower<-which(as.integer(as.numeric(jointNames))<ii)
-			return(as.integer(clusterWithTab[jointNames][whLower])/as.integer(sampledWithTab[jointNames][whLower]))
-			#old code that made Nx3 matrix and subset it:
-		    #             #make a N x 3 matrix summarizing the results for all indices
-		    # out<-cbind(idx=as.integer(as.numeric(jointNames)), together=as.integer(clusterWithTab[jointNames]), total=as.integer(sampledWithTab[jointNames]))
-			# #keep only those in the lower triangle
-			#             out<-out[out[,"idx"]<ii,,drop=FALSE]
-			#             return(out[,"together"]/out[,"total"])
-
-			#thoughts about alternative code if not need save NxN matrix...
-            #jointNames<-names(sampledWithTab) #if manage to not save NxN matrix, could use this to return only those that actually present
-            #out<-out[!is.na(out[,"together"]),,drop=FALSE] #if manage to not save NxN matrix, could use this to return only those that actually present; but then need to not return proportions, but something else.
-        }
-        #Test: searchForPairs(5,DList[1:2])
-
-
-		###
-		# the result of pairList is the upper-triangle of eventual NxN matrix
-		###
-        if(ncores==1){
-            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)})
-        }
-        else{
-            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)},mc.cores=ncores,...)
-        }
-        if(doGC){
-          rm(DList)
-          gc()
-        }
-        #Create NxN matrix
-        Dbar<-matrix(0,N,N)
-        Dbar[upper.tri(Dbar, diag = FALSE)]<-unlist(pairList)
-        Dbar<-Dbar+t(Dbar)
-        Dbar[is.na(Dbar)]<-0
-        diag(Dbar)<-1
+      DDenom <- length(DList) - Reduce("+",lapply(DList,function(y){y$Dexclude}))
+      DNum <- Reduce("+",lapply(DList,function(y){y$D}))
+      Dbar = DNum/DDenom
     }
     rownames(Dbar)<-colnames(Dbar)<-idnames
     return(Dbar)

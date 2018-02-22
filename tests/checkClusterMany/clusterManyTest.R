@@ -38,16 +38,39 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
+
+# library(profvis)
+# profvis({
 cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5,
 				 mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
-                 ncores=ncores, subsampleArgs=list(resamp.num=20,largeDataset=FALSE,
+                 ncores=ncores, subsampleArgs=list(resamp.num=20,largeDataset=TRUE,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
+# })
+
+# profvis({
+#   cl1 <- clusterSingle(simData, subsample=TRUE, sequential=FALSE,
+#                     mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),
+#                     subsampleArgs=list(largeDataset=FALSE, clusterFunction="pam", clusterArgs=list(k=3)))
+# })
+#
+# profvis({
+#   cl2 <- clusterSingle(simData, subsample=TRUE, sequential=FALSE,
+#                     mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),
+#                     subsampleArgs=list(largeDataset=TRUE, clusterFunction="pam", clusterArgs=list(k=3)))
+# })
+#
+# profvis({
+#   p1 <- prcomp_irlba(t(log1p(assay(l5))), n=50, scale=TRUE)
+#   p2 <- clusterExperiment:::.pca(t(log1p(assay(l5))), k=50, scale=TRUE)
+#   p3 <- prcomp(t(log1p(assay(l5))), scale=TRUE)
+# })
+
 endtm<-proc.time()
 tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))

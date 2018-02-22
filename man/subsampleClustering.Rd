@@ -42,7 +42,7 @@ object. For any given \code{\link{ClusterFunction}} object, use function
 \code{\link{requiredArgs}} to get a list of required arguments for the
 object.}
 
-\item{classifyMethod}{method for determining which samples should be used in 
+\item{classifyMethod}{method for determining which samples should be used in
 calculating the co-occurance matrix. "All"= all samples, "OutOfSample"=
 those not subsampled, and "InSample"=those in the subsample.  See details
 for explanation.}
@@ -51,22 +51,22 @@ for explanation.}
 
 \item{samp.p}{the proportion of samples to sample for each subsample.}
 
-\item{ncores}{integer giving the number of cores. If ncores>1, mclapply will 
+\item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
 be called.}
 
 \item{checkArgs}{logical as to whether should give warning if arguments given
-that don't match clustering choices given. Otherwise, inapplicable 
+that don't match clustering choices given. Otherwise, inapplicable
 arguments will be ignored without warning.}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
 
-\item{largeDataset}{logical indicating whether a more memory-efficient version 
-should be used because the dataset is large. This is a beta option, and is 
+\item{largeDataset}{logical indicating whether a more memory-efficient version
+should be used because the dataset is large. This is a beta option, and is
 in the process of being tested before it becomes the default.}
 
-\item{doGC}{logical indicating whether frequent calls to gc should be 
-implemented in children processes (i.e. when ncores>1) to free up memory 
+\item{doGC}{logical indicating whether frequent calls to gc should be
+implemented in children processes (i.e. when ncores>1) to free up memory
 for the other processes.}
 }
 \value{
@@ -113,7 +113,7 @@ co-occurance.
 \dontrun{
 #takes a bit of time, not run on checks:
 data(simData)
-coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData, 
+coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData,
 clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
 
 #visualize the resulting co-occurance matrix
