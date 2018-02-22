@@ -76,16 +76,16 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   par(mfrow=c(1,2))
   x2<-plotClusters(ceSim,sampleData="all",resetColors=TRUE)
   x1<-plotClusters(ceSim,resetColors=TRUE)
-  
-  
+
+
   #check NAs
   naSim<-ceSim
   colData(naSim)[sample(10,1:nrow(naSim)),]<-NA
   plotClusters(naSim,sampleData=c("A","B"))
 
   #test the new TRUE option
-  plotClusters(naSim,sampleData=TRUE) 
-  
+  plotClusters(naSim,sampleData=TRUE)
+
   #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
 #  expect_equal(x1,x2)
 #   par(mfrow=c(1,2))
@@ -122,7 +122,7 @@ test_that("plotting helpers", {
   convertClusterLegend(smSimCE,output="matrixNames",whichClusters=1:3)
   convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=c("cluster1"))
   expect_error(convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=1:3),"given whichClusters indicates more than 1 clustering which is not allowed for option")
-  
+
   plotClusterLegend(smSimCE)
   plotClusterLegend(smSimCE,whichCluster="cluster1")
     showPalette()
@@ -138,7 +138,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1]))
     #check error
     expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
-    
+
     #test CE version with no defaults
     expect_silent(plotBarplot(ceSim))
     #test CE version whichClusters arguments
@@ -146,7 +146,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     expect_silent(plotBarplot(ceSim,whichClusters="primaryCluster"))
     expect_silent(plotBarplot(ceSim))
 
-    
+
     test<-ceSim
     expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])])
     #test character matrix version
@@ -157,7 +157,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="id"))
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="name"))
     #plotBarplot(ceSim,whichClusters="primaryCluster")
-    
+
 })
 
 test_that("plotReducedDims works",{
@@ -166,21 +166,22 @@ test_that("plotReducedDims works",{
 	removeSil=c(TRUE,FALSE)))
 	expect_silent(plotReducedDims(cl,legend="bottomright"))
 	expect_silent(plotReducedDims(cl,legend=TRUE))
+	expect_silent(plotReducedDims(cl,legend=FALSE))
 	expect_silent(clusterLegend(cl)[["nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE"]][,"name"]<-LETTERS[1:5])
 	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
-	
+
 	#test on object that doesn't have saved:
 	expect_silent(clD<-plotReducedDims(ceSimData,reducedDim="PCA"))
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
-	
+
 	#higher dims.
 	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
 	expect_error(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
 	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
-	
-	
-	
+
+
+
 })
 
 test_that("plotFeatureBoxplot works",{

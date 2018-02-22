@@ -207,9 +207,6 @@ setMethod(
   f = "ClusterExperiment",
   signature = signature("SingleCellExperiment", "numeric"),
   definition = function(object, clusters, ...){
-    if(NCOL(object) != length(clusters)) {
-      stop("`clusters` must be a vector of length equal to the number of samples.")
-    }
   ClusterExperiment(object,matrix(clusters, ncol=1),...)
 })
 #' @rdname ClusterExperiment-class
@@ -254,6 +251,7 @@ setMethod(
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots)
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -283,6 +281,7 @@ setMethod(
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
                         merge_method=NA_character_,
+						clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
     if(NCOL(object) != nrow(clusters)) {
@@ -315,7 +314,21 @@ setMethod(
     }
     #make clusters consecutive integer valued:
     tmp<-.makeColors(clusters, colors=massivePalette)
-    clusterLegend<-tmp$colorList
+    if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
+	else{
+		clusterLegend<-unname(clusterLegend)
+		ch<-.checkIndClusterLegend(clusters,clusterLegend)
+		if(!is.logical(ch)) stop(ch)
+		#need to grab colors/names in given clusterLegend
+		autoLegend<-tmp$colorList
+		clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
+			m<-match(orig[,"clusterIds"],auto[,"name"])
+			if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
+			orig[,"clusterIds"]<-auto[m,"clusterIds"]
+			return(orig)
+				
+		},SIMPLIFY=FALSE)
+	}
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
     #can just give object in constructor, and then don't loose any information!

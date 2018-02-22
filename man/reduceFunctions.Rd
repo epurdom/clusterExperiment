@@ -68,7 +68,7 @@ will give a transformation function \code{function(x){x}}. Ignored if \code{tran
 If object is of class \code{ClusterExperiment}, the stored transformation will be used 
 and giving this parameter will result in an error.}
 
-\item{...}{Values passed on the the 'SummarizedExperiment' method.}
+\item{...}{Values passed on the the 'SingleCellExperiment' method.}
 
 \item{whichClusterIgnoreUnassigned}{indicates clustering that should be used to filter out unassigned samples from the calculations. If \code{NULL} no filtering of samples will be done. See details for more information.}
 
@@ -92,8 +92,6 @@ number of dimensions necessary to account for that proportion of the
 variance. \code{maxDims} should be of same length as \code{reducedDims}, indicating 
 the number of dimensions to keep for each method (if \code{maxDims} is of length 1, 
 the same number of dimensions will be used for each).}
-
-\item{...}{Values passed on the the 'SingleCellExperiment' method.}
 }
 \value{
 \code{makeFilterStats} returns a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the requested filtering statistics will be added to the \code{DataFrame} in the \code{rowData} slot and given names corresponding to the \code{filterStats} values. Warning: the function will overwrite existing columns in \code{rowData} with the same name. Columns in the \code{rowData} slot with different names should not be affected.

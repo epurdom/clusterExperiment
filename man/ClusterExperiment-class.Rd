@@ -35,7 +35,7 @@ ClusterExperiment(object, clusters, ...)
   coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
   merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
   merge_nodeMerge = NULL, merge_method = NA_character_,
-  checkTransformAndAssay = TRUE)
+  clusterLegend = NULL, checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{object}{a matrix or \code{SummarizedExperiment} or
@@ -90,6 +90,8 @@ Slots)}
 Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
+
+\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see Slots)}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the 
 assay and given transformation function for whether they are valid.}

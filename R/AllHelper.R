@@ -73,9 +73,10 @@ object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"Si
                clusterTypes = x@clusterTypes,
                clusterInfo=x@clusterInfo,
                orderSamples=newOrder,
+			   clusterLegend=newClLegend,
 			   checkTransformAndAssay=FALSE
     )
-	clusterLegend(out)<-newClLegend
+#	clusterLegend(out)<-newClLegend
     return(out)
   }
 )

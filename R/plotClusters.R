@@ -375,6 +375,8 @@ setMethod(
         newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
 		names(newClLegend)<-colnames(oldClMat)
         clusterLegend(object)[whichClusters]<-newClLegend
+		ch<-.checkClusterLegend(object)
+		if(!is.logical(ch)) stop(ch)
     }
     if(resetOrderSamples) orderSamples(object)<-outval$orderSamples
     invisible(object)
