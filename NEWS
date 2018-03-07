@@ -1,3 +1,10 @@
+Changes in version 1.99.1-9001 ( Release date: 2018-02-15)
+==============
+
+Bugs:
+* Fix bug in setBreaks (isPositive and isNegative)
+* use stringr::str_sort to make sort locale independent
+
 Changes in version 1.99.0 ( Release date: 2018-02-15)
 ==============
 

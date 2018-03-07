@@ -249,8 +249,14 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 #' @examples
 #' setBreaks(data=simData,breaks=.9)
 setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
-	isPositive<-all(na.omit(data)>=0)
-	isNegative<-all(na.omit(data)<=0)
+	if(all(is.na(data))) stop("data consists only of NA values")
+	if(length(unique(na.omit(as.vector(data))))==1){
+			warning("data consists of only a single non NA value")
+			val<-unique(na.omit(as.vector(data)))
+			return(seq(val-1,val+1,length=52))
+		}
+	isPositive<-all(na.omit(as.vector(data))>=0)
+	isNegative<-all(na.omit(as.vector(data))<=0)
 #	
     #get arround bug in aheatmap
     #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
