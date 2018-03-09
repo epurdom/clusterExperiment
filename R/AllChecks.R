@@ -115,7 +115,10 @@
     if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
     if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
-    if(!object@merge_method %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")))
+	
+	#deal with possible FC
+	baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
+    if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
 	allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','Node')
 	
 	if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {

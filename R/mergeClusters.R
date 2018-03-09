@@ -28,10 +28,13 @@
 #' @param plotInfo what type of information about the merging will be shown on
 #'   the dendrogram. If 'all', then all the estimates of proportion non-null
 #'   will be plotted at each node of the dendrogram; if 'mergeMethod', then only
-#'   the value used in the merging is plotted at each node. If 'none', then no
-#'   proportions will be added to the dendrogram. 'plotInfo' can also be one of
-#'   the mergeMethod choices (even if that method is not the method chosen in
-#'   'mergeMethod' options).
+#'   the value used in the \code{mergeClusters} command is plotted at each node. 
+#'   If 'none', then no proportions will be added to the dendrogram, though the 
+#'   dendrogram will be drawn. 'plotInfo' can also be one of
+#'   the valid input to \code{mergeMethod} (even if that method is not the method chosen in
+#'   \code{mergeMethod} argument). \code{plotInfo} can also show the information
+#'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to this 
+#'   argument in  the form of "adjP_2.0", for example.
 #' @param isCount logical as to whether input data is a count matrix. See 
 #'   details.
 #' @param plot logical as to whether to plot the dendrogram with the merge
@@ -172,7 +175,7 @@ setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
           definition = function(x, cl, dendro=NULL, 
 			  mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-			  plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), 
+			  plotInfo="none", 
 			  nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
               cutoff=0.1, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -189,11 +192,6 @@ setMethod(f = "mergeClusters",
     }
   }
   mergeMethod <- match.arg(mergeMethod)
-  plotInfo <- match.arg(plotInfo)
-  if(mergeMethod=="none" & plotInfo=="none" & !calculateAll) stop("mergeMethod and plotInfo both equal 'none'; nothing to be done.")
-  if(plotInfo=="mergeMethod" & mergeMethod=="none") {
-    stop("can only plot 'mergeMethod' results if one method is selected")
-  }
   ############
   #determine what methods asked to be calculated
   ############
@@ -216,6 +214,18 @@ setMethod(f = "mergeClusters",
   }
   if(logFCcutoff>0 && "adjP" %in% whMethodCalculate){
 	  whMethodCalculate<-c(whMethodCalculate,adjPFCMethod)
+	  if(mergeMethod=="adjP") mergeMethod<-addFCString(logFCcutoff)
+
+  }
+
+  otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
+  otherVals<-c(otherVals,adjPFCMethod)
+  possibleValues<-unique(c("none", "all","mergeMethod",.availMergeMethods,otherVals))
+  plotInfo<-match.arg(plotInfo,possibleValues)
+
+  if(mergeMethod=="none" & plotInfo=="none" & !calculateAll) stop("mergeMethod and plotInfo both equal 'none'; nothing to be done.")
+  if(plotInfo=="mergeMethod" & mergeMethod=="none") {
+    stop("can only plot 'mergeMethod' results if one method is selected")
   }
 
   ############
@@ -237,7 +247,6 @@ setMethod(f = "mergeClusters",
 		  contrastType=c("Dendro"), dendro=dendro,
 		  contrastAdj=c("All"),
 		  number=nrow(x), p.value=1, isCount=isCount)
-	  #browser()
 	  #divide table into each node and calculate proportion.
 	  sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
 	      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
@@ -338,19 +347,28 @@ setMethod(f = "mergeClusters",
 	  whTransfer<-colnames(nodePropTableGiven)[-whNotProp]
 	  #1. do those that shared between two tables, but all NA in current, and were calculated previously
 	  whTransferExist<-whTransfer[whTransfer %in% colnames(nodePropTable)]
-	  whTransferExist<-whTransferExist[sapply(whTransferExist,function(x){ all(!is.na(nodePropTableGiven[,whTransferExist])) })]
+	  whTransferExist<-whTransferExist[sapply(whTransferExist,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
       whTransferExist<-whTransferExist[which(!whTransferExist %in% whMethodCalculate)]
       if(length(whTransferExist)>0){
         m<-match(annotTable$Node,nodePropTableGiven$Node)
-        nodePropTable[,whTransferExist]<-nodePropTableGiven[m,whTransferExist]
+		
+        nodePropTable[,whTransferExist]<-data.matrix(nodePropTableGiven[m,whTransferExist,drop=FALSE])
+		
       }
 	  #2. Add those in original table (that were calculated), but don't yet exist in current nodePropTable
-	  whTransfer<-whTransfer[!whTransfer %in% nodePropTable]
-	  nodePropTable<-cbind(nodePropTable,nodePropTableGiven[,whTransfer])
+	  whTransfer<-whTransfer[!whTransfer %in% colnames(nodePropTable)]
+	  if(length(whTransfer)>0){
+		  nodePropTable<-cbind(nodePropTable,
+				data.matrix(nodePropTableGiven[,whTransfer,drop=FALSE])	  	
+				)
+	  }
+	  if(any(duplicated(colnames(nodePropTable)))) stop("Internal Coding error -- have multiple copies of a method values.")
 	  #3. Go ahead and sort those that are the logFC so nice looking table (and make sure at the end of the table)
-	  whSort<-which(colnames(nodePropTable) %in% c("Node", "Contrast",.availMergeMethods))
-	  ord<-order(colnames(nodePropTable)[whSort])
-	  nodePropTable<-cbind(nodePropTable[,c("Node", "Contrast",.availMergeMethods)],nodePropTable[,whSort[ord]])	  
+	  whSort<-which(!colnames(nodePropTable) %in% .availMergeMethods)
+	  if(length(whSort)>0){
+		  ord<-order(colnames(nodePropTable)[whSort])
+		  nodePropTable<-cbind(nodePropTable[,.availMergeMethods], nodePropTable[,whSort[ord],drop=FALSE])	  
+	  }
     }
     
   }						  
@@ -429,6 +447,7 @@ setMethod(f = "mergeClusters",
       }
     }
 	combTable<-.nodeMergeInfo(nodeProp=out$nodeProp,nodeMerge=out$nodeMerge)
+	
     if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
     else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
     
@@ -519,6 +538,7 @@ setMethod(f = "mergeClusters",
 	  #######################
 	  ##add a new cluster, but only if there was a merging
 	  #######################
+
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
     if(!didMerge) .mynote("merging with these parameters did not result in any clusters being merged.")
     newObj <- ClusterExperiment(x, outlist$clustering,
@@ -553,6 +573,7 @@ setMethod(f = "mergeClusters",
 	##Do this by matching the outlist$clustering to the new clustering
 	#----- 
 	if(didMerge){ 
+		
 		if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
 		origOldToNew<-outlist$oldClToNew
 		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
@@ -663,10 +684,13 @@ setMethod(
         nodeMerge<-x@merge_nodeMerge
       }
       else{ #if run calculate all, can have the prop but no merge index
-        nodeMerge<-matrix(NA,nrow=nrow(x@merge_nodeProp),ncol=2)
-        colnames(nodeMerge)<-c("isMerged","mergeClusterId")
+        nodeMerge<-cbind(
+			x@merge_nodeProp[,c("Node","Contrast")],
+			matrix(NA,nrow=nrow(x@merge_nodeProp),ncol=2)
+			)
+        colnames(nodeMerge)<-c("Node","Contrast","isMerged","mergeClusterId")
       }
-	  .nodeMergeInfo(x@merge_nodeProp,nodeMerge)
+	  return(.nodeMergeInfo(x@merge_nodeProp,nodeMerge))
     }
 
     else return(NULL)
