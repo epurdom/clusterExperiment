@@ -83,7 +83,7 @@ setMethod(
 	possibleMergeValues<-c("none", "all","mergeMethod",.availMergeMethods)
     if(!is.null(x@merge_nodeProp)){
 		otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)%in%c("Node","Contrast")]
-		possibleMergeValues<-unique(possibleMergeValues,otherVals)
+		possibleMergeValues<-unique(c(possibleMergeValues,otherVals))
     	
     }
 	mergeInfo<-match.arg(mergeInfo,possibleMergeValues)

@@ -284,11 +284,11 @@ test_that("logFC works",{
   expect_equal(length(unique(primaryCluster(clustMerged))),5)
 
   ###Test plotting on CE version:
-  expect_message(clustMerged <- mergeClusters(clustWithDendro,
+  expect_message(clustMerged10 <- mergeClusters(clustWithDendro,
 	   mergeMethod="adjP", plot=TRUE,plotInfo="adjP_10.0", 
 	   calculateAll=FALSE,cutoff=0.1,logFCcutoff=10),"Merging will be done on")
 
-  expect_silent(plotDendrogram(clustMerged,mergeInfo="adjP_10.0"))
+  expect_silent(plotDendrogram(clustMerged10,mergeInfo="adjP_10.0"))
 })
 
 
