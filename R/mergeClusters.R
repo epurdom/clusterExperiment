@@ -52,6 +52,12 @@
 #'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
 #'   default to avoid large number of warnings being produced by "locfdr", but
 #'   users may want to be more careful to check the warnings for themselves.
+#' @param logFCcutoff Relevant only if the \code{mergeMethod} selected is 
+#' "adjP", in which case the calculation 
+#' of the proportion of individual tests significant will also require that 
+#' the estimated log-fold change of the features to be at least this large in 
+#' absolute value. Value will be rounded to nearest tenth of an integer via
+#' \code{round(logFCcutoff,digits=1)}. For any other method, this parameter is ignored.
 #' @param ... for signature \code{matrix}, arguments passed to the 
 #'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
 #'   For signature \code{ClusterExperiment} arguments passed to the method for 
@@ -105,11 +111,15 @@
 #'   link up the internal nodes of the sample dendrogram to the internal nodes
 #'   of the cluster dendrogram when the unassigned samples are intermixed. 
 #' @return If `x` is a matrix, it returns (invisibly) a list with elements 
-#'   \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x) 
+#'   \itemize{ 
+#'		\item{\code{clustering}}{ a vector of length equal to ncol(x) 
 #'   giving the integer-valued cluster ids for each sample. "-1" indicates the 
-#'   sample was not clustered.} \item{\code{oldClToNew}}{ A table of the old 
-#'   cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
+#'   sample was not clustered.} 
+#'		\item{\code{oldClToNew}}{ A table of the old 
+#'   cluster labels to the new cluster labels.} 
+#'		\item{\code{nodeProp}}{ A table of
 #'   the proportions that are DE on each node.} 
+#'		\item{\code{nodeMerge}}{ A table of indicating for each node whether merged or not and the cluster id in the new clustering that corresponds to the node}
 #'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
 #'   was based (based on the original clustering).} 
 #'   \item{\code{cutoff}}{ The cutoff value for merging.} }
@@ -160,10 +170,13 @@
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
           signature = signature(x = "matrix"),
-          definition = function(x, cl, dendro=NULL, mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
-                                plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-                                cutoff=0.1, plot=TRUE,isCount=TRUE,  ...){  
+          definition = function(x, cl, dendro=NULL, 
+			  mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
+			  plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), 
+			  nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
+              cutoff=0.1, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
+  logFCcutoff<-round(logFCcutoff,digits=1)
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- .convertToNum(cl)
@@ -181,44 +194,81 @@ setMethod(f = "mergeClusters",
   if(plotInfo=="mergeMethod" & mergeMethod=="none") {
     stop("can only plot 'mergeMethod' results if one method is selected")
   }
+  ############
   #determine what methods asked to be calculated
+  ############
+  rmFCString<-function(x){
+	  wh<-grep("adjP",x)
+	  if(length(wh)>0){
+		  x[wh]<-"adjP"
+	  }
+	  return(x)
+  }
+  addFCString<-function(fc){
+	  paste("adjP", format(fc,nsmall=1),sep="_")
+  }
+  adjPFCMethod<-if(logFCcutoff>0) addFCString(logFCcutoff) else NULL
   if(calculateAll) whMethodCalculate=.availMergeMethods
   else{
 	  whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
 	  if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
 	  if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))  	
   }
+  if(logFCcutoff>0 && "adjP" %in% whMethodCalculate){
+	  whMethodCalculate<-c(whMethodCalculate,adjPFCMethod)
+  }
 
-	  #determine whether need to calculate, or if already in nodePropTable
+  ############
+  #determine whether need to calculate, or if already in nodePropTable
+  ############
+  ### check valid existing table
   if(!is.null(nodePropTable)){
     if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
     if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
   }
   needCalculate<-is.null(nodePropTable) || any(!whMethodCalculate %in% names(nodePropTable)) || any(is.na(nodePropTable[,whMethodCalculate]))
-  if(needCalculate){### calculate the estimated proportions
-	 
+
+  ############
+  ### calculate the estimated proportions
+  ############  
+  if(needCalculate){
 	  #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
-	  sigTable <- getBestFeatures(x, cl, contrastType=c("Dendro"), dendro=dendro,
-	                               contrastAdj=c("All"),
-	                              number=nrow(x), p.value=1, isCount=isCount)
-	  #divide table into each node and calculate.
+	  sigTable <- getBestFeatures(x, cl, 
+		  contrastType=c("Dendro"), dendro=dendro,
+		  contrastAdj=c("All"),
+		  number=nrow(x), p.value=1, isCount=isCount)
+	  #browser()
+	  #divide table into each node and calculate proportion.
 	  sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
 	      storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
 	      pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC,showWarnings=showWarnings) else NA
 	      mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB,showWarnings=showWarnings) else NA
 	      locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr,showWarnings=showWarnings) else NA
-	      jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC,showWarnings=showWarnings) else NA
-	      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(x$adj) else NA
-	      return(c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc))
+	      
+		  jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC,showWarnings=showWarnings) else NA
+		  
+	      adjP<-if("adjP" %in% whMethodCalculate)  .m1_adjP(adjPvalues=x$adj,logFC=x$logFC, logFCcutoff=0) else NA
+	      out<-c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc)
+	      if(!is.null(adjPFCMethod) && adjPFCMethod %in% whMethodCalculate){
+	      	adjPFC<-.m1_adjP(adjPvalues=x$adj,logFC=x$logFC, logFCcutoff=logFCcutoff)
+			out<-c(out,adjPFC)
+			names(out)[length(names(out))]<-adjPFCMethod
+			return(out)
+	      }
+		  else return(out)
 	  })
   }
   else{
+  	.mynote(paste("Using existing results of per-node significance -- no new tests on individual features will be made."))
+	  
     sigByNode<-by(nodePropTable,nodePropTable$Node,function(x){x})
   }
   newcl <- cl
+  ############
+  ### #go up tree and merge clusters
+  ############  
   phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
   if(mergeMethod != "none"){
-    #go up tree and merge clusters
     valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 2)})
     nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
     
@@ -253,41 +303,61 @@ setMethod(f = "mergeClusters",
       newcl[is.na(newcl)] <- cl[is.na(newcl)]
     }
   }
+  ############
+  ### save/update merge information
+  ############  
   nodePropTableGiven<-nodePropTable
+  whNotProp <- which(c("Node", "Contrast") %in% names(nodePropTableGiven)) #interger 0 if is NULL
   if(!needCalculate){
-    whProp <- which(names(nodePropTable) %in% .availMergeMethods)
-    nodePropTable <- nodePropTableGiven[, whProp]
-    annotTable <- nodePropTableGiven[, c("Node", "Contrast")]
+    #------------	
+	## Just split the table apart 
+    #------------	
+    nodePropTable <- nodePropTableGiven[, -whNotProp]
+    annotTable <- nodePropTableGiven[, whNotProp]
   }
   else{
-    if (!is.null(nodePropTable)) {
-      #add results to given nodePropTable
-      nodePropTable <- do.call("rbind", sigByNode)
-      annotTable <- data.frame(
-        "Node" = names(sigByNode),
-        "Contrast" = as.character(sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)]),
-        stringsAsFactors = FALSE
-      )
-      #check same nodes and contrasts
+	#------------	
+	#create new table with calculated results
+	#------------	
+	nodePropTable <- do.call("rbind", sigByNode)
+	annotTable <- data.frame("Node"=names(sigByNode),
+	                       "Contrast" = as.character(sigTable$Contrast[ match(names(sigByNode), sigTable$ContrastName) ]), 
+						   stringsAsFactors =FALSE)
+    if (!is.null(nodePropTableGiven)) {
+	  #------------	
+      #add results from nodePropTableGiven (original table) to nodePropTableGiven
+	  #------------	
+      #check same nodes and contrasts with original table
       if (!identical(unname(sort(nodePropTableGiven$Node)),unname(sort(annotTable$Node))))
-        stop("different nodes in nodePropTable than when calculated fresh")
+        stop("different nodes in given `nodePropTable` than those just calculated")
       if (!identical(unname(sort(nodePropTableGiven$Contrast)), sort(unname(annotTable$Contrast))))
-        stop("different contrast values in nodePropTable than when calculated fresh")
-      whInGiven<-.availMergeMethods[sapply(.availMergeMethods,function(x){ all(!is.na(nodePropTableGiven[,x])) })]
-      whInGiven<-whInGiven[which(!whInGiven %in% whMethodCalculate)]
-      if(length(whInGiven)>0){
+        stop("different contrast values in given `nodePropTable` than those just calculated")
+	  #----------
+	  # Find methods in nodePropTableGiven not calculated this time
+	  #----------
+	  whTransfer<-colnames(nodePropTableGiven)[-whNotProp]
+	  #1. do those that shared between two tables, but all NA in current, and were calculated previously
+	  whTransferExist<-whTransfer[whTransfer %in% colnames(nodePropTable)]
+	  whTransferExist<-whTransferExist[sapply(whTransferExist,function(x){ all(!is.na(nodePropTableGiven[,whTransferExist])) })]
+      whTransferExist<-whTransferExist[which(!whTransferExist %in% whMethodCalculate)]
+      if(length(whTransferExist)>0){
         m<-match(annotTable$Node,nodePropTableGiven$Node)
-        nodePropTable[,whInGiven]<-nodePropTableGiven[m,whInGiven]
+        nodePropTable[,whTransferExist]<-nodePropTableGiven[m,whTransferExist]
       }
+	  #2. Add those in original table (that were calculated), but don't yet exist in current nodePropTable
+	  whTransfer<-whTransfer[!whTransfer %in% nodePropTable]
+	  nodePropTable<-cbind(nodePropTable,nodePropTableGiven[,whTransfer])
+	  #3. Go ahead and sort those that are the logFC so nice looking table (and make sure at the end of the table)
+	  whSort<-which(colnames(nodePropTable) %in% c("Node", "Contrast",.availMergeMethods))
+	  ord<-order(colnames(nodePropTable)[whSort])
+	  nodePropTable<-cbind(nodePropTable[,c("Node", "Contrast",.availMergeMethods)],nodePropTable[,whSort[ord]])	  
     }
-    else{
-      nodePropTable <- do.call("rbind", sigByNode)
-      annotTable <- data.frame("Node"=names(sigByNode),
-                               "Contrast"=as.character(sigTable$Contrast[match(names(sigByNode), sigTable$ContrastName)]),stringsAsFactors =FALSE)
-    }
+    
   }						  
+  ############
   #add merge information:
   #also determine whether node corresponds to a cluster in merge clusters
+  ############
   if (mergeMethod != "none" &&
       length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
 	logicalMerge <- annotTable$Node %in% nodesToMerge
@@ -324,7 +394,13 @@ setMethod(f = "mergeClusters",
     logicalMerge <- rep(FALSE, length = nrow(annotTable))
     corrspCluster <- rep(NA, length = nrow(annotTable))
   }
-  nodePropTable<-data.frame(annotTable,"isMerged"=logicalMerge,"mergeClusterId"=corrspCluster,nodePropTable,stringsAsFactors=FALSE)
+  nodeMergeTable<-data.frame(annotTable,
+				"isMerged"=logicalMerge,
+				"mergeClusterId"=corrspCluster,
+				stringsAsFactors=FALSE)
+  nodePropTable<-data.frame(annotTable,
+	  			nodePropTable,
+				stringsAsFactors=FALSE)
   
   if(mergeMethod=="none"){
     newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
@@ -335,10 +411,12 @@ setMethod(f = "mergeClusters",
     #check node identification from above
     nmerge<-apply(oldClToNew,2,function(x){sum(x>0)})
     clustersThatMerge<-colnames(oldClToNew)[which(nmerge>1)]
-    if(!identical(unname(sort(as.character(na.omit(nodePropTable$mergeClusterId)))),sort(unname(clustersThatMerge)))) stop("coding error -- wrong identification of merged clusters")
+    tableMergedClusters<- unname(sort(as.character(na.omit(nodeMergeTable$mergeClusterId))))
+	actualMergedClusters<-sort(unname(clustersThatMerge))
+	if(!identical(tableMergedClusters,actualMergedClusters)) stop("coding error -- wrong identification of merged clusters")
   }
-  out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff,
-            propDE=nodePropTable, originalClusterDendro=dendro,mergeMethod=mergeMethod)
+  out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff, logFCcutoff=logFCcutoff,
+            nodeProp=nodePropTable, nodeMerge=nodeMergeTable,originalClusterDendro=dendro,mergeMethod=mergeMethod)
   if(plot){
     clMat<-cbind(Original=cl, mergeCluster=newcl)
     if(!is.null(dendroSamples)){
@@ -350,8 +428,9 @@ setMethod(f = "mergeClusters",
         rownames(clMat)<-names(cl)	  	
       }
     }
-    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
-    else .plotDendro(dendro,leafType="clusters",mergeOutput=out$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
+	combTable<-.nodeMergeInfo(nodeProp=out$nodeProp,nodeMerge=out$nodeMerge)
+    if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
+    else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
     
   }
   invisible(out)
@@ -388,112 +467,131 @@ setMethod(f = "mergeClusters",
 setMethod(f = "mergeClusters",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x, eraseOld=FALSE,isCount=FALSE, 
-                                mergeMethod="none",plotInfo="all",clusterLabel="mergeClusters",
-                                leafType=c("samples","clusters" ),plotType=c("colorblock","name","ids"),
-                                plot=TRUE,...) {
-  plotType<-match.arg(plotType)
-  leafType<-match.arg(leafType)
-  if(is.null(x@dendro_clusters)) {
-    stop("`makeDendrogram` needs to be called before `mergeClusters`")
-  }
-  else{
-    cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
-    .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
-  }
-  if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
-with the transformation function in the slot `transformation`.
-This makes sense only for counts.")
+             mergeMethod="none",
+			 plotInfo="all",
+			 clusterLabel="mergeClusters",
+             leafType=c("samples","clusters"),
+			 plotType=c("colorblock","name","ids"),
+			 plot=TRUE,
+			 ...) {
+	plotType<-match.arg(plotType)
+	leafType<-match.arg(leafType)
+	if(is.null(x@dendro_clusters)) {
+	stop("`makeDendrogram` needs to be called before `mergeClusters`")
+	}
+	else{
+	cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
+	.mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
+	}
+	if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than with the transformation function in the slot `transformation`. This makes sense only for counts.")
 	if(!x@dendro_outbranch){
 		if(any(cl<0) & leafType=="samples"){
 			warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
 			leafType<-"clusters"
 		}
 	}
-   ###Divide ... into mergeCluster arguments and plotting arguments
-   ###Remove mergeClusters arguments in ... so can pass arguments to  
-   mergeArgs<-.methodFormals("mergeClusters","matrix") #list with names equal to formal arguments
-   passedArgs<-list(...)
-   if(any(!names(passedArgs) %in% names(mergeArgs))){
+	###Divide ... into mergeCluster arguments and plotting arguments
+	###Remove mergeClusters arguments in ... so can pass arguments to  
+	mergeArgs<-.methodFormals("mergeClusters","matrix") #list with names equal to formal arguments
+	passedArgs<-list(...)
+	if(any(!names(passedArgs) %in% names(mergeArgs))){
 	   plotArgs<-passedArgs[which(!names(passedArgs) %in% names(mergeArgs))]
-   }
-   else plotArgs<-NULL
-   
+	}
+	else plotArgs<-NULL
+
 	  
 	  
 ###Note, plot=FALSE, and then manually call .plotDendro afterwards to allow for passage of colors, etc.
-  if(!is.na(x@merge_index)){
-    #check to make sure all match, same, etc. 
-    if(x@merge_dendrocluster_index==x@dendro_index) propTable<-x@merge_nodeProp
-    else propTable<-NULL
-  }
-  else propTable<-NULL
+	##########
+	#check to make sure all match, same, etc. 
+	##########
+	if(!is.na(x@merge_index)){
+		if(x@merge_dendrocluster_index==x@dendro_index) propTable<-x@merge_nodeProp
+		else propTable<-NULL
+	}
+	else propTable<-NULL
   outlist <- mergeClusters(x=if(!isCount) transformData(x) else assay(x),
                            cl=cl, nodePropTable=propTable,
                            dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                            isCount=isCount,mergeMethod=mergeMethod, ...)
-  propTable<-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
-  mergeTable<-outlist$propDE[,c("Node","Contrast","isMerged","mergeClusterId")]
-  ##Did anything change??
-  if(mergeMethod!="none"){#only add a new cluster if there was a mergeMethod. otherwise, mergeClusters just returns original cluster!
+  nodeMerge<-outlist$nodeMerge
+  if(mergeMethod!="none"){#
+	  #######################
+	  ##add a new cluster, but only if there was a merging
+	  #######################
     didMerge<-any(apply(outlist$oldClToNew,2,function(x){sum(x>0)>1}))
     if(!didMerge) .mynote("merging with these parameters did not result in any clusters being merged.")
     newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="mergeClusters", 
                                 checkTransformAndAssay=FALSE)
-    #add "m" to name of cluster
+	#-----							
+	#add "m" to name of cluster
+	#-----							
     newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
+	#-----							
     ##Check if pipeline already ran previously and if so increase
+	#-----							
     x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
 	if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    #add merge slots manually here, because need joint object to dendro_index stuff, otherwise get validity errors
-    retval@merge_nodeProp<-propTable
+	#-----							
+    #Add merge info to merge slots
+	#Do manually here, because need joint object to dendro_index stuff
+	# (otherwise get validity errors)
+	#Note will save merge info, even if no change from merging.
+	#-----							
+    retval@merge_nodeProp<-outlist$nodeProp
     retval@merge_index<-1
     retval@merge_method<-outlist$mergeMethod
     retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
     retval@merge_cutoff<-outlist$cutoff
-	############## 
+	#----- 
 	##The above can change the internal coding of the merge clusters (???Why???)
-	##Need to update the mergeTable to reflect this before save to object.
+	##Need to update the nodeMerge to reflect this before save to object.
 	##Do this by matching the outlist$clustering to the new clustering
-	############## 
+	#----- 
 	if(didMerge){ 
-		if(all(is.na(mergeTable$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
+		if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
 		origOldToNew<-outlist$oldClToNew
 		if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
 			#
 			currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
 			#-----
-			##Match merge Ids in mergeTable to columns of origOldToNew
+			##Match merge Ids in nodeMerge to columns of origOldToNew
 			#-----
-			#get non NAs in mergeTable
-			whNotNAMerge<-which(!is.na(mergeTable$mergeClusterId))
-			idsInMergeTable<-mergeTable$mergeClusterId[whNotNAMerge]
+			#get non NAs in nodeMerge
+			whNotNAMerge<-which(!is.na(nodeMerge$mergeClusterId))
+			idsInMergeTable<-nodeMerge$mergeClusterId[whNotNAMerge]
 			#make origOldToNew only these ids in this order
 			origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
 			#make new merge table in same order as these ids by match columns to each other
 			mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
 			#currOldToNew<-currOldToNew[,mCols]
-			mergeTable$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+			nodeMerge$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
 			
 		}
 		
 	}
-    retval@merge_nodeMerge<-mergeTable
-	
-		
+    retval@merge_nodeMerge<-nodeMerge	
+	#------------
     ##Align the colors between mergeClusters and combineMany
+	#------------
     retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
     
   }
-  else{ #still save merge info so don't have to redo it.
+  else{ 
+	##############
+	#When no merging done, still need to save merge info so don't have to redo it.
+	#But do not update the clustering, etc from above.
+	##############
     retval<-x
     saveNodeTable<-is.na(x@merge_index)
     if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
     if(saveNodeTable ){
-      retval@merge_nodeProp <-outlist$propDE[,c("Node","Contrast",.availMergeMethods)]
+		
+      retval@merge_nodeProp <-outlist$nodeProp
     }
     if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
     
@@ -531,7 +629,7 @@ This makes sense only for counts.")
   	# rownames(cl)<-colnames(retval)
   	# dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
   	if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=outlist$propDE,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
+  	do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge),mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
   }
   
   invisible(retval)
@@ -561,27 +659,28 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     if(!is.na(x@merge_dendrocluster_index)){
-      nodeProp<-x@merge_nodeProp
       if(!is.na(x@merge_index)){
         nodeMerge<-x@merge_nodeMerge
-        #just in case not in same order!
-        m<-match(nodeMerge$Node,nodeProp$Node)
-        nodeProp<-nodeProp[m,]
-        
       }
       else{ #if run calculate all, can have the prop but no merge index
-        nodeMerge<-matrix(NA,nrow=nrow(nodeProp),ncol=2)
+        nodeMerge<-matrix(NA,nrow=nrow(x@merge_nodeProp),ncol=2)
         colnames(nodeMerge)<-c("isMerged","mergeClusterId")
       }
-      out<-(cbind(nodeProp[,c("Node","Contrast")],nodeMerge[,c("isMerged","mergeClusterId")],nodeProp[,.availMergeMethods]))
-      row.names(out)<-NULL
-      return(out)
+	  .nodeMergeInfo(x@merge_nodeProp,nodeMerge)
     }
 
     else return(NULL)
   }
 )
 
+.nodeMergeInfo<-function(nodeProp,nodeMerge){
+	if(!nrow(nodeProp)==nrow(nodeMerge)) stop("Coding error -- nodeProp and nodeMerge had different number of rows")
+    out<-merge(x=nodeMerge,y=nodeProp,by=c("Node","Contrast"),all=TRUE)
+	if(!nrow(out)==nrow(nodeProp)) stop("Coding error -- merging of nodeProp and nodeMerge indicates not same values of 'Node' and 'Contrast'")
+    row.names(out)<-NULL
+	return(out)
+	
+}
 #' @rdname mergeClusters
 #' @return \code{mergeCutoff} returns the cutoff used for the current merging.
 #' @aliases mergeCutoff
@@ -644,8 +743,9 @@ setMethod(
   nCorrect<-max(howmany::lowerbound(howmany::howmany(pvalues))) #the most you can call correctly
   return(nCorrect/length(pvalues))
 }
-.m1_adjP<-function(adjP){
-  sum(adjP<0.05)/length(adjP)
+.m1_adjP<-function(adjPvalues,logFC,logFCcutoff){
+	if(length(adjPvalues)!=length(logFC)) stop("coding error -- adjPvalues and logFC must be of same length")
+   sum(adjPvalues<=0.05 & abs(logFC)>=logFCcutoff)/length(adjPvalues)
 }
 .m1_locfdr<-function(tstats){
   locfdrResults<-locfdr::locfdr(tstats,plot=0)#ignore issue of df of t-statistic -- topTable doesn't give it out, and with large samples won't matter.

@@ -137,13 +137,18 @@
 	  if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
 	  
 	  }
-    allowColumns<-c("Node","Contrast",.availMergeMethods)
-    if(!identical(sort(colnames(object@merge_nodeProp)),sort(allowColumns)) ) 
-    return(paste("merge_nodeProp must be data.frame with",length(allowColumns),"columns and column names equal to:",paste(allowColumns,sep="",collapse=",")))
+    requireColumns<-c("Node","Contrast",.availMergeMethods)
+	#need to allow for log fold change columns of adjP
+	allCnames<-colnames(object@merge_nodeProp)
+	whFC<-grep("adjP_",allCnames)
+	whNode<-which(allCnames %in% c("Node","Contrast"))
+	namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
+    if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
+    return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
     
     if(!is.character(object@merge_nodeProp[,"Node"])) return("'Node' column of merge_nodeProp must be character")
     if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
-    for(method in .availMergeMethods){
+    for(method in allCnames[-whNode]){
       if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
     }
   }
