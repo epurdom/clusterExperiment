@@ -19,9 +19,9 @@
 \usage{
 \S4method{mergeClusters}{matrix}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
-  plotInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB", "JC",
-  "mergeMethod"), nodePropTable = NULL, calculateAll = TRUE,
-  showWarnings = FALSE, cutoff = 0.1, plot = TRUE, isCount = TRUE, ...)
+  plotInfo = "none", nodePropTable = NULL, calculateAll = TRUE,
+  showWarnings = FALSE, cutoff = 0.1, plot = TRUE, isCount = TRUE,
+  logFCcutoff = 0, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
@@ -61,10 +61,13 @@ for description of methods.}
 \item{plotInfo}{what type of information about the merging will be shown on
 the dendrogram. If 'all', then all the estimates of proportion non-null
 will be plotted at each node of the dendrogram; if 'mergeMethod', then only
-the value used in the merging is plotted at each node. If 'none', then no
-proportions will be added to the dendrogram. 'plotInfo' can also be one of
-the mergeMethod choices (even if that method is not the method chosen in
-'mergeMethod' options).}
+the value used in the \code{mergeClusters} command is plotted at each node. 
+If 'none', then no proportions will be added to the dendrogram, though the 
+dendrogram will be drawn. 'plotInfo' can also be one of
+the valid input to \code{mergeMethod} (even if that method is not the method chosen in
+\code{mergeMethod} argument). \code{plotInfo} can also show the information
+corresponding  to "adjP" with a fold-change cutoff, by giving a value to this 
+argument in  the form of "adjP_2.0", for example.}
 
 \item{nodePropTable}{Only for matrix version. Matrix of results from previous
 run of \code{mergeClusters} as returned by matrix version of
@@ -95,6 +98,13 @@ results}
 
 \item{isCount}{logical as to whether input data is a count matrix. See 
 details.}
+
+\item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is 
+"adjP", in which case the calculation 
+of the proportion of individual tests significant will also require that 
+the estimated log-fold change of the features to be at least this large in 
+absolute value. Value will be rounded to nearest tenth of an integer via
+\code{round(logFCcutoff,digits=1)}. For any other method, this parameter is ignored.}
 
 \item{...}{for signature \code{matrix}, arguments passed to the 
 \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
@@ -129,11 +139,15 @@ corresponding to the original clustering ids. See return value for details.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements 
-  \itemize{ \item{\code{clustering}}{ a vector of length equal to ncol(x) 
+  \itemize{ 
+	\item{\code{clustering}}{ a vector of length equal to ncol(x) 
   giving the integer-valued cluster ids for each sample. "-1" indicates the 
-  sample was not clustered.} \item{\code{oldClToNew}}{ A table of the old 
-  cluster labels to the new cluster labels.} \item{\code{propDE}}{ A table of
+  sample was not clustered.} 
+	\item{\code{oldClToNew}}{ A table of the old 
+  cluster labels to the new cluster labels.} 
+	\item{\code{nodeProp}}{ A table of
   the proportions that are DE on each node.} 
+	\item{\code{nodeMerge}}{ A table of indicating for each node whether merged or not and the cluster id in the new clustering that corresponds to the node}
   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging 
   was based (based on the original clustering).} 
   \item{\code{cutoff}}{ The cutoff value for merging.} }
