@@ -88,7 +88,6 @@ setMethod(
     }
 	mergeInfo<-match.arg(mergeInfo,possibleMergeValues)
 	
-	mergeInfo<-match.arg(mergeInfo)
 	legend<-match.arg(legend)
     whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
