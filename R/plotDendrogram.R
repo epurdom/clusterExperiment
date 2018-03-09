@@ -86,7 +86,7 @@ setMethod(
 		possibleMergeValues<-unique(possibleMergeValues,otherVals)
     	
     }
-	plotInfo<-match.arg(plotInfo,possibleMergeValues)
+	mergeInfo<-match.arg(mergeInfo,possibleMergeValues)
 	
 	mergeInfo<-match.arg(mergeInfo)
 	legend<-match.arg(legend)
