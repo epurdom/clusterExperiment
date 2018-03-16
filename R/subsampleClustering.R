@@ -206,18 +206,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         #classX has NA if method does not classify all of the data.
 
         if(!largeDataset){
-          #current implementation
-          # returns TWO NxN matrices!!!
+
           D <- outer(classX, classX, function(a, b) a == b)
-          Dinclude<-matrix(1,N,N)
-          whNA<-which(is.na(classX))
-          if(length(whNA)>0){
-            Dinclude[whNA,]<-0 #don't add them to the denominator either
-            Dinclude[,whNA]<-0
-            D[whNA,]<-0 #don't add to sum
-            D[,whNA]<-0
-          }
-          return(list(D=D,Dinclude=Dinclude))
+          return(as.vector(D))
+
         }
         else{
           #use sparsity! FALSE=0; TRUE=1.
@@ -250,9 +242,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 	}
 
     if(!largeDataset){
-        DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
-        DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-        Dbar = DNum/DDenom
+
+        Dvec <- rowMeans(DList, na.rm = TRUE)
+        Dbar <- matrix(Dvec, ncol = N, nrow = N)
+
     }
     else{
       DDenom <- length(DList) - Reduce("+",lapply(DList,function(y){y$Dexclude}))
