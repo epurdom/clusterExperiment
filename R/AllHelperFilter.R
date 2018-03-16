@@ -1,3 +1,5 @@
+####### Note: These are notexported, so the documentation is commented out.
+
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
@@ -88,6 +90,7 @@ setMethod( "filterStats",c("SummarizedExperiment","missing"),
 # #'   They update existing filters of the
 # #'   same name and add filters with new names to the existing filters.
 # #' @aliases filterStats<-
+#' @importFrom S4Vectors DataFrame
 setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, ...,value) {
 	isMatrixLike<-is.matrix(value) || class(value)=="DataFrame"
 	if(missing(type)){
@@ -115,11 +118,11 @@ setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, .
 	if(NCOL(fs)>0){
 		whTypeExist<-which(type %in% colnames(fs))
 		if(length(whTypeExist)>0){
-			fs[,type[whTypeExist]] <- DataFrame(value[,whTypeExist,drop=FALSE])
+			fs[,type[whTypeExist]] <- S4Vectors::DataFrame(value[,whTypeExist,drop=FALSE])
 		}
 	    whTypeNew<-which(!type %in% colnames(fs))
 		if(length(whTypeNew)>0){
-			fs<-DataFrame(fs,value[,whTypeNew,drop=FALSE])
+			fs<-S4Vectors::DataFrame(fs,value[,whTypeNew,drop=FALSE])
 		}
 	    rowData(object) <- fs
 	}

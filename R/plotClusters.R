@@ -94,26 +94,30 @@
 #'   Specifically, a list with the following elements.
 #' \itemize{
 #'
-#' \item{\code{index}}{ a vector of length equal to \code{ncols(clusters)}
-#' giving the order of the columns to use to get the original clusters matrix
+#' \item{\code{orderSamples}}{ a vector of length equal to 
+#' \code{nrows(clusters)} giving the order of the samples (rows) to 
+#'  use to get the original clusters matrix
 #' into the order made by \code{plotClusters}.}
 #'
 #' \item{\code{colors}}{ matrix of color assignments for each element of
 #' original clusters matrix. Matrix is in the same order as original clusters
-#' matrix. The matrix \code{colors[index,]} is the matrix that can be given back
-#' to \code{plotClusters} to recreate the plot (see examples).}
+#' matrix. The matrix \code{colors[orderSamples,]} is the matrix that can be 
+#' given back to \code{plotClusters} to recreate the plot (see examples).}
 #'
 #' \item{\code{alignedClusterIds}}{ a matrix of integer valued cluster
 #' assignments that match the colors. This is useful if you want to have cluster
 #' identification numbers that are better aligned than that given in the
-#' original clusters. Again, the matrix is in same order as original input
-#' matrix.}
+#' original clusters. Again, the rows/samples are in same order as original 
+#' input matrix.}
 #'
 #' \item{\code{clusterLegend}}{ list of length equal to the number of columns of
 #' input matrix. The elements of the list are matrices, each with three columns
 #' named "Original","Aligned", and "Color" giving, respectively, the
 #' correspondence between the original cluster ids in \code{clusters}, the
 #' aligned cluster ids in \code{aligned}, and the color.}
+#' 
+#' \item{\code{origClusters}}{The original matrix of clusters given to
+#' \code{plotClusters}}
 #' }
 #'
 #' @author Elizabeth Purdom and Marla Johnson (based on the tracking plot in
@@ -219,6 +223,8 @@ setMethod(
 #'   new order found.
 #' @export
 #' @importFrom grDevices gray
+#' @importFrom stringr str_sort str_order
+
 setMethod(
   f = "plotClusters",
   signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
@@ -371,6 +377,8 @@ setMethod(
         newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
 		names(newClLegend)<-colnames(oldClMat)
         clusterLegend(object)[whichClusters]<-newClLegend
+		ch<-.checkClusterLegend(object)
+		if(!is.logical(ch)) stop(ch)
     }
     if(resetOrderSamples) orderSamples(object)<-outval$orderSamples
     invisible(object)
@@ -605,7 +613,7 @@ setMethod(
 		#map values of ct to 1:(# unique values)
 		ncl<-length(unique(ct))
 		v<-1:ncl
-		names(v)<-sort(unique(ct))
+		names(v)<-stringr::str_sort(unique(ct),locale="en")
 		clNum<-v[match(ct,names(v))]
 		newColors = colorU[clNum]
 	}
@@ -615,7 +623,7 @@ setMethod(
 		#############
 		pastTab<-table(past_ct,past_colors)
 		if(nrow(pastTab)!=ncol(pastTab)) stop("past_ct and past_colors have different numbers of categories")
-		pastTab<-t(apply(pastTab,1,sort,decreasing=TRUE))
+		pastTab<-t(apply(pastTab,1,sort,decreasing=TRUE)) #numeric sort, can use sort
 		#each row should have only 1 non-zero category, so once order by row, then should all be zero except first
 		if(any(colSums(pastTab[,-1,drop=FALSE])>0)) stop("past_ct and past_colors do not imply the same clustering of samples.")
 
@@ -655,7 +663,7 @@ setMethod(
 				maxvals<-max(pvals)
 				vals<-vals[pvals >= min(c(minRequireColor,maxvals))]#require 30% overlap to take on new cluster value
 				if(length(vals)>0){
-					vals<-sort(vals,decreasing=TRUE)
+					vals<-sort(vals,decreasing=TRUE) #numeric sort
 					#for each value, determine its matching cluster (if any) then take highest
 					matchPci<-sapply(vals,function(v){
 						whMatch<-which(m[,tci]==v)

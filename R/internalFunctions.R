@@ -69,9 +69,10 @@
                             merge_nodeMerge=newObj@merge_nodeMerge,
                             merge_method=newObj@merge_method,
                             primaryIndex=primaryClusterIndex(newObj),
+							clusterLegend=clusterLegend(newObj),
                             checkTransformAndAssay=FALSE
   )
-  clusterLegend(retval)<-clusterLegend(newObj)
+#  clusterLegend(retval)<-clusterLegend(newObj)
   return(retval)
 }
 #Returns NULL if no sample data
@@ -203,15 +204,8 @@
 
     #convert ids into list of matrices:
     colorList<-lapply(1:ncol(clMat),function(ii){
-#         col<-colorMat[,ii]
-#         ids<-clMat[,ii]
-#         origids<-origClMat[,ii]
-#         uniqueIds<-unique(ids)
-#         mIds<-match(uniqueIds,ids)
-#         uniqueCols<-col[mIds]
-#         mat<-cbind("clusterIds"=uniqueIds,"color"=uniqueCols)
-        mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
-        rownames(mat)<-mat[,"clusterIds"]
+mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
+        rownames(mat)<-NULL
         return(mat)
     })
     names(colorList)<-cNames

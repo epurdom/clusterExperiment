@@ -6,23 +6,23 @@
 \alias{addClusterings}
 \alias{removeClusterings}
 \alias{addClusterings,ClusterExperiment,ClusterExperiment-method}
-\alias{addClusterings,ClusterExperiment,numeric-method}
+\alias{addClusterings,ClusterExperiment,vector-method}
 \alias{removeClusterings,ClusterExperiment,character-method}
 \alias{removeClusterings,ClusterExperiment,numeric-method}
 \alias{removeUnclustered,ClusterExperiment-method}
 \alias{removeUnclustered}
-\alias{unassignSamples,ClusterExperiment,numeric-method}
-\alias{unassignSamples}
-\alias{unassignSamples,ClusterExperiment,character-method}
+\alias{removeClusters,ClusterExperiment,numeric-method}
+\alias{removeClusters}
+\alias{removeClusters,ClusterExperiment,character-method}
 \title{Functions to add/remove clusters to ClusterExperiment}
 \usage{
 \S4method{addClusterings}{ClusterExperiment,matrix}(x, y,
-  clusterTypes = "User")
+  clusterTypes = "User", clusterLabels = NULL, clusterLegend = NULL)
 
 \S4method{addClusterings}{ClusterExperiment,ClusterExperiment}(x, y)
 
-\S4method{addClusterings}{ClusterExperiment,numeric}(x, y,
-  clusterLabel = NULL, ...)
+\S4method{addClusterings}{ClusterExperiment,vector}(x, y, makePrimary = FALSE,
+  ...)
 
 \S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters, ...)
 
@@ -30,10 +30,10 @@
 
 \S4method{removeUnclustered}{ClusterExperiment}(x)
 
-\S4method{unassignSamples}{ClusterExperiment,numeric}(x, whichClusters,
-  clustersToRemove)
+\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichClusters,
+  clustersToRemove, clusterLabels = NULL)
 
-\S4method{unassignSamples}{ClusterExperiment,character}(x, whichClusters, ...)
+\S4method{removeClusters}{ClusterExperiment,character}(x, whichClusters, ...)
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}
@@ -46,7 +46,11 @@ values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not 
 be used when creating a new object with the constructor.}
 
-\item{clusterLabel}{label(s) for the clusters being added.}
+\item{clusterLabels}{label(s) for the clusters being added. If \code{y} a matrix, the column names of that matrix will be used by default, if \code{clusterLabels} is not given.}
+
+\item{clusterLegend}{a list giving the cluster legend for the clusters added.}
+
+\item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
 
 \item{...}{Passed to signature \code{ClusterExperiment,matrix}.}
 
@@ -59,6 +63,8 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{clustersToRemove}{numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).}
 }
 \value{
 A \code{\link{ClusterExperiment}} object with the added clusters.
@@ -87,7 +93,7 @@ addClusterings adds y to x, and is thus not symmetric in the two
   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
   be unclustered in other clusters found in \code{clusterMatrix(x)}).
 
-\code{unassignSamples} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned)
+\code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
 }
 \examples{
 data(simData)

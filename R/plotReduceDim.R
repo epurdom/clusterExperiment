@@ -14,7 +14,7 @@ setMethod(
     return(plotReducedDims(object,whichCluster=wh,...))
 
   })
-  
+
 #' @rdname plotReducedDims
 #' @export
 setMethod(
@@ -25,11 +25,11 @@ setMethod(
     plotReducedDims(object,whichCluster="primaryCluster",...)
 
   })
-  
+
 #' @param object a ClusterExperiment object
 #' @param whichCluster which clusters to show on the plot
 #' @param reducedDim What dimensionality reduction method to use. Should match
-#'   either a value in \code{reducedDimNames(object)} or one of the built-in 
+#'   either a value in \code{reducedDimNames(object)} or one of the built-in
 #'   functions of \code{\link{listBuiltInReducedDims}()}
 #' @param whichDims vector of length 2 giving the indices of which dimensions to
 #'   show. The first value goes on the x-axis and the second on the y-axis.
@@ -46,19 +46,19 @@ setMethod(
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param plotUnassigned logical as to whether unassigned (either -1 or -2
-#'   cluster values) should be plotted. 
+#'   cluster values) should be plotted.
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
-#'   "white", will be coerced to "lightgrey" regardless of user input to 
-#'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE}, 
-#'   the samples with -1/-2 will not be plotted, nor will the category show up in the 
+#'   "white", will be coerced to "lightgrey" regardless of user input to
+#'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
+#'   the samples with -1/-2 will not be plotted, nor will the category show up in the
 #'   legend.
 #' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 #' @rdname plotReducedDims
-#' @return A plot is created. Nothing is returned. 
+#' @return A plot is created. Nothing is returned.
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
@@ -102,7 +102,7 @@ definition = function(object, whichCluster,
 		names(clColor)[wh1]<-"Unassigned"
 		clusterLegend[wh1,"name"]<-"Unassigned"
 		clColor<-c(clColor[-wh1],clColor[wh1])
-	} 
+	}
 	if(length(wh2)>0){
 		if(plotUnassigned && clColor[wh2]=="white") clColor[wh2]<-"lightgrey"
 		else if(!plotUnassigned) clColor[wh2]<-NA
@@ -110,25 +110,25 @@ definition = function(object, whichCluster,
 		clusterLegend[wh2,"name"]<-"Missing"
 		clColor<-c(clColor[-wh2],clColor[wh2])
 	}
-	
+
 	clFactor<-factor(as.character(cluster),levels=clusterLegend[,"clusterIds"], labels=clusterLegend[,"name"])
-	
+
 	#################
 	####Dim reduction stuff:
 	#################
-	if(length(whichDims)<2) 
+	if(length(whichDims)<2)
 		stop("whichDims must be a vector of length at least 2 giving the which dimensions of the dimensionality reduction to plot")
 	redoDim<-FALSE
 	if(!reducedDim %in% reducedDimNames(object) & reducedDim %in% listBuiltInReducedDims()) redoDim<-TRUE
-	if(reducedDim %in% reducedDimNames(object)){ 
+	if(reducedDim %in% reducedDimNames(object)){
 		#check if ask for higher dim than available
 		if(max(whichDims)>NROW(object) || max(whichDims)>NCOL(object)) stop("Invalid value for whichDims: larger than row or column")
 		if(max(whichDims)>ncol(reducedDim(object,type=reducedDim))) redoDim<-TRUE
-	}	
-		
+	}
+
 	if(redoDim) object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims))
 	if(reducedDim %in% reducedDimNames(object)){
-		
+
 		dat<-reducedDim(object,type=reducedDim)[,whichDims]
 	}
 	else stop("'reducedDim' does not match saved dimensionality reduction nor built in methods.")
@@ -136,16 +136,21 @@ definition = function(object, whichCluster,
 	if(length(whichDims)==2){
 		if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])
 		if(is.null(xlab)) xlab<-paste("Dimension",whichDims[1])
+
 		plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
+
 		doLegend<-FALSE
-		if(is.logical(legend) && legend){
-		  doLegend<-TRUE
-		  legend<-"topright"
-		}
-		else{
+
+		if(is.logical(legend)) {
+		  if(legend) {
+		    doLegend<-TRUE
+		    legend<-"topright"
+		  }
+		} else{
 		  if(is.character(legend)) doLegend<-TRUE
 		  else stop("legend must either be logical or character value.")
 		}
+
 		if(doLegend){
 			if(!plotUnassigned){
 				wh1<-which(names(clColor)=="Unassigned")
@@ -156,7 +161,7 @@ definition = function(object, whichCluster,
 		 	if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
 			legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
 		}
-		
+
 	}
 	else if(length(whichDims)>2){
 		colnames(dat)<-paste("Dim.",whichDims,sep="")
@@ -164,5 +169,5 @@ definition = function(object, whichCluster,
 	}
 
 	invisible(object)
-	
+
 })

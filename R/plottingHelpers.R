@@ -139,7 +139,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   par(mar=c(0,0,0,0),omi=c(0,0,0,0))
   plot.new()
   plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
-  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=F)
+  rect(x1,ycolor1,x2,ycolor2,col=c(colPalette,rep("white",nblank)),border=FALSE)
   if(length(colPalette)>100){
 	  half<-ceiling(length(colPalette)/2)
 	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))
@@ -233,9 +233,11 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced
-#'   breaks should be calculated.
+#'   breaks should be calculated. If missing or NA, will determine evenly spaced 
+#'   breaks in the range of the data.
 #' @param makeSymmetric whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)
-#'
+#' @param returnBreaks logical as to whether to return the vector of breaks. See details.
+#' @details if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 #' @rdname plottingFunctions
 #'
 #' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced
@@ -246,18 +248,35 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 #'
 #' @examples
 #' setBreaks(data=simData,breaks=.9)
-setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
-	isPositive<-all(na.omit(data)>=0)
-	isNegative<-all(na.omit(data)<=0)
+setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
+	if(all(is.na(data))) stop("data consists only of NA values")
+	if(length(unique(na.omit(as.vector(data))))==1){
+			warning("data consists of only a single non NA value")
+			val<-unique(na.omit(as.vector(data)))
+			return(seq(val-1,val+1,length=52))
+		}
+	isPositive<-all(na.omit(as.vector(data))>=0)
+	isNegative<-all(na.omit(as.vector(data))<=0)
 #	
     #get arround bug in aheatmap
     #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
     #TO DO: might not need any more with updated aheatmap.
     ncols<-51
+    minData<-min(data,na.rm=TRUE)
+    maxData<-max(data,na.rm=TRUE)
+    maxAbsData<-max(abs(data),na.rm=TRUE)
 	if(!is.vector(breaks)) stop("breaks argument must be a vector")
 	if(missing(breaks) || is.na(breaks)){
-		if(makeSymmetric & !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=ncols+1)
-		else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
+		#go from minimum to max
+		if(makeSymmetric & !isPositive & !isNegative){
+			breaks<-seq(-maxAbsData,maxAbsData,length=ncols+1)	
+			seconds<-c(-maxAbsData,maxAbsData)
+		} 
+		else{
+			breaks<-seq(minData,maxData,length=ncols+1)
+			seconds<-c(minData,maxData)
+		}
+		
 	}
 	else if(length(breaks)>0 && !is.na(breaks)){
         if(length(breaks)==1){
@@ -268,36 +287,64 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE){
 			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
 			  
 			  if(makeSymmetric & !isPositive & !isNegative){
+				  #make breaks symmetric around 0
 				  absq<-max(abs(c(lowQ,uppQ)),na.rm=TRUE)
 				  absm<-max(abs(c(min(data,na.rm=TRUE),max(data,na.rm=TRUE))))
 				  #is largest quantile also max of abs(data)?
 				  quantAllMax <- if( isTRUE( all.equal(round(absq,5), round(absm,5)))) TRUE else FALSE
-			      if(!quantAllMax) breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
-				  else breaks <- seq(absm,absm,length=ncols+1)
+			      if(!quantAllMax){
+					  breaks <- c(-absm, seq(-absq,absq,length=ncols-1), absm)
+					  seconds<-c(-absq,absq)
+				  }
+				  else{
+					  #equally spaced
+					  breaks <- seq(-absm,absm,length=ncols+1)
+					  seconds<-c(-absm,absm)
+				  }
 			  }
 			  else{
 				  #determine if those quantiles are min/max of data
-			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(min(data,na.rm=TRUE),5)))) TRUE else FALSE
-			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(max(data,na.rm=TRUE),5)))) TRUE else FALSE
-			      if(!quantMin & !quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,uppQ,length=ncols-1), max(data,na.rm=TRUE))
-			      if(!quantMin & quantMax) breaks <- c(min(data,na.rm=TRUE), seq(lowQ,max(data,na.rm=TRUE),length=ncols))
-			      if(quantMin & !quantMax) breaks <- c(seq(min(data,na.rm=TRUE),uppQ,length=ncols), max(data,na.rm=TRUE))
-			      if(quantMin & quantMax) breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=ncols+1)
-
+			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(minData,5)))) TRUE else FALSE
+			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(maxData,5)))) TRUE else FALSE
+				  
+			      if(!quantMin & !quantMax){
+					  breaks <- c(minData, seq(lowQ,uppQ,length=ncols-1), maxData)
+					  seconds<-c(lowQ,uppQ)
+				  }
+			      if(!quantMin & quantMax){
+					  breaks <- c(minData, seq(lowQ,maxData,length=ncols))
+					  seconds<-c(lowQ,maxData)
+				  }
+			      if(quantMin & !quantMax){
+					  breaks <- c(seq(minData,uppQ,length=ncols), maxData)
+				  	  seconds<-c(minData,uppQ)
+				  }
+			      if(quantMin & quantMax){
+					  breaks<-seq(minData,maxData,length=ncols+1)
+			      	  seconds<-c(minData,maxData)
+			      } 
 			  }
 			}
 	        else{ #breaks is number of breaks
 				if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum of colors will not be used")
-				if(makeSymmetric& !isPositive & !isNegative) breaks<-seq(-max(abs(data),na.rm=TRUE),max(abs(data),na.rm=TRUE),length=breaks)
-				else breaks<-seq(min(data,na.rm=TRUE),max(data,na.rm=TRUE),length=breaks)
+				if(makeSymmetric& !isPositive & !isNegative){
+					breaks<-seq(-maxAbsData,maxAbsData,length=breaks)	
+					seconds<-c(-maxAbsData,maxAbsData)
+				} 
+				else{
+					breaks<-seq(minData,maxData,length=breaks)
+					seconds<-c(minData,maxData)
+				}
 	    	}
         }
     }
 	if(!length(unique(breaks))==length(breaks)){
 		breaks<-sort(unique(breaks))
 		warning("setBreaks did not create unique breaks, and therefore the resulting breaks will not be of exactly the length requested. If you have replicable code that can recreate this warning, we would appreciate submitting it to the issues tracker on github (existing issue: #186)")
+		seconds<-c(min(breaks),max(breaks))
 	}
-    return(breaks)
+    if(returnBreaks) return(breaks)
+		else return(seconds)
 
 }
 
@@ -349,15 +396,17 @@ showHeatmapPalettes<-function(){
 seqPal5<- colorRampPalette(c("black","navyblue","mediumblue","dodgerblue3","aquamarine4","green4","yellowgreen","yellow"))(16)
 #' @rdname plottingFunctions
 #' @export
-seqPal2<- colorRampPalette(c("orange","black","blue"))(16)
-seqPal2<-(c("yellow","gold2",seqPal2))
+seqPal2<-colorRampPalette(c("yellow","orange","black","blue","dodgerblue"))(16)[-c(2,14)]
 seqPal2<-rev(seqPal2)
+#seqPal2<- colorRampPalette(c("yellow","orange","black","blue","dodgerblue"))(16)
+#seqPal2<-(c("yellow","gold2",seqPal2))
 #' @rdname plottingFunctions
 #' @export
 seqPal3<-rev(brewer.pal(11, "RdBu"))
 #' @rdname plottingFunctions
 #' @export
-seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)
+#make it symmetric around white
+seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)[c(1:9,12,13,14,16)]
 #' @rdname plottingFunctions
 #' @export
 seqPal1<-rev(brewer.pal(11, "Spectral"))

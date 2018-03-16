@@ -425,7 +425,7 @@ clOrig<-gsub("Features","",clOrig)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. However, if we change the labels internally in `ce` we will not be able to run `getClusterManyParams` which relies on parsing the expected clusterLabels from `clusterMany`. 
+We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. 
 
 There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 

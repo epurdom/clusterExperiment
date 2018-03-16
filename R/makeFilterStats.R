@@ -1,13 +1,13 @@
 #' @name reduceFunctions
 #' @title Filtering statistics and Dimensionality Reduction Functions
 #' @description Functions for calculating and manipulating either filtering statistics, stored in rowData, or the dimensionality reduction results, stored in reducedDims.
-#' @aliases reduceFunctions makeFilterStats
+#' @aliases reduceFunctions makeFilterStats makeFilterStats,SummarizedExperiment-method 
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. 
 #' 	  Must be one of the character values given by \code{listBuildInFilterStats()}.
-#' @param ... Values passed on the the 'SummarizedExperiment' method.
 #' @return \code{makeFilterStats} returns a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the requested filtering statistics will be added to the \code{DataFrame} in the \code{rowData} slot and given names corresponding to the \code{filterStats} values. Warning: the function will overwrite existing columns in \code{rowData} with the same name. Columns in the \code{rowData} slot with different names should not be affected.
 #' @inheritParams transformData
+#' @rdname reduceFunctions
 #'
 #' @examples
 #' data(simData)
@@ -17,8 +17,6 @@
 #' scfFiltered<-filterData(scf,filterStats="mad",percentile=10)
 #' scfFiltered
 #' assay(scfFiltered)[1:10,1:10]
-#' @rdname reduceFunctions
-#' @aliases makeFilterStats makeFilterStats,SummarizedExperiment-method
 #' @export
 setMethod(
   f = "makeFilterStats",
@@ -142,7 +140,6 @@ listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median'
 
 #' @rdname reduceFunctions
 #' @aliases filterData
-#' @param filterStats The filterStats of filtering statistic to use to filter. 
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
 #' @param percentile numeric. Either a number between 0,1 indicating what percentage of the rows (genes) to keep or an integer value indicated the number of rows (genes) to keep
 #' @param absolute whether to take the absolute value of the filter statistic

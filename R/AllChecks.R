@@ -115,7 +115,10 @@
     if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
     if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
-    if(!object@merge_method %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")))
+	
+	#deal with possible FC
+	baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
+    if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
 	allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','Node')
 	
 	if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
@@ -137,13 +140,18 @@
 	  if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
 	  
 	  }
-    allowColumns<-c("Node","Contrast",.availMergeMethods)
-    if(!identical(sort(colnames(object@merge_nodeProp)),sort(allowColumns)) ) 
-    return(paste("merge_nodeProp must be data.frame with",length(allowColumns),"columns and column names equal to:",paste(allowColumns,sep="",collapse=",")))
+    requireColumns<-c("Node","Contrast",.availMergeMethods)
+	#need to allow for log fold change columns of adjP
+	allCnames<-colnames(object@merge_nodeProp)
+	whFC<-grep("adjP_",allCnames)
+	whNode<-which(allCnames %in% c("Node","Contrast"))
+	namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
+    if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
+    return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
     
     if(!is.character(object@merge_nodeProp[,"Node"])) return("'Node' column of merge_nodeProp must be character")
     if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
-    for(method in .availMergeMethods){
+    for(method in allCnames[-whNode]){
       if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
     }
   }
@@ -189,58 +197,64 @@
 	return(TRUE)
 }
 
+
+.checkIndClusterLegend<-function(clusters,clusterLegend){
+    ####
+    #make so can call on arbitrary clusterLegend...not need to be object
+    ####
+    if(!is.null(names(clusterLegend))) return("clusterLegend should not have names")
+    if(length(clusterLegend) != NCOL(clusters)) {
+      return("`clusterLegend` must be list of same length as NCOL of
+               `clusterMatrix`")
+    }
+    testIsMatrix <- sapply(clusterLegend,
+                           function(x) {!is.null(dim(x))})
+    if(!all(testIsMatrix)) {
+      return("Each element of `clusterLegend` list must be a matrix")
+    }
+    testColorRows <- sapply(clusterLegend, function(x){nrow(x)})
+    testClusterMat <- apply(clusters, 2, function(x) {length(unique(x))})
+    if(!all(testColorRows == testClusterMat)) {
+      return("each element of `clusterLegend` must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in `clusterMatrix`")
+    }
+    testColorCols1 <- sapply(clusterLegend, function(x) {
+      "color" %in% colnames(x)})
+    testColorCols2 <- sapply(clusterLegend, function(x) {
+      "clusterIds" %in% colnames(x)})
+    testColorCols3 <- sapply(clusterLegend, function(x) {
+      "name" %in% colnames(x)})
+if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
+      return("each element of `clusterLegend` must be matrix with at least 3 columns, and at least 3 columns have names `clusterIds`, `color` and `name`")
+    }
+    
+#     testUniqueName <- sapply(clusterLegend, function(x) {
+#       any(duplicated(x[,"name"]))})
+#     if(any(testUniqueName)) return("the column")
+    testColorCols1 <- sapply(clusterLegend, function(x){is.character(x)})
+    if(!all(testColorCols1)) {
+      return("each element of `clusterLegend` must be matrix of character values")
+    }
+    testColorCols1 <- sapply(1:length(clusterLegend), function(ii){
+      col<-clusterLegend[[ii]]
+	  x<-clusters[,ii]
+	  y<-col[,"clusterIds"]
+	  if(is.numeric(x)){
+		  y<-as.numeric(y)
+	  }
+      
+      return(all(y %in% x) & all(x %in% y))
+    })
+    if( !all(testColorCols1)) {
+      return("each element of `clusterLegend` must be matrix with column
+             `clusterIds` matching the corresponding
+             clusterMatrix values")
+    }
+
+	return(TRUE)
+}
 .checkClusterLegend<-function(object){
-    ####
-    #test that @clusterLegend is proper form
-    ####
 	if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-	    if(!is.null(names(object@clusterLegend))) return("clusterLegend should not have names")
-	    if(length(object@clusterLegend) != NCOL(object@clusterMatrix)) {
-	      return("`clusterLegend` must be list of same length as NCOL of
-	               `clusterMatrix`")
-	    }
-	    testIsMatrix <- sapply(object@clusterLegend,
-	                           function(x) {!is.null(dim(x))})
-	    if(!all(testIsMatrix)) {
-	      return("Each element of `clusterLegend` list must be a matrix")
-	    }
-	    testColorRows <- sapply(object@clusterLegend, function(x){nrow(x)})
-	    testClusterMat <- apply(object@clusterMatrix, 2, function(x) {length(unique(x))})
-	    if(!all(testColorRows == testClusterMat)) {
-	      return("each element of `clusterLegend` must be matrix with number of
-	               rows equal to the number of clusters (including -1 or -2 values)
-	               in `clusterMatrix`")
-	    }
-	    testColorCols1 <- sapply(object@clusterLegend, function(x) {
-	      "color" %in% colnames(x)})
-	    testColorCols2 <- sapply(object@clusterLegend, function(x) {
-	      "clusterIds" %in% colnames(x)})
-	    testColorCols3 <- sapply(object@clusterLegend, function(x) {
-	      "name" %in% colnames(x)})
-	    if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
-	      return("each element of `clusterLegend` must be matrix with at least 3
-	             columns, and at least 3 columns have names `clusterIds`,
-	             `color` and `name`")
-	    }
-	#     testUniqueName <- sapply(object@clusterLegend, function(x) {
-	#       any(duplicated(x[,"name"]))})
-	#     if(any(testUniqueName)) return("the column")
-	    testColorCols1 <- sapply(object@clusterLegend, function(x){is.character(x)})
-	    if(!all(testColorCols1)) {
-	      return("each element of `clusterLegend` must be matrix of character
-	             values")
-	    }
-	    testColorCols1 <- sapply(1:length(object@clusterLegend), function(ii){
-	      col<-object@clusterLegend[[ii]]
-	      x<-object@clusterMatrix[,ii]
-	      y<-as.numeric(col[,"clusterIds"])
-	      all(y %in% x)
-	    })
-	    if(!all(testColorCols1)) {
-	      return("each element of `clusterLegend` must be matrix with column
-	             `clusterIds` matching the corresponding integer valued
-	             clusterMatrix values")
-	    }
+		return(.checkIndClusterLegend(clusters=object@clusterMatrix,clusterLegend=object@clusterLegend))
 	}
 	return(TRUE)
 }

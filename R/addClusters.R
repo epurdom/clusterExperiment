@@ -6,7 +6,8 @@
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
-#' @param clusterLabel label(s) for the clusters being added.
+#' @param clusterLabels label(s) for the clusters being added. If \code{y} a matrix, the column names of that matrix will be used by default, if \code{clusterLabels} is not given. 
+#' @param clusterLegend a list giving the cluster legend for the clusters added. 
 #' @inheritParams ClusterExperiment
 #' @details addClusterings adds y to x, and is thus not symmetric in the two 
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
@@ -31,8 +32,17 @@
 setMethod(
   f = "addClusterings",
   signature = signature("ClusterExperiment", "matrix"),
-  definition = function(x, y, clusterTypes="User") {
-    ccObj<-ClusterExperiment(assay(x),y,transformation=transformation(x),clusterTypes=clusterTypes,checkTransformAndAssay=FALSE)
+  definition = function(x, y, clusterTypes="User",clusterLabels=NULL,clusterLegend=NULL) {
+   if(!is.null(clusterLabels)){
+	   if(length(clusterLabels)!=ncol(y)) stop("clusterLabels must vector of length equal to the number of clusterings (columns of y)")
+	   colnames(y)<-clusterLabels
+   }
+    ccObj<-ClusterExperiment(assay(x),
+		clusters=y,
+		transformation=transformation(x),
+		clusterTypes=clusterTypes,
+		checkTransformAndAssay=FALSE,
+		clusterLegend=clusterLegend)
     addClusterings(x,ccObj)
   }
 )
@@ -68,15 +78,20 @@ setMethod(
 #' @rdname addClusterings
 #' @export
 #' @param ... Passed to signature \code{ClusterExperiment,matrix}.
+#' @param makePrimary whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)
 setMethod(
   f = "addClusterings",
-  signature = signature("ClusterExperiment", "numeric"),
-  definition = function(x, y, clusterLabel=NULL,...) {
+  signature = signature("ClusterExperiment", "vector"),
+  definition = function(x, y, makePrimary=FALSE,...) {
     mat<-matrix(y,ncol=1)
-    if(!is.null(clusterLabel)) colnames(mat)<-clusterLabel
-    addClusterings(x,mat,...)
+    x<-addClusterings(x,mat,...)
+	if(makePrimary){
+		x@primaryIndex<-ncol(clusterMatrix(x))
+	}
+	return(x)
   }
 )
+
 
 #' @rdname addClusterings
 #' @export
@@ -134,19 +149,22 @@ setMethod(
       dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichClusters])
     }
     
-    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),newClLabels,transformation(x),
-                              clusterTypes=newClusterType,
-                              clusterInfo<-newClusterInfo,
-                              primaryIndex=pIndex,
-                              dendro_samples=dend_samples,
-                              dendro_clusters=dend_cl,
-                            dendro_index=dend_ind,
-                            dendro_outbranch=dend_out,
-                            coClustering=coMat,
-                            orderSamples=orderSamples,
-							checkTransformAndAssay=FALSE
-                              )
-    clusterLegend(retval)<-newClusterColors
+    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
+		clusters=newClLabels,
+		transformation=transformation(x),
+        clusterTypes=newClusterType,
+		clusterInfo<-newClusterInfo,
+		primaryIndex=pIndex,
+		dendro_samples=dend_samples,
+		dendro_clusters=dend_cl,
+		dendro_index=dend_ind,
+		dendro_outbranch=dend_out,
+		coClustering=coMat,
+		orderSamples=orderSamples,
+		clusterLegend=newClusterColors,
+		checkTransformAndAssay=FALSE
+     )
+#    clusterLegend(retval)<-newClusterColors
     return(retval)
   }
 )
@@ -166,30 +184,54 @@ setMethod(
 )
 
 
-#' @details \code{unassignSamples} unassigns samples in \code{clustersToRemove} and assigns them to -1 (unassigned) 
+#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned) 
+#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value). 
 #' @rdname addClusterings
-#' @aliases unassignSamples
+#' @aliases removeClusters
 #' @export
 setMethod(
-  f = "unassignSamples",
+  f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove) {
+  definition = function(x,whichClusters,clustersToRemove,clusterLabels=NULL) {
 	  if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
+		 makePrimary<-whichClusters==x@primaryIndex
 	  cl<-clusterMatrix(x)[,whichClusters]
+	  leg<-clusterLegend(x)[[whichClusters]]
+	  if(is.character(clustersToRemove)){
+	  		 m<- match(clustersToRemove,leg[,"name"] )
+	  		 if(any(is.na(m))) 
+	  			 stop("invalid names of clusters in 'clustersToRemove'")
+	  		 clustersToRemove<-as.numeric(leg[m,"clusterIds"])
+	  	  }
 	  if(is.numeric(clustersToRemove)){
+		  if(any(!clustersToRemove %in% cl)) stop("invalid clusterIds in 'clustersToRemove'")
+		  if(any(clustersToRemove== -1)) stop("cannot remove -1 clusters using this function")
 		  cl[cl %in% clustersToRemove]<- -1
 	  }
-	  else if(is.character(clustersToRemove)){
-	  	
+	  else stop("clustersToRemove must be either character or numeric")
+	  if(is.null(clusterLabels)){
+		  currlabel<-clusterLabels(x)[whichClusters]
+		  clusterLabels<-paste0(currlabel,"_unassignClusters")
 	  }
-	return(x[,primaryCluster(x) >= 0])
-	
+	  if(clusterLabels %in% clusterLabels(x)) 
+		  stop("must give a 'clusterLabels' value that is not already assigned to a clustering")
+	  newleg<-leg
+	  if(!"-1" %in% leg[,"clusterIds"] & any(cl== -1)){
+		  newleg<-rbind(newleg,c("-1","white","-1"))
+	  }
+	  whRm<-which(as.numeric(newleg[,"clusterIds"]) %in% clustersToRemove )
+	  if(length(whRm)>0){
+		  newleg<-newleg[-whRm,,drop=FALSE]
+	  }
+	  return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=list(newleg),makePrimary=makePrimary))
+	  
+	 
   }
 )
 #' @rdname addClusterings
 #' @export
 setMethod(
-  f = "unassignSamples",
+  f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
   definition = function(x, whichClusters,...) {
 	  whichClusters<-.TypeIntoIndices(x,whichClusters)
