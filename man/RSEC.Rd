@@ -66,9 +66,9 @@ applied to the data creates an error or NA values, then the function will throw 
 If object is of class \code{ClusterExperiment}, the stored transformation will be used 
 and giving this parameter will result in an error.}
 
-\item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+\item{reduceMethod}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR
 3) stored filtering or reducedDim values in the object.}
 
 \item{nFilterDims}{vector of the number of the most variable features to keep 
@@ -117,7 +117,7 @@ are left unassigned.}
 help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
-(if \code{subsample=TRUE}), see help pages of 
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}

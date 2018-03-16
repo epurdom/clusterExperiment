@@ -39,9 +39,9 @@ following classes: matrix (with genes in rows),
 \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
 or \code{ClusterExperiment}.}
 
-\item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+\item{reduceMethod}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR
 3) stored filtering or reducedDim values in the object.}
 
 \item{nReducedDims}{vector of the number of dimensions to use (when 
@@ -88,7 +88,7 @@ of \code{\link{seqCluster}}). Can be used in combination with
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff
 (only used if clusterFunction of type "K")}
 
-\item{subsample}{logical as to whether to subsample via 
+\item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
 done on the co-occurance between clusterings in the subsampled clustering
 results.  If FALSE, the mainClustering step will be run directly on
@@ -122,7 +122,7 @@ are left unassigned.}
 help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
-(if \code{subsample=TRUE}), see help pages of 
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}

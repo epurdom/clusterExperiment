@@ -36,10 +36,10 @@
 \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
 on which to run the clustering.}
 
-\item{...}{arguments to be passed on to the method for signature 
+\item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
 
 \item{replaceCoClustering}{logical. Applicable if \code{x} is a
@@ -47,16 +47,16 @@ on which to run the clustering.}
 subsampling is returned in the coClustering object and replaces any
 existing coClustering object in the slot \code{coClustering}.}
 
-\item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
+\item{reduceMethod}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are
+1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR
 3) stored filtering or reducedDim values in the object.}
 
-\item{nDims}{integer An integer identifying how many dimensions to reduce to 
+\item{nDims}{integer An integer identifying how many dimensions to reduce to
 in the reduction specified by \code{reduceMethod}. Defaults to output of
 \code{\link{defaultNDims}}}
 
-\item{subsample}{logical as to whether to subsample via 
+\item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
 done on the co-occurance between clusterings in the subsampled clustering
 results.  If FALSE, the mainClustering step will be run directly on
@@ -70,7 +70,7 @@ of \code{\link{seqCluster}}). Can be used in combination with
 help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
-(if \code{subsample=TRUE}), see help pages of 
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
@@ -95,14 +95,14 @@ valid.}
 \value{
 A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
 
-If input was \code{diss}, then the result is a list with values 
-  \itemize{ \item{clustering: }{The vector of clustering results} 
+If input was \code{diss}, then the result is a list with values
+  \itemize{ \item{clustering: }{The vector of clustering results}
   \item{clusterInfo: }{A list with information about the parameters run in
   the clustering} \item{diss: }{The dissimilarity matrix used in the
   clustering} }
 }
 \description{
-Given input data, 
+Given input data,
  this function will find clusters, based on a single specification of parameters.
 }
 \details{
@@ -172,20 +172,20 @@ Only certain combinations of parameters are possible for certain
   'findBestK=FALSE' via \code{mainClusterArgs} will function as expected
   (assuming the \code{clusterFunction} argument passed to \code{mainClusterArgs}
   is of type 'K'). In particular, the sequential step will set the number of
-  clusters \code{k} for clustering of each subsample. If findBestK=FALSE, 
+  clusters \code{k} for clustering of each subsample. If findBestK=FALSE,
   that same \code{k} will be used for mainClustering step that clusters the
-  resulting co-occurance matrix after subsampling. If findBestK=TRUE, then 
-  \code{\link{mainClustering}} will search for best k. Note that the default 
-  'kRange' over which \code{\link{mainClustering}} searches when findBestK=TRUE 
+  resulting co-occurance matrix after subsampling. If findBestK=TRUE, then
+  \code{\link{mainClustering}} will search for best k. Note that the default
+  'kRange' over which \code{\link{mainClustering}} searches when findBestK=TRUE
   depends on the input value of \code{k} which is set by the sequential
   method if \code{sequential=TRUE}), see above. The user can change
   \code{kRange} to not depend on \code{k} and to be fixed across all of the
   sequential steps by setting \code{kRange} explicitly in the
   \code{mainClusterArgs} list.} }
 
-To provide a distance matrix via the argument \code{distFunction}, 
-  the function must be defined to take the distance of the rows of a matrix 
-  (internally, the function will call \code{distFunction(t(x))}. This is to 
+To provide a distance matrix via the argument \code{distFunction},
+  the function must be defined to take the distance of the rows of a matrix
+  (internally, the function will call \code{distFunction(t(x))}. This is to
   be compatible with the input for the \code{dist} function. \code{as.matrix}
   will be performed on the output of \code{distFunction}, so if the object
   returned has a \code{as.matrix} method that will convert the output into a
@@ -207,8 +207,8 @@ data(simData)
 }
 
 #use clusterSingle to do just clustering k=3 with no subsampling
-clustNothing <- clusterSingle(simData, 
-    subsample=FALSE, sequential=FALSE, 
+clustNothing <- clusterSingle(simData,
+    subsample=FALSE, sequential=FALSE,
     mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #compare to standard pam
 cluster::pam(t(simData),k=3,cluster.only=TRUE)
