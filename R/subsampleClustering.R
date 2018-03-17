@@ -108,6 +108,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
                               classifyMethod=c("All","InSample","OutOfSample"),
                               resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,... )
 {
+
 	## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
 #	doGC<-largeDataset & ncores>1
     #######################
@@ -233,9 +234,13 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     if(!is.null(x)){
 		idnames<-colnames(x)
 		rm(x)
-	}
+    }
+
     rm(idx)
-    gc()
+
+    if(doGC) {
+      gc()
+    }
 
     DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
     DNum<-Reduce("+",lapply(DList,function(y){y$D}))
