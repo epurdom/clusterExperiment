@@ -242,10 +242,6 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
       gc()
     }
 
-    DDenom<-Reduce("+",lapply(DList,function(y){y$Dinclude}))
-    DNum<-Reduce("+",lapply(DList,function(y){y$D}))
-    Dbar <- DNum/DDenom
-
     if(!largeDataset){
 
       Dvec <- rowMeans(DList, na.rm = TRUE)
