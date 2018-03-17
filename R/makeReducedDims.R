@@ -153,7 +153,11 @@ listBuiltInReducedDims<-function(){c("PCA")}
 		prc <- prc[,seq_len(md)]
 	}
 	else {
-	  prcObj <- prcomp_irlba(dat, center=TRUE, scale=TRUE, n=md)
+	  if(md > 0.5 * min(NCOL(x), NROW(x))) {
+	    prcObj <- stats::prcomp(dat, center=TRUE, scale=TRUE, rank.=md)
+	  } else {
+	    prcObj <- prcomp_irlba(dat, center=TRUE, scale=TRUE, n=md)
+	  }
 	  prc <- prcObj$x
 	  if(any(md > NROW(prc))) {
 	    stop("Internal error in coding of principal components.")
