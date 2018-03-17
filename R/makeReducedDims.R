@@ -143,6 +143,7 @@ listBuiltInReducedDims<-function(){c("PCA")}
 .pcaDimRed<-function(x, md, isPct, rowvars){
 
   dat <- t(x[which(rowvars>0),])
+
 	if(isPct) {
 		prcObj <- stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
 		prvar <- prcObj$sdev^2 #variance of each component
@@ -153,12 +154,18 @@ listBuiltInReducedDims<-function(){c("PCA")}
 		prc <- prc[,seq_len(md)]
 	}
 	else {
+
+	  if(md == min(NCOL(x), NROW(x))) {
+	    warning("all singular values are requested")
+	  }
+
 	  if(md > 0.5 * min(NCOL(x), NROW(x))) {
-	    prcObj <- stats::prcomp(dat, center=TRUE, scale=TRUE, rank.=md)
+	    prcObj <- stats::prcomp(dat, center=TRUE, scale=TRUE, rank. = md)
 	  } else {
 	    prcObj <- prcomp_irlba(dat, center=TRUE, scale=TRUE, n=md)
 	  }
 	  prc <- prcObj$x
+
 	  if(any(md > NROW(prc))) {
 	    stop("Internal error in coding of principal components.")
 	  }
