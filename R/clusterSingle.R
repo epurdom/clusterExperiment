@@ -378,7 +378,7 @@ setMethod(
 			    checkTransformAndAssay=FALSE)
 	  clusterLabels(retval)<-clusterLabel
       if(!sequential & subsample) {
-        retval@coClustering <- as(1 - finalClusterList$diss, "sparseMatrix")
+        retval@coClustering <- 1 - finalClusterList$diss
 		ch<-.checkCoClustering(retval)
 		if(!is.logical(ch)) stop(ch)
       }
@@ -401,7 +401,7 @@ setMethod(
 {
     if(subsample){
         #make it a dissimilarity by 1- of the resulting Dbar.
-	    diss <- as(1 - do.call("subsampleClustering", c(list(x=x,diss=diss), subsampleArgs)), "sparseMatrix")
+	    diss <- 1 - do.call("subsampleClustering", c(list(x=x,diss=diss), subsampleArgs))
 	    x <- NULL #disable using x
 
 		##This was to make it automatic so if subsample and didn't give 'k' to mainClustering, would do the same for mainClustering. Now have added this directly to sequential, and then by default if missing from subsampling should pull from mainClustering (i.e. should happen the other way).

@@ -33,7 +33,6 @@ Imports:
     irlba,
 	  kernlab,
 	  stringr,
-	  Matrix,
   	S4Vectors,
 	  grDevices
 Suggests:

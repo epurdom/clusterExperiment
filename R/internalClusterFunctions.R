@@ -44,7 +44,7 @@
 	      distFunction<-switch(algType, "01"=function(x){(1-cor(t(x)))/2}, "K"=function(x){dist(x)})
 	  }else stop("if distFunction is not a function, it must be either NA or a character")
   }
-  D<-try(as(as.matrix(distFunction(t(x))), "sparseMatrix"))	#distances assumed to be of observations on rows
+  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
   if(inherits(D,"try-error")) stop("input distance function gives error when applied to x")
   if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("input distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
   if(checkDiss) .checkDissFunction(D,algType=algType)
@@ -52,9 +52,8 @@
 }
 .checkDissFunction<-function(D,algType=NA){
 	if(anyNA(D)) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	# because is.nan is not implemented for sparse matrices!
-  #if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
-  if(any(is.infinite(D))) stop("Dissimilarity matrix contains Infinite values.")
+
+  if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
   if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
 	if(any(diag(D)!=0)) stop("Dissimilarity matrix must have zero values on the diagonal")
 	if(!all(D==t(D))) stop("Dissimilarity matrix must result in a symmetric matrix")
