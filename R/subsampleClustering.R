@@ -225,6 +225,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     }
     else{
         DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+        DList <- simplify2array(DList)
     }
     #N large: get rid of these big matrices from memory
     if(!is.null(diss)){
