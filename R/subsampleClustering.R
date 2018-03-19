@@ -139,93 +139,128 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     subSize <- round(samp.p * N)
     idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
+
     #-----
     # Function that calls the clustering for each subsample
-	# Called over a loop (lapply or mclapply)
+  	# Called over a loop (lapply or mclapply)
     #-----
     perSample<-function(ids){
-		## Calls rm and gc frequently to free up memory
-		## (mclapply child processes don't know when other processes are using large memory. )
+      ## Calls rm and gc frequently to free up memory
+      ## (mclapply child processes don't know when other processes are using large memory. )
 
-        ##----
-        ##Cluster part of subsample
-        ##----
-        argsClusterList<-.makeDataArgs(dataInput=input, funInput=clusterFunction@inputType, xData=x[,ids,drop=FALSE], dissData=diss[ids,ids,drop=FALSE])
+      ##----
+      ##Cluster part of subsample
+      ##----
+      argsClusterList <- .makeDataArgs(dataInput=input,
+                                       funInput=clusterFunction@inputType,
+                                       xData=x[,ids,drop=FALSE],
+                                       dissData=diss[ids,ids,drop=FALSE])
 
-        #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
-        argsClusterList<-c(argsClusterList,list("checkArgs"=checkArgs,"cluster.only"= (classifyMethod=="InSample") ))
-        result<-do.call(clusterFunction@clusterFUN,c(argsClusterList,clusterArgs))
-		if(doGC){
-			rm(argsClusterList)
-			gc()
-		}
+      #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
+      argsClusterList <- c(argsClusterList,
+                           list("checkArgs"=checkArgs,
+                                "cluster.only"=(classifyMethod=="InSample")))
+      result <- do.call(clusterFunction@clusterFUN,
+                        c(argsClusterList,clusterArgs))
 
-        ##----
-        ##Classify part of subsample
-        ##----
-        if(classifyMethod=="All"){
-            argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x, dissData=diss)
-            classX<-do.call(clusterFunction@classifyFUN,c(argsClassifyList,list(clusterResult=result)))
-			if(doGC){
-				rm(argsClassifyList)
-				gc()
-			}
+      if(doGC){
+        rm(argsClusterList)
+        gc()
+      }
+
+      ##----
+      ##Classify part of subsample
+      ##----
+      if(classifyMethod=="All"){
+        argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
+                                          funInput=clusterFunction@inputClassifyType,
+                                          xData=x, dissData=diss)
+        classX <- do.call(clusterFunction@classifyFUN,
+                          c(argsClassifyList,list(clusterResult=result)))
+
+        if(doGC){
+          rm(argsClassifyList)
+          gc()
         }
-        if(classifyMethod=="OutOfSample"){
-            argsClassifyList<-.makeDataArgs(dataInput=inputClassify,funInput=clusterFunction@inputClassifyType, xData=x[,-ids,drop=FALSE], dissData=diss[-ids,-ids,drop=FALSE])
-            classElse<-do.call(clusterFunction@classifyFUN,c(argsClassifyList, list(clusterResult=result)))
-			if(doGC){
-				rm(argsClassifyList)
-				gc()
-			}
-            classX<-rep(NA,N)
-            classX[-ids]<-classElse
-        }
-        if(classifyMethod=="InSample"){
-            classX<-rep(NA,N)
-            #methods that do not have
-            if(is.list(result)){
-                #the next shouldn't happen any more because should be cluster.only=TRUE
-                # if("clustering" %in% names(result)){
-                # 	classX[ids]<-result$clustering
-                # }
-                # 		  	  else{
-                if(clusterFunction@outputType=="list"){
-                    resultVec  <-.convertClusterListToVector(result,N=length(ids))
-                    classX[ids]<-resultVec
-                }
-                else stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
-                #			  }
-            }
-            else{
-                classX[ids]<-result
+      }
 
-            }
-        }
-		#classX is length N
-        #classX has NA if method does not classify all of the data.
-        if(!largeDataset){
+      if(classifyMethod=="OutOfSample"){
+        argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
+                                          funInput=clusterFunction@inputClassifyType,
+                                          xData=x[,-ids,drop=FALSE],
+                                          dissData=diss[-ids,-ids,drop=FALSE])
+        classElse <- do.call(clusterFunction@classifyFUN,
+                             c(argsClassifyList, list(clusterResult=result)))
 
-          D <- outer(classX, classX, function(a, b) a == b)
-          return(as.vector(D))
+        if(doGC){
+          rm(argsClassifyList)
+          gc()
+        }
 
+        classX <- rep(NA,N)
+        classX[-ids] <- classElse
+      }
+
+      if(classifyMethod=="InSample"){
+        classX <- rep(NA,N)
+
+        #methods that do not have
+        if(is.list(result)){
+          #the next shouldn't happen any more because should be cluster.only=TRUE
+          # if("clustering" %in% names(result)){
+          # 	classX[ids]<-result$clustering
+          # }
+          # 		  	  else{
+          if(clusterFunction@outputType=="list"){
+            resultVec <- .convertClusterListToVector(result,N=length(ids))
+            classX[ids] <- resultVec
+          } else {
+            stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
+          }
+          #			  }
+        } else{
+          classX[ids]<-result
         }
-        else{
-          #instead return
-			# 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
-			# 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
-			# What does this do with NAs? Removes them -- not included.
-            clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
-            clusterLengths<-tapply(1:N,classX,length)
-            return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
-        }
+      }
+
+      #classX is length N
+      #classX has NA if method does not classify all of the data.
+      if(!largeDataset){
+
+        D <- lapply(seq_len(N), function(i) classX == classX[i])
+        return(unlist(D))
+
+      }
+      else{
+        #instead return
+        # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
+        # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
+        # What does this do with NAs? Removes them -- not included.
+        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
+        clusterLengths<-tapply(1:N,classX,length)
+        return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
+      }
     }
+
     if(ncores==1){
+
+
         DList<-apply(idx,2,perSample)
+
+        # DList <- matrix(data = 0, ncol = N, nrow = N)
+        # for(i in seq_len(NCOL(idx))) {
+        #   DList <- DList + perSample(idx[,i])
+        # }
+
     }
     else{
         DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
         DList <- simplify2array(DList)
+      # DList <- matrix(data = 0, ncol = N, nrow = N)
+      # for(i in seq_len(NCOL(idx))) {
+      #   DList <- DList + perSample(idx[,i])
+      # }
+      # warning("Parallel computation not implemented yet.")
     }
     #N large: get rid of these big matrices from memory
     if(!is.null(diss)){
@@ -237,16 +272,11 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 		rm(x)
     }
 
-    rm(idx)
-
-    if(doGC) {
-      gc()
-    }
-
     if(!largeDataset){
 
       Dvec <- rowMeans(DList, na.rm = TRUE)
       Dbar <- matrix(Dvec, ncol = N, nrow = N)
+      # Dbar <- DList / NCOL(idx)
 
     }
     else{
