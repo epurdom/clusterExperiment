@@ -2,7 +2,7 @@
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
-setClassUnion("matrixOrNULL",members=c("matrix", "Matrix", "NULL"))
+setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
@@ -326,7 +326,7 @@ setMethod(
 			if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
 			orig[,"clusterIds"]<-auto[m,"clusterIds"]
 			return(orig)
-				
+
 		},SIMPLIFY=FALSE)
 	}
     clustersNum<-tmp$numClusters
