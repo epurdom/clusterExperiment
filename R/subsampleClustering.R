@@ -244,23 +244,12 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 
     if(ncores==1){
 
-
         DList<-apply(idx,2,perSample)
-
-        # DList <- matrix(data = 0, ncol = N, nrow = N)
-        # for(i in seq_len(NCOL(idx))) {
-        #   DList <- DList + perSample(idx[,i])
-        # }
 
     }
     else{
         DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
         DList <- simplify2array(DList)
-      # DList <- matrix(data = 0, ncol = N, nrow = N)
-      # for(i in seq_len(NCOL(idx))) {
-      #   DList <- DList + perSample(idx[,i])
-      # }
-      # warning("Parallel computation not implemented yet.")
     }
     #N large: get rid of these big matrices from memory
     if(!is.null(diss)){
@@ -276,7 +265,6 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 
       Dvec <- rowMeans(DList, na.rm = TRUE)
       Dbar <- matrix(Dvec, ncol = N, nrow = N)
-      # Dbar <- DList / NCOL(idx)
 
     }
     else{
