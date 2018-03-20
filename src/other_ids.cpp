@@ -12,12 +12,13 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 arma::uvec other_ids(arma::uword idx, arma::uvec cl_vec, arma::uvec cl_len) {
 
+  arma::uvec m = find(cl_vec == idx);
+  // TODO: check that sum(cl_vec == idx) == 1 -- if 0 return NA, if >1 error
+
   arma::uvec ends = arma::cumsum(cl_len);
   // change below to something like: arma::uvec begins = arma::cumsum(c(1,head(clustLeng,-1)));
   arma::uvec begins = arma::cumsum(cl_len);
 
-  arma::uvec m = find(cl_vec == idx);
-  // TODO: check that sum(cl_vec == idx) == 1 -- if 0 return NA, if >1 error
 
   arma::uvec wh_cl = find(m[0] <= ends && m[0] >= begins);
 
