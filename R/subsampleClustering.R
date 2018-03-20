@@ -293,11 +293,12 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         #Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
 
 		#---------
-		#For ii an index of a sample, calculates the number of times joint with every other sample with index > ii.
+		#For ii an index of a sample, calculates the proportion of times joint with every other sample with index < ii.
 		#clusterList is the results of subsampling, i.e. list with indices of clusters adjacent
 		#returns vector of length N-ii with the proportions
+		#NA if either never subsampled together or never clustered together.
 		#---------
-        searchForPairs<-function(ii,clusterList){
+        searchForPairs<-function(ii,clusterList,N){
             #get list of those indices sample ii was sampled
 			whHave<-which(sapply(clusterList,function(ll){ii%in%ll$clusterIds}))
 			#calculate number of times sampled with (denominator)
@@ -306,20 +307,14 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 			clusterWith<-lapply(clusterList[whHave],function(ll){
                 otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
             })
-			if(doGC){#just to reduce memory since will be parallelized
-				rm(clusterList)
-				gc()
-			}
+			# if(doGC){#just to reduce memory since will be parallelized
+			# 	rm(clusterList)
+			# 	gc()
+			# }
 			clusterWithTab<-table(unlist(clusterWith))
             jointNames<-as.character(1:N)
 			whLower<-which(as.integer(as.numeric(jointNames))<ii)
 			return(as.integer(clusterWithTab[jointNames][whLower])/as.integer(sampledWithTab[jointNames][whLower]))
-			#old code that made Nx3 matrix and subset it:
-		    #             #make a N x 3 matrix summarizing the results for all indices
-		    # out<-cbind(idx=as.integer(as.numeric(jointNames)), together=as.integer(clusterWithTab[jointNames]), total=as.integer(sampledWithTab[jointNames]))
-			# #keep only those in the lower triangle
-			#             out<-out[out[,"idx"]<ii,,drop=FALSE]
-			#             return(out[,"together"]/out[,"total"])
 
 			#thoughts about alternative code if not need save NxN matrix...
             #jointNames<-names(sampledWithTab) #if manage to not save NxN matrix, could use this to return only those that actually present
@@ -332,10 +327,10 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 		# the result of pairList is the upper-triangle of eventual NxN matrix
 		###
         if(ncores==1){
-            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)})
+            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)})
         }
         else{
-            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)},mc.cores=ncores,...)
+            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)},mc.cores=ncores,...)
         }
         rm(DList)
         gc()
