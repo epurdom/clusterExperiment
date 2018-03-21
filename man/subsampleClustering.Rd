@@ -13,7 +13,7 @@
   diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"), resamp.num = 100,
   samp.p = 0.7, ncores = 1, checkArgs = TRUE, checkDiss = TRUE,
-  largeDataset = FALSE, whichmplementation = c("R", "Csimple", "Cmemory"),
+  largeDataset = FALSE, whichImplementation = c("R", "Csimple", "Cmemory"),
   ...)
 }
 \arguments{
