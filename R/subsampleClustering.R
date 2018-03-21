@@ -257,7 +257,11 @@ setMethod(
     }
     else{
       DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
-      DList <- simplify2array(DList)
+
+      if(!largeDataset | whichImplementation == "Csimple") {
+        DList <- simplify2array(DList)
+      }
+
     }
 
     if(!is.null(diss)){
