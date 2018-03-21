@@ -35,9 +35,6 @@ NULL
 #' @param largeDataset logical indicating whether a more memory-efficient version
 #'   should be used because the dataset is large. This is a beta option, and is
 #'   in the process of being tested before it becomes the default.
-#' @param doGC logical indicating whether frequent calls to gc should be
-#'  implemented in children processes (i.e. when ncores>1) to free up memory
-#'  for the other processes.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
@@ -111,11 +108,9 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,which_implementation=c("R", "Csimple", "Cmemory"),... )
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,which_implementation=c("R", "Csimple", "Cmemory"),... )
   {
 
-    ## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
-    #	doGC<-largeDataset & ncores>1
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
@@ -138,12 +133,15 @@ setMethod(
     reqArgs<-requiredArgs(clusterFunction)
     if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
 
+    which_implementation <- match.arg(which_implementation)
+
     #-----
     # Basic parameters, subsamples
     #-----
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     subSize <- round(samp.p * N)
-    idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
+    idx<-replicate(resamp.num,sample(1:N,size=subSize))
+    #each column a set of indices for the subsample.
 
     #-----
     # Function that calls the clustering for each subsample
@@ -168,11 +166,6 @@ setMethod(
       result <- do.call(clusterFunction@clusterFUN,
                         c(argsClusterList,clusterArgs))
 
-      if(doGC){
-        rm(argsClusterList)
-        gc()
-      }
-
       ##----
       ##Classify part of subsample
       ##----
@@ -183,10 +176,6 @@ setMethod(
         classX <- do.call(clusterFunction@classifyFUN,
                           c(argsClassifyList,list(clusterResult=result)))
 
-        if(doGC){
-          rm(argsClassifyList)
-          gc()
-        }
       }
 
       if(classifyMethod=="OutOfSample"){
@@ -196,11 +185,6 @@ setMethod(
                                           dissData=diss[-ids,-ids,drop=FALSE])
         classElse <- do.call(clusterFunction@classifyFUN,
                              c(argsClassifyList, list(clusterResult=result)))
-
-        if(doGC){
-          rm(argsClassifyList)
-          gc()
-        }
 
         classX <- rep(NA,N)
         classX[-ids] <- classElse
@@ -239,9 +223,12 @@ setMethod(
       else{
 
         if(which_implementation == "Csimple") {
+
           ## we just need to return the vector of cluster labels
           return(classX)
+
         } else {
+
           #instead return
           # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
           # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
@@ -262,14 +249,12 @@ setMethod(
       DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
       DList <- simplify2array(DList)
     }
-    #N large: get rid of these big matrices from memory
+
     if(!is.null(diss)){
       idnames<-colnames(diss)
-      rm(diss)
     }
     if(!is.null(x)){
       idnames<-colnames(x)
-      rm(x)
     }
 
     if(!largeDataset){
@@ -284,11 +269,14 @@ setMethod(
       #############
 
       if(which_implementation == "Csimple") {
+
         Dbar <- search_pairs(t(DList))
         Dbar<-Dbar+t(Dbar)
         Dbar[is.na(Dbar)]<-0
         diag(Dbar)<-1
+
       } else {
+
         if(which_implementation == "R"){
           ###
           # the result of pairList is the upper-triangle of eventual NxN matrix
