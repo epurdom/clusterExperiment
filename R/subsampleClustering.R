@@ -1,7 +1,6 @@
-#' @useDynLib clusterExperiment
+#' @useDynLib clusterExperiment, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
-
 
 #' Cluster subsamples of the data
 #'
