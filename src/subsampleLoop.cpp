@@ -14,7 +14,7 @@ using namespace std;
 // [[Rcpp::plugins(cpp11)]]
 
 // [[Rcpp::export]]
-std::string makeHashKey(int i, int j, string delim){
+std::string makeHashKey(int i, int j, std::string delim){
 	std::string result;
 	if(i<=j)
 		result=std::to_string(i)+delim+std::to_string(j);
@@ -24,7 +24,7 @@ std::string makeHashKey(int i, int j, string delim){
 }
 
 // [[Rcpp::export]]
-Rcpp::IntegerVector splitHashKey(string s, string delim){
+Rcpp::IntegerVector splitHashKey(std::string s, std::string delim){
 	Rcpp::IntegerVector token(2);
 	int pos = s.find(delim);
 	token[0]=std::stoi(s.substr(0, pos));
@@ -44,7 +44,7 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 
 	// Preset their bucket size (I *think* this means the number of unique key values, and NOT the size of the values saved in each... need to check.)
 	//countTotal.reserve(N*N/2);
-	
+
     Rcpp::IntegerVector clIds;
 	Rcpp::IntegerVector clLens;
 	Rcpp::List currList;
@@ -55,13 +55,13 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 		currList=clList[i];
 		clIds=currList["clusterIds"];
 		clLens=currList["clusterLengths"];
-		
+
 		// // Regardless, next part of code would still work, once define those vectors.
 
 		// Calculate cumulative sum.
 		int nclusters=clLens.size();
 		int nsamples=clIds.size();
-		
+
 		Rcpp::IntegerVector cumSumVals=Rcpp::cumsum(clLens);
 
 		// just made for loops to define starts, but should be Rcpp functions to do it
@@ -71,13 +71,13 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 		for(int ii=1; ii<nclusters;++ii){
 			indexClusterStarts[ii]=cumSumVals[ii-1];
 		}
-		
+
 		Rcpp::IntegerVector indexClusterEnds(nclusters);
 		for(int ii=0; ii< nclusters-1;++ii){
 			indexClusterEnds[ii]=indexClusterStarts[ii+1]-1;
 		}
 		indexClusterEnds[nclusters-1]=nsamples-1;
-		
+
 		// Iterate over each position in the clusterIds vector
 		// Add to hash
 		for(int j=0; j<nsamples ; j++){
@@ -104,16 +104,16 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 				countTotal[hashKey].first=0;
 				countTotal[hashKey].second=NA_INTEGER;
 			}
-			
+
 		}
 	}
-	
+
 	// Pull out the results
 	int nbuckets=countTotal.bucket_count();
 	StringVector pairName(nbuckets);
 	IntegerVector denom(nbuckets);
 	IntegerVector num(nbuckets);
-	/* Note: Problem, nbuckets greater than the number of entries because reserved in beginning to try improve memory. 
+	/* Note: Problem, nbuckets greater than the number of entries because reserved in beginning to try improve memory.
 	Creates too many. 'ind' counts how many real buckets there are*/
 	int ind=0;
 
@@ -122,12 +122,12 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
  		if((it->second).first>0 | (it->second).second==NA_INTEGER){
 			IntegerVector currPairIndices=splitHashKey(it->first, delimiter);
 			results.row(ind)=IntegerVector::create(currPairIndices[0], currPairIndices[1],(it->second).second,(it->second).first);
-			
+
 		}
 		ind++;
     }
 	results=results(Range(0,ind-1),_);
-	
+
 
 	return(results);
 }
@@ -143,9 +143,9 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 
 /*** Summary of output created from subsampling (input to this function):
 	returns a list "DList", each element:
-            #each element is list: 
-			# 1) "clusterIds": vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and 
-			# 2) "clusterLengths": another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector), 
+            #each element is list:
+			# 1) "clusterIds": vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
+			# 2) "clusterLengths": another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
 			# What does this do with NAs? Removes them -- not included.
 */
 
@@ -207,11 +207,11 @@ testSubList<-replicate(subN, expr=createFun(), simplify = FALSE)
 system.time(testR<-Rfun(testSubList,Nbig))
 system.time(testC<-Cfun(testSubList,Nbig))
 > system.time(Rfun(testSubList,N))
-   user  system elapsed 
- 58.702   1.989  61.559 
+   user  system elapsed
+ 58.702   1.989  61.559
 > system.time(Cfun(testSubList,N))
-   user  system elapsed 
- 29.070   0.386  29.327 
+   user  system elapsed
+ 29.070   0.386  29.327
 
 
 */

@@ -16,9 +16,49 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// makeHashKey
+std::string makeHashKey(int i, int j, std::string delim);
+RcppExport SEXP _clusterExperiment_makeHashKey(SEXP iSEXP, SEXP jSEXP, SEXP delimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    Rcpp::traits::input_parameter< int >::type j(jSEXP);
+    Rcpp::traits::input_parameter< std::string >::type delim(delimSEXP);
+    rcpp_result_gen = Rcpp::wrap(makeHashKey(i, j, delim));
+    return rcpp_result_gen;
+END_RCPP
+}
+// splitHashKey
+Rcpp::IntegerVector splitHashKey(std::string s, std::string delim);
+RcppExport SEXP _clusterExperiment_splitHashKey(SEXP sSEXP, SEXP delimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type s(sSEXP);
+    Rcpp::traits::input_parameter< std::string >::type delim(delimSEXP);
+    rcpp_result_gen = Rcpp::wrap(splitHashKey(s, delim));
+    return rcpp_result_gen;
+END_RCPP
+}
+// subsampleLoop
+Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N);
+RcppExport SEXP _clusterExperiment_subsampleLoop(SEXP clListSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type clList(clListSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(subsampleLoop(clList, N));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_clusterExperiment_search_pairs", (DL_FUNC) &_clusterExperiment_search_pairs, 1},
+    {"_clusterExperiment_makeHashKey", (DL_FUNC) &_clusterExperiment_makeHashKey, 3},
+    {"_clusterExperiment_splitHashKey", (DL_FUNC) &_clusterExperiment_splitHashKey, 2},
+    {"_clusterExperiment_subsampleLoop", (DL_FUNC) &_clusterExperiment_subsampleLoop, 2},
     {NULL, NULL, 0}
 };
 

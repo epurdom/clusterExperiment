@@ -14,3 +14,15 @@ search_pairs <- function(clusterings) {
     .Call(`_clusterExperiment_search_pairs`, clusterings)
 }
 
+makeHashKey <- function(i, j, delim) {
+    .Call(`_clusterExperiment_makeHashKey`, i, j, delim)
+}
+
+splitHashKey <- function(s, delim) {
+    .Call(`_clusterExperiment_splitHashKey`, s, delim)
+}
+
+subsampleLoop <- function(clList, N) {
+    .Call(`_clusterExperiment_subsampleLoop`, clList, N)
+}
+
