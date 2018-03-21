@@ -7,8 +7,8 @@ library(devtools)
 library(testthat)
 library(pryr)
 
-load("~/git/10x_utils/processed_171109/combined_filtered_all_batches.rda")
-load("~/git/10x_utils/processed_171109/combined_zinbwave_all_batches.rda")
+load("tests/checkClusterMany/combined_filtered_all_batches.rda")
+load("tests/checkClusterMany/combined_zinbwave_all_batches.rda")
 
 W <- getW(zinb)
 rownames(W) <- colnames(filtered)
@@ -29,7 +29,7 @@ colnames(W) <- paste0("W", 1:10)
 
 ## first let's make sure that we get the same results, then we can memory proof them
 
-library(clusterExperiment)
+devtools::load_all()
 set.seed(123)
 system.time(master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
                         mainClusterArgs = list(clusterFunction = "hierarchical01",
@@ -40,56 +40,36 @@ system.time(master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
                                              resamp.num = 10)))
 
 set.seed(123)
-profvis(master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+system.time(lds <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
                                     mainClusterArgs = list(clusterFunction = "hierarchical01",
                                                            clusterArgs = list(alpha = 0.9)),
                                     subsampleArgs = list(clusterFunction = "kmeans",
                                                          clusterArgs = list(k = 5),
                                                          samp.p = 0.1,
-                                                         resamp.num = 10)))
+                                                         resamp.num = 10,
+                                                         largeDataset = TRUE)))
 
-# set.seed(123)
-# profvis(lds <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
-#                                     mainClusterArgs = list(clusterFunction = "hierarchical01",
-#                                                            clusterArgs = list(alpha = 0.9)),
-#                                     subsampleArgs = list(clusterFunction = "kmeans",
-#                                                          clusterArgs = list(k = 5),
-#                                                          samp.p = 0.1,
-#                                                          resamp.num = 10,
-#                                                          largeDataset = TRUE)))
-#
-# expect_equivalent(master, lds)
-
-detach("package:clusterExperiment")
-load_all()
-set.seed(123)
-system.time(test <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
-                        mainClusterArgs = list(clusterFunction = "hierarchical01",
-                                               clusterArgs = list(alpha = 0.9)),
-                        subsampleArgs = list(clusterFunction = "kmeans",
-                                             clusterArgs = list(k = 5),
-                                             samp.p = 0.1,
-                                             resamp.num = 10)))
-
-expect_equal(master, test)
+expect_equivalent(master, lds)
 
 set.seed(123)
-profvis(test <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
-                              mainClusterArgs = list(clusterFunction = "hierarchical01",
-                                                     clusterArgs = list(alpha = 0.9)),
-                              subsampleArgs = list(clusterFunction = "kmeans",
-                                                   clusterArgs = list(k = 5),
-                                                   samp.p = 0.1,
-                                                   resamp.num = 10)))
+profvis(master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                                    mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                           clusterArgs = list(alpha = 0.9)),
+                                    subsampleArgs = list(clusterFunction = "kmeans",
+                                                         clusterArgs = list(k = 5),
+                                                         samp.p = 0.7,
+                                                         resamp.num = 100)))
 
 set.seed(123)
-profvis(test3 <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
-                               mainClusterArgs = list(clusterFunction = "hierarchical01",
-                                                      clusterArgs = list(alpha = 0.9)),
-                               subsampleArgs = list(clusterFunction = "kmeans",
-                                                    clusterArgs = list(k = 5),
-                                                    samp.p = 0.1,
-                                                    resamp.num = 50)))
+profvis(lds <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                                 mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                        clusterArgs = list(alpha = 0.9)),
+                                 subsampleArgs = list(clusterFunction = "kmeans",
+                                                      clusterArgs = list(k = 5),
+                                                      samp.p = 0.7,
+                                                      resamp.num = 100,
+                                                      largeDataset = TRUE)))
+
 
 
 classY <- sample(1:5, 20000, replace=TRUE)
@@ -111,7 +91,7 @@ master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
 
 
 #############################
-library(clusterExperiment)
+
 
 otherIds<-function(idx,clustVec,clustLeng){
   m<-which(clustVec==idx)
@@ -251,17 +231,21 @@ diag(Dbar)<-1
 Dbar_lower <- Dbar[lower.tri(Dbar, diag=FALSE)]
 
 clusterMat <- sapply(clusterList, function(x) x$classX)
-Dbar2 <- clusterExperiment:::search_pairs(t(clusterMat))
+Dbar2 <- search_pairs(t(clusterMat))
 Dbar2_lower <- Dbar2[lower.tri(Dbar2, diag=FALSE)]
 
-expect_equal(Dbar_lower, Dbar2_lower)
+Dbar3 <- searchForPairs4(t(clusterMat))
+Dbar3_lower <- Dbar3[lower.tri(Dbar3, diag=FALSE)]
+
+expect_equal(Dbar_lower, Dbar3_lower)
 
 library(microbenchmark)
 
 microbenchmark(
-  fun1={lapply(2:N,function(jj){searchForPairs(jj,clusterList=clusterList)})},
-  fun2={searchForPairs3(2:N, clusterList)},
-  fun3={search_pairs(t(clusterMat))}
+  original={lapply(2:N,function(jj){searchForPairs(jj,clusterList=clusterList)})},
+  vectorized={searchForPairs3(2:N, clusterList)},
+  loopR={searchForPairs4(t(clusterMat))},
+  loopCpp={search_pairs(t(clusterMat))}
 )
 
 # tapply(1:N, mat[,1], identity, simplify = FALSE)
@@ -287,7 +271,10 @@ search_pairs(mat2)
 search_pairs(mat3)
 search_pairs(mat4)
 
-
+## TODO:
+## 1. merge elizabeth branch
+## 2. three options: old (R), my C++, Elizabeth's C++
+##
 
 
 
