@@ -1,3 +1,8 @@
+#' @useDynLib clusterExperiment
+#' @importFrom Rcpp sourceCpp
+NULL
+
+
 #' Cluster subsamples of the data
 #'
 #' Given input data, this function will subsample the samples, cluster the
@@ -68,8 +73,6 @@
 #'   those subsamples where the ith and jth sample were both in or out of
 #'   sample, respectively, relative to the subsample.
 #'
-#' @useDynLib clusterExperiment
-#' @importFrom Rcpp sourceCpp
 #' @examples
 #'\dontrun{
 #' #takes a bit of time, not run on checks:

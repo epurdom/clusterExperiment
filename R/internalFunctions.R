@@ -1,3 +1,7 @@
+.onUnload <- function (libpath) {
+  library.dynam.unload("clusterExperiment", libpath)
+}
+
 .mynote<-function(x){
 	message(paste("Note:",x))
 }

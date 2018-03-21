@@ -34,22 +34,7 @@ Rcpp::IntegerVector splitHashKey(string s, string delim){
 	return token;
 }
 
-/* Don't know how to use iterator for IntegerMatrix so that this would work.*/
-// // [[Rcpp::export]]
-// bool wayToSort(IntegerVector i, IntegerVector j) {
-// 	bool out;
-// 	if(i[1] == j[1]) out=i[2] < j[2];
-// 	else out=i[1]<j[1];
-// 	return(out)
-// }
 
-/*** Summary of output created from subsampling (input to this function):
-	returns a list "DList", each element:
-            #each element is list: 
-			# 1) "clusterIds": vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and 
-			# 2) "clusterLengths": another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector), 
-			# What does this do with NAs? Removes them -- not included.
-*/
 
 // [[Rcpp::export]]
 Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
@@ -147,7 +132,22 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 	return(results);
 }
 
+/* Don't know how to use iterator for IntegerMatrix so that this would work.*/
+// // [[Rcpp::export]]
+// bool wayToSort(IntegerVector i, IntegerVector j) {
+// 	bool out;
+// 	if(i[1] == j[1]) out=i[2] < j[2];
+// 	else out=i[1]<j[1];
+// 	return(out)
+// }
 
+/*** Summary of output created from subsampling (input to this function):
+	returns a list "DList", each element:
+            #each element is list: 
+			# 1) "clusterIds": vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and 
+			# 2) "clusterLengths": another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector), 
+			# What does this do with NAs? Removes them -- not included.
+*/
 
 /*** R code for testing
 setwd("~/Documents/Sequencing/SingleCell/clusterExperiment")
