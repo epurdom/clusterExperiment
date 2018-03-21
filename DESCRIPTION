@@ -48,7 +48,7 @@ LazyData: false
 LazyLoad: false
 RoxygenNote: 6.0.1
 biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
-Collate:
+Collate: 
     'AllChecks.R'
     'AllClasses.R'
     'AllGenerics.R'
@@ -56,6 +56,7 @@ Collate:
     'AllHelperClusterFunction.R'
     'AllHelperFilter.R'
     'JiashinJiCode.R'
+    'RcppExports.R'
     'addClusters.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'

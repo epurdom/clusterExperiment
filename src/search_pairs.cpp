@@ -2,13 +2,15 @@
 
 #include <Rcpp.h>
 using namespace Rcpp;
-// Search pairs of samples that co-cluster across subsamples
+//' Search pairs of samples that co-cluster across subsamples
 //
-// Assume that our input is a matrix, with N columns and B rows
-// (the number of subsamples), storing integers -- the cluster labels.
+//' Assume that our input is a matrix, with N columns and B rows
+//' (the number of subsamples), storing integers -- the cluster labels.
+//'
+//' @param clusterings a matrix with the cluster labels
 //
-// The output is a matrix with the co-clusters, but only the lower triangle
-// is populated.
+//' @return A matrix with the co-clusters, but only the lower triangle
+//' is populated.
 // [[Rcpp::export]]
 NumericMatrix search_pairs(IntegerMatrix clusterings) {
 
