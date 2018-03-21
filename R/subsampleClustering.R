@@ -1,3 +1,8 @@
+#' @useDynLib clusterExperiment
+#' @importFrom Rcpp sourceCpp
+NULL
+
+
 #' Cluster subsamples of the data
 #'
 #' Given input data, this function will subsample the samples, cluster the
@@ -84,10 +89,10 @@ setMethod(
   f = "subsampleClustering",
   signature = signature(clusterFunction = "character"),
   definition = function(clusterFunction,...){
-  	subsampleClustering(getBuiltInFunction(clusterFunction),...)
+    subsampleClustering(getBuiltInFunction(clusterFunction),...)
 
   }
- )
+)
 
 # #' @rdname subsampleClustering
 # #' @export
@@ -102,30 +107,30 @@ setMethod(
 #' @rdname subsampleClustering
 #' @export
 setMethod(
-   f = "subsampleClustering",
-   signature = signature(clusterFunction = "ClusterFunction"),
-definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
-                              classifyMethod=c("All","InSample","OutOfSample"),
-                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,... )
-{
+  f = "subsampleClustering",
+  signature = signature(clusterFunction = "ClusterFunction"),
+  definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
+                      classifyMethod=c("All","InSample","OutOfSample"),
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,which_implementation=c("R", "Csimple", "Cmemory"),... )
+  {
 
-	## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
-#	doGC<-largeDataset & ncores>1
+    ## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
+    #	doGC<-largeDataset & ncores>1
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
     input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
     classifyMethod<-match.arg(classifyMethod)
     if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
-        classifyMethod<-"InSample" #silently change it...
+      classifyMethod<-"InSample" #silently change it...
     }
     else{
-        inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!
+      inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!
     }
     if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
-        diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
-        if(input=="X") input<-"diss"
-        if(inputClassify=="X") inputClassify<-"diss"
+      diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+      if(input=="X") input<-"diss"
+      if(inputClassify=="X") inputClassify<-"diss"
     }
     #-----
     # Other Checks
@@ -142,7 +147,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 
     #-----
     # Function that calls the clustering for each subsample
-  	# Called over a loop (lapply or mclapply)
+    # Called over a loop (lapply or mclapply)
     #-----
     perSample<-function(ids){
       ## Calls rm and gc frequently to free up memory
@@ -233,28 +238,38 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
       }
       else{
 
-        ## we just need to return the vector of cluster labels
-        return(classX)
+        if(which_implementation == "Csimple") {
+          ## we just need to return the vector of cluster labels
+          return(classX)
+        } else {
+          #instead return
+          # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
+          # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
+          # What does this do with NAs? Removes them -- not included.
+          clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
+          clusterLengths<-tapply(1:N,classX,length)
+          return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
+        }
       }
     }
 
     if(ncores==1){
 
-        DList<-apply(idx,2,perSample)
+      DList<-apply(idx,2,perSample)
 
     }
     else{
-        DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
-        DList <- simplify2array(DList)
+      DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+      DList <- simplify2array(DList)
     }
     #N large: get rid of these big matrices from memory
     if(!is.null(diss)){
-		idnames<-colnames(diss)
-		rm(diss)
-	}
+      idnames<-colnames(diss)
+      rm(diss)
+    }
     if(!is.null(x)){
-		idnames<-colnames(x)
-		rm(x)
+      idnames<-colnames(x)
+      rm(x)
     }
 
     if(!largeDataset){
@@ -264,13 +279,44 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 
     }
     else{
+      #############
+      #Need to calculate number of times pairs together without building large NxN matrix
+      #############
 
-      Dbar <- search_pairs(t(DList))
-      Dbar<-Dbar+t(Dbar)
-      Dbar[is.na(Dbar)]<-0
-      diag(Dbar)<-1
+      if(which_implementation == "Csimple") {
+        Dbar <- search_pairs(t(DList))
+        Dbar<-Dbar+t(Dbar)
+        Dbar[is.na(Dbar)]<-0
+        diag(Dbar)<-1
+      } else {
+        if(which_implementation == "R"){
+          ###
+          # the result of pairList is the upper-triangle of eventual NxN matrix
+          ###
+          if(ncores==1){
+            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)})
+          }
+          else{
+            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)},mc.cores=ncores,...)
+          }
+          pairList<-unlist(pairList)
+        } else {
+          matResults<-subsampleLoop(DList, N)
+          ord<-order(matResults[,2],matResults[,1])
+          pairList<- matResults[ord,3]/matResults[ord,4]
+        }
+
+        #Create NxN matrix
+        Dbar<-matrix(0,N,N)
+        Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
+        Dbar<-Dbar+t(Dbar)
+        Dbar[is.na(Dbar)]<-0
+        diag(Dbar)<-1
+
+      }
+
     }
 
     rownames(Dbar)<-colnames(Dbar)<-idnames
     return(Dbar)
-})
+  })

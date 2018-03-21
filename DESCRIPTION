@@ -35,7 +35,7 @@ Imports:
 	stringr,
 	S4Vectors,
 	grDevices,
-    Rcpp
+	Rcpp
 Suggests:
     BiocStyle,
     knitr,
@@ -87,6 +87,7 @@ Collate:
     'rsec.R'
     'seqCluster.R'
     'subsampleClustering.R'
+    'subsampleLoop.R'
     'transformFunction.R'
     'workflowClusters.R'
 LinkingTo: Rcpp
