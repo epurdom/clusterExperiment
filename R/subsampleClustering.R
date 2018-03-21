@@ -265,7 +265,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     }
     else{
 
-      Dbar <- search_pairs(t(clusterMat))
+      Dbar <- search_pairs(t(DList))
       Dbar<-Dbar+t(Dbar)
       Dbar[is.na(Dbar)]<-0
       diag(Dbar)<-1
