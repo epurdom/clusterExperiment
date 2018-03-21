@@ -111,6 +111,7 @@ master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
 
 
 #############################
+library(clusterExperiment)
 
 otherIds<-function(idx,clustVec,clustLeng){
   m<-which(clustVec==idx)
@@ -199,13 +200,24 @@ searchForPairs2<-function(ii, clusterList, ncores = 1){
 
 searchForPairs3 <- Vectorize(searchForPairs2, vectorize.args = "ii", SIMPLIFY = FALSE)
 
-# ## For each subsample (list) find the pairs
-# searchForPairs4 <- function(N, classX, clusterIds) {
-#
-#   clusterWith <- otherIds3(seq_len(N), classX)
-#
-# }
+## For each subsample (list) find the pairs
+searchForPairs4 <- function(clusterMat) {
 
+  retval <- matrix(ncol=N, nrow=N)
+
+  for(i in seq(2, ncol(clusterMat))) {
+    for(j in seq_len(i)) {
+      s <- sum(clusterMat[,i] == clusterMat[,j], na.rm = TRUE)
+      tot_na <- sum(!(is.na(clusterMat[,i]) | is.na(clusterMat[,j])))
+      retval[i, j] <- s / tot_na
+    }
+  }
+
+  return(retval)
+
+}
+
+library(testthat)
 set.seed(112)
 N <- 100
 classX <- sample(1:10, N, replace = TRUE)
@@ -239,7 +251,7 @@ diag(Dbar)<-1
 Dbar_lower <- Dbar[lower.tri(Dbar, diag=FALSE)]
 
 clusterMat <- sapply(clusterList, function(x) x$classX)
-Dbar2 <- search_pairs(t(clusterMat))
+Dbar2 <- clusterExperiment:::search_pairs(t(clusterMat))
 Dbar2_lower <- Dbar2[lower.tri(Dbar2, diag=FALSE)]
 
 expect_equal(Dbar_lower, Dbar2_lower)
@@ -271,7 +283,6 @@ mat4 <- mat2
 mat4[1,3] <- NA
 mat4
 
-sourceCpp("src/search_pairs.cpp")
 search_pairs(mat2)
 search_pairs(mat3)
 search_pairs(mat4)
