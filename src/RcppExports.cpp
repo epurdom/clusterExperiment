@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // search_pairs
 NumericMatrix search_pairs(IntegerMatrix clusterings);
-RcppExport SEXP _NewPackage_search_pairs(SEXP clusteringsSEXP) {
+RcppExport SEXP _clusterExperiment_search_pairs(SEXP clusteringsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,11 +18,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_NewPackage_search_pairs", (DL_FUNC) &_NewPackage_search_pairs, 1},
+    {"_clusterExperiment_search_pairs", (DL_FUNC) &_clusterExperiment_search_pairs, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_NewPackage(DllInfo *dll) {
+RcppExport void R_init_clusterExperiment(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
