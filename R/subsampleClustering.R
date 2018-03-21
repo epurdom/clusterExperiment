@@ -35,6 +35,9 @@ NULL
 #' @param largeDataset logical indicating whether a more memory-efficient version
 #'   should be used because the dataset is large. This is a beta option, and is
 #'   in the process of being tested before it becomes the default.
+#' @param whichImplementation charachter indicating which implementation of the
+#'   \code{largeDataset} method to use. Ignored if \code{largeDataset = FALSE}.
+#'   See Details.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
@@ -60,6 +63,14 @@ NULL
 #'   subsamples are taken) which can cause errors if you then pass the resulting
 #'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
+#' @details \code{whichImplementation}: in case \code{largeDataset = TRUE},
+#'   there are three possible algorithms implemented to save memory. The first,
+#'   \code{R}, is extremely slow and is kept in this version just as a
+#'   compatibility check. \code{Csimple} is a simple double for loop on the
+#'   matrix of the cluster labels per each subsample. It is extremely fast and
+#'   simple but may be memory inefficient if \code{samp.p} is low.
+#'   \code{Cmemory} should be more efficient in such situations, possibly at the
+#'   cost of speed.
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth
 #'   sample were clustered into the same cluster. The percentage is only out of
@@ -108,7 +119,7 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,which_implementation=c("R", "Csimple", "Cmemory"),... )
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,whichmplementation=c("R", "Csimple", "Cmemory"),... )
   {
 
     #######################
@@ -133,7 +144,7 @@ setMethod(
     reqArgs<-requiredArgs(clusterFunction)
     if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
 
-    which_implementation <- match.arg(which_implementation)
+    whichImplementation <- match.arg(whichImplementation)
 
     #-----
     # Basic parameters, subsamples
@@ -222,7 +233,7 @@ setMethod(
       }
       else{
 
-        if(which_implementation == "Csimple") {
+        if(whichImplementation == "Csimple") {
 
           ## we just need to return the vector of cluster labels
           return(classX)
@@ -268,7 +279,7 @@ setMethod(
       #Need to calculate number of times pairs together without building large NxN matrix
       #############
 
-      if(which_implementation == "Csimple") {
+      if(whichImplementation == "Csimple") {
 
         Dbar <- search_pairs(t(DList))
         Dbar<-Dbar+t(Dbar)
@@ -277,7 +288,7 @@ setMethod(
 
       } else {
 
-        if(which_implementation == "R"){
+        if(whichImplementation == "R"){
           ###
           # the result of pairList is the upper-triangle of eventual NxN matrix
           ###
