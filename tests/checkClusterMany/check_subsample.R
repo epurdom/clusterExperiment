@@ -6,6 +6,7 @@ library(profvis)
 library(devtools)
 library(testthat)
 library(pryr)
+library(microbenchmark)
 
 load("tests/checkClusterMany/combined_filtered_all_batches.rda")
 load("tests/checkClusterMany/combined_zinbwave_all_batches.rda")
@@ -13,6 +14,14 @@ load("tests/checkClusterMany/combined_zinbwave_all_batches.rda")
 W <- getW(zinb)
 rownames(W) <- colnames(filtered)
 colnames(W) <- paste0("W", 1:10)
+WW <- t(W)
+
+## profile
+source("tests/checkClusterMany/subsample_for_profile.R")
+profvis(subsample(getBuiltInFunction("kmeans"), x = WW,
+                  clusterArgs = list(k=5),
+                  samp.p = 0.7, resamp.num = 10,
+                  largeDataset = TRUE, whichImplementation = "Cmemory"))
 
 # trap_wrap <- function(x, k, steps = 4, ...) {
 #   snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE)
@@ -26,28 +35,77 @@ colnames(W) <- paste0("W", 1:10)
 # SNN <- ClusterFunction(trap_wrap, inputType = "X", algorithmType = "K",
 #                        outputType="vector")
 
+library(clusterExperiment)
+
+microbenchmark(
+  original={clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                          mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                 clusterArgs = list(alpha = 0.9)),
+                          subsampleArgs = list(clusterFunction = "kmeans",
+                                               clusterArgs = list(k = 5),
+                                               samp.p = 0.7,
+                                               resamp.num = 100))},
+  large_r={clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                         mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                clusterArgs = list(alpha = 0.9)),
+                         subsampleArgs = list(clusterFunction = "kmeans",
+                                              clusterArgs = list(k = 5),
+                                              samp.p = 0.7,
+                                              resamp.num = 100,
+                                              largeDataset = TRUE,
+                                              whichImplementation = "R"))},
+  large_c1={clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                         mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                clusterArgs = list(alpha = 0.9)),
+                         subsampleArgs = list(clusterFunction = "kmeans",
+                                              clusterArgs = list(k = 5),
+                                              samp.p = 0.7,
+                                              resamp.num = 100,
+                                              largeDataset = TRUE,
+                                              whichImplementation = "Csimple"))},
+  large_c2={clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                         mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                clusterArgs = list(alpha = 0.9)),
+                         subsampleArgs = list(clusterFunction = "kmeans",
+                                              clusterArgs = list(k = 5),
+                                              samp.p = 0.7,
+                                              resamp.num = 100,
+                                              largeDataset = TRUE,
+                                              whichImplementation = "Cmemory"))},
+  times = 1L
+)
+
+
+
+
+
+
+
 
 ## first let's make sure that we get the same results, then we can memory proof them
 
 devtools::load_all()
 set.seed(123)
-system.time(master <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
-                        mainClusterArgs = list(clusterFunction = "hierarchical01",
-                                               clusterArgs = list(alpha = 0.9)),
-                        subsampleArgs = list(clusterFunction = "kmeans",
-                                             clusterArgs = list(k = 5),
-                                             samp.p = 0.1,
-                                             resamp.num = 10)))
+system.time(lds1 <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+                                 mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                                        clusterArgs = list(alpha = 0.9)),
+                                 subsampleArgs = list(clusterFunction = "kmeans",
+                                                      clusterArgs = list(k = 5),
+                                                      samp.p = 0.1,
+                                                      resamp.num = 10,
+                                                      largeDataset = TRUE,
+                                                      whichImplementation = "Csimple")))
 
 set.seed(123)
-system.time(lds <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
+system.time(lds2 <- clusterSingle(t(W), subsample = TRUE, sequential = FALSE,
                                     mainClusterArgs = list(clusterFunction = "hierarchical01",
                                                            clusterArgs = list(alpha = 0.9)),
                                     subsampleArgs = list(clusterFunction = "kmeans",
                                                          clusterArgs = list(k = 5),
                                                          samp.p = 0.1,
                                                          resamp.num = 10,
-                                                         largeDataset = TRUE)))
+                                                         largeDataset = TRUE,
+                                                         whichImplementation = "Cmemory")))
 
 expect_equivalent(master, lds)
 
