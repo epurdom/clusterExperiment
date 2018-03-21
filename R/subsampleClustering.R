@@ -68,6 +68,8 @@
 #'   those subsamples where the ith and jth sample were both in or out of
 #'   sample, respectively, relative to the subsample.
 #'
+#' @useDynLib clusterExperiment
+#' @importFrom Rcpp sourceCpp
 #' @examples
 #'\dontrun{
 #' #takes a bit of time, not run on checks:
@@ -106,7 +108,7 @@ setMethod(
    signature = signature(clusterFunction = "ClusterFunction"),
 definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                               classifyMethod=c("All","InSample","OutOfSample"),
-                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,... )
+                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,useRLoop=TRUE,... )
 {
 
 	## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
@@ -270,73 +272,29 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     else{
 		#############
 		#Need to calculate number of times pairs together without building large NxN matrix
-		#could speed up if had C++ function to do this instead!
 		#############
 
-		#---------
-		#for a sample index ii, determine what other indices in the same sample with it
-		#ii an index of a sample
-		#clustVec the clusterIds as returned by above in DList
-		#clusterLengths the length of each cluster as returned by above in DList
-		otherIds<-function(idx,clustVec,clustLeng){
-            m<-which(clustVec==idx)
-            if(length(m)>1) stop("ids clustered in more than one cluster")
-            if(length(m)==0) return(NA) #sample not ever clustered
-            if(length(m)==1){
-                ends<-cumsum(clustLeng)
-                begins<-cumsum(c(1,head(clustLeng,-1)))
-                whCluster<-which(m<=ends & m>=begins)
-                if(length(whCluster)>1 | length(whCluster)==0) stop("error in coding: finding range of clusterids")
-                return(clustVec[seq(begins[whCluster],ends[whCluster],by=1)])
-            }
-        }
-        #Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
-
-		#---------
-		#For ii an index of a sample, calculates the proportion of times joint with every other sample with index < ii.
-		#clusterList is the results of subsampling, i.e. list with indices of clusters adjacent
-		#returns vector of length N-ii with the proportions
-		#NA if either never subsampled together or never clustered together.
-		#---------
-        searchForPairs<-function(ii,clusterList,N){
-            #get list of those indices sample ii was sampled
-			whHave<-which(sapply(clusterList,function(ll){ii%in%ll$clusterIds}))
-			#calculate number of times sampled with (denominator)
-            sampledWithTab<-table(unlist(sapply(clusterList[whHave],.subset2,"clusterIds")))
-            #get those indices clustered with and tabulate
-			clusterWith<-lapply(clusterList[whHave],function(ll){
-                otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
-            })
-			# if(doGC){#just to reduce memory since will be parallelized
-			# 	rm(clusterList)
-			# 	gc()
-			# }
-			clusterWithTab<-table(unlist(clusterWith))
-            jointNames<-as.character(1:N)
-			whLower<-which(as.integer(as.numeric(jointNames))<ii)
-			return(as.integer(clusterWithTab[jointNames][whLower])/as.integer(sampledWithTab[jointNames][whLower]))
-
-			#thoughts about alternative code if not need save NxN matrix...
-            #jointNames<-names(sampledWithTab) #if manage to not save NxN matrix, could use this to return only those that actually present
-            #out<-out[!is.na(out[,"together"]),,drop=FALSE] #if manage to not save NxN matrix, could use this to return only those that actually present; but then need to not return proportions, but something else.
-        }
-        #Test: searchForPairs(5,DList[1:2])
-
-
-		###
-		# the result of pairList is the upper-triangle of eventual NxN matrix
-		###
-        if(ncores==1){
-            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)})
-        }
-        else{
-            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)},mc.cores=ncores,...)
-        }
-        rm(DList)
-        gc()
+		if(useRLoop){
+			###
+			# the result of pairList is the upper-triangle of eventual NxN matrix
+			###
+	        if(ncores==1){
+	            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)})
+	        }
+	        else{
+	            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)},mc.cores=ncores,...)
+	        }
+	        pairList<-unlist(pairList)
+		}
+		else{
+			matResults<-subsampleLoop(DList, N)
+			ord<-order(matResults[,2],matResults[,1])
+			pairList<- matResults[ord,3]/matResults[ord,4]
+		}
+        
         #Create NxN matrix
         Dbar<-matrix(0,N,N)
-        Dbar[upper.tri(Dbar, diag = FALSE)]<-unlist(pairList)
+        Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
         Dbar<-Dbar+t(Dbar)
         Dbar[is.na(Dbar)]<-0
         diag(Dbar)<-1
