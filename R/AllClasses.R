@@ -7,7 +7,7 @@ setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 
-#' @useDynLib clusterExperiment
+#' @useDynLib clusterExperiment, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
 

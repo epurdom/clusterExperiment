@@ -2,14 +2,12 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' Search pairs of samples that co-cluster across subsamples
-NULL
-
+#'
 #' Assume that our input is a matrix, with N columns and B rows
 #' (the number of subsamples), storing integers -- the cluster labels.
 #'
 #' @param clusterings a matrix with the cluster labels
-NULL
-
+#'
 #' @return A matrix with the co-clusters, but only the lower triangle
 #' is populated.
 search_pairs <- function(clusterings) {
