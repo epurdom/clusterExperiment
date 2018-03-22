@@ -1,4 +1,4 @@
-Changes in version 1.99.2 ( Release date: 2018-02-15)
+Changes in version 1.99.2 ( Release date: 2018-03-22)
 ==============
 Bugs:
 * Fix defaultNDims so that returns minimum of 50 and the minimum dimension of data.
