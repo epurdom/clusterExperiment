@@ -164,6 +164,7 @@ setMethod(f = "mergeClusters",
                                 plotInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
                                 cutoff=0.1, plot=TRUE,isCount=TRUE,  ...){  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
+  if(!is.numeric(cutoff) || cutoff<0 || cutoff > 1) stop("Invalid value for the parameter 'cutoff'.")
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- .convertToNum(cl)

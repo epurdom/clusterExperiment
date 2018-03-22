@@ -77,15 +77,28 @@ test_that("`RSEC` works with no merging",{
 })
 
 test_that("`RSEC` returns clusterMany even when errors later",{
+	#error in combineMany param
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
         subsampleArgs=list(resamp.num=5),random.seed=495, combineProportion = -1, combineMinSize = 5),"Invalid value for the 'proportion' parameter"
   	 	)
 	expect_true("clusterMany" %in% clusterTypes(rsecOut1))
-	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
+
+	#error in dendro param
+	expect_message(rsecOut2<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-        subsampleArgs=list(resamp.num=5),random.seed=495, combineProportion = 0.7, combineMinSize = -1
-  	 	)
+        subsampleArgs=list(resamp.num=5),random.seed=495, 
+		dendroReduce="myfakemethod"
+  	 	),"does not contain the given 'reduceMethod' value")
+    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut2)))
 	
-	
+	#error in merging -- have to get one where can make dendrogram... takes longer.
+	expect_message(rsecOut3<-RSEC(x=assay(seSimCount[sample(size=50,x=1:nrow(seSimCount)),]), isCount=TRUE,reduceMethod="none",
+              k0s=4:5,clusterFunction="pam", alphas=0.1,
+              betas=0.9,dendroReduce="none",minSizes=1,
+       subsampleArgs=list(resamp.num=5),random.seed=495,
+		mergeMethod="fakeMerge"
+  	 	),"mergeClusters encountered following error")
+    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut3)))
+
 })
