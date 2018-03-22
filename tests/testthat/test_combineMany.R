@@ -6,14 +6,11 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
                                 subsample=FALSE, sequential=FALSE,
                                 isCount=FALSE,verbose=FALSE))
     expect_silent(x1<-combineMany(clustNothing,proportion=1,whichClusters = "clusterMany"))
-    x2<-combineMany(clustNothing,proportion=1)
+    expect_message(x2<-combineMany(clustNothing,proportion=1),"no clusters specified to combine")
     expect_equal(x1,x2)
 	expect_silent(ceObj<-clusterSingle(mat, subsample=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
-    expect_error(combineMany(ceObj,proportion=1),
-                 "no clusters specified")
-	expect_error(combineMany(ceObj,whichCluster="clusterSingle"),
-	                          'argument "proportion" is missing, with no default')
+
 
     expect_silent(shared1 <- combineMany(clusterMatrix(clustNothing),proportion=1))
     expect_silent(shared2 <- combineMany(clustNothing, "all",proportion=1))
@@ -22,21 +19,36 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
     expect_silent(shared3 <- combineMany(clustNothing, "workflow",proportion=1))
     expect_equal(shared2, shared3)
 
-    shared4 <- combineMany(clustNothing, 1:nClusterings(clustNothing),proportion=1)
+    expect_silent(shared4 <- combineMany(clustNothing, 1:nClusterings(clustNothing),proportion=1))
     expect_equal(shared3, shared4)
 
     expect_silent(shared5 <- combineMany(clustNothing, "workflow", proportion=.5))
 
     expect_silent(shared6 <- combineMany(clustNothing, "workflow",
                                   proportion=.5, clusterFunction="tight"))
+	expect_true("combineMany" %in% clusterTypes(shared6))
+	expect_true("combineMany" %in% clusterLabels(shared6))
+	expect_true(all(primaryCluster(shared6)==clusterMatrix(shared6)[,"combineMany"]))
 
+  	#----
+  	##Check error catching:
+  	#----
+  	expect_error(combineMany(ceObj,proportion=1),
+                   "no clusters specified")
+ 	expect_error(combineMany(ceObj,whichClusters = "all",proportion=-1),
+           "Invalid value for the 'proportion' parameter")
+	expect_error(combineMany(ceObj,whichClusters = "all",proportion=0.7, minSize=-3),
+	       "Invalid value for the 'minSize' parameter")
+	expect_error(combineMany(ceObj,whichClusters = "all",proportion=0.7, propUnassigned=3),
+	       "Invalid value for the 'propUnassigned' parameter")
+	expect_error(combineMany(ceObj,whichCluster="clusterSingle"),
+  	        'argument "proportion" is missing, with no default')
+  	expect_error(combineMany(ceObj,whichCluster="clusterSingle"),
+  			'argument "proportion" is missing, with no default')
     expect_error(combineMany(clustNothing, "workflow",
            proportion=.5,clusterFunction="pam"), 
 		   "combineMany is only implemented for '01' type")
 
-    expect_true("combineMany" %in% clusterTypes(shared6))
-    expect_true("combineMany" %in% clusterLabels(shared6))
-    expect_true(all(primaryCluster(shared6)==clusterMatrix(shared6)[,"combineMany"]))
 })
 
 test_that("`combineMany` works when multiple runs of workflow", {

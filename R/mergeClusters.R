@@ -485,7 +485,10 @@ This makes sense only for counts.")
 	
 		
     ##Align the colors between mergeClusters and combineMany
-    retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
+    tryAlign<-try(plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE),silent=TRUE)
+	if(!inherits(tryAlign,"try-error")) 
+		retval<-tryAlign
+	else .mynote("Unable to align mergeClusters with combineMany clusters because of the following error:",tryAlign)
     
   }
   else{ #still save merge info so don't have to redo it.

@@ -1,3 +1,10 @@
+Changes in version 1.99.2 ( Release date: 2018-02-15)
+==============
+Bugs:
+* Fix defaultNDims so that returns minimum of 50 and the minimum dimension of data.
+* Fix RSEC so still returns results if hit error after clusterMany.
+
+
 Changes in version 1.99.0 ( Release date: 2018-02-15)
 ==============
 
