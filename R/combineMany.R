@@ -92,8 +92,14 @@ setMethod(
                         clusterFunction="hierarchical01",
                         propUnassigned=.5, minSize=5,...) {
 
+  if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
+  if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
   clusterMat <- x
   if(proportion == 1) {
+	  #have to repeat from mainClustering because didn't
+  	if(!is.numeric(minSize) || minSize<0) 
+  		stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
+  	else minSize<-round(minSize) #incase not integer.
     singleValueClusters <- apply(clusterMat, 1, paste, collapse=";")
     allUnass <- paste(rep("-1", length=ncol(clusterMat)), collapse=";")
     uniqueSingleValueClusters <- unique(singleValueClusters)
@@ -104,6 +110,7 @@ setMethod(
     cl[is.na(cl)] <- -1
     sharedPerct<-NULL
   } else{
+	  
     	if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
 		else if(class(clusterFunction)=="ClusterFunction") typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
       if(typeAlg!="01") {

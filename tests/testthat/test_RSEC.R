@@ -36,12 +36,11 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 
 test_that("`RSEC` works through whole series of steps",{
 #bigger example where actually goes through all the steps, takes some time:
-rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
+expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
               betas=0.9,dendroReduce="none",minSizes=1,
-       subsampleArgs=list(resamp.num=5),random.seed=495
-  )
-  ##check same as individual steps
+       subsampleArgs=list(resamp.num=5),random.seed=495),
+  "Merging will be done on")
  expect_silent(ceOut<-clusterMany(x=assay(seSimCount),ks=4:5,clusterFunction="tight",alphas=0.1,betas=0.9,minSizes=1,
   isCount=TRUE, reduceMethod="none", transFun = NULL,
  sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
@@ -50,9 +49,8 @@ rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
  ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
-	#gives 'note', can't use expect_silent
- combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5)
- expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
+ expect_message(combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
+  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
 
  expect_silent(dendOut<-makeDendrogram(combOut,reduceMethod="none",nDims=NA))
@@ -76,4 +74,31 @@ test_that("`RSEC` works with no merging",{
                 betas=0.9,dendroReduce="none",minSizes=1,
                 subsampleArgs=list(resamp.num=5),random.seed=495,
                 mergeMethod="none")
+})
+
+test_that("`RSEC` returns clusterMany even when errors later",{
+	#error in combineMany param
+	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
+		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+        subsampleArgs=list(resamp.num=5),random.seed=495, combineProportion = -1, combineMinSize = 5),"Invalid value for the 'proportion' parameter"
+  	 	)
+	expect_true("clusterMany" %in% clusterTypes(rsecOut1))
+
+	#error in dendro param
+	expect_message(rsecOut2<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
+		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+        subsampleArgs=list(resamp.num=5),random.seed=495, 
+		dendroReduce="myfakemethod"
+  	 	),"does not contain the given 'reduceMethod' value")
+    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut2)))
+	
+	#error in merging -- have to get one where can make dendrogram... takes longer.
+	expect_message(rsecOut3<-RSEC(x=assay(seSimCount[sample(size=50,x=1:nrow(seSimCount)),]), isCount=TRUE,reduceMethod="none",
+              k0s=4:5,clusterFunction="pam", alphas=0.1,
+              betas=0.9,dendroReduce="none",minSizes=1,
+       subsampleArgs=list(resamp.num=5),random.seed=495,
+		mergeMethod="fakeMerge"
+  	 	),"mergeClusters encountered following error")
+    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut3)))
+
 })
