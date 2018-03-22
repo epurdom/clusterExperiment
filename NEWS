@@ -1,12 +1,19 @@
-Changes in version 1.99.1-9001 ( Release date: 2018-02-15)
+Changes in version 1.99.2-9001 ( Release date: )
 ==============
 
 Changes:
-* Method "adjP" in `mergeClusters` now allows for further requirement that gene have a minimal log-fold change.
+* Method "adjP" in `mergeClusters` now allows for further requirement that gene have a minimal log-fold change ('logFCcutoff').
 
 Bugs:
 * Fix bug in `setBreaks` (isPositive and isNegative)
 * use `stringr::str_sort` to make sort of character values locale independent
+
+Changes in version 1.99.2 ( Release date: 2018-03-22)
+==============
+Bugs:
+* Fix defaultNDims so that returns minimum of 50 and the minimum dimension of data.
+* Fix RSEC so still returns results if hit error after clusterMany.
+
 
 Changes in version 1.99.0 ( Release date: 2018-02-15)
 ==============

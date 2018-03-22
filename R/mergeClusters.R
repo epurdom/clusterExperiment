@@ -179,7 +179,9 @@ setMethod(f = "mergeClusters",
 			  nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
               cutoff=0.1, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){  
   dendroSamples<-NULL #currently option is not implemented for matrix version...
+  if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
   logFCcutoff<-round(logFCcutoff,digits=1)
+  if(!is.numeric(cutoff) || cutoff<0 || cutoff > 1) stop("Invalid value for the parameter 'cutoff'.")
   if(is.factor(cl)){
     warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
     cl <- .convertToNum(cl)
@@ -599,7 +601,10 @@ setMethod(f = "mergeClusters",
 	#------------
     ##Align the colors between mergeClusters and combineMany
 	#------------
-    retval<-plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE)
+    tryAlign<-try(plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE),silent=TRUE)
+	if(!inherits(tryAlign,"try-error")) 
+		retval<-tryAlign
+	else .mynote(paste("Unable to align mergeClusters with combineMany clusters because of the following error:",tryAlign))
     
   }
   else{ 

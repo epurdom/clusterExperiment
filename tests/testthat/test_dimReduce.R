@@ -208,3 +208,13 @@ test_that("makeFilterStats works as promised",{
 	
 	
 })
+
+test_that("defaultNDims works",{
+    nDim<-3
+    expect_silent(dr3<-makeReducedDims(ceSimData,reducedDims="PCA",maxDims=nDim))
+    expect_equal(defaultNDims(dr3,"PCA"),3)
+	
+	expect_equal(defaultNDims(SingleCellExperiment(mat),"PCA"),min(dim(mat)))
+	expect_equal(defaultNDims(SingleCellExperiment(ceSimData),"PCA"),50)
+	
+})

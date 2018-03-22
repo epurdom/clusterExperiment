@@ -102,13 +102,16 @@ setMethod(
         nReducedDims<-NA
         nFilterDims<-NA
     }
-    if(is.null(seqArgs))seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
-ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=betas,minSizes=minSizes,
-                    sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
-                    isCount=isCount,transFun=transFun,
-                    reduceMethod=reduceMethod,nFilterDims=nFilterDims,nReducedDims=nReducedDims,
-                    mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
-                    seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
+    if(is.null(seqArgs)) seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
+	ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,
+		alphas=alphas,betas=betas,minSizes=minSizes,
+		sequential=TRUE,removeSil=FALSE,subsample=TRUE,
+		silCutoff=0,distFunction=NA,
+        isCount=isCount,transFun=transFun,
+		reduceMethod=reduceMethod,nFilterDims=nFilterDims,
+		nReducedDims=nReducedDims, 
+		mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
+        seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					
     if(run){
       ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,isCount=isCount)
@@ -137,35 +140,47 @@ ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,alphas=alphas,betas=bet
 	passedArgs<-list(...)
 	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
 	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
+	#------------
 	###CombineMany
+	#------------
 	args1<-list()
 	if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
 	if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
-		 whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters else "clusterMany"
-  ce<-do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1))
+		 whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters  	else "clusterMany"
+	combineTry<-try(do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1)), silent=TRUE)
+	if(!inherits(combineTry,"try-error")){
+		ce<-combineTry
+		#------------
+		##makeDendrogram
+		#------------
+		args1<-list()
+		if("dendroReduce" %in% names(passedArgs)){
+			args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce)
+			if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
+		}
+		if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
 
-	##makeDendrogram
-  	args1<-list()
-  	if("dendroReduce" %in% names(passedArgs)){
-		args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce)
-		if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
-	}
-  	if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-	
-	dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
+		dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
 
-		#mergeClusters
-  if(!inherits(dendroTry,"try-error")){
-    ce<-dendroTry
-  	args1<-list()
-	if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
-	if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
-		args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
-      	ce <- do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")]))
-		
+	  #------------
+	  #mergeClusters
+	  #------------
+	  if(!inherits(dendroTry,"try-error")){
+	    ce<-dendroTry
+	  	args1<-list()
+		if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+		if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
+			args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
+			mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")])), silent=TRUE)
+			if(!inherits(mergeTry,"try-error")){
+				ce<-mergeTry
+			}
+			else .mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))		
+		}
+		else .mynote("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
+	  }
+	  else .mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
 	}
-	else .mynote("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
-  }
-  else .mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
+	else .mynote(paste("combineMany encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
   return(ce) 
 }

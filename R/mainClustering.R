@@ -100,6 +100,9 @@ definition=function(clusterFunction,x=NULL, diss=NULL,
 	orderBy<-match.arg(orderBy)
 	format<-match.arg(format)
 	postProcessArgs<-list(...)
+	if(!is.numeric(minSize) || minSize<0) 
+		stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
+	else minSize<-round(minSize) #incase not integer.
 	if(length(postProcessArgs)>0){
 	#get rid of wrong args passed because of user confusion between the two
 		whRightArgs<-which(names(postProcessArgs) %in% getPostProcessingArgs(clusterFunction))
