@@ -109,3 +109,12 @@ pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
 tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
 clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
+
+#####################
+## Create hdf5 SCE version
+## Note is matrix of doubles....
+#####################
+library(HDF5Array)
+hdfSCE<-se
+assay(hdfSCE) <- writeHDF5Array(assay(hdfSCE), "./test.h5", "counts")
+
