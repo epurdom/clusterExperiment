@@ -203,9 +203,10 @@ setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,ty
 	return(nDims)
 	
 })
-setMethod( "defaultNDims","matrix",function(object,...){
+setMethod( "defaultNDims","matrixOrHDF5",function(object,...){
 	return(defaultNDims(SingleCellExperiment(object),...))
 })
+
 
 #' @rdname reduceFunctions
 #' @return \code{filterNames} returns a vector of the columns of the rowData that are considered valid filtering statistics. Currently any numeric column in rowData is a valid filtering statistic. 

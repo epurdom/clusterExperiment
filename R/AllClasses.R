@@ -6,6 +6,8 @@ setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "HDF5Matrix"))
+setClassUnion("matrixOrHDF5OrNULL",members=c("matrix", "HDF5Matrix","NULL"))
 
 
 	
