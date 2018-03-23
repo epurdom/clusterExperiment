@@ -174,7 +174,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="missing"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="missing"),
   definition = function(x, diss,...) {
 	  clusterSingle(x=x,diss=NULL,...)
  
@@ -265,7 +265,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="matrixOrNULL"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="matrixOrNULL"),
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL,

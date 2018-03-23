@@ -125,7 +125,23 @@ test_that("`clusterSingle` works with reduceMethod", {
 
 })
 
-
+test_that("`clusterSingle` works with hdf5Matrix",{
+	# clusterSingle(x, diss, subsample = TRUE,
+	#   sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
+	#   seqArgs = NULL, isCount = FALSE, transFun = NULL,
+	#   reduceMethod = c("none", listBuiltInReducedDims(),
+	#   listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
+	#   clusterLabel = "clusterSingle", checkDiss = TRUE)
+	#
+    for(kk in 1:length(listBuiltInFunctions)){
+  	  expect_silent(clustNothing2 <- clusterSingle(hdfSCE,
+		  reduceMethod = "none",
+  		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[kk]]),
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+    }
+	
+	
+})
 test_that("`clusterSingle` works with filtering", {
     ####Check built in functions ####
 	for(fs in listBuiltInFilterStats()){

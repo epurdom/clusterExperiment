@@ -31,7 +31,7 @@
 #' @export
 setMethod(
   f = "transformData",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,transFun=NULL,isCount=FALSE) {
 	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
 	  x <- try(transFun(object), silent=TRUE)

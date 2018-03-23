@@ -1,10 +1,5 @@
 #' @include internalFunctions.R internalClusterFunctions.R
 
-### input to clustering:
-# pam : x or dis
-# hier : dis
-# kmeans : x
-
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
@@ -74,9 +69,12 @@
 
 #' @importFrom cluster pam
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
-      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
+	
+	  passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
 	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
-	  if(input=="X") return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
+	  if(input=="X"){
+		return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))  
+	  } 
       if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     }
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
