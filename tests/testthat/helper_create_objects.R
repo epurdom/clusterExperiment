@@ -115,6 +115,7 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 ## Note is matrix of doubles....
 #####################
 library(HDF5Array)
-hdfSCE<-se
+hdfSCE<-seSimDataDimRed
+### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. 
 assay(hdfSCE) <- writeHDF5Array(assay(hdfSCE), "./test.h5", "counts")
 
