@@ -118,4 +118,5 @@ library(HDF5Array)
 hdfSCE<-sceSimDataDimRed
 ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
 unlink("./sce.h5")
-assay(hdfSCE) <- writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
+assay(hdfSCE) <- HDF5Array::writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
+

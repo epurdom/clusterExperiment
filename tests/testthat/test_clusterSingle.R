@@ -134,12 +134,17 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 	#   clusterLabel = "clusterSingle", checkDiss = TRUE)
 	#
     for(kk in 1:length(listBuiltInFunctions)){
+      expect_silent(clustNothing1 <- clusterSingle(sceSimDataDimRed,
+  		  reduceMethod = "none",
+    		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[kk]]),
+    	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+		
   	  expect_silent(clustNothing2 <- clusterSingle(hdfSCE,
 		  reduceMethod = "none",
   		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[kk]]),
-  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))
+		expect_equal(clusterMatrix(clustNothing1) ,clusterMatrix(clustNothing2))
     }
-	
 	
 })
 test_that("`clusterSingle` works with filtering", {
