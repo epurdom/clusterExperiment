@@ -34,7 +34,8 @@ Imports:
 	kernlab,
 	stringr,
 	S4Vectors,
-	grDevices
+	grDevices,
+	HDF5Array (>=1.7.9)
 Suggests:
     BiocStyle,
     knitr,

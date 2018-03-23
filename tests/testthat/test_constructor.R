@@ -45,6 +45,13 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 			
 })
 
+test_that("`ClusterExperiment` constructor works with hdf5",{
+    #test creation
+    expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))
+	
+	
+})
+
 test_that("whichClusters works with clusterMatrix",{
 	 expect_silent(x<-dim(clusterMatrix(ceSim)))
 	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)

@@ -193,7 +193,7 @@ setGeneric(
 #' @export
 setMethod(
   f = "ClusterExperiment",
-  signature = signature("matrix","ANY"),
+  signature = signature("matrixOrHDF5","ANY"),
   definition = function(object, clusters, ...){
     ClusterExperiment(SummarizedExperiment(object), clusters, ...)
   })
