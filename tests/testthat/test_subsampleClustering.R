@@ -8,11 +8,6 @@ test_that("Large memory option", {
                                 clusterArgs=list(k=3), classifyMethod="All",
                                 largeDataset=FALSE, resamp.num = 100,
                                 samp.p = 0.7,ncores=1)
-  set.seed(4897)
-  subAllParal <- subsampleClustering(x=mat,clusterFunction="pam",
-                                     clusterArgs=list(k=3), classifyMethod="All",
-                                     largeDataset=FALSE, resamp.num = 100,
-                                     samp.p = 0.7,ncores=2)
 
   ## largeDataset = FALSE; whichImplementation = "R"
   set.seed(4897)
@@ -20,25 +15,14 @@ test_that("Large memory option", {
                                      clusterArgs=list(k=3), classifyMethod="All",
                                      largeDataset=TRUE, resamp.num = 100,
                                      samp.p = 0.7,ncores=1)
-  set.seed(4897)
-  subAllLargeParal <- subsampleClustering(x=mat,clusterFunction="pam",
-                                          clusterArgs=list(k=3), classifyMethod="All",
-                                          largeDataset=TRUE, resamp.num = 100,
-                                          samp.p = 0.7,ncores=2)
 
   ## largeDataset = FALSE; whichImplementation = "Csimple"
   set.seed(4897)
   subAllLarge2 <- subsampleClustering(x=mat,clusterFunction="pam",
-                                     clusterArgs=list(k=3), classifyMethod="All",
-                                     largeDataset=TRUE, resamp.num = 100,
-                                     samp.p = 0.7,ncores=1,
-                                     whichImplementation = "Csimple")
-  set.seed(4897)
-  subAllLarge2Paral <- subsampleClustering(x=mat,clusterFunction="pam",
-                                          clusterArgs=list(k=3), classifyMethod="All",
-                                          largeDataset=TRUE, resamp.num = 100,
-                                          samp.p = 0.7,ncores=2,
-                                          whichImplementation = "Csimple")
+                                      clusterArgs=list(k=3), classifyMethod="All",
+                                      largeDataset=TRUE, resamp.num = 100,
+                                      samp.p = 0.7,ncores=1,
+                                      whichImplementation = "Csimple")
 
   ## largeDataset = FALSE; whichImplementation = "Cmemory"
   set.seed(4897)
@@ -47,26 +31,62 @@ test_that("Large memory option", {
                                      largeDataset=TRUE, resamp.num = 100,
                                      samp.p = 0.7,ncores=1,
                                      whichImplementation = "Cmemory")
-  set.seed(4897)
-  subAllLarge3Paral <- subsampleClustering(x=mat,clusterFunction="pam",
-                                          clusterArgs=list(k=3), classifyMethod="All",
-                                          largeDataset=TRUE, resamp.num = 100,
-                                          samp.p = 0.7,ncores=2,
-                                          whichImplementation = "Cmemory")
 
   expect_identical(subAllLarge,subAll)
-  expect_identical(subAllParal,subAll)
-  expect_identical(subAllLargeParal,subAll)
   expect_identical(subAllLarge2,subAll)
-  expect_identical(subAllLarge2Paral,subAll)
   expect_identical(subAllLarge3,subAll)
-  expect_identical(subAllLarge3Paral,subAll)
+
+  ## Windows does not support mclapply
+  if(.Platform$OS.type != "windows"){
+
+    set.seed(4897)
+    subAllParal <- subsampleClustering(x=mat,clusterFunction="pam",
+                                       clusterArgs=list(k=3), classifyMethod="All",
+                                       largeDataset=FALSE, resamp.num = 100,
+                                       samp.p = 0.7,ncores=2)
+
+    set.seed(4897)
+    subAllLargeParal <- subsampleClustering(x=mat,clusterFunction="pam",
+                                            clusterArgs=list(k=3), classifyMethod="All",
+                                            largeDataset=TRUE, resamp.num = 100,
+                                            samp.p = 0.7,ncores=2)
+
+    set.seed(4897)
+    subAllLarge2Paral <- subsampleClustering(x=mat,clusterFunction="pam",
+                                             clusterArgs=list(k=3), classifyMethod="All",
+                                             largeDataset=TRUE, resamp.num = 100,
+                                             samp.p = 0.7,ncores=2,
+                                             whichImplementation = "Csimple")
+
+    set.seed(4897)
+    subAllLarge3Paral <- subsampleClustering(x=mat,clusterFunction="pam",
+                                             clusterArgs=list(k=3), classifyMethod="All",
+                                             largeDataset=TRUE, resamp.num = 100,
+                                             samp.p = 0.7,ncores=2,
+                                             whichImplementation = "Cmemory")
+
+    expect_identical(subAllLargeParal,subAll)
+    expect_identical(subAllLarge2Paral,subAll)
+    expect_identical(subAllLarge3Paral,subAll)
+
+  }
+
 
 	#subsample clusterings won't have identification to all samples...
     set.seed(4897)
-	subInSampleLarge <- subsampleClustering(x=mat,clusterArgs=list(k=3), clusterFunction="pam",  classifyMethod=c("InSample"),largeDataset=TRUE, resamp.num = 100, samp.p = 0.7,ncores=1)
+	subInSampleLarge <- subsampleClustering(x=mat,clusterArgs=list(k=3),
+	                                        clusterFunction="pam",
+	                                        classifyMethod=c("InSample"),
+	                                        largeDataset=TRUE,
+	                                        resamp.num = 100,
+	                                        samp.p = 0.7,ncores=1)
     set.seed(4897)
-    subInSample <- subsampleClustering(x=mat,clusterArgs=list(k=3), clusterFunction="pam",  classifyMethod=c("InSample"),largeDataset=FALSE, resamp.num = 100, samp.p = 0.7,ncores=1)
+    subInSample <- subsampleClustering(x=mat,clusterArgs=list(k=3),
+                                       clusterFunction="pam",
+                                       classifyMethod=c("InSample"),
+                                       largeDataset=FALSE,
+                                       resamp.num = 100,
+                                       samp.p = 0.7,ncores=1)
 	expect_identical(subInSampleLarge,subInSample)
 
 	#test in passing to subsampleArgs
