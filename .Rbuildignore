@@ -31,3 +31,4 @@ README[.]md
 ^\.Rproj\.user$
 ^\.\./inst/NEWS$
 ^tests/checkClusterMany/*$
+^appveyor\.yml$
