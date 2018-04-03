@@ -109,27 +109,30 @@ setMethod(
       if(typeAlg!="01") {
         stop("combineMany is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
-    
-    ##Make clusterMat character, just in case
-    clusterMat <- apply(clusterMat, 2, as.character)
-    clusterMat[clusterMat %in%  c("-1","-2")] <- NA
-    sharedPerct <- .hammingdist(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back.
 
-    #fix those pairs that have no clusterings for which they are both not '-1'
-    diag(sharedPerct)[is.na(diag(sharedPerct)) | is.nan(diag(sharedPerct))]<-1 #only happens if -1 in all samples...
-    sharedPerct[is.na(sharedPerct) | is.nan(sharedPerct)] <- 0 
-	clustArgs<-list(alpha=1-proportion)
-	clustArgs<-c(clustArgs,list(...))
-	if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
-		clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
-	}
-    cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
-                   minSize=minSize, format="vector",
-                   clusterArgs=clustArgs)
+		##Make clusterMat integer, just in case
+		clusterMat <- apply(clusterMat, 2, as.integer)
+		clusterMat[clusterMat %in%  c(-1,-2)] <- NA
+		sharedPerct <- search_pairs(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
 
-    if(is.character(cl)) {
-      stop("coding error -- mainClustering should return numeric vector")
-    }
+		#fix those pairs that have no clusterings for which they are both not '-1'
+		sharedPerct <- sharedPerct + t(sharedPerct)
+		sharedPerct[is.na(sharedPerct)] <- 0
+		sharedPerct[is.nan(sharedPerct)] <- 0
+		diag(sharedPerct) <- 1
+
+		clustArgs<-list(alpha=1-proportion)
+		clustArgs<-c(clustArgs,list(...))
+		if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
+		  clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
+		}
+		cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
+		                     minSize=minSize, format="vector",
+		                     clusterArgs=clustArgs)
+
+		if(is.character(cl)) {
+		  stop("coding error -- mainClustering should return numeric vector")
+		}
   }
   ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
   whUnassigned <- which(apply(clusterMat, 2, function(x){
@@ -139,7 +142,7 @@ setMethod(
 
   return(list(clustering=clUnassigned, percentageShared=sharedPerct,
               noUnassignedCorrection=cl))
-}
+  }
 )
 
 #' @rdname combineMany
@@ -206,42 +209,4 @@ setMethod(
   }
 )
 
-#from: https://johanndejong.wordpress.com/2015/10/02/faster-hamming-distance-in-r-2/
-.hammingdist <- function(X, Y,uniqValue=1539263) {
-  #samples are in the rows!
-  if ( missing(Y) ) {
-    uniqs <- na.omit(unique(as.vector(X)))
-    if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in X")
-    isobsX<-abs(is.na(X)-1)
-    if(anyNA(X)){
-      X[is.na(X)]<-uniqValue
-    }
-    U <- X == uniqs[1]
-    H <- t(U) %*% U
-    N <- t(isobsX) %*% (isobsX)
-    for ( uniq in uniqs[-1] ) {
-      U <- X == uniq
-      H <- H + t(U) %*% U
-    }
-  }
-  else {
-    uniqs <- na.omit(union(X, Y))
-    if(uniqValue %in% uniqs) stop("uniqValue (",uniqValue,") is in either X or Y")
-    isobsX<-abs(is.na(X)-1)
-    if(anyNA(X)){
-      X[is.na(X)]<-uniqValue
-    }
-    isobsY<-abs(is.na(Y)-1)
-    if(anyNA(Y)){
-      Y[is.na(Y)]<-uniqValue
-    }
-    H <- t(X == uniqs[1]) %*% (Y == uniqs[1])
-    N <- t(isobsX) %*% (isobsY)
-    for ( uniq in uniqs[-1] ) {
-      A<-t(X == uniq) %*% (Y == uniq)
-      H <- H + A
-    }
-  }
-  H/N
-}
 
