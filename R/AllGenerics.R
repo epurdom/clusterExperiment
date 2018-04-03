@@ -1,3 +1,4 @@
+setGeneric(".matchToStats", function(object,...) { standardGeneric(".matchToStats")})
 setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
 setGeneric("filterData", function(object,...) { standardGeneric("filterData")})

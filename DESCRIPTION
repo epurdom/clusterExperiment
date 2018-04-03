@@ -35,7 +35,7 @@ Imports:
 	stringr,
 	S4Vectors,
 	grDevices,
-	HDF5Array (>=1.7.9)
+	HDF5Array (>= 1.7.9)
 Suggests:
     BiocStyle,
     knitr,

@@ -95,6 +95,21 @@ test_that("Filter functions work as expected",{
 	#Need more checks about replacement, etc.
 	
 })
+
+test_that("Filter functions work with hdf5",{
+	expect_silent(filterNames(hdfSCE))
+
+	expect_silent(f1<-filterData(hdfSCE,filterStats="Filter1",cutoff=1))
+	expect_silent(f1<-filterData(hdfSCE,filterStats="Filter1",cutoff=1))
+	
+	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats=c("mean","var")))
+	expect_silent(out<-filterData(fs,filterStats=c("mean"),cutoff=1))
+
+	
+})
+
+
 test_that("filterData works as expected",{
 	
 	###Cutoff filter

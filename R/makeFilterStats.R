@@ -51,8 +51,9 @@ setMethod(
 	  filterStats<-c(filterStats[-whCV])
   }
   else doCV<-FALSE
+	  ### Problem here in hdf5
   filterStatData<-sapply(filterStats,function(statName){
-	  f<-.matchToStats[[statName]]
+	  f<-.matchToStats(x)[[statName]]
 	  f(x)
   })
   if(doCV){
@@ -123,21 +124,47 @@ setMethod(
 	return(object)
 }
 )
+
 .makeClusterFilterStats<-function(filterStats,clusterName){
 	make.names(paste(filterStats,clusterName,sep="_"))
 }
 #' @rdname reduceFunctions
 #' @export
 listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
+
 #' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
-.matchToStats<-SimpleList(
-	'var'=matrixStats::rowVars,
-	'mad'=matrixStats::rowMads,
-	'mean'=matrixStats::rowMeans2,
-	'iqr'=matrixStats::rowIQRs,
-	'median'=matrixStats::rowMedians)
-
-
+# .matchToStats<-SimpleList(
+# 	'var'=matrixStats::rowVars,
+# 	'mad'=matrixStats::rowMads,
+# 	'mean'=matrixStats::rowMeans2,
+# 	'iqr'=matrixStats::rowIQRs,
+# 	'median'=matrixStats::rowMedians)
+setMethod(
+  f = ".matchToStats",
+  signature = "matrix",
+  definition = function(object){
+	  SimpleList(
+	  	'var'=matrixStats::rowVars,
+	  	'mad'=matrixStats::rowMads,
+	  	'mean'=matrixStats::rowMeans2,
+	  	'iqr'=matrixStats::rowIQRs,
+	  	'median'=matrixStats::rowMedians)
+  }
+  )
+  
+### need to go back to this and check what are the best options for these functions. 
+setMethod(
+f = ".matchToStats",
+signature = "DelayedArray",
+definition = function(object){
+  SimpleList(
+  	'var'=function(x){apply(x,1,var)},
+  	'mad'=function(x){apply(x,1,mad)},
+  	'mean'=DelayedArray::rowMeans,
+  	'iqr'=function(x){apply(x,1,iqr)},
+  	'median'=function(x){apply(x,1,median)})
+	
+})
 #' @rdname reduceFunctions
 #' @aliases filterData
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic

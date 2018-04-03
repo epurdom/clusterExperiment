@@ -247,7 +247,7 @@ setMethod(
 #' @export
 setMethod(
   f = "makeDendrogram",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(x, cluster,
                         unassignedSamples=c("outgroup", "cluster", "remove"),
                         ...) {

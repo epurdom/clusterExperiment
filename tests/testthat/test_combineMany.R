@@ -51,6 +51,15 @@ test_that("`combineMany` works with matrix and ClusterExperiment objects", {
 
 })
 
+test_that("`combineMany` works with hdf5",{
+    expect_silent(clustNothing <- clusterMany(hdfSCE,
+		 ks=c(3,4),clusterFunction="pam",
+		 subsample=FALSE, sequential=FALSE,
+		 isCount=FALSE,verbose=FALSE))
+    expect_silent(x1<-combineMany(clustNothing,proportion=1,whichClusters = "clusterMany"))
+	
+})
+
 test_that("`combineMany` works when multiple runs of workflow", {
   expect_silent(clustNothing <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                               subsample=FALSE, sequential=FALSE,

@@ -61,6 +61,16 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
   
 })
 
+test_that("`makeDendrogram` works with hdf5",{
+    expect_silent(clustNothing <- clusterMany(hdfSCE,
+		 ks=c(3,4),clusterFunction="pam",
+		 subsample=FALSE, sequential=FALSE,
+		 isCount=FALSE,verbose=FALSE))
+    expect_silent(clustNothing<-combineMany(clustNothing, proportion=1,whichClusters = "clusterMany"))
+	expect_silent(makeDendrogram(clustNothing))
+	
+})
+
 test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
   expect_silent(whCl<-primaryClusterIndex(ccSE))
