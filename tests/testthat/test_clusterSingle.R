@@ -645,9 +645,27 @@ test_that("`clusterSingle` preserves the colData and rowData of SE", {
 
 })
 
-test_that("`clusterSingle` works with parallel subsampling", {
-  expect_silent(clustSubsample2 <- clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(clusterFunction="kmeans", resamp.num=3, clusterArgs=list(k=3), ncores=2), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE))
+## Windows does not support mclapply
+if(.Platform$OS.type == "unix"){
+  test_that("`clusterSingle` works with parallel subsampling", {
+    expect_silent(clustSubsample2 <- clusterSingle(mat,  subsample=TRUE,
+                                                   sequential=FALSE,
+                                                   subsampleArgs=list(clusterFunction="kmeans",
+                                                                      resamp.num=3,
+                                                                      clusterArgs=list(k=3),
+                                                                      ncores=2),
+                                                   mainClusterArgs=list(clusterFunction="pam",
+                                                                        clusterArgs=list(k=3)),
+                                                   isCount=FALSE))
 
-  expect_silent(clustSubsample1 <- clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(clusterFunction="kmeans", resamp.num=3, clusterArgs=list(k=3), ncores=1), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE))
-
-})
+    expect_silent(clustSubsample1 <- clusterSingle(mat,  subsample=TRUE,
+                                                   sequential=FALSE,
+                                                   subsampleArgs=list(clusterFunction="kmeans",
+                                                                      resamp.num=3,
+                                                                      clusterArgs=list(k=3),
+                                                                      ncores=1),
+                                                   mainClusterArgs=list(clusterFunction="pam",
+                                                                        clusterArgs=list(k=3)),
+                                                   isCount=FALSE))
+  })
+}
