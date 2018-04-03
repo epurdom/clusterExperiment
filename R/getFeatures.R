@@ -149,7 +149,7 @@
 #' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
-          signature = signature(x = "matrix"),
+          signature = signature(x = "matrixOrHDF5"),
           definition = function(x, cluster,
                                 contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,
@@ -163,6 +163,7 @@ setMethod(f = "getBestFeatures",
               cl <- .convertToNum(cl)
             }
             
+			###Note: this pulls hdf5 file into memory.
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)

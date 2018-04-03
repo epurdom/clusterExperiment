@@ -1,5 +1,10 @@
 Changes in version 1.99.2-9001 ( Release date: )
 ==============
+Changes: 
+* Added support for hdf5 files stored in `assay` slot via the `HDF5Array` package
+
+Changes in version 1.99.2-9001 ( Release date: )
+==============
 
 Changes:
 * Method "adjP" in `mergeClusters` now allows for further requirement that gene have a minimal log-fold change ('logFCcutoff').

@@ -172,7 +172,7 @@
 #' @importFrom locfdr locfdr
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
-          signature = signature(x = "matrix"),
+          signature = signature(x = "matrixOrHDF5"),
           definition = function(x, cl, dendro=NULL, 
 			  mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
 			  plotInfo="none", 

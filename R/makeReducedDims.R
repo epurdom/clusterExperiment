@@ -58,7 +58,8 @@ setMethod(
   #---------
   #Check zero variance genes before doing reducedDims:
   #---------
-  rowvars <- matrixStats::rowVars(x)
+  varFun<-.matchToStats(x)[["var"]] #does matrixStats::rowVars if x is matrix, otherwise apply with var across rows.
+  rowvars <- varFun(x) 
   if(any(rowvars==0)) {
     if(all(rowvars==0)) {
       stop("All features have zero variance.")
