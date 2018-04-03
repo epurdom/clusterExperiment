@@ -8,32 +8,42 @@ library(testthat)
 library(pryr)
 library(microbenchmark)
 
-load("tests/checkClusterMany/combined_filtered_all_batches.rda")
-load("tests/checkClusterMany/combined_zinbwave_all_batches.rda")
+load("~/git/10x_utils/processed_171109/combined_filtered_all_batches.rda")
+load("~/git/10x_utils/processed_171109/combined_zinbwave_all_batches.rda")
 
 W <- getW(zinb)
 rownames(W) <- colnames(filtered)
 colnames(W) <- paste0("W", 1:10)
 WW <- t(W)
 
-## profile
-source("tests/checkClusterMany/subsample_for_profile.R")
-profvis(subsample(getBuiltInFunction("kmeans"), x = WW,
-                  clusterArgs = list(k=5),
-                  samp.p = 0.7, resamp.num = 10,
-                  largeDataset = TRUE, whichImplementation = "Cmemory"))
+# ## profile
+# source("tests/checkClusterMany/subsample_for_profile.R")
+# profvis(subsample(getBuiltInFunction("kmeans"), x = WW,
+#                   clusterArgs = list(k=5),
+#                   samp.p = 0.7, resamp.num = 10,
+#                   largeDataset = TRUE, whichImplementation = "Cmemory"))
 
-# trap_wrap <- function(x, k, steps = 4, ...) {
-#   snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE)
-#   res <- cluster_walktrap(snn, steps = steps)
-#   return(res$membership)
-# }
-#
-# internalFunctionCheck(trap_wrap, inputType = "X", algorithmType = "K",
-#                       outputType="vector")
-#
-# SNN <- ClusterFunction(trap_wrap, inputType = "X", algorithmType = "K",
-#                        outputType="vector")
+trap_wrap <- function(x, k, steps = 4, ...) {
+  snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE)
+  res <- cluster_walktrap(snn, steps = steps)
+  return(res$membership)
+}
+
+internalFunctionCheck(trap_wrap, inputType = "X", algorithmType = "K",
+                      outputType="vector")
+
+SNN <- ClusterFunction(trap_wrap, inputType = "X", algorithmType = "K",
+                       outputType="vector")
+
+system.time(cl <- clusterSingle(WW, subsample = TRUE, sequential = FALSE,
+                    mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                           clusterArgs = list(alpha = 0.9)),
+                    subsampleArgs = list(clusterFunction = SNN,
+                                         clusterArgs = list(k = 30),
+                                         samp.p = 0.7,
+                                         resamp.num = 100,
+                                         largeDataset = TRUE,
+                                         whichImplementation = "Csimple")))
 
 library(clusterExperiment)
 
