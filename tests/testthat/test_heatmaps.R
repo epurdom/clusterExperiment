@@ -14,17 +14,17 @@ test_that("`setBreaks`", {
 	expect_equal(length(y),10)
 })
 test_that("`plotHeatmap` works with matrix objects", {
-    x1<-plotHeatmap(data=smSimData)
+    expect_silent(x1<-plotHeatmap(data=smSimData))
     a1<-NMF::aheatmap(smSimData)
     expect_equal(x1$aheatmapOut,a1)
-    x2<-plotHeatmap(data=smSimCount,clusterSamplesData=smSimData,clusterFeaturesData=smSimData)
+    expect_silent(x2<-plotHeatmap(data=smSimCount,clusterSamplesData=smSimData,clusterFeaturesData=smSimData))
     #for some reason, labels on dendrogram move from character to numeric so can't test entire object...
     expect_equal(x1$aheatmapOut$rowInd,x2$aheatmapOut$rowInd) 
     expect_equal(x1$aheatmapOut$colInd,x2$aheatmapOut$colInd) 
     
     #check internal alignment of sampleData (alignSampleData=TRUE) is working:
     sampleData<-clusterMatrix(smSimCE)
-    alList<-plotClusters(sampleData)
+    expect_silent(alList<-plotClusters(sampleData))
     alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
    #these should be same plots:
     x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE,plot=plotAll)
@@ -43,7 +43,10 @@ test_that("`plotHeatmap` works with matrix objects", {
 })
 
 
+test_that("`plotHeatmap` works with hdf5 objects", {
+    expect_silent(plotHeatmap(hdfObj))
 
+})
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
 
     expect_silent(plotHeatmap(cc))
