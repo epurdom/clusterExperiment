@@ -37,7 +37,7 @@ test_that("Large memory option", {
   expect_identical(subAllLarge3,subAll)
 
   ## Windows does not support mclapply
-  if(.Platform$OS.type != "windows"){
+  if(.Platform$OS.type == "unix"){
 
     set.seed(4897)
     subAllParal <- subsampleClustering(x=mat,clusterFunction="pam",
