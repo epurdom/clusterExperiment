@@ -13,8 +13,7 @@
   diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"), resamp.num = 100,
   samp.p = 0.7, ncores = 1, checkArgs = TRUE, checkDiss = TRUE,
-  largeDataset = FALSE, whichImplementation = c("R", "Csimple", "Cmemory"),
-  ...)
+  largeDataset = FALSE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -65,10 +64,6 @@ valid.}
 \item{largeDataset}{logical indicating whether a more memory-efficient version
 should be used because the dataset is large. This is a beta option, and is
 in the process of being tested before it becomes the default.}
-
-\item{whichImplementation}{charachter indicating which implementation of the
-\code{largeDataset} method to use. Ignored if \code{largeDataset = FALSE}.
-See Details.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
@@ -110,14 +105,10 @@ co-occurance.
   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
   "All".
 
-\code{whichImplementation}: in case \code{largeDataset = TRUE},
-  there are three possible algorithms implemented to save memory. The first,
-  \code{R}, is extremely slow and is kept in this version just as a
-  compatibility check. \code{Csimple} is a simple double for loop on the
-  matrix of the cluster labels per each subsample. It is extremely fast and
+Our subsampling algorithm is implemented in C++ and is fast and
   simple but may be memory inefficient if \code{samp.p} is low.
-  \code{Cmemory} should be more efficient in such situations, possibly at the
-  cost of speed.
+  \code{largeDataset = TRUE} should be more efficient in such situations,
+  possibly at the cost of speed.
 }
 \examples{
 \dontrun{

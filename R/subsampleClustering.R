@@ -34,9 +34,6 @@ NULL
 #' @param largeDataset logical indicating whether a more memory-efficient version
 #'   should be used because the dataset is large. This is a beta option, and is
 #'   in the process of being tested before it becomes the default.
-#' @param whichImplementation charachter indicating which implementation of the
-#'   \code{largeDataset} method to use. Ignored if \code{largeDataset = FALSE}.
-#'   See Details.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
@@ -62,14 +59,10 @@ NULL
 #'   subsamples are taken) which can cause errors if you then pass the resulting
 #'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
-#' @details \code{whichImplementation}: in case \code{largeDataset = TRUE},
-#'   there are three possible algorithms implemented to save memory. The first,
-#'   \code{R}, is extremely slow and is kept in this version just as a
-#'   compatibility check. \code{Csimple} is a simple double for loop on the
-#'   matrix of the cluster labels per each subsample. It is extremely fast and
+#' @details Our subsampling algorithm is implemented in C++ and is fast and
 #'   simple but may be memory inefficient if \code{samp.p} is low.
-#'   \code{Cmemory} should be more efficient in such situations, possibly at the
-#'   cost of speed.
+#'   \code{largeDataset = TRUE} should be more efficient in such situations,
+#'   possibly at the cost of speed.
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth
 #'   sample were clustered into the same cluster. The percentage is only out of
@@ -118,7 +111,7 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,whichImplementation=c("R", "Csimple", "Cmemory"),... )
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,... )
   {
 
     #######################
@@ -142,8 +135,6 @@ setMethod(
     #-----
     reqArgs<-requiredArgs(clusterFunction)
     if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
-
-    whichImplementation <- match.arg(whichImplementation)
 
     #-----
     # Basic parameters, subsamples
@@ -226,27 +217,17 @@ setMethod(
       #classX has NA if method does not classify all of the data.
       if(!largeDataset){
 
-        D <- lapply(seq_len(N), function(i) classX == classX[i])
-        return(unlist(D))
+        return(classX)
 
       }
       else{
-
-        if(whichImplementation == "Csimple") {
-
-          ## we just need to return the vector of cluster labels
-          return(classX)
-
-        } else {
-
-          #instead return
-          # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
-          # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
-          # What does this do with NAs? Removes them -- not included.
-          clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
-          clusterLengths<-tapply(1:N,classX,length)
-          return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
-        }
+        #instead return
+        # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
+        # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
+        # What does this do with NAs? Removes them -- not included.
+        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
+        clusterLengths<-tapply(1:N,classX,length)
+        return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
       }
     }
 
@@ -258,7 +239,7 @@ setMethod(
     else{
       DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
 
-      if(!largeDataset | whichImplementation == "Csimple") {
+      if(!largeDataset) {
         DList <- simplify2array(DList)
       }
 
@@ -273,8 +254,10 @@ setMethod(
 
     if(!largeDataset){
 
-      Dvec <- rowMeans(DList, na.rm = TRUE)
-      Dbar <- matrix(Dvec, ncol = N, nrow = N)
+      Dbar <- search_pairs(t(DList))
+      Dbar <- Dbar + t(Dbar)
+      # Dbar[is.na(Dbar)] <- 0
+      diag(Dbar) <- 1
 
     }
     else{
@@ -282,40 +265,16 @@ setMethod(
       #Need to calculate number of times pairs together without building large NxN matrix
       #############
 
-      if(whichImplementation == "Csimple") {
+      matResults<-subsampleLoop(DList, N)
+      ord<-order(matResults[,2],matResults[,1])
+      pairList<- matResults[ord,3]/matResults[ord,4]
 
-        Dbar <- search_pairs(t(DList))
-        Dbar<-Dbar+t(Dbar)
-        Dbar[is.na(Dbar)]<-0
-        diag(Dbar)<-1
-
-      } else {
-
-        if(whichImplementation == "R"){
-          ###
-          # the result of pairList is the upper-triangle of eventual NxN matrix
-          ###
-          if(ncores==1){
-            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)})
-          }
-          else{
-            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList,N=N)},mc.cores=ncores,...)
-          }
-          pairList<-unlist(pairList)
-        } else {
-          matResults<-subsampleLoop(DList, N)
-          ord<-order(matResults[,2],matResults[,1])
-          pairList<- matResults[ord,3]/matResults[ord,4]
-        }
-
-        #Create NxN matrix
-        Dbar<-matrix(0,N,N)
-        Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
-        Dbar<-Dbar+t(Dbar)
-        Dbar[is.na(Dbar)]<-0
-        diag(Dbar)<-1
-
-      }
+      #Create NxN matrix
+      Dbar<-matrix(0,N,N)
+      Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
+      Dbar<-Dbar+t(Dbar)
+      # Dbar[is.na(Dbar)]<-0
+      diag(Dbar)<-1
 
     }
 
