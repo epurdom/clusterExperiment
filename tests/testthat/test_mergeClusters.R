@@ -54,6 +54,20 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
 })
 
 
+test_that("`mergeClusters` works with HDF5 assay slot",{
+    expect_silent(cl1 <- clusterSingle(hdfObj, 
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE)
+    expect_silent(clustWithDendro <- makeDendrogram(cl1))
+    expect_message(mergedCE <- mergeClusters(x=clustWithDendro,plot=FALSE,
+            mergeMethod="adjP", plotInfo="mergeMethod"),
+			"Merging will be done on")
+	expect_true(class(assay(mergedCE))=="HDF5Matrix")
+								
+	
+})
+
 test_that("saving merge info works",{
   expect_silent(cl1 <- clusterSingle(smSimData, 
        subsample=FALSE, sequential=FALSE, reduceMethod="none",

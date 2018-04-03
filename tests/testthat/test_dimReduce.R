@@ -96,7 +96,7 @@ test_that("Filter functions work as expected",{
 	
 })
 
-test_that("Filter functions work with hdf5",{
+test_that("reduce and filter work with hdf5",{
 	expect_silent(filterNames(hdfSCE))
 
 	expect_silent(f1<-filterData(hdfSCE,filterStats="Filter1",cutoff=1))
@@ -105,6 +105,24 @@ test_that("Filter functions work with hdf5",{
 	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats="var"))
 	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats=c("mean","var")))
 	expect_silent(out<-filterData(fs,filterStats=c("mean"),cutoff=1))
+
+
+	expect_silent(defaultNDims(hdfObj,"PCA"))
+
+	#add pca to it
+	nDim<-3
+	expect_silent(dr3<-makeReducedDims(hdfObj,reducedDims="PCA",maxDims=nDim))
+	expect_equal(defaultNDims(dr3,"PCA"),3)
+
+	#test transformation -- need make CE object
+    expect_silent(clustNothing1 <- clusterSingle(hdfObj,
+		  reduceMethod = "none",
+  		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[1]]),
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+	
+	transformation(clustNothing1)<-function(x){exp(x)}
+	expect_equal(exp(assay(clustNothing1)),unname(transformData(clustNothing1)))
+	
 
 	
 })
