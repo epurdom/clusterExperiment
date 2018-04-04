@@ -60,7 +60,7 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   #takes a while with all functions, but sometimes turn up surprises.
   #for some reason if do clusterFunction=listBuiltInFunctions(), 
   #    expect_silent gets warning, but not if run myself.
-  for(kk in 1:length(listBuiltInFunctions)){
+  for(kk in 1:length(listBuiltInFunctions())){
 	  expect_silent(clustNothing2 <- clusterMany(sceSimDataDimRed,
 		   ks=c(3,4),clusterFunction=listBuiltInFunctions()[[kk]],
 	       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))  	
@@ -119,15 +119,14 @@ test_that("`clusterMany` works with SingleCellExperiment", {
 
 
 test_that("`clusterMany` works with hdf5", {
-    for(kk in 1:length(listBuiltInFunctions)){
+	########
+	#Check if use PCA (not in hdf5) changes nothing, as expect.
+	########
+    for(kk in 1:length(listBuiltInFunctions())){
   	  expect_silent(clustNothing2 <- clusterMany(hdfSCE,
   		   ks=c(3,4),clusterFunction=listBuiltInFunctions()[[kk]],
   	       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))  	
     }
-
-	########
-	#If use PCA (not in hdf5) changes nothing, as expect.
-	########
     expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), 
     	ks=c(3,4),clusterFunction="pam", reduceMethod="none",
       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
@@ -137,6 +136,24 @@ test_that("`clusterMany` works with hdf5", {
     expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
     expect_equal(NCOL(clusterMatrix(clustNothing)),2)
     expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
+
+	########
+	#Check if not using PCA (reduceMethod = "none")
+	########
+    for(kk in 1:length(listBuiltInFunctions())){
+  	  expect_silent(clustNothing2 <- clusterMany(hdfSCE,reduceMethod = "none", 
+  		   ks=c(3,4),clusterFunction=listBuiltInFunctions()[[kk]],
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))  	
+    }
+
+	########
+	#Check directly on hdf5 object
+	########
+    for(kk in 1:length(listBuiltInFunctions())){
+  	  expect_silent(clustNothing2 <- clusterMany(assay(hdfObj),reduceMethod = "none", 
+  		   ks=c(3,4),clusterFunction=listBuiltInFunctions()[[kk]],
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))  	
+    }
 
 })
 

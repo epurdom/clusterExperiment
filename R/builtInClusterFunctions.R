@@ -28,7 +28,8 @@
 #' @importFrom kernlab specc
 .speccCluster<-function(x,k,checkArgs,cluster.only,...){
 	passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
-    out<-try(do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs)))
+   #add data.matrix here for hdf5Matrix. Not optimized
+   out<-try(do.call(kernlab::specc,c(list(x=data.matrix(t(x)), centers=k),passedArgs)))
 	if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
     else return(out) 
@@ -100,6 +101,19 @@
 .claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
 
+##---------
+##hiearchicalK
+##---------
+#' @importFrom stats hclust cutree
+.hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
+	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
+    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
+    stats::cutree(hclustOut,k)
+}
+.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
+
+#internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
+
 
 ##---------
 ##Hiearchical01
@@ -154,19 +168,6 @@
 	return(clusterListIndices)
 }
 .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType="diss", algorithmType="01",outputType="list")
-
-##---------
-##hiearchicalK
-##---------
-#' @importFrom stats hclust cutree
-.hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
-	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
-    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
-    stats::cutree(hclustOut,k)
-}
-.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
-
-#internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
 
 ##---------

@@ -336,7 +336,6 @@ setMethod(
         if(!is.na(mainClusterArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in mainClusterArgs")
     }
 	
-	
 	##########
 	## Start running clustering
 	##########
@@ -410,6 +409,7 @@ setMethod(
         #     else if(!"k" %in% names(mainClusterArgs)) mainClusterArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         # }
     }
+	
     resList<-do.call("mainClustering",c(list(x=x,diss=diss,format="list", returnData=TRUE),mainClusterArgs)) 
     return(resList) 
 }

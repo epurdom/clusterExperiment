@@ -105,7 +105,7 @@ setMethod(
 #' @export
 setMethod(
   f = "makeReducedDims",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,...)
 {
 	makeReducedDims(SummarizedExperiment(object),...)

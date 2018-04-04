@@ -73,7 +73,7 @@ setMethod(
 #' @rdname RSEC
 setMethod(
 f = "RSEC",
-signature = signature(x = "matrix"),
+signature = signature(x = "matrixOrHDF5"),
 definition = function(x, ...){
   return(RSEC(SingleCellExperiment(x),...))
 

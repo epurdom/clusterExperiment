@@ -133,18 +133,57 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 	#   listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
 	#   clusterLabel = "clusterSingle", checkDiss = TRUE)
 	#
-    for(kk in 1:length(listBuiltInFunctions)){
-      expect_silent(clustNothing1 <- clusterSingle(sceSimDataDimRed,
-  		  reduceMethod = "none",
-    		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[kk]]),
-    	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
-		
-  	  expect_silent(clustNothing2 <- clusterSingle(hdfSCE,
-		  reduceMethod = "none",
-  		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[kk]]),
-  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))
-		expect_equal(clusterMatrix(clustNothing1) ,clusterMatrix(clustNothing2))
-    }
+	
+    kMethods<-listBuiltInTypeK()
+	seedValue<-571839
+  	for(cf in kMethods){
+		print(cf)
+		set.seed(seedValue)
+  	    expect_silent(clust1<-clusterSingle(sceSimDataDimRed, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+  	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+  				)
+		set.seed(seedValue)
+  	    expect_silent(clust2<-clusterSingle(hdfSCE, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+  	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+  				)
+			
+		set.seed(seedValue)
+  	    expect_silent(clust3<-clusterSingle(hdfObj, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+  	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+  				)
+		set.seed(seedValue)
+  	    expect_silent(clust4<-clusterSingle(assay(hdfSCE), reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+  	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+  				)
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust2))
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust3))
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust4))
+  	}
+    aMethods<-listBuiltInType01()
+    for(cf in aMethods){
+		print(cf)
+		set.seed(seedValue)
+  	    expect_silent(clust1<-clusterSingle(sceSimDataDimRed, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
+ 	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+ 				)
+		set.seed(seedValue)
+ 	    expect_silent(clust2<-clusterSingle(hdfSCE, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
+ 	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+ 				)
+		set.seed(seedValue)
+ 	    expect_silent(clust3<-clusterSingle(hdfObj, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
+ 	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+ 				)
+	    expect_silent(clust4<-clusterSingle(assay(hdfSCE), reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
+	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
+				)
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust2))
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust3))
+		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust4))
+
+  	 }
+	
+
 	
 })
 test_that("`clusterSingle` works with filtering", {

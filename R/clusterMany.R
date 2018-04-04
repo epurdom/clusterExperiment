@@ -186,7 +186,7 @@
 #' @export 
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "matrix"),
+  signature = signature(x = "matrixOrHDF5"),
   definition = function(x,
       reduceMethod="none",nReducedDims=NA, transFun=NULL,isCount=FALSE, ...
   ){
