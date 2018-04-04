@@ -69,7 +69,7 @@ setMethod(
 #' @export
 setMethod(
   f = "makeFilterStats",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,...)
 {
 	makeFilterStats(SummarizedExperiment(object),...)

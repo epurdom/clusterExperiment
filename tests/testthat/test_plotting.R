@@ -59,6 +59,15 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 })
 
 
+
+test_that("`plotClusters` works with hdf5 assays objects",{
+    expect_silent(cl1 <- clusterSingle(hdfObj, 
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+	expect_silent(plotClusters(cl1))
+	
+})
 test_that("`plotClusters` rerun above tests with sampleData included", {
 
   #test matrix version

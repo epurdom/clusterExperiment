@@ -294,10 +294,15 @@ setMethod(
         if(unassigned=="outgroup"){
             #hard to use merge and then get the indices to go back to the same ones
             #cheat and add large amount to the unassigned so that they don't cluster to
+			
             outlierDat <- dat[-whKeep,,drop=FALSE]
             maxAss <- max(dat[whKeep,,drop=FALSE])
             outlierDat <- outlierDat + maxAss + 10e6
-            fakeData <- rbind(fakeData, outlierDat)
+			############
+			###This a workaround which will hopefully be dealt with in future hdf5:
+			############
+			if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray(fakeData), DelayedArray(outlierDat))
+            else fakeData <- rbind(fakeData, outlierDat)
             fakeData <- fakeData[rownames(dat),,drop=FALSE]
             # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
             # unassD<-as.dendrogram(stats::hclust(dist(dat[-whKeep,])))
