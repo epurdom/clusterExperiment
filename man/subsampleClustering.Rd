@@ -108,7 +108,8 @@ co-occurance.
 Our subsampling algorithm is implemented in C++ and is fast and
   simple but may be memory inefficient if \code{samp.p} is low.
   \code{largeDataset = TRUE} should be more efficient in such situations,
-  possibly at the cost of speed.
+  possibly at the cost of speed. Note that this feature is experimental and
+  should be used only by the developers.
 }
 \examples{
 \dontrun{
