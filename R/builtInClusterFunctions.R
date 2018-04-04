@@ -4,9 +4,16 @@
 ##Internal wrapper functions for kmeans and pam
 ################
 .genericClassify<-function(x,centers){
-    innerProd<-tcrossprod(t(x),centers) #a n x k matrix of inner-products between them
-    distMat<-as.matrix(dist(rbind(t(x),centers)))
-    distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
+    if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
+		innerProd<- t(x) %*% t(centers)
+		distMat<-as.matrix(dist(rbind(DelayedArray(t(x)),DelayedArray(centers))))
+	}
+	else{
+		innerProd<-tcrossprod(t(x),centers) #equivalent to x %*% t(y), slightly faster
+	#gives a n x k matrix of inner-products between them
+    	distMat<-as.matrix(dist(rbind(t(x),centers)))
+	}
+	distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
     apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
