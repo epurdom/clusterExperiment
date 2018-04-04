@@ -110,12 +110,22 @@ test_that("`RSEC` works with hdf5",{
 
 	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
 		clusterFunction="tight", alphas=0.1, 
-        subsampleArgs=list(resamp.num=5),random.seed=495)
+        subsampleArgs=list(resamp.num=5),random.seed=495),
+		"All samples are unassigned for"
 		)
 
-	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
+	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-        subsampleArgs=list(resamp.num=5),random.seed=495)
+		
+        subsampleArgs=list(resamp.num=5),random.seed=495),
+		"Merging will be done on"
 		)
 
+	expect_message(rsecOut3<-RSEC(assay(hdfObj), isCount=FALSE,k0s=4:5,reduceMethod="PCA",
+		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+	    subsampleArgs=list(resamp.num=5),random.seed=495),
+		"Merging will be done on"
+		)
+
+	expect_equal(clusterMatrix(rsecOut2),clusterMatrix(rsecOut3))
 })

@@ -184,6 +184,26 @@ test_that("`clusterSingle` works with hdf5Matrix",{
   	 }
 	
 
+	 ####Test sequential option
+     expect_silent(clustSeq <- clusterSingle(hdfObj,reduceMethod="none",subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
+     expect_silent(clustSeq <- clusterSingle(assay(hdfObj),reduceMethod="none",subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
+
+
+	 ####Test subsample option
+     expect_silent(clusterSingle(hdfObj, reduceMethod="none", 
+	 	subsample=TRUE, sequential=FALSE,
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE,
+	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, clusterArgs=list(k=3))
+		)
+	 )
+     expect_silent(clusterSingle(assay(hdfObj), reduceMethod="none", 
+	 	subsample=TRUE, sequential=FALSE,
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE,
+	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, clusterArgs=list(k=3))
+		)
+	 )
 	
 })
 test_that("`clusterSingle` works with filtering", {
