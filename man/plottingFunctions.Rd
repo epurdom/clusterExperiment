@@ -69,7 +69,7 @@ data is then fed to heatmap.)}
 
 \item{whichClusters}{which clusters to use}
 
-\item{colPalette}{a vector of character colors. By default, the palette 
+\item{colPalette}{a vector of character colors. By default, the palette
 \code{bigPalette} is used}
 
 \item{which}{numeric. Which colors to plot. Must be a numeric vector with values
@@ -79,7 +79,7 @@ between 1 and length of \code{colPalette}. If missing, all colors plotted.}
 
 \item{breaks}{either vector of breaks, or number of breaks (integer) or a
 number between 0 and 1 indicating a quantile, between which evenly spaced
-breaks should be calculated. If missing or NA, will determine evenly spaced 
+breaks should be calculated. If missing or NA, will determine evenly spaced
 breaks in the range of the data.}
 
 \item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
@@ -88,9 +88,9 @@ breaks in the range of the data.}
 
 \item{whichCluster}{which cluster to plot cluster legend}
 
-\item{clusterNames}{vector of names for the clusters; vector should have names 
-that correspond to the clusterIds in the ClusterExperiment object. If this 
-argument is missing, will use the names in the "name" column of the clusterLegend 
+\item{clusterNames}{vector of names for the clusters; vector should have names
+that correspond to the clusterIds in the ClusterExperiment object. If this
+argument is missing, will use the names in the "name" column of the clusterLegend
 slot of the object.}
 
 \item{title}{title for the clusterLegend plot}
@@ -155,11 +155,11 @@ convertClusterLegend pulls out information stored in the
 \code{bigPalette} is a long palette of colors (length 58) used by
   \code{\link{plotClusters}} and accompanying functions.
   \code{showPalette} creates plot that gives index of each color in
-  a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
-  and the non-grey colors of \code{\link{colors}()} (length 487). 
-  \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
-  of a very large number of clusterings, each with many clusters, so that the code 
- doesn't run out of colors. However, many of the colors will be very similar 
+  a vector of colors. \code{massivePalette} is a combination of \code{bigPalette}
+  and the non-grey colors of \code{\link{colors}()} (length 487).
+  \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}}
+  of a very large number of clusterings, each with many clusters, so that the code
+ doesn't run out of colors. However, many of the colors will be very similar
  to each other.
 
 \code{showPalette} will plot the \code{colPalette} colors with

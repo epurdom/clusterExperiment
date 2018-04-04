@@ -13,7 +13,7 @@
   diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"), resamp.num = 100,
   samp.p = 0.7, ncores = 1, checkArgs = TRUE, checkDiss = TRUE,
-  largeDataset = FALSE, doGC = FALSE, ...)
+  largeDataset = FALSE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -64,10 +64,6 @@ valid.}
 \item{largeDataset}{logical indicating whether a more memory-efficient version
 should be used because the dataset is large. This is a beta option, and is
 in the process of being tested before it becomes the default.}
-
-\item{doGC}{logical indicating whether frequent calls to gc should be
-implemented in children processes (i.e. when ncores>1) to free up memory
-for the other processes.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
@@ -108,6 +104,12 @@ co-occurance.
   subsamples are taken) which can cause errors if you then pass the resulting
   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
   "All".
+
+Our subsampling algorithm is implemented in C++ and is fast and
+  simple but may be memory inefficient if \code{samp.p} is low.
+  \code{largeDataset = TRUE} should be more efficient in such situations,
+  possibly at the cost of speed. Note that this feature is experimental and
+  should be used only by the developers.
 }
 \examples{
 \dontrun{

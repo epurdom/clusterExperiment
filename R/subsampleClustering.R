@@ -1,3 +1,7 @@
+#' @useDynLib clusterExperiment, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Cluster subsamples of the data
 #'
 #' Given input data, this function will subsample the samples, cluster the
@@ -30,9 +34,6 @@
 #' @param largeDataset logical indicating whether a more memory-efficient version
 #'   should be used because the dataset is large. This is a beta option, and is
 #'   in the process of being tested before it becomes the default.
-#' @param doGC logical indicating whether frequent calls to gc should be
-#'  implemented in children processes (i.e. when ncores>1) to free up memory
-#'  for the other processes.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
@@ -58,6 +59,11 @@
 #'   subsamples are taken) which can cause errors if you then pass the resulting
 #'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
+#' @details Our subsampling algorithm is implemented in C++ and is fast and
+#'   simple but may be memory inefficient if \code{samp.p} is low.
+#'   \code{largeDataset = TRUE} should be more efficient in such situations,
+#'   possibly at the cost of speed. Note that this feature is experimental and
+#'   should be used only by the developers.
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth
 #'   sample were clustered into the same cluster. The percentage is only out of
@@ -84,10 +90,10 @@ setMethod(
   f = "subsampleClustering",
   signature = signature(clusterFunction = "character"),
   definition = function(clusterFunction,...){
-  	subsampleClustering(getBuiltInFunction(clusterFunction),...)
+    subsampleClustering(getBuiltInFunction(clusterFunction),...)
 
   }
- )
+)
 
 # #' @rdname subsampleClustering
 # #' @export
@@ -102,30 +108,28 @@ setMethod(
 #' @rdname subsampleClustering
 #' @export
 setMethod(
-   f = "subsampleClustering",
-   signature = signature(clusterFunction = "ClusterFunction"),
-definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
-                              classifyMethod=c("All","InSample","OutOfSample"),
-                              resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,doGC=FALSE,... )
-{
+  f = "subsampleClustering",
+  signature = signature(clusterFunction = "ClusterFunction"),
+  definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
+                      classifyMethod=c("All","InSample","OutOfSample"),
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,... )
+  {
 
-	## Slows down enormously to do rm and gc, so only if largeDataset=TRUE and ncores>1
-#	doGC<-largeDataset & ncores>1
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
     input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
     classifyMethod<-match.arg(classifyMethod)
     if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
-        classifyMethod<-"InSample" #silently change it...
+      classifyMethod<-"InSample" #silently change it...
     }
     else{
-        inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!
+      inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!
     }
     if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
-        diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
-        if(input=="X") input<-"diss"
-        if(inputClassify=="X") inputClassify<-"diss"
+      diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+      if(input=="X") input<-"diss"
+      if(inputClassify=="X") inputClassify<-"diss"
     }
     #-----
     # Other Checks
@@ -138,11 +142,12 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
     #-----
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     subSize <- round(samp.p * N)
-    idx<-replicate(resamp.num,sample(1:N,size=subSize)) #each column a set of indices for the subsample.
+    idx<-replicate(resamp.num,sample(1:N,size=subSize))
+    #each column a set of indices for the subsample.
 
     #-----
     # Function that calls the clustering for each subsample
-  	# Called over a loop (lapply or mclapply)
+    # Called over a loop (lapply or mclapply)
     #-----
     perSample<-function(ids){
       ## Calls rm and gc frequently to free up memory
@@ -163,11 +168,6 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
       result <- do.call(clusterFunction@clusterFUN,
                         c(argsClusterList,clusterArgs))
 
-      if(doGC){
-        rm(argsClusterList)
-        gc()
-      }
-
       ##----
       ##Classify part of subsample
       ##----
@@ -178,10 +178,6 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         classX <- do.call(clusterFunction@classifyFUN,
                           c(argsClassifyList,list(clusterResult=result)))
 
-        if(doGC){
-          rm(argsClassifyList)
-          gc()
-        }
       }
 
       if(classifyMethod=="OutOfSample"){
@@ -191,11 +187,6 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
                                           dissData=diss[-ids,-ids,drop=FALSE])
         classElse <- do.call(clusterFunction@classifyFUN,
                              c(argsClassifyList, list(clusterResult=result)))
-
-        if(doGC){
-          rm(argsClassifyList)
-          gc()
-        }
 
         classX <- rep(NA,N)
         classX[-ids] <- classElse
@@ -227,8 +218,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
       #classX has NA if method does not classify all of the data.
       if(!largeDataset){
 
-        D <- lapply(seq_len(N), function(i) classX == classX[i])
-        return(unlist(D))
+        return(classX)
 
       }
       else{
@@ -236,7 +226,7 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
         # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
         # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
         # What does this do with NAs? Removes them -- not included.
-        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE))
+        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
         clusterLengths<-tapply(1:N,classX,length)
         return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
       }
@@ -244,108 +234,51 @@ definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArg
 
     if(ncores==1){
 
-        DList<-apply(idx,2,perSample)
+      DList<-apply(idx,2,perSample)
 
     }
     else{
-        DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+      DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+
+      if(!largeDataset) {
         DList <- simplify2array(DList)
+      }
+
     }
-    #N large: get rid of these big matrices from memory
+
     if(!is.null(diss)){
-		idnames<-colnames(diss)
-		rm(diss)
-	}
+      idnames<-colnames(diss)
+    }
     if(!is.null(x)){
-		idnames<-colnames(x)
-		rm(x)
+      idnames<-colnames(x)
     }
 
     if(!largeDataset){
 
-      Dvec <- rowMeans(DList, na.rm = TRUE)
-      Dbar <- matrix(Dvec, ncol = N, nrow = N)
+      Dbar <- search_pairs(t(DList))
+      Dbar <- Dbar + t(Dbar)
+      Dbar[is.na(Dbar)] <- 0
+      diag(Dbar) <- 1
 
     }
     else{
-		#############
-		#Need to calculate number of times pairs together without building large NxN matrix
-		#could speed up if had C++ function to do this instead!
-		#############
+      #############
+      #Need to calculate number of times pairs together without building large NxN matrix
+      #############
 
-		#---------
-		#for a sample index ii, determine what other indices in the same sample with it
-		#ii an index of a sample
-		#clustVec the clusterIds as returned by above in DList
-		#clusterLengths the length of each cluster as returned by above in DList
-		otherIds<-function(idx,clustVec,clustLeng){
-            m<-which(clustVec==idx)
-            if(length(m)>1) stop("ids clustered in more than one cluster")
-            if(length(m)==0) return(NA) #sample not ever clustered
-            if(length(m)==1){
-                ends<-cumsum(clustLeng)
-                begins<-cumsum(c(1,head(clustLeng,-1)))
-                whCluster<-which(m<=ends & m>=begins)
-                if(length(whCluster)>1 | length(whCluster)==0) stop("error in coding: finding range of clusterids")
-                return(clustVec[seq(begins[whCluster],ends[whCluster],by=1)])
-            }
-        }
-        #Test: otherIds(5,DList[[1]][[1]],DList[[1]][[2]])
+      matResults<-subsampleLoop(DList, N)
+      ord<-order(matResults[,2],matResults[,1])
+      pairList<- matResults[ord,3]/matResults[ord,4]
 
-		#---------
-		#For ii an index of a sample, calculates the number of times joint with every other sample with index > ii.
-		#clusterList is the results of subsampling, i.e. list with indices of clusters adjacent
-		#returns vector of length N-ii with the proportions
-		#---------
-        searchForPairs<-function(ii,clusterList){
-            #get list of those indices sample ii was sampled
-			whHave<-which(sapply(clusterList,function(ll){ii%in%ll$clusterIds}))
-			#calculate number of times sampled with (denominator)
-            sampledWithTab<-table(unlist(sapply(clusterList[whHave],.subset2,"clusterIds")))
-            #get those indices clustered with and tabulate
-			clusterWith<-lapply(clusterList[whHave],function(ll){
-                otherIds(idx=ii,clustVec=ll$clusterIds,clustLeng=ll$clusterLengths)
-            })
-			if(doGC){#just to reduce memory since will be parallelized
-				rm(clusterList)
-				gc()
-			}
-			clusterWithTab<-table(unlist(clusterWith))
-            jointNames<-as.character(1:N)
-			whLower<-which(as.integer(as.numeric(jointNames))<ii)
-			return(as.integer(clusterWithTab[jointNames][whLower])/as.integer(sampledWithTab[jointNames][whLower]))
-			#old code that made Nx3 matrix and subset it:
-		    #             #make a N x 3 matrix summarizing the results for all indices
-		    # out<-cbind(idx=as.integer(as.numeric(jointNames)), together=as.integer(clusterWithTab[jointNames]), total=as.integer(sampledWithTab[jointNames]))
-			# #keep only those in the lower triangle
-			#             out<-out[out[,"idx"]<ii,,drop=FALSE]
-			#             return(out[,"together"]/out[,"total"])
+      #Create NxN matrix
+      Dbar<-matrix(0,N,N)
+      Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
+      Dbar<-Dbar+t(Dbar)
+      Dbar[is.na(Dbar)]<-0
+      diag(Dbar)<-1
 
-			#thoughts about alternative code if not need save NxN matrix...
-            #jointNames<-names(sampledWithTab) #if manage to not save NxN matrix, could use this to return only those that actually present
-            #out<-out[!is.na(out[,"together"]),,drop=FALSE] #if manage to not save NxN matrix, could use this to return only those that actually present; but then need to not return proportions, but something else.
-        }
-        #Test: searchForPairs(5,DList[1:2])
-
-
-		###
-		# the result of pairList is the upper-triangle of eventual NxN matrix
-		###
-        if(ncores==1){
-            pairList<-lapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)})
-        }
-        else{
-            pairList<-parallel::mclapply(2:N,function(jj){searchForPairs(jj,clusterList=DList)},mc.cores=ncores,...)
-        }
-        rm(DList)
-        gc()
-        #Create NxN matrix
-        Dbar<-matrix(0,N,N)
-        Dbar[upper.tri(Dbar, diag = FALSE)]<-unlist(pairList)
-        Dbar<-Dbar+t(Dbar)
-        Dbar[is.na(Dbar)]<-0
-        diag(Dbar)<-1
     }
+
     rownames(Dbar)<-colnames(Dbar)<-idnames
     return(Dbar)
-})
+  })

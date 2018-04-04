@@ -26,6 +26,7 @@
 #' @return If \code{output="matrixNames"} or \code{"matrixColors"} a matrix the
 #'   same dimension of \code{clusterMatrix(object)}, but with the cluster color
 #'   or cluster name instead of the clusterIds, respectively.
+#'
 #' @importFrom RColorBrewer brewer.pal brewer.pal.info
 #' @export
 #' @rdname plottingFunctions
@@ -37,8 +38,8 @@ setMethod(
     output<-match.arg(output)
 	whichClusters<-.TypeIntoIndices(object,whClusters=whichClusters)
     if(length(whichClusters)==0) stop("given whichClusters value does not match any clusters")
-	
-	
+
+
     if(output=="aheatmapFormat"){
       outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
@@ -98,17 +99,17 @@ setMethod(
 #' @details \code{bigPalette} is a long palette of colors (length 58) used by
 #'   \code{\link{plotClusters}} and accompanying functions.
 #'   \code{showPalette} creates plot that gives index of each color in
-#'   a vector of colors. \code{massivePalette} is a combination of \code{bigPalette} 
-#'   and the non-grey colors of \code{\link{colors}()} (length 487). 
-#'   \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}} 
-#'   of a very large number of clusterings, each with many clusters, so that the code 
-#'  doesn't run out of colors. However, many of the colors will be very similar 
+#'   a vector of colors. \code{massivePalette} is a combination of \code{bigPalette}
+#'   and the non-grey colors of \code{\link{colors}()} (length 487).
+#'   \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}}
+#'   of a very large number of clusterings, each with many clusters, so that the code
+#'  doesn't run out of colors. However, many of the colors will be very similar
 #'  to each other.
 #'
 #' @param which numeric. Which colors to plot. Must be a numeric vector with values
 #'   between 1 and length of \code{colPalette}. If missing, all colors plotted.
-#' @param cex numeric value giving the cex for the text of the plot. 
-#' @param colPalette a vector of character colors. By default, the palette 
+#' @param cex numeric value giving the cex for the text of the plot.
+#' @param colPalette a vector of character colors. By default, the palette
 #'  \code{bigPalette} is used
 #' @details \code{showPalette} will plot the \code{colPalette} colors with
 #'   their labels and index.
@@ -135,7 +136,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
   ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
   ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
-  
+
   par(mar=c(0,0,0,0),omi=c(0,0,0,0))
   plot.new()
   plot.window(xlim=c(.5,xwide+.5),ylim=c(.5,(yup*2)+.5))
@@ -149,7 +150,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   for(i in 1:length(colPalette)){
       text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
       if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
-  }  	
+  }
 }
 
 #' @rdname plottingFunctions
@@ -233,7 +234,7 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 
 #' @param breaks either vector of breaks, or number of breaks (integer) or a
 #'   number between 0 and 1 indicating a quantile, between which evenly spaced
-#'   breaks should be calculated. If missing or NA, will determine evenly spaced 
+#'   breaks should be calculated. If missing or NA, will determine evenly spaced
 #'   breaks in the range of the data.
 #' @param makeSymmetric whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)
 #' @param returnBreaks logical as to whether to return the vector of breaks. See details.
@@ -257,7 +258,7 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
 		}
 	isPositive<-all(na.omit(as.vector(data))>=0)
 	isNegative<-all(na.omit(as.vector(data))<=0)
-#	
+#
     #get arround bug in aheatmap
     #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
     #TO DO: might not need any more with updated aheatmap.
@@ -269,23 +270,23 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
 	if(missing(breaks) || is.na(breaks)){
 		#go from minimum to max
 		if(makeSymmetric & !isPositive & !isNegative){
-			breaks<-seq(-maxAbsData,maxAbsData,length=ncols+1)	
+			breaks<-seq(-maxAbsData,maxAbsData,length=ncols+1)
 			seconds<-c(-maxAbsData,maxAbsData)
-		} 
+		}
 		else{
 			breaks<-seq(minData,maxData,length=ncols+1)
 			seconds<-c(minData,maxData)
 		}
-		
+
 	}
 	else if(length(breaks)>0 && !is.na(breaks)){
         if(length(breaks)==1){
 			if(breaks<1){
 			  if(breaks<0.5) breaks<-1-breaks
-			#	  
+			#
 			  uppQ<-if(isPositive) quantile(data[which(data>0)],breaks,na.rm=TRUE) else quantile(data,breaks,na.rm=TRUE)
 			  lowQ<-if(isPositive) min(data,na.rm=TRUE) else quantile(data,1-breaks,na.rm=TRUE)
-			  
+
 			  if(makeSymmetric & !isPositive & !isNegative){
 				  #make breaks symmetric around 0
 				  absq<-max(abs(c(lowQ,uppQ)),na.rm=TRUE)
@@ -306,7 +307,7 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
 				  #determine if those quantiles are min/max of data
 			      quantMin <- if( isTRUE( all.equal(round(lowQ,5), round(minData,5)))) TRUE else FALSE
 			      quantMax<-if( isTRUE( all.equal(round(uppQ,5),round(maxData,5)))) TRUE else FALSE
-				  
+
 			      if(!quantMin & !quantMax){
 					  breaks <- c(minData, seq(lowQ,uppQ,length=ncols-1), maxData)
 					  seconds<-c(lowQ,uppQ)
@@ -322,15 +323,15 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
 			      if(quantMin & quantMax){
 					  breaks<-seq(minData,maxData,length=ncols+1)
 			      	  seconds<-c(minData,maxData)
-			      } 
+			      }
 			  }
 			}
 	        else{ #breaks is number of breaks
 				if(length(breaks)!=52) warning("Because of bug in aheatmap, breaks should be of length 52 -- otherwise the entire spectrum of colors will not be used")
 				if(makeSymmetric& !isPositive & !isNegative){
-					breaks<-seq(-maxAbsData,maxAbsData,length=breaks)	
+					breaks<-seq(-maxAbsData,maxAbsData,length=breaks)
 					seconds<-c(-maxAbsData,maxAbsData)
-				} 
+				}
 				else{
 					breaks<-seq(minData,maxData,length=breaks)
 					seconds<-c(minData,maxData)
@@ -402,22 +403,22 @@ seqPal2<-rev(seqPal2)
 #seqPal2<-(c("yellow","gold2",seqPal2))
 #' @rdname plottingFunctions
 #' @export
-seqPal3<-rev(brewer.pal(11, "RdBu"))
+seqPal3<-rev(RColorBrewer::brewer.pal(11, "RdBu"))
 #' @rdname plottingFunctions
 #' @export
 #make it symmetric around white
 seqPal4<-colorRampPalette(c("black","blue","white","red","orange","yellow"))(16)[c(1:9,12,13,14,16)]
 #' @rdname plottingFunctions
 #' @export
-seqPal1<-rev(brewer.pal(11, "Spectral"))
+seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 
 
 #' @export
 #' @param whichCluster which cluster to plot cluster legend
 #' @param title title for the clusterLegend plot
-#' @param clusterNames vector of names for the clusters; vector should have names 
-#'  that correspond to the clusterIds in the ClusterExperiment object. If this 
-#'  argument is missing, will use the names in the "name" column of the clusterLegend 
+#' @param clusterNames vector of names for the clusters; vector should have names
+#'  that correspond to the clusterIds in the ClusterExperiment object. If this
+#'  argument is missing, will use the names in the "name" column of the clusterLegend
 #'  slot of the object.
 #' @param ... arguments passed to legend
 #' @rdname plottingFunctions
@@ -448,7 +449,7 @@ setMethod(
 	 }
 	 else{
 		 clusterNames<-legMat[,"name"]
-	 } 	 
+	 }
 	 if(missing(title)){
 		 title<-paste("Clusters of",clusterLabels(object)[whichCluster])
 	 }
@@ -460,8 +461,8 @@ setMethod(
 	 else ord<-1:nrow(legMat)
 	  plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
 	  legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
-	  
-  
+
+
  })
 
 

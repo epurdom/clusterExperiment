@@ -63,8 +63,8 @@ NULL
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on 
-#' fluidigm data described in vignette and available in the \code{scRNAseq} 
+#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on
+#' fluidigm data described in vignette and available in the \code{scRNAseq}
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
 #' @keywords data
@@ -89,18 +89,18 @@ NULL
 #' packageVersion("clusterExperiment")
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
-
-###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
-# Note: Merging will be done on ' combineMany ', with clustering index 1
-# Note: If `isCount=TRUE` the data will be transformed with voom() rather than
-# with the transformation function in the slot `transformation`.
-# This makes sense only for counts.
-#    user  system elapsed
-# 170.428   5.408  61.705
-# > packageVersion("clusterExperiment")
-# [1] ‘1.3.3.9001’
-
-# devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
-
-
 NULL
+
+# ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
+# # Note: Merging will be done on ' combineMany ', with clustering index 1
+# # Note: If `isCount=TRUE` the data will be transformed with voom() rather than
+# # with the transformation function in the slot `transformation`.
+# # This makes sense only for counts.
+# #    user  system elapsed
+# # 170.428   5.408  61.705
+# # > packageVersion("clusterExperiment")
+# # [1] ‘1.3.3.9001’
+#
+# # devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
+
+
