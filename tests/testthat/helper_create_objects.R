@@ -117,12 +117,12 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 library(HDF5Array)
 hdfSCE<-sceSimDataDimRed
 ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
-unlink("./sce.h5")
+if(file.exists("./sce.h5")) unlink("./sce.h5")
 assay(hdfSCE) <- HDF5Array::writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
 
 #no pca attached
 hdfObj<-sceSimData
 ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
-unlink("./hdfonly.h5")
+if(file.exists("./hdfonly.h5")) unlink("./hdfonly.h5")
 assay(hdfObj) <- HDF5Array::writeHDF5Array(assay(hdfObj), "./hdfonly.h5", "counts")
 
