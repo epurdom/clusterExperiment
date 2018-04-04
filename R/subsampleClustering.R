@@ -256,7 +256,7 @@ setMethod(
 
       Dbar <- search_pairs(t(DList))
       Dbar <- Dbar + t(Dbar)
-      # Dbar[is.na(Dbar)] <- 0
+      Dbar[is.na(Dbar)] <- 0
       diag(Dbar) <- 1
 
     }
@@ -273,7 +273,7 @@ setMethod(
       Dbar<-matrix(0,N,N)
       Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
       Dbar<-Dbar+t(Dbar)
-      # Dbar[is.na(Dbar)]<-0
+      Dbar[is.na(Dbar)]<-0
       diag(Dbar)<-1
 
     }
