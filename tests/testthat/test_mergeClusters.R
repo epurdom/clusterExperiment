@@ -58,7 +58,7 @@ test_that("`mergeClusters` works with HDF5 assay slot",{
     expect_silent(cl1 <- clusterSingle(hdfObj, 
             subsample=FALSE, sequential=FALSE,
 			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
-			isCount=FALSE)
+			isCount=FALSE))
     expect_silent(clustWithDendro <- makeDendrogram(cl1))
     expect_message(mergedCE <- mergeClusters(x=clustWithDendro,plot=FALSE,
             mergeMethod="adjP", plotInfo="mergeMethod"),
