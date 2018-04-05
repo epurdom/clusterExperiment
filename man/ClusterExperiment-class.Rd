@@ -5,7 +5,7 @@
 \alias{ClusterExperiment-class}
 \alias{ClusterExperiment}
 \alias{ClusterExperiment}
-\alias{ClusterExperiment,matrix,ANY-method}
+\alias{ClusterExperiment,matrixOrHDF5,ANY-method}
 \alias{ClusterExperiment,SummarizedExperiment,ANY-method}
 \alias{ClusterExperiment,SingleCellExperiment,numeric-method}
 \alias{ClusterExperiment,SingleCellExperiment,character-method}
@@ -15,7 +15,7 @@
 \usage{
 ClusterExperiment(object, clusters, ...)
 
-\S4method{ClusterExperiment}{matrix,ANY}(object, clusters, ...)
+\S4method{ClusterExperiment}{matrixOrHDF5,ANY}(object, clusters, ...)
 
 \S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters, ...)
 

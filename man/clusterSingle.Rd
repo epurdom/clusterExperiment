@@ -4,16 +4,16 @@
 \name{clusterSingle}
 \alias{clusterSingle}
 \alias{clusterSingle,missing,matrixOrNULL-method}
-\alias{clusterSingle,matrixOrNULL,missing-method}
+\alias{clusterSingle,matrixOrHDF5OrNULL,missing-method}
 \alias{clusterSingle,SummarizedExperiment,missing-method}
 \alias{clusterSingle,ClusterExperiment,missing-method}
 \alias{clusterSingle,SingleCellExperiment,missing-method}
-\alias{clusterSingle,matrixOrNULL,matrixOrNULL-method}
+\alias{clusterSingle,matrixOrHDF5OrNULL,matrixOrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
 \S4method{clusterSingle}{missing,matrixOrNULL}(x, diss, ...)
 
-\S4method{clusterSingle}{matrixOrNULL,missing}(x, diss, ...)
+\S4method{clusterSingle}{matrixOrHDF5OrNULL,missing}(x, diss, ...)
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
@@ -23,10 +23,10 @@
 \S4method{clusterSingle}{SingleCellExperiment,missing}(x,
   reduceMethod = "none", nDims = defaultNDims(x, reduceMethod), ...)
 
-\S4method{clusterSingle}{matrixOrNULL,matrixOrNULL}(x, diss, subsample = TRUE,
-  sequential = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  reduceMethod = c("none", listBuiltInReducedDims(),
+\S4method{clusterSingle}{matrixOrHDF5OrNULL,matrixOrNULL}(x, diss,
+  subsample = TRUE, sequential = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
+  transFun = NULL, reduceMethod = c("none", listBuiltInReducedDims(),
   listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
   clusterLabel = "clusterSingle", checkDiss = TRUE)
 }

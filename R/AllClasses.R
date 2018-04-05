@@ -1,4 +1,6 @@
 #' @include AllChecks.R
+#' @importClassesFrom HDF5Array HDF5Matrix
+#' @importClassesFrom DelayedArray DelayedMatrix
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
@@ -6,7 +8,7 @@ setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
-setClassUnion("matrixOrHDF5",members=c("matrix", "HDF5Matrix","DelayedArray"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "HDF5Matrix","DelayedMatrix"))
 setClassUnion("matrixOrHDF5OrNULL",members=c("matrix", "HDF5Matrix","DelayedArray","NULL"))
 
 #############################################################

@@ -5,7 +5,7 @@
 \alias{reduceFunctions}
 \alias{makeFilterStats}
 \alias{makeFilterStats,SummarizedExperiment-method}
-\alias{makeFilterStats,matrix-method}
+\alias{makeFilterStats,matrixOrHDF5-method}
 \alias{makeFilterStats,ClusterExperiment-method}
 \alias{listBuiltInFilterStats}
 \alias{filterData,SummarizedExperiment-method}
@@ -16,7 +16,7 @@
 \alias{filterNames}
 \alias{makeReducedDims,SingleCellExperiment-method}
 \alias{makeReducedDims}
-\alias{makeReducedDims,matrix-method}
+\alias{makeReducedDims,matrixOrHDF5-method}
 \alias{makeReducedDims,SummarizedExperiment-method}
 \alias{makeReducedDims,ClusterExperiment-method}
 \alias{listBuiltInReducedDims}
@@ -26,7 +26,7 @@
   filterStats = listBuiltInFilterStats(), transFun = NULL,
   isCount = FALSE)
 
-\S4method{makeFilterStats}{matrix}(object, ...)
+\S4method{makeFilterStats}{matrixOrHDF5}(object, ...)
 
 \S4method{makeFilterStats}{ClusterExperiment}(object,
   whichClusterIgnoreUnassigned = NULL,
@@ -44,7 +44,7 @@ listBuiltInFilterStats()
 \S4method{makeReducedDims}{SingleCellExperiment}(object, reducedDims = "PCA",
   maxDims = 500, transFun = NULL, isCount = FALSE)
 
-\S4method{makeReducedDims}{matrix}(object, ...)
+\S4method{makeReducedDims}{matrixOrHDF5}(object, ...)
 
 \S4method{makeReducedDims}{SummarizedExperiment}(object, ...)
 

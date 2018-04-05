@@ -36,7 +36,8 @@ Imports:
 	S4Vectors,
 	grDevices,
 	Rcpp,
-	HDF5Array (>= 1.7.9)
+	HDF5Array (>= 1.7.9),
+	DelayedArray (>= 0.5.23)
 Suggests:
     BiocStyle,
     knitr,
