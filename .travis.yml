@@ -13,12 +13,13 @@
 language: r
 cache: packages
 
+# Temporarily enable when caching Bioconductor packages
+script: true
+
 # R versions to be tested on
 r:
 #  - bioc-release
   - bioc-devel
-
-source: true
 
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false
