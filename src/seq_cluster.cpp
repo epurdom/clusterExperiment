@@ -158,17 +158,18 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
       kstart[nfound] = current_start;
       tclust[nfound] = found_temp;
 
-      // IntegerVector tofind = setdiff(seq(0, N), found_temp);
-      // arma::uvec to_find = as<arma::uvec>(tofind);
+      IntegerVector all_idx = seq(0, N);
+      IntegerVector tofind = setdiff(all_idx, found_temp);
+      arma::uvec to_find = as<arma::uvec>(tofind);
 
-      // if(input == "X") {
-      //   x = x.cols(to_find);
-      // }
-      //
-      // if(input == "diss") {
-      //   diss = diss.cols(to_find);
-      //   diss = diss.rows(to_find);
-      // }
+      if(input == "X") {
+        x = x.cols(to_find);
+      }
+
+      if(input == "diss") {
+        diss = diss.cols(to_find);
+        diss = diss.rows(to_find);
+      }
 
       remain = remain - found_temp.length();
 
