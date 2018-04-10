@@ -14,6 +14,10 @@ search_pairs <- function(clusterings) {
     .Call(`_clusterExperiment_search_pairs`, clusterings)
 }
 
+do_seq_cluster <- function(x, diss, N, k0, remain_n, seq_num, k_min, k_max, top_can, beta, index_m, beta_num, wh_return, input, updateClustering) {
+    .Call(`_clusterExperiment_do_seq_cluster`, x, diss, N, k0, remain_n, seq_num, k_min, k_max, top_can, beta, index_m, beta_num, wh_return, input, updateClustering)
+}
+
 makeHashKey <- function(i, j, delim) {
     .Call(`_clusterExperiment_makeHashKey`, i, j, delim)
 }

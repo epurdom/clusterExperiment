@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 1.99.1-9005
+Version: 1.99.1-9006
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -35,7 +35,8 @@ Imports:
 	stringr,
 	S4Vectors,
 	grDevices,
-	Rcpp
+	Rcpp,
+	RcppArmadillo
 Suggests:
     BiocStyle,
     knitr,
@@ -86,8 +87,9 @@ Collate:
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'
+    'seqCluster2.R'
     'subsampleClustering.R'
     'subsampleLoop.R'
     'transformFunction.R'
     'workflowClusters.R'
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo

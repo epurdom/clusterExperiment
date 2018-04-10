@@ -19,8 +19,8 @@ on which to run the clustering}
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
 
-\item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}} to get the distance matrix at each 
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}} to get the distance matrix at each
 iteration; otherwise the distance matrix is set by arguments to
 \code{\link{mainClustering}}.}
 
@@ -100,7 +100,7 @@ In each iteration, to determine the next set of homogeneous set of
 
 Depending on the value of \code{subsample} how the value of $K$ is
   used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the
-  cluster function \code{clusterFunction} sent to 
+  cluster function \code{clusterFunction} sent to
   \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
   \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
   \code{\link{subsampleClustering}} with the \code{ClusterFunction} object

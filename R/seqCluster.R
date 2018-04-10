@@ -10,8 +10,8 @@
 #'   on which to run the clustering
 #' @param k0 the value of K at the first iteration of sequential algorithm, see
 #'   details below or vignette.
-#' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}} to get the distance matrix at each 
+#' @param subsample logical as to whether to subsample via
+#'   \code{\link{subsampleClustering}} to get the distance matrix at each
 #'   iteration; otherwise the distance matrix is set by arguments to
 #'   \code{\link{mainClustering}}.
 #' @param beta value between 0 and 1 to decide how stable clustership membership
@@ -25,7 +25,7 @@
 #' @param remain.n when only this number of samples are left (i.e. not yet
 #'   clustered) then algorithm will stop.
 #' @param k.min each iteration of sequential detection of clustering will
-#'   decrease the beginning K of subsampling, but not lower than k.min. 
+#'   decrease the beginning K of subsampling, but not lower than k.min.
 #' @param k.max algorithm will stop if K in iteration is increased beyond this
 #'   point.
 #' @param verbose whether the algorithm should print out information as to its
@@ -53,7 +53,7 @@
 #'   \code{kinit} is increased internally.
 #' @details Depending on the value of \code{subsample} how the value of $K$ is
 #'   used differs. If \code{subsample=TRUE}, $K$ is the \code{k} sent to the
-#'   cluster function \code{clusterFunction} sent to 
+#'   cluster function \code{clusterFunction} sent to
 #'   \code{\link{subsampleClustering}} via \code{subsampleArgs}; then
 #'   \code{\link{mainClustering}} is run on the result of the co-occurance matrix from
 #'   \code{\link{subsampleClustering}} with the \code{ClusterFunction} object
@@ -79,7 +79,7 @@
 #'   iteration $K$ that has overlap similarity > \code{beta} to any in the
 #'   previous iteration, then the algorithm will move to the next iteration,
 #'   increasing to $K+1$.
-#'   
+#'
 #' @details If, however, of these clusters there is a cluster in the current
 #'   iteration $K$ that has overlap similarity > beta to a cluster in the
 #'   previous iteration $K-1$, then the cluster with the largest such similarity
@@ -92,8 +92,8 @@
 #'   samples will start off one value less than was the case for the previous
 #'   set of homogeneous samples. If \code{kinit-1}<\code{k.min}, then
 #'   \code{kinit} will be set to \code{k.min}.
-#'   
-#'   
+#'
+#'
 #' @details If there are less than \code{remain.n} samples left after finding a
 #'   cluster and removing its samples, the algorithm will stop, as subsampling
 #'   is deamed to no longer be appropriate. If the K has to be increased to
@@ -123,10 +123,10 @@
 #' @references Tseng and Wong (2005), "Tight Clustering: A Resampling-Based
 #'   Approach for Identifying Stable and Tight Patterns in Data", Biometrics,
 #'   61:10-16.
-#' 
+#'
 #' @seealso tight.clust,
 #'   \code{\link{clusterSingle}},\code{\link{mainClustering}},\code{\link{subsampleClustering}}
-#'   
+#'
 #' @examples
 #' \dontrun{
 #' data(simData)
@@ -140,22 +140,22 @@
 #' @export
 #' @rdname seqCluster
 #' @export
-seqCluster<-function(x=NULL, diss=NULL, k0,  
-     subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
+seqCluster<-function(x=NULL, diss=NULL, k0,
+     subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3,
      k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=TRUE)
 {
   ########
   ####Checks
   ########
-	
+
     	checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
 		if(is.character(checkOut)) stop(checkOut)
 else {
 	mainClusterArgs<-checkOut$mainClusterArgs
 	subsampleArgs<-checkOut$subsampleArgs
 	input<-checkOut$inputClusterD
-}		
-  
+}
+
   ################
   ################
   ###The following is legacy of tight.clust. They originally had programmed ability to look across more than 2 at each step to determing the stability of a cluster. This was not what they described in paper, and function is hard-coded at 2, but I have left code here in case we ever wanted to reconsider this issue.
@@ -178,39 +178,43 @@ else {
   }
   if(input %in% c("X"))  colnames(x) <- as.character(1:N)
   if(input %in% c("diss")) colnames(diss)<-rownames(diss)<-as.character(1:N)
-  
+
   #iterative setup
   remain <- N #keep track of how many samples not yet clustered (stop when less than remain.n)
   nfound <- 0 #keep track of how many clusters found/removed so far
   found <- TRUE #has a cluster been found/removed in last iteration
   k.start <- k0 #the starting k for the next cluster
   k <- k0
-  
+
   candidates <- list() #list of length seq.num of possible clusters found for each k to be compared
   tclust <- list() #list of final cluster identifications (indices of rows of x)
   kstart<-c() #the starting k for the cluster
   kend<-c() #the ending k for the cluster
   whyStop<-NULL
-  
+
   updateClustering<-function(newk){
       if(verbose) cat(paste("k =", newk,"\n"))
 	  if(subsample){
 		  tempArgs<-subsampleArgs
-		  tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k  
+		  tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k
 		  #also set the k for the mainClustering to be the same as in subsampling.
 		  tempClusterDArgs<-mainClusterArgs
 		  tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
-		    	      
+
 		  res <- .clusterWrapper(x=x, diss=diss,subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
       }
       else{
           tempArgs<-mainClusterArgs
 		  tempArgs[["clusterArgs"]]<-c(list(k=newk), mainClusterArgs[["clusterArgs"]]) #set k
           res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=subsampleArgs, mainClusterArgs=tempArgs)$results
-        
+
       }
 	  return(res)
   }
+
+  browser()
+
+
   while (remain >= remain.n && (found || k <= k.max)) {
     if (found) { #i.e. start finding new cluster
       if(verbose) cat(paste("Looking for cluster", nfound + 1, "...\n"))
@@ -218,7 +222,7 @@ else {
       currentStart<-k.start #will add this to kstart if successful in finding cluster
       #find clusters for K,K+1
       for (i in 1:seq.num) {
-		newk<-k + i - 1
+        newk<-k + i - 1
         res<-updateClustering(newk)
         if(length(res)>0) res <- res[1:min(top.can,length(res))]
         candidates[[i]]<-res
@@ -226,13 +230,14 @@ else {
     }
     else { #need to go increase to K+2,K+3, etc.
       candidates <- candidates[-1] #remove old k
-	  newk<-k + seq.num - 1
+      newk<-k + seq.num - 1
       if(verbose) cat(paste("k =", newk, "\n"))
       #add new k (because always list o)
-	  res<-updateClustering(newk)
+      res<-updateClustering(newk)
       if(length(res)>0) res <- res[1:min(top.can,length(res))]
       candidates[[seq.num]] <- res
     }
+
     ##################
     #check whether all got top.can values for each -- could be less.
     #find which rows of index.m define cluster combinations that don't exist
@@ -248,11 +253,11 @@ else {
     if(length(whInvalid)>0){
       if(verbose) cat("Did not find", top.can,"clusters: ")
       if(verbose) cat(paste("found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),", respectively\n"))
-      
+
       tempIndex<-index.m[-whInvalid,,drop=FALSE]
     }
     else tempIndex<-index.m
-    
+
     ##################
     #Calculate the stability pairwise between all of cluster combinations
     ##################
@@ -272,7 +277,7 @@ else {
       #if(is.na(out)) stop("coding error: invalid similarity calculation")
       #else
       return(out)
-      
+
     }
     beta.temp <- apply(tempIndex, 1, calc.beta) #original code had unlist. I removed it...might cause problems, but if so, should figure them out!
     if (any(beta.temp >= beta)){
@@ -286,7 +291,7 @@ else {
       if(input %in% c("X")) tclust[[nfound]] <- colnames(x)[found.temp] #need to do rownames, because remove rows from x
       else tclust[[nfound]] <- colnames(diss)[found.temp] #need to do rownames, because remove rows from x
       mode(tclust[[nfound]]) <- "numeric"
-      if(input %in% c("X")) x <- x[,-found.temp] 
+      if(input %in% c("X")) x <- x[,-found.temp]
       if(input %in% c("diss")) diss<-diss[-found.temp,-found.temp]
       remain <- remain - length(tclust[[nfound]])
       if(verbose) cat(paste("Cluster size:", length(tclust[[nfound]]),
@@ -298,6 +303,7 @@ else {
       k = k + 1
     }
   }
+
   if(is.null(whyStop)){
     if(remain< remain.n) whyStop<-"Ran out of samples"
     if(!found & k>k.max) whyStop<-paste("Went past k.max=",k.max,"in looking for cluster with similarity to previous.")
@@ -315,5 +321,5 @@ else {
     if(verbose) cat("No tight clusters could be found with given parameters")
     return(list(clustering = clusterVector, whyStop=whyStop))
   }
-  
+
 }
