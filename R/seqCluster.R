@@ -212,9 +212,6 @@ else {
 	  return(res)
   }
 
-  browser()
-
-
   while (remain >= remain.n && (found || k <= k.max)) {
     if (found) { #i.e. start finding new cluster
       if(verbose) cat(paste("Looking for cluster", nfound + 1, "...\n"))
