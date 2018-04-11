@@ -2,29 +2,30 @@
 
 #include <RcppArmadillo.h>
 #include <algorithm>
+#include <iostream>
 using namespace Rcpp;
 
 // Function to calculate the stability across the given combination
 //	y is a combination (row of index_m) giving clusters to compare stability from k, k+1
-int calc_beta(IntegerVector y, List candidates, int seq_num, String beta_num) {
+float calc_beta(IntegerVector y, List candidates, int seq_num, String beta_num) {
   // written generally enough to deal with seq_num>2; could be a lot simpler with seq.num=2.
 
-  List temp(2);
+  List temp(seq_num);
 
   for(int z=0; z<seq_num; z++) {
     List each_can = candidates[z];
     temp[z] = each_can[y[z]];
   }
 
-  IntegerVector itemp = temp[1];
+  IntegerVector itemp = temp[0];
   IntegerVector utemp;
 
   if(beta_num == "all" || beta_num == "first") {
-    utemp = temp[1];
+    utemp = temp[0];
   }
 
   if(beta_num == "last") {
-    utemp = temp[seq_num];
+    utemp = temp[seq_num - 1];
   }
 
   for(int j=1; j<seq_num; j++) {
@@ -32,12 +33,13 @@ int calc_beta(IntegerVector y, List candidates, int seq_num, String beta_num) {
     itemp = intersect(itemp, jtemp);
 
     if(beta_num == "all") {
-      jtemp = temp[j];
       utemp = union_(utemp, jtemp);
     }
   }
 
-  return( itemp.length() / utemp.length() );
+  float retval =  (float)itemp.size() / (float)utemp.size();
+
+  return(retval);
 
 }
 
@@ -51,9 +53,9 @@ int calc_beta(IntegerVector y, List candidates, int seq_num, String beta_num) {
 //'
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
-List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
+List do_seq_cluster(arma::mat& x, arma::mat& diss, int N, int k0,
                     int remain_n, int seq_num, int k_min, int k_max,
-                    int top_can, int beta,
+                    int top_can, float beta,
                     IntegerMatrix index_m, String beta_num,
                     int wh_return, String input,
                     Function updateClustering) {
@@ -71,8 +73,9 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
   IntegerVector kstart; //the starting k for the cluster
   IntegerVector kend; //the ending k for the cluster
   int current_start;
-
+  int iter=1;
   while(remain >= remain_n && (found || k <= k_max)) {
+    std::cout << "itearation: " << iter << std::endl;
     if(found) {
       k = k_start;
       current_start = k_start;
@@ -81,13 +84,12 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
         List res = updateClustering(newk, x, diss);
         int s = res.size();
         if(s > 0) {
-          IntegerVector idx(0, std::min(top_can, s));
+          IntegerVector idx = seq(0, std::min(top_can, s) - 1);
           res = res[idx];
         }
         candidates[i] = res;
       }
     } else {
-
       IntegerVector idx = seq_len(candidates.size());
       candidates = candidates[idx != 1];
 
@@ -95,10 +97,12 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
       List res = updateClustering(newk, x, diss);
       int s = res.size();
       if(s > 0) {
-        IntegerVector idx(0, std::min(top_can, s));
+        IntegerVector idx = seq(0, std::min(top_can, s) - 1);
         res = res[idx];
       }
-      candidates[seq_num] = res;
+
+      candidates.push_back(res);
+
     }
 
     // check whether all got top_can values for each -- could be less.
@@ -108,7 +112,7 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
     for(int i=0; i<seq_num; i++) {
       List temp = candidates[i];
       nClusterPerK = temp.size();
-      is_invalid.column(i) = index_m.column(i) > nClusterPerK;
+      is_invalid.column(i) = index_m.column(i) > (nClusterPerK - 1);
     }
 
     int ninv=0;
@@ -116,7 +120,7 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
       ninv = ninv + is_true(any(is_invalid.row(i)));
     }
 
-    IntegerMatrix index_red(N - ninv, seq_num);
+    IntegerMatrix index_red(index_m.nrow() - ninv, seq_num);
 
     // all invalid -- probably means that for some k there were no candidates found.
     // So should stop.
@@ -139,14 +143,15 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
     }
 
     // Calculate the stability pairwise between all of cluster combinations
-    IntegerVector beta_temp(index_red.nrow());
+    NumericVector beta_temp(index_red.nrow());
     for(int i=0; i<index_red.nrow(); i++) {
       beta_temp[i] = calc_beta(index_red.row(i), candidates, seq_num, beta_num);
     }
 
+    std::cout << "beta_temp:" << beta_temp << std::endl;
+
     if(is_true(any(beta_temp >= beta))) {
       found = true;
-      nfound++;
 
       if(k_start > k_min) {
         k_start = k_start - 1;
@@ -154,16 +159,23 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
 
       List list_temp = candidates[wh_return];
       IntegerVector found_temp = list_temp[index_red(which_max(beta_temp), wh_return)];
-      kend[nfound] = k + seq_num - 1;
-      kstart[nfound] = current_start;
-      tclust[nfound] = found_temp;
 
-      IntegerVector all_idx = seq(0, N);
-      IntegerVector tofind = setdiff(all_idx, found_temp);
+      std::cout << "Found cluster number " << nfound + 1 << std::endl;
+      std::cout << "Cluster size: " << found_temp.size()  << std::endl;
+
+      kend.push_back(k + seq_num - 1);
+      kstart.push_back(current_start);
+      tclust.push_back(found_temp); // the indexes of found_temp are wrong; need sample names!
+      nfound++;
+
+      IntegerVector all_idx = seq(1, x.n_cols);
+      IntegerVector tofind = setdiff(all_idx, found_temp) - 1;
       arma::uvec to_find = as<arma::uvec>(tofind);
 
       if(input == "X") {
         x = x.cols(to_find);
+        diss = diss.cols(to_find);
+        diss = diss.rows(to_find);
       }
 
       if(input == "diss") {
@@ -171,12 +183,15 @@ List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0,
         diss = diss.rows(to_find);
       }
 
-      remain = remain - found_temp.length();
+      remain = remain - found_temp.size();
+      std::cout << "Samples remaining: " << remain << std::endl;
 
     } else {
       found = false;
       k++;
     }
+
+    iter++;
   }
 
   return List::create(Named("tclust") = tclust,

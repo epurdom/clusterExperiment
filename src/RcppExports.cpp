@@ -18,13 +18,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // do_seq_cluster
-List do_seq_cluster(arma::mat x, arma::mat diss, int N, int k0, int remain_n, int seq_num, int k_min, int k_max, int top_can, int beta, IntegerMatrix index_m, String beta_num, int wh_return, String input, Function updateClustering);
+List do_seq_cluster(arma::mat& x, arma::mat& diss, int N, int k0, int remain_n, int seq_num, int k_min, int k_max, int top_can, float beta, IntegerMatrix index_m, String beta_num, int wh_return, String input, Function updateClustering);
 RcppExport SEXP _clusterExperiment_do_seq_cluster(SEXP xSEXP, SEXP dissSEXP, SEXP NSEXP, SEXP k0SEXP, SEXP remain_nSEXP, SEXP seq_numSEXP, SEXP k_minSEXP, SEXP k_maxSEXP, SEXP top_canSEXP, SEXP betaSEXP, SEXP index_mSEXP, SEXP beta_numSEXP, SEXP wh_returnSEXP, SEXP inputSEXP, SEXP updateClusteringSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type diss(dissSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type diss(dissSEXP);
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< int >::type k0(k0SEXP);
     Rcpp::traits::input_parameter< int >::type remain_n(remain_nSEXP);
@@ -32,7 +32,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type k_min(k_minSEXP);
     Rcpp::traits::input_parameter< int >::type k_max(k_maxSEXP);
     Rcpp::traits::input_parameter< int >::type top_can(top_canSEXP);
-    Rcpp::traits::input_parameter< int >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< float >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type index_m(index_mSEXP);
     Rcpp::traits::input_parameter< String >::type beta_num(beta_numSEXP);
     Rcpp::traits::input_parameter< int >::type wh_return(wh_returnSEXP);

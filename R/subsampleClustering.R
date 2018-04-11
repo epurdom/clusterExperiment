@@ -118,7 +118,7 @@ setMethod(
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
-    input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+    input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
     classifyMethod<-match.arg(classifyMethod)
     if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
       classifyMethod<-"InSample" #silently change it...

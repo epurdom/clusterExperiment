@@ -29,8 +29,8 @@ seqCluster2 <- function(x=NULL, diss=NULL, k0,
   betaNum <- match.arg(betaNum,c("all","last","first"))
   #This makes all combinations of 1:top.can, seq.num times (could be simplified if seq.num=2):
   #a ncombinations x seq.num matrix -- each row gives a combination of clusters to compare stability
-  index.m <- as.matrix(expand.grid(lapply(1:seq.num, function(x) 1:top.can)))
-  whReturn <- switch(kReturn, "last"=seq.num, "first"=1) #way to index which one gets returned.
+  index.m <- as.matrix(expand.grid(lapply(seq(0, seq.num - 1), function(x) seq(0, top.can - 1))))
+  whReturn <- switch(kReturn, "last"=seq.num-1, "first"=0) #way to index which one gets returned.
 
   if(input %in% c("X")) {
     N <- dim(x)[2]
@@ -53,6 +53,7 @@ seqCluster2 <- function(x=NULL, diss=NULL, k0,
   }
 
   updateClustering<-function(newk, x, diss){
+
     if(verbose) cat(paste("k =", newk,"\n"))
     if(subsample){
       tempArgs<-subsampleArgs
@@ -72,7 +73,16 @@ seqCluster2 <- function(x=NULL, diss=NULL, k0,
     return(res)
   }
 
-  retval <- do_seq_cluster(x, diss, N, k0, remain.n, seq.num, k.min, k.max,
+  # if(is.null(diss)) {
+  #   diss <- matrix(0)
+  # }
+  #
+  # if(is.null(x)) {
+  #   x <- matrix(0)
+  # }
+
+dd <- as.matrix(dist(t(x)))
+  retval <- do_seq_cluster(x, dd, N, k0, remain.n, seq.num, k.min, k.max,
                            top.can, beta, index.m, betaNum, whReturn,
                            input, updateClustering)
 
