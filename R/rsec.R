@@ -90,10 +90,14 @@ setMethod(
         nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), k0s=4:15,
         clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
-        combineProportion=0.7, combineMinSize=5,
-        dendroReduce="mad",
-		dendroNDims=defaultNDims(x,dendroReduce,type="filterStats"),
-        mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
+        combineProportion=0.7, 
+		combineMinSize,
+        dendroReduce,
+		dendroNDims,
+        mergeMethod="adjP",
+		mergeCutoff,
+		mergeLogFCcutoff,
+		verbose=FALSE,
         mainClusterArgs=NULL,
         subsampleArgs=NULL,
         seqArgs=NULL,
@@ -104,19 +108,22 @@ setMethod(
         nReducedDims<-NA
         nFilterDims<-NA
     }
-    if(is.null(seqArgs)) seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
+    if(is.null(seqArgs)) 
+		seqArgs<-list(verbose=FALSE)  
+	else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
 	ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,
 		alphas=alphas,betas=betas,minSizes=minSizes,
 		sequential=TRUE,removeSil=FALSE,subsample=TRUE,
 		silCutoff=0,distFunction=NA,
         isCount=isCount,transFun=transFun,
-		reduceMethod=reduceMethod,nFilterDims=nFilterDims,
-		nReducedDims=nReducedDims, 
+		reduceMethod=reduceMethod,nFilterDims=eval(nFilterDims),
+		nReducedDims=eval(nReducedDims), 
 		mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
         seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					
     if(run){
-      ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,isCount=isCount)
+     
+	  ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
     return(ce)
 })
@@ -139,6 +146,8 @@ setMethod(
 }
 .postClusterMany<-function(ce,...){
     defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
+	#remove those without anything defined
+	defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",signature="SingleCellExperiment"),function(x){!isTRUE(x=="")}))]
 	passedArgs<-list(...)
 	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
 	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
@@ -161,7 +170,6 @@ setMethod(
 			if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
 		}
 		if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-
 		dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
 
 	  #------------
@@ -169,9 +177,13 @@ setMethod(
 	  #------------
 	  if(!inherits(dendroTry,"try-error")){
 	    ce<-dendroTry
-	  	args1<-list()
-		if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+	  	
 		if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
+		  	args1<-list()
+			if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+			if("mergeLogFCCutoff" %in% names(passedArgs)){
+				args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)			
+			}
 			args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
 			mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")])), silent=TRUE)
 			if(!inherits(mergeTry,"try-error")){

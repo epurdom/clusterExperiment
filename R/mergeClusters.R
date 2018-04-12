@@ -177,7 +177,7 @@ setMethod(f = "mergeClusters",
 			  mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
 			  plotInfo="none",
 			  nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-              cutoff=0.1, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+              cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
   dendroSamples<-NULL #currently option is not implemented for matrix version...
   if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
   logFCcutoff<-round(logFCcutoff,digits=1)
