@@ -179,6 +179,7 @@ List do_seq_cluster(arma::mat& x, arma::mat& diss, int N, int k0,
       }
 
       if(input == "diss") {
+        x = x.cols(to_find);
         diss = diss.cols(to_find);
         diss = diss.rows(to_find);
       }
