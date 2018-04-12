@@ -218,7 +218,7 @@ setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,ty
 	isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
 	isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
   	if(isFilter)
-		nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(500,NROW(object))
+		nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
 	else if(isReducedDims(object,reduceMethod ))
 		nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
 	else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
