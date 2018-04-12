@@ -21,16 +21,16 @@ listBuiltInType01()
 \item{object}{name of built in function.}
 }
 \value{
-\code{listBuiltInFunctions} returns a character vector of all 
+\code{listBuiltInFunctions} returns a character vector of all
 the built-in cluster functions' names.
 
-\code{getBuiltInFunction} returns the \code{ClusterFunction} 
+\code{getBuiltInFunction} returns the \code{ClusterFunction}
 object that corresponds to the character name of a function
 
-\code{listBuiltInTypeK} returns a character vector of the 
+\code{listBuiltInTypeK} returns a character vector of the
 names of built-in cluster functions that are of type "K"
 
-\code{listBuiltInType01} returns a character vector of the 
+\code{listBuiltInType01} returns a character vector of the
 names of built-in cluster functions that are of type "01"
 }
 \description{
@@ -51,65 +51,65 @@ Documents the built-in clustering options that are available in
   \code{ClusterFunction} object of a character value that corresponds to a
   built-in function.
 
-\code{\link{algorithmType}} and \code{\link{inputType}} will 
+\code{\link{algorithmType}} and \code{\link{inputType}} will
 return the \code{algorithmType} and \code{inputType} of the
   built-in clusterFunction corresponding to the character value.
 
 \strong{Built-in clustering methods:} The built-in clustering methods, the
   names of which can be accessed by \code{listBuiltInFunctions()} are the
-  following: 
-\itemize{ 
+  following:
+\itemize{
 \item{"pam"}{Based on \code{\link[cluster]{pam}} in
   \code{cluster} package. Arguments to that function can be passed via
-  \code{clusterArgs}. 
-Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+  \code{clusterArgs}.
+Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"}
 \item{"clara"}{Based on \code{\link[cluster]{clara}} in
   \code{cluster} package. Arguments to that function can be passed via
-  \code{clusterArgs}. Note that we have changed the default arguments of 
+  \code{clusterArgs}. Note that we have changed the default arguments of
   that function to match the recommendations in the documentation of
- \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
- settings for back-compatiability). Specifically, the following defaults 
- are implemented \code{samples=50}, \code{keep.data=FALSE}, 
+ \code{\link[cluster]{clara}} (numerous functions are set to less than optimal
+ settings for back-compatiability). Specifically, the following defaults
+ are implemented \code{samples=50}, \code{keep.data=FALSE},
 \code{mediods.x=FALSE},\code{rngR=TRUE},
- \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
-Input is \code{"X"}; algorithm type is "K".} 
+ \code{pamLike=TRUE}, \code{correct.d=TRUE}.
+Input is \code{"X"}; algorithm type is "K".}
 \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
   \code{stats} package. Arguments to that function can be passed via
   \code{clusterArgs} except for \code{centers} which is reencoded here to be
-  the argument 'k' 
-Input is \code{"X"}; algorithm type is "K"} 
-\item{"hierarchical01"}{\code{\link[stats]{hclust}} in
+  the argument 'k'
+Input is \code{"X"}; algorithm type is "K"}
+\item{"hierarchical01"}{\code{\link[fastcluster]{hclust}} in
   \code{stats} package is used to build hiearchical clustering. Arguments to
   that function can be passed via \code{clusterArgs}. The
   \code{hierarchical01} cuts the hiearchical tree based on the parameter
-  \code{alpha}. It does not use the \code{cutree} function, but instead 
- transversing down the tree until getting a block of 
-  samples with whose summary of the values  is greater than or equal to 
-  1-alpha. Arguments that can be passed to 'hierarchical01' are 
-  'evalClusterMethod' which determines how to summarize the samples' values 
+  \code{alpha}. It does not use the \code{cutree} function, but instead
+ transversing down the tree until getting a block of
+  samples with whose summary of the values  is greater than or equal to
+  1-alpha. Arguments that can be passed to 'hierarchical01' are
+  'evalClusterMethod' which determines how to summarize the samples' values
   of D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes
   the minimum of D[samples,samples] and requires it to be less than or equal
   to 1-alpha; "average" requires that each row mean of D[samples,samples] be
   less than or equal to 1-alpha. Additional arguments of hclust can also be passed via
-  clusterArgs to control the hierarchical clustering of D.  
-Input is \code{"diss"}; algorithm type is "01"}  
-\item{"hierarchicalK"}{\code{\link[stats]{hclust}} in \code{stats} package is used
+  clusterArgs to control the hierarchical clustering of D.
+Input is \code{"diss"}; algorithm type is "01"}
+\item{"hierarchicalK"}{\code{\link[fastcluster]{hclust}} in \code{stats} package is used
   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
   tree into \code{k} clusters.
-Input is \code{"diss"}; algorithm type is "K"}   
+Input is \code{"diss"}; algorithm type is "K"}
 \item{"tight"}{Based on the algorithm in
   Tsang and Wong, specifically their method of picking clusters from a
   co-occurance matrix after subsampling. The clustering encoded here is not
   the entire tight clustering algorithm, only that single piece that
-  identifies clusters from the co-occurance matrix.  
-Arguments for the tight method are 
+  identifies clusters from the co-occurance matrix.
+Arguments for the tight method are
   'minSize.core' (default=2), which sets the minimimum number of samples that
   form a core cluster.
-Input is \code{"diss"}; algorithm type is "01"} 
-\item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
-is used to perform spectral clustering. Note that spectral clustering can 
-produce errors if the number of clusters (K) is not sufficiently smaller than 
-the number of samples (N). K < N is not always sufficient. 
+Input is \code{"diss"}; algorithm type is "01"}
+\item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package
+is used to perform spectral clustering. Note that spectral clustering can
+produce errors if the number of clusters (K) is not sufficiently smaller than
+the number of samples (N). K < N is not always sufficient.
 Input is \code{"X"}; algorithm type is "K".}
 }
 }
