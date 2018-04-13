@@ -244,6 +244,7 @@ setMethod(
 
 
 #' @rdname makeDendrogram
+#' @importFrom DelayedArray DelayedArray
 #' @export
 setMethod(
   f = "makeDendrogram",
@@ -301,7 +302,7 @@ setMethod(
 			############
 			###This a workaround which will hopefully be dealt with in future hdf5:
 			############
-			if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray(fakeData), DelayedArray(outlierDat))
+			if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray::DelayedArray(fakeData), DelayedArray(outlierDat))
             else fakeData <- rbind(fakeData, outlierDat)
             fakeData <- fakeData[rownames(dat),,drop=FALSE]
             # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))

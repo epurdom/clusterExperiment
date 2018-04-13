@@ -3,10 +3,11 @@
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
+#' @importsFrom DelayedArray DelayedArray
 .genericClassify<-function(x,centers){
     if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
 		innerProd<- t(x) %*% t(centers)
-		distMat<-as.matrix(dist(rbind(DelayedArray(t(x)),DelayedArray(centers))))
+		distMat<-as.matrix(dist(rbind(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))))
 	}
 	else{
 		innerProd<-tcrossprod(t(x),centers) #equivalent to x %*% t(y), slightly faster

@@ -143,7 +143,7 @@ setMethod(
   f = ".matchToStats",
   signature = "matrix",
   definition = function(object){
-	  SimpleList(
+	  S4Vectors::SimpleList(
 	  	'var'=matrixStats::rowVars,
 	  	'mad'=matrixStats::rowMads,
 	  	'mean'=matrixStats::rowMeans2,
@@ -153,15 +153,17 @@ setMethod(
   )
   
 ### need to go back to this and check what are the best options for these functions. 
+#' @importFrom stats IQR
+#' @importFrom S4Vectors SimpleList
 setMethod(
 f = ".matchToStats",
 signature = "DelayedArray",
 definition = function(object){
-  SimpleList(
+  S4Vectors::SimpleList(
   	'var'=function(x){apply(x,1,var)},
   	'mad'=function(x){apply(x,1,mad)},
   	'mean'=DelayedArray::rowMeans,
-  	'iqr'=function(x){apply(x,1,iqr)},
+  	'iqr'=function(x){apply(x,1,stats::IQR)},
   	'median'=function(x){apply(x,1,median)})
 	
 })
