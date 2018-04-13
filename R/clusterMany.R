@@ -5,7 +5,7 @@
 #' \code{plotClusters} for visualization.
 #' 
 #' @name clusterMany
-#'   
+#' @aliases clusterMany,matrixOrHDF5-method
 #' @param x the data matrix on which to run the clustering. Can be object of the
 #'   following classes: matrix (with genes in rows), 
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},

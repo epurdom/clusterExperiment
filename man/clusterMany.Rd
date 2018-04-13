@@ -3,6 +3,7 @@
 \docType{methods}
 \name{clusterMany}
 \alias{clusterMany}
+\alias{clusterMany,matrixOrHDF5-method}
 \alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}

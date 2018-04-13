@@ -3,7 +3,7 @@
 \docType{methods}
 \name{mergeClusters}
 \alias{mergeClusters}
-\alias{mergeClusters,matrix-method}
+\alias{mergeClusters,matrixOrHDF5-method}
 \alias{mergeClusters,ClusterExperiment-method}
 \alias{nodeMergeInfo,ClusterExperiment-method}
 \alias{nodeMergeInfo}

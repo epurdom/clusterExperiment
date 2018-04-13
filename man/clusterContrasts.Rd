@@ -3,6 +3,7 @@
 \docType{methods}
 \name{clusterContrasts}
 \alias{clusterContrasts}
+\alias{clusterContrasts,ClusterExperiment-method}
 \alias{clusterContrasts,vector-method}
 \title{Create contrasts for testing DE of a cluster}
 \usage{

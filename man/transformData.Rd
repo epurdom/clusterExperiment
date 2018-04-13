@@ -3,7 +3,7 @@
 \docType{methods}
 \name{transformData}
 \alias{transformData}
-\alias{transformData,matrix-method}
+\alias{transformData,matrixOrHDF5-method}
 \alias{transformData,ClusterExperiment-method}
 \alias{transformData,SingleCellExperiment-method}
 \alias{transformData,SummarizedExperiment-method}

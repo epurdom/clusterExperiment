@@ -3,7 +3,7 @@
 #' @name clusterContrasts
 #' @description Uses clustering to create different types of contrasts to be
 #'   tested that can then be fed into DE testing programs.
-#' @aliases clusterContrasts
+#' @aliases clusterContrasts,ClusterExperiment-method
 #' @param cluster Either a vector giving contrasts assignments or a
 #'   ClusterExperiment object
 #' @param contrastType What type of contrast to create.

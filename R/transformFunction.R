@@ -1,6 +1,6 @@
 #' @name transformData
 #' @title Transform the original data in a ClusterExperiment object
-#'
+#' @aliases transformData,matrixOrHDF5-method
 #' @description Provides the transformed data
 #'
 #' @param object a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.
