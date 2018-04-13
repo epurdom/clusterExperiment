@@ -4,6 +4,7 @@
 \name{clusterMany,matrixOrHDF5-method}
 \alias{clusterMany,matrixOrHDF5-method}
 \alias{clusterMany}
+\alias{clusterMany,matrix-method}
 \alias{clusterMany,SingleCellExperiment-method}
 \alias{clusterMany,ClusterExperiment-method}
 \alias{clusterMany,SummarizedExperiment-method}

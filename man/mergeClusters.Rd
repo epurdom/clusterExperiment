@@ -4,6 +4,7 @@
 \name{mergeClusters,matrixOrHDF5-method}
 \alias{mergeClusters,matrixOrHDF5-method}
 \alias{mergeClusters}
+\alias{mergeClusters,matrix-method}
 \alias{mergeClusters,ClusterExperiment-method}
 \alias{nodeMergeInfo,ClusterExperiment-method}
 \alias{nodeMergeInfo}
@@ -20,7 +21,7 @@
 \S4method{mergeClusters}{matrixOrHDF5}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = "none", nodePropTable = NULL, calculateAll = TRUE,
-  showWarnings = FALSE, cutoff = 0.1, plot = TRUE, isCount = TRUE,
+  showWarnings = FALSE, cutoff = 0.05, plot = TRUE, isCount = TRUE,
   logFCcutoff = 0, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,

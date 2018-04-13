@@ -11,6 +11,7 @@
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
+#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in \code{\link{mergeClusters}}
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
