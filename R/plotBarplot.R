@@ -38,7 +38,7 @@
 #'
 #' @return A plot is produced, nothing is returned
 #' @author Elizabeth Purdom
-#' @inheritParams plotClusters,ClusterExperiment,character-method
+#' @inheritParams plotClusters
 
 #' @export
 #'

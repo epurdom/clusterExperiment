@@ -18,10 +18,10 @@
 #'   without the computational costs of the clusterMany step.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all of 
 #' the clusterings from the steps of RSEC
-#' @inheritParams clusterMany,SingleCellExperiment-method
+#' @inheritParams clusterMany
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method
-#' @inheritParams mergeClusters,matrix-method
+#' @inheritParams mergeClusters
 #' @export
 #' @rdname RSEC
 setMethod(

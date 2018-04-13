@@ -4,7 +4,7 @@
 #' clustering of the samples across the range, which can be passed to 
 #' \code{plotClusters} for visualization.
 #' 
-#' @aliases clusterMany clusterMany,matrix-method
+#' @name clusterMany
 #'   
 #' @param x the data matrix on which to run the clustering. Can be object of the
 #'   following classes: matrix (with genes in rows), 

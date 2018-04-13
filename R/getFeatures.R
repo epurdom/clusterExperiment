@@ -23,7 +23,7 @@
 #'   \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the
 #'   default value of \code{\link{voom}}.
-#' @inheritParams clusterContrasts,ClusterExperiment-method
+#' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the

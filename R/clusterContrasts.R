@@ -1,5 +1,6 @@
 #' @title Create contrasts for testing DE of a cluster
 #' @docType methods
+#' @name clusterContrasts
 #' @description Uses clustering to create different types of contrasts to be
 #'   tested that can then be fed into DE testing programs.
 #' @aliases clusterContrasts
