@@ -89,7 +89,7 @@ dd <- as.matrix(dist(t(x)))
   if(retval$whyStop == 1) {
     whyStop <- "Stopped in midst of searching for cluster because no clusters meeting criteria found in last iteration and previous clusters not similar enough."
   } else {
-    if(retval$remain< retavl$remain.n) whyStop<-"Ran out of samples"
+    if(retval$remain< retval$remain.n) whyStop<-"Ran out of samples"
     if(!retval$found & retval$k>retval$k.max) whyStop<-paste("Went past k.max=",retval$k.max,"in looking for cluster with similarity to previous.")
 
   }
