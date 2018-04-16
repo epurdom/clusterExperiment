@@ -22,7 +22,8 @@ Imports:
     ape (>= 5.0),
     phylobase,
     cluster,
-    stats,
+  	fastcluster,
+  	stats,
     limma,
     dendextend,
     howmany,
@@ -31,12 +32,11 @@ Imports:
     graphics,
     parallel,
     RSpectra,
-	kernlab,
-	stringr,
-	S4Vectors,
-	grDevices,
-	Rcpp,
-	fastcluster
+    kernlab,
+	  stringr,
+	  S4Vectors,
+	  grDevices,
+	  Rcpp
 Suggests:
     BiocStyle,
     knitr,
