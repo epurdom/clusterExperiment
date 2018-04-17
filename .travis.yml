@@ -36,6 +36,9 @@ notifications:
 r_github_packages:
   - hadley/devtools@efa894ffa
   - Bioconductor/S4Vectors
+  - Bioconductor/HDF5Array
+  - Bioconductor/DelayedArray
+
 ## Code coverage
 r_packages:
   - covr
