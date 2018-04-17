@@ -27,7 +27,6 @@
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' z<-transformData(cc) 
-#' @aliases transformData,matrix-method
 #' @export
 setMethod(
   f = "transformData",

@@ -35,7 +35,7 @@ notifications:
 ## Use patched devtools
 r_github_packages:
   - hadley/devtools@efa894ffa
-
+  - Bioconductor/S4Vectors
 ## Code coverage
 r_packages:
   - covr

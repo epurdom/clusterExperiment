@@ -125,7 +125,7 @@ test_that("reduce and filter work with hdf5",{
   		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[1]]),
   	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
 	
-	transformation(clustNothing1)<-function(x){exp(x)}
+	expect_silent(transformation(clustNothing1)<-function(x){exp(x)})
 	expect_equal(exp(assay(clustNothing1)),unname(transformData(clustNothing1)))
 	
 

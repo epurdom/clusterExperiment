@@ -1,5 +1,4 @@
 ###Note: any changes to this file should be at the END so as to not mess up the seed calls.
-options(getClass.msg=FALSE) 
 library(clusterExperiment)
 # library(devtools)
 # load_all()
@@ -9,8 +8,6 @@ if(ncol(simData) != 300) {
   #get all kinds of annoyances because using old version.
   #Can delete this once package is stabilized.
 }
-options(getClass.msg=FALSE) #get rid of annoying messages about cache so not printed on build
-
 ## make sure the tests are reproducible
 set.seed(23)
 
@@ -119,6 +116,8 @@ hdfSCE<-sceSimDataDimRed
 ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
 if(file.exists("./sce.h5")) unlink("./sce.h5")
 assay(hdfSCE) <- HDF5Array::writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
+# test<-saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="my_h5_se", replace=TRUE)
+#note this creates class of "DelayedMatrix", not class of "HDF5Matrix" -- is that new? 
 
 #no pca attached
 hdfObj<-sceSimData
