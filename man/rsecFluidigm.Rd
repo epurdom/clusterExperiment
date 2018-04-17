@@ -4,8 +4,8 @@
 \name{rsecFluidigm}
 \alias{rsecFluidigm}
 \title{RSEC run for vignette}
-\format{ClusterExperiment object, the result of running \code{\link{RSEC}} on 
-fluidigm data described in vignette and available in the \code{scRNAseq} 
+\format{ClusterExperiment object, the result of running \code{\link{RSEC}} on
+fluidigm data described in vignette and available in the \code{scRNAseq}
 package.}
 \description{
 RSEC run for vignette

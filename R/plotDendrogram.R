@@ -40,7 +40,7 @@
 #'	 applicable if \code{plotType="colorblock"}.
 #' @param mergeInfo What kind of information about merge to plot on dendrogram. If not 
 #' equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
-#' creates.
+#' creates, and the input to \code{mergeInfo} corresponds to that of \code{plotInfo} in \code{mergeClusters}.
 #' @return A dendrogram is plotted. Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
@@ -52,7 +52,7 @@
 #'   is because the function colors the cluster labels based on the colors of
 #'   the clusterIds of the primaryCluster
 #' @importFrom ape plot.phylo nodelabels
-#' @seealso \code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
+#' @seealso \code{\link{mergeClusters}},\code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 #' @export
 #' 
 #' @examples
@@ -74,12 +74,20 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo=c("none", "all", "Storey","PC","adjP", "locfdr", "MB", "JC","mergeMethod"), main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
     plotType<-match.arg(plotType)
-	mergeInfo<-match.arg(mergeInfo)
+	
+	possibleMergeValues<-c("none", "all","mergeMethod",.availMergeMethods)
+    if(!is.null(x@merge_nodeProp)){
+		otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)%in%c("Node","Contrast")]
+		possibleMergeValues<-unique(c(possibleMergeValues,otherVals))
+    	
+    }
+	mergeInfo<-match.arg(mergeInfo,possibleMergeValues)
+	
 	legend<-match.arg(legend)
     whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
     if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
@@ -198,15 +206,18 @@ setMethod(
   	### Add information about the merging as node labels and change edge type
 	### Note: could probably have used nodelabels function and avoided some of this
   	###############
-  	if(!is.null(mergePlotType) && mergePlotType %in% c("all",.availMergeMethods,"mergeMethod")){
+	if(!is.null(mergeOutput)){
+		annotNames<-c("Node","Contrast","isMerged", "mergeClusterId")
+		methods<-colnames(mergeOutput)[!colnames(mergeOutput)%in%annotNames] #possible for which have proportion saved
+	}
+	if(!is.null(mergePlotType) && !is.null(mergeOutput) && mergePlotType %in% c("all",methods,"mergeMethod")){
           #####
           #convert names of internal nodes for plotting
           #####
           #match to order of tree
   	    whToMerge<-which(mergeOutput$isMerged)
   	    nodesToMerge<-as.character(mergeOutput$Node[whToMerge])
-  	    methods<-colnames(mergeOutput[,-c(1:3)])
-        m <- match( as.character(mergeOutput$Node),phyloObj$node)
+		m <- match( as.character(mergeOutput$Node),phyloObj$node)
   		if(any(is.na(m))) stop("some nodes in merge node info not in the given dendrogram")
         edgeLty <- rep(1, nrow(phyloObj$edge))
 		if(mergeMethod != "none" && length(whToMerge) > 0){
@@ -224,12 +235,15 @@ setMethod(
 		  # offsetDivide<-3
 		  # dataPct<-.7
 		}
-		if(mergePlotType %in% c("all",.availMergeMethods)) {
-		  	meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
+		else if(all(mergePlotType %in% c("all",methods))) {
+			meth<-if(mergePlotType=="all") methods else methods[methods%in%mergePlotType]
 		  	phyloObj$node.label[m] <- apply(mergeOutput[,meth,drop=FALSE],1, 
 			  function(x){
 		  		whKp<-which(!is.na(x))
-		  	  	vals<-paste(paste(meth[whKp], signif(x[whKp],2), sep=":"), collapse="\n")
+				#fix up name of FC methods:
+				mm<-meth[whKp]
+				mm<-sapply(strsplit(mm,"_"),function(u){if(length(u)==2) return(sprintf("%s(>%s)",u[1],u[2])) else return(u)})
+		  	  	vals<-paste(paste(mm, signif(x[whKp],2), sep=":"), collapse="\n")
 				vals[is.na(vals)]<-"NA"
 				return(vals)
 				})
@@ -354,7 +368,7 @@ setMethod(
 		}
 	} 
 	###############
-	### Deal with clusterLegend object: 
+	### Deal with clusterLegend object Part II: 
 	### - Add color of cluster and cluster/sample name to tip labels if plotType=="name"
 	### - Make colorMat matrix if plotType=="colorblock"
 	###############
@@ -422,10 +436,10 @@ setMethod(
 	else tip.color<-"black"
 	
 
-  	###############
+  	#---------------
   	#this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
   	# Divides edge lengths so not too large.
-  	###############
+  	#---------------
   	if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) 
 		
 	prohibitOptions<-c("tip.color","node.pos","edge.width","horizontal","direction","type")

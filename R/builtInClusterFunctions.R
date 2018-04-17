@@ -59,8 +59,10 @@
 #' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
   dissE<-(cluster::daisy(t(x)))^2
-  silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE))
-  silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
+  silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
+  if(!inherits(silObj,"try-error")) 
+	  silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
+  else silinfo<-NULL
   return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }
 .kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")

@@ -12,6 +12,8 @@
 #----------------------------------------------------------------
 language: r
 cache: packages
+# Temporarily enable when caching Bioconductor packages
+#script: true
 
 # Temporarily enable when caching Bioconductor packages
 #script: true
@@ -34,7 +36,6 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - hadley/devtools@efa894ffa
   - Bioconductor/S4Vectors
 
 ## Code coverage

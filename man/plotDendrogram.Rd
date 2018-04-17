@@ -8,8 +8,7 @@
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
   leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
-  "ids"), mergeInfo = c("none", "all", "Storey", "PC", "adjP", "locfdr", "MB",
-  "JC", "mergeMethod"), main, sub, clusterLabelAngle = 45,
+  "ids"), mergeInfo = "none", main, sub, clusterLabelAngle = 45,
   removeOutbranch = TRUE, legend = c("side", "below", "none"),
   nodeColors = NULL, ...)
 }
@@ -38,7 +37,7 @@ internal clusterIds value will be plotted (only appropriate if
 
 \item{mergeInfo}{What kind of information about merge to plot on dendrogram. If not 
 equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
-creates.}
+creates, and the input to \code{mergeInfo} corresponds to that of \code{plotInfo} in \code{mergeClusters}.}
 
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
@@ -97,5 +96,5 @@ plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 
 }
 \seealso{
-\code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
+\code{\link{mergeClusters}},\code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 }

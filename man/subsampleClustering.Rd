@@ -13,7 +13,7 @@
   diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"), resamp.num = 100,
   samp.p = 0.7, ncores = 1, checkArgs = TRUE, checkDiss = TRUE,
-  largeDataset = FALSE, doGC = FALSE, ...)
+  largeDataset = FALSE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -42,7 +42,7 @@ object. For any given \code{\link{ClusterFunction}} object, use function
 \code{\link{requiredArgs}} to get a list of required arguments for the
 object.}
 
-\item{classifyMethod}{method for determining which samples should be used in 
+\item{classifyMethod}{method for determining which samples should be used in
 calculating the co-occurance matrix. "All"= all samples, "OutOfSample"=
 those not subsampled, and "InSample"=those in the subsample.  See details
 for explanation.}
@@ -51,7 +51,7 @@ for explanation.}
 
 \item{samp.p}{the proportion of samples to sample for each subsample.}
 
-\item{ncores}{integer giving the number of cores. If ncores>1, mclapply will 
+\item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
 be called.}
 
 \item{checkArgs}{logical as to whether should give warning if arguments given
@@ -61,13 +61,9 @@ arguments will be ignored without warning.}
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
 
-\item{largeDataset}{logical indicating whether a more memory-efficient version 
-should be used because the dataset is large. This is a beta option, and is 
+\item{largeDataset}{logical indicating whether a more memory-efficient version
+should be used because the dataset is large. This is a beta option, and is
 in the process of being tested before it becomes the default.}
-
-\item{doGC}{logical indicating whether frequent calls to gc should be 
-implemented in children processes (i.e. when ncores>1) to free up memory 
-for the other processes.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
@@ -108,12 +104,18 @@ co-occurance.
   subsamples are taken) which can cause errors if you then pass the resulting
   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
   "All".
+
+Our subsampling algorithm is implemented in C++ and is fast and
+  simple but may be memory inefficient if \code{samp.p} is low.
+  \code{largeDataset = TRUE} should be more efficient in such situations,
+  possibly at the cost of speed. Note that this feature is experimental and
+  should be used only by the developers.
 }
 \examples{
 \dontrun{
 #takes a bit of time, not run on checks:
 data(simData)
-coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData, 
+coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData,
 clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
 
 #visualize the resulting co-occurance matrix

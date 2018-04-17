@@ -41,9 +41,9 @@
 \item{y}{additional clusters to add to x. Can be a ClusterExperiment object
 or a matrix/vector of clusters.}
 
-\item{clusterTypes}{a string describing the nature of the clustering. The 
-values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are 
-reserved for the clustering coming from the package workflow and should not 
+\item{clusterTypes}{a string describing the nature of the clustering. The
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
 \item{clusterLabels}{label(s) for the clusters being added. If \code{y} a matrix, the column names of that matrix will be used by default, if \code{clusterLabels} is not given.}
