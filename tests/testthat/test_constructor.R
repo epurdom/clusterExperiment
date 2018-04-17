@@ -4,7 +4,7 @@ context("Constructor")
 
 test_that("saved rsecFluidigm is still valid object", {
 	data(rsecFluidigm)
-	validObject(rsecFluidigm)
+	expect_true(validObject(rsecFluidigm))
 		  })
 
 		  
