@@ -1,13 +1,8 @@
-Changes in version 1.99.2-9001 ( Release date: )
+Changes in version 1.99.3 ( Release date: 2018-04-17)
 =======
 
 Changes:
 * Re-implemented subsampleClustering() and combineMany() to use C++.
-
-Changes in version 1.99.1-9001 ( Release date: 2018-02-15)
-==============
-
-Changes:
 * Method "adjP" in `mergeClusters` now allows for further requirement that gene have a minimal log-fold change ('logFCcutoff').
 
 Bugs:
