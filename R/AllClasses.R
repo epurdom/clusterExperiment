@@ -8,8 +8,8 @@ setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
-setClassUnion("matrixOrHDF5",members=c("matrix", "HDF5Matrix","DelayedMatrix"))
-setClassUnion("matrixOrHDF5OrNULL",members=c("matrix", "HDF5Matrix","DelayedArray","NULL"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray"))
+setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 
 #############################################################
 #############################################################
@@ -112,7 +112,7 @@ setClass(
     dendro_clusters = "dendrogramOrNULL",
     dendro_index = "numeric",
 	dendro_outbranch = "logical",
-    coClustering = "matrixOrNULL",
+    coClustering = "matrixOrHDF5OrNULL",
     clusterLegend="list",
     orderSamples="numeric",
 	merge_index="numeric",

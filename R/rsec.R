@@ -123,8 +123,23 @@ setMethod(
         seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					
     if(run){
-     
-	  ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
+    #first add ones that have default value
+		passedArgs<-list(ce=ce,combineProportion=combineProportion,mergeMethod=mergeMethod)
+	#add those who will use default value from the function -- is there easier way
+		if(!missing(combineProportion)) 
+			passedArgs<-c(passedArgs,combineProportion=combineProportion)
+		if(!missing(combineMinSize)) 
+			passedArgs<-c(passedArgs,combineMinSize=combineMinSize)
+		if(!missing(dendroReduce)) 
+			passedArgs<-c(passedArgs,dendroReduce=dendroReduce)
+		if(!missing(dendroNDims)) 
+			passedArgs<-c(passedArgs,dendroNDims=dendroNDims)
+		if(!missing(mergeCutoff)) 
+			passedArgs<-c(passedArgs,dendroNDims=mergeCutoff)
+		if(!missing(mergeLogFCcutoff)) 
+			passedArgs<-c(passedArgs,dendroNDims=mergeLogFCcutoff)
+		ce<-do.call(".postClusterMany",passedArgs)
+			 #.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
     return(ce)
 })

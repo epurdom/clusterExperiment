@@ -706,9 +706,10 @@ test_that("Different direct options of `clusterSingle` ", {
   expect_silent(clusterSingle(smSimCount,
                            subsample=FALSE, sequential=FALSE,
                            mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"),isCount=TRUE) )
-  expect_error(clusterSingle(smSimData,
+  #suppressWarnings because in addition to error, R prints warning about NAs
+  expect_error(suppressWarnings(clusterSingle(smSimData,
                           subsample=FALSE, sequential=FALSE,
-                          mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"),isCount=TRUE),"User-supplied `transFun` produces NA values",info="test error handling for isCount=TRUE when can't take log")
+                          mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"),isCount=TRUE)),"User-supplied `transFun` produces NA values",info="test error handling for isCount=TRUE when can't take log")
 
 
 })
