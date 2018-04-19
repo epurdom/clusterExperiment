@@ -38,7 +38,7 @@
 \arguments{
 \item{x}{a ClusterExperiment object.}
 
-\item{y}{additional clusters to add to x. Can be a ClusterExperiment object
+\item{y}{additional clusters to add to x. Can be a ClusterExperiment object 
 or a matrix/vector of clusters.}
 
 \item{clusterTypes}{a string describing the nature of the clustering. The
@@ -46,7 +46,9 @@ values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
-\item{clusterLabels}{label(s) for the clusters being added. If \code{y} a matrix, the column names of that matrix will be used by default, if \code{clusterLabels} is not given.}
+\item{clusterLabels}{label(s) for the clusters being added. If \code{y} a
+matrix, the column names of that matrix will be used by default, if
+\code{clusterLabels} is not given.}
 
 \item{clusterLegend}{a list giving the cluster legend for the clusters added.}
 
@@ -74,12 +76,12 @@ A \code{\link{ClusterExperiment}} object with the added clusters.
  \code{\link{SingleCellExperiment}} object.
 }
 \description{
-These functions are used to add or remove clusters to a
+These functions are used to add or remove clusters to a 
 \code{\link{ClusterExperiment}} object.
 }
 \details{
 addClusterings adds y to x, and is thus not symmetric in the two 
-  arguments. In particular, the \code{primaryCluster}, all of the dendrogram
+  arguments. In particular, the \code{primaryCluster}, all of the dendrogram 
   information, \code{coClustering}, and \code{orderSamples} are all kept from
   the x object, even if y is a ClusterExperiment.
 

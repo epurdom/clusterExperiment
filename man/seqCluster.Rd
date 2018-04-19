@@ -52,7 +52,7 @@ progress.}
 \item{mainClusterArgs}{list of arguments to be passed to
 \code{\link{mainClustering}}).}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is 
 valid.}
 }
 \value{

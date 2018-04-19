@@ -28,8 +28,8 @@
   missingColor = "grey", colPalette = NULL, ...)
 }
 \arguments{
-\item{object}{A matrix of with each column corresponding to a clustering
-and each row a sample or a \code{\link{ClusterExperiment}} object.}
+\item{object}{A matrix of with each column corresponding to a clustering and
+each row a sample or a \code{\link{ClusterExperiment}} object.}
 
 \item{whichClusters}{If numeric, a predefined order for the clusterings in 
 the plot. If x is a \code{\link{ClusterExperiment}} object, 
@@ -39,11 +39,11 @@ the plot. If x is a \code{\link{ClusterExperiment}} object,
 'all' or 'workflow' to indicate choosing all clusters or choosing all
 \code{\link{workflowClusters}}.}
 
-\item{...}{for \code{plotBarplot} arguments passed either to the method
-of \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
+\item{...}{for \code{plotBarplot} arguments passed either to the method of
+\code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}
 
-\item{labels}{if object is a ClusterExperiment object, then labels defines
-whether the clusters will be identified by their names values in
+\item{labels}{if object is a ClusterExperiment object, then labels defines 
+whether the clusters will be identified by their names values in 
 clusterLegend (labels="names", the default) or by their clusterIds value in
 clusterLegend (labels="ids").}
 
@@ -51,15 +51,16 @@ clusterLegend (labels="ids").}
 By default uses names of the 1st column of clusters matrix. See details.}
 
 \item{legNames}{names for the clusters dividing up the 1st clusters (will 
-appear in legend). By default uses names of the 2nd cluster of clusters matrix. 
-If only one clustering, \code{xNames} and \code{legNames} refer to the same clustering. See details.}
+appear in legend). By default uses names of the 2nd cluster of clusters
+matrix. If only one clustering, \code{xNames} and \code{legNames} refer to
+the same clustering. See details.}
 
 \item{legend}{whether to plot the legend}
 
-\item{xlab}{label for x-axis. By default or if equal NULL the column name of
+\item{xlab}{label for x-axis. By default or if equal NULL the column name of 
 the 1st cluster of clusters matrix}
 
-\item{legend.title}{label for legend. By default or if equal NULL the column
+\item{legend.title}{label for legend. By default or if equal NULL the column 
 name of the 2st cluster of clusters matrix}
 
 \item{unassignedColor}{If ``-1'' in \code{clusters}, will be given this color
@@ -69,30 +70,36 @@ name of the 2st cluster of clusters matrix}
 for samples that were missing from the clustering, mainly when comparing
 clusterings run on different sets of samples)}
 
-\item{colPalette}{a vector of colors used for the different clusters. See details.}
+\item{colPalette}{a vector of colors used for the different clusters. See
+details.}
 }
 \value{
 A plot is produced, nothing is returned
 }
 \description{
-Make a barplot of sample's assignments to clusters for single clustering, or
+Make a barplot of sample's assignments to clusters for single clustering, or 
 cross comparison for two clusterings.
 }
 \details{
 The first column of the cluster matrix will be on the x-axis and the
   second column (if present) will separate the groups of the first column.
 
-All arguments of the matrix version can be passed to the
-  \code{ClusterExperiment} version. As noted above, however, some arguments
+All arguments of the matrix version can be passed to the 
+  \code{ClusterExperiment} version. As noted above, however, some arguments 
   have different interpretations.
 
-If \code{whichClusters = "workflow"}, then the most recent two
-  clusters of the workflow will be chosen where recent is based on the
-  following order (most recent first): final, mergeClusters, combineMany,
+If \code{whichClusters = "workflow"}, then the most recent two 
+  clusters of the workflow will be chosen where recent is based on the 
+  following order (most recent first): final, mergeClusters, combineMany, 
   clusterMany.
 
-\code{xNames}, \code{legNames} and \code{colPalette} should all be named
-vectors, with the names referring to the clusters they should match to (for \code{ClusterExperiment} objects, it is determined by the argument \code{labels} as to whether the names should match the cluster names or the clusterIds). \code{colPalette} and \code{legNames} must be same length of the number of clusters found in the second clustering, or if  only a single clustering, the same length as the number of clusters in that clustering.
+\code{xNames}, \code{legNames} and \code{colPalette} should all be
+  named vectors, with the names referring to the clusters they should match
+  to (for \code{ClusterExperiment} objects, it is determined by the argument
+  \code{labels} as to whether the names should match the cluster names or the
+  clusterIds). \code{colPalette} and \code{legNames} must be same length of
+  the number of clusters found in the second clustering, or if  only a single
+  clustering, the same length as the number of clusters in that clustering.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

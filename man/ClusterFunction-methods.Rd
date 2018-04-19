@@ -41,13 +41,17 @@
 \S4method{inputType}{factor}(object)
 }
 \arguments{
-\item{object}{input to the method, usually either a \code{ClusterFunction} class or a character describing a built-in \code{ClusterFunction} object.}
+\item{object}{input to the method, usually either a \code{ClusterFunction}
+class or a character describing a built-in \code{ClusterFunction} object.}
 
-\item{genericOnly}{logical If TRUE, return only the generic required arguments (i.e. those required by the algorithm type) and not the arguments specific to that clustering found in the slot \code{requiredArgs}. If FALSE both sets of arguments are returned.}
+\item{genericOnly}{logical If TRUE, return only the generic required
+arguments (i.e. those required by the algorithm type) and not the arguments
+specific to that clustering found in the slot \code{requiredArgs}. If FALSE
+both sets of arguments are returned.}
 }
 \value{
-\code{requiredArgs}  returns a list of the required args of a function 
-(via a call to \code{\link{requiredArgs}})
+\code{requiredArgs}  returns a list of the required args of a
+  function (via a call to \code{\link{requiredArgs}})
 
 \code{algorithmType} returns a character value giving the type of 
 clustering function ("01" or "K")
@@ -59,6 +63,6 @@ type of the object
 This is a collection of helper methods for the ClusterExperiment class.
 }
 \details{
-Note that when subsetting the data, the dendrogram information and
-the co-clustering matrix are lost.
+Note that when subsetting the data, the dendrogram information and 
+  the co-clustering matrix are lost.
 }

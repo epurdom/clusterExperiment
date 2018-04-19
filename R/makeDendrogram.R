@@ -14,10 +14,10 @@
 #'   dimensionality reduction to perform before clustering. Can be either a
 #'   value stored in either of reducedDims or filterStats slot or a built-in
 #'   diminsionality reduction/filtering. The option "coCluster" will use the
-#'   co-Clustering matrix stored
+#'   co-Clustering matrix stored in the 'coClustering' slot of the
+#'   \code{ClusterExperiment} object
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
-#'   missing see details for default values. in the 'coClustering' slot of the
-#'   \code{ClusterExperiment} object.
+#'   missing calls \code{\link{defaultNDims}}.
 #' @param whichCluster an integer index or character string that identifies 
 #'   which cluster should be used to make the dendrogram. Default is 
 #'   primaryCluster.
@@ -25,11 +25,11 @@
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for 
 #'   signature \code{matrix}. For plotDendrogram, passed to 
 #'   \code{\link{plot.dendrogram}}.
-#' @param ignoreUnassignedVar logical. Whether filtering statistics should
-#'   ignore the unassigned samples within the clustering. Only relevant if
-#'   'reduceMethod' matches one of built-in filtering statistics in
-#'   \code{\link{listBuiltInFilterStats}()}. In which case the clustering identified
-#'   in \code{whichCluster} is passed to \code{makeFilterStats}. See
+#' @param ignoreUnassignedVar logical. Whether filtering statistics should 
+#'   ignore the unassigned samples within the clustering. Only relevant if 
+#'   'reduceMethod' matches one of built-in filtering statistics in 
+#'   \code{\link{listBuiltInFilterStats}()}. In which case the clustering
+#'   identified in \code{whichCluster} is passed to \code{makeFilterStats}. See 
 #'   \code{\link{makeFilterStats}}  for more details.
 #' @inheritParams clusterSingle
 #' @details The function returns two dendrograms (as a list if x is a matrix or 
@@ -38,7 +38,6 @@
 #'   In the sample dendrogram the clusters are again clustered, but now the 
 #'   samples are also part of the resulting dendrogram. This is done by giving 
 #'   each sample the value of the medoid of its cluster.
-#'   
 #' @details The argument \code{unassignedSamples} governs what is done with 
 #'   unassigned samples (defined by a -1 cluster value). If
 #'   unassigned=="cluster", then the dendrogram is created by hclust of the
@@ -52,13 +51,9 @@
 #'   for the \code{@dendro_samples} slot.
 #' @details If any merge information is stored in the input object, it will be 
 #'   erased by a call to mergeDendrogram.
-#' @details If \code{nDims} is missing, it will be given a default value
-#'   depending on the value of \code{reduceMethod}. If \code{reduceMethod} is set to a
-#'   filtering statistic, \code{nDims} is arbitrarily set to 500. If
-#'   \code{reduceMethod} matches a dimensionality reduction value saved in
-#'   \code{x}, then the number of columns of this matrix. If not, and
-#'   \code{reduceMethod} matches a value of \code{listBuiltInReducedDims()}, then
-#'   arbirarily set to 50.
+#' @details If \code{nDims} is missing, it will be given a default value 
+#'   depending on the value of \code{reduceMethod}. See
+#'   \code{\link{defaultNDims}} for details.
 #' @return If x is a matrix, a list with two dendrograms, one in which the 
 #'   leaves are clusters and one in which the leaves are samples. If x is a 
 #'   ClusterExperiment object, the dendrograms are saved in the appropriate
@@ -84,69 +79,69 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
-                    nDims=defaultNDims(x,reduceMethod),ignoreUnassignedVar=TRUE,
-					unassignedSamples=c("outgroup", "cluster"),...)
+                        nDims=defaultNDims(x,reduceMethod),ignoreUnassignedVar=TRUE,
+                        unassignedSamples=c("outgroup", "cluster"),...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
     if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
-#    
+    #    
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
     
-	#cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
+    #cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
     ########
     ##Transform the data
     ########
     if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
-	if(reduceMethod!="coCluster"){
-	    #need to change name of reduceMethod to make it match the 
-		#clustering information if that option chosen.
-		reduceMethodName<-reduceMethod
-		if(ignoreUnassignedVar){
-			reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
-		}
-		#if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
-	    if(length(nDims) > 1) {
-	      stop("makeDendrogram only handles one choice of dimensions.")
-	    }
-	    if(!is.na(nDims) & reduceMethod=="none") {
-	      warning("specifying nDims has no effect if reduceMethod==`none`")
-	    }
-		###Calculate filters/reduceMethod if needed...
-		if(!isReducedDims(x,reduceMethod) & isBuiltInReducedDims(reduceMethod)){
-				x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims)
-			}
-		else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
-				x<-makeFilterStats(x,filterStat=reduceMethod,
-				whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
-			}
-			
-		if(reduceMethod=="none") 
-			dat<-transformData(x)
-		else if(isReducedDims(x,reduceMethod))
-			dat<-t(reducedDim(x,type=reduceMethod)[,1:nDims])
-		else if(isFilterStats(x,reduceMethodName))
-			dat<-transformData(filterData(x,filterStats=reduceMethodName,percentile=nDims))
-		else
-			stop("'x' does not contain the given 'reduceMethod' value nor does 'reduceMethod' value match any built-in filters or dimensionality reduction options.")
-	    outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
-	}
-	else{
-		if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'reduceMethod'")
-			if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
-		outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
-		
-	}
+    if(reduceMethod!="coCluster"){
+      #need to change name of reduceMethod to make it match the 
+      #clustering information if that option chosen.
+      reduceMethodName<-reduceMethod
+      if(ignoreUnassignedVar){
+        reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
+      }
+      #if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
+      if(length(nDims) > 1) {
+        stop("makeDendrogram only handles one choice of dimensions.")
+      }
+      if(!is.na(nDims) & reduceMethod=="none") {
+        warning("specifying nDims has no effect if reduceMethod==`none`")
+      }
+      ###Calculate filters/reduceMethod if needed...
+      if(!isReducedDims(x,reduceMethod) & isBuiltInReducedDims(reduceMethod)){
+        x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims)
+      }
+      else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
+        x<-makeFilterStats(x,filterStat=reduceMethod,
+                           whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
+      }
+      
+      if(reduceMethod=="none") 
+        dat<-transformData(x)
+      else if(isReducedDims(x,reduceMethod))
+        dat<-t(reducedDim(x,type=reduceMethod)[,1:nDims])
+      else if(isFilterStats(x,reduceMethodName))
+        dat<-transformData(filterData(x,filterStats=reduceMethodName,percentile=nDims))
+      else
+        stop("'x' does not contain the given 'reduceMethod' value nor does 'reduceMethod' value match any built-in filters or dimensionality reduction options.")
+      outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
+    }
+    else{
+      if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run combineMany before running 'makeDendrogram' or choose another option for 'reduceMethod'")
+      if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
+      outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
+      
+    }
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
-
-	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"	
+    
+    x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"	
     ch<-.checkDendrogram(x)
-	if(!is.logical(ch)) stop(ch)
+    if(!is.logical(ch)) stop(ch)
     return(x)
   })
 

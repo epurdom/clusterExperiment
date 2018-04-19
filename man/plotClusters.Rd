@@ -46,12 +46,11 @@ the plot. If x is a \code{\link{ClusterExperiment}} object,
 of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
 (if \code{add=FALSE}).}
 
-\item{existingColors}{how to make use of the exiting colors in the
-\code{ClusterExperiment} object. 'ignore' will ignore them and assign new
-colors. 'firstOnly' will use the existing colors of only the 1st
-clustering, and then align the remaining clusters and give new colors for the 
-remaining only. 'all' will use 
-all of the existing colors.}
+\item{existingColors}{how to make use of the exiting colors in the 
+\code{ClusterExperiment} object. 'ignore' will ignore them and assign new 
+colors. 'firstOnly' will use the existing colors of only the 1st 
+clustering, and then align the remaining clusters and give new colors for
+the remaining only. 'all' will use all of the existing colors.}
 
 \item{resetNames}{logical. Whether to reset the names of the clusters in
 \code{clusterLegend} to be the aligned integer-valued ids from
@@ -79,12 +78,12 @@ a column or column name, respectively, of the \code{colData} slot of the
 columns, they will be encoded as 'unassigned' and receive the same color as
 'unassigned' samples in the clustering.}
 
-\item{clusterLabels}{names to go with the columns (clusterings) in matrix
-\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the
-\code{clusterLabels} argument must include names for the sample data too.
+\item{clusterLabels}{names to go with the columns (clusterings) in matrix 
+\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the 
+\code{clusterLabels} argument must include names for the sample data too. 
 If the user gives only names for the clusterings, the code will try to 
-anticipate that and use the column names of the sample data, but this is fragile.
-If set to \code{FALSE}, then no labels will be plotted.}
+anticipate that and use the column names of the sample data, but this is
+fragile. If set to \code{FALSE}, then no labels will be plotted.}
 
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters

@@ -141,20 +141,20 @@
 #' @rdname seqCluster
 #' @export
 seqCluster<-function(x=NULL, diss=NULL, k0,  
-     subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
-     k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=TRUE)
+                     subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
+                     k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=TRUE)
 {
   ########
   ####Checks
   ########
-	
-    	checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
-		if(is.character(checkOut)) stop(checkOut)
-else {
-	mainClusterArgs<-checkOut$mainClusterArgs
-	subsampleArgs<-checkOut$subsampleArgs
-	input<-checkOut$inputClusterD
-}		
+  
+  checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+  if(is.character(checkOut)) stop(checkOut)
+  else {
+    mainClusterArgs<-checkOut$mainClusterArgs
+    subsampleArgs<-checkOut$subsampleArgs
+    input<-checkOut$inputClusterD
+  }		
   
   ################
   ################
@@ -193,23 +193,23 @@ else {
   whyStop<-NULL
   
   updateClustering<-function(newk){
-      if(verbose) cat(paste("k =", newk,"\n"))
-	  if(subsample){
-		  tempArgs<-subsampleArgs
-		  tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k  
-		  #also set the k for the mainClustering to be the same as in subsampling.
-		  tempClusterDArgs<-mainClusterArgs
-		  tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
-		    	      
-		  res <- .clusterWrapper(x=x, diss=diss,subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
-      }
-      else{
-          tempArgs<-mainClusterArgs
-		  tempArgs[["clusterArgs"]]<-c(list(k=newk), mainClusterArgs[["clusterArgs"]]) #set k
-          res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=subsampleArgs, mainClusterArgs=tempArgs)$results
-        
-      }
-	  return(res)
+    if(verbose) cat(paste("k =", newk,"\n"))
+    if(subsample){
+      tempArgs<-subsampleArgs
+      tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k  
+      #also set the k for the mainClustering to be the same as in subsampling.
+      tempClusterDArgs<-mainClusterArgs
+      tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
+      
+      res <- .clusterWrapper(x=x, diss=diss,subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
+    }
+    else{
+      tempArgs<-mainClusterArgs
+      tempArgs[["clusterArgs"]]<-c(list(k=newk), mainClusterArgs[["clusterArgs"]]) #set k
+      res <- .clusterWrapper(x=x, diss=diss, subsample=subsample,  subsampleArgs=subsampleArgs, mainClusterArgs=tempArgs)$results
+      
+    }
+    return(res)
   }
   while (remain >= remain.n && (found || k <= k.max)) {
     if (found) { #i.e. start finding new cluster
@@ -218,7 +218,7 @@ else {
       currentStart<-k.start #will add this to kstart if successful in finding cluster
       #find clusters for K,K+1
       for (i in 1:seq.num) {
-		newk<-k + i - 1
+        newk<-k + i - 1
         res<-updateClustering(newk)
         if(length(res)>0) res <- res[1:min(top.can,length(res))]
         candidates[[i]]<-res
@@ -226,10 +226,10 @@ else {
     }
     else { #need to go increase to K+2,K+3, etc.
       candidates <- candidates[-1] #remove old k
-	  newk<-k + seq.num - 1
+      newk<-k + seq.num - 1
       if(verbose) cat(paste("k =", newk, "\n"))
       #add new k (because always list o)
-	  res<-updateClustering(newk)
+      res<-updateClustering(newk)
       if(length(res)>0) res <- res[1:min(top.can,length(res))]
       candidates[[seq.num]] <- res
     }

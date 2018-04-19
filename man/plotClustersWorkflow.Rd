@@ -32,7 +32,10 @@ to clusterings of clusterType \code{clusterMany}.}
 \item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the highlighted clusterings.}
 
-\item{existingColors}{one of "ignore","all","highlightOnly". Whether the plot should use the stored colors in the \code{ClusterExperiment} object given. "highlightOnly" means only the highlighted clusters will use the stored colors, not the clusterMany clusterings.}
+\item{existingColors}{one of "ignore","all","highlightOnly". Whether the plot
+should use the stored colors in the \code{ClusterExperiment} object given.
+"highlightOnly" means only the highlighted clusters will use the stored
+colors, not the clusterMany clusterings.}
 
 \item{nSizeResult}{the number of rows each highlighted clustering should take up.
 Increasing the number increases the thickness of the rectangles

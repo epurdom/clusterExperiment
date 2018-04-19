@@ -40,22 +40,25 @@ following classes: matrix (with genes in rows),
 or \code{ClusterExperiment}.}
 
 \item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
-3) stored filtering or reducedDim values in the object.}
+dimensionality reduction to perform before clustering. Options are 1)
+"none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 3)
+stored filtering or reducedDim values in the object.}
 
 \item{nReducedDims}{vector of the number of dimensions to use (when 
 \code{reduceMethod} gives a dimensionality reduction method).}
 
-\item{transFun}{a transformation function to be applied to the data. If the transformation 
-applied to the data creates an error or NA values, then the function will throw an error.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{transFun}{a transformation function to be applied to the data. If the
+transformation applied to the data creates an error or NA values, then the
+function will throw an error. If object is of class
+\code{ClusterExperiment}, the stored transformation will be used and giving
+this parameter will result in an error.}
 
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
 \item{...}{For signature \code{list}, arguments to be passed on to mclapply 
 (if ncores>1). For all the other signatures, arguments to be passed to the 
@@ -82,17 +85,17 @@ dissimilarity matrix. Takes on values in [0,1]. See documentation of
 silhouette width (only used when clusterFunction of type "K").}
 
 \item{sequential}{logical whether to use the sequential strategy (see details
-of \code{\link{seqCluster}}). Can be used in combination with
+of \code{\link{seqCluster}}). Can be used in combination with 
 \code{subsample=TRUE} or \code{FALSE}.}
 
 \item{removeSil}{logical as to whether remove when silhouette < silCutoff
 (only used if clusterFunction of type "K")}
 
 \item{subsample}{logical as to whether to subsample via 
-\code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
-done on the co-occurance between clusterings in the subsampled clustering
-results.  If FALSE, the mainClustering step will be run directly on
-\code{x}/\code{diss}}
+\code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
+step is done on the co-occurance between clusterings in the subsampled
+clustering results.  If FALSE, the mainClustering step will be run directly
+on \code{x}/\code{diss}}
 
 \item{silCutoff}{Requirement on minimum silhouette width to be included in
 cluster (only for combinations where removeSil=TRUE).}
@@ -118,10 +121,10 @@ are left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
-help pages of \code{\link{mainClustering}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering
+step, see help pages of \code{\link{mainClustering}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to the subsampling step
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step 
 (if \code{subsample=TRUE}), see help pages of 
 \code{\link{subsampleClustering}}.}
 

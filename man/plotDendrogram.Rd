@@ -15,60 +15,63 @@
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{only used if \code{leafType="samples"}). If numeric, an
+\item{whichClusters}{only used if \code{leafType="samples"}). If numeric, an 
 index for the clusterings to be plotted with dendrogram. Otherwise, 
 \code{whichClusters} can be a character value identifying the 
-\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-\code{clusterLabels}; alternatively \code{whichClusters} can be either 
-'all' or 'workflow' or 'primaryCluster' to indicate choosing all clusters
-or choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates
+\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then 
+\code{clusterLabels}; alternatively \code{whichClusters} can be either 'all'
+or 'workflow' or 'primaryCluster' to indicate choosing all clusters or
+choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates 
 using the clustering that created the dendrogram.}
 
-\item{leafType}{if "samples" the dendrogram has one leaf per sample,
-otherwise it has one per cluster.}
+\item{leafType}{if "samples" the dendrogram has one leaf per sample, otherwise
+it has one per cluster.}
 
-\item{plotType}{one of 'name', 'colorblock' or 'id'. If 'Name' then 
-dendrogram will be plotted, and name of cluster or sample (depending on 
-type of value for \code{leafType}) will be plotted next to the leaf of the 
-dendrogram. If 'colorblock', rectangular blocks, corresponding to the color
-of the cluster will be plotted, along with cluster name legend. If 'id' the
-internal clusterIds value will be plotted (only appropriate if 
+\item{plotType}{one of 'name', 'colorblock' or 'id'. If 'Name' then dendrogram
+will be plotted, and name of cluster or sample (depending on type of value
+for \code{leafType}) will be plotted next to the leaf of the dendrogram. If
+'colorblock', rectangular blocks, corresponding to the color of the cluster
+will be plotted, along with cluster name legend. If 'id' the internal
+clusterIds value will be plotted (only appropriate if 
 \code{leafType="clusters"}).}
 
-\item{mergeInfo}{What kind of information about merge to plot on dendrogram. If not 
-equal to "none", will replicate the kind of plot that \code{\link{mergeClusters}} 
-creates, and the input to \code{mergeInfo} corresponds to that of \code{plotInfo} in \code{mergeClusters}.}
+\item{mergeInfo}{What kind of information about merge to plot on dendrogram.
+If not equal to "none", will replicate the kind of plot that
+\code{\link{mergeClusters}} creates, and the input to \code{mergeInfo}
+corresponds to that of \code{plotInfo} in \code{mergeClusters}.}
 
 \item{main}{passed to the \code{plot.phylo} function to set main title.}
 
 \item{sub}{passed to the \code{plot.phylo} function to set subtitle.}
 
-\item{clusterLabelAngle}{angle at which label of cluster will be drawn. Only
+\item{clusterLabelAngle}{angle at which label of cluster will be drawn. Only 
 applicable if \code{plotType="colorblock"}.}
 
-\item{removeOutbranch}{logical, only applicable if there are missing samples
-(i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram
-for the samples was made by putting missing samples in an outbranch. In
-which case, if this parameter is TRUE, the outbranch will not be plotted,
-and if FALSE it will be plotted.}
+\item{removeOutbranch}{logical, only applicable if there are missing samples 
+(i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram for
+the samples was made by putting missing samples in an outbranch. In which
+case, if this parameter is TRUE, the outbranch will not be plotted, and if
+FALSE it will be plotted.}
 
-\item{legend}{character, only applicable if \code{plotType="colorblock"}.
-Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is
-used to draw the color values of the clusters/samples next to the
+\item{legend}{character, only applicable if \code{plotType="colorblock"}. 
+Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is 
+used to draw the color values of the clusters/samples next to the 
 dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 available for 'ape' package >= 4.1-0.6).}
 
-\item{nodeColors}{named vector of colors to be plotted on a node in the dendrogram. 
-Names should match the name of the node (calls \code{\link[ape]{nodelabels}}).}
+\item{nodeColors}{named vector of colors to be plotted on a node in the
+dendrogram. Names should match the name of the node (calls
+\code{\link[ape]{nodelabels}}).}
 
-\item{...}{arguments passed to the \code{\link{plot.phylo}} function of
+\item{...}{arguments passed to the \code{\link{plot.phylo}} function of 
 \code{ape} that plots the dendrogram.}
 }
 \value{
 A dendrogram is plotted. Returns (invisibly) a list with elements
 \itemize{
 \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
-\item{\code{originalObject}}{ the \code{phylo} object before adjusting the node/tip labels. }
+\item{\code{originalObject}}{ the \code{phylo} object before adjusting the
+node/tip labels. }
 }
 }
 \description{
@@ -96,5 +99,6 @@ plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 
 }
 \seealso{
-\code{\link{mergeClusters}},\code{\link[ape]{plot.phylo}},\code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
+\code{\link{mergeClusters}},\code{\link[ape]{plot.phylo}},
+  \code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
 }

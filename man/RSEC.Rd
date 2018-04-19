@@ -52,24 +52,27 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
-determines whether to rerun the clusterMany step. Useful if want to try
-different parameters for combining clusters after the clusterMany step,
+determines whether to rerun the clusterMany step. Useful if want to try 
+different parameters for combining clusters after the clusterMany step, 
 without the computational costs of the clusterMany step.}
 
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
-\item{transFun}{a transformation function to be applied to the data. If the transformation 
-applied to the data creates an error or NA values, then the function will throw an error.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{transFun}{a transformation function to be applied to the data. If the
+transformation applied to the data creates an error or NA values, then the
+function will throw an error. If object is of class
+\code{ClusterExperiment}, the stored transformation will be used and giving
+this parameter will result in an error.}
 
 \item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
-3) stored filtering or reducedDim values in the object.}
+dimensionality reduction to perform before clustering. Options are 1)
+"none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 3)
+stored filtering or reducedDim values in the object.}
 
 \item{nFilterDims}{vector of the number of the most variable features to keep 
 (when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
@@ -77,7 +80,8 @@ dimensionality reduction to perform before clustering. Options are
 \item{nReducedDims}{vector of the number of dimensions to use (when 
 \code{reduceMethod} gives a dimensionality reduction method).}
 
-\item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
+\item{k0s}{the k0 parameter for sequential clustering (see
+\code{\link{seqCluster}})}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in 
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
@@ -99,26 +103,30 @@ documentation of \code{\link{seqCluster}}.}
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
-\item{combineProportion}{passed to \code{proportion} in \code{\link{combineMany}}}
+\item{combineProportion}{passed to \code{proportion} in
+\code{\link{combineMany}}}
 
 \item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
 
-\item{dendroReduce}{passed to \code{reduceMethod} in \code{\link{makeDendrogram}}}
+\item{dendroReduce}{passed to \code{reduceMethod} in
+\code{\link{makeDendrogram}}}
 
 \item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 
-\item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
+\item{mergeMethod}{passed to \code{mergeMethod} in
+\code{\link{mergeClusters}}}
 
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
-\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in \code{\link{mergeClusters}}}
+\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in
+\code{\link{mergeClusters}}}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
-help pages of \code{\link{mainClustering}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering
+step, see help pages of \code{\link{mainClustering}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to the subsampling step
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step 
 (if \code{subsample=TRUE}), see help pages of 
 \code{\link{subsampleClustering}}.}
 
@@ -140,12 +148,12 @@ however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object is returned containing all of 
-the clusterings from the steps of RSEC
+A \code{\link{ClusterExperiment}} object is returned containing all
+  of the clusterings from the steps of RSEC
 }
 \description{
-Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
-Clustering) for single cell sequencing data. This is a wrapper function
-around the existing ClusterExperiment workflow that results in the output of
-RSEC.
+Implementation of the RSEC algorithm (Resampling-based
+  Sequential Ensemble Clustering) for single cell sequencing data. This is a
+  wrapper function around the existing ClusterExperiment workflow that
+  results in the output of RSEC.
 }

@@ -31,23 +31,26 @@
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
 
-\item{plotUnassigned}{whether to plot the unassigned samples as a cluster (either -1 or -2)}
+\item{plotUnassigned}{whether to plot the unassigned samples as a cluster
+(either -1 or -2)}
 
-\item{unassignedColor}{If not NULL, should be character value giving the
+\item{unassignedColor}{If not NULL, should be character value giving the 
 color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
 
-\item{missingColor}{If not NULL, should be character value giving the color
+\item{missingColor}{If not NULL, should be character value giving the color 
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{main}{title of plot. If NULL, given default title.}
 
-\item{assay}{Identifies which assay in the \code{object} should be used for the data to be plotted.}
+\item{assay}{Identifies which assay in the \code{object} should be used for
+the data to be plotted.}
 }
 \value{
 A plot is created. The output of boxplot is returned
 }
 \description{
-Plot a boxplot of the (transformed) values for a particular gene, separated by cluster
+Plot a boxplot of the (transformed) values for a particular
+  gene, separated by cluster
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

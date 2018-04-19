@@ -52,15 +52,18 @@
 interpretation of parameters depends on the type of the input to
 \code{data}.}
 
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
-\item{transFun}{a transformation function to be applied to the data. If the transformation 
-applied to the data creates an error or NA values, then the function will throw an error.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{transFun}{a transformation function to be applied to the data. If the
+transformation applied to the data creates an error or NA values, then the
+function will throw an error. If object is of class
+\code{ClusterExperiment}, the stored transformation will be used and giving
+this parameter will result in an error.}
 
 \item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}. 
 For the other signatures, passed to the method for signature \code{matrix}.
@@ -143,12 +146,13 @@ number between 0 and 1, indicating that the breaks should be equally spaced
 (based on the range in the data) upto the `breaks' quantile, see 
 \code{\link{setBreaks}}}
 
-\item{symmetricBreaks}{logical as to whether the breaks created for the 
-color scale should be symmetrical around 0}
+\item{symmetricBreaks}{logical as to whether the breaks created for the color
+scale should be symmetrical around 0}
 
-\item{capBreaksLegend}{logical as to whether the legend for the breaks should be capped. 
-Only relevant if \code{breaks} is a value < 1, in which case if \code{capBreaksLegend=TRUE},
-only the values between the quantiles requested will show in the color scale legend.}
+\item{capBreaksLegend}{logical as to whether the legend for the breaks should
+be capped. Only relevant if \code{breaks} is a value < 1, in which case if
+\code{capBreaksLegend=TRUE}, only the values between the quantiles
+requested will show in the color scale legend.}
 
 \item{isSymmetric}{logical. if TRUE indicates that the input matrix is 
 symmetric. Useful when plotting a co-clustering matrix or other sample by 

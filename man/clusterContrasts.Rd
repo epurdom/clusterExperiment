@@ -14,56 +14,57 @@
   outputType = c("limma", "MAST"), removeNegative = TRUE)
 }
 \arguments{
-\item{cluster}{Either a vector giving contrasts assignments or a
+\item{cluster}{Either a vector giving contrasts assignments or a 
 ClusterExperiment object}
 
-\item{contrastType}{What type of contrast to create.
-`Dendro' traverses the given dendrogram and does contrasts of the samples
-in each side,  `Pairs' does pair-wise contrasts based on the pairs given in
-pairMat (if pairMat=NULL, does all pairwise), and `OneAgainstAll' compares
-each cluster to the average of all others.}
+\item{contrastType}{What type of contrast to create. `Dendro' traverses the
+given dendrogram and does contrasts of the samples in each side,  `Pairs'
+does pair-wise contrasts based on the pairs given in pairMat (if
+pairMat=NULL, does all pairwise), and `OneAgainstAll' compares each cluster
+to the average of all others.}
 
-\item{...}{arguments that are passed to from the \code{ClusterExperiment}
+\item{...}{arguments that are passed to from the \code{ClusterExperiment} 
 version to the most basic numeric version.}
 
-\item{dendro}{The dendrogram to traverse if contrastType="Dendro". Note that this
-should be the dendrogram of the clusters, not of the individual samples,  
-either of class "dendrogram" or "phylo4"}
+\item{dendro}{The dendrogram to traverse if contrastType="Dendro". Note that
+this should be the dendrogram of the clusters, not of the individual
+samples, either of class "dendrogram" or "phylo4"}
 
-\item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise
-contrasts (must match to elements of cl). If NULL, will do all pairwise of
-the clusters in \code{cluster} (excluding "-1" categories). Each row is a pair
-to be compared and must match the names of the clusters in the vector
+\item{pairMat}{matrix giving the pairs of clusters for which to do pair-wise 
+contrasts (must match to elements of cl). If NULL, will do all pairwise of 
+the clusters in \code{cluster} (excluding "-1" categories). Each row is a
+pair to be compared and must match the names of the clusters in the vector 
 \code{cluster}.}
 
-\item{outputType}{character string. Gives format for the resulting contrast
-matrix. Currently the two options are the format appropriate for
+\item{outputType}{character string. Gives format for the resulting contrast 
+matrix. Currently the two options are the format appropriate for 
 \code{\link[limma]{limma}} and \code{\link[MAST]{MAST}} package.}
 
 \item{removeNegative}{logical, whether to remove negative valued clusters 
-from the design matrix. Appropriate to pick TRUE (default) if design will
+from the design matrix. Appropriate to pick TRUE (default) if design will 
 be input into linear model on samples that excludes -1.}
 }
 \value{
 List with components:
-\itemize{
-\item{\code{contrastMatrix}}{ Contrast matrix, the form of which depends on \code{outputType}.
-If \code{outputType=="limma"}, the result of running
-  \code{\link{makeContrasts}}: a matrix with number of columns equal
-  to the number of contrasts, and rows equal to the number of levels of the
-  factor that will be fit in a linear model.}
-  \item{\code{contrastNames}}{A vector of names for each of the contrasts. NULL if no such additional names.}
-  }
+\itemize{ 
+\item{\code{contrastMatrix}}{ Contrast matrix, the form of which
+depends on \code{outputType}. If \code{outputType=="limma"}, the result of
+running \code{\link{makeContrasts}}: a matrix with number of columns equal to
+the number of contrasts, and rows equal to the number of levels of the factor
+that will be fit in a linear model.} 
+\item{\code{contrastNames}}{A vector of
+names for each of the contrasts. NULL if no such additional names.} 
+}
 }
 \description{
-Uses clustering to create different types of contrasts to be
+Uses clustering to create different types of contrasts to be 
   tested that can then be fed into DE testing programs.
 }
 \details{
 The input vector must be numeric clusters, but the external commands
-  that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require
-  syntatically valid R names. For this reason, the names of the levels will
-  be "X1" instead of "1". And negative values (if removeNegative=FALSE) will
+  that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require 
+  syntatically valid R names. For this reason, the names of the levels will 
+  be "X1" instead of "1". And negative values (if removeNegative=FALSE) will 
   be "X.1","X.2", etc.
 }
 \examples{
@@ -78,9 +79,14 @@ cl<-makeDendrogram(cl)
 clusterContrasts(cl,contrastType="Pairs")
 }
 \references{
-Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and Smyth, GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47. http://nar.oxfordjournals.org/content/43/7/e47
+Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and
+  Smyth, GK (2015). limma powers differential expression analyses for
+  RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47.
+  http://nar.oxfordjournals.org/content/43/7/e47
 
-Finak, et al. MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data. Genome Biology (2015).
+Finak, et al. MAST: a flexible statistical framework for
+  assessing transcriptional changes and characterizing heterogeneity in
+  single-cell RNA sequencing data. Genome Biology (2015).
 }
 \author{
 Elizabeth Purdom

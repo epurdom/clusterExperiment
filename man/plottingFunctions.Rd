@@ -69,11 +69,12 @@ data is then fed to heatmap.)}
 
 \item{whichClusters}{which clusters to use}
 
-\item{colPalette}{a vector of character colors. By default, the palette
+\item{colPalette}{a vector of character colors. By default, the palette 
 \code{bigPalette} is used}
 
-\item{which}{numeric. Which colors to plot. Must be a numeric vector with values
-between 1 and length of \code{colPalette}. If missing, all colors plotted.}
+\item{which}{numeric. Which colors to plot. Must be a numeric vector with
+values between 1 and length of \code{colPalette}. If missing, all colors
+plotted.}
 
 \item{cex}{numeric value giving the cex for the text of the plot.}
 
@@ -152,18 +153,18 @@ Most of these functions are called internally by plotting
 convertClusterLegend pulls out information stored in the
   \code{clusterLegend} slot of the object and returns it in useful format.
 
-\code{bigPalette} is a long palette of colors (length 58) used by
-  \code{\link{plotClusters}} and accompanying functions.
-  \code{showPalette} creates plot that gives index of each color in
-  a vector of colors. \code{massivePalette} is a combination of \code{bigPalette}
-  and the non-grey colors of \code{\link{colors}()} (length 487).
-  \code{massivePalette} is mainly useful for when doing \code{\link{plotClusters}}
-  of a very large number of clusterings, each with many clusters, so that the code
- doesn't run out of colors. However, many of the colors will be very similar
- to each other.
+\code{bigPalette} is a long palette of colors (length 58) used by 
+  \code{\link{plotClusters}} and accompanying functions. \code{showPalette}
+  creates plot that gives index of each color in a vector of colors.
+  \code{massivePalette} is a combination of \code{bigPalette} and the
+  non-grey colors of \code{\link{colors}()} (length 487). 
+  \code{massivePalette} is mainly useful for when doing
+  \code{\link{plotClusters}} of a very large number of clusterings, each with
+  many clusters, so that the code doesn't run out of colors. However, many of
+  the colors will be very similar to each other.
 
-\code{showPalette} will plot the \code{colPalette} colors with
-  their labels and index.
+\code{showPalette} will plot the \code{colPalette} colors with their
+  labels and index.
 
 if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 

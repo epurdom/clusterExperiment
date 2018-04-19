@@ -19,17 +19,21 @@
 \S4method{transformData}{SummarizedExperiment}(object, ...)
 }
 \arguments{
-\item{object}{a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.}
+\item{object}{a matrix, SummarizedExperiment, SingleCellExperiment or
+ClusterExperiment object.}
 
-\item{transFun}{a transformation function to be applied to the data. If the transformation 
-applied to the data creates an error or NA values, then the function will throw an error.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{transFun}{a transformation function to be applied to the data. If the
+transformation applied to the data creates an error or NA values, then the
+function will throw an error. If object is of class
+\code{ClusterExperiment}, the stored transformation will be used and giving
+this parameter will result in an error.}
 
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
 \item{...}{Values passed on the the 'matrix' method.}
 }

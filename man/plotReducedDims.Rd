@@ -63,7 +63,8 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 A plot is created. Nothing is returned.
 }
 \description{
-Plot a 2-dimensional representation of the data, color-code by a clustering.
+Plot a 2-dimensional representation of the data, color-code by a
+  clustering.
 }
 \details{
 If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
