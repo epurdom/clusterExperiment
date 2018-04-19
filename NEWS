@@ -13,7 +13,7 @@ Changes:
 * Method "adjP" in `mergeClusters` now allows for further requirement that gene have a minimal log-fold change ('logFCcutoff').
 
 Bugs:
-* Fix bug in `setBreaks` (isPositive and isNegative)
+* Fix bug in `setBreaks` (isPositive and isNegative variables)
 * use `stringr::str_sort` to make sort of character values locale independent
 
 Changes in version 1.99.2 ( Release date: 2018-03-22)
