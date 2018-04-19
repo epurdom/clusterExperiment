@@ -7,7 +7,5 @@ clusterVignette.md
 vignettes/*_cache
 vignettes/*_figure
 vignettes/*.R
-tests/checkClusterMany/*.Rout
-tests/checkClusterMany/*.txt
-tests/checkClusterMany/nohup.out
-tests/checkClusterMany/*.tar.gz
+tests/checkClusterMany/*
+tests/testthat/*.h5
