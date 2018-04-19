@@ -574,7 +574,7 @@ setMethod(
         if(reduceMethod=="none") 
           dat<-transformData(x,transFun=transFun) 
         else if(isReducedDims(x,reduceMethod)) 
-          dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]]]) ) 
+          dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]])] ) 
         else if(isFilterStats(x,reduceMethod)) 
           dat<-transformData( filterData(x, filterStats=reduceMethod, percentile=par[["nFilterDims"]]),
                               transFun=transFun)

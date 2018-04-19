@@ -3,7 +3,8 @@ Changes in version 1.99.3-9002 ( Release date: )
 
 Changes: 
 * Added support for hdf5 files stored in `assay` slot via the `HDF5Array` package
-* Removed most defaults from RSEC arguments -- pull them from underlying functions' defaults.
+* Removed most defaults from `RSEC` arguments -- pull them from underlying functions' defaults.
+* replace `1:` with `seq_len` and `seq_along`
 
 Changes in version 1.99.3 ( Release date: 2018-04-17)
 ==============
@@ -19,8 +20,8 @@ Bugs:
 Changes in version 1.99.2 ( Release date: 2018-03-22)
 ==============
 Bugs:
-* Fix defaultNDims so that returns minimum of 50 and the minimum dimension of data.
-* Fix RSEC so still returns results if hit error after clusterMany.
+* Fix `defaultNDims` so that returns minimum of 50 and the minimum dimension of data.
+* Fix `RSEC` so still returns results if hit error after clusterMany.
 
 
 Changes in version 1.99.0 ( Release date: 2018-02-15)
