@@ -4,8 +4,8 @@
 #' clustering of the samples across the range, which can be passed to 
 #' \code{plotClusters} for visualization.
 #' 
-#' @aliases clusterMany
-#'   
+#' @name clusterMany
+#' @aliases clusterMany,matrixOrHDF5-method
 #' @param x the data matrix on which to run the clustering. Can be object of the
 #'   following classes: matrix (with genes in rows), 
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
@@ -186,7 +186,7 @@
 #' @export 
 setMethod(
   f = "clusterMany",
-  signature = signature(x = "matrix"),
+  signature = signature(x = "matrixOrHDF5"),
   definition = function(x,
       reduceMethod="none",nReducedDims=NA, transFun=NULL,isCount=FALSE, ...
   ){

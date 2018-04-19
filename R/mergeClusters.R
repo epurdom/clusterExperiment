@@ -4,8 +4,8 @@
 #' @description Takes an input of hierarchical clusterings of clusters and
 #'   returns estimates of number of proportion of non-null and merges those
 #'   below a certain cutoff.
-#'
-#' @aliases mergeClusters
+#' @name mergeClusters
+#' @aliases mergeClusters mergeClusters,matrixOrHDF5-method
 #'
 #' @param x data to perform the test on. It can be a matrix or a
 #'   \code{\link{ClusterExperiment}}.
@@ -66,7 +66,7 @@
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
 #'   signature \code{matrix} and then if do not match those arguments, will be
 #'   passed onto \code{\link{plot.phylo}}.
-#' @inheritParams clusterMany,matrix-method
+#' @inheritParams clusterMany
 #'
 #' @details \strong{Estimation of Proportion non-null} "Storey" refers to the
 #'   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
@@ -172,12 +172,12 @@
 #' @importFrom locfdr locfdr
 #' @rdname mergeClusters
 setMethod(f = "mergeClusters",
-          signature = signature(x = "matrix"),
-          definition = function(x, cl, dendro=NULL,
+          signature = signature(x = "matrixOrHDF5"),
+          definition = function(x, cl, dendro=NULL, 
 			  mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
 			  plotInfo="none",
 			  nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-              cutoff=0.1, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+              cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
   dendroSamples<-NULL #currently option is not implemented for matrix version...
   if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
   logFCcutoff<-round(logFCcutoff,digits=1)

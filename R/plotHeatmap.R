@@ -608,7 +608,7 @@ setMethod(
 #' @rdname plotHeatmap
 setMethod(
     f = "plotHeatmap",
-    signature = signature(data = "matrix"),
+    signature = signature(data = "matrixOrHDF5"),
     definition = function(data,sampleData=NULL,
                           clusterSamplesData=NULL,
                           clusterFeaturesData=NULL,
@@ -659,7 +659,7 @@ setMethod(
           else{
               ##Call NMF:::cluster_mat so do the same thing:
               
-              if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData)) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix")
+              if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData) & !inherits(clusterSamplesData,"DelayedArray")) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix/DelayedArray class")
               clusterSamplesData<-data.matrix(clusterSamplesData)
               #check valid
               if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
@@ -696,7 +696,7 @@ setMethod(
                 else{
                     ##Call NMF:::cluster_mat so do the same thing:
                     
-                    if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData)) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
+                    if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData) &  !inherits(clusterFeaturesData,"DelayedArray")) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
                     clusterFeaturesData<-data.matrix(clusterFeaturesData)
                     #check valid
                     if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")

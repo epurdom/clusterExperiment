@@ -1,4 +1,6 @@
 #' @include AllChecks.R
+#' @importClassesFrom HDF5Array HDF5Matrix
+#' @importClassesFrom DelayedArray DelayedMatrix
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
@@ -6,6 +8,8 @@ setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray"))
+setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 
 #############################################################
 #############################################################
@@ -108,7 +112,7 @@ setClass(
     dendro_clusters = "dendrogramOrNULL",
     dendro_index = "numeric",
 	dendro_outbranch = "logical",
-    coClustering = "matrixOrNULL",
+    coClustering = "matrixOrHDF5OrNULL",
     clusterLegend="list",
     orderSamples="numeric",
 	merge_index="numeric",
@@ -189,7 +193,7 @@ setGeneric(
 #' @export
 setMethod(
   f = "ClusterExperiment",
-  signature = signature("matrix","ANY"),
+  signature = signature("matrixOrHDF5","ANY"),
   definition = function(object, clusters, ...){
     ClusterExperiment(SummarizedExperiment(object), clusters, ...)
   })

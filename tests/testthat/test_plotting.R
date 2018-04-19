@@ -59,6 +59,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 })
 
 
+
 test_that("`plotClusters` rerun above tests with sampleData included", {
 
   #test matrix version
@@ -130,6 +131,7 @@ test_that("plotting helpers", {
 })
 
 
+
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
@@ -159,6 +161,9 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     #plotBarplot(ceSim,whichClusters="primaryCluster")
 
 })
+
+
+
 
 test_that("plotReducedDims works",{
 	expect_silent(cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
@@ -193,4 +198,25 @@ test_that("plotFeatureBoxplot works",{
 	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
 	expect_silent(plotFeatureBoxplot(cc,ignoreUnassigned=TRUE,feature=rownames(cc)[2]))
+})
+
+test_that("plotting works with hdf5 assays objects",{
+	##plotClusters
+    expect_silent(cl1 <- clusterSingle(hdfSCE, reduceMethod="PCA",
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+	expect_silent(plotClusters(cl1))
+	
+	##plotBarplot
+	expect_silent(plotBarplot(cl1))
+	
+	##plotReducedDims
+	expect_silent(plotReducedDims(cl1,legend="bottomright"))
+
+	##plotFeatureBoxplot
+	expect_silent(plotFeatureBoxplot(object=cl1,feature=1))
+
+	
+
 })

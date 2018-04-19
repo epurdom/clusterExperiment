@@ -107,7 +107,7 @@ setMethod(
 
 #' @rdname workflowClusters
 #' @param whichCluster which cluster to set to current in the workflow
-#' @inheritParams clusterMany,matrix-method
+#' @inheritParams clusterMany
 #' @return \code{setToCurrent} returns a \code{ClusterExperiment} object where
 #'   the indicated cluster of \code{whichCluster} has been set to the most
 #'   current iteration in the workflow. Pre-existing clusters are appropriately

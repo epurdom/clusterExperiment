@@ -1,6 +1,6 @@
 #' @name transformData
 #' @title Transform the original data in a ClusterExperiment object
-#'
+#' @aliases transformData,matrixOrHDF5-method
 #' @description Provides the transformed data
 #'
 #' @param object a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.
@@ -27,11 +27,10 @@
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
 #' z<-transformData(cc) 
-#' @aliases transformData,matrix-method
 #' @export
 setMethod(
   f = "transformData",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,transFun=NULL,isCount=FALSE) {
 	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
 	  x <- try(transFun(object), silent=TRUE)

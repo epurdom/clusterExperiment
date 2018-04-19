@@ -2,8 +2,8 @@
 #'
 #' Align multiple clusterings of the same set of samples and provide a
 #' color-coded plot of their shared cluster assignments
-#'
-#' @aliases plotClusters
+#' @name plotClusters
+#' @aliases plotClusters,ClusterExperiment,character-method
 #' @docType methods
 #' @param object A matrix of with each column corresponding to a clustering
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. If a

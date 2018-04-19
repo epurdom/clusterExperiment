@@ -174,7 +174,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="missing"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="missing"),
   definition = function(x, diss,...) {
 	  clusterSingle(x=x,diss=NULL,...)
  
@@ -265,7 +265,7 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="matrixOrNULL"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="matrixOrNULL"),
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
       isCount=FALSE,transFun=NULL,
@@ -335,7 +335,6 @@ setMethod(
     if(input %in% c("both","diss") && !is.null(mainClusterArgs) && "distFunction" %in% names(mainClusterArgs)){
         if(!is.na(mainClusterArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in mainClusterArgs")
     }
-	
 	
 	##########
 	## Start running clustering
@@ -410,6 +409,7 @@ setMethod(
         #     else if(!"k" %in% names(mainClusterArgs)) mainClusterArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         # }
     }
+	
     resList<-do.call("mainClustering",c(list(x=x,diss=diss,format="list", returnData=TRUE),mainClusterArgs)) 
     return(resList) 
 }

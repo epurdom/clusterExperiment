@@ -3,13 +3,14 @@
 \docType{methods}
 \name{transformData}
 \alias{transformData}
-\alias{transformData,matrix-method}
+\alias{transformData,matrixOrHDF5-method}
 \alias{transformData,ClusterExperiment-method}
 \alias{transformData,SingleCellExperiment-method}
 \alias{transformData,SummarizedExperiment-method}
 \title{Transform the original data in a ClusterExperiment object}
 \usage{
-\S4method{transformData}{matrix}(object, transFun = NULL, isCount = FALSE)
+\S4method{transformData}{matrixOrHDF5}(object, transFun = NULL,
+  isCount = FALSE)
 
 \S4method{transformData}{ClusterExperiment}(object, ...)
 

@@ -5,7 +5,7 @@
 \alias{makeDendrogram}
 \alias{makeDendrogram,ClusterExperiment-method}
 \alias{makeDendrogram,dist-method}
-\alias{makeDendrogram,matrix-method}
+\alias{makeDendrogram,matrixOrHDF5-method}
 \title{Make hierarchy of set of clusters}
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
@@ -16,7 +16,7 @@
 \S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
   "cluster", "remove"), ...)
 
-\S4method{makeDendrogram}{matrix}(x, cluster,
+\S4method{makeDendrogram}{matrixOrHDF5}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)
 }
 \arguments{

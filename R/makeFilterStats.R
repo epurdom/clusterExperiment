@@ -51,8 +51,9 @@ setMethod(
 	  filterStats<-c(filterStats[-whCV])
   }
   else doCV<-FALSE
+	  ### Problem here in hdf5
   filterStatData<-sapply(filterStats,function(statName){
-	  f<-.matchToStats[[statName]]
+	  f<-.matchToStats(x)[[statName]]
 	  f(x)
   })
   if(doCV){
@@ -68,7 +69,7 @@ setMethod(
 #' @export
 setMethod(
   f = "makeFilterStats",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,...)
 {
 	makeFilterStats(SummarizedExperiment(object),...)
@@ -123,21 +124,49 @@ setMethod(
 	return(object)
 }
 )
+
 .makeClusterFilterStats<-function(filterStats,clusterName){
 	make.names(paste(filterStats,clusterName,sep="_"))
 }
 #' @rdname reduceFunctions
 #' @export
 listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
+
 #' @importFrom matrixStats rowVars rowMeans2 rowMads rowMedians rowIQRs
-.matchToStats<-SimpleList(
-	'var'=matrixStats::rowVars,
-	'mad'=matrixStats::rowMads,
-	'mean'=matrixStats::rowMeans2,
-	'iqr'=matrixStats::rowIQRs,
-	'median'=matrixStats::rowMedians)
-
-
+# .matchToStats<-SimpleList(
+# 	'var'=matrixStats::rowVars,
+# 	'mad'=matrixStats::rowMads,
+# 	'mean'=matrixStats::rowMeans2,
+# 	'iqr'=matrixStats::rowIQRs,
+# 	'median'=matrixStats::rowMedians)
+setMethod(
+  f = ".matchToStats",
+  signature = "matrix",
+  definition = function(object){
+	  S4Vectors::SimpleList(
+	  	'var'=matrixStats::rowVars,
+	  	'mad'=matrixStats::rowMads,
+	  	'mean'=matrixStats::rowMeans2,
+	  	'iqr'=matrixStats::rowIQRs,
+	  	'median'=matrixStats::rowMedians)
+  }
+  )
+  
+### need to go back to this and check what are the best options for these functions. 
+#' @importFrom stats IQR
+#' @importFrom S4Vectors SimpleList
+setMethod(
+f = ".matchToStats",
+signature = "DelayedArray",
+definition = function(object){
+  S4Vectors::SimpleList(
+  	'var'=function(x){apply(x,1,var)},
+  	'mad'=function(x){apply(x,1,mad)},
+  	'mean'=DelayedArray::rowMeans,
+  	'iqr'=function(x){apply(x,1,stats::IQR)},
+  	'median'=function(x){apply(x,1,median)})
+	
+})
 #' @rdname reduceFunctions
 #' @aliases filterData
 #' @param cutoff numeric. A value at which to filter the rows (genes) for the test statistic
@@ -191,7 +220,7 @@ setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,ty
 	isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
 	isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
   	if(isFilter)
-		nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(500,NROW(object))
+		nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
 	else if(isReducedDims(object,reduceMethod ))
 		nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
 	else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
@@ -203,9 +232,10 @@ setMethod( "defaultNDims","SingleCellExperiment",function(object,reduceMethod,ty
 	return(nDims)
 	
 })
-setMethod( "defaultNDims","matrix",function(object,...){
+setMethod( "defaultNDims","matrixOrHDF5",function(object,...){
 	return(defaultNDims(SingleCellExperiment(object),...))
 })
+
 
 #' @rdname reduceFunctions
 #' @return \code{filterNames} returns a vector of the columns of the rowData that are considered valid filtering statistics. Currently any numeric column in rowData is a valid filtering statistic. 

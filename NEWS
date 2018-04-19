@@ -1,9 +1,12 @@
-Changes in version 1.99.3-9001 ( Release date: )
-=======
+Changes in version 1.99.3-9002 ( Release date: )
+==============
 
+Changes: 
+* Added support for hdf5 files stored in `assay` slot via the `HDF5Array` package
+* Removed most defaults from RSEC arguments -- pull them from underlying functions' defaults.
 
 Changes in version 1.99.3 ( Release date: 2018-04-17)
-=======
+==============
 
 Changes:
 * Re-implemented subsampleClustering() and combineMany() to use C++.

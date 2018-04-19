@@ -23,7 +23,7 @@
 #'   \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the
 #'   default value of \code{\link{voom}}.
-#' @inheritParams clusterContrasts,ClusterExperiment-method
+#' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
@@ -149,7 +149,7 @@
 #' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
-          signature = signature(x = "matrix"),
+          signature = signature(x = "matrixOrHDF5"),
           definition = function(x, cluster,
                                 contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                                 dendro=NULL, pairMat=NULL,
@@ -163,6 +163,7 @@ setMethod(f = "getBestFeatures",
               cl <- .convertToNum(cl)
             }
             
+			###Note: this pulls hdf5 file into memory.
             dat <- data.matrix(x)
             contrastType <- match.arg(contrastType)
             contrastAdj <- match.arg(contrastAdj)

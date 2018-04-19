@@ -10,7 +10,7 @@
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
-\alias{RSEC,matrix-method}
+\alias{RSEC,matrixOrHDF5-method}
 \alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
@@ -21,17 +21,17 @@
 \S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE,
   rerunClusterMany = FALSE, ...)
 
-\S4method{RSEC}{matrix}(x, ...)
+\S4method{RSEC}{matrixOrHDF5}(x, ...)
 
 \S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
   reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
   "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
   "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
   alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
-  combineProportion = 0.7, combineMinSize = 5, dendroReduce = "mad",
-  dendroNDims = 1000, mergeMethod = "adjP", mergeCutoff = 0.05,
-  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE)
+  combineProportion = 0.7, combineMinSize, dendroReduce, dendroNDims,
+  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  ncores = 1, random.seed = NULL, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -110,6 +110,8 @@ are left unassigned.}
 \item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
 
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
+
+\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in \code{\link{mergeClusters}}}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 

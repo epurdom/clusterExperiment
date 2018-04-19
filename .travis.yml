@@ -15,6 +15,9 @@ cache: packages
 # Temporarily enable when caching Bioconductor packages
 #script: true
 
+# Temporarily enable when caching Bioconductor packages
+# script: true
+
 # R versions to be tested on
 r:
 #  - bioc-release
@@ -34,7 +37,8 @@ notifications:
 ## Use patched devtools
 r_github_packages:
   - Bioconductor/S4Vectors
-#  - hadley/devtools@efa894ffa
+  - Bioconductor/HDF5Array
+  - Bioconductor/DelayedArray
 
 ## Code coverage
 r_packages:

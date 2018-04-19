@@ -116,5 +116,5 @@ definition = function(object, whichCluster, feature,plotUnassigned=FALSE,unassig
 		else paste("Gene expression of feature number",feature)
 	}
 	cl<-factor(cl,levels=if(uniqueNames) clLegend[,"name"] else clLegend[,"clusterIds"])
-	invisible(boxplot(dat ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...))
+	invisible(boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...))
 	})

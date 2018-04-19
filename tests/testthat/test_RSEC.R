@@ -102,3 +102,30 @@ test_that("`RSEC` returns clusterMany even when errors later",{
     expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut3)))
 
 })
+
+test_that("`RSEC` works with hdf5",{
+	#no reduce method, do everything on raw data
+	#currently error: Error in tcrossprod(x, y) : 
+#  requires numeric/complex matrix/vector arguments
+
+	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
+		clusterFunction="tight", alphas=0.1, 
+        subsampleArgs=list(resamp.num=5),random.seed=495),
+		"All samples are unassigned for"
+		)
+
+	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
+		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+		
+        subsampleArgs=list(resamp.num=5),random.seed=495),
+		"Merging will be done on"
+		)
+
+	expect_message(rsecOut3<-RSEC(assay(hdfObj), isCount=FALSE,k0s=4:5,reduceMethod="PCA",
+		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+	    subsampleArgs=list(resamp.num=5),random.seed=495),
+		"Merging will be done on"
+		)
+
+	expect_equal(clusterMatrix(rsecOut2),clusterMatrix(rsecOut3))
+})

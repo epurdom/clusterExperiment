@@ -10,7 +10,8 @@ test_that("saved rsecFluidigm is still valid object", {
 		  
 test_that("`ClusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
             expect_error(ClusterExperiment(mat), "is missing, with no default")
-			expect_error(ClusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
+			#Also creates warnings, which show up in summary, sort of annoying.
+			expect_error(suppressWarnings(ClusterExperiment(mat,as.numeric(numLabels), transformation=log)), info="Error checking transFun")
             expect_error(ClusterExperiment(mat, numLabels[1:2]),
                          "must be a matrix of rows equal")
             expect_error(ClusterExperiment(as.data.frame(mat), numLabels),
@@ -43,6 +44,13 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 			expect_silent(ccSCE<-ClusterExperiment(sce,as.numeric(numLabels)))
 			###Need to add things specific to sce, but first need to build a sce object with new things.
 			
+})
+
+test_that("`ClusterExperiment` constructor works with hdf5",{
+    #test creation
+    expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))
+	
+	
 })
 
 test_that("whichClusters works with clusterMatrix",{

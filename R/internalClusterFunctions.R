@@ -44,7 +44,8 @@
 	      distFunction<-switch(algType, "01"=function(x){(1-cor(t(x)))/2}, "K"=function(x){dist(x)})
 	  }else stop("if distFunction is not a function, it must be either NA or a character")
   } 
-  D<-try(as.matrix(distFunction(t(x))))	#distances assumed to be of observations on rows
+  ###Add data.matrix here for HDF5, not optimized.
+  D<-try(as.matrix(distFunction(data.matrix(t(x)))))	#distances assumed to be of observations on rows
   if(inherits(D,"try-error")) stop("input distance function gives error when applied to x")
   if(!all(dim(D) == c(ncol(x),ncol(x)))) stop("input distance function must result in a ",ncol(x),"by",ncol(x),"matrix of distances")
   if(checkDiss) .checkDissFunction(D,algType=algType)

@@ -8,7 +8,7 @@
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,data.frame-method}
 \alias{plotHeatmap,ExpressionSet-method}
-\alias{plotHeatmap,matrix-method}
+\alias{plotHeatmap,matrixOrHDF5-method}
 \alias{plotCoClustering,ClusterExperiment-method}
 \alias{plotCoClustering}
 \title{Heatmap for showing clustering results and more}
@@ -31,7 +31,7 @@
 
 \S4method{plotHeatmap}{ExpressionSet}(data, ...)
 
-\S4method{plotHeatmap}{matrix}(data, sampleData = NULL,
+\S4method{plotHeatmap}{matrixOrHDF5}(data, sampleData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
   whSampleDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,

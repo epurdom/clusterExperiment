@@ -11,16 +11,17 @@
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
 #' @param mergeMethod passed to \code{mergeMethod} in \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
+#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in \code{\link{mergeClusters}}
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
 #'   without the computational costs of the clusterMany step.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all of 
 #' the clusterings from the steps of RSEC
-#' @inheritParams clusterMany,SingleCellExperiment-method
+#' @inheritParams clusterMany
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method
-#' @inheritParams mergeClusters,matrix-method
+#' @inheritParams mergeClusters
 #' @export
 #' @rdname RSEC
 setMethod(
@@ -73,7 +74,7 @@ setMethod(
 #' @rdname RSEC
 setMethod(
 f = "RSEC",
-signature = signature(x = "matrix"),
+signature = signature(x = "matrixOrHDF5"),
 definition = function(x, ...){
   return(RSEC(SingleCellExperiment(x),...))
 
@@ -85,13 +86,19 @@ setMethod(
     f = "RSEC",
     signature = signature(x = "SingleCellExperiment"),
     definition = function(x, isCount=FALSE,transFun=NULL,
-        reduceMethod="PCA",nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
+        reduceMethod="PCA",
+		nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
         nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), k0s=4:15,
         clusterFunction="hierarchical01", #listBuiltInType01(),
         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
-        combineProportion=0.7, combineMinSize=5,
-        dendroReduce="mad",dendroNDims=1000,
-        mergeMethod="adjP",mergeCutoff=0.05,verbose=FALSE,
+        combineProportion=0.7, 
+		combineMinSize,
+        dendroReduce,
+		dendroNDims,
+        mergeMethod="adjP",
+		mergeCutoff,
+		mergeLogFCcutoff,
+		verbose=FALSE,
         mainClusterArgs=NULL,
         subsampleArgs=NULL,
         seqArgs=NULL,
@@ -102,19 +109,37 @@ setMethod(
         nReducedDims<-NA
         nFilterDims<-NA
     }
-    if(is.null(seqArgs)) seqArgs<-list(verbose=FALSE)  else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
+    if(is.null(seqArgs)) 
+		seqArgs<-list(verbose=FALSE)  
+	else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
 	ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,
 		alphas=alphas,betas=betas,minSizes=minSizes,
 		sequential=TRUE,removeSil=FALSE,subsample=TRUE,
 		silCutoff=0,distFunction=NA,
         isCount=isCount,transFun=transFun,
-		reduceMethod=reduceMethod,nFilterDims=nFilterDims,
-		nReducedDims=nReducedDims, 
+		reduceMethod=reduceMethod,nFilterDims=eval(nFilterDims),
+		nReducedDims=eval(nReducedDims), 
 		mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
         seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run)
 					
     if(run){
-      ce<-.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,isCount=isCount)
+    #first add ones that have default value
+		passedArgs<-list(ce=ce,combineProportion=combineProportion,mergeMethod=mergeMethod)
+	#add those who will use default value from the function -- is there easier way
+		if(!missing(combineProportion)) 
+			passedArgs<-c(passedArgs,combineProportion=combineProportion)
+		if(!missing(combineMinSize)) 
+			passedArgs<-c(passedArgs,combineMinSize=combineMinSize)
+		if(!missing(dendroReduce)) 
+			passedArgs<-c(passedArgs,dendroReduce=dendroReduce)
+		if(!missing(dendroNDims)) 
+			passedArgs<-c(passedArgs,dendroNDims=dendroNDims)
+		if(!missing(mergeCutoff)) 
+			passedArgs<-c(passedArgs,dendroNDims=mergeCutoff)
+		if(!missing(mergeLogFCcutoff)) 
+			passedArgs<-c(passedArgs,dendroNDims=mergeLogFCcutoff)
+		ce<-do.call(".postClusterMany",passedArgs)
+			 #.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
     return(ce)
 })
@@ -137,6 +162,8 @@ setMethod(
 }
 .postClusterMany<-function(ce,...){
     defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
+	#remove those without anything defined
+	defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",signature="SingleCellExperiment"),function(x){!isTRUE(x=="")}))]
 	passedArgs<-list(...)
 	whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
 	if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
@@ -159,7 +186,6 @@ setMethod(
 			if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
 		}
 		if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-
 		dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
 
 	  #------------
@@ -167,9 +193,13 @@ setMethod(
 	  #------------
 	  if(!inherits(dendroTry,"try-error")){
 	    ce<-dendroTry
-	  	args1<-list()
-		if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+	  	
 		if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
+		  	args1<-list()
+			if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
+			if("mergeLogFCCutoff" %in% names(passedArgs)){
+				args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)			
+			}
 			args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
 			mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")])), silent=TRUE)
 			if(!inherits(mergeTry,"try-error")){

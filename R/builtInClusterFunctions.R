@@ -1,17 +1,20 @@
 #' @include internalFunctions.R internalClusterFunctions.R
 
-### input to clustering:
-# pam : x or dis
-# hier : dis
-# kmeans : x
-
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
+#' @importFrom DelayedArray DelayedArray
 .genericClassify<-function(x,centers){
-    innerProd<-tcrossprod(t(x),centers) #a n x k matrix of inner-products between them
-    distMat<-as.matrix(dist(rbind(t(x),centers)))
-    distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
+    if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
+		innerProd<- t(x) %*% t(centers)
+		distMat<-as.matrix(dist(rbind(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))))
+	}
+	else{
+		innerProd<-tcrossprod(t(x),centers) #equivalent to x %*% t(y), slightly faster
+	#gives a n x k matrix of inner-products between them
+    	distMat<-as.matrix(dist(rbind(t(x),centers)))
+	}
+	distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
     apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
@@ -33,7 +36,8 @@
 #' @importFrom kernlab specc
 .speccCluster<-function(x,k,checkArgs,cluster.only,...){
 	passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
-    out<-try(do.call(kernlab::specc,c(list(x=t(x),centers=k),passedArgs)))
+   #add data.matrix here for hdf5Matrix. Not optimized
+   out<-try(do.call(kernlab::specc,c(list(x=data.matrix(t(x)), centers=k),passedArgs)))
 	if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
     else return(out) 
@@ -74,9 +78,12 @@
 
 #' @importFrom cluster pam
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
-      passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
+	
+	  passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
 	  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
-	  if(input=="X") return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))
+	  if(input=="X"){
+		return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))  
+	  } 
       if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     }
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
@@ -101,6 +108,19 @@
 
 .claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
+
+##---------
+##hiearchicalK
+##---------
+#' @importFrom stats hclust cutree
+.hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
+	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
+    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
+    stats::cutree(hclustOut,k)
+}
+.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
+
+#internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
 
 ##---------
@@ -156,19 +176,6 @@
 	return(clusterListIndices)
 }
 .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType="diss", algorithmType="01",outputType="list")
-
-##---------
-##hiearchicalK
-##---------
-#' @importFrom stats hclust cutree
-.hierKCluster<-function(diss,k,checkArgs,cluster.only,...){
-	passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
-    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(diss)),passedArgs))
-    stats::cutree(hclustOut,k)
-}
-.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
-
-#internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
 
 ##---------
