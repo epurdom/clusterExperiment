@@ -139,13 +139,13 @@ test_that("plotDendrogram works with outgroup", {
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
-  plotDendrogram(dend)
-  plotDendrogram(dend,show.node.label=TRUE)
-  plotDendrogram(dend,leafType="samples",plotType="name")
-  plotDendrogram(dend,leafType="samples",plotType="name",removeOutbranch=FALSE)
-  plotDendrogram(dend,leafType="samples",plotType="colorblock")
-  plotDendrogram(dend,leafType="clusters",plotType="colorblock")
-  plotDendrogram(dend,leafType="clusters",plotType="name")
+  expect_silent(plotDendrogram(dend))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE))
+  expect_silent(plotDendrogram(dend,leafType="samples",plotType="name"))
+  expect_silent(plotDendrogram(dend, leafType="samples",plotType="name",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="name"))
   
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -153,9 +153,9 @@ test_that("plotDendrogram works with outgroup", {
   dend2<-addClusterings(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend2)<-3
   dend2 <- makeDendrogram(dend2)
-  plotDendrogram(dend2,leafType="clusters",plotType="colorblock")
-  plotDendrogram(dend2,leafType="samples",plotType="colorblock")
-  plotDendrogram(dend2,leafType="samples",plotType="colorblock",removeOutbranch=FALSE)
+  expect_silent(plotDendrogram(dend2,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend2,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend2,leafType="samples",plotType="colorblock",removeOutbranch=FALSE))
 
   ## make only single sample -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -163,9 +163,9 @@ test_that("plotDendrogram works with outgroup", {
   dend3<-addClusterings(ccSE,cl,clusterLabel="newCluster")
   primaryClusterIndex(dend3)<-3
   dend3 <- makeDendrogram(dend3)
-  plotDendrogram(dend3,leafType="clusters",plotType="colorblock")
-  plotDendrogram(dend3,leafType="samples",plotType="colorblock")
-  plotDendrogram(dend3,leafType="samples",plotType="colorblock",removeOutbranch=FALSE)
+  expect_silent(plotDendrogram(dend3,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend3,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend3,leafType="samples",plotType="colorblock",removeOutbranch=FALSE))
 
   # This test breaks something. Needs to be figured out. 
   # ## make all -1 but two samples
@@ -197,25 +197,25 @@ test_that("plotDendrogram works with whichClusters", {
     leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
-  dend <- makeDendrogram(ccSE)
-  dend<-mergeClusters(dend)
-  plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock")
+  expect_silent(dend <- makeDendrogram(ccSE))
+  expect_message(dend<-mergeClusters(dend))
+  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))
   
   
 })
 
 
 test_that("plotDendrogram works with cluster missing", {
-    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+    expect_silent(leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]])
     leg[,"name"]<-letters[1:nrow(leg)]
-    clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
-  dend <- makeDendrogram(ccSE,unassignedSamples = c("cluster"))
-  plotDendrogram(dend)
-  plotDendrogram(dend,show.node.label=TRUE)
-  plotDendrogram(dend,leafType="samples",plotType="name")
-  plotDendrogram(dend,leafType="samples",plotType="colorblock")
-  plotDendrogram(dend,leafType="clusters",plotType="colorblock")
-  plotDendrogram(dend,leafType="clusters",plotType="name")
+    expect_silent(clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg)
+  expect_silent(dend <- makeDendrogram(ccSE,unassignedSamples = c("cluster")))
+  expect_silent(plotDendrogram(dend))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE))
+  expect_silent(plotDendrogram(dend,leafType="samples",plotType="name"))
+  expect_silent(plotDendrogram(dend,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="name"))
   
   ## make all -2
   dend2<-dend
@@ -225,8 +225,8 @@ test_that("plotDendrogram works with cluster missing", {
   leg<-dend2@clusterLegend[[1]]
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg
-  dend2 <- makeDendrogram(dend2,unassignedSamples = c("cluster"))
-  plotDendrogram(dend2,leafType="clusters",plotType="colorblock")
-  plotDendrogram(dend2,leafType="samples",plotType="colorblock")
+  expect_silent(dend2 <- makeDendrogram(dend2,unassignedSamples = c("cluster")))
+  expect_silent(plotDendrogram(dend2,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend2,leafType="samples",plotType="colorblock"))
   
 })

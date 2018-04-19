@@ -4,13 +4,14 @@ context("Constructor")
 
 test_that("saved rsecFluidigm is still valid object", {
 	data(rsecFluidigm)
-	validObject(rsecFluidigm)
+	expect_true(validObject(rsecFluidigm))
 		  })
 
 		  
 test_that("`ClusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
             expect_error(ClusterExperiment(mat), "is missing, with no default")
-			expect_error(ClusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
+			#Also creates warnings, which show up in summary, sort of annoying.
+			expect_error(suppressWarnings(ClusterExperiment(mat,as.numeric(numLabels), transformation=log)), info="Error checking transFun")
             expect_error(ClusterExperiment(mat, numLabels[1:2]),
                          "must be a matrix of rows equal")
             expect_error(ClusterExperiment(as.data.frame(mat), numLabels),
