@@ -212,9 +212,9 @@ setMethod(
         if(is.na(percentile) || percentile>=1){
           if(is.na(percentile) || percentile>NROW(object)){
             warning("the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
-            whKeep<-1:NROW(object)
+            whKeep<-seq_len(NROW(object))
           }
-          else whKeep<- order(stat,decreasing=ifelse(keepLarge,TRUE,FALSE),na.last=NA)[1:percentile]
+          else whKeep<- order(stat,decreasing=ifelse(keepLarge,TRUE,FALSE),na.last=NA)[seq_len(percentile)]
         }
         else stop("Invalid value for percentile. Must be either between 0,1 or a positive integer number to keep")
       }

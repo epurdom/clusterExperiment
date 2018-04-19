@@ -177,7 +177,7 @@ setMethod(
     returnType <- "Table" 
     
     if(is.null(rownames(dat))) {
-      rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+      rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
     }
     
     tmp <- dat
@@ -337,7 +337,7 @@ This makes sense only for counts.")
     }
     return(tt)
   }
-  tops<-do.call("rbind",lapply(1:ncontr,getRaw))
+  tops<-do.call("rbind",lapply(seq_len(ncontr),getRaw))
   if(contrastAdj=="AfterF" & p.value<1){
     #get p-value for F test for all genes, and only consider genes with significant F.
     fitF2<-eBayes(fitF)
@@ -351,7 +351,7 @@ This makes sense only for counts.")
     if(p.value<1) tops<-tops[tops$adj.P.Val<p.value,,drop=FALSE]
     if(nGenes<length(rownames(fit$coef))){
       #just return relevant number per contrast
-      tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[1:min(c(nGenes,nrow(x))),,drop=FALSE]}))
+      tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[seq_len(min(c(nGenes,nrow(x)))),,drop=FALSE]}))
     }
   }
   row.names(tops)<-NULL

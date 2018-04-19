@@ -306,7 +306,7 @@ setMethod(
         }
         outval$colors<-newColorMat
         ###make new clusterLegend from color matrix
-        temp<-lapply(1:ncol(outval$alignedClusterIds),function(ii){
+        temp<-lapply(seq_len(ncol(outval$alignedClusterIds)),function(ii){
           oldMat<-outval$clusterLegend[[ii]]
           alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
           m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
@@ -369,7 +369,7 @@ setMethod(
         }
         return(oldColMat)
       }
-      newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
+      newClLegend<-lapply(seq_len(NCOL(oldClMat)),convertAlignedColorLegend)
       names(newClLegend)<-colnames(oldClMat)
       clusterLegend(object)[whichClusters]<-newClLegend
       ch<-.checkClusterLegend(object)
@@ -406,7 +406,8 @@ setMethod(
   if(!is.matrix(object)) stop("object must be a matrix")
 	  
 	  
-  if(!is.null(orderSamples) && !all(orderSamples %in% 1:nrow(object))) stop("invalid values for orderSamples")
+  if(!is.null(orderSamples) && !all(orderSamples %in% seq_len(nrow(object))))
+	  stop("invalid values for orderSamples")
   index<-orderSamples #match to old arguments
   input<-match.arg(input)
 
@@ -474,7 +475,7 @@ setMethod(
 			#take out -1
 
 			#2. replace colors of -1/-2 in clusterLegend (used to update clusterLegend if resetColors=TRUE)
-			newColorLeg<-lapply(1:nrow(clusters),function(i){
+			newColorLeg<-lapply(seq_len(nrow(clusters)),function(i){
 				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
@@ -484,7 +485,7 @@ setMethod(
 			})
 			names(newColorLeg)<-names(out$clusterLegend)
 			#3. Update colors in colors matrix
-			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
+			xColors<-do.call("cbind",lapply(seq_len(nrow(clusters)),function(i){
 				out$colors[clusters[i,]=="-1",i]<-unassignedColor
 				out$colors[clusters[i,]=="-2",i]<-missingColor
 				return(out$colors[,i])
@@ -521,7 +522,7 @@ setMethod(
 	######
 	pastColorVector<-NULL
 	colorM = rbind() #matrix of colors. gives colors for cluster assignments that give the 'right' color throughout the different rows
-	for(i in 1:nrow(clusters)){
+	for(i in seq_len(nrow(clusters))){
 	  # Below calls the function:
 		#.setClusterColors <- function(past_ct,ct,colorU,colorList,reuseColors,minRequireColor=0.5){
 		# About this function:
@@ -569,7 +570,7 @@ setMethod(
 	###Order the samples
 	###########
 	if(is.null(index)){
-		tmp<-lapply(1:nrow(alignCl),function(i){unlist(alignCl[i,])})
+		tmp<-lapply(seq_len(nrow(alignCl)),function(i){unlist(alignCl[i,])})
 		index<-do.call("order",tmp)
 	}
 	
@@ -579,7 +580,7 @@ setMethod(
 	###########
     # Make color legend
 	###########
-	clusterLegend<-lapply(1:nrow(clusters),function(ii){
+	clusterLegend<-lapply(seq_len(nrow(clusters)),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		mat<-cbind(mat,"name"=mat[,"alignedClusterIds"])
 		rownames(mat)<-NULL
@@ -607,7 +608,7 @@ setMethod(
 	if(is.null(past_colors) | is.null(past_ct)){
 		#map values of ct to 1:(# unique values)
 		ncl<-length(unique(ct))
-		v<-1:ncl
+		v<-seq_len(ncl)
 		names(v)<-stringr::str_sort(unique(ct),locale="en")
 		clNum<-v[match(ct,names(v))]
 		newColors = colorU[clNum]
@@ -625,7 +626,7 @@ setMethod(
 		if(!startNewColors){
 			whShared<-which(colorU %in% past_colors)
 			m<-max(whShared)
-			colorU<-c(colorU[m:length(colorU)],colorU[1:m]) #puts the used by previous rows colors at the end
+			colorU<-c(colorU[m:length(colorU)],colorU[seq_len(m)]) #puts the used by previous rows colors at the end
 		}
 		colorU<-colorU[!colorU %in% past_colors]
 		colorU<-unique(colorU) #make sure unique colors, at least per cluster
@@ -740,7 +741,7 @@ setMethod(
 	}
 	if(!add) plot(NULL,xlim=range(c(xleft,xright)),ylim=ylim,axes=FALSE,ylab=ylab,xlab=xlab,bty="n",...)
 
-	for(i in 1:nrow(m)){
+	for(i in seq_len(nrow(m))){
     rect(  xleft=xleft, xright=xright,  ybottom=rep(ybottom[i],ncol(m)) , ytop=rep(ytop[i],ncol(m)), col=m[i,],border=NA,xpd=NA)
   }
   #hatch lines to indicate samples

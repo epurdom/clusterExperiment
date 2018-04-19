@@ -173,7 +173,7 @@ setMethod(
     ###Check colors given:
     #-----------
     if(is.null(colPalette)){
-      colPalette<-bigPalette[1:nX]
+      colPalette<-bigPalette[seq_len(nX)]
       names(colPalette)<-xnames
     }
     if(is.null(names(colPalette)) & length(colPalette)>1) stop("must give names to colPalette") 

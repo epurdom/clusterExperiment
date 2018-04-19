@@ -55,7 +55,7 @@
 	testConsecIntFun<-function(x){
           whCl<-which(!x %in% c(-1,-2))
           uniqVals<-unique(x[whCl])
-          return(all(sort(unname(uniqVals))==1:length(uniqVals)))
+          return(all(sort(unname(uniqVals))==seq_along(uniqVals)))
         }
      testConsecIntegers<-apply(object@clusterMatrix,2,testConsecIntFun)
 	 if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
@@ -234,7 +234,7 @@ if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
     if(!all(testColorCols1)) {
       return("each element of `clusterLegend` must be matrix of character values")
     }
-    testColorCols1 <- sapply(1:length(clusterLegend), function(ii){
+    testColorCols1 <- sapply(seq_along(clusterLegend), function(ii){
       col<-clusterLegend[[ii]]
 	  x<-clusters[,ii]
 	  y<-col[,"clusterIds"]
@@ -267,7 +267,7 @@ if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
 	  return("`orderSamples` must be of same length as number of samples
 	       (NCOL(assay(object)))")
 	}
-	if(any(!object@orderSamples %in% 1:NCOL(assay(object)))) {
+	if(any(!object@orderSamples %in% seq_len(NCOL(assay(object))))) {
 	  return("`orderSamples` must be values between 1 and the number of samples.")
 	}
 	return(TRUE)

@@ -311,7 +311,7 @@ setMethod(
         })
         #make consecutive integers
         uc<-sort(unique(newcl[newcl>0]))
-        newcl <- as.numeric(factor(newcl, levels=uc,labels=as.character(1:length(uc))))
+        newcl <- as.numeric(factor(newcl, levels=uc,labels=as.character(seq_along(uc))))
         #deal with -1/-2
         newcl[is.na(newcl)] <- cl[is.na(newcl)]
       }
@@ -635,14 +635,14 @@ setMethod(
         whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
         leg<-clusterLegend(retval)[whClusters]
         cl<-clusterMatrix(retval,whichClusters=whClusters)
-        rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
+        rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(seq_len(ncol(retval)))
         
       }
       else{
         leg<-clusterLegend(retval)[[retval@dendro_index]]
         cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
         if(leafType=="samples"){
-          names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(1:ncol(retval))
+          names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(seq_len(ncol(retval)))
         }
         
       }

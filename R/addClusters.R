@@ -140,7 +140,7 @@ setMethod(
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
     if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),(1:NCOL(clusterMatrix(x)))[-whichClusters])
+    else pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     if(dendroClusterIndex(x) %in% whichClusters){
       dend_cl<-NULL
       dend_samples<-NULL
@@ -148,7 +148,7 @@ setMethod(
       dend_out<-NA
     }
     else{
-      dend_ind<-match(dend_ind,(1:NCOL(clusterMatrix(x)))[-whichClusters])
+      dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
     
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),

@@ -46,7 +46,7 @@ setMethod(
     newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
     colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    newClLegend<-lapply(1:NCOL(newMat),function(ii){
+    newClLegend<-lapply(seq_len(NCOL(newMat)),function(ii){
       colMat<-x@clusterLegend[[ii]]
       newCl<-newMat[,ii]
       cl<-subMat[,ii]
@@ -119,7 +119,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     clMat<-clusterMatrix(x)
-    out<-do.call("cbind",lapply(1:ncol(clMat),function(ii){
+    out<-do.call("cbind",lapply(seq_len(ncol(clMat)),function(ii){
       cl<-clMat[,ii]
       leg<-clusterLegend(x)[[ii]]
       leg[,"name"][match(cl,leg[,"clusterIds"])]
@@ -248,7 +248,7 @@ setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment","missing"),
   definition = function(x,whichClusters) {
-    wh<-1:ncol(x@clusterMatrix)
+    wh<-seq_len(ncol(x@clusterMatrix))
     return(clusterMatrix(x,whichClusters=wh))
   }
 )

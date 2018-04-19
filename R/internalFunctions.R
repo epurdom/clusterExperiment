@@ -47,7 +47,7 @@
     retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
   }
   #put back orderSamples, coClustering
-  if(all(retval@orderSamples==1:nSamples(retval)) & !all(oldObj@orderSamples==1:nSamples(retval))) retval@orderSamples<-oldObj@orderSamples
+  if(all(retval@orderSamples==seq_len(nSamples(retval))) & !all(oldObj@orderSamples==seq_len(nSamples(retval)))) retval@orderSamples<-oldObj@orderSamples
   if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
   retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
   #   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
@@ -87,14 +87,14 @@
       
       if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sampleData")
       if(is.character(wh)){
-        if(all(wh=="all")) wh<-1:NCOL(sData)
+        if(all(wh=="all")) wh<-seq_len(NCOL(sData))
         else{
           if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sampleData (some do not match names of colData)")
           else wh<-match(wh,colnames(sData))
         }
       }
       else if(is.numeric(wh)){
-        if(!all(wh %in% 1:NCOL(sData))) stop("Invalid indices for for pulling sampleData (some indices are not in 1:NCOL(colData)")
+        if(!all(wh %in% seq_len(NCOL(sData)))) stop("Invalid indices for for pulling sampleData (some indices are not in 1:NCOL(colData)")
       }
       else stop("invalid values for pulling sampleData from colData of object")
       sData<-as.data.frame(sData[,wh,drop=FALSE])
@@ -123,7 +123,7 @@
     }
     #have to do this; otherwise makes them all characters if use apply...
     cnames<-colnames(sData)
-    sData<-do.call("data.frame",lapply(1:ncol(sData),function(ii){fixNAFunction(sData[,ii],newValue=newValue)}))
+    sData<-do.call("data.frame",lapply(seq_len(ncol(sData)),function(ii){fixNAFunction(sData[,ii],newValue=newValue)}))
     colnames(sData)<-cnames
     
   }
@@ -206,7 +206,7 @@
   colorMat[clMat== -2]<-missingColor
   
   #convert ids into list of matrices:
-  colorList<-lapply(1:ncol(clMat),function(ii){
+  colorList<-lapply(seq_len(ncol(clMat)),function(ii){
     mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
     rownames(mat)<-NULL
     return(mat)
@@ -235,7 +235,7 @@
       if(test=="all"){
         #put primary cluster first
         ppcl<-primaryClusterIndex(x)
-        wh<-c(ppcl,c(1:nClusterings(x))[-ppcl])
+        wh<-c(ppcl,c(seq_len(nClusterings(x)))[-ppcl])
       }
       if(test=="none") wh<-vector("integer",length=0)
       if(test=="primaryCluster") wh<-primaryClusterIndex(x)
@@ -336,14 +336,14 @@
     }
     #trueInternal<-allInternal[!allInternal%in%clusterNodes]
     
-    phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",1:length(trueInternal),sep="")
+    phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",seq_along(trueInternal),sep="")
     #add new label for root 
     if(outbranch){
       phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
-      if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",1:length(outbranchNodeDesc),sep="")
+      if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",seq_along(outbranchNodeDesc),sep="")
     }
   }
-  else phylobase::nodeLabels(phylo4Obj)<-paste("Node",1:phylobase::nNodes(phylo4Obj),sep="")
+  else phylobase::nodeLabels(phylo4Obj)<-paste("Node",seq_len(phylobase::nNodes(phylo4Obj)),sep="")
   
   return(phylo4Obj)
 }

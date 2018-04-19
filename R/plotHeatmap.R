@@ -279,7 +279,7 @@ setMethod(
   ){
     #get transformation function
     transformation<-.makeTransFun(transFun=transFun,isCount=isCount) 
-    fakeCL<-sample(1:2,size=NCOL(data),replace=TRUE)
+    fakeCL<-sample(c(1,2),size=NCOL(data),replace=TRUE)
     fakeCE<-ClusterExperiment(data, fakeCL,transformation=transformation, 
                               checkTransformAndAssay=FALSE)
     if("whichClusters" %in% names(list(...))) stop("cannot provide argument 'whichClusters' for input data not of class 'ClusterExperiment'")
@@ -376,7 +376,7 @@ setMethod(
             ### Other character values ####
             if(is.character(clusterFeaturesData)){#gene names
               if(length(clusterFeaturesData)==1 && clusterFeaturesData=="all") 
-                whRows<-1:NROW(data)
+                whRows<-seq_len(NROW(data))
               else{
                 ### Give specific genes to use ####
                 if(is.null(rownames(data))) stop("Cannot give feature names in clusterFeaturesData unless assay(data) has rownames")
@@ -392,7 +392,7 @@ setMethod(
             }
             else{
               ### Numeric row indices ####
-              if(any(!clusterFeaturesData %in% 1:NROW(data))) stop("invalid indices for clusterFeaturesData")
+              if(any(!clusterFeaturesData %in% seq_len(NROW(data)))) stop("invalid indices for clusterFeaturesData")
               whRows<-clusterFeaturesData
             }
             data<-data[whRows,]
@@ -430,7 +430,7 @@ setMethod(
     #---
     sData<-.pullSampleData(data,sampleData)
     #identify which numeric
-    if(!is.null(sData)) whCont<-which(sapply(1:ncol(sData),function(ii){is.numeric(sData[,ii])}))
+    if(!is.null(sData)) whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
     whSampleDataCont<-NULL
     
     if(!is.null(clusterData) & !is.null(sData)){
@@ -566,7 +566,7 @@ setMethod(
         else userList$annRow<-annRow
         if(!"Gene Group" %in% names(clLegend)){
           nGroups<-length(groupFeatures)
-          groupColors<-bigPalette[1:nGroups]	
+          groupColors<-bigPalette[seq_len(nGroups)]	
           names(groupColors)<-levels(annRow[["Gene Group"]])
           clLegend<-c(clLegend, "Gene Group"=list(groupColors))
         }
@@ -734,10 +734,10 @@ setMethod(
       #-------------------
       
       #--- check that no ordered factors...
-      anyOrdered<-sapply(1:ncol(sampleData),function(ii){is.ordered(sampleData[,ii])})
+      anyOrdered<-sapply(seq_len(ncol(sampleData)),function(ii){is.ordered(sampleData[,ii])})
       if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
       ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
-      tmpDf<-do.call("data.frame", lapply(1:ncol(sampleData), function(ii){ factor(sampleData[,ii]) }))
+      tmpDf<-do.call("data.frame", lapply(seq_len(ncol(sampleData)), function(ii){ factor(sampleData[,ii]) }))
       names(tmpDf)<-colnames(sampleData)
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
@@ -761,7 +761,7 @@ setMethod(
           #Pull out those that are factors to assign clusters
           if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
           #make numeric
-          tmpDfNum<-do.call("cbind", lapply(1:ncol(tmpDf), function(ii){ .convertToNum(tmpDf[,ii]) }))
+          tmpDfNum<-do.call("cbind", lapply(seq_len(ncol(tmpDf)), function(ii){ .convertToNum(tmpDf[,ii]) }))
           colnames(tmpDfNum)<-colnames(tmpDf)
           if(alignSampleData){
             #align the clusters and give them colors
@@ -774,18 +774,18 @@ setMethod(
               colMat<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(xOrig)[m])
               return(colMat)
             }
-            clusterLegend<-lapply(1:ncol(tmpDfNum),mkLegend)
+            clusterLegend<-lapply(seq_len(ncol(tmpDfNum)),mkLegend)
           }
           else{#give each distinct colors, compared to row before
             maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
             maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1))
             pal<-rep(bigPalette,length=sum(maxPerAnn)) #make sure don't run out of colors
             
-            clusterLegend<-lapply(1:ncol(tmpDfNum),FUN=function(ii){
+            clusterLegend<-lapply(seq_len(ncol(tmpDfNum)),FUN=function(ii){
               facInt<-tmpDfNum[,ii]
               facOrig<-tmpDf[,ii]
               add<-maxPreviousColor[[ii]]
-              colors<-pal[1:max(facInt)+add]
+              colors<-pal[seq_len(max(facInt))+add]
               cols<-cbind("clusterIds"=levels(factor(facInt[facInt>0])),"color"=colors,"name"=levels(facOrig[facInt>0]))
               if(any(facInt== -1)) cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
               if(any(facInt== -2)) cols<-rbind(cols,c("clusterIds"="-2","color"=unassignedColor,"name"="-2") )

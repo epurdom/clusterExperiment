@@ -163,7 +163,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
   definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="combineMany",...){
     
-    if(!all(whichClusters %in% 1:NCOL(clusterMatrix(x)))) {
+    if(!all(whichClusters %in% seq_len(NCOL(clusterMatrix(x))))) {
       stop("Invalid indices for clusterLabels")
     }
     if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")

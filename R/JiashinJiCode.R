@@ -6,7 +6,7 @@
  # output the estimated mean and standard deviation
 
  n = length(x)
- t = c(1:1000)/200
+ t = c(seq_len(1000))/200
  
  gan    = n^(-gamma)
  that   = 0 
@@ -21,7 +21,7 @@
  phi       = rep(1,1000)
  dphi      = rep(1,1000)
 
- for (i in 1:1000) {
+ for (i in seq_len(1000)) {
     s = t[i]
     phiplus[i]   = mean(cos(s*x))
     phiminus[i]  = mean(sin(s*x))
@@ -30,7 +30,7 @@
     phi[i]       = sqrt(phiplus[i]^2 + phiminus[i]^2)
  }
 
- ind = min(c(1:1000)[(phi - gan) <= 0])
+ ind = min(c(seq(1000))[(phi - gan) <= 0])
  tt = t[ind]
  a  = phiplus[ind]
  b  = phiminus[ind]
@@ -59,7 +59,7 @@
 
   epsest=NULL
 
-  for (j in 1:length(tt)) { 
+  for (j in seq_along(tt)) { 
 
     t=tt[j]
     f  = t*xi
@@ -67,7 +67,7 @@
     w  = (1 - abs(xi))
     co  = 0*xi
 
-    for (i in 1:101) {
+    for (i in seq_len(101)) {
       co[i] = mean(cos(t*xi[i]*z));
     } 
     epshat = 1 - sum(w*f*co)/sum(w)

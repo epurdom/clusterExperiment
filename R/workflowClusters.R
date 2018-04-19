@@ -120,7 +120,7 @@ setMethod(
   definition = function(x,whichCluster,eraseOld=FALSE){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
@@ -149,7 +149,7 @@ setMethod(
   definition = function(x,whichCluster,clusterLabel){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) warning("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     clusterTypes(x)[whCl]<-"final"
     if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
     primaryClusterIndex(x)<-whCl

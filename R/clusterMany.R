@@ -507,7 +507,7 @@ setMethod(
           #for some reason, this code started changing TRUE/FALSE in to 1/0
           # cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
           # paste(colnames(param)[whVary],as.character(x),sep="=",collapse=",")})	
-          cnames<-sapply(1:nrow(param),function(ii){
+          cnames<-sapply(seq_len(nrow(param)),function(ii){
             paste(colnames(param)[whVary],as.character(param[ii,whVary]),sep="=",collapse=",")
           })
         } else {
@@ -574,7 +574,7 @@ setMethod(
         if(reduceMethod=="none") 
           dat<-transformData(x,transFun=transFun) 
         else if(isReducedDims(x,reduceMethod)) 
-          dat<-t(reducedDim(x,reduceMethod)[,1:par[["nReducedDims"]]] ) 
+          dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]]]) ) 
         else if(isFilterStats(x,reduceMethod)) 
           dat<-transformData( filterData(x, filterStats=reduceMethod, percentile=par[["nFilterDims"]]),
                               transFun=transFun)
@@ -601,7 +601,7 @@ setMethod(
           distParam<-distParam[!is.na(distParam[,"distFunction"]),]
           ##Assume only take distances on original data (or filtered version of it)
           #need to update here when have filter
-          allDist<-lapply(1:nrow(distParam),function(ii){
+          allDist<-lapply(seq_len(nrow(distParam)),function(ii){
             distFun<-as.character(distParam[ii,"distFunction"])
             #be conservative and check for the 01 type if any of clusterFunctions are 01.
             algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" 
@@ -625,13 +625,13 @@ setMethod(
         }
         
         if(ncores>1) {
-          out <- mclapply(1:nrow(param), FUN=paramFun, mc.cores=ncores, ...)
+          out <- mclapply(seq_len(nrow(param)), FUN=paramFun, mc.cores=ncores, ...)
           nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
           if(length(nErrors)>0) {
             stop(length(nErrors)," parameter values (of ",length(out),") hit an error. The first was:\n",out[nErrors[1]])
           }
         } else {
-          out <- lapply(1:nrow(param),FUN=paramFun)
+          out <- lapply(seq_len(nrow(param)),FUN=paramFun)
         }
         if(verbose) {
           cat("done.\n")
@@ -639,7 +639,7 @@ setMethod(
         clMat <- sapply(out, function(x){primaryCluster(x)})
         
         colnames(clMat) <- unname(cnames)
-        pList <- lapply(1:nrow(param), function(i){
+        pList <- lapply(seq_len(nrow(param)), function(i){
           x <- param[i,]
           names(x) <- colnames(param)
           return(x)})

@@ -142,7 +142,7 @@ setMethod(
     #-----
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     subSize <- round(samp.p * N)
-    idx<-replicate(resamp.num,sample(1:N,size=subSize))
+    idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
     #each column a set of indices for the subsample.
 
     #-----
@@ -226,8 +226,8 @@ setMethod(
         # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
         # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
         # What does this do with NAs? Removes them -- not included.
-        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
-        clusterLengths<-tapply(1:N,classX,length)
+        clusterIds<-unlist(tapply(seq_len(N),classX,function(x){x},simplify=FALSE),use.names=FALSE)
+        clusterLengths<-tapply(seq_len(N),classX,length)
         return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
       }
     }
@@ -238,7 +238,7 @@ setMethod(
 
     }
     else{
-      DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+      DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
 
       if(!largeDataset) {
         DList <- simplify2array(DList)

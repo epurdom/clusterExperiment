@@ -246,7 +246,7 @@ setMethod(
 			if(any(names(inputArgs)%in%"isCount"))
 				inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
 			if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
-			outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,1:nDims])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
+			outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,seq_len(nDims)])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
 		}
 		if(isFilter){
 			#Need to think how can pass options to filterData...

@@ -85,7 +85,7 @@ setMethod(
     unassignedSamples<-match.arg(unassignedSamples)
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     #    
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
@@ -122,7 +122,7 @@ setMethod(
       if(reduceMethod=="none") 
         dat<-transformData(x)
       else if(isReducedDims(x,reduceMethod))
-        dat<-t(reducedDim(x,type=reduceMethod)[,1:nDims])
+        dat<-t(reducedDim(x,type=reduceMethod)[,seq_len(nDims)])
       else if(isFilterStats(x,reduceMethodName))
         dat<-transformData(filterData(x,filterStats=reduceMethodName,percentile=nDims))
       else
@@ -162,7 +162,7 @@ setMethod(
 	      stop("cluster must be the same length as the number of samples")
     }
 	if(is.null(attributes(x)$Labels)) {
-      attributes(x)$Labels <- as.character(1:nSamples)
+      attributes(x)$Labels <- as.character(seq_len(nSamples))
     }
 
 	clNum<-.convertToNum(cl)
@@ -253,7 +253,7 @@ setMethod(
       stop("cluster must be the same length as the number of samples")
     }
     if(is.null(colnames(x))) {
-      colnames(x) <- as.character(1:ncol(x))
+      colnames(x) <- as.character(seq_len(ncol(x)))
     }
 	
 	clNum<-.convertToNum(cl)

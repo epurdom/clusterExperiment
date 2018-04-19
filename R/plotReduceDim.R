@@ -74,7 +74,7 @@ setMethod(
   f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
   definition = function(object, whichCluster,
-                        reducedDim="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
+                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
     if(length(whichCluster)!=1) stop("whichCluster must identify a single clustering.")

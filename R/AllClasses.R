@@ -303,7 +303,7 @@ setMethod(
     #fix up names of clusters and match
 
     if(is.null(colnames(clusters))){
-      colnames(clusters)<-paste("cluster",1:NCOL(clusters),sep="")
+      colnames(clusters)<-paste("cluster",seq_len(NCOL(clusters)),sep="")
     }
     if(any(duplicated(colnames(clusters)))){#probably not possible
       colnames(clusters)<-make.names(colnames(clusters),unique=TRUE)
@@ -342,7 +342,7 @@ setMethod(
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
-               orderSamples=1:ncol(object),
+               orderSamples=seq_len(ncol(object)),
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,

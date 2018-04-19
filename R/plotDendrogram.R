@@ -107,7 +107,7 @@ setMethod(
     dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
-    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
+    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))
     if(length(whCl)==1){
       leg<-clusterLegend(x)[[whCl]]
       if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
@@ -282,7 +282,7 @@ setMethod(
       #make default colors, works for vector or matrix cl
       #----
       clusterIds<-sort(unique(as.vector(cl)))
-      clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
+      clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[seq_along(clusterIds)])
     }
     else{
       if(is.matrix(cl) && ncol(cl)>1){
@@ -596,7 +596,7 @@ setMethod(
     }
     yy <- numeric(Ntip + Nnode)
     TIPS <- x$edge[x$edge[, 2] <= Ntip, 2]
-    yy[TIPS] <- 1:Ntip
+    yy[TIPS] <- seq_len(Ntip)
   }
   z <- ape:::reorder.phylo(x, order = "postorder") ##
   if (phyloORclado) {
@@ -698,7 +698,7 @@ setMethod(
   if (is.null(x.lim)) {
     if (phyloORclado) {
       if (horizontal) {
-        xx.tips <- xx[1:Ntip]
+        xx.tips <- xx[seq_len(Ntip)]
         if (show.tip.label) {
           pin1 <- par("pin")[1]
           tmp <- getLimit(xx.tips, x$tip.label, pin1, 
@@ -749,7 +749,7 @@ setMethod(
         y.lim <- c(1, Ntip)
       else {
         pin2 <- par("pin")[2]
-        yy.tips <- yy[1:Ntip]
+        yy.tips <- yy[seq_len(Ntip)]
         if (show.tip.label) {
           tmp <- getLimit(yy.tips, x$tip.label, pin2, 
                           cex)

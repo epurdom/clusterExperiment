@@ -44,7 +44,7 @@ setMethod(
       outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
     if(output%in% c("matrixNames","matrixColors")){
-      outval<-do.call("cbind",lapply(1:length(whichClusters),function(ii){
+      outval<-do.call("cbind",lapply(seq_along(whichClusters),function(ii){
         cl<-clusterMatrix(object)[,whichClusters,drop=FALSE][,ii]
         colMat<-clusterLegend(object)[whichClusters][[ii]]
         m<-match(cl,colMat[,"clusterIds"])
@@ -119,16 +119,16 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   oldMar<-par("mar")
   wh<-which
   if(is.null(wh)){
-    wh<-1:length(colPalette)
+    wh<-seq_along(colPalette)
   }
   else{ colPalette<-colPalette[wh]}
   n<-ceiling(sqrt(length(colPalette)))
   nblank<-n^2-length(colPalette)
   xwide<-n
   yup<-n
-  x1<-rep(c(1:xwide)-.5,yup)
-  x2<-rep(c(1:xwide)+.5,yup)
-  xtext<-rep(c(1:xwide),yup)
+  x1<-rep(c(seq_len(xwide))-.5,yup)
+  x2<-rep(c(seq_len(xwide))+.5,yup)
+  xtext<-rep(c(seq_len(xwide)),yup)
   ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
   ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
   ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
@@ -140,10 +140,10 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   if(length(colPalette)>100){
 	  half<-ceiling(length(colPalette)/2)
 	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))
-	 adj.text<-adj.text[1:length(colPalette),]
+	 adj.text<-adj.text[seq_along(colPalette),]
   }
   else adj.text<-matrix(c(0.5,0),nrow=length(colPalette),ncol=2,byrow=TRUE)
-  for(i in 1:length(colPalette)){
+  for(i in seq_along(colPalette)){
       text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
       if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
   }
@@ -377,8 +377,8 @@ showHeatmapPalettes<-function(){
 		if(length(x)<maxLength) x<-c(x,rep("white",maxLength-length(x)))
 			return(x)})
 	ll<-list()
-	sapply(1:length(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
-	sapply(1:(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
+	sapply(seq_along(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
+	sapply(seq_len(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
 	names(ll)[seq(1,length(ll),by=2)]<-names(palettesAll)
 	names(ll)[seq(2,length(ll),by=2)]<-rep("",length(palettesAll)-1)
 	mat<-do.call("cbind",ll)
@@ -451,7 +451,7 @@ setMethod(
       isNeg<-as.numeric(legMat[,"clusterIds"])<0
       ord<-c(which(!isNeg),which(isNeg))
     }
-    else ord<-1:nrow(legMat)
+    else ord<-seq_len(nrow(legMat))
     plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
     legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
     
