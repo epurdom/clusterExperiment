@@ -63,7 +63,7 @@ test_that("`mergeClusters` works with HDF5 assay slot",{
     expect_message(mergedCE <- mergeClusters(x=clustWithDendro,plot=FALSE,
             mergeMethod="adjP", plotInfo="mergeMethod"),
 			"Merging will be done on")
-	expect_true(inherits(assay(h5_se0),"DelayedArray"))
+	expect_true(inherits(assay(mergedCE),"DelayedArray"))
 								
 	
 })
