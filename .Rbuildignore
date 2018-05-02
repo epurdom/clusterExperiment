@@ -3,6 +3,7 @@
 ^.svn
 ^.git
 README[.]md
+update*[.]md
 
 # Travis-CI et al.
 ^[.]travis[.]yml$

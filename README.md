@@ -2,7 +2,15 @@
 
 Functions for running and comparing many different clusterings of single-cell sequencing data.
 
-## Installation From Bioconductor
+## News and Updates
+
+Version 2.0.0 is now available on with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
+
+The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
+
+## Installation instructions
+
+### Installation From Bioconductor
 
 We recommend installation of the package via bioconductor.
 
@@ -13,16 +21,18 @@ biocLite("clusterExperiment")
 
 To install the most recent version on the development branch of bioconductor, follow the above instructions, with the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
 
-## Installation of Github Version:
+### Installation of Github Version:
 
-We generally try to keep the bioconductor *devel* version up-to-date with the *master* branch of this git repository, but there can be at times a lag between the two. You can install the github version via
+We generally try to keep the bioconductor *devel* version up-to-date with the *master* branch of this git repository. But since this can require installing R development version, it can be convenient to be able to get just the most recent version from github. 
+
+You can install the github version via
 
 ```r
 library(devtools)
 install_github("epurdom/clusterExperiment")
 ```
 
-## Development branch:
+### Development branch:
 
 The `develop` branch is our development branch where we are actively updating features, and may contain bugs or be in the process of being updated. You should not use the `develop` branch unless it passes TravisCI checks (see below) and you want to be using a *very* beta version.
 
@@ -33,7 +43,7 @@ library(devtools)
 install_github("epurdom/clusterExperiment", ref="develop")
 ```
 
-## Status
+## Status Checks
 
 Below are status checks for the package. Note that occassionally errors do not appear here immediately. Clicking on the link will give you the most up-to-date status.
 

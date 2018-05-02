@@ -1,3 +1,7 @@
+Changes in version 2.1.0-9001 ( Release date: )
+==============
+
+
 Changes in version 1.99.4 ( Release date: 2018-04-19)
 ==============
 
@@ -28,7 +32,7 @@ Changes in version 1.99.0 ( Release date: 2018-02-15)
 ==============
 
 Changes:
-* MAJOR CHANGE TO DEFINITION OF CLASS: This version consists of a major update of how dimensionality reduction and filtering is done. The class has been updated to extend the new `SingleCellExperiment` class, which save the dimensionality reductions. Furthermore, calculating of per-gene statistics, which are usually used for filtering, are stored in `colData` of the object and can be easily accessed and used for repeated filtering without recalculating. This has created a massive change under-the-hood in functions that allow dimensionality reduction and filtering. Changes to function names are the following:
+* MAJOR CHANGE TO DEFINITION OF CLASS: This version consists of a major update of how dimensionality reduction and filtering is done. The class has been updated to extend the new `SingleCellExperiment` class, which save the dimensionality reductions. Furthermore, calculating of per-gene statistics, which are usually used for filtering, are stored in `rowData` of the object and can be easily accessed and used for repeated filtering without recalculating. This has created a massive change under-the-hood in functions that allow dimensionality reduction and filtering. Changes to function names are the following:
 	- `transform` is now `transformData`
 	- New functions `makeReducedDims` and `makeFilterStats` will calculate (and thus store) dimensionality reductions and statistics for filtering the data.
 	- New function `filterData` will return the filtered data as a matrix
