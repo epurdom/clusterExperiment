@@ -763,31 +763,34 @@ setMethod(
 	num<-length(which(pvalues>lambda))
 	pi0<-num/(1-lambda)/m
 	return(1-pi0)
-
+	return(max(c(0,1-pi0)))
 }
 .m1_PC<-function(pvalues){
 	pi0<-2*mean(pvalues)
-	return(1-pi0)
+	return(max(c(0,1-pi0)))
 
 }
 
 .m1_MB<-function(pvalues){
   nCorrect<-max(howmany::lowerbound(howmany::howmany(pvalues))) #the most you can call correctly
-  return(nCorrect/length(pvalues))
+	p1<-nCorrect/length(pvalues)
+	return(max(c(0,p1)))
 }
 .m1_adjP<-function(adjPvalues,logFC,logFCcutoff){
 	if(length(adjPvalues)!=length(logFC)) stop("coding error -- adjPvalues and logFC must be of same length")
-   sum(adjPvalues<=0.05 & abs(logFC)>=logFCcutoff)/length(adjPvalues)
+  p1<-sum(adjPvalues<=0.05 & abs(logFC)>=logFCcutoff)/length(adjPvalues)
+	return(max(c(0,p1)))
 }
 .m1_locfdr<-function(tstats){
   locfdrResults<-locfdr::locfdr(tstats,plot=0)#ignore issue of df of t-statistic -- topTable doesn't give it out, and with large samples won't matter.
   p0<-locfdrResults$fp0["mlest","p0"] #estimate proportion null; ignore estimate of variability for now
-  return(1-p0)
+  	return(max(c(0,1-pi0)))
 }
 .m1_JC<-function(tstats){
   #copied code from Jianshin's website
   musigma<-try(.EstNull.func(tstats),silent=TRUE)
-  .epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
+  p1<-.epsest.func(tstats,musigma$mu,musigma$s) #gives proportion of non-null
+	return(max(c(0,p1)))
 }
 
 #' @param by indicates whether output from \code{getMergeCorrespond} should be
