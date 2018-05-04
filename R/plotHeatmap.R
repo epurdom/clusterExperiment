@@ -352,7 +352,7 @@ setMethod(
     else groupFeatures<-NULL
     if(!externalData){
       if(!clusterFeatures && visualizeData=="original"){
-        heatData<-assay(data)
+        heatData<-assay(data, whichAssay)
       }
       else{
         if(length(clusterFeaturesData)==1 && isPossibleReducedDims(data,clusterFeaturesData)){
