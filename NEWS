@@ -1,3 +1,9 @@
+Changes in version 2.1.0-9003 ( Release date: )
+==============
+
+Changes:
+* change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`) 
+
 Changes in version 2.1.0-9002 ( Release date: )
 ==============
 
