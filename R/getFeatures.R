@@ -287,23 +287,102 @@ This makes sense only for counts.")
 )
 
 
-.getBestFGenes<-function(fit,...){
-	## basic limma design
-	fit2 <- eBayes(fit)
-	#tops<-topTableF(fit2,number=nGenes,genelist=rownames(fit$coef),...)
-	tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
-	colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
+.getBestFGenes<-function(fit, weights = NULL,...){
+	if(is.null(weights)){
+	  ## basic limma design
+	  fit2 <- eBayes(fit)
+	  #tops<-topTableF(fit2,number=nGenes,genelist=rownames(fit$coef),...)
+	  tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
+	  colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
+	}
 
+	else{
+	  LRT<-glmWeightedF(fit)
+	  feat<- rownames(fit$coefficients)
+	  coefs<- fit$coefficients
+	  aveExp<- fit$AveLogCPM
+	  pval<- LRT$table$PValue
+	  pval.adj <- p.adjust(pval, method = "BH", n = length(feat))
+	  tops<-data.frame(Feature = feat, coefs, AveExpr= aveExp, LR = LRT$table$LR, 
+	                   P.Value = pval, adj.P.Val = pval.adj)
+	  tops <- tops[order(pval.adj)[1:10] ,]
+	}
+	
 	return(tops)
 }
-.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj,...){
+#.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj,...){
+#  ncontr<-ncol(contr.matrix)
+#  fit2<-contrasts.fit(fit,contr.matrix)
+#  fit2<-eBayes(fit2)
+#  args<-list(...)
+#  if("p.value" %in% names(args)){
+#    p.value<-args$p.value
+#  }
+#  else p.value<-1 #default of topTable
+#  if("number" %in% names(args)){
+#    nGenes<-args$number
+#  }
+#  else nGenes<-10 #default of topTable
+#  
+#  
+#  #get raw p-values for all(!)
+#  getRaw<-function(ii){
+#    if(contrastAdj%in%c("AfterF","All")) {
+#      tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
+#    }
+#    else{
+#      tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
+#    }
+#    colnames(tt)[colnames(tt)=="ID"]<-"Feature"
+#    if(nrow(tt)>0){
+#      tt<-data.frame("Contrast"=unname(colnames(contr.matrix)[ii]),tt,row.names=NULL)
+#      if(!is.null(contrastNames)){
+#        tt<-data.frame("ContrastName"=contrastNames[ii],tt,row.names=NULL)
+#      }
+#    }
+#    return(tt)
+#  }
+#  tops<-do.call("rbind",lapply(1:ncontr,getRaw))
+#  if(contrastAdj=="AfterF" & p.value<1){
+#    #get p-value for F test for all genes, and only consider genes with significant F.
+#    fitF2<-eBayes(fitF)
+#    topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
+#    whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
+#    tops<-tops[tops$Feature %in% whGenesSigF,]
+#  }
+#  #do FDR correction on all raw p-values (that remain)
+#  if(contrastAdj%in%c("AfterF","All")) {
+#    tops$adj.P.Val<-p.adjust(tops$P.Value,method="BH")
+#    if(p.value<1) tops<-tops[tops$adj.P.Val<p.value,,drop=FALSE]
+#    if(nGenes<length(rownames(fit$coef))){
+#      #just return relevant number per contrast
+#      tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[1:min(c(nGenes,nrow(x))),,drop=FALSE]}))
+#    }
+#  }
+#  row.names(tops)<-NULL
+#  
+#  return(tops)
+#  
+#}
+
+.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj, weights = NULL, ...){
   ncontr<-ncol(contr.matrix)
-  fit2<-contrasts.fit(fit,contr.matrix)
-  fit2<-eBayes(fit2)
+  
+  fit2<- fit
+  
+  if(is.null(weights)){
+    fit2<-contrasts.fit(fit,contr.matrix)
+    fit2<-eBayes(fit2)
+  }
+  
   args<-list(...)
+  
+  
   if("p.value" %in% names(args)){
     p.value<-args$p.value
   }
+  
+  
   else p.value<-1 #default of topTable
   if("number" %in% names(args)){
     nGenes<-args$number
@@ -313,11 +392,20 @@ This makes sense only for counts.")
   
   #get raw p-values for all(!)
   getRaw<-function(ii){
-    if(contrastAdj%in%c("AfterF","All")) {
-      tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
+    if(is.null(weights)){
+      if(contrastAdj%in%c("AfterF","All")) {
+        tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
+      }
+      else{
+        tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
+      }
     }
     else{
-      tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
+      lrt = glmWeightedF(fit2, contrast = contr.matrix[,ii])
+      tt<- topTags(lrt, n= nGenes)
+      if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
+      tt<- data.frame(ID=rownames(tt), tt)
+      colnames(tt)[5:6]<- c("P.Value", "adj.P.Val")
     }
     colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     if(nrow(tt)>0){
@@ -330,11 +418,19 @@ This makes sense only for counts.")
   }
   tops<-do.call("rbind",lapply(1:ncontr,getRaw))
   if(contrastAdj=="AfterF" & p.value<1){
-    #get p-value for F test for all genes, and only consider genes with significant F.
-    fitF2<-eBayes(fitF)
-    topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
-    whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
-    tops<-tops[tops$Feature %in% whGenesSigF,]
+    #get p-value for F test for all genes, and only consider genes with significant F/LRT.
+    if(is.null(weights)){
+      fitF2<-eBayes(fitF)
+      topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
+      whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
+      tops<-tops[tops$Feature %in% whGenesSigF,]
+    }
+    else{
+      lrt = glmWeightedF(fitF, contrast= contr.matrix)$table
+      whGenesSig<-rownames(lrt)[which(lrt$padjFilter < p.value)]
+      tops<-tops[tops$Feature %in% whGenesSig,]
+    }
+    
   }
   #do FDR correction on all raw p-values (that remain)
   if(contrastAdj%in%c("AfterF","All")) {
@@ -350,6 +446,7 @@ This makes sense only for counts.")
   return(tops)
   
 }
+
 
 #' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
@@ -463,5 +560,145 @@ This makes sense only for counts.")
 	phylobase::edgeLength(tree)<-allLen
 	tree
 }
+
+
+setMethod(f = "getBestFeatures2",
+          signature = signature(x = "matrix"),
+          definition = function(x, cluster,
+                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                                dendro=NULL, pairMat=NULL, weights = NULL,
+                                contrastAdj=c("All", "PerContrast", "AfterF"),
+                                isCount=FALSE, normalize.method="none",...) {
+            
+            #... is always sent to topTable, and nothing else
+            cl<-cluster
+            if(is.factor(cl)) {
+              warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+              cl <- .convertToNum(cl)
+            }
+            
+            dat <- data.matrix(x)
+            contrastType <- match.arg(contrastType)
+            contrastAdj <- match.arg(contrastAdj)
+            returnType <- "Table" 
+            
+            if(is.null(rownames(dat))) {
+              rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+            }
+            
+            tmp <- dat
+            
+            if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+              whNA <- which(cl<0)
+              tmp <- tmp[, -whNA]
+              cl <- cl[-whNA]
+              if(is.null(weights) ==F){
+                weights<- weights[,-whNA]
+              }
+            }
+            ###--------
+            ### Fix up the names
+            ###--------
+            pad<-if(length(unique(cl))<100) 2 else 3
+            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+            clLevels<-unique(cl[order(clPretty)])
+            clPrettyLevels<-unique(clPretty[order(clPretty)])
+            #get them ordered nicely.
+            clNumFac<-factor(cl,levels=clLevels)
+            
+            if(contrastType=="Dendro") {
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
+              if(is.null(dendro)) {
+                stop("must provide dendro")
+              }
+              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+                stop("dendro must be of class 'dendrogram' or 'phylo4'")
+              }
+            }
+            else{
+              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+            }
+            
+            if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
+              ###Create fit for running contrasts
+              designContr <- model.matrix(~ 0 + clPrettyFac)
+              colnames(designContr) <- make.names(levels(clPrettyFac))
+              
+              if(isCount) {
+                if(is.null(weights)){
+                  v <- voom(tmp, design=designContr, plot=FALSE,
+                            normalize.method = normalize.method)
+                  fitContr <- lmFit(v, designContr)
+                }
+                
+                else{
+                  fitContr<- DGEList(tmp)
+                  fitContr$weights <- weights
+                  fitContr <- estimateDisp(fitContr, designContr)
+                  fitContr <- glmFit(fitContr,design = designContr)
+                  
+                  #disp <- estimateDisp(tmp, designContr)$common.dispersion
+                  #fitContr <- glmFit(tmp, dispersion = disp,design = designContr, weights= weights)
+                }
+                
+              } else {
+                fitContr <- lmFit(tmp, designContr)
+              }
+            }
+            
+            if(contrastType=="F" || contrastAdj=="AfterF") {
+              xdat<-data.frame("Cluster"=clPrettyFac)
+              designF<-model.matrix(~Cluster,data=xdat)
+              #designF <- model.matrix(~clPrettyFac)
+              
+              if(isCount) {
+                if(is.null(weights)){
+                  v <- voom(tmp, design=designF, plot=FALSE,
+                            normalize.method = normalize.method)
+                  fitF <- lmFit(v, designF)
+                }
+                else{
+                  fitF<- DGEList(tmp)
+                  fitF$weights <- weights
+                  fitF <- estimateDisp(fitF, design = designF)
+                  fitF <- glmFit(fitF,design = designF)
+                  #disp <- estimateDisp(tmp, design = designF)$common.dispersion
+                  #fitF <- glmFit(tmp, dispersion = disp,design = designF, weights= weights )
+                }
+                
+              } else {
+                fitF <- lmFit(tmp, designF)
+              }
+            } else {
+              fitF <- NULL
+            }
+            
+            if(contrastType!="F"){
+              contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,
+                                             dendro=dendro,pairMat=pairMat,outputType = "limma", 
+                                             removeNegative = TRUE)
+            }
+            
+            if(contrastType=="F"){
+              tops <- .getBestFGenes(fitF, weights = weights,...)
+            }
+            
+            else{
+              tops<-.testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,
+                            fit=fitContr,fitF=fitF,contrastAdj=contrastAdj, weights = weights,...)
+            }
+            tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+            
+          
+            if(returnType=="Index") {
+              whGenes <- tops$IndexInOriginal
+              names(whGenes) <- tops$Feature
+              return(whGenes)
+            }
+            if(returnType=="Table") {
+              return(tops)
+            }
+          }
+)
 
 
