@@ -22,6 +22,9 @@
 #'@param ... arguments to be passed on to the method for signature 
 #'  \code{matrix,missing}.
 #'@inheritParams clusterMany
+#'@details This function was previously called \code{combineMany} (versions <= 2.0.0).
+#' \code{combineMany} is still available, but is considered defunct and users should 
+#' update their code accordingly. 
 #'@details The function tries to find a consensus cluster across many different 
 #'  clusterings of the same samples. It does so by creating a \code{nSamples} x 
 #'  \code{nSamples} matrix of the percentage of co-occurance of each sample and 
