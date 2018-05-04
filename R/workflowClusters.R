@@ -1,10 +1,10 @@
 #Update here if change workflow values. Also defines the order of them.
-.workflowValues<-c("final","mergeClusters","combineMany","clusterMany")
+.workflowValues<-c("final","mergeClusters","makeConsensus","clusterMany")
 
 #' @title Methods for workflow clusters
 #'
 #' @description The main workflow of the package is made of
-#'   \code{\link{clusterMany}}, \code{\link{combineMany}}, and
+#'   \code{\link{clusterMany}}, \code{\link{makeConsensus}}, and
 #'   \code{\link{mergeClusters}}. The clusterings from these functions (and not
 #'   those obtained in a different way) can be obtained with the functions
 #'   documented here.
@@ -23,7 +23,7 @@
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #'
-#' clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
+#' clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 #' minSize=10)
 #'
 #' clCommon <- makeDendrogram(clCommon)
@@ -55,7 +55,7 @@ setMethod(
 #' @rdname workflowClusters
 #' @return \code{workflowClusterDetails} returns a \code{data.frame} with some
 #'   details on the clusterings, such as the type (e.g., `clusterMany`,
-#'   `combineMany`) and iteration.
+#'   `makeConsensus`) and iteration.
 #' @export
 setMethod(
   f = "workflowClusterDetails",
@@ -93,7 +93,7 @@ setMethod(
 #' @rdname workflowClusters
 #' @return \code{workflowClusterTable} returns a table of how many of the
 #'   clusterings belong to each of the following possible values: `final`,
-#'   `mergeClusters`, `combineMany` and `clusterMany`.
+#'   `mergeClusters`, `makeConsensus` and `clusterMany`.
 #' @export
 setMethod(
   f = "workflowClusterTable",

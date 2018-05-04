@@ -83,7 +83,7 @@
 #'   \code{ClusterExperiment} version. As noted above, however, some arguments
 #'   have different interpretations.
 #' @details If \code{whichClusters = "workflow"}, then the workflow clusterings
-#'   will be plotted in the following order: final, mergeClusters, combineMany,
+#'   will be plotted in the following order: final, mergeClusters, makeConsensus,
 #'   clusterMany.
 #' @return If \code{clusters} is a \code{\link{ClusterExperiment}} Object, then
 #'   \code{plotClusters} returns an updated \code{ClusterExperiment} object,

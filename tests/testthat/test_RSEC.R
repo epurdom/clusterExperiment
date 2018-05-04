@@ -1,8 +1,8 @@
 context("RSEC")
 
 test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
-	##these examples don't do dendrogram/merge because all -1 after combineMany
-	##only tests clusterMany, combineMany parts.
+	##these examples don't do dendrogram/merge because all -1 after makeConsensus
+	##only tests clusterMany, makeConsensus parts.
 	##so can't do expect_silent, because returns NOTE about that issue.
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,
 		clusterFunction="tight", alphas=0.1,dendroReduce="none",
@@ -49,8 +49,8 @@ expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="non
                  ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
  ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
- expect_message(combOut<-combineMany(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
-  expect_equal(clusterMatrix(rsecOut,whichClusters="combineMany"),clusterMatrix(combOut,whichClusters="combineMany"))
+ expect_message(combOut<-makeConsensus(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
+  expect_equal(clusterMatrix(rsecOut,whichClusters="makeConsensus"),clusterMatrix(combOut,whichClusters="makeConsensus"))
  expect_equal(coClustering(rsecOut),coClustering(combOut))
 
  expect_silent(dendOut<-makeDendrogram(combOut,reduceMethod="none",nDims=NA))
@@ -77,7 +77,7 @@ test_that("`RSEC` works with no merging",{
 })
 
 test_that("`RSEC` returns clusterMany even when errors later",{
-	#error in combineMany param
+	#error in makeConsensus param
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
         subsampleArgs=list(resamp.num=5),random.seed=495, combineProportion = -1, combineMinSize = 5),"Invalid value for the 'proportion' parameter"
@@ -90,7 +90,7 @@ test_that("`RSEC` returns clusterMany even when errors later",{
         subsampleArgs=list(resamp.num=5),random.seed=495, 
 		dendroReduce="myfakemethod"
   	 	),"does not contain the given 'reduceMethod' value")
-    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut2)))
+    expect_true(all(c("clusterMany","makeConsensus") %in% clusterTypes(rsecOut2)))
 	
 	#error in merging -- have to get one where can make dendrogram... takes longer.
 	expect_message(rsecOut3<-RSEC(x=assay(seSimCount[sample(size=50,x=1:nrow(seSimCount)),]), isCount=TRUE,reduceMethod="none",
@@ -99,7 +99,7 @@ test_that("`RSEC` returns clusterMany even when errors later",{
        subsampleArgs=list(resamp.num=5),random.seed=495,
 		mergeMethod="fakeMerge"
   	 	),"mergeClusters encountered following error")
-    expect_true(all(c("clusterMany","combineMany") %in% clusterTypes(rsecOut3)))
+    expect_true(all(c("clusterMany","makeConsensus") %in% clusterTypes(rsecOut3)))
 
 })
 

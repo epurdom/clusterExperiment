@@ -103,7 +103,7 @@ setMethod(
     cat("Workflow progress:\n")
     typeTab<-names(table(clusterTypes(object)))
     cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
-    cat("combineMany run?",if("combineMany" %in% typeTab) "Yes" else "No","\n")
+    cat("makeConsensus run?",if("makeConsensus" %in% typeTab) "Yes" else "No","\n")
     cat("makeDendrogram run?",if(!is.null(object@dendro_samples) & !is.null(object@dendro_clusters) ) "Yes" else "No","\n")
     cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }

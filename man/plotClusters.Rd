@@ -191,7 +191,7 @@ All arguments of the matrix version can be passed to the
   have different interpretations.
 
 If \code{whichClusters = "workflow"}, then the workflow clusterings
-  will be plotted in the following order: final, mergeClusters, combineMany,
+  will be plotted in the following order: final, mergeClusters, makeConsensus,
   clusterMany.
 }
 \examples{

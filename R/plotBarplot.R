@@ -33,7 +33,7 @@
 #'   have different interpretations.
 #' @details If \code{whichClusters = "workflow"}, then the most recent two 
 #'   clusters of the workflow will be chosen where recent is based on the 
-#'   following order (most recent first): final, mergeClusters, combineMany, 
+#'   following order (most recent first): final, mergeClusters, makeConsensus, 
 #'   clusterMany.
 #' @details \code{xNames}, \code{legNames} and \code{colPalette} should all be
 #'   named vectors, with the names referring to the clusters they should match

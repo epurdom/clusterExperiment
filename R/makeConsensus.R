@@ -3,7 +3,7 @@
 #'Find sets of samples that stay together across clusterings in order to define 
 #'a new clustering vector.
 #'
-#'@aliases combineMany
+#'@aliases makeConsensus
 #'  
 #'@param x a matrix or \code{\link{ClusterExperiment}} object.
 #'@param whichClusters a numeric or character vector that specifies which 
@@ -50,7 +50,7 @@
 #'  
 #' @return If x is a \code{\link{ClusterExperiment}}, a
 #'  \code{\link{ClusterExperiment}} object, with an added clustering of
-#'  clusterTypes equal to \code{combineMany} and the \code{percentageShared}
+#'  clusterTypes equal to \code{makeConsensus} and the \code{percentageShared}
 #'  matrix stored in the \code{coClustering} slot.
 #'
 #' @examples
@@ -67,10 +67,10 @@
 #' colnames(clMat) <- gsub("k=NA,", "", colnames(clMat))
 #'
 #' #require 100% agreement -- very strict
-#' clCommon100 <- combineMany(clMat, proportion=1, minSize=10)
+#' clCommon100 <- makeConsensus(clMat, proportion=1, minSize=10)
 #'
 #' #require 70% agreement based on clustering of overlap
-#' clCommon70 <- combineMany(clMat, proportion=0.7, minSize=10)
+#' clCommon70 <- makeConsensus(clMat, proportion=0.7, minSize=10)
 #'
 #' oldpar <- par()
 #' par(mar=c(1.1, 12.1, 1.1, 1.1))
@@ -78,15 +78,15 @@
 #' "100%Similarity"=clCommon100$clustering), axisLine=-2)
 #'
 #' #method for ClusterExperiment object
-#' clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
+#' clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 #' minSize=10)
 #' plotClusters(clCommon)
 #' par(oldpar)
 #'
-#' @rdname combineMany
+#' @rdname makeConsensus
 #' @export
 setMethod(
-  f = "combineMany",
+  f = "makeConsensus",
   signature = signature(x = "matrix", whichClusters = "missing"),
   definition = function(x, whichClusters, proportion,
                         clusterFunction="hierarchical01",
@@ -114,7 +114,7 @@ setMethod(
       if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
       else if(class(clusterFunction)=="ClusterFunction") typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
       if(typeAlg!="01") {
-        stop("combineMany is only implemented for '01' type clustering functions (see ?ClusterFunction)")
+        stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
       
       ##Make clusterMat integer, just in case
@@ -152,16 +152,16 @@ setMethod(
   }
 )
 
-#' @rdname combineMany
+#' @rdname makeConsensus
 #' @export
 #' @param clusterLabel a string used to describe the type of clustering. By
-#'   default it is equal to "combineMany", to indicate that this clustering is
-#'   the result of a call to combineMany. However, a more informative label can
+#'   default it is equal to "makeConsensus", to indicate that this clustering is
+#'   the result of a call to makeConsensus. However, a more informative label can
 #'   be set (see vignette).
 setMethod(
-  f = "combineMany",
+  f = "makeConsensus",
   signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
-  definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="combineMany",...){
+  definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
     
     if(!all(whichClusters %in% seq_len(NCOL(clusterMatrix(x))))) {
       stop("Invalid indices for clusterLabels")
@@ -169,10 +169,10 @@ setMethod(
     if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")
     clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
     
-    outlist <- combineMany(clusterMat, ...)
+    outlist <- makeConsensus(clusterMat, ...)
     newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
-                                clusterTypes="combineMany",checkTransformAndAssay=FALSE)
+                                clusterTypes="makeConsensus",checkTransformAndAssay=FALSE)
     #add "c" to name of cluster
     newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
@@ -181,34 +181,34 @@ setMethod(
       coClustering(newObj) <- outlist$percentageShared
     }
     ##Check if pipeline already ran previously and if so increase
-    x<-.updateCurrentWorkflow(x,eraseOld,"combineMany")
+    x<-.updateCurrentWorkflow(x,eraseOld,"makeConsensus")
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
     return(retval)
   }
 )
 
-#' @rdname combineMany
+#' @rdname makeConsensus
 #' @export
 setMethod(
-  f = "combineMany",
+  f = "makeConsensus",
   signature = signature(x = "ClusterExperiment", whichClusters = "character"),
   definition = function(x, whichClusters, ...){
     
     wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-    combineMany(x, wh, ...)
+    makeConsensus(x, wh, ...)
   }
 )
-#' @rdname combineMany
+#' @rdname makeConsensus
 #' @export
 setMethod(
-  f = "combineMany",
+  f = "makeConsensus",
   signature = signature(x = "ClusterExperiment", whichClusters = "missing"),
   definition = function(x, whichClusters, ...){
     wh<-.TypeIntoIndices(x,"clusterMany")
     if(length(wh)>0){
       .mynote("no clusters specified to combine, using results from clusterMany")
-      combineMany(x, whichClusters = "clusterMany",...)
+      makeConsensus(x, whichClusters = "clusterMany",...)
     }
     else{
       stop("no clusters specified to combine, please specify.")

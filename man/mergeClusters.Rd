@@ -114,7 +114,7 @@ passed onto \code{\link{plot.phylo}}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class 
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing 
 workflow results will have "\code{_i}" added to the clusterTypes value, 
 where \code{i} is one more than the largest such existing workflow 
 clusterTypes.}

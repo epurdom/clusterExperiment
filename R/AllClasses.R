@@ -30,7 +30,7 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #' in the Slots section.
 #'
 #' @description There are several methods implemented for this class. The most
-#' important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
+#' important methods (e.g., \code{\link{clusterMany}}, \code{\link{makeConsensus}},
 #' ...) have their own help page. Simple helper methods are described in the
 #' Methods section. For a comprehensive list of methods specific to this class
 #' see the Reference Manual.
@@ -228,7 +228,7 @@ setMethod(
   })
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
-#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
 #'  reserved for the clustering coming from the package workflow and should not
 #'  be used when creating a new object with the constructor.
 #'@param clusterInfo a list with information on the clustering (see Slots).

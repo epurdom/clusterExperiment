@@ -7,8 +7,8 @@
 #' @param k0s the k0 parameter for sequential clustering (see
 #'   \code{\link{seqCluster}})
 #' @param combineProportion passed to \code{proportion} in
-#'   \code{\link{combineMany}}
-#' @param combineMinSize passed to \code{minSize} in \code{\link{combineMany}}
+#'   \code{\link{makeConsensus}}
+#' @param combineMinSize passed to \code{minSize} in \code{\link{makeConsensus}}
 #' @param dendroReduce passed to \code{reduceMethod} in
 #'   \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
@@ -179,7 +179,7 @@ setMethod(
   if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
   if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
   whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters  	else "clusterMany"
-  combineTry<-try(do.call("combineMany",c(list(x=ce,whichClusters=whClusters),args1)), silent=TRUE)
+  combineTry<-try(do.call("makeConsensus",c(list(x=ce,whichClusters=whClusters),args1)), silent=TRUE)
   if(!inherits(combineTry,"try-error")){
     ce<-combineTry
     #------------
@@ -216,6 +216,6 @@ setMethod(
     }
     else .mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
   }
-  else .mynote(paste("combineMany encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
+  else .mynote(paste("makeConsensus encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
   return(ce) 
 }

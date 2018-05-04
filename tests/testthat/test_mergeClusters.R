@@ -48,7 +48,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged<- makeDendrogram(clustMerged)
   clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
   expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
-  expect_true(!"combineMany.1" %in% clusterTypes(clustMerged2))
+  expect_true(!"makeConsensus.1" %in% clusterTypes(clustMerged2))
   expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
   removeClusterings(clustMerged, whichClusters = "mergeClusters")
 })

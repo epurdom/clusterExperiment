@@ -45,7 +45,7 @@
 #'     clusterings from a call to \code{\link{clusterMany}}. This plot separates
 #'     out the \code{\link{clusterMany}} results from a designated clustering of
 #'     interest, as indicated by the \code{whichClusters} argument
-#'     (by default clusterings from a call to \code{\link{combineMany}} or 
+#'     (by default clusterings from a call to \code{\link{makeConsensus}} or 
 #'     \code{\link{mergeClusters}}). In addition the highlighted clusters are
 #'     made bigger so that they can be easily seen.
 #' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
@@ -57,13 +57,13 @@
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
-#' cl <- combineMany(cl, proportion=0.7)
+#' cl <- makeConsensus(cl, proportion=0.7)
 #' plotClustersWorkflow(cl)
 #' @export
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=c("ignore","all","highlightOnly"),
+  definition = function(object, whichClusters=c("mergeClusters","makeConsensus"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=c("ignore","all","highlightOnly"),
                         nSizeResult=ceiling(nClusterings(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
     sortBy<-match.arg(sortBy)

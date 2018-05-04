@@ -396,7 +396,7 @@ This makes sense only for counts.")
   ##################
   #Now need to change tip name to be that of the merge cluster
   #Currently tips should be either 
-  #1) Name of combineMany cluster (i.e. integer) which needs to translate to a merge cluster
+  #1) Name of makeConsensus cluster (i.e. integer) which needs to translate to a merge cluster
   #2) Node name which now should be a merge cluster id
   ##################
   newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries

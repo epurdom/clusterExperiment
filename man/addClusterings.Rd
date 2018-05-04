@@ -42,7 +42,7 @@
 or a matrix/vector of clusters.}
 
 \item{clusterTypes}{a string describing the nature of the clustering. The
-values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 

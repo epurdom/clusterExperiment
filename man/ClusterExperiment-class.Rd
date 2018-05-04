@@ -55,7 +55,7 @@ as the log.}
 \item{primaryIndex}{integer. Sets the `primaryIndex` slot (see Slots).}
 
 \item{clusterTypes}{a string describing the nature of the clustering. The
-values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
 reserved for the clustering coming from the package workflow and should not
 be used when creating a new object with the constructor.}
 
@@ -109,7 +109,7 @@ class, the \code{ClusterExperiment} object has the additional slots described
 in the Slots section.
 
 There are several methods implemented for this class. The most
-important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
+important methods (e.g., \code{\link{clusterMany}}, \code{\link{makeConsensus}},
 ...) have their own help page. Simple helper methods are described in the
 Methods section. For a comprehensive list of methods specific to this class
 see the Reference Manual.

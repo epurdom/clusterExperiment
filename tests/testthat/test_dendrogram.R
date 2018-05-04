@@ -66,7 +66,7 @@ test_that("`makeDendrogram` works with hdf5",{
 		 ks=c(3,4),clusterFunction="pam",
 		 subsample=FALSE, sequential=FALSE,
 		 isCount=FALSE,verbose=FALSE))
-    expect_silent(clustNothing<-combineMany(clustNothing, proportion=1,whichClusters = "clusterMany"))
+    expect_silent(clustNothing<-makeConsensus(clustNothing, proportion=1,whichClusters = "clusterMany"))
 	expect_silent(makeDendrogram(clustNothing))
 	
 })
@@ -115,12 +115,12 @@ test_that("`makeDendrogram` works with whichCluster", {
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     expect_error(makeDendrogram(bigCE,whichCluster="workflow"),"'whichCluster' must identify only a single clustering")
  
-    #--- check combineMany updates dendrogram correctly
-    expect_message(bigCE<-combineMany(bigCE,proportion=0.3),"no clusters specified to combine, using results from clusterMany")
+    #--- check makeConsensus updates dendrogram correctly
+    expect_message(bigCE<-makeConsensus(bigCE,proportion=0.3),"no clusters specified to combine, using results from clusterMany")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
-    expect_silent(makeDendrogram(bigCE,whichCluster="combineMany") )
+    expect_silent(makeDendrogram(bigCE,whichCluster="makeConsensus") )
     
     
     #--- check mergeClusters updates dendrogram correctly

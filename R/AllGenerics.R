@@ -330,8 +330,8 @@ setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
 setGeneric( name = "removeUnclustered", def = function(x) {
 	standardGeneric("removeUnclustered")})
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
-setGeneric( name = "combineMany", def = function(x, whichClusters, ...) {
-    standardGeneric("combineMany")})
+setGeneric( name = "makeConsensus", def = function(x, whichClusters, ...) {
+    standardGeneric("makeConsensus")})
 
 setGeneric(
   name = "clusterMatrixNamed",

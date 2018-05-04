@@ -602,12 +602,12 @@ setMethod(
       }
       retval@merge_nodeMerge<-nodeMerge
       #------------
-      ##Align the colors between mergeClusters and combineMany
+      ##Align the colors between mergeClusters and makeConsensus
       #------------
-      tryAlign<-try(plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","combineMany"),plot=FALSE),silent=TRUE)
+      tryAlign<-try(plotClusters(retval,resetColors = TRUE, whichClusters=c("mergeClusters","makeConsensus"),plot=FALSE),silent=TRUE)
       if(!inherits(tryAlign,"try-error"))
         retval<-tryAlign
-      else .mynote(paste("Unable to align mergeClusters with combineMany clusters because of the following error:",tryAlign))
+      else .mynote(paste("Unable to align mergeClusters with makeConsensus clusters because of the following error:",tryAlign))
       
     }
     else{

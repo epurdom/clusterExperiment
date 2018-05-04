@@ -2,7 +2,7 @@ Changes in version 2.1.0-9002 ( Release date: )
 ==============
 
 Bugs:
-* Fix so that estimates of proportion non-null in `mergeClusters` always positive.
+* Fix so that estimates of the proportion non-null in `mergeClusters` are always positive.
 
 Changes in version 1.99.4 ( Release date: 2018-04-19)
 ==============

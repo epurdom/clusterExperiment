@@ -42,9 +42,9 @@ The package encodes many common practices that are shared across clustering algo
 As mentioned above, RSEC is a specific algorithm for creating a clustering that follows these basic steps:
 
 * Implement many different clusterings using different choices of parameters using the function `clusterMany`. This results in a large collection of clusterings, where each clustering is based on different parameters. 
-* Find a unifying clustering across these many clusterings using the `combineMany` function. 
+* Find a unifying clustering across these many clusterings using the `makeConsensus` function. 
 * Determine whether some clusters should be merged together into larger clusters. This involves two steps:
-    - Find a hierarchical clustering of the clusters found by `combineMany` using `makeDendrogram`
+    - Find a hierarchical clustering of the clusters found by `makeConsensus` using `makeDendrogram`
     - Merge together clusters of this hierarchy based on the percentage of differential expression, using `mergeClusters`.
 
 The basic premise of RSEC is to find small, robust clusters of samples, and then merge them into larger clusters as relevant. We find that many algorithmic methods for choosing the appropriate number of clusters for methods  err on the side of too few clusters. However, we find in practice that we tend to prefer to err on finding many clusters and then merging them based on examining the data.
@@ -165,7 +165,7 @@ This final result of RSEC is the result of running many clusterings and finding 
 head(clusterMatrix(rsecFluidigm)[,1:4])
 ```
 
-The "mergeClusters" clustering is the final clustering from RSEC and matches the primary clustering that we saw above. The "combineMany" clustering is the result of the initial ensembl concensus among all of the many clusterings that were run, while "mergeClusters" is the result of merging smaller clusters together that did not show enough signs of differences between clusters. The remaining clusters are the result of changing the parameters, and a couple of such clusterings a shown in the above printout of the cluster matrix. 
+The "mergeClusters" clustering is the final clustering from RSEC and matches the primary clustering that we saw above. The "makeConsensus" clustering is the result of the initial ensembl concensus among all of the many clusterings that were run, while "mergeClusters" is the result of merging smaller clusters together that did not show enough signs of differences between clusters. The remaining clusters are the result of changing the parameters, and a couple of such clusterings a shown in the above printout of the cluster matrix. 
 
 The column names are the `clusterLabels` for each clustering and can be accessed (and assigned new values!) via the `clusterLabels` function. 
 
@@ -213,35 +213,35 @@ plotBarplot(rsecFluidigm,main="Final Clustering")
 We can also pick a particular intermediate clustering, say our intial ensembl clustering before merging.
 
 ```{r plotBarplotRSEC.2}
-plotBarplot(rsecFluidigm,whichClusters=c("combineMany" ))
+plotBarplot(rsecFluidigm,whichClusters=c("makeConsensus" ))
 ```
 
 
-We can also compare two specific clusters with a simple barplot using `plotBarplot`. Here we compare the "combineMany" and the "mergeClusters" clusterings. 
+We can also compare two specific clusters with a simple barplot using `plotBarplot`. Here we compare the "makeConsensus" and the "mergeClusters" clusterings. 
 
 ```{r plotBarplot2}
-plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"combineMany"))
+plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"))
 ```
 
-Since "combineMany" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
+Since "makeConsensus" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
 
 
 **Co-Clustering** We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
 
 ```{r plotCoClustering_rsec}
-plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","combineMany"))
+plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","makeConsensus"))
 ```
 
-Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering), but the proportion of times across the clusterings we ran. The initial consensus clustering in `combineMany` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
+Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering), but the proportion of times across the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
 
 
-**Plot of Dendrogram** We can visualize how the initial ensembl cluster in `combineMany` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
+**Plot of Dendrogram** We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
-plotDendrogram(rsecFluidigm,whichClusters=c("combineMany","mergeClusters"),plotType="colorblock",leafType="sample")
+plotDendrogram(rsecFluidigm,whichClusters=c("makeConsensus","mergeClusters"),plotType="colorblock",leafType="sample")
 ```
 
-As shown in this plot, the individual clusters of the `combineMany` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `combineMany` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
+As shown in this plot, the individual clusters of the `makeConsensus` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `makeConsensus` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
 
 **2D plot of clusters** Finally, we can plot a 2-dimensional representation of the data with PCA and color code the samples to get a sense of how the data cluster.
 
@@ -260,7 +260,7 @@ In this case we can see that higher dimensions show us a greater amount of separ
 
 ## Rerunning RSEC with different parameters 
 
-In the next section, we will describe more about the options we could adjust in `RSEC`. As an example of a few options, we might, for example, want to change the proportion of co-clustering we required in making our `combineMany`
+In the next section, we will describe more about the options we could adjust in `RSEC`. As an example of a few options, we might, for example, want to change the proportion of co-clustering we required in making our `makeConsensus`
  clustering (which used the default of 0.7), or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many individual clustering steps which are time intensive (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We demonstrate this in our next command where we change these choices in the following ways:
  
  * set the proportion of co-clustering required by the argument `combineProportion=0.6`, 
@@ -282,10 +282,10 @@ We can compare the results of our changes with the `whichClusters` command to ex
 defaultMar<-par("mar")
 plotCMar<-c(1.1,8.1,4.1,1.1)
 par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","combineMany.1","mergeClusters","combineMany"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","makeConsensus.1","mergeClusters","makeConsensus"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-The clusterings with the `.1` appended to the labels are the previous `combineMany` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
+The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
 
 In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
 
@@ -320,7 +320,7 @@ length(pairsAllRSEC$Feature)==length(unique(pairsAllRSEC$Feature))
 In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
 
 ```{r getBestFeatures_heatmap}
-plotHeatmap(rsecFluidigm, whichClusters=c("combineMany","mergeClusters"),clusterSamplesData="dendrogramValue",
+plotHeatmap(rsecFluidigm, whichClusters=c("makeConsensus","mergeClusters"),clusterSamplesData="dendrogramValue",
             clusterFeaturesData=unique(pairsAllRSEC[,"IndexInOriginal"]),
             main="Heatmap of features w/ significant pairwise differences",
             breaks=.99)
@@ -340,7 +340,7 @@ We give an overview here of the steps used by the `RSEC` wrapper and more genera
 The standard clustering workflow steps are the following:
 
 * `clusterMany` -- run desired clusterings
-* `combineMany` -- get a unified clustering
+* `makeConsensus` -- get a unified clustering
 * `makeDendrogram` -- get a hierarchical relationship between the clusters
 * `mergeClusters` -- merge together clusters with little DE between their genes.
 
@@ -429,19 +429,19 @@ We could also permanently assign new labels in our `ClusterExperiment` object if
 
 There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
-## Step 2: Find a consensus with `combineMany` {#step2}
+## Step 2: Find a consensus with `makeConsensus` {#step2}
 
-To find a consensus clustering across the many different clusterings created by `clusterMany` the function `combineMany` can be used next. 
+To find a consensus clustering across the many different clusterings created by `clusterMany` the function `makeConsensus` can be used next. 
 
 ```{r}
-ce<-combineMany(ce,proportion=1)
+ce<-makeConsensus(ce,proportion=1)
 ```
 
 The `proportion` argument indicates the minimum proportion of times samples should be with other samples in the cluster they are assigned to in order to be clustered together in the final assignment. Notice we get a warning that we did not specify any clusters to combine, so it is using the default -- those from the `clusterMany` call. 
 
-If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `combineMany` has been added to the existing clusterings. This is the basic strategy of all of these functions in this package. Any clustering function that is applied to an existing `ClusterExperiment` object adds the new clustering to the set of existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
+If we look at the `clusterMatrix` of the returned `ce` object, we see that the new cluster from `makeConsensus` has been added to the existing clusterings. This is the basic strategy of all of these functions in this package. Any clustering function that is applied to an existing `ClusterExperiment` object adds the new clustering to the set of existing clusterings, so the user does not need to keep track of past clusterings and can easily compare what has changed. 
 
-We can again run `plotClusters`, which will now also show the result of `combineMany`. Instead, we'll use `plotClustersWorkflow` which is nicer for looking specifically at the results of `combineMany`
+We can again run `plotClusters`, which will now also show the result of `makeConsensus`. Instead, we'll use `plotClustersWorkflow` which is nicer for looking specifically at the results of `makeConsensus`
 
 ```{r lookAtCombineMany}
 head(clusterMatrix(ce)[,1:3])
@@ -450,48 +450,48 @@ plotClustersWorkflow(ce)
 
 ```
 
-The choices of `proportion=1` in `combineMany` is not usually a great choice, and certainly isn't helpful here. The clustering from the default `combineMany` leaves most samples unassigned (white in the above plot). This is because we requires samples to be in the same cluster in *every clustering* in order to be assigned to a cluster together. This is quite stringent. We can vary this by setting the `proportion` argument to be lower.  Explicit details on how `combineMany` makes these clusters are discussed  in the section on [combineMany](#combineMany).
+The choices of `proportion=1` in `makeConsensus` is not usually a great choice, and certainly isn't helpful here. The clustering from the default `makeConsensus` leaves most samples unassigned (white in the above plot). This is because we requires samples to be in the same cluster in *every clustering* in order to be assigned to a cluster together. This is quite stringent. We can vary this by setting the `proportion` argument to be lower.  Explicit details on how `makeConsensus` makes these clusters are discussed  in the section on [makeConsensus](#makeConsensus).
 
-So let's label the one we found as "combineMany,1" and then create a new one. (Making or changing the label to an informative label will make it easier to keep track of this particular clustering later, particularly if we make multiple calls to the workflow). 
+So let's label the one we found as "makeConsensus,1" and then create a new one. (Making or changing the label to an informative label will make it easier to keep track of this particular clustering later, particularly if we make multiple calls to the workflow). 
 
-```{r combineMany_changeLabel}
-wh<-which(clusterLabels(ce)=="combineMany")
-if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"combineMany,1"
+```{r makeConsensus_changeLabel}
+wh<-which(clusterLabels(ce)=="makeConsensus")
+if(length(wh)!=1) stop() else clusterLabels(ce)[wh]<-"makeConsensus,1"
 ```
 
-Now we'll rerun `combineMany` with `proportion=0.7`. This time, we will give it an informative label upfront in our call to `combineMany`.
+Now we'll rerun `makeConsensus` with `proportion=0.7`. This time, we will give it an informative label upfront in our call to `makeConsensus`.
 
-```{r combineMany_newCombineMany}
-ce<-combineMany(ce,proportion=0.7,clusterLabel="combineMany,0.7")
+```{r makeConsensus_newCombineMany}
+ce<-makeConsensus(ce,proportion=0.7,clusterLabel="makeConsensus,0.7")
 par(mar=plotCMar)
 plotClustersWorkflow(ce)
 
 ```
 
-We see that more clusters are detected. Those that are still not assigned a cluster from `combineMany` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. There is also a `minSize` parameter for `combineMany`, with the default of `minSize=5`. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. Here, we reduce it to `minSize=3` (we'll call this "combineMany,final"). We'll also choose to show all of the different combineMany results in our call to `plotClustersWorkflow`:
+We see that more clusters are detected. Those that are still not assigned a cluster from `makeConsensus` clearly vary across the clusterings as to whether the samples are clustered together or not. Varying the `proportion` argument will adjust whether some of the unclustered samples get added to a cluster. There is also a `minSize` parameter for `makeConsensus`, with the default of `minSize=5`. We could reduce that requirement as well and more of the unclustered samples would be grouped into a cluster. Here, we reduce it to `minSize=3` (we'll call this "makeConsensus,final"). We'll also choose to show all of the different makeConsensus results in our call to `plotClustersWorkflow`:
 
-```{r combineMany_changeMinSize}
-ce<-combineMany(ce,proportion=0.7,minSize=3,clusterLabel="combineMany,final")
+```{r makeConsensus_changeMinSize}
+ce<-makeConsensus(ce,proportion=0.7,minSize=3,clusterLabel="makeConsensus,final")
 par(mar=plotCMar)
-plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Min. Size=3")
+plotClustersWorkflow(ce,whichClusters=c("makeConsensus,final","makeConsensus,0.7","makeConsensus,1"),main="Min. Size=3")
 ```
 
 
 
 
-As we did before for `RSEC` results, we can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called combineMany provided that proportion argument is <1):
+As we did before for `RSEC` results, we can also visualize the proportion of times these clusters were together across these clusterings (this information was made and stored in the ClusterExperiment object when we called makeConsensus provided that proportion argument is <1):
 
 ```{r plotCoClustering_quickstart}
 plotCoClustering(ce)
 ```
 
-This visualization can help in determining whether to change the value of `proportion` (though see [combineMany](#combineMany) for how -1 assignments affect `combineMany`).
+This visualization can help in determining whether to change the value of `proportion` (though see [makeConsensus](#makeConsensus) for how -1 assignments affect `makeConsensus`).
 
 ## Step 3: Merge clusters together with `makeDendrogram` and `mergeClusters` {#step3}
 
-Once you start varying the parameters, is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case the results of `combineMany` can often result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `combineMany`. But we have found that it is often after looking at the clusters, for example with a heatmap, and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
+Once you start varying the parameters, is not uncommon in practice to create forty or more clusterings with `clusterMany`. In which case the results of `makeConsensus` can often result in too many small clusters. We might wonder if they are necessary or could be logically combined together. We could change the value of `proportion` in our call to `makeConsensus`. But we have found that it is often after looking at the clusters, for example with a heatmap, and how different they look on individual genes that we best make this determination, rather than the proportion of times they are together in different clustering routines. 
 
-For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `combineMany`. This is done by the function `mergeClusters`. We often display and use both sets of clusters side-by-side (that from `combineMany` and that from `mergeClusters`).
+For this reason, we often find the need for an additional clustering step that merges clusters together that are not different, based on running tests of differential expression between the clusters found in `makeConsensus`. This is done by the function `mergeClusters`. We often display and use both sets of clusters side-by-side (that from `makeConsensus` and that from `mergeClusters`).
 
 `mergeClusters` needs a hierarchical clustering of the clusters in order to merge clusters; it then goes progressively up that hierarchy, deciding whether two adjacent clusters can be merged. The function `makeDendrogram` makes such a hierarchy between clusters (by applying `hclust` to the medoids of the clusters). Because the results of `mergeClusters` are so dependent on that hierarchy, we require the user to call `makeDendrogram` rather than calling it automatically internally. This is because different options in `makeDendrogram` can affect how the clusters are hierarchically ordered, and we want to encourage the user make these choices.
 
@@ -541,7 +541,7 @@ It can be interesting to visualize the clusterings both with the `plotClustersWo
 
 ```{r mergeClusters_coClustering}
 plotClustersWorkflow(ce,whichClusters="workflow") #, sampleData=c("Biological_Condition","Published2")
-plotCoClustering(ce,whichClusters=c("mergeClusters","combineMany"),
+plotCoClustering(ce,whichClusters=c("mergeClusters","makeConsensus"),
                  sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
 
@@ -575,7 +575,7 @@ would be equivalent to the following individual steps:
 ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5),
 	clusterFunction="hierarchical01", sequential=TRUE,subsample=TRUE,
          reduceMethod="PCA",nFilterDims=c(50,10))
-ce<-combineMany(ce, proportion=0.7, minSize=5)
+ce<-makeConsensus(ce, proportion=0.7, minSize=5)
 ce<-makeDendrogram(ce,reduceMethod="mad",nDims=500)
 ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05,plot=FALSE)
 ```
@@ -604,7 +604,7 @@ head(clusterMatrix(ce))[,1:5]
 primaryCluster(ce)
 ```
 
-Remember that we made multiple calls to `combineMany`: only the last such call will be shown when we use `whichClusters="workflow"` in our plotting (see this [section](#rerun) for a discussion of how these repeated calls are handled.)
+Remember that we made multiple calls to `makeConsensus`: only the last such call will be shown when we use `whichClusters="workflow"` in our plotting (see this [section](#rerun) for a discussion of how these repeated calls are handled.)
 
 **Negative Valued Cluster Assignments** The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. '-2' is for samples that were not included in the original input to the clustering. This is useful if, for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
 
@@ -665,7 +665,7 @@ plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow",
 
 We have seen that we can get very different plots depending on how we order the clusterings, and what clusterings are included. The argument `whichClusters` allows the user to choose different clusterings or provide an explicit ordering of the clusterings. For `plotClustersWorkflow`, `whichClusters` indicates the clusterings that are "highlighted" by being drawn separately from the results of `clusterMany`. 
 
-`whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusterings chosen are either all, or only those from the most recent calls to the workflow functions. Choosing "workflow" removes from the visualization both user-defined clusterings and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `combineMany` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.
+`whichClusters` can take either a single character value, or a vector of either characters  or indices. If `whichClusters` matches either "all" or "workflow", then the clusterings chosen are either all, or only those from the most recent calls to the workflow functions. Choosing "workflow" removes from the visualization both user-defined clusterings and also previous calls to the workflow that have since been rerun. Setting `whichClusters="workflow"` can be a useful if you have called a method like `makeConsensus` several times, as we did, only with different parameters. All of those runs are saved (unless `eraseOld=TRUE`), but you may not want to plot them.
 
 If `whichClusters` is a character that is not one of these designated values, the entries should match a "clusterType" value (like "clusterMany") or a "clusterLabel" value (with exact matching). Alternatively, the user can specify numeric indices corresponding to the columns of `clusterMatrix` that provide the order of the clusters.
 
@@ -694,20 +694,20 @@ We will turn off the plotting of the cluster labels to make the plot less clutte
 
 **Saving Assignment of colors from `plotClusters`:** `plotClusters` invisibly returns a `ClusterExperiment` object. In our earlier calls to `plotCluster`, this would be the same as the input object and so there is no reason to save it. However, the alignment and color assignments created by `plotClusters` can be requested to be saved *into* the appropriate slots of the `ClusterExperiment` object in order to save the color and alignments of samples. This is done via the `resetNames`, `resetColors` and `resetOrderSamples` arguments. If any of these are set to TRUE, then the object returned will be different than those of the input. 
 
-Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot (and indeed this is done automatically by `mergeClusters` so that the `combineMany` and `mergeClusters` steps will have aligned color assignments). Similarly, if `resetNames=TRUE` the *names* of the clusters will be changed to be integer values, but now those integers will be aligned to try to be the same across clusters (and therefore will not be consecutive integers, which is why these are saved as *names* for the clusters and not the internal `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
+Specifically, if `resetColors=TRUE` the `colorLegend` of the returned object will be changed so that the colors assigned to each cluster will be as were shown in the plot (and indeed this is done automatically by `mergeClusters` so that the `makeConsensus` and `mergeClusters` steps will have aligned color assignments). Similarly, if `resetNames=TRUE` the *names* of the clusters will be changed to be integer values, but now those integers will be aligned to try to be the same across clusters (and therefore will not be consecutive integers, which is why these are saved as *names* for the clusters and not the internal `clusterIds`). If `resetOrderSamples=TRUE`, then the order of the samples shown in the plot will be similarly saved in the slot `orderSamples`. 
 
 As an example, we will make a call to `plotClusters`, but now ask to reset everything to match this clusterAlignment. 
 
 First let's look at what the object's default colors are for the first two clusterings, accessed by `clusterLegend` function:
 
 ```{r plotClusterEx1_origColors}
-clusterLegend(ce)[c("mergeClusters","combineMany,final")]
+clusterLegend(ce)[c("mergeClusters","makeConsensus,final")]
 ```
 
 The `plotClusterLegend` creates a quick legend plot of this information for a single clustering:
 
 ```{r plotClusterLegend_before,out.width="300px",out.height="300px"}
-plotClusterLegend(ce,whichCluster="combineMany,final")
+plotClusterLegend(ce,whichCluster="makeConsensus,final")
 ```
 
 Now, we'll run `plotClusters` and save the new colors. We'll save this as a different object so that this is not a permanent change for the rest of the vignette, though in practice we would usually overwrite the existing `ce` to save memory on our computer and not have many versions floating around. 
@@ -717,10 +717,10 @@ ce_temp<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Cond
                main="Cluster Alignment of Workflow Clusters",clusterLabels=FALSE, axisLine=-1, resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
 ```
 
-Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but it has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to distinguish the `combineMany` result from the `mergeClusters` result is now gone (the user could manually add them by changing the values in the clusterLegend). Instead, there are names that "match up" the clusters across the different clusterings. 
+Now, the `clusterLegend` slot of the object no longer has the default color/name assignments, but it has names and colors that match across the clusters. Notice, that this means the prefix "m" or "c" that was previously given to distinguish the `makeConsensus` result from the `mergeClusters` result is now gone (the user could manually add them by changing the values in the clusterLegend). Instead, there are names that "match up" the clusters across the different clusterings. 
 
 ```{r plotClusterEx1_newColors}
-clusterLegend(ce_temp)[c("mergeClusters","combineMany,final")]
+clusterLegend(ce_temp)[c("mergeClusters","makeConsensus,final")]
 ```
 
 
@@ -832,17 +832,17 @@ plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","P
 
 ### Variant version: `plotClustersWorkflow`
 
-`plotClusters` is a generic function for showing any clusterings. In following our workflow, however, there can often be many clusterings from `clusterMany` and the important clusters from `combineMany` and `mergeMany` can get lost from view. The function `plotClustersWorkflow` implements `plotClusters` but pulls out specific clusterings designated by the user and puts them apart from the results of `clusterMany`. 
+`plotClusters` is a generic function for showing any clusterings. In following our workflow, however, there can often be many clusterings from `clusterMany` and the important clusters from `makeConsensus` and `mergeMany` can get lost from view. The function `plotClustersWorkflow` implements `plotClusters` but pulls out specific clusterings designated by the user and puts them apart from the results of `clusterMany`. 
 
 ```{r plotWorkflow}
 plotClustersWorkflow(ce, axisLine= -1)
 ```
 
-By default, the "combineMany" and "mergeClusters" clusterings are highlighted. We can choose other clusterings to be the result, rather than the default ones using the argument `whichClusters`. We can also sort the clusterings differently so that we sort based on the results of `clusterMany` first, rather than the highlighted results first and/or choose to have the highlighted clusters on the bottom or the top (independently of the sorting choices). In the following code, we choose to show the different versions of `combineMany` as our highlighted clusters. 
+By default, the "makeConsensus" and "mergeClusters" clusterings are highlighted. We can choose other clusterings to be the result, rather than the default ones using the argument `whichClusters`. We can also sort the clusterings differently so that we sort based on the results of `clusterMany` first, rather than the highlighted results first and/or choose to have the highlighted clusters on the bottom or the top (independently of the sorting choices). In the following code, we choose to show the different versions of `makeConsensus` as our highlighted clusters. 
 
 ```{r plotWorkflow_resort}
 par(mar=plotCMar)
-plotClustersWorkflow(ce,whichClusters=c("combineMany,final","combineMany,0.7","combineMany,1"),main="Different choices of proportion in combineMany",sortBy="clusterMany",highlightOnTop=FALSE, axisLine= -1)
+plotClustersWorkflow(ce,whichClusters=c("makeConsensus,final","makeConsensus,0.7","makeConsensus,1"),main="Different choices of proportion in makeConsensus",sortBy="clusterMany",highlightOnTop=FALSE, axisLine= -1)
 ```
 
 There are no limits as to which clusterings can be shown with the `whichClusters` command, but the non-highlighted clusterings must always be of `clusterType` "clusterMany". The user can select a subset or different ordering of the "clusterMany" clusterings with the argument `whichClusterMany`, which must be a numeric vector giving the indices of the clusters to be chosen. 
@@ -867,7 +867,7 @@ The `plotHeatmap` command has numerous options, in addition to those of `aheatma
 
 Like `plotClusters`, `plotHeatmap` has a `whichClusters` option that behaves similarly to that of `plotClusters`.  In addition to the options "all" and "workflow" that we saw with `plotClusters`, `plotHeatmap` also takes the option "none"" (no clusters shown) and "primary" (only the primaryCluster). The user can also request a subset of the clusters by giving specific indices to `whichClusters` like in `plotClusters`.
 
-Here we create a heatmap that shows the clusters from the workflow. Notice that we choose only the last 2 -- from `combineMany` and `mergeClusters`. If we chose all "workflow" clusters it would be too many.
+Here we create a heatmap that shows the clusters from the workflow. Notice that we choose only the last 2 -- from `makeConsensus` and `mergeClusters`. If we chose all "workflow" clusters it would be too many.
 
 ```{r plotHeatmap_Ex1.1}
 whClusterPlot<-1:2
@@ -895,16 +895,16 @@ show(ce)
 ```
 
 
-We can see, as we expected, that the dendrogram we made from "combineMany,final" is still the active dendrogram saved in the `ce` object. Now we will call `plotHeatmap` choosing to display the "mergeClusters" and "combineMany,final" clustering, and ordering the samples by the dendrogram in `ce`. We will also display some data about the samples from the `colData` slot using the `sampleData` argument. Notice that instead of giving the index, we can also give the clusterLabels of the clusters we want to show.
+We can see, as we expected, that the dendrogram we made from "makeConsensus,final" is still the active dendrogram saved in the `ce` object. Now we will call `plotHeatmap` choosing to display the "mergeClusters" and "makeConsensus,final" clustering, and ordering the samples by the dendrogram in `ce`. We will also display some data about the samples from the `colData` slot using the `sampleData` argument. Notice that instead of giving the index, we can also give the clusterLabels of the clusters we want to show.
 
 ```{r plotHeatmap_dendro}
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",
-            whichClusters=c("mergeClusters","combineMany"),
+            whichClusters=c("mergeClusters","makeConsensus"),
             main="Heatmap with clusterMany",
             sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
 
-If there is not a dendrogram stored, `plotHeatmap` will call `makeDendrogram` based on the primary cluster (with the default settings of `makeDendrogram`); calling `makeDendrogram` on `ce` is preferred so that the user can control the choices in how it is done (which we will discuss below). For visualization purposes, the dendrogram for the `combineMany` cluster is preferred to that of the `mergeCluster` cluster, since "combineMany,final" is just a finer partition of the "mergeClusters" clustering. 
+If there is not a dendrogram stored, `plotHeatmap` will call `makeDendrogram` based on the primary cluster (with the default settings of `makeDendrogram`); calling `makeDendrogram` on `ce` is preferred so that the user can control the choices in how it is done (which we will discuss below). For visualization purposes, the dendrogram for the `makeConsensus` cluster is preferred to that of the `mergeCluster` cluster, since "makeConsensus,final" is just a finer partition of the "mergeClusters" clustering. 
 
 ### Using separate input data for clustering and for visualization
 
@@ -1169,43 +1169,43 @@ ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
 -->
 
-## Create a unified cluster from many clusters with `combineMany` {#combineMany}
+## Create a unified cluster from many clusters with `makeConsensus` {#makeConsensus}
 
-After creating many clusterings, `combineMany` finds a single cluster based on what samples were in the same clusters throughout the many clusters found by `clusterMany`. While subsampling the data helps be robust to outlying samples, combining across many clustering parameters can help be robust to choice in parameters, particularly when the parameters give roughly similar numbers of clusters. 
+After creating many clusterings, `makeConsensus` finds a single cluster based on what samples were in the same clusters throughout the many clusters found by `clusterMany`. While subsampling the data helps be robust to outlying samples, combining across many clustering parameters can help be robust to choice in parameters, particularly when the parameters give roughly similar numbers of clusters. 
 
-As mentioned in the Quick Start section, the default option for `combineMany` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
+As mentioned in the Quick Start section, the default option for `makeConsensus` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
 
-Instead `combineMany` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `combineMany` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `combineMany` (`proportion=0.7` and `minSize=3`). 
+Instead `makeConsensus` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `makeConsensus` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `makeConsensus` (`proportion=0.7` and `minSize=3`). 
 
-```{r combineMany_detailed}
+```{r makeConsensus_detailed}
 plotCoClustering(ce)
 ```
 
-`combineMany` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimum size of a cluster.
+`makeConsensus` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimum size of a cluster.
 
 
-We can also manually choose the set of clusters to use in `combineMany` with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
+We can also manually choose the set of clusters to use in `makeConsensus` with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
 
-```{r combineMany_chooseClusters}
+```{r makeConsensus_chooseClusters}
 wh<-getClusterManyParams(ce)$clusteringIndex[getClusterManyParams(ce)$reduceMethod=="var"]
-ce<-combineMany(ce,whichCluster=wh,proportion=0.7,minSize=3,
-                clusterLabel="combineMany,nVAR")
+ce<-makeConsensus(ce,whichCluster=wh,proportion=0.7,minSize=3,
+                clusterLabel="makeConsensus,nVAR")
 plotCoClustering(ce)
 ```
 
-We can compare to all of our other versions of `combineMany`. While they do not all have `clusterTypes` equal to "combineMany" (only the most recent call has clusterType exactly equal to "combineMany"), they all have "combineMany" as part of their clusterType, even though they have different clusterLabels (and now we'll see that it was useful to give them different labels!)
+We can compare to all of our other versions of `makeConsensus`. While they do not all have `clusterTypes` equal to "makeConsensus" (only the most recent call has clusterType exactly equal to "makeConsensus"), they all have "makeConsensus" as part of their clusterType, even though they have different clusterLabels (and now we'll see that it was useful to give them different labels!)
 
-```{r combineMany_showDifferent}
-wh<-grep("combineMany",clusterTypes(ce))
+```{r makeConsensus_showDifferent}
+wh<-grep("makeConsensus",clusterTypes(ce))
 par(mar=plotCMar)
 plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 ```
 
 
-**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `combineMany`.
+**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `makeConsensus`.
 
 
-**Good scenarios for running `combineMany`** Varying certain parameters result in clusterings better for `combineMany` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `combineMany`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
 ## Creating a Hierarchy of Clusters and Merging clusters {#hierarchy}
 
@@ -1228,7 +1228,7 @@ plotDendrogram(ce)
  Notice that the plot of the dendrogram shows the hierarchy of the clusters (and color codes them according to the colors stored in colorLegend slot).
  
 
-Recall that the most recent clustering made is from our call to `combineMany`, where we experimented with using on some of the clusterings from `clusterMany`, so that is our current primaryCluster:
+Recall that the most recent clustering made is from our call to `makeConsensus`, where we experimented with using on some of the clusterings from `clusterMany`, so that is our current primaryCluster:
 
 ```{r showCe}
 show(ce)
@@ -1236,11 +1236,11 @@ show(ce)
 
 This is the clustering from combining only the clusterings from `clusterMany` that use the top  most variable genes. Because it is the primaryCluster, it was the clustering that was used by default to make the dendrogram. 
 
-We might prefer to get back to the dendrogram based on our `combineMany` in quick start (the "combineMany, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
+We might prefer to get back to the dendrogram based on our `makeConsensus` in quick start (the "makeConsensus, final" clustering). We've lost that dendrogram when we called `makeDendrogram` again. However, we can rerun `makeDendrogram` and choose a different clustering from which to make the dendrogram. 
 
 ```{r remakeMakeDendrogram}
 ce<-makeDendrogram(ce,reduceMethod="var",nDims=500,
-                   whichCluster="combineMany,final")
+                   whichCluster="makeConsensus,final")
 ```
 
 We will visualize the dendrogram with `plotDendrogram`. The default setting plots the dendrogram where there are color blocks equal to the size of the clusters (i.e number of samples in each cluster). 
@@ -1249,25 +1249,25 @@ We will visualize the dendrogram with `plotDendrogram`. The default setting plot
 plotDendrogram(ce,leafType="sample",plotType="colorblock")
 ```
 
-We can actually use `plotDendrogram` to compare clusterings too, like `plotClusters` using the `whichClusters` argument to identfy which clusters to show. For example, lets compare our different `combineMany` results
+We can actually use `plotDendrogram` to compare clusterings too, like `plotClusters` using the `whichClusters` argument to identfy which clusters to show. For example, lets compare our different `makeConsensus` results
 
 ```{r plotRemadeDendrogram_compare}
-whCM<-grep("combineMany",clusterTypes(ce))
+whCM<-grep("makeConsensus",clusterTypes(ce))
 plotDendrogram(ce,whichClusters=whCM,leafType="sample",plotType="colorblock")
 ```
 
 Unlike `plotClusters`, however, there is no aligning of samples to make samples with the same cluster group together. 
 
-**Making this clustering current** Note that if we look at the clusterType of the "combineMany,final" cluster, it is not of type "combineMany", but "combineMany.x". This is because we've run additional `combineMany` steps on this data, and the clustering "combineMany,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
+**Making this clustering current** Note that if we look at the clusterType of the "makeConsensus,final" cluster, it is not of type "makeConsensus", but "makeConsensus.x". This is because we've run additional `makeConsensus` steps on this data, and the clustering "makeConsensus,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
 
 ```{r clusterTypeOfCombineMany}
-clusterTypes(ce)[which(clusterLabels(ce)=="combineMany,final")]
+clusterTypes(ce)[which(clusterLabels(ce)=="makeConsensus,final")]
 ```
 
-We can choose reset this past call to `combineMany` to be the current 'combineMany' output (which will also set this clustering to be the primaryCluster). 
+We can choose reset this past call to `makeConsensus` to be the current 'makeConsensus' output (which will also set this clustering to be the primaryCluster). 
 
 ```{r getBackCombineMany}
-ce<-setToCurrent(ce,whichCluster="combineMany,final")
+ce<-setToCurrent(ce,whichCluster="makeConsensus,final")
 show(ce)
 ```
 
@@ -1285,7 +1285,7 @@ Notice that `mergeClusters` will always run based on the clustering that made th
 ce
 ```
 
-We see in the summary "Dendrogram run on 'combineMany,final'", showing us that this is the clustering that will be used (and also showing us the value of giving our own labels to the results of `combineMany` if we are going to try different strategies).
+We see in the summary "Dendrogram run on 'makeConsensus,final'", showing us that this is the clustering that will be used (and also showing us the value of giving our own labels to the results of `makeConsensus` if we are going to try different strategies).
 
 
 We will run `mergeClusters` with the option `mergeMethod="adjP"`. We will also set `plotInfo="adjP"` meaning that we would like the `mergeClusters` command to also produce a plot showing the dendrogram and the estimates from the `adjP` method for each node. We also set `calculateAll=FALSE` for illustration purposes, meaning the function will only calculate the estimates for the methods we request, but as we explain below, that is not necessarily the best option if you are going to be trying out different cutoffs.
@@ -1355,9 +1355,9 @@ What happens if some parts of the clustering workflow are re-run? For example, i
 
 The workflow commands check for existing clusters of the workflow (based on the `clusterTypes` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterTypes value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose we rerun 'combineMany', say with a different parameter choice of the proportion similarity to require. Then `combineMany` searches the existing clusterings in the input object. Any existing `combineMany` results will have their `clusterTypes` changed from `combineMany` to `combineMany.x`, where $x$ is the largest such number needed to be greater than any existing `combineMany.x` (after all, you might do this many times!). Their labels will also be updated if they just have the default label, but if the user has given different labels to the clusters those will be preserved. 
+For example, suppose we rerun 'makeConsensus', say with a different parameter choice of the proportion similarity to require. Then `makeConsensus` searches the existing clusterings in the input object. Any existing `makeConsensus` results will have their `clusterTypes` changed from `makeConsensus` to `makeConsensus.x`, where $x$ is the largest such number needed to be greater than any existing `makeConsensus.x` (after all, you might do this many times!). Their labels will also be updated if they just have the default label, but if the user has given different labels to the clusters those will be preserved. 
 
-Moreover, since `mergeClusters` is downstream of `combineMany` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `combineMany` (i.e. you expect there to be existing `clusterMany` before you run `combineMany`) so nothing will happen to `clusterMany`. 
+Moreover, since `mergeClusters` is downstream of `makeConsensus` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `makeConsensus` (i.e. you expect there to be existing `clusterMany` before you run `makeConsensus`) so nothing will happen to `clusterMany`. 
 
 This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not displayed. 
 
@@ -1365,7 +1365,7 @@ However, if the user wants to "go back" to previous versions and make them the c
 
 Note that there is nothing that governs or protects the `clusterTypes` values to be of a certain kind. This means that if the user decides to name a clusterTypes of a clustering one of these protected names, that is allowed. However, it could clearly create some havoc if done poorly.
 
-**Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `combineMany`,`mergeClusters` and/or `setToCurrent`. `eraseOld=TRUE` in any of these functions will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
+**Erasing old clusters** You can also choose to have **all** old versions erased by choosing the options `eraseOld=TRUE` in the call to `clusterMany`, `makeConsensus`,`mergeClusters` and/or `setToCurrent`. `eraseOld=TRUE` in any of these functions will delete ALL past workflow results except for those that are both in the current workflow *and* "upstream" of the requested command. You can also manually remove clusters with `removeClusters`.
 
 
 **Finding workflow iterations** Sometimes which numbered iteration a particular call is in will not be obvious if there are many calls to the workflow. You may have a `mergeClusters.2` cluster but no `mergeClusters.1` because of an upstream workflow call in the middle that bumped the iteration value up to 2 without ever making a `mergeClusters.1`. If you really want to, you can see more about the existing iterations and where they are in the `clusterMatrix`. "0" refers to the current iteration; otherwise the smaller the iteration number, the earlier it was run.
@@ -1404,7 +1404,7 @@ A cleaner way to do this would have been to first set the desired cluster ("merg
 
 ## RSEC {#RSEC}
 
- `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `combineMany`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `ClusterExperiment` object as you would get from following the workflow. 
+ `RSEC` is a single function that follows the entire workflow described above, but makes the choices to set `subsample=TRUE` and `sequential=TRUE` to provide more robust clusterings. This removes a number of options from clusterMany, making for a slightly reduced set of arguments. `RSEC` also implements the `makeConsensus`, `makeDendrogram` and `mergeClusters` steps, again with not all the arguments available to those function to be set by the user, only the most common. Furthermore, the defaults set in `RSEC` are those we choose for our algorithm, and occassionally vary from stand-alone method. The final output is a `ClusterExperiment` object as you would get from following the workflow. 
 
 We give the following correspondence to help see what arguments of each component are fixed by RSEC, and which are allowed to be set by the user (as well as their correspondence to arguments in the workflow functions).
 
@@ -1430,7 +1430,7 @@ tabl <- "
 - |  | random.seed | |
 - |  | isCount | |
 - |  | transFun | |
-*combineMany*  | propUnassigned = *(default)* | combineProportion | proportion 
+*makeConsensus*  | propUnassigned = *(default)* | combineProportion | proportion 
 -  | combineMinSize    | minSize | |
 *makeDendrogram* | ignoreUnassignedVar=TRUE | dendroReduce      | reduceMethod | 
 -  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
@@ -1516,7 +1516,7 @@ We can plot the dendrogram to help make sense of which contrasts go with which n
 
 
 ```{r dendroWithNodeNames}
-plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("combineMany","mergeClusters"),leaf="samples",plotType="colorblock")
+plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("makeConsensus","mergeClusters"),leaf="samples",plotType="colorblock")
 ```
 
 

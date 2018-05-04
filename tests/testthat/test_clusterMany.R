@@ -351,7 +351,7 @@ test_that("`getClusterManyParams` works", {
 		reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	  	subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
 	    isCount=FALSE)
-	cc<-combineMany(cc,proportion=1,whichClusters = "clusterMany")
+	cc<-makeConsensus(cc,proportion=1,whichClusters = "clusterMany")
 	expect_silent(paramAll<-getClusterManyParams(cc))
 	expect_equal(colnames(paramAll),c("clusteringIndex", "reduceMethod", "nReducedDims", "nFilterDims", "k"))
 	expect_true(is.data.frame(paramAll))

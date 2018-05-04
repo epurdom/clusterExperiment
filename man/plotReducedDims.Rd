@@ -14,7 +14,7 @@
 \S4method{plotReducedDims}{ClusterExperiment,missing}(object, whichCluster, ...)
 
 \S4method{plotReducedDims}{ClusterExperiment,numeric}(object, whichCluster,
-  reducedDim = "PCA", whichDims = c(1:2), plotUnassigned = TRUE,
+  reducedDim = "PCA", whichDims = c(1, 2), plotUnassigned = TRUE,
   legend = TRUE, legendTitle = "", clusterLegend = NULL,
   unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
   ylab = NULL, ...)

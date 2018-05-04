@@ -46,7 +46,7 @@ method for signature \code{list}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class 
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing 
 workflow results will have "\code{_i}" added to the clusterTypes value, 
 where \code{i} is one more than the largest such existing workflow 
 clusterTypes.}
@@ -104,9 +104,9 @@ documentation of \code{\link{seqCluster}}.}
 are left unassigned.}
 
 \item{combineProportion}{passed to \code{proportion} in
-\code{\link{combineMany}}}
+\code{\link{makeConsensus}}}
 
-\item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
+\item{combineMinSize}{passed to \code{minSize} in \code{\link{makeConsensus}}}
 
 \item{dendroReduce}{passed to \code{reduceMethod} in
 \code{\link{makeDendrogram}}}
