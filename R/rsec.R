@@ -132,7 +132,8 @@ setMethod(
 
     if(run){
       #first add ones that have default value
-      passedArgs<-list(ce=ce,combineProportion=combineProportion,mergeMethod=mergeMethod)
+      passedArgs<-list(ce=ce,combineProportion=combineProportion,
+                       mergeMethod=mergeMethod,whichAssay=whichAssay)
       #add those who will use default value from the function -- is there easier way
       if(!missing(combineProportion))
         passedArgs<-c(passedArgs,combineProportion=combineProportion)
@@ -190,7 +191,7 @@ setMethod(
     #------------
     args1<-list()
     if("dendroReduce" %in% names(passedArgs)){
-      args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce)
+      args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce, "whichAssay"=passedArgs$whichAssay)
       if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
     }
     if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
@@ -204,6 +205,7 @@ setMethod(
 
       if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
         args1<-list()
+        args1 <- c(args1, "whichAssay"=passedArgs$whichAssay)
         if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
         if("mergeLogFCCutoff" %in% names(passedArgs)){
           args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)
