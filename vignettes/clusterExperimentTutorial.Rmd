@@ -8,6 +8,8 @@ output:
     toc: true
 vignette: >
   %\VignetteEncoding{UTF-8}
+editor_options: 
+  chunk_output_type: console
 ---
 <!--
 %\VignetteEngine{knitr::rmarkdown}
@@ -1542,6 +1544,32 @@ The user should be careful about questions of multiple comparisons when all of t
 
 
 As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned *for each contrast*. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
+
+# Working with other `assays()`
+
+By default, `RSEC` and all the other user-facing functions in `clusterExperiment` will use the first `assay` if applied to `SummarizedExperiment`-like objects (including `SingleCellExperiment` and `ClusterExperiment`).
+
+However, it is often the case that one needs to use the data saved in a different `assay` slot for clustering, or even two different `assays` for clustering and visualization. `clusterExperiment` allows for this level of flexibility, by using the `whichAssay` option in all the relevant functions.
+
+As an example, consider the `fluidigm` dataset: it is saved as a `SummarizedExperiment` with `assay` several slots.
+
+```{r slotnames}
+assayNames(fluidigm)
+```
+
+Assume that we want to use the RSEM TPM values to cluster the data with RSEM.
+
+```{r clusterTPM, eval=FALSE}
+se2 <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
+wh_zero <- which(rowSums(assay(se2, "rsem_tpm"))==0)
+pass_filter <- apply(assay(se2, "rsem_tpm"), 1, function(x) length(x[x >= 10]) >= 10)
+se2 <- se2[pass_filter,]
+dim(se2)
+
+rsecTPM <- RSEC(se2, whichAssay = "rsem_tpm", transFun = log1p,
+              reduceMethod="PCA", nReducedDims=10, combineMinSize=3, 
+              ncores=1, random.seed=176201)
+```
 
 # Session Information
 This vignette was compiled under:
