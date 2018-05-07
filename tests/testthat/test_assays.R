@@ -111,5 +111,11 @@ test_that("RSEC works wih non default assays", {
   expect_equivalent(out2, out4)
 })
 
-## test plotting functions
+test_that("plotting works wih non default assays", {
+  expect_silent(plotFeatureBoxplot(object=multi_cc,feature=1,whichAssay=1))
+  expect_silent(plotFeatureBoxplot(object=multi_cc,feature=1,whichAssay=2))
 
+  expect_silent(plotHeatmap(multi_cc, whichAssay=1))
+  expect_silent(plotHeatmap(multi_cc, whichAssay=2))
+
+})
