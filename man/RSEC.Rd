@@ -31,7 +31,7 @@
   combineProportion = 0.7, combineMinSize, dendroReduce, dendroNDims,
   mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  ncores = 1, random.seed = NULL, run = TRUE)
+  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -52,8 +52,8 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
-determines whether to rerun the clusterMany step. Useful if want to try 
-different parameters for combining clusters after the clusterMany step, 
+determines whether to rerun the clusterMany step. Useful if want to try
+different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
 
 \item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
@@ -131,6 +131,9 @@ step, see help pages of \code{\link{mainClustering}}.}
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
+
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
 
 \item{ncores}{the number of threads}
 

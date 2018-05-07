@@ -38,7 +38,7 @@
 \arguments{
 \item{x}{a ClusterExperiment object.}
 
-\item{y}{additional clusters to add to x. Can be a ClusterExperiment object 
+\item{y}{additional clusters to add to x. Can be a ClusterExperiment object
 or a matrix/vector of clusters.}
 
 \item{clusterTypes}{a string describing the nature of the clustering. The
@@ -71,17 +71,17 @@ clusterings is returned.}
 \value{
 A \code{\link{ClusterExperiment}} object with the added clusters.
 
-\code{removeClusterings} returns a \code{ClusterExperiment} object, 
+\code{removeClusterings} returns a \code{ClusterExperiment} object,
  unless all clusters are removed, in which case it returns a
  \code{\link{SingleCellExperiment}} object.
 }
 \description{
-These functions are used to add or remove clusters to a 
+These functions are used to add or remove clusters to a
 \code{\link{ClusterExperiment}} object.
 }
 \details{
-addClusterings adds y to x, and is thus not symmetric in the two 
-  arguments. In particular, the \code{primaryCluster}, all of the dendrogram 
+addClusterings adds y to x, and is thus not symmetric in the two
+  arguments. In particular, the \code{primaryCluster}, all of the dendrogram
   information, \code{coClustering}, and \code{orderSamples} are all kept from
   the x object, even if y is a ClusterExperiment.
 
