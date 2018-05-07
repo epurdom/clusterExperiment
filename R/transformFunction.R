@@ -61,8 +61,8 @@ setMethod(
 setMethod(
   f = "transformData",
   signature = "SingleCellExperiment",
-  definition = function(object,...) {
-	  return(transformData(assay(object),...))
+  definition = function(object, whichAssay=1, ...) {
+	  return(transformData(assay(object, whichAssay),...))
   }
 )
 #' @export

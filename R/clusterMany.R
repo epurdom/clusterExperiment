@@ -1,36 +1,36 @@
 #' Create a matrix of clustering across values of parameters
-#' 
-#' Given a range of parameters, this function will return a matrix with the 
-#' clustering of the samples across the range, which can be passed to 
+#'
+#' Given a range of parameters, this function will return a matrix with the
+#' clustering of the samples across the range, which can be passed to
 #' \code{plotClusters} for visualization.
-#' 
+#'
 #' @name clusterMany
 #' @aliases clusterMany,matrixOrHDF5-method
 #' @param x the data matrix on which to run the clustering. Can be object of the
-#'   following classes: matrix (with genes in rows), 
+#'   following classes: matrix (with genes in rows),
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
-#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} 
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}}
 #'   or \code{ClusterExperiment}.
 #' @param ks the range of k values (see details for the meaning of \code{k} for
 #'   different choices of other parameters).
-#' @param alphas values of alpha to be tried. Only used for clusterFunctions of 
+#' @param alphas values of alpha to be tried. Only used for clusterFunctions of
 #'   type '01'. Determines tightness required in creating clusters from the
 #'   dissimilarity matrix. Takes on values in [0,1]. See documentation of
 #'   \code{\link{ClusterFunction}}.
 #' @param betas values of \code{beta} to be tried in sequential steps. Only used
-#'   for \code{sequential=TRUE}. Determines the similarity between two clusters 
+#'   for \code{sequential=TRUE}. Determines the similarity between two clusters
 #'   required in order to deem the cluster stable. Takes on values in [0,1]. See
 #'   documentation of \code{\link{seqCluster}}.
-#' @param clusterFunction function used for the clustering. Note that unlike in 
+#' @param clusterFunction function used for the clustering. Note that unlike in
 #'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 #'   clustering techniques, and can not be a user-defined function. Current
 #'   functions can be found by typing \code{listBuiltInFunctions()} into the
 #'   command-line.
-#' @param minSizes the minimimum size required for a cluster (in the 
+#' @param minSizes the minimimum size required for a cluster (in the
 #'   \code{mainClustering} step). Clusters smaller than this are not kept and samples
 #'   are left unassigned.
-#' @param distFunction a vector of character strings that are the names of 
-#'   distance functions found in the global environment. See the help pages of 
+#' @param distFunction a vector of character strings that are the names of
+#'   distance functions found in the global environment. See the help pages of
 #'   \code{\link{clusterSingle}} for details about the required format of
 #'   distance functions. Currently, this distance function must be applicable
 #'   for all clusterFunction types tried. Therefore, it is not possible in
@@ -38,15 +38,15 @@
 #'   also give distances to evaluate via \code{distFunction} unless all
 #'   distances give 0-1 values for the distance (and hence are possible for both
 #'   type "01" and "K" algorithms).
-#' @param nFilterDims vector of the number of the most variable features to keep 
-#'   (when "var", "abscv", or "mad" is identified in \code{reduceMethod}). 
-#' @param nReducedDims vector of the number of dimensions to use (when 
-#'	\code{reduceMethod} gives a dimensionality reduction method). 
-#' @param eraseOld logical. Only relevant if input \code{x} is of class 
-#'   \code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-#'   (clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing 
-#'   workflow results will have "\code{_i}" added to the clusterTypes value, 
-#'   where \code{i} is one more than the largest such existing workflow 
+#' @param nFilterDims vector of the number of the most variable features to keep
+#'   (when "var", "abscv", or "mad" is identified in \code{reduceMethod}).
+#' @param nReducedDims vector of the number of dimensions to use (when
+#'	\code{reduceMethod} gives a dimensionality reduction method).
+#' @param eraseOld logical. Only relevant if input \code{x} is of class
+#'   \code{ClusterExperiment}. If TRUE, will erase existing workflow results
+#'   (clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+#'   workflow results will have "\code{_i}" added to the clusterTypes value,
+#'   where \code{i} is one more than the largest such existing workflow
 #'   clusterTypes.
 #' @param findBestK logical, whether should find best K based on average
 #'   silhouette width (only used when clusterFunction of type "K").
@@ -57,76 +57,76 @@
 #' @inheritParams clusterSingle
 #' @inheritParams mainClustering
 #' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterSingle (so 
-#'   that all of the runs are run on the same subsample of the data). Note, if 
-#'   'random.seed' is set, argument 'ncores' should NOT be passed via 
+#' @param random.seed a value to set seed before each run of clusterSingle (so
+#'   that all of the runs are run on the same subsample of the data). Note, if
+#'   'random.seed' is set, argument 'ncores' should NOT be passed via
 #'   subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 #'   (which is preferred for improving speed anyway).
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
-#'   rownames equal to the names of the resulting column names of clMat object 
-#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
+#'   rownames equal to the names of the resulting column names of clMat object
+#'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 #'   however, the function will create the dimensionality reductions of the data
 #'   indicated by the user input.
-#' @param ... For signature \code{list}, arguments to be passed on to mclapply 
-#'   (if ncores>1). For all the other signatures, arguments to be passed to the 
+#' @param ... For signature \code{list}, arguments to be passed on to mclapply
+#'   (if ncores>1). For all the other signatures, arguments to be passed to the
 #'   method for signature \code{list}.
 #' @param verbose logical. If TRUE it will print informative messages.
 #' @details Some combinations of these parameters are not feasible. See the
 #'   documentation of \code{\link{clusterSingle}} for important information on
 #'   how these parameter choices interact.
-#' @details While the function allows for multiple values of clusterFunction, 
-#'   the code does not reuse the same subsampling matrix and try different 
-#'   clusterFunctions on it. This is because if sequential=TRUE, different 
-#'   subsample clusterFunctions will create different sets of data to subsample 
-#'   so it is not possible; if sequential=FALSE, we have not implemented 
-#'   functionality for this reuse. Setting the \code{random.seed} value, 
-#'   however, should mean that the subsampled matrix is the same for each, but 
-#'   there is no gain in computational complexity (i.e. each subsampled 
+#' @details While the function allows for multiple values of clusterFunction,
+#'   the code does not reuse the same subsampling matrix and try different
+#'   clusterFunctions on it. This is because if sequential=TRUE, different
+#'   subsample clusterFunctions will create different sets of data to subsample
+#'   so it is not possible; if sequential=FALSE, we have not implemented
+#'   functionality for this reuse. Setting the \code{random.seed} value,
+#'   however, should mean that the subsampled matrix is the same for each, but
+#'   there is no gain in computational complexity (i.e. each subsampled
 #'   co-occurence matrix is recalculated for each set of parameters).
-#'   
-#' @details The argument \code{ks} is interpreted differently for different 
+#'
+#' @details The argument \code{ks} is interpreted differently for different
 #'   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
-#'   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks} 
-#'   values are the \code{k} values for \strong{both} the mainClustering and 
-#'   subsampling step (i.e. assigned to the \code{subsampleArgs} and 
-#'   \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and 
-#'   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in 
-#'   \code{subsampleArgs}. The passing of these arguments via 
-#'   \code{subsampleArgs} will only have an effect if `subsample=TRUE`. 
-#'   Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an 
+#'   the argument \code{k0} of \code{\link{seqCluster}}. Otherwise, \code{ks}
+#'   values are the \code{k} values for \strong{both} the mainClustering and
+#'   subsampling step (i.e. assigned to the \code{subsampleArgs} and
+#'   \code{mainClusterArgs} that are passed to \code{\link{mainClustering}} and
+#'   \code{\link{subsampleClustering}} unless \code{k} is set appropriately in
+#'   \code{subsampleArgs}. The passing of these arguments via
+#'   \code{subsampleArgs} will only have an effect if `subsample=TRUE`.
+#'   Similarly, the passing of \code{mainClusterArgs[["k"]]} will only have an
 #'   effect when the clusterFunction argument includes a clustering algorithm of
-#'   type "K". When/if "findBestK=TRUE", \code{ks} also defines the 
+#'   type "K". When/if "findBestK=TRUE", \code{ks} also defines the
 #'   \code{kRange} argument of \code{\link{mainClustering}} unless \code{kRange}
 #'   is specified by the user via the \code{mainClusterArgs}; note this means
 #'   that the default option of setting \code{kRange} that depends on the input
 #'   \code{k} (see \code{\link{mainClustering}}) is not available in
 #'   \code{clusterMany}, only in \code{\link{clusterSingle}}.
-#' @details If the input is a \code{ClusterExperiment} object, current 
-#'   implementation is that existing \code{orderSamples},\code{coClustering} or 
+#' @details If the input is a \code{ClusterExperiment} object, current
+#'   implementation is that existing \code{orderSamples},\code{coClustering} or
 #'   the many dendrogram slots will be retained.
 #' @return If \code{run=TRUE} and the input is not a list of data matrices, will
 #'   return a \code{ClusterExperiment} object, where the results are stored as
-#'   clusterings with clusterTypes \code{clusterMany}. Depending on 
-#'   \code{eraseOld} argument above, this will either delete existing such 
-#'   objects, or change the clusterTypes of existing objects. See argument 
-#'   \code{eraseOld} above. Arbitrarily the first clustering is set as the 
+#'   clusterings with clusterTypes \code{clusterMany}. Depending on
+#'   \code{eraseOld} argument above, this will either delete existing such
+#'   objects, or change the clusterTypes of existing objects. See argument
+#'   \code{eraseOld} above. Arbitrarily the first clustering is set as the
 #'   primaryClusteringIndex.
-#'   
-#' @return If \code{run=TRUE} and the input is a list of data sets, a list with 
-#'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each 
-#'   column corresponding to a clustering and each row to a sample.} 
-#'   \item{\code{clusterInfo}}{ a list with information regarding clustering 
+#'
+#' @return If \code{run=TRUE} and the input is a list of data sets, a list with
+#'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
+#'   column corresponding to a clustering and each row to a sample.}
+#'   \item{\code{clusterInfo}}{ a list with information regarding clustering
 #'   results (only relevant entries for those clusterings with sequential=TRUE)}
-#'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each 
-#'   clustering, where each column is a possible parameter set by the user and 
-#'   passed to \code{\link{clusterSingle}} and each row of paramMatrix 
+#'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
+#'   clustering, where each column is a possible parameter set by the user and
+#'   passed to \code{\link{clusterSingle}} and each row of paramMatrix
 #'   corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
-#'   a list of (possibly modified) arguments to mainClusterArgs} 
-#'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to 
-#'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified) 
+#'   a list of (possibly modified) arguments to mainClusterArgs}
+#'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
+#'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified)
 #'   arguments to subsampleArgs} }
-#' @return If \code{run=FALSE} a list similar to that described above, but 
+#' @return If \code{run=FALSE} a list similar to that described above, but
 #'   without the clustering results.
 #'
 #' @examples
@@ -135,7 +135,7 @@
 #' #Example: clustering using pam with different dimensions of pca and different
 #' #k and whether remove negative silhouette values
 #' #check how many and what runs user choices will imply:
-#' checkParams <- clusterMany(simData,reduceMethod="PCA",  
+#' checkParams <- clusterMany(simData,reduceMethod="PCA",
 #' nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
 #' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(head(checkParams$paramMatrix))
@@ -183,7 +183,7 @@
 # clSmaller <- clusterMany(simData, nReducedDims=c(5,10,50),  reduceMethod="PCA",
 # paramMatrix=checkParamsMat, subsampleArgs=checkParams$subsampleArgs,
 # seqArgs=checkParams$seqArgs, mainClusterArgs=checkParams$mainClusterArgs)
-#' @export 
+#' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "matrixOrHDF5"),
@@ -211,15 +211,15 @@ setMethod(
     if(length(dimNam)>0 | length(filtNam)>0){
       if(length(dimNam)>0){
         nReducedDims<-na.omit(nReducedDims)
-        if(length(nReducedDims)==0) 
+        if(length(nReducedDims)==0)
           stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
         maxDims<-max(nReducedDims)
         x<-makeReducedDims(x,reducedDims=dimNam,
-                           maxDims=maxDims,transFun=transFun,isCount=isCount)			
+                           maxDims=maxDims,transFun=transFun,isCount=isCount)
       }
       if(length(filtNam)>0){
         #Need to think how can pass options to filterData...
-        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)  	
+        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)
       }
     }
     else{
@@ -230,11 +230,13 @@ setMethod(
 )
 
 #' @rdname clusterMany
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @export
 setMethod(
   f = "clusterMany",
   signature = signature(x = "SingleCellExperiment"),
-  definition = function(x, ks=NA, clusterFunction, 
+  definition = function(x, ks=NA, clusterFunction,
                         reduceMethod="none",
                         nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
                         nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"),
@@ -247,12 +249,13 @@ setMethod(
                         mainClusterArgs=NULL,
                         subsampleArgs=NULL,
                         seqArgs=NULL,
+                        whichAssay=1,
                         ncores=1, random.seed=NULL, run=TRUE,
                         ...
   )
   {
     inputArgs<-as.list(environment()) #need so can pass all the args, not just the ...
-    transFun<-.makeTransFun(transFun=transFun,isCount=isCount)  
+    transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
     paramMatrix<-NULL
     if(!is.null(random.seed)){
       if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
@@ -265,12 +268,12 @@ setMethod(
     anyDimSaved<-anyDim && any(isReducedDims(x,reduceMethod))
     anyDimBuiltIn<-any(isBuiltInReducedDims(reduceMethod))
     anyFilterBuiltIn<-any(isBuiltInFilterStats(reduceMethod))
-    if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn) 
+    if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn)
       stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
     if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
       ###This will make it calculate the requested reduceMethod values and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
       ## Note that if no Filter saved, and asked for filter
-      outval<-do.call(clusterMany,c(list(x=assay(x)),inputArgs[!names(inputArgs)%in%"x"]))
+      outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
       if(class(outval)=="ClusterExperiment") {
         #lost anything about the meta data, old filtering/reducedDim
         retval<-.addBackSEInfo(newObj=outval,oldObj=x)
@@ -284,12 +287,12 @@ setMethod(
     else{
       ###############
       #Check inputs of reduceMethod slots
-      ##NOTE: For now, IF there is a reducedDim slot, then will not try 
+      ##NOTE: For now, IF there is a reducedDim slot, then will not try
       ##to patch in ones that are missing.
-      ##This means can list some that want to be calculated. 
-      ##Either do all of them ahead of time or let all of them be done 
+      ##This means can list some that want to be calculated.
+      ##Either do all of them ahead of time or let all of them be done
       ##during call to clusterMany...
-      ###############  
+      ###############
       doNone<-"none" %in% reduceMethod
       if(doNone) reduceMethod<-reduceMethod[-grep("none",reduceMethod)]
       if(length(reduceMethod)>0){
@@ -302,15 +305,15 @@ setMethod(
         #check if nReducedDims values
         if(any(isReducedDims(x,reduceMethod))){
           maxDimValues<-ncolReducedDims(x)[isReducedDims(x,reduceMethod)]
-          if(length(na.omit(nReducedDims))>0 && all(na.omit(nReducedDims) > max(maxDimValues))) 
+          if(length(na.omit(nReducedDims))>0 && all(na.omit(nReducedDims) > max(maxDimValues)))
             stop("The values of nReducedDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeReducedDims' to get larger number of components.")
-          
+
         }
-        
+
         #check if give nFilterDims if isFilterStats and no NA values
         if(any(isFilterStats(x,reduceMethod))){
           if(!missing(nFilterDims) && any(is.na(nFilterDims))){
-            warning("NA values have no meaning for the argument nFilterDims and will be ignored")		
+            warning("NA values have no meaning for the argument nFilterDims and will be ignored")
             nFilterDims<-na.omit(nFilterDims)
           }
           if(missing(nFilterDims) || length(nFilterDims)==0){
@@ -323,19 +326,19 @@ setMethod(
         nFilterDims<-NA
         maxDimValues<-NA #indicates that only "none" will be done
       }
-      
+
       ###############
       #Start creating the combinations
       ###############
       if(is.null(paramMatrix)){
         if(doNone) reduceMethod<-c(reduceMethod,"none")
         param <- expand.grid(reduceMethod=reduceMethod,
-                             nReducedDims=nReducedDims, nFilterDims=nFilterDims,k=ks, alpha=alphas, findBestK=findBestK, 
+                             nReducedDims=nReducedDims, nFilterDims=nFilterDims,k=ks, alpha=alphas, findBestK=findBestK,
                              beta=betas, minSize=minSizes,
                              sequential=sequential, distFunction=distFunction,
                              removeSil=removeSil, subsample=subsample,
                              clusterFunction=clusterFunction,silCutoff=silCutoff)
-        
+
         ###########
         #Check param matrix:
         #don't vary them across ones that don't matter (i.e. 0-1 versus K);
@@ -349,7 +352,7 @@ setMethod(
         #---
         typeK <- which( paramAlgTypes=="K")
         if(length(typeK)>0){
-          param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here        
+          param[typeK,"alpha"] <- NA #just a nothing value, because doesn't mean anything here
           #--------
           #if findBestK make sure other arguments make sense:
           #--------
@@ -396,7 +399,7 @@ setMethod(
         if(length(whDimReduce)>0){
           param[whDimReduce,"distFunction"]<-NA
         }
-        
+
         #---
         #Check value alpha, beta values
         #---
@@ -410,7 +413,7 @@ setMethod(
           stop("beta value must be in (0,1)")
           param[beta01,"beta"]<-NA
         }
-        
+
         #---
         # deal with nReducedDims NA or larger than the size of the dataset
         # set it to the maximum value possible.
@@ -435,7 +438,7 @@ setMethod(
         if(length(whOther)>0){
           param[whOther,"nReducedDims"]<-NA
         }
-        
+
         #---
         # deal with nFilterDims NA or larger than the size of the dataset
         # set it to the maximum value possible.
@@ -445,18 +448,18 @@ setMethod(
         if(length(whTooLarge)>0){
           param[whTooLarge,"reduceMethod"]<-"none"
         }
-        
+
         #now turn to NA is when reduceMethod a dim reduce
         whOther<-which(!isFilterStats(x,param[,"reduceMethod"]))
         if(length(whOther)>0){
           param[whOther,"nFilterDims"]<-NA
         }
-        
-        
-        
-        
+
+
+
+
         param <- unique(param)
-        
+
         #####
         #deal with those that are invalid combinations:
         # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
@@ -467,29 +470,29 @@ setMethod(
         if(length(whInvalid)>0) {
           param <- param[-whInvalid,]
         }
-        
+
         whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
                            & param[,"findBestK"])
         if(length(whInvalid)>0) {
           param<-param[-whInvalid,]
         }
-        
+
         whInvalid <- which(param[,"sequential"] & is.na(param[,"beta"]))
         if(length(whInvalid)>0) {
           param<-param[-whInvalid,]
         }
-        
-        #if type K and not findBestK, need to give the k value. 
+
+        #if type K and not findBestK, need to give the k value.
         whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
         if(length(whInvalid)>0){
           clFun<-param[,"clusterFunction"]
           if(any(algorithmType(clFun)=="K")) stop("One of clusterFunctions chosen requires choice of k")
           else param<-param[-whInvalid,]
-          
+
         }
-        
-        
-        if(any(!is.na(param[,"nFilterDims"]) & !is.na(param[,"nReducedDims"]))) 
+
+
+        if(any(!is.na(param[,"nFilterDims"]) & !is.na(param[,"nReducedDims"])))
           stop("Internal error: failed to properly remove inconsistent nFilterDims, nReducedDims combination.")
         if(any(is.na(param[,"nFilterDims"]) & is.na(param[,"nReducedDims"] & !param[,"reduceMethod"] %in% "none"))) stop("Internal error: NA in both nFilterDims, nReducedDims combination without equal to 'none'")
         #####
@@ -498,7 +501,7 @@ setMethod(
         if(nrow(param)<=1) {
           stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
         }
-        
+
         #####
         #give names to the parameter combinations.
         #####
@@ -506,7 +509,7 @@ setMethod(
         if(length(whVary)>0) {
           #for some reason, this code started changing TRUE/FALSE in to 1/0
           # cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-          # paste(colnames(param)[whVary],as.character(x),sep="=",collapse=",")})	
+          # paste(colnames(param)[whVary],as.character(x),sep="=",collapse=",")})
           cnames<-sapply(seq_len(nrow(param)),function(ii){
             paste(colnames(param)[whVary],as.character(param[ii,whVary]),sep="=",collapse=",")
           })
@@ -518,7 +521,7 @@ setMethod(
         cnames[param[,"sequential"]] <- gsub("k=", "k0=", cnames[param[,"sequential"]])
         #should I combine together nReducedDims and nFilterDims like they were before for the labels?
         rownames(param) <- cnames
-        
+
       } else{ #if paramMatrix!=NULL, have killed off this code for now, because doesn't work.
         if(!run) {
           stop("If paramMatrix is given, run should be TRUE. Otherwise there is no effect.")
@@ -532,7 +535,7 @@ setMethod(
         }
         cnames<-rownames(paramMatrix)
       }
-      
+
       if(verbose) {
         cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method,",sum(param[,"subsample"]),"use subsampling method\n")
       }
@@ -571,13 +574,13 @@ setMethod(
           set.seed(random.seed)
         }
         ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
-        if(reduceMethod=="none") 
-          dat<-transformData(x,transFun=transFun) 
-        else if(isReducedDims(x,reduceMethod)) 
-          dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]])] ) 
-        else if(isFilterStats(x,reduceMethod)) 
+        if(reduceMethod=="none")
+          dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
+        else if(isReducedDims(x,reduceMethod))
+          dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]])] )
+        else if(isFilterStats(x,reduceMethod))
           dat<-transformData( filterData(x, filterStats=reduceMethod, percentile=par[["nFilterDims"]]),
-                              transFun=transFun)
+                              transFun=transFun, whichAssay=whichAssay)
         else stop("Internal error: reduceMethod value that not in filtering statistics or reducedDimNames")
         #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
         if(!is.null(distFunction)){
@@ -591,7 +594,7 @@ setMethod(
           clusterSingle(x=dat, subsample=subsample,
                         mainClusterArgs=mainClusterArgs, reduceMethod="none",
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE) 
+                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE)
       }
       if(run){
         ##Calculate distances necessary only once
@@ -604,11 +607,11 @@ setMethod(
           allDist<-lapply(seq_len(nrow(distParam)),function(ii){
             distFun<-as.character(distParam[ii,"distFunction"])
             #be conservative and check for the 01 type if any of clusterFunctions are 01.
-            algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K" 
+            algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K"
             redM<-as.character(distParam[ii,"reduceMethod"])
-            if(redM=="none")  dat<-transformData(x,transFun=transFun) 
-            else if(isFilterStats(x,redM)) 
-              dat<-transformData( filterData(x, filterStats=redM, 
+            if(redM=="none")  dat<-transformData(x,transFun=transFun)
+            else if(isFilterStats(x,redM))
+              dat<-transformData( filterData(x, filterStats=redM,
                                              percentile=distParam[ii,"nFilterDims"]), transFun=transFun)
             else stop("Internal error: distance should only be will full or filtered data")
             distMat<-.makeDiss(dat, distFunction=distFun, checkDiss=TRUE, algType=algCheckType)
@@ -616,14 +619,14 @@ setMethod(
           })
           #need to update here when have filter
           ##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
-          names(allDist)<-distParam[,"distFunction"]			
-          
+          names(allDist)<-distParam[,"distFunction"]
+
         }
-        
+
         if(verbose) {
           cat("Running Clustering on Parameter Combinations...")
         }
-        
+
         if(ncores>1) {
           out <- mclapply(seq_len(nrow(param)), FUN=paramFun, mc.cores=ncores, ...)
           nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
@@ -637,7 +640,7 @@ setMethod(
           cat("done.\n")
         }
         clMat <- sapply(out, function(x){primaryCluster(x)})
-        
+
         colnames(clMat) <- unname(cnames)
         pList <- lapply(seq_len(nrow(param)), function(i){
           x <- param[i,]
@@ -657,7 +660,7 @@ setMethod(
       }
       return(outval)
     }
-    
+
   }
 )
 
@@ -669,25 +672,25 @@ setMethod(
   definition = function(x, reduceMethod="none", nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"), nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"),
                         eraseOld=FALSE, ...)
   {
-    if(any(c("transFun","isCount") %in% names(list(...)))) 
-      stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
+    if(any(c("transFun","isCount") %in% names(list(...))))
+      stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
     outval<-clusterMany(as(x,"SingleCellExperiment"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
                         nReducedDims=nReducedDims, transFun=transformation(x), ...)
     if(class(outval)=="ClusterExperiment") {
-      
+
       #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,"clusterMany")
-      
+
       if(!is.null(x)){
         retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
-        
+
       }
       else{
         retval<-.addBackSEInfo(newObj=outval,oldObj=x)
       }
       filterStats(retval)<-filterStats(outval)
-      reducedDims(retval)<-reducedDims(outval)	  
+      reducedDims(retval)<-reducedDims(outval)
       #both above check validity.
       return(retval)
     } else {
