@@ -1,36 +1,36 @@
 #' @title Function for finding best features associated with clusters
-#' @description Calls limma on input data to determine features most associated 
-#'   with found clusters (based on an F-statistic, pairwise comparisons, or 
+#' @description Calls limma on input data to determine features most associated
+#'   with found clusters (based on an F-statistic, pairwise comparisons, or
 #'   following a tree that clusters the clusters).
 #' @aliases getBestFeatures
-#' @param x data for the test. Can be a numeric matrix or a 
+#' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
 #' @param cluster A numeric vector with cluster assignments. ``-1'' indicates
 #'   the sample was not assigned to a cluster.
-#' @param contrastType What type of test to do. `F' gives the omnibus 
-#'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of 
-#'   the samples in each side,  `Pairs' does pair-wise contrasts based on the 
-#'   pairs given in pairMat (if pairMat=NULL, does all pairwise), and 
-#'   `OneAgainstAll' compares each cluster to the average of all others. Passed 
+#' @param contrastType What type of test to do. `F' gives the omnibus
+#'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
+#'   the samples in each side,  `Pairs' does pair-wise contrasts based on the
+#'   pairs given in pairMat (if pairMat=NULL, does all pairwise), and
+#'   `OneAgainstAll' compares each cluster to the average of all others. Passed
 #'   to \code{\link{clusterContrasts}}
-#' @param contrastAdj What type of FDR correction to do for contrasts tests 
+#' @param contrastAdj What type of FDR correction to do for contrasts tests
 #'   (i.e. if contrastType='Dendro' or 'Pairs').
 #' @param isCount logical as to whether input data is count data, in which case
 #'   to perform voom correction to data. See details.
-#' @param ... options to pass to \code{\link{topTable}} or 
+#' @param ... options to pass to \code{\link{topTable}} or
 #'   \code{\link[limma]{topTableF}} (see \code{\link[limma]{limma}} package)
 #' @param normalize.method character value, passed to \code{\link[limma]{voom}}
-#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}. 
+#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the default
 #'   value of \code{\link{voom}}.
 #' @inheritParams clusterContrasts
-#' @details getBestFeatures returns the top ranked features corresponding to a 
-#'   cluster assignment. It uses limma to fit the models, and limma's functions 
+#' @details getBestFeatures returns the top ranked features corresponding to a
+#'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
-#'   best features. See the options of these functions to put better control on 
-#'   what gets returned (e.g. only if significant, only if log-fc is above a 
-#'   certain amount, etc.). In particular, set `number=` to define how many 
-#'   significant features to return (where number is per contrast for the 
+#'   best features. See the options of these functions to put better control on
+#'   what gets returned (e.g. only if significant, only if log-fc is above a
+#'   certain amount, etc.). In particular, set `number=` to define how many
+#'   significant features to return (where number is per contrast for the
 #'   `Pairs` or `Dendro` option)
 #' @details When `contrastType` argument implies that the best features should
 #'   be found via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then
@@ -42,31 +42,31 @@
 #'   based on a hierarchical scheme that only tests the contrasts in those genes
 #'   where the omnibus F statistic is significant. If the user selects `AfterF`,
 #'   the user must also supply an option `p.value` to have any effect, and then
-#'   only those significant at that p.value level will be returned. Note that 
+#'   only those significant at that p.value level will be returned. Note that
 #'   currently the correction for `AfterF` is not guaranteed to control the FDR;
 #'   improvements will be added in the future.
-#' @details  Note that the default option for \code{\link[limma]{topTable}} is 
-#'   to not filter based on adjusted p-values (\code{p.value = 1}) and return 
-#'   only the top 10 most significant (\code{number = 10}) -- these are options 
-#'   the user can change (these arguments are passed via the \code{...} in 
-#'   \code{getBestFeatures}). In particular, it only makes sense to set 
-#'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05); 
-#'   the default value of \code{p.value = 1} will not result in any effect on 
+#' @details  Note that the default option for \code{\link[limma]{topTable}} is
+#'   to not filter based on adjusted p-values (\code{p.value = 1}) and return
+#'   only the top 10 most significant (\code{number = 10}) -- these are options
+#'   the user can change (these arguments are passed via the \code{...} in
+#'   \code{getBestFeatures}). In particular, it only makes sense to set
+#'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05);
+#'   the default value of \code{p.value = 1} will not result in any effect on
 #'   the adjusted p-value otherwise.
-#' @details  \code{isCount} triggers whether the "voom" correction will be 
-#'   performed in \code{limma}. If the input data is a matrix is counts (or a 
-#'   `ClusterExperiment` object with counts as the primary data before 
+#' @details  \code{isCount} triggers whether the "voom" correction will be
+#'   performed in \code{limma}. If the input data is a matrix is counts (or a
+#'   `ClusterExperiment` object with counts as the primary data before
 #'   transformation) this should be set to TRUE and they will be log-transformed
-#'   internally by voom for the differential expression analysis in a way that 
-#'   accounts for the difference in the mean-variance relationships. Otherwise, 
-#'   dat should be on the correct (log) scale for differential expression 
-#'   analysis without a need a variance stabilization (e.g. microarray data). 
-#'   Currently the default is set to FALSE, simply because the isCount has not 
-#'   been heavily tested. If the But TRUE with \code{x} being counts really 
-#'   should be the default for RNA-Seq data. If the input data is a 
-#'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program 
-#'   to ignore the internally stored transformation function and instead use 
-#'   voom with log2(x+0.5). Alternatively, \code{isCount=FALSE} for a 
+#'   internally by voom for the differential expression analysis in a way that
+#'   accounts for the difference in the mean-variance relationships. Otherwise,
+#'   dat should be on the correct (log) scale for differential expression
+#'   analysis without a need a variance stabilization (e.g. microarray data).
+#'   Currently the default is set to FALSE, simply because the isCount has not
+#'   been heavily tested. If the But TRUE with \code{x} being counts really
+#'   should be the default for RNA-Seq data. If the input data is a
+#'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
+#'   to ignore the internally stored transformation function and instead use
+#'   voom with log2(x+0.5). Alternatively, \code{isCount=FALSE} for a
 #'   \code{ClusterExperiment} object will cause the DE to be performed with
 #'   \code{limma} after transforming the data with the stored transformation.
 #'   Although some writing about "voom" seem to suggest that it would be
@@ -162,26 +162,26 @@ setMethod(
                         dendro=NULL, pairMat=NULL,
                         contrastAdj=c("All", "PerContrast", "AfterF"),
                         isCount=FALSE, normalize.method="none",...) {
-    
+
     #... is always sent to topTable, and nothing else
     cl<-cluster
     if(is.factor(cl)) {
       warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
       cl <- .convertToNum(cl)
     }
-    
+
     ###Note: this pulls hdf5 file into memory.
     dat <- data.matrix(x)
     contrastType <- match.arg(contrastType)
     contrastAdj <- match.arg(contrastAdj)
-    returnType <- "Table" 
-    
+    returnType <- "Table"
+
     if(is.null(rownames(dat))) {
       rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
     }
-    
+
     tmp <- dat
-    
+
     if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
       whNA <- which(cl<0)
       tmp <- tmp[, -whNA]
@@ -196,7 +196,7 @@ setMethod(
     clPrettyLevels<-unique(clPretty[order(clPretty)])
     #get them ordered nicely.
     clNumFac<-factor(cl,levels=clLevels)
-    
+
     if(contrastType=="Dendro") {
       clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
       if(is.null(dendro)) {
@@ -209,12 +209,12 @@ setMethod(
     else{
       clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
     }
-    
+
     if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
       ###Create fit for running contrasts
       designContr <- model.matrix(~ 0 + clPrettyFac)
       colnames(designContr) <- make.names(levels(clPrettyFac))
-      
+
       if(isCount) {
         v <- voom(tmp, design=designContr, plot=FALSE,
                   normalize.method = normalize.method)
@@ -223,12 +223,12 @@ setMethod(
         fitContr <- lmFit(tmp, designContr)
       }
     }
-    
+
     if(contrastType=="F" || contrastAdj=="AfterF") {
       xdat<-data.frame("Cluster"=clPrettyFac)
       designF<-model.matrix(~Cluster,data=xdat)
       #designF <- model.matrix(~clPrettyFac)
-      
+
       if(isCount) {
         v <- voom(tmp, design=designF, plot=FALSE,
                   normalize.method = normalize.method)
@@ -239,7 +239,7 @@ setMethod(
     } else {
       fitF <- NULL
     }
-    
+
     if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
     tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
     tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
@@ -255,12 +255,14 @@ setMethod(
 )
 
 #' @rdname getBestFeatures
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @export
 setMethod(
   f = "getBestFeatures",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                        isCount=FALSE, ...){
+                        isCount=FALSE, whichAssay=1, ...){
     contrastType <- match.arg(contrastType)
     cl<-primaryCluster(x)
     if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
@@ -279,19 +281,19 @@ setMethod(
         else dendro <- x@dendro_clusters
       }
     }
-    
+
     if(isCount) {
       .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
-      dat <- assay(x)
+      dat <- assay(x, whichAssay)
     } else {
-      dat <- transformData(x)
+      dat <- transformData(x, whichAssay)
     }
-    
+
     getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
                     isCount=isCount, ...)
-    
+
   }
 )
 
@@ -318,8 +320,8 @@ This makes sense only for counts.")
     nGenes<-args$number
   }
   else nGenes<-10 #default of topTable
-  
-  
+
+
   #get raw p-values for all(!)
   getRaw<-function(ii){
     if(contrastAdj%in%c("AfterF","All")) {
@@ -355,9 +357,9 @@ This makes sense only for counts.")
     }
   }
   row.names(tops)<-NULL
-  
+
   return(tops)
-  
+
 }
 
 #' @importFrom phylobase descendants nodeLabels subset
@@ -377,7 +379,7 @@ This makes sense only for counts.")
   }
   for(node in clusterNode){
     #first remove tips of children nodes so all children of node in question are tips
-    
+
 	desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     while(length(whDescNodes)>0){
@@ -387,7 +389,7 @@ This makes sense only for counts.")
       desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
       whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     }
-		
+
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
     newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
@@ -395,7 +397,7 @@ This makes sense only for counts.")
 
   ##################
   #Now need to change tip name to be that of the merge cluster
-  #Currently tips should be either 
+  #Currently tips should be either
   #1) Name of makeConsensus cluster (i.e. integer) which needs to translate to a merge cluster
   #2) Node name which now should be a merge cluster id
   ##################
@@ -406,7 +408,7 @@ This makes sense only for counts.")
   #Find the correspondence between old and new
   #replace the old (i.e. non-nodes) with the new
   corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
-  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be 
+  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be
   if(length(whOldCl)>0){
     newTips[whOldCl]<-corrsp[currTips[whOldCl]]
   }
@@ -417,7 +419,7 @@ This makes sense only for counts.")
   newTips[mClusterNode]<-as.character(clusterId)
   names(newTips)<-names(currTips) #this is the internal numbering of the nodes
   phylobase::tipLabels(newPhylo4)<-newTips
-  
+
   #--------
   #just some checks didn't screw up
   #--------
@@ -432,7 +434,7 @@ This makes sense only for counts.")
 	  stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
-  #newPhylo4<-.force.ultrametric(newPhylo4) 
+  #newPhylo4<-.force.ultrametric(newPhylo4)
   #convert back to dendrogram class and return
   ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
   ## as.dendrogram(ape::as.hclust.phylo(object))
@@ -447,12 +449,12 @@ This makes sense only for counts.")
   #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
 
 }
- 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId 
+
+#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
 ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 .force.ultrametric<-function(tree){
 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-	
+
 	allTips<-phylobase::tipLabels(tree)
 	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
 	maxD<-max(depthToTips)

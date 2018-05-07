@@ -1,18 +1,18 @@
 #' Functions to add/remove clusters to ClusterExperiment
-#' 
-#' These functions are used to add or remove clusters to a 
+#'
+#' These functions are used to add or remove clusters to a
 #' \code{\link{ClusterExperiment}} object.
-#' 
+#'
 #' @param x a ClusterExperiment object.
-#' @param y additional clusters to add to x. Can be a ClusterExperiment object 
+#' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
 #' @param clusterLabels label(s) for the clusters being added. If \code{y} a
 #'   matrix, the column names of that matrix will be used by default, if
 #'   \code{clusterLabels} is not given.
 #' @param clusterLegend a list giving the cluster legend for the clusters added.
 #' @inheritParams ClusterExperiment
-#' @details addClusterings adds y to x, and is thus not symmetric in the two 
-#'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram 
+#' @details addClusterings adds y to x, and is thus not symmetric in the two
+#'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
 #'   information, \code{coClustering}, and \code{orderSamples} are all kept from
 #'   the x object, even if y is a ClusterExperiment.
 #'
@@ -39,7 +39,7 @@ setMethod(
       if(length(clusterLabels)!=ncol(y)) stop("clusterLabels must vector of length equal to the number of clusterings (columns of y)")
       colnames(y)<-clusterLabels
     }
-    ccObj<-ClusterExperiment(assay(x),
+    ccObj<-ClusterExperiment(x,
                              clusters=y,
                              transformation=transformation(x),
                              clusterTypes=clusterTypes,
@@ -113,7 +113,7 @@ setMethod(
 #'  \code{primaryCluster} is one of the clusters removed, the
 #'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
 #'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
-#' @return \code{removeClusterings} returns a \code{ClusterExperiment} object, 
+#' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
 #'  unless all clusters are removed, in which case it returns a
 #'  \code{\link{SingleCellExperiment}} object.
 #' @rdname addClusterings
@@ -128,7 +128,7 @@ setMethod(
       #make it Summarized Experiment
       return(as(x,"SingleCellExperiment"))
     }
-    
+
     newClLabels<-clusterMatrix(x)[,-whichClusters,drop=FALSE]
     newClusterInfo<-clusteringInfo(x)[-whichClusters]
     newClusterType<-clusterTypes(x)[-whichClusters]
@@ -150,7 +150,7 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
-    
+
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
                               clusters=newClLabels,
                               transformation=transformation(x),
@@ -186,8 +186,8 @@ setMethod(
 )
 
 
-#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned) 
-#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value). 
+#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
+#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
 #' @rdname addClusterings
 #' @aliases removeClusters
 #' @export
@@ -201,7 +201,7 @@ setMethod(
     leg<-clusterLegend(x)[[whichClusters]]
     if(is.character(clustersToRemove)){
       m<- match(clustersToRemove,leg[,"name"] )
-      if(any(is.na(m))) 
+      if(any(is.na(m)))
         stop("invalid names of clusters in 'clustersToRemove'")
       clustersToRemove<-as.numeric(leg[m,"clusterIds"])
     }
@@ -215,7 +215,7 @@ setMethod(
       currlabel<-clusterLabels(x)[whichClusters]
       clusterLabels<-paste0(currlabel,"_unassignClusters")
     }
-    if(clusterLabels %in% clusterLabels(x)) 
+    if(clusterLabels %in% clusterLabels(x))
       stop("must give a 'clusterLabels' value that is not already assigned to a clustering")
     newleg<-leg
     if(!"-1" %in% leg[,"clusterIds"] & any(cl== -1)){
@@ -226,8 +226,8 @@ setMethod(
       newleg<-newleg[-whRm,,drop=FALSE]
     }
     return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=list(newleg),makePrimary=makePrimary))
-    
-    
+
+
   }
 )
 #' @rdname addClusterings

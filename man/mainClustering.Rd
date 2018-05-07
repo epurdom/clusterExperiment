@@ -66,7 +66,7 @@ part.}
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is 
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
 
 \item{returnData}{logical as to whether to return the \code{diss} or \code{x}
