@@ -1,7 +1,7 @@
 setGeneric("combineMany", function(x,...) { standardGeneric("combineMany")})
 
 #' @name clusterExperiment-deprecated
-#' @aliases clusterExperiment-deprecated combineMany
+#' @aliases clusterExperiment-deprecated combineMany combineMany,ANY-method
 #' @title Deprecated functions in package \sQuote{clusterExperiment}
 #' @description These functions are provided for compatibility with older versions
 #'  of \sQuote{clusterExperiment} only, and will be defunct at the next release.
@@ -11,6 +11,7 @@ setGeneric("combineMany", function(x,...) { standardGeneric("combineMany")})
 #'    \item{\code{combineMany}: \code{\link{makeConsensus}}}
 #'  }
 #' @export
+#' @param x any object
 #' @rdname clusterExperiment-deprecated
 setMethod(
   f = "combineMany",

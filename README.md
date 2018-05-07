@@ -8,6 +8,12 @@ Version 2.0.0 is now available on with many new changes. Checkout out a [brief d
 
 The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
 
+## Vignette
+
+A compiled version of the vignette of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+
+The compiled version of the current version of `clusterExperiment` available with Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+
 ## Installation instructions
 
 ### Installation From Bioconductor
