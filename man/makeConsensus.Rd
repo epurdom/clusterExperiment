@@ -44,11 +44,11 @@ a cluster because of shared clustering, passed to
 \item{...}{arguments to be passed on to the method for signature 
 \code{matrix,missing}.}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By

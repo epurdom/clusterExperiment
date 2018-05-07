@@ -35,20 +35,20 @@
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
-following classes: matrix (with genes in rows), 
+following classes: matrix (with genes in rows),
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
-\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
+\code{\link[SingleCellExperiment]{SingleCellExperiment}}
 or \code{ClusterExperiment}.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply 
-(if ncores>1). For all the other signatures, arguments to be passed to the 
+\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+(if ncores>1). For all the other signatures, arguments to be passed to the
 method for signature \code{list}.}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
@@ -69,37 +69,37 @@ function will throw an error. If object is of class
 \code{ClusterExperiment}, the stored transformation will be used and giving
 this parameter will result in an error.}
 
-\item{reduceMethod}{character A character identifying what type of 
+\item{reduceMethod}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are 1)
 "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 3)
 stored filtering or reducedDim values in the object.}
 
-\item{nFilterDims}{vector of the number of the most variable features to keep 
+\item{nFilterDims}{vector of the number of the most variable features to keep
 (when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
-\item{nReducedDims}{vector of the number of dimensions to use (when 
+\item{nReducedDims}{vector of the number of dimensions to use (when
 \code{reduceMethod} gives a dimensionality reduction method).}
 
 \item{k0s}{the k0 parameter for sequential clustering (see
 \code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 
-\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of
 type '01'. Determines tightness required in creating clusters from the
 dissimilarity matrix. Takes on values in [0,1]. See documentation of
 \code{\link{ClusterFunction}}.}
 
 \item{betas}{values of \code{beta} to be tried in sequential steps. Only used
-for \code{sequential=TRUE}. Determines the similarity between two clusters 
+for \code{sequential=TRUE}. Determines the similarity between two clusters
 required in order to deem the cluster stable. Takes on values in [0,1]. See
 documentation of \code{\link{seqCluster}}.}
 
-\item{minSizes}{the minimimum size required for a cluster (in the 
+\item{minSizes}{the minimimum size required for a cluster (in the
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
@@ -126,24 +126,24 @@ are left unassigned.}
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
 
-\item{subsampleArgs}{list of arguments to be passed to the subsampling step 
-(if \code{subsample=TRUE}), see help pages of 
+\item{subsampleArgs}{list of arguments to be passed to the subsampling step
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
 
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so 
-that all of the runs are run on the same subsample of the data). Note, if 
-'random.seed' is set, argument 'ncores' should NOT be passed via 
+\item{random.seed}{a value to set seed before each run of clusterSingle (so
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
-rownames equal to the names of the resulting column names of clMat object 
-that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
+rownames equal to the names of the resulting column names of clMat object
+that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 }
