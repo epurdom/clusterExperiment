@@ -149,101 +149,145 @@
 #' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
-          signature = signature(x = "matrix"),
-          definition = function(x, cluster,
-                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                dendro=NULL, pairMat=NULL,
-                                contrastAdj=c("All", "PerContrast", "AfterF"),
-                                isCount=FALSE, normalize.method="none",...) {
-
-            #... is always sent to topTable, and nothing else
-            cl<-cluster
-            if(is.factor(cl)) {
-              warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-              cl <- .convertToNum(cl)
-            }
-            
-            dat <- data.matrix(x)
-            contrastType <- match.arg(contrastType)
-            contrastAdj <- match.arg(contrastAdj)
-            returnType <- "Table" 
-            
-            if(is.null(rownames(dat))) {
-              rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
-            }
-            
-            tmp <- dat
-            
-            if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
-              whNA <- which(cl<0)
-              tmp <- tmp[, -whNA]
-              cl <- cl[-whNA]
-            }
-            ###--------
-            ### Fix up the names
-            ###--------
-            pad<-if(length(unique(cl))<100) 2 else 3
-            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
-            clLevels<-unique(cl[order(clPretty)])
-            clPrettyLevels<-unique(clPretty[order(clPretty)])
-            #get them ordered nicely.
-            clNumFac<-factor(cl,levels=clLevels)
-            
-            if(contrastType=="Dendro") {
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
-              if(is.null(dendro)) {
-                stop("must provide dendro")
-              }
-              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
-				stop("dendro must be of class 'dendrogram' or 'phylo4'")
-              }
-            }
-            else{
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
-            }
-            
-            if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-              ###Create fit for running contrasts
-              designContr <- model.matrix(~ 0 + clPrettyFac)
-              colnames(designContr) <- make.names(levels(clPrettyFac))
-              
-              if(isCount) {
-                v <- voom(tmp, design=designContr, plot=FALSE,
-                          normalize.method = normalize.method)
-                fitContr <- lmFit(v, designContr)
-              } else {
-                fitContr <- lmFit(tmp, designContr)
-              }
-            }
-            
-            if(contrastType=="F" || contrastAdj=="AfterF") {
-              xdat<-data.frame("Cluster"=clPrettyFac)
-              designF<-model.matrix(~Cluster,data=xdat)
-              #designF <- model.matrix(~clPrettyFac)
-              
-              if(isCount) {
-                v <- voom(tmp, design=designF, plot=FALSE,
-                          normalize.method = normalize.method)
-                fitF <- lmFit(v, designF)
-              } else {
-                fitF <- lmFit(tmp, designF)
-              }
-            } else {
-              fitF <- NULL
-            }
-            
-            if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
-            tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
-            tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
-            if(returnType=="Index") {
-              whGenes <- tops$IndexInOriginal
-              names(whGenes) <- tops$Feature
-              return(whGenes)
-            }
-            if(returnType=="Table") {
-              return(tops)
-            }
-          }
+signature = signature(x = "matrix"),
+definition = function(x, cluster,
+                      contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                      dendro=NULL, pairMat=NULL, weights = NULL,
+                      contrastAdj=c("All", "PerContrast", "AfterF"),
+                      isCount=FALSE, normalize.method="none",...) {
+  
+  #if weights is NULL, then the differential expression uses limma voom
+  #if a weight matrix is provided and isCount is True, then glmFit from edgeR is used.
+  
+  #... is always sent to topTable, and nothing else
+  cl<-cluster
+  if(is.factor(cl)) {
+    warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+    cl <- .convertToNum(cl)
+  }
+  
+  dat <- data.matrix(x)
+  contrastType <- match.arg(contrastType)
+  contrastAdj <- match.arg(contrastAdj)
+  returnType <- "Table" 
+  
+  if(is.null(rownames(dat))) {
+    rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+  }
+  
+  tmp <- dat
+  
+  if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+    whNA <- which(cl<0)
+    tmp <- tmp[, -whNA]
+    cl <- cl[-whNA]
+    if(is.null(weights) ==F){
+      weights<- weights[,-whNA]
+    }
+  }
+  ###--------
+  ### Fix up the names
+  ###--------
+  pad<-if(length(unique(cl))<100) 2 else 3
+  clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+  clLevels<-unique(cl[order(clPretty)])
+  clPrettyLevels<-unique(clPretty[order(clPretty)])
+  #get them ordered nicely.
+  clNumFac<-factor(cl,levels=clLevels)
+  
+  if(contrastType=="Dendro") {
+    clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
+    if(is.null(dendro)) {
+      stop("must provide dendro")
+    }
+    if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+      stop("dendro must be of class 'dendrogram' or 'phylo4'")
+    }
+  }
+  else{
+    clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+  }
+  
+  if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
+    ###Create fit for running contrasts
+    designContr <- model.matrix(~ 0 + clPrettyFac)
+    colnames(designContr) <- make.names(levels(clPrettyFac))
+    
+    if(isCount) {
+      if(is.null(weights)){
+        v <- voom(tmp, design=designContr, plot=FALSE,
+                  normalize.method = normalize.method)
+        fitContr <- lmFit(v, designContr)
+      }
+      
+      else{
+        fitContr<- DGEList(tmp)
+        fitContr$weights <- weights
+        fitContr <- estimateDisp(fitContr, designContr)
+        fitContr <- glmFit(fitContr,design = designContr)
+        
+        #disp <- estimateDisp(tmp, designContr)$common.dispersion
+        #fitContr <- glmFit(tmp, dispersion = disp,design = designContr, weights= weights)
+      }
+      
+    } else {
+      fitContr <- lmFit(tmp, designContr)
+    }
+  }
+  
+  if(contrastType=="F" || contrastAdj=="AfterF") {
+    xdat<-data.frame("Cluster"=clPrettyFac)
+    designF<-model.matrix(~Cluster,data=xdat)
+    #designF <- model.matrix(~clPrettyFac)
+    
+    if(isCount) {
+      if(is.null(weights)){
+        v <- voom(tmp, design=designF, plot=FALSE,
+                  normalize.method = normalize.method)
+        fitF <- lmFit(v, designF)
+      }
+      else{
+        fitF<- DGEList(tmp)
+        fitF$weights <- weights
+        fitF <- estimateDisp(fitF, design = designF)
+        fitF <- glmFit(fitF,design = designF)
+        #disp <- estimateDisp(tmp, design = designF)$common.dispersion
+        #fitF <- glmFit(tmp, dispersion = disp,design = designF, weights= weights )
+      }
+      
+    } else {
+      fitF <- lmFit(tmp, designF)
+    }
+  } else {
+    fitF <- NULL
+  }
+  
+  if(contrastType!="F"){
+    contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,
+                                   dendro=dendro,pairMat=pairMat,outputType = "limma", 
+                                   removeNegative = TRUE)
+  }
+  
+  if(contrastType=="F"){
+    tops <- .getBestFGenes(fitF, weights = weights,...)
+  }
+  
+  else{
+    tops<-.testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,
+                         fit=fitContr,fitF=fitF,contrastAdj=contrastAdj, weights = weights,...)
+  }
+  tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+  
+  
+  if(returnType=="Index") {
+    whGenes <- tops$IndexInOriginal
+    names(whGenes) <- tops$Feature
+    return(whGenes)
+  }
+  if(returnType=="Table") {
+    return(tops)
+  }
+}
 )
 
 #' @rdname getBestFeatures
@@ -251,7 +295,7 @@ setMethod(f = "getBestFeatures",
 setMethod(f = "getBestFeatures",
           signature = signature(x = "ClusterExperiment"),
           definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                isCount=FALSE, ...){
+                                isCount=FALSE, weights = NULL, ...){
             contrastType <- match.arg(contrastType)
 			cl<-primaryCluster(x)
 			if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
@@ -281,7 +325,7 @@ This makes sense only for counts.")
             }
             
             getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
-                            isCount=isCount, ...)
+                            isCount=isCount, weights = weights, ...)
             
 }
 )
@@ -560,145 +604,5 @@ This makes sense only for counts.")
 	phylobase::edgeLength(tree)<-allLen
 	tree
 }
-
-
-setMethod(f = "getBestFeatures2",
-          signature = signature(x = "matrix"),
-          definition = function(x, cluster,
-                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                dendro=NULL, pairMat=NULL, weights = NULL,
-                                contrastAdj=c("All", "PerContrast", "AfterF"),
-                                isCount=FALSE, normalize.method="none",...) {
-            
-            #... is always sent to topTable, and nothing else
-            cl<-cluster
-            if(is.factor(cl)) {
-              warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-              cl <- .convertToNum(cl)
-            }
-            
-            dat <- data.matrix(x)
-            contrastType <- match.arg(contrastType)
-            contrastAdj <- match.arg(contrastAdj)
-            returnType <- "Table" 
-            
-            if(is.null(rownames(dat))) {
-              rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
-            }
-            
-            tmp <- dat
-            
-            if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
-              whNA <- which(cl<0)
-              tmp <- tmp[, -whNA]
-              cl <- cl[-whNA]
-              if(is.null(weights) ==F){
-                weights<- weights[,-whNA]
-              }
-            }
-            ###--------
-            ### Fix up the names
-            ###--------
-            pad<-if(length(unique(cl))<100) 2 else 3
-            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
-            clLevels<-unique(cl[order(clPretty)])
-            clPrettyLevels<-unique(clPretty[order(clPretty)])
-            #get them ordered nicely.
-            clNumFac<-factor(cl,levels=clLevels)
-            
-            if(contrastType=="Dendro") {
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
-              if(is.null(dendro)) {
-                stop("must provide dendro")
-              }
-              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
-                stop("dendro must be of class 'dendrogram' or 'phylo4'")
-              }
-            }
-            else{
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
-            }
-            
-            if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-              ###Create fit for running contrasts
-              designContr <- model.matrix(~ 0 + clPrettyFac)
-              colnames(designContr) <- make.names(levels(clPrettyFac))
-              
-              if(isCount) {
-                if(is.null(weights)){
-                  v <- voom(tmp, design=designContr, plot=FALSE,
-                            normalize.method = normalize.method)
-                  fitContr <- lmFit(v, designContr)
-                }
-                
-                else{
-                  fitContr<- DGEList(tmp)
-                  fitContr$weights <- weights
-                  fitContr <- estimateDisp(fitContr, designContr)
-                  fitContr <- glmFit(fitContr,design = designContr)
-                  
-                  #disp <- estimateDisp(tmp, designContr)$common.dispersion
-                  #fitContr <- glmFit(tmp, dispersion = disp,design = designContr, weights= weights)
-                }
-                
-              } else {
-                fitContr <- lmFit(tmp, designContr)
-              }
-            }
-            
-            if(contrastType=="F" || contrastAdj=="AfterF") {
-              xdat<-data.frame("Cluster"=clPrettyFac)
-              designF<-model.matrix(~Cluster,data=xdat)
-              #designF <- model.matrix(~clPrettyFac)
-              
-              if(isCount) {
-                if(is.null(weights)){
-                  v <- voom(tmp, design=designF, plot=FALSE,
-                            normalize.method = normalize.method)
-                  fitF <- lmFit(v, designF)
-                }
-                else{
-                  fitF<- DGEList(tmp)
-                  fitF$weights <- weights
-                  fitF <- estimateDisp(fitF, design = designF)
-                  fitF <- glmFit(fitF,design = designF)
-                  #disp <- estimateDisp(tmp, design = designF)$common.dispersion
-                  #fitF <- glmFit(tmp, dispersion = disp,design = designF, weights= weights )
-                }
-                
-              } else {
-                fitF <- lmFit(tmp, designF)
-              }
-            } else {
-              fitF <- NULL
-            }
-            
-            if(contrastType!="F"){
-              contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,
-                                             dendro=dendro,pairMat=pairMat,outputType = "limma", 
-                                             removeNegative = TRUE)
-            }
-            
-            if(contrastType=="F"){
-              tops <- .getBestFGenes(fitF, weights = weights,...)
-            }
-            
-            else{
-              tops<-.testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,
-                            fit=fitContr,fitF=fitF,contrastAdj=contrastAdj, weights = weights,...)
-            }
-            tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
-            
-          
-            if(returnType=="Index") {
-              whGenes <- tops$IndexInOriginal
-              names(whGenes) <- tops$Feature
-              return(whGenes)
-            }
-            if(returnType=="Table") {
-              return(tops)
-            }
-          }
-)
 
 
