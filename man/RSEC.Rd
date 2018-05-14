@@ -28,7 +28,7 @@
   "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
   "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
   alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
-  combineProportion = 0.7, combineMinSize, dendroReduce, dendroNDims,
+  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
   mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
   whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE)
@@ -103,10 +103,10 @@ documentation of \code{\link{seqCluster}}.}
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
-\item{combineProportion}{passed to \code{proportion} in
+\item{consensusProportion}{passed to \code{proportion} in
 \code{\link{makeConsensus}}}
 
-\item{combineMinSize}{passed to \code{minSize} in \code{\link{makeConsensus}}}
+\item{consensusMinSize}{passed to \code{minSize} in \code{\link{makeConsensus}}}
 
 \item{dendroReduce}{passed to \code{reduceMethod} in
 \code{\link{makeDendrogram}}}

@@ -4,9 +4,13 @@
 \name{clusterExperiment-deprecated}
 \alias{clusterExperiment-deprecated}
 \alias{combineMany}
+\alias{combineMany,ANY-method}
 \title{Deprecated functions in package \sQuote{clusterExperiment}}
 \usage{
 \S4method{combineMany}{ANY}(x, ...)
+}
+\arguments{
+\item{x}{any object}
 }
 \description{
 These functions are provided for compatibility with older versions
