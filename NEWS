@@ -10,6 +10,7 @@ Changes:
 
 Bugs:
 * Fix so that estimates of the proportion non-null in `mergeClusters` are always positive.
+* Fix bug introduced in 2.0.0 that didn't pass merge commands from RSEC correctly
 
 
 Changes in version 1.99.4 ( Release date: 2018-04-19)

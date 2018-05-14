@@ -144,9 +144,9 @@ setMethod(
       if(!missing(dendroNDims))
         passedArgs<-c(passedArgs,dendroNDims=dendroNDims)
       if(!missing(mergeCutoff))
-        passedArgs<-c(passedArgs,dendroNDims=mergeCutoff)
+        passedArgs<-c(passedArgs,mergeCutoff=mergeCutoff)
       if(!missing(mergeLogFCcutoff))
-        passedArgs<-c(passedArgs,dendroNDims=mergeLogFCcutoff)
+        passedArgs<-c(passedArgs,mergeLogFCcutoff=mergeLogFCcutoff)
       ce<-do.call(".postClusterMany",passedArgs)
       #.postClusterMany(ce,consensusProportion=consensusProportion,consensusMinSize=consensusMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
