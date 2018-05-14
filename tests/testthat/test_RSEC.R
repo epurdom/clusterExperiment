@@ -80,7 +80,7 @@ test_that("`RSEC` returns clusterMany even when errors later",{
 	#error in makeConsensus param
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-        subsampleArgs=list(resamp.num=5),random.seed=495, combineProportion = -1, combineMinSize = 5),"Invalid value for the 'proportion' parameter"
+        subsampleArgs=list(resamp.num=5),random.seed=495, consensusProportion = -1, consensusMinSize = 5),"Invalid value for the 'proportion' parameter"
   	 	)
 	expect_true("clusterMany" %in% clusterTypes(rsecOut1))
 

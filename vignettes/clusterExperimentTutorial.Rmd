@@ -116,7 +116,7 @@ colnames(colData(se))[wh]<-c("Published1","Published2")
 
 ## Clustering with RSEC
 
-We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`combineMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
+We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`consensusMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
 
 Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves by running the following code (or setting `eval=TRUE` in the .Rmd file) with the `ncores` option appropriately chosen for their machine. 
 
@@ -124,7 +124,7 @@ Because this procedure is slightly computationally intensive, depending on the u
 ```{r RSEC, eval=FALSE}
 library(clusterExperiment)
 system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
-	reduceMethod="PCA", nReducedDims=10,combineMinSize=3,
+	reduceMethod="PCA", nReducedDims=10,consensusMinSize=3,
 	ncores=1, random.seed=176201))
 ```
 
@@ -265,15 +265,15 @@ In this case we can see that higher dimensions show us a greater amount of separ
 In the next section, we will describe more about the options we could adjust in `RSEC`. As an example of a few options, we might, for example, want to change the proportion of co-clustering we required in making our `makeConsensus`
  clustering (which used the default of 0.7), or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many individual clustering steps which are time intensive (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We demonstrate this in our next command where we change these choices in the following ways:
  
- * set the proportion of co-clustering required by the argument `combineProportion=0.6`, 
+ * set the proportion of co-clustering required by the argument `consensusProportion=0.6`, 
  * make the merge cutoff `mergeCutoff=0.01`
  * decide to use a different method of estimating the proportion differential for merge by setting `mergeMethod="Storey"` instead of the default ("adjP"). 
- * no longer adjust the minimum cluster size and use the default (`combineMinSize=5`).
+ * no longer adjust the minimum cluster size and use the default (`consensusMinSize=5`).
  
  These are the main parameters we might frequently want to tweak in `RSEC`.
  
 ```{r recallRSEC}
-rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,combineProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
+rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
 ```
 
 Notice that we save the output over our original object. This is the standard way to work with the `ClusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
@@ -292,7 +292,7 @@ The clusterings with the `.1` appended to the labels are the previous `makeConse
 In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
 
 ```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,combineMinSize=3)
+rsecFluidigm<-RSEC(rsecFluidigm,consensusMinSize=3)
 ```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
@@ -565,7 +565,7 @@ The above explanation follows the simple example of PAM. The original RSEC resul
 ```{r quasiRsecCode, eval=FALSE}
 rsecOut<-RSEC(se, reduceMethod="PCA", nReducedDims=c(50,10), k0s=4:15,
         alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9), minSizes=c(1,5), clusterFunction="hierarchical01",
-        combineProportion=0.7, combineMinSize=5,
+        consensusProportion=0.7, consensusMinSize=5,
         dendroReduce="mad",dendroNDims=500,
         mergeMethod="adjP",mergeCutoff=0.05,
 		)
@@ -1432,8 +1432,8 @@ tabl <- "
 - |  | random.seed | |
 - |  | isCount | |
 - |  | transFun | |
-*makeConsensus*  | propUnassigned = *(default)* | combineProportion | proportion 
--  | combineMinSize    | minSize | |
+*makeConsensus*  | propUnassigned = *(default)* | consensusProportion | proportion 
+-  | consensusMinSize    | minSize | |
 *makeDendrogram* | ignoreUnassignedVar=TRUE | dendroReduce      | reduceMethod | 
 -  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
 *mergeClusters*   | plot=FALSE | mergeMethod     | | 
@@ -1567,7 +1567,7 @@ se2 <- se2[pass_filter,]
 dim(se2)
 
 rsecTPM <- RSEC(se2, whichAssay = "rsem_tpm", transFun = log1p,
-              reduceMethod="PCA", nReducedDims=10, combineMinSize=3, 
+              reduceMethod="PCA", nReducedDims=10, consensusMinSize=3, 
               ncores=1, random.seed=176201)
 ```
 

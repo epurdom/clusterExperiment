@@ -6,9 +6,9 @@
 #'   results in the output of RSEC.
 #' @param k0s the k0 parameter for sequential clustering (see
 #'   \code{\link{seqCluster}})
-#' @param combineProportion passed to \code{proportion} in
+#' @param consensusProportion passed to \code{proportion} in
 #'   \code{\link{makeConsensus}}
-#' @param combineMinSize passed to \code{minSize} in \code{\link{makeConsensus}}
+#' @param consensusMinSize passed to \code{minSize} in \code{\link{makeConsensus}}
 #' @param dendroReduce passed to \code{reduceMethod} in
 #'   \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
@@ -98,8 +98,8 @@ setMethod(
                         nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), k0s=4:15,
                         clusterFunction="hierarchical01", #listBuiltInType01(),
                         alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
-                        combineProportion=0.7,
-                        combineMinSize,
+                        consensusProportion=0.7,
+                        consensusMinSize,
                         dendroReduce,
                         dendroNDims,
                         mergeMethod="adjP",
@@ -132,13 +132,13 @@ setMethod(
 
     if(run){
       #first add ones that have default value
-      passedArgs<-list(ce=ce,combineProportion=combineProportion,
+      passedArgs<-list(ce=ce,consensusProportion=consensusProportion,
                        mergeMethod=mergeMethod,whichAssay=whichAssay)
       #add those who will use default value from the function -- is there easier way
-      if(!missing(combineProportion))
-        passedArgs<-c(passedArgs,combineProportion=combineProportion)
-      if(!missing(combineMinSize))
-        passedArgs<-c(passedArgs,combineMinSize=combineMinSize)
+      if(!missing(consensusProportion))
+        passedArgs<-c(passedArgs,consensusProportion=consensusProportion)
+      if(!missing(consensusMinSize))
+        passedArgs<-c(passedArgs,consensusMinSize=consensusMinSize)
       if(!missing(dendroReduce))
         passedArgs<-c(passedArgs,dendroReduce=dendroReduce)
       if(!missing(dendroNDims))
@@ -148,7 +148,7 @@ setMethod(
       if(!missing(mergeLogFCcutoff))
         passedArgs<-c(passedArgs,dendroNDims=mergeLogFCcutoff)
       ce<-do.call(".postClusterMany",passedArgs)
-      #.postClusterMany(ce,combineProportion=combineProportion,combineMinSize=combineMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
+      #.postClusterMany(ce,consensusProportion=consensusProportion,consensusMinSize=consensusMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
     return(ce)
   })
@@ -180,8 +180,8 @@ setMethod(
   ###CombineMany
   #------------
   args1<-list()
-  if("combineProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$combineProportion)
-  if("combineMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$combineMinSize)
+  if("consensusProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$consensusProportion)
+  if("consensusMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$consensusMinSize)
   whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters  	else "clusterMany"
   combineTry<-try(do.call("makeConsensus",c(list(x=ce,whichClusters=whClusters),args1)), silent=TRUE)
   if(!inherits(combineTry,"try-error")){

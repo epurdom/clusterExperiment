@@ -85,7 +85,7 @@ NULL
 #' ncores<-1
 #' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,reduceMethod="PCA",nReducedDims=10,
 #'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
-#'  combineMinSize=3))
+#'  consensusMinSize=3))
 #' packageVersion("clusterExperiment")
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
