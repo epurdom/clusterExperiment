@@ -11,6 +11,8 @@
 }
 \arguments{
 \item{x}{any object}
+
+\item{...}{additional arguments}
 }
 \description{
 These functions are provided for compatibility with older versions

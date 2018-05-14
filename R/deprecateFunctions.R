@@ -12,6 +12,7 @@ setGeneric("combineMany", function(x,...) { standardGeneric("combineMany")})
 #'  }
 #' @export
 #' @param x any object
+#' @param ... additional arguments
 #' @rdname clusterExperiment-deprecated
 setMethod(
   f = "combineMany",
