@@ -58,7 +58,7 @@ be called.}
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is 
+\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
 
 \item{largeDataset}{logical indicating whether a more memory-efficient version

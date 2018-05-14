@@ -17,7 +17,7 @@ setMethod(
      invisible(plotFeatureBoxplot(object,whichCluster=wh,feature=feature,...))
 
   })
-  
+
 #' @rdname plotFeatureBoxplot
 #' @export
 setMethod(
@@ -43,22 +43,22 @@ setMethod(
   })
 
 
-  
+
 #' @param feature identification of feature to plot, either row name or index
-#' @param unassignedColor If not NULL, should be character value giving the 
+#' @param unassignedColor If not NULL, should be character value giving the
 #'   color for unassigned (-2) samples (overrides \code{clusterLegend}) default.
-#' @param missingColor If not NULL, should be character value giving the color 
+#' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param main title of plot. If NULL, given default title.
 #' @param plotUnassigned whether to plot the unassigned samples as a cluster
 #'   (either -1 or -2)
-#' @param assay Identifies which assay in the \code{object} should be used for
-#'   the data to be plotted.
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @param ... arguments passed to \code{\link{boxplot}}
 #' @inheritParams plotReducedDims
 #' @seealso \code{\link{boxplot}}
 #' @rdname plotFeatureBoxplot
-#' @return A plot is created. The output of boxplot is returned 
+#' @return A plot is created. The output of boxplot is returned
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
@@ -72,17 +72,11 @@ setMethod(
 setMethod(
   f = "plotFeatureBoxplot",
   signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-  definition = function(object, whichCluster, feature,plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,assay=NULL,...)
+  definition = function(object, whichCluster, feature,plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,whichAssay=1,...)
   {
     #get data:
-    if(is.null(assay)) dat<-transformData(object)[feature,]
-    else{
-      if(!is.matrix(assay)) assay<-assays(object)[[assay]]
-      if(!all(dim(assay)==dim(object))) stop("input assay does not match the dimensions of object")
-      if(is.null(assay)) stop("assay value does not match an assay in object")
-      else dat<-assay[feature,]
-    }
-    
+    dat<-transformData(object, whichAssay=whichAssay)[feature,]
+
     clLegend<-clusterLegend(object)[[whichCluster]]
     uniqueNames<-length(unique(clLegend[,"name"]))==nrow(clLegend)
     #put in alpha order by cluster name / id:
@@ -97,9 +91,9 @@ setMethod(
     if(length(whMissing)>0 & !plotUnassigned){
       if(length(whNotMissing)>0) orderedLegend<-rbind(orderedLegend,clLegend[whMissing,])
       else orderedLegend<-clLegend[whMissing,]
-      if(!is.null(unassignedColor) & any(orderedLegend[,"clusterIds"]=="-1")) 
+      if(!is.null(unassignedColor) & any(orderedLegend[,"clusterIds"]=="-1"))
         orderedLegend[orderedLegend[,"clusterIds"]=="-1","color"]<-unassignedColor
-      if(!is.null(missingColor) & any(orderedLegend[,"clusterIds"]=="-2")) 
+      if(!is.null(missingColor) & any(orderedLegend[,"clusterIds"]=="-2"))
         orderedLegend[orderedLegend[,"clusterIds"]=="-2","color"]<-missingColor
     }
     clLegend<-orderedLegend

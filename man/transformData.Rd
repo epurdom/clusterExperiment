@@ -12,9 +12,9 @@
 \S4method{transformData}{matrixOrHDF5}(object, transFun = NULL,
   isCount = FALSE)
 
-\S4method{transformData}{ClusterExperiment}(object, ...)
+\S4method{transformData}{ClusterExperiment}(object, whichAssay = 1, ...)
 
-\S4method{transformData}{SingleCellExperiment}(object, ...)
+\S4method{transformData}{SingleCellExperiment}(object, whichAssay = 1, ...)
 
 \S4method{transformData}{SummarizedExperiment}(object, ...)
 }
@@ -35,6 +35,9 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
+
 \item{...}{Values passed on the the 'matrix' method.}
 }
 \value{
@@ -45,7 +48,7 @@ Provides the transformed data
 }
 \details{
 The data matrix defined by \code{assay(x)} is transformed based on
-  the transformation function either defined in x (in the case of a 
+  the transformation function either defined in x (in the case of a
 \code{ClusterExperiment} object) or by user given values for other classes.
 }
 \examples{
@@ -54,5 +57,5 @@ mat[1,1] <- -1 #force a negative value
 labels <- gl(5, 2)
 cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 function(x){x^2}) #define transformation as x^2
-z<-transformData(cc) 
+z<-transformData(cc)
 }
