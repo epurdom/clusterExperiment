@@ -1,8 +1,12 @@
-Changes in version 2.1.0-9003 ( Release date: )
+Changes in version 2.1.0-9006 ( Release date: )
 ==============
 
 Changes:
-* change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`) 
+* change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`). 
+* Arguments to `RSEC` changed accordingly:
+	- `combineProportion` now `consensusProportion`
+	- `combineMinSize` now `consensusMinSize`
+* Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
 
 Bugs:
 * Fix so that estimates of the proportion non-null in `mergeClusters` are always positive.

@@ -8,11 +8,17 @@ Version 2.0.0 is now available on with many new changes. Checkout out a [brief d
 
 The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
 
-## Vignette
+## Publications
 
-A compiled version of the vignette of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+The paper acompanying this package can be found at:
 
-The compiled version of the current version of `clusterExperiment` available with Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+Davide Risso, Liam Purvis, Russell Fletcher, Diya Das, John Ngai, Sandrine Dudoit, and Elizabeth Purdom (March 2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" bioRxiv, (https://www.biorxiv.org/content/early/2018/03/12/280545)[https://www.biorxiv.org/content/early/2018/03/12/280545].
+
+There is a github repository ((epurdom/RSECPaper)[https://github.com/epurdom/RSECPaper] for this paper that gives the code for reproducing the analysis in that manuscript.
+
+A compiled version of the vignette (i.e. tutorial) of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+
+The compiled version of the version of `clusterExperiment` available with the latest release of Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
 
 ## Installation instructions
 

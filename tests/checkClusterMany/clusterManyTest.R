@@ -44,7 +44,7 @@ cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
 				 mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
-                 ncores=ncores, subsampleArgs=list(resamp.num=20,largeDataset=FALSE,
+                 ncores=ncores, subsampleArgs=list(resamp.num=20,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)
