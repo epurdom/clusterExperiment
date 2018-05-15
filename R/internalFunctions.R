@@ -238,7 +238,7 @@
 	    if(any(facInt== -2)) 
 				cols<-rbind(cols,c("clusterIds"="-2","color"=missingColor,"name"="-2") )
 		}
-    cols<-cols[order(cols[,"name"]),]
+    cols<-cols[order(cols[,"name"]),,drop=FALSE]
 		rownames(cols)<-NULL
     return(cols)
   }
