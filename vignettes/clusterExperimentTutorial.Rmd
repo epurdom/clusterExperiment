@@ -1076,7 +1076,7 @@ betas          | sequential=TRUE | seqCluster    | beta
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 ```
 
-### Example changing the distance function and clustering algorithm
+### Example changing the distance function
 
 Providing different distance functions is slightly more involved than the other parameters, so we give an example here. 
 
@@ -1272,7 +1272,7 @@ plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 
 **Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
-## Consensus of subsets of clusterings
+### Consensus of subsets of clusterings
 
 A call to `clusterMany` or to `RSEC` can generate many clusterings that result from changing the underlying parameters of a given method (e.g., the number of centers in k-means), the dimensionality reduction, the distance function, or the base algorithm used for the clustering (e.g., PAM vs. k-means).
 
