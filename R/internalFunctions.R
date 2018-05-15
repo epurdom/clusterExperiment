@@ -185,10 +185,11 @@
     return(matrix(fun(clMat),ncol=1))
   }
 }
-##Universal way to convert matrix of clusters into colors
+##Universal way to convert matrix of clusters into default colorLegend
 ## returns  list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 ## only colorList and numClusters absolutely required for return (needed by AllClasses for integer).
 .makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
+  if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
     ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(clMat,2,function(x){factor(x)}))
 		
@@ -202,12 +203,13 @@
 	}
 	
   maxPerCol<-apply(clNumMat,2,max) #max cluster value (not including -1,-2)
-  currcolors<-rep(colors,length= sum(maxPerCol)) #make sure don't run out of colors
+  currcolors<-rep(colors,length= max(c(length(colors),sum(maxPerCol)))) #make sure don't run out of colors. Put max in case none are >0
   if(distinctColors) maxPreviousColor<-c(0,head(cumsum(maxPerCol),-1)) 
 		
 	#make a clusterLegend list
 	perColumnFunction<-function(ii){
     facInt<-clNumMat[,ii] #assumes adjacent numbers
+    nVals<-max(c(facInt,0))
     facOrig<-clMat[,ii] #assumes factors
 		if(!is.null(matchClusterLegend)){
 	    colMat<-matchClusterLegend[[ii]]
@@ -215,16 +217,22 @@
 	    cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
 		}
 		else{
-	    if(distinctColors){
-				add<-maxPreviousColor[[ii]]
-	    	colors<-currcolors[seq_len(max(facInt))+add]
-			}
-			else colors<-currcolors[seq_len(max(facInt))]
-		  cols<-cbind(
-				"clusterIds"=levels(factor(facInt[facInt>0])),
-				"color"=colors,
-				"name"=levels(droplevels(facOrig[facInt>0]))
-			)
+		  if(nVals>0){
+		    if(distinctColors){
+		      add<-maxPreviousColor[[ii]]
+		      colors<-currcolors[seq_len( nVals)+add]
+		    }
+		    else colors<-currcolors[seq_len( nVals)]
+		    cols<-cbind(
+		      "clusterIds"=levels(factor(facInt[facInt>0])),
+		      "color"=colors,
+		      "name"=levels(droplevels(facOrig[facInt>0]))
+		    )
+		  }
+		  else{ #all <0 cluster values
+		    cols<-matrix(nrow=0,ncol=3)
+		    colnames(cols)<-c("clusterIds","color","name")
+		  }
 	    if(any(facInt== -1)) 
 				cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
 	    if(any(facInt== -2)) 

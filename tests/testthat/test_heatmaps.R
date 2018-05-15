@@ -142,8 +142,6 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
 })
 
 test_that("`makeBlankData` works", {
-
-
   ##call directly
   gps<-list(c(3,6,7),c(2,1))
   expect_silent(xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps))
