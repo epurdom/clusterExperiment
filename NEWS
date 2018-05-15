@@ -1,3 +1,10 @@
+Changes in version 2.0.1 ( Release date: 2018-05-18)
+==============
+
+Bugs: 
+* Fixed error introduced in 2.0.0 where arguments to `mergeCutoff` and `mergeLogFCcutoff` where passed instead to `dendroNDims`.
+
+
 Changes in version 1.99.4 ( Release date: 2018-04-19)
 ==============
 
