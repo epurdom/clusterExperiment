@@ -80,7 +80,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,sampleData=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -106,7 +106,33 @@ setMethod(
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
     dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     
+    #---
+    #make color matrix
+    #---
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
+		
+		if(leafType=="samples" & plotType=="colorblock"){
+	    sData<-.pullSampleData(data,sampleData) #returns data.frame
+	    #identify which numeric
+	    if(!is.null(sData)) 
+				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
+			if(length(whCont)>0){
+				warning("argument 'sampleData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
+				if(whCont<ncol(sdata)) sData<-sData[,-whCont,drop=FALSE]
+				else sData<-NULL
+			}
+		}
+		else{
+			if(!is.null(sampleData)) 
+				warning("argument sampleData only used if leafType='samples' and plotType='colorblock'. Ignoring input to sampleData.")
+			sData<-NULL
+		}
+		if(!is.null(sData)){
+			#convert sData into matrix with integers
+			sData<-.makeIntegerClusters(data.matrix(sData))
+			cl<-cbind(cl,sData)
+		}
+		
     if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))
     if(length(whCl)==1){
       leg<-clusterLegend(x)[[whCl]]
