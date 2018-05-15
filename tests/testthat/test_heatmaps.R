@@ -154,8 +154,8 @@ test_that("`makeBlankData` works", {
 
   ##call within plotHeatmap (serves as test of NA capabilities)
   expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps))
-  expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99))
   expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
+  expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99))
 })
 
 test_that("`plotCoClustering` works", {

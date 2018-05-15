@@ -131,7 +131,8 @@ setMethod(
 		}
 		if(!is.null(sData)){
 			sClusterLegend<-.makeColors(as.matrix(sData),colors=massivePalette,makeIntegers=TRUE)
-			
+#			.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
+			  
 			#convert sData into matrix with integers
 			if(!is.null(clusterLegend)){
 				if(!is.list(clusterLegend)) stop("clusterLegend must be list in format of clusterLegend(x)")
