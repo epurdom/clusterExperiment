@@ -731,13 +731,15 @@ setMethod(
         if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
         else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
       }
+			
+      #--- check that no ordered factors...
+      anyOrdered<-sapply(seq_len(ncol(sampleData)),function(ii){is.ordered(sampleData[,ii])})
+      if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
+
       #-------------------
       ###Make sampleData explicitly factors, except for whSampleDataCont
       #-------------------
 
-      #--- check that no ordered factors...
-      anyOrdered<-sapply(seq_len(ncol(sampleData)),function(ii){is.ordered(sampleData[,ii])})
-      if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
       ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
       tmpDf<-do.call("data.frame", lapply(seq_len(ncol(sampleData)), function(ii){ factor(sampleData[,ii]) }))
       names(tmpDf)<-colnames(sampleData)

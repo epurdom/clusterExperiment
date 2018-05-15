@@ -137,6 +137,9 @@ setMethod(
 				if(!is.list(clusterLegend)) stop("clusterLegend must be list in format of clusterLegend(x)")
 				#add colors for sample data with sampleDataLegend
 				whNeedColor<-which(!colnames(sData) %in% names(clusterLegend))
+				#need to add the clusterId value for the colors...
+				
+				
 			}
 			else whNeedColor<-seq_len(ncol(sData))
 			if(length(whNeedColor)>0)	

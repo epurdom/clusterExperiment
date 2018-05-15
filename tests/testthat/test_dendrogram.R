@@ -140,6 +140,10 @@ test_that("plotDendrogram works with sampleData", {
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
 	dend <- makeDendrogram(ccSE)
 	expect_silent(plotDendrogram(dend,sampleData="A"))
+	
+	legA<-leg[4:7,]
+	legA[,"color"]<-tail(massivePalette,4)
+	expect_silent(plotDendrogram(dend,sampleData="A",clusterLegend=))
 	expect_warning(plotDendrogram(dend,sampleData=c("A","B","C")),"implies using columns of colData that are continuous")
 })
 

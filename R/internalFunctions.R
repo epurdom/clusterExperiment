@@ -135,6 +135,7 @@
   return(ce)
 }
 
+#.convertToNum works on vector and is basically as.numeric, so that if character valued numbers, will get them, but other wise, arbitrary values based on making input x a factor (so alphabetical).
 .convertToNum<-function(x){
   nms<-names(x)
   if(is.factor(x)){
@@ -152,14 +153,20 @@
   names(x)<-nms
   return(x)
 }
-##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
+##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values. Makes them adjacent values. NAs are converted into -1 values.
 .makeIntegerClusters<-function(clMat){
-  if(!is.matrix(clMat)) stop("must give matrix input")
+  if(!is.matrix(clMat)) stop("must give matrix input") #means must be either character or numeric values.
   fun<-function(x){ #make it numbers from 1:length(x), except for -1,-2
     #id special values of -1,-2
     isChar<-as.character(is.character(x))
-    wh1<-switch(isChar,"TRUE"=x =="-1","FALSE"=x ==-1)
-    wh2<-switch(isChar,"TRUE"=x =="-2","FALSE"=x ==-2)
+		
+		#make NA values NA
+		if(any(is.na(x))){
+			if(is.character(x)) x[is.na(x)]<-"-1" 
+			else x[is.na(x)]<- -1 
+		}
+    wh1<-switch(isChar,"TRUE"= x =="-1","FALSE"= x ==-1)
+    wh2<-switch(isChar,"TRUE"= x =="-2","FALSE"= x ==-2)
     wh<-wh1 | wh2
     vals<-unique(x[!wh])
     y<-match(x,vals)
@@ -179,17 +186,21 @@
   }
 }
 ##Universal way to convert matrix of clusters into colors
-.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey",makeIntegers=TRUE){
+## returns  list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
+## only colorList and numClusters absolutely required for return (needed by AllClasses for integer).
+.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey",makeIntegers=TRUE, distinctColors=FALSE){ 
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
-  if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
+	
+  # if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
   cNames<-colnames(clMat)
-  origClMat<-clMat
+  origClMat<-clMat #could be a data.frame
+	clMat<-as.matrix(clMat)
   if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from some plots where very carefully already chosen
-  
+  maxPerCol<-apply(clMat,2,max) #max cluster value (not including -1,-2)
+  currcolors<-rep(colors,length= sum(maxPerCol)) #make sure don't run out of colors
   if(ncol(clMat)>1){
     colorMat<-apply(clMat,2,function(x){
       y<-vector("character",length(x))
-      currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
       y[x>0]<-currcolors[x[x>0]]
       return(y)
     })
@@ -198,7 +209,6 @@
   else{
     if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
     y<-vector("character",length(x))
-    currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
     y[x>=0]<-currcolors[x[x>=0]]
     colorMat<-matrix(y,ncol=1)
   }
