@@ -188,42 +188,54 @@
 ##Universal way to convert matrix of clusters into colors
 ## returns  list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 ## only colorList and numClusters absolutely required for return (needed by AllClasses for integer).
-.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey",makeIntegers=TRUE, distinctColors=FALSE){ 
+.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
+    ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(clMat,2,function(x){factor(x)}))
+		
+	cNames<-colnames(clMat)
+	#if give clNumMat, can skip this step, save time
+	if(is.null(clNumMat)) clNumMat<-.makeIntegerClusters(as.matrix(clMat)) #require to not skip a integer value
+	allFactors<-all(apply(clMat,2,function(x){is.factor(x)}))
+	if(!allFactors){
+		clMat<-do.call("data.frame", lapply(seq_len(ncol(clMat)), function(ii){ factor(clMat[,ii]) }))
+  	names(clMat)<-cNames
+	}
 	
-  # if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
-  cNames<-colnames(clMat)
-  origClMat<-clMat #could be a data.frame
-	clMat<-as.matrix(clMat)
-  if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from some plots where very carefully already chosen
-  maxPerCol<-apply(clMat,2,max) #max cluster value (not including -1,-2)
+  maxPerCol<-apply(clNumMat,2,max) #max cluster value (not including -1,-2)
   currcolors<-rep(colors,length= sum(maxPerCol)) #make sure don't run out of colors
-  if(ncol(clMat)>1){
-    colorMat<-apply(clMat,2,function(x){
-      y<-vector("character",length(x))
-      y[x>0]<-currcolors[x[x>0]]
-      return(y)
-    })
-    if(nrow(clMat)==1) colorMat<-matrix(colorMat,nrow=1) #in case only 1 sample!
-  }
-  else{
-    if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
-    y<-vector("character",length(x))
-    y[x>=0]<-currcolors[x[x>=0]]
-    colorMat<-matrix(y,ncol=1)
-  }
-  colorMat[clMat== -1]<-unassignedColor
-  colorMat[clMat== -2]<-missingColor
-  
-  #convert ids into list of matrices:
-  colorList<-lapply(seq_len(ncol(clMat)),function(ii){
-    mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
-    rownames(mat)<-NULL
-    return(mat)
+  if(distinctColors) maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1)) 
+		
+	#make a clusterLegend list
+  clusterLegend<-lapply(seq_len(ncol(clNumMat)),FUN=function(ii){
+    facInt<-clNumMat[,ii] #assumes adjacent numbers
+    facOrig<-origclNumMat[,ii] #assumes factors
+		if(!is.null(matchClusterLegend)){
+	    m<-match(matchClusterLegend[[ii]][,"clusterIds"],as.character(facInt))
+	    cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
+		}
+		else{
+	    if(distinctColors){
+				add<-maxPreviousColor[[ii]]
+	    	colors<-currcolors[seq_len(max(facInt))+add]
+			}
+			else colors<-currcolors[seq_len(max(facInt))]
+		  cols<-cbind(
+				"clusterIds"=levels(factor(facInt[facInt>0])),
+				"color"=colors,
+				"name"=levels(facOrig[facInt>0])
+			)
+	    if(any(facInt== -1)) 
+				cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
+	    if(any(facInt== -2)) 
+				cols<-rbind(cols,c("clusterIds"="-2","color"=missingColor,"name"="-2") )
+		}
+    cols<-cols[order(cols[,"name"]),]
+		rownames(cols)<-NULL
+    return(cols)
   })
   names(colorList)<-cNames
   colnames(colorMat)<-cNames
-  return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
+  return(list(colorList=colorList,numClusters=clNumMat))
 }
 
 ##Universal way to change character indication of clusterTypes into integer indices.

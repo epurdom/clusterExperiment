@@ -739,15 +739,15 @@ setMethod(
       #-------------------
       ###Make sampleData explicitly factors, except for whSampleDataCont
       #-------------------
-
-      ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(annCol,2,function(x){factor(x)}))
-      tmpDf<-do.call("data.frame", lapply(seq_len(ncol(sampleData)), function(ii){ factor(sampleData[,ii]) }))
-      names(tmpDf)<-colnames(sampleData)
+      annCol<-sampleData
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
-        if(length(whSampleDataCont)>0) tmpDf[,whSampleDataCont]<-sampleData[,whSampleDataCont]
       }
-      annCol<-tmpDf
+      if(length(whSampleDataCont)>0) tmpDf<-annCol[,-whSampleDataCont,drop=FALSE]
+			else tmpDf<-annCol
+			defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE) 
+			tmpDfNum<-defaultColorLegend$numClusters
+			colnames(tmpDfNum)<-colnames(tmpDf)
       convertNames <- TRUE
 
       ##########
@@ -762,43 +762,15 @@ setMethod(
         #if not all continuous, assign default colors from palette
         #------
         if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){
-          #Pull out those that are factors to assign clusters
-          if(!is.null(whSampleDataCont)) tmpDf<- annCol[,-whSampleDataCont,drop=FALSE] else tmpDf<-annCol
-          #make numeric
-          tmpDfNum<-do.call("cbind", lapply(seq_len(ncol(tmpDf)), function(ii){ .convertToNum(tmpDf[,ii]) }))
-          colnames(tmpDfNum)<-colnames(tmpDf)
+
           if(alignSampleData){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-            mkLegend<-function(ii){
-              xNum<-tmpDfNum[,ii]
-              xOrig<-tmpDf[,ii]
-              colMat<-alignObj$clusterLegend[[ii]]
-              m<-match(colMat[,"clusterIds"],as.character(xNum))
-              colMat<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(xOrig)[m])
-              return(colMat)
-            }
-            clusterLegend<-lapply(seq_len(ncol(tmpDfNum)),mkLegend)
+						clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend) 
           }
           else{#give each distinct colors, compared to row before
-            maxPerAnn<-apply(tmpDfNum,2,max) #max cluster value (not including -1,-2)
-            maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1))
-            pal<-rep(bigPalette,length=sum(maxPerAnn)) #make sure don't run out of colors
-
-            clusterLegend<-lapply(seq_len(ncol(tmpDfNum)),FUN=function(ii){
-              facInt<-tmpDfNum[,ii]
-              facOrig<-tmpDf[,ii]
-              add<-maxPreviousColor[[ii]]
-              colors<-pal[seq_len(max(facInt))+add]
-              cols<-cbind("clusterIds"=levels(factor(facInt[facInt>0])),"color"=colors,"name"=levels(facOrig[facInt>0]))
-              if(any(facInt== -1)) cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
-              if(any(facInt== -2)) cols<-rbind(cols,c("clusterIds"="-2","color"=unassignedColor,"name"="-2") )
-              cols<-cols[order(cols[,"name"]),]
-              return(cols)
-            })
+            clusterLegend<-defaultClusterLegend$colorList
           }
-          names(clusterLegend)<-colnames(tmpDf)
-
         }
       }
       #-----
