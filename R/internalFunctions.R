@@ -236,7 +236,7 @@
   }
 	colorList<-lapply(seq_len(ncol(clNumMat)),FUN=perColumnFunction)
   names(colorList)<-cNames
-  return(list(colorList=colorList,numClusters=clNumMat))
+  return(list(colorList=colorList,numClusters=clNumMat,facClusters=clMat))
 }
 
 ##Universal way to change character indication of clusterTypes into integer indices.

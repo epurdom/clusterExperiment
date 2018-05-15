@@ -723,7 +723,7 @@ setMethod(
     ##Deal with annotation of samples (sampleData) ...
     ##########
     #check sampleData input:
-
+    
     if(!is.null(sampleData)){
       if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame")
       if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")
@@ -739,16 +739,22 @@ setMethod(
       #-------------------
       ###Make sampleData explicitly factors, except for whSampleDataCont
       #-------------------
-      annCol<-sampleData
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
       }
-      if(length(whSampleDataCont)>0) tmpDf<-annCol[,-whSampleDataCont,drop=FALSE]
-			else tmpDf<-annCol
+      if(length(whSampleDataCont)>0) tmpDf<-sampleData[,-whSampleDataCont,drop=FALSE]
+			else tmpDf<-sampleData
 			defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE) 
-			tmpDfNum<-defaultColorLegend$numClusters
+      tmpDfNum<-defaultColorLegend$numClusters
 			colnames(tmpDfNum)<-colnames(tmpDf)
-      convertNames <- TRUE
+			#so that annCol has them as factors.
+			tmpDf<-defaultColorLegend$facClusters
+			if(length(whSampleDataCont)>0){
+			  annCol<-sampleData
+			  annCol[,-whSampleDataCont]<-tmpDf
+			}			  
+			else annCol<-tmpDf 
+			convertNames <- TRUE
 
       ##########
       ##Deal with colors ...
@@ -790,7 +796,8 @@ setMethod(
       if(!is.null(whSampleDataCont) & length(whSampleDataCont)>0){
         whInAnnColors<-setdiff(whInAnnColors,whSampleDataCont)
       }
-      prunedList<-lapply(whInAnnColors,function(ii){
+			#      browser()
+			prunedList<-lapply(whInAnnColors,function(ii){
         nam<-names(annColors)[[ii]] #the name of variable
         x<-annColors[[ii]] ##list of colors
         levs<-levels(annCol[,nam])

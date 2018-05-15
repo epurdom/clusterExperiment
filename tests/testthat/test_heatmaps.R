@@ -27,8 +27,8 @@ test_that("`plotHeatmap` works with matrix objects", {
     expect_silent(alList<-plotClusters(sampleData))
     alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
    #these should be same plots:
-    x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE,plot=plotAll)
-    x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE,plot=plotAll)
+    expect_silent(x1<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],clusterLegend=alCol,clusterSamples=FALSE,clusterFeatures=FALSE,plot=plotAll))
+    expect_silent(x2<-plotHeatmap(data=smSimData[,alList$orderSamples],sampleData=sampleData[alList$orderSamples,1:10],alignSampleData=TRUE,clusterFeatures=FALSE,clusterSamples=FALSE,plot=plotAll))
 #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
 #    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 
