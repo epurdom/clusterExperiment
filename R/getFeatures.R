@@ -15,23 +15,40 @@
 #'   to \code{\link{clusterContrasts}}
 #' @param contrastAdj What type of FDR correction to do for contrasts tests
 #'   (i.e. if contrastType='Dendro' or 'Pairs').
-#' @param isCount logical as to whether input data is count data, in which case
-#'   to perform voom correction to data. See details.
-#' @param ... options to pass to \code{\link{topTable}} or
-#'   \code{\link[limma]{topTableF}} (see \code{\link[limma]{limma}} package)
+#' @param DEMethod character vector describing how the differential expression 
+#'   analysis should be performed (replaces previous argument \code{isCount}.
+#'   See details.
+#' @param ... If \code{x} is a matrix, these are options to pass to
+#'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see
+#'   \code{\link[limma]{limma}} package). If \code{x} is a
+#'   \code{ClusterExperiment} object, these arguments can also be those to pass
+#'   to the matrix version.
 #' @param normalize.method character value, passed to \code{\link[limma]{voom}}
 #'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
 #'   Note that the default value is set to "none", which is not the default
 #'   value of \code{\link{voom}}.
 #' @inheritParams clusterContrasts
-#' @details getBestFeatures returns the top ranked features corresponding to a
-#'   cluster assignment. It uses limma to fit the models, and limma's functions
-#'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
-#'   best features. See the options of these functions to put better control on
-#'   what gets returned (e.g. only if significant, only if log-fc is above a
-#'   certain amount, etc.). In particular, set `number=` to define how many
-#'   significant features to return (where number is per contrast for the
-#'   `Pairs` or `Dendro` option)
+#' @details getBestFeatures returns the top ranked features corresponding to a 
+#'   cluster assignment. It uses either limma or edgeR to fit the models, and
+#'   limma/edgeR functions \code{\link[limma]{topTable}} or
+#'   \code{\link[limma]{topTableF}} to find the best features. See the options
+#'   of these functions to put better control on what gets returned (e.g. only
+#'   if significant, only if log-fc is above a certain amount, etc.). In
+#'   particular, set `number=` to define how many significant features to return
+#'   (where number is per contrast for the `Pairs` or `Dendro` option)
+#' @details  \code{DEMethod} triggers what type of differential expression 
+#'   analysis will be performed. Three options are available: limma, edgeR, and 
+#'   limma with a voom corrections. The last two options are only appropriate 
+#'   for count data. If the input \code{x} is a \code{ClusterExperiment} object,
+#'   and \code{DEMethod="limma"}, then the data analyzed for DE will be after 
+#'   taking the transformation of the data (as given in the transformation slot 
+#'   of the object). For the options "limma-voom" and "edgeR", the
+#'   transformation slot will be ignored and only the counts data (as specified
+#'   by the \code{whichAssay} slot) will be passed to the programs. Note that
+#'   for "limma-voom" this implies that the data will be transformed by voom
+#'   with the function log2(x+0.5)
+#' @details Note that the argument \code{DEMethod} replaces the previous option
+#'   \code{isCount}, to decide on the method of DE.
 #' @details When `contrastType` argument implies that the best features should
 #'   be found via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then
 #'   then `contrastAdj` determines the type of multiple testing correction to
@@ -53,28 +70,6 @@
 #'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05);
 #'   the default value of \code{p.value = 1} will not result in any effect on
 #'   the adjusted p-value otherwise.
-#' @details  \code{isCount} triggers whether the "voom" correction will be
-#'   performed in \code{limma}. If the input data is a matrix is counts (or a
-#'   `ClusterExperiment` object with counts as the primary data before
-#'   transformation) this should be set to TRUE and they will be log-transformed
-#'   internally by voom for the differential expression analysis in a way that
-#'   accounts for the difference in the mean-variance relationships. Otherwise,
-#'   dat should be on the correct (log) scale for differential expression
-#'   analysis without a need a variance stabilization (e.g. microarray data).
-#'   Currently the default is set to FALSE, simply because the isCount has not
-#'   been heavily tested. If the But TRUE with \code{x} being counts really
-#'   should be the default for RNA-Seq data. If the input data is a
-#'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
-#'   to ignore the internally stored transformation function and instead use
-#'   voom with log2(x+0.5). Alternatively, \code{isCount=FALSE} for a
-#'   \code{ClusterExperiment} object will cause the DE to be performed with
-#'   \code{limma} after transforming the data with the stored transformation.
-#'   Although some writing about "voom" seem to suggest that it would be
-#'   appropriate for arbitrary transformations, the authors have cautioned
-#'   against using it for anything other than count data on mailing lists. For
-#'   this reason we are not implementing it for arbitrary transformations at
-#'   this time (e.g. log(FPKM+epsilon) transformations).
-#'
 #' @return A \code{data.frame} in the same format as
 #'   \code{\link[limma]{topTable}}, except for the following additional or
 #'   changed columns:
@@ -153,105 +148,144 @@
 #' @export
 #' @import limma
 #' @importFrom stringr str_pad
+#' @import edgeR
 #' @rdname getBestFeatures
-setMethod(
-  f = "getBestFeatures",
-  signature = signature(x = "matrixOrHDF5"),
-  definition = function(x, cluster,
-                        contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                        dendro=NULL, pairMat=NULL,
-                        contrastAdj=c("All", "PerContrast", "AfterF"),
-                        isCount=FALSE, normalize.method="none",...) {
-
-    #... is always sent to topTable, and nothing else
-    cl<-cluster
-    if(is.factor(cl)) {
-      warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-      cl <- .convertToNum(cl)
-    }
-
-    ###Note: this pulls hdf5 file into memory.
-    dat <- data.matrix(x)
-    contrastType <- match.arg(contrastType)
-    contrastAdj <- match.arg(contrastAdj)
-    returnType <- "Table"
-
-    if(is.null(rownames(dat))) {
-      rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
-    }
-
-    tmp <- dat
-
-    if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
-      whNA <- which(cl<0)
-      tmp <- tmp[, -whNA]
-      cl <- cl[-whNA]
-    }
-    ###--------
-    ### Fix up the names
-    ###--------
-    pad<-if(length(unique(cl))<100) 2 else 3
-    clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
-    clLevels<-unique(cl[order(clPretty)])
-    clPrettyLevels<-unique(clPretty[order(clPretty)])
-    #get them ordered nicely.
-    clNumFac<-factor(cl,levels=clLevels)
-
-    if(contrastType=="Dendro") {
-      clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
-      if(is.null(dendro)) {
-        stop("must provide dendro")
-      }
-      if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
-        stop("dendro must be of class 'dendrogram' or 'phylo4'")
-      }
-    }
-    else{
-      clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
-    }
-
-    if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-      ###Create fit for running contrasts
-      designContr <- model.matrix(~ 0 + clPrettyFac)
-      colnames(designContr) <- make.names(levels(clPrettyFac))
-
-      if(isCount) {
-        v <- voom(tmp, design=designContr, plot=FALSE,
-                  normalize.method = normalize.method)
-        fitContr <- lmFit(v, designContr)
-      } else {
-        fitContr <- lmFit(tmp, designContr)
-      }
-    }
-
-    if(contrastType=="F" || contrastAdj=="AfterF") {
-      xdat<-data.frame("Cluster"=clPrettyFac)
-      designF<-model.matrix(~Cluster,data=xdat)
-      #designF <- model.matrix(~clPrettyFac)
-
-      if(isCount) {
-        v <- voom(tmp, design=designF, plot=FALSE,
-                  normalize.method = normalize.method)
-        fitF <- lmFit(v, designF)
-      } else {
-        fitF <- lmFit(tmp, designF)
-      }
-    } else {
-      fitF <- NULL
-    }
-
-    if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
-    tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
-    tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
-    if(returnType=="Index") {
-      whGenes <- tops$IndexInOriginal
-      names(whGenes) <- tops$Feature
-      return(whGenes)
-    }
-    if(returnType=="Table") {
-      return(tops)
+setMethod(f = "getBestFeatures",
+signature = signature(x = "matrix"),
+definition = function(x, cluster,
+                      contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                      dendro=NULL, pairMat=NULL, weights = NULL,
+                      contrastAdj=c("All", "PerContrast", "AfterF"),
+                      DEMethod=c("edgeR","limma","limma-voom"),
+											normalize.method="none",...) {
+  
+  #if weights is NULL, then the differential expression uses limma voom
+  #if a weight matrix is provided and isCount is True, then glmFit from edgeR is used.
+  
+  #... is always sent to topTable, and nothing else
+	DEMethod<-match.arg(DEMethod)
+  cl<-cluster
+  if(is.factor(cl)) {
+    warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+    cl <- .convertToNum(cl)
+  }
+  
+  dat <- data.matrix(x)
+  contrastType <- match.arg(contrastType)
+  contrastAdj <- match.arg(contrastAdj)
+  returnType <- "Table" 
+  
+  if(is.null(rownames(dat))) {
+    rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+  }
+  
+  tmp <- dat
+  
+  if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+    whNA <- which(cl<0)
+    tmp <- tmp[, -whNA]
+    cl <- cl[-whNA]
+    if(!is.null(weights)){
+      weights<- weights[,-whNA]
     }
   }
+  ###--------
+  ### Fix up the names
+  ###--------
+  pad<-if(length(unique(cl))<100) 2 else 3
+  clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+  clLevels<-unique(cl[order(clPretty)])
+  clPrettyLevels<-unique(clPretty[order(clPretty)])
+  #get them ordered nicely.
+  clNumFac<-factor(cl,levels=clLevels)
+  
+  if(contrastType=="Dendro") {
+    clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
+    if(is.null(dendro)) {
+      stop("must provide dendro")
+    }
+    if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+      stop("dendro must be of class 'dendrogram' or 'phylo4'")
+    }
+  }
+  else{
+    clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+  }
+  
+  if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
+    ###Create fit for running contrasts
+    designContr <- model.matrix(~ 0 + clPrettyFac)
+    colnames(designContr) <- make.names(levels(clPrettyFac))
+    
+    if(DEMethod == "limma-voom"){
+      v <- voom(tmp, design=designContr, plot=FALSE,
+                normalize.method = normalize.method)
+      fitContr <- lmFit(v, designContr)
+		}
+		else if(DEMethod=="edgeR"){
+      fitContr<- DGEList(tmp)
+      if(!is.null(weights)) fitContr$weights <- weights
+      fitContr <- estimateDisp(fitContr, designContr)
+      fitContr <- glmFit(fitContr,design = designContr)
+			
+		}
+		else if(DEMethod=="limma"){
+      fitContr <- lmFit(tmp, designContr)
+    }
+  }
+  
+  if(contrastType=="F" || contrastAdj=="AfterF") {
+    xdat<-data.frame("Cluster"=clPrettyFac)
+    designF<-model.matrix(~Cluster,data=xdat)
+    #designF <- model.matrix(~clPrettyFac)
+    
+    if(DEMethod == "limma-voom"){
+      v <- voom(tmp, design=designF, plot=FALSE,
+                normalize.method = normalize.method)
+      fitF <- lmFit(v, designF)
+    }
+		else if(DEMethod=="edgeR"){
+        fitF<- DGEList(tmp)
+        if(!is.null(weights)) fitF$weights <- weights
+        fitF <- estimateDisp(fitF, design = designF)
+        fitF <- glmFit(fitF,design = designF)
+        #disp <- estimateDisp(tmp, design = designF)$common.dispersion
+        #fitF <- glmFit(tmp, dispersion = disp,design = designF, weights= weights )
+    } else if(DEMethod=="limma") {
+      fitF <- lmFit(tmp, designF)
+    }
+  } else {
+    fitF <- NULL
+  }
+  
+  if(contrastType!="F"){
+    contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,
+                                   dendro=dendro,pairMat=pairMat,outputType = "limma", 
+                                   removeNegative = TRUE)
+  }
+  
+  if(contrastType=="F"){
+    tops <- .getBestFGenes(fitF, weights = weights,...)
+  }
+  else{
+    tops<-.testContrasts(contr.result$contrastMatrix,
+			contrastNames=contr.result$contrastNames,
+			fit=fitContr,fitF=fitF,
+			contrastAdj=contrastAdj, 
+			weights = weights,...)
+  }
+  tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+  
+  
+  if(returnType=="Index") {
+    whGenes <- tops$IndexInOriginal
+    names(whGenes) <- tops$Feature
+    return(whGenes)
+  }
+  if(returnType=="Table") {
+    return(tops)
+  }
+}
 )
 
 #' @rdname getBestFeatures
@@ -261,9 +295,11 @@ setMethod(
 setMethod(
   f = "getBestFeatures",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                        isCount=FALSE, whichAssay=1, ...){
-    contrastType <- match.arg(contrastType)
+  definition = 
+    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
+             whichAssay,DEMethod,...)
+      {
+      contrastType <- match.arg(contrastType)
     cl<-primaryCluster(x)
     if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
     if(contrastType=="Dendro") {
@@ -281,54 +317,78 @@ setMethod(
         else dendro <- x@dendro_clusters
       }
     }
-
-    if(isCount) {
-      .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
-with the transformation function in the slot `transformation`.
-This makes sense only for counts.")
-      dat <- assay(x, whichAssay)
-    } else {
-      dat <- transformData(x, whichAssay)
+    passedArgs<-list(...)
+    if(DEMethod=="limma") dat<-transformData(x,whichAssay=whichAssay)
+    else dat<-assay(x,whichAssay)
+    
+    if("weights" %in% names(assays(x)) & !"weights" %in% names(passedArgs)){
+      getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, "weights"),...)
     }
-
-    getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
-                    isCount=isCount, ...)
-
+    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, ...)
+    
   }
 )
 
 
-.getBestFGenes<-function(fit,...){
-	## basic limma design
-	fit2 <- eBayes(fit)
-	#tops<-topTableF(fit2,number=nGenes,genelist=rownames(fit$coef),...)
-	tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
-	colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
-
+.getBestFGenes<-function(fit, DEMethod, weights = NULL,...){
+  ##Kevin -- need to fix this code so that works based on combination of DEMethod and weights (i.e. can run edgeR with no weights)
+  ##Check what I've done below.
+	if(DEMethod%in% c("limma","limma-voom")){
+	  ## basic limma design
+	  fit2 <- eBayes(fit)
+	  tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
+	  colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
+	}
+	else if(DEMethod=="edgeR"){
+	  if(!is.null(weights)) fit <- glmWeightedF(fit, coef = 3) ##??? Kevin, why coef 3? Have you checked this works?
+	  tops<-topTags(fit,...)
+	  
+    #Kevin, you should use topTags and then convert those column names to match output of limma so 1 standard format.	  
+	  ##              logFC   logCPM       LR       PValue   padjFilter          FDR
+	  ## VIM      -4.768620 13.21770 47.43920 2.378498e-10 2.378498e-08 2.378498e-08
+	  ## FOS      -5.314301 14.50175 37.39214 8.940291e-09 4.470146e-07 4.470146e-07
+	}
+	
 	return(tops)
 }
-.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj,...){
+.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj, DEMethod,weights = NULL, ...){
   ncontr<-ncol(contr.matrix)
-  fit2<-contrasts.fit(fit,contr.matrix)
-  fit2<-eBayes(fit2)
+  if(DEMethod%in%c("limma","limma-voom")){
+    fit2<-contrasts.fit(fit,contr.matrix)
+    fit2<-eBayes(fit2)
+  }
+  else if(DEMethod=="edgeR"){
+    fit2<-fit
+  }
   args<-list(...)
+ 
   if("p.value" %in% names(args)){
     p.value<-args$p.value
   }
   else p.value<-1 #default of topTable
+  
   if("number" %in% names(args)){
     nGenes<-args$number
   }
   else nGenes<-10 #default of topTable
 
-
   #get raw p-values for all(!)
   getRaw<-function(ii){
-    if(contrastAdj%in%c("AfterF","All")) {
-      tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
+    if(is.null(weights)){
+      if(contrastAdj%in%c("AfterF","All")) {
+        tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
+      }
+      else{
+        tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
+      }
     }
     else{
-      tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
+      #Devin, does this really have to be done separately for each contrast? That doesn't make sense...
+      if(!is.null(weights)) fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
+      tt<- topTags(fit2, n= nGenes)
+      if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
+      tt<- data.frame(ID=rownames(tt), tt)
+      colnames(tt)[5:6]<- c("P.Value", "adj.P.Val")
     }
     colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     if(nrow(tt)>0){
@@ -341,11 +401,19 @@ This makes sense only for counts.")
   }
   tops<-do.call("rbind",lapply(seq_len(ncontr),getRaw))
   if(contrastAdj=="AfterF" & p.value<1){
-    #get p-value for F test for all genes, and only consider genes with significant F.
-    fitF2<-eBayes(fitF)
-    topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
-    whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
+    #get p-value for F test for all genes, and only consider genes with significant F/LRT.
+    if(DEMethod%in%c("limma","limma-voom")){
+      fitF2<-eBayes(fitF)
+      topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
+      whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
+    }
+    else if(DEMethod %in% c("edgeR")) {
+      if(!is.null(weights)) fitF<- glmWeightedF(fitF, contrast= contr.matrix) #why does this have contr.matrix? Should be like above for the F, not need contrasts...
+      lrt<-fitF$table
+      whGenesSigF<-rownames(lrt)[which(lrt$padjFilter < p.value)]
+    }
     tops<-tops[tops$Feature %in% whGenesSigF,]
+    
   }
   #do FDR correction on all raw p-values (that remain)
   if(contrastAdj%in%c("AfterF","All")) {
@@ -361,6 +429,7 @@ This makes sense only for counts.")
   return(tops)
 
 }
+
 
 #' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
@@ -450,29 +519,29 @@ This makes sense only for counts.")
 
 }
 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
-##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
-.force.ultrametric<-function(tree){
-	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-
-	allTips<-phylobase::tipLabels(tree)
-	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
-	maxD<-max(depthToTips)
-	addValue<-maxD-depthToTips
-	allLen<-phylobase::edgeLength(tree)
-  edgeMat<-phylobase::edges(tree)
-  tipIds<-as.numeric(names(allTips))
-  m<-match(tipIds,edgeMat[,2])
-  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
-
-  #check didn't do something stupid:
-  checkTipEdges<-phylobase::edgeId(tree,type="tip")
-  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
-
-  #replace with new edges:
-	allLen[edgeIds]<-allLen[edgeIds]+addValue
-	phylobase::edgeLength(tree)<-allLen
-	tree
-}
+#' #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
+#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
+#' .force.ultrametric<-function(tree){
+#' 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
+#' 
+#' 	allTips<-phylobase::tipLabels(tree)
+#' 	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
+#' 	maxD<-max(depthToTips)
+#' 	addValue<-maxD-depthToTips
+#' 	allLen<-phylobase::edgeLength(tree)
+#'   edgeMat<-phylobase::edges(tree)
+#'   tipIds<-as.numeric(names(allTips))
+#'   m<-match(tipIds,edgeMat[,2])
+#'   edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
+#' 
+#'   #check didn't do something stupid:
+#'   checkTipEdges<-phylobase::edgeId(tree,type="tip")
+#'   if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
+#' 
+#'   #replace with new edges:
+#' 	allLen[edgeIds]<-allLen[edgeIds]+addValue
+#' 	phylobase::edgeLength(tree)<-allLen
+#' 	tree
+#' }
 
 
