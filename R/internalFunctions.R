@@ -203,14 +203,15 @@
 	
   maxPerCol<-apply(clNumMat,2,max) #max cluster value (not including -1,-2)
   currcolors<-rep(colors,length= sum(maxPerCol)) #make sure don't run out of colors
-  if(distinctColors) maxPreviousColor<-c(0,head(cumsum(maxPerAnn),-1)) 
+  if(distinctColors) maxPreviousColor<-c(0,head(cumsum(maxPerCol),-1)) 
 		
 	#make a clusterLegend list
-  clusterLegend<-lapply(seq_len(ncol(clNumMat)),FUN=function(ii){
+	perColumnFunction<-function(ii){
     facInt<-clNumMat[,ii] #assumes adjacent numbers
-    facOrig<-origclNumMat[,ii] #assumes factors
+    facOrig<-clMat[,ii] #assumes factors
 		if(!is.null(matchClusterLegend)){
-	    m<-match(matchClusterLegend[[ii]][,"clusterIds"],as.character(facInt))
+	    colMat<-matchClusterLegend[[ii]]
+			m<-match(colMat[,"clusterIds"],as.character(facInt))
 	    cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
 		}
 		else{
@@ -222,7 +223,7 @@
 		  cols<-cbind(
 				"clusterIds"=levels(factor(facInt[facInt>0])),
 				"color"=colors,
-				"name"=levels(facOrig[facInt>0])
+				"name"=levels(droplevels(facOrig[facInt>0]))
 			)
 	    if(any(facInt== -1)) 
 				cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
@@ -232,9 +233,9 @@
     cols<-cols[order(cols[,"name"]),]
 		rownames(cols)<-NULL
     return(cols)
-  })
+  }
+	colorList<-lapply(seq_len(ncol(clNumMat)),FUN=perColumnFunction)
   names(colorList)<-cNames
-  colnames(colorMat)<-cNames
   return(list(colorList=colorList,numClusters=clNumMat))
 }
 
