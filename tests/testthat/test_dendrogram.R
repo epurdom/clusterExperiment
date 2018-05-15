@@ -134,6 +134,15 @@ test_that("`makeDendrogram` works with whichCluster", {
 	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
 })
 
+test_that("plotDendrogram works with sampleData", {
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg[,"name"]<-letters[1:nrow(leg)]
+  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+	dend <- makeDendrogram(ccSE)
+	expect_silent(plotDendrogram(dend,sampleData="A"))
+	expect_warning(plotDendrogram(dend,sampleData=c("A","B","C")),"implies using columns of colData that are continuous")
+})
+
 test_that("plotDendrogram works with outgroup", {
     leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
     leg[,"name"]<-letters[1:nrow(leg)]

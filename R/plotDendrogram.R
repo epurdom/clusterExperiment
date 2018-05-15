@@ -80,7 +80,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,sampleData=NULL,...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,sampleData=NULL,clusterLegend=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -112,15 +112,17 @@ setMethod(
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
 		
 		if(leafType=="samples" & plotType=="colorblock"){
-	    sData<-.pullSampleData(data,sampleData) #returns data.frame
-	    #identify which numeric
-	    if(!is.null(sData)) 
+	    sData<-.pullSampleData(x,sampleData) #returns data.frame
+	    #identify which numeric and remove
+	    if(!is.null(sData)){
 				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
-			if(length(whCont)>0){
-				warning("argument 'sampleData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
-				if(whCont<ncol(sdata)) sData<-sData[,-whCont,drop=FALSE]
-				else sData<-NULL
-			}
+				if(length(whCont)>0){
+					warning("argument 'sampleData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
+					if(length(whCont)< ncol(sData)) sData<-sData[,-whCont,drop=FALSE]
+					else sData<-NULL
+				}
+	    	
+	    }
 		}
 		else{
 			if(!is.null(sampleData)) 
@@ -128,19 +130,32 @@ setMethod(
 			sData<-NULL
 		}
 		if(!is.null(sData)){
+			sClusterLegend<-.makeColors(as.matrix(sData),colors=massivePalette,makeIntegers=TRUE)
+			
 			#convert sData into matrix with integers
-			sData<-.makeIntegerClusters(data.matrix(sData))
+			if(!is.null(clusterLegend)){
+				if(!is.list(clusterLegend)) stop("clusterLegend must be list in format of clusterLegend(x)")
+				#add colors for sample data with sampleDataLegend
+				whNeedColor<-which(!colnames(sData) %in% names(clusterLegend))
+			}
+			else whNeedColor<-seq_len(ncol(sData))
+			if(length(whNeedColor)>0)	
+				clusterLegend<-c(clusterLegend,sClusterLegend$colorList[whNeedColor])
+			sData<-sClusterLegend$numClusters
 			cl<-cbind(cl,sData)
 		}
 		
     if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))
-    if(length(whCl)==1){
+    if(length(whCl)==1 & is.null(sData)){
       leg<-clusterLegend(x)[[whCl]]
       if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
     }
     else{
       leg<-clusterLegend(x)[whCl]
       if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+			if(!is.null(sData)){
+				leg<-c(leg,clusterLegend)
+			}
     }
     label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
     #   mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL, 
