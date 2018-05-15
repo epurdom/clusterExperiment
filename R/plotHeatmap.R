@@ -775,10 +775,15 @@ setMethod(
 						clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend)$colorList
           }
           else{#give each distinct colors, compared to row before
-            clusterLegend<-defaultClusterLegend$colorList
+            clusterLegend<-defaultColorLegend$colorList
           }
         }
       }
+			else{
+			  #give default values for those not in given clusterLegend
+			  whAdd<-which(!names(defaultColorLegend$colorList)%in% names(clusterLegend))
+			  if(length(whAdd)>0) clusterLegend<-c(clusterLegend,defaultColorLegend$colorList[whAdd])
+			}
       #-----
       # Convert to aheatmap format, if needed
       #-----
