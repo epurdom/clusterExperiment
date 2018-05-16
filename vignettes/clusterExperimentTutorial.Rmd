@@ -142,7 +142,8 @@ data("rsecFluidigm")
 
 ```{r results="hide",echo=FALSE}
 # a simple check to make sure have same clusterings as expected
-if(length(tableClusters(rsecFluidigm)) != 6) stop("rsecFluidigm object has changed")
+if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
 ```
 ### The output 
 
