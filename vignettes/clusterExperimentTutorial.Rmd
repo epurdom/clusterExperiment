@@ -124,7 +124,7 @@ Because this procedure is slightly computationally intensive, depending on the u
 ```{r RSEC, eval=FALSE}
 library(clusterExperiment)
 system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
-	reduceMethod="PCA", nReducedDims=10,consensusMinSize=3,
+	reduceMethod="PCA", nReducedDims=10,consensusMinSize=3, 
 	ncores=1, random.seed=176201))
 ```
 
@@ -135,6 +135,7 @@ Instead we have saved the results from this call as a data object in the package
 #it will overwrite the rsecFluidigm you made
 library(clusterExperiment)
 data("rsecFluidigm")
+metadata(rsecFluidigm)$packageVersion
 ```
 
 
