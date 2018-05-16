@@ -129,7 +129,7 @@ system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,
 
 However, to exactly replicate the results here, we will set a large number of parameters to make sure that the vignette is back-compatible in case some defaults change. We will explain these parameters as we go along, but many of these parameters are the default. 
 
-```{r RSEC, eval=FALSE}
+```{r RSECExact, eval=FALSE}
 library(clusterExperiment)
 system.time(rsecFluidigm<-RSEC(se, 
   isCount = TRUE, 
