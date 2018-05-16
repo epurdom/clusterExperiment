@@ -760,24 +760,22 @@ setMethod(
       else annCol<-tmpDf 
       
       #-----
-      #if align samples (ignored if clusterLegend != NULL or no non-continuous variables):
+      #final update of clusterLegend
       #-----
       if(is.null(clusterLegend) & alignSampleData & (is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol))){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-            clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")$colorList
+            defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
+      }
+      #preserve caluse in given clusterLegend that don't match sampleData (could go with features/rows)
+      if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
+        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend))]
+        clusterLegend<-c(defaultColorLegend$colorList,clusterLegend[whKeep])
       }
       else clusterLegend<-defaultColorLegend$colorList
 
-      #-----
       # Convert to aheatmap format, if needed
-      #-----
-      convertNames <- TRUE
-      if( any(sapply(clusterLegend,function(x){!is.null(dim(x))}))) {
-        annColors<-.convertToAheatmap(clusterLegend, names=convertNames)
-      } else {
-        annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with; actually .convertToAheatmap would probably handle this fine too. Not clear we need catch.
-      }
+      annColors<-.convertToAheatmap(clusterLegend, names=TRUE)
       
       ##########################
       # remove any unused level colors to clean up legend,

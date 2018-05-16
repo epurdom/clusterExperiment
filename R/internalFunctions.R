@@ -185,14 +185,15 @@
     return(matrix(fun(clMat),ncol=1))
   }
 }
-##Universal way to convert matrix of clusters into default colorLegend
-## returns  list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
-## only colorList and numClusters absolutely required for return (needed by AllClasses for integer).
-## If matchClusterLegend, will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
-## (will only match if finds name in matchClusterLegend)
-## Note, does drop levels, so doesn't return colors for missing data...
+## Universal way to convert matrix of clusters into default colorLegend
+## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
+## If matchClusterLegend given, will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
+## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
+## Assumes that clMat has already had continuous columns removed
+## Note, does drop levels, so returned datasets as well as color legend doesn't include missing factor levels
 .makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,
                       matchClusterLegend=NULL,matchTo=c("clusterIds","name")){ 
+  
   matchTo<-match.arg(matchTo)
   if(!is.null(matchClusterLegend)){
     if(!is.list(matchClusterLegend) ) matchClusterLegend<-.convertToClusterLegend(matchClusterLegend)
@@ -237,13 +238,13 @@
 	    colMat<-matchClusterLegend[[matchName]]
 			if(matchTo=="clusterIds"){
 			  m<-match(colMat[,"clusterIds"],as.character(facInt))
-			  cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
+			  cols<-cbind(colMat[,c("clusterIds","color"),drop=FALSE],"name"=as.character(facOrig)[m])
 			}
 			else{
 			  m<-match(colMat[,"name"],as.character(facOrig))
-			  cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name")])
+			  cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name"),drop=FALSE])
 			}
-	    if(any(is.na(m))) cols<-cols[!is.na(m),] #incase given legend has names/Ids not found in data
+	    if(any(is.na(m))) cols<-cols[!is.na(m),,drop=FALSE] #incase given legend has names/Ids not found in data
 	    #in case given legend doesn't have values found in data
 	    whMissing<-which(!as.character(facInt)[facInt>0] %in% cols[,"clusterIds"])
 	    if(length(whMissing)>0){ 

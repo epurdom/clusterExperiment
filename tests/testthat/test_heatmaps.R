@@ -48,65 +48,59 @@ test_that("`plotHeatmap` works with hdf5 objects", {
 
 })
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
-
-    expect_silent(plotHeatmap(cc))
-    expect_silent(plotHeatmap(cc,whichClusters="none"))
-    expect_warning(plotHeatmap(cc,whichClusters="workflow",plot=plotAll) ,"whichClusters value does not match any clusters") #there are no workflow for this one
-
-    	expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE),"More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
-    expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,plot=plotAll),"given whichClusters value does not match any clusters")
-	expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
-    expect_warning(plotHeatmap(smSimCE,whichClusters="all",
-		alignSampleData=FALSE,overRideClusterLimit=TRUE))
-
- 
-    #test sampleData
-    expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
-
-    expect_silent(plotHeatmap(smSimCE,sampleData="all"))
-    expect_silent(plotHeatmap(smSimCE,sampleData="A",plot=plotAll))
-    expect_silent(plotHeatmap(smSimCE,sampleData=2:3,plot=plotAll))
-
-    #check that it pulls the names, not the clusterIds.
-    clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
-    expect_silent(plotHeatmap(cc))
-    
-    #check user setting clusterLegend
-	x<-palette()[1:7]
-	names(x)<-clusterLegend(cc)$Cluster1[,"name"]
-    expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=x),plot=plotAll))
-
-    expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7])))
-	expect_silent(plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:4]),plot=plotAll))
-
-	names(x)<-LETTERS[1:7]
-	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"do not cover all levels in the data")
-	x<-palette()[1:6]
-	names(x)<-LETTERS[1:6]
-	expect_error(    plotHeatmap(cc,clusterLegend=list("Cluster1"=x)),"is less than the number of levels in the data")
-	
-	########################
-	########################
-    # the following checks work outside of the test but  inside test_that, they hit errors
-    # possibly issue with testthat? Not evaluating for now.
-	########################
-	########################
-	#
-	# plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
-	#
-	# #this test doesn't work -- for some reason, expect_warning environment hits error that don't see at the consule.
-	# plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
-	# expect_warning( plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=TRUE)
-	# , "More than 10 annotations/clusterings")
-	#
-	# # create some names to see if keeps names with alignSampleData=TRUE
-	# # only can check manually, not with testthat.
-	# # BUG!: doesn't work. looses their -1/-2 designation... haven't fixed yet.
-	# clLeg<-clusterLegend(smSimCE)
-	# clLeg[[1]][,"name"]<-LETTERS[1:nrow(clLeg[[1]])]
-	# clusterLegend(smSimCE)<-clLeg
-	# plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE,overRideClusterLimit=TRUE)
-	#
+  
+  expect_silent(plotHeatmap(cc))
+  expect_silent(plotHeatmap(cc,whichClusters="none"))
+  expect_warning(plotHeatmap(cc,whichClusters="workflow",plot=plotAll) ,"whichClusters value does not match any clusters") #there are no workflow for this one
+  
+  expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",overRideClusterLimit=TRUE),"More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
+  expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,plot=plotAll),"given whichClusters value does not match any clusters")
+  expect_error( plotHeatmap(smSimCE,whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=FALSE), "More than 10 annotations/clusterings")
+  expect_warning(plotHeatmap(smSimCE,whichClusters="all",
+                             alignSampleData=FALSE,overRideClusterLimit=TRUE))
+  
+  
+  #test sampleData
+  expect_error(plotHeatmap(cc,sampleData="A"), "no colData for object data")
+  
+  expect_silent(plotHeatmap(smSimCE,sampleData="all"))
+  expect_silent(plotHeatmap(smSimCE,sampleData="A",plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,sampleData=2:3,plot=plotAll))
+  
+  #check that it pulls the names, not the clusterIds.
+  clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
+  expect_silent(plotHeatmap(cc))
+  
+  #check user setting clusterLegend
+  x<-palette()[1:7]
+  names(x)<-clusterLegend(cc)$Cluster1[,"name"]
+  expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=x),plot=plotAll))
+  
+  expect_silent(plotHeatmap(cc,clusterLegend=list("Cluster1"=palette()[1:7])))
+  expect_silent(plotHeatmap(smSimCE,sampleData="A",clusterLegend=list("A"=palette()[1:4]),plot=plotAll))
+  
+  ########################
+  ########################
+  # the following checks work outside of the test but  inside test_that, they hit errors
+  # possibly issue with testthat? Not evaluating for now.
+  ########################
+  ########################
+  #
+  # plotHeatmap(smSimCE, sampleData="all", whichClusters="none")
+  #
+  # #this test doesn't work -- for some reason, expect_warning environment hits error that don't see at the consule.
+  # plotHeatmap(smSimCE,whichClusters="all",alignSampleData=TRUE,overRideClusterLimit=TRUE)
+  # expect_warning( plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE, overRideClusterLimit=TRUE)
+  # , "More than 10 annotations/clusterings")
+  #
+  # # create some names to see if keeps names with alignSampleData=TRUE
+  # # only can check manually, not with testthat.
+  # # BUG!: doesn't work. looses their -1/-2 designation... haven't fixed yet.
+  # clLeg<-clusterLegend(smSimCE)
+  # clLeg[[1]][,"name"]<-LETTERS[1:nrow(clLeg[[1]])]
+  # clusterLegend(smSimCE)<-clLeg
+  # plotHeatmap(smSimCE, whichClusters="all", alignSampleData=TRUE,overRideClusterLimit=TRUE)
+  #
 })
 
 test_that("`plotHeatmap` visualization choices/feature choices all work", {
