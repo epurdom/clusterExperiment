@@ -125,9 +125,7 @@ setMethod(
         if(length(whDo)>0){
           whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
           if(length(whAssigned)>0){
-            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],...)
-            whNew<-match(filterStats[whDo],colnames(rowData(out)))
-            colnames(rowData(out))[whNew]<-newNames[whDo]	
+            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],filterNames=newNames[whDo],...)
           }
           else 
             stop("All samples are unassigned for clustering", clusterLabels(object)[whCluster])
