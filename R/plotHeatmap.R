@@ -767,9 +767,9 @@ setMethod(
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
             defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
       }
-      #preserve caluse in given clusterLegend that don't match sampleData (could go with features/rows)
+      #preserve those in given clusterLegend that don't match sampleData (could go with features/rows)
       if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
-        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend))]
+        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend$colorList))]
         clusterLegend<-c(defaultColorLegend$colorList,clusterLegend[whKeep])
       }
       else clusterLegend<-defaultColorLegend$colorList
