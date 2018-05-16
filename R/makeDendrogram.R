@@ -89,13 +89,11 @@ setMethod(
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
     if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
-    #
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
 
-    #cl<-convertClusterLegend(x,output="matrixNames")[,whCl]
-    ########
+        ########
     ##Transform the data
     ########
     if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
@@ -106,7 +104,6 @@ setMethod(
       if(ignoreUnassignedVar){
         reduceMethodName<-.makeClusterFilterStats(reduceMethod,clusterLabels(x)[whCl])
       }
-      #if(missing(nDims)) nDims<-defaultNDims(x,reduceMethod)
       if(length(nDims) > 1) {
         stop("makeDendrogram only handles one choice of dimensions.")
       }
@@ -120,9 +117,10 @@ setMethod(
       else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
         x<-makeFilterStats(x,filterStat=reduceMethod,
                            whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
+        
       }
 
-      if(reduceMethod=="none")
+			if(reduceMethod=="none")
         dat<-transformData(x, whichAssay=whichAssay)
       else if(isReducedDims(x,reduceMethod))
         dat<-t(reducedDim(x,type=reduceMethod)[,seq_len(nDims)])
@@ -160,82 +158,82 @@ setMethod(
                         ...) {
     unassigned <- match.arg(unassignedSamples)
     cl <- cluster
-	nSamples<-attributes(x)$Size
-	if(nSamples != length(cl)) {
-	      stop("cluster must be the same length as the number of samples")
+    nSamples<-attributes(x)$Size
+    if(nSamples != length(cl)) {
+      stop("cluster must be the same length as the number of samples")
     }
-	if(is.null(attributes(x)$Labels)) {
+    if(is.null(attributes(x)$Labels)) {
       attributes(x)$Labels <- as.character(seq_len(nSamples))
     }
-
-	clNum<-.convertToNum(cl)
-
+    
+    clNum<-.convertToNum(cl)
+    
     #############
     # Cluster dendrogram
     #############
     whKeep <- which(clNum >= 0) #remove -1, -2
     if(length(whKeep) == 0) stop("all samples have clusterIds<0")
     if(length(unique(cl[whKeep]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-	clFactor <- factor(cl[whKeep])
-
-	#each pair of clusters, need to get median of the distance values
-	#do a double by, just returning the values as a vector, and then take the median
-	medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
-		out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
-		names(out)<-levels(clFactor)
-		return(out)
-	}))
-	diag(medoids)<-0 #incase the median of within is not zero...
-	rownames(medoids) <- levels(clFactor)
-	colnames(medoids) <- levels(clFactor)
-	nPerCluster <- table(clFactor)
-		    clusterD<-as.dendrogram(stats::hclust(as.dist(medoids),members=nPerCluster,...))
+    clFactor <- factor(cl[whKeep])
+    
+    #each pair of clusters, need to get median of the distance values
+    #do a double by, just returning the values as a vector, and then take the median
+    medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
+      out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
+      names(out)<-levels(clFactor)
+      return(out)
+    }))
+    diag(medoids)<-0 #incase the median of within is not zero...
+    rownames(medoids) <- levels(clFactor)
+    colnames(medoids) <- levels(clFactor)
+    nPerCluster <- table(clFactor)
+    clusterD<-as.dendrogram(stats::hclust(as.dist(medoids),members=nPerCluster,...))
     #############
     # Samples dendrogram
     #############
-
+    
     #make fake dist with just medoids as value per sample (only for whKeep samples):
     fakeData <- do.call("rbind",lapply(levels(clFactor), function(z){
-        ind <- which(clFactor == z) #indices of those in this cluster
-        med <- medoids[z,] #vector of mediod with other clusters
-		medExp<-rep(med,times=nPerCluster)
-        mat <- matrix(medExp, nrow=length(ind), ncol=sum(nPerCluster) ,byrow=TRUE)
-        rownames(mat) <- rownames(as.matrix(x)[whKeep,])[ind]
-        colnames(mat) <- colnames(as.matrix(x)[,whKeep])
-        return(mat)
+      ind <- which(clFactor == z) #indices of those in this cluster
+      med <- medoids[z,] #vector of mediod with other clusters
+      medExp<-rep(med,times=nPerCluster)
+      mat <- matrix(medExp, nrow=length(ind), ncol=sum(nPerCluster) ,byrow=TRUE)
+      rownames(mat) <- rownames(as.matrix(x)[whKeep,])[ind]
+      colnames(mat) <- colnames(as.matrix(x)[,whKeep])
+      return(mat)
     }))
     if(length(whKeep) != nSamples && unassigned != "remove"){
-		#need to add the unassigned samples into fakeData
-        outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
-        if(unassigned=="outgroup"){
-            #hard to use merge and then get the indices to go back to the same ones
-            #cheat and add large amount to the unassigned so that they don't cluster to
-            maxAss <- max(c(max(fakeData),max(outlierDat)))
-            offDiag<-matrix(maxAss+10^6,nrow=nrow(fakeData),ncol=ncol(outlierDat))
-			fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
-        }
-
-        if(unassigned=="cluster"){
-            #add remaining distances to fake data and let them cluster
-			offDiag <- as.matrix(x)[whKeep,-whKeep,drop=FALSE]
-			#put in order of fake data, then outliers
-			offDiag<-offDiag[row.names(fakeData),,drop=FALSE]
-
-			fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
-        }
+      #need to add the unassigned samples into fakeData
+      outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
+      if(unassigned=="outgroup"){
+        #hard to use merge and then get the indices to go back to the same ones
+        #cheat and add large amount to the unassigned so that they don't cluster to
+        maxAss <- max(c(max(fakeData),max(outlierDat)))
+        offDiag<-matrix(maxAss+10^6,nrow=nrow(fakeData),ncol=ncol(outlierDat))
+        fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
+      }
+      
+      if(unassigned=="cluster"){
+        #add remaining distances to fake data and let them cluster
+        offDiag <- as.matrix(x)[whKeep,-whKeep,drop=FALSE]
+        #put in order of fake data, then outliers
+        offDiag<-offDiag[row.names(fakeData),,drop=FALSE]
+        
+        fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
+      }
     }
-	#make sure fakeData in same order as original data so order.dendrogram will work
-	sampleNames<-attributes(x)$Labels
-	m<-na.omit(match(sampleNames,rownames(fakeData)))
-	fakeData<-fakeData[m,m]
-	fullD <- as.dendrogram(stats::hclust(as.dist(fakeData)), ...)
-	if(length(whKeep) != nSamples && unassigned == "outgroup"){
-        #need to get rid of super long outgroup arm
-        armLength <- max(attributes(fullD[[1]])$height,
-                         attributes(fullD[[2]])$height)
-        attributes(fullD)$height <- armLength + .1 * armLength
+    #make sure fakeData in same order as original data so order.dendrogram will work
+    sampleNames<-attributes(x)$Labels
+    m<-na.omit(match(sampleNames,rownames(fakeData)))
+    fakeData<-fakeData[m,m]
+    fullD <- as.dendrogram(stats::hclust(as.dist(fakeData)), ...)
+    if(length(whKeep) != nSamples && unassigned == "outgroup"){
+      #need to get rid of super long outgroup arm
+      armLength <- max(attributes(fullD[[1]])$height,
+                       attributes(fullD[[2]])$height)
+      attributes(fullD)$height <- armLength + .1 * armLength
     }
-  #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+    #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
     return(list(samples=fullD,clusters=clusterD))
   })
 
@@ -258,74 +256,74 @@ setMethod(
     if(is.null(colnames(x))) {
       colnames(x) <- as.character(seq_len(ncol(x)))
     }
-
-	clNum<-.convertToNum(cl)
-
+    
+    clNum<-.convertToNum(cl)
+    
     #############
     # Cluster dendrogram
     #############
     whKeep <- which(clNum >= 0) #remove -1, -2
     if(length(whKeep) == 0) stop("all samples have clusterIds<0")
     if(length(unique(cl[whKeep]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-	clFactor <- factor(cl[whKeep])
-
-	medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
-		    rownames(medoids) <- levels(clFactor)
-		    nPerCluster <- table(clFactor)
-			    clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
-
-
+    clFactor <- factor(cl[whKeep])
+    
+    medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
+    rownames(medoids) <- levels(clFactor)
+    nPerCluster <- table(clFactor)
+    clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
+    
+    
     #############
     # Samples dendrogram
     #############
-
+    
     #make fake data with just medoids as value per sample:
     dat <- t(x) #make like was in old code
     fakeData <- do.call("rbind", lapply(levels(clFactor), function(z){
-        ind <- which(clFactor == z) #indices of those in this cluster
-        med <- medoids[z,]
-        mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
-        rownames(mat) <- rownames(dat[whKeep,])[ind]
-        return(mat)
+      ind <- which(clFactor == z) #indices of those in this cluster
+      med <- medoids[z,]
+      mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
+      rownames(mat) <- rownames(dat[whKeep,])[ind]
+      return(mat)
     }))
     fakeData <- fakeData[rownames(dat[whKeep,]),] #why do I need this??
     if(length(whKeep) != nrow(dat) && unassigned != "remove"){
-        if(unassigned=="outgroup"){
-            #hard to use merge and then get the indices to go back to the same ones
-            #cheat and add large amount to the unassigned so that they don't cluster to
-
-            outlierDat <- dat[-whKeep,,drop=FALSE]
-            maxAss <- max(dat[whKeep,,drop=FALSE])
-            outlierDat <- outlierDat + maxAss + 10e6
-			############
-			###This a workaround which will hopefully be dealt with in future hdf5:
-			############
-			if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray::DelayedArray(fakeData), DelayedArray(outlierDat))
-            else fakeData <- rbind(fakeData, outlierDat)
-            fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
-            # unassD<-as.dendrogram(stats::hclust(dist(dat[-whKeep,])))
-            # return(merge(fullD,unassD))
-
-        }
-
-        if(unassigned=="cluster"){
-            #add remaining to fake data and let them cluster
-            fakeData <- rbind(fakeData,dat[-whKeep,,drop=FALSE])
-            fakeData <- fakeData[rownames(dat),,drop=FALSE]
-            #return(as.dendrogram(stats::hclust(dist(fakeData))))
-        }
+      if(unassigned=="outgroup"){
+        #hard to use merge and then get the indices to go back to the same ones
+        #cheat and add large amount to the unassigned so that they don't cluster to
+        
+        outlierDat <- dat[-whKeep,,drop=FALSE]
+        maxAss <- max(dat[whKeep,,drop=FALSE])
+        outlierDat <- outlierDat + maxAss + 10e6
+        ############
+        ###This a workaround which will hopefully be dealt with in future hdf5:
+        ############
+        if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray::DelayedArray(fakeData), DelayedArray(outlierDat))
+        else fakeData <- rbind(fakeData, outlierDat)
+        fakeData <- fakeData[rownames(dat),,drop=FALSE]
+        # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
+        # unassD<-as.dendrogram(stats::hclust(dist(dat[-whKeep,])))
+        # return(merge(fullD,unassD))
+        
+      }
+      
+      if(unassigned=="cluster"){
+        #add remaining to fake data and let them cluster
+        fakeData <- rbind(fakeData,dat[-whKeep,,drop=FALSE])
+        fakeData <- fakeData[rownames(dat),,drop=FALSE]
+        #return(as.dendrogram(stats::hclust(dist(fakeData))))
+      }
     }
-	#make sure fakeData in same order as original data so order.dendrogram will work
-	fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
-	fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
+    #make sure fakeData in same order as original data so order.dendrogram will work
+    fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
+    fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
     if(length(whKeep) != nrow(dat) && unassigned == "outgroup"){
-        #need to get rid of super long outgroup arm
-        armLength <- max(attributes(fullD[[1]])$height,
-                         attributes(fullD[[2]])$height)
-        attributes(fullD)$height <- armLength + .1 * armLength
+      #need to get rid of super long outgroup arm
+      armLength <- max(attributes(fullD[[1]])$height,
+                       attributes(fullD[[2]])$height)
+      attributes(fullD)$height <- armLength + .1 * armLength
     }
-  #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+    #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
     return(list(samples=fullD,clusters=clusterD))
   })
 

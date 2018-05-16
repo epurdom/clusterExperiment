@@ -42,9 +42,9 @@ setMethod(
       stop("Not all of the filterStats given are valid. Must be one of listBuiltInFilterStats().")
     }
     if(!is.null(filterNames)){
-			if(length(unique(filterStats))!=length(filterStats)) stop("cannot set filterNames if filterStats not unique")
-    	if(!is.character(filterNames) || length(filterNames)==length(filterStats)) stop("invalid values of filterNames")
-				filterStatsOrig<-filterStats #preserve this
+      if(length(unique(filterStats))!=length(filterStats)) stop("cannot set filterNames if filterStats not unique")
+      if(!is.character(filterNames) || length(filterNames)!=length(filterStats)) stop("invalid values of filterNames")
+      filterStatsOrig<-filterStats #preserve the original order of names
     }
     ###################
     ##Clean up data:
@@ -73,11 +73,11 @@ setMethod(
       filterStatData<-cbind(filterStatData, "abscv"=sqrt(filterStatData[,"var"])/abs(filterStatData[,"mean"]))
       #filterStatData<-filterStatData[,origfilterStats] #put it in order, though user shouldn't depend on it.
     }
-		if(!is.null(filterStats)){
-			m<-match(filterStatsOrig,colnames(filterStatData))
-			if(any(is.na(m))) stop("error in assigning filterNames")
-				names(filterStatData)[m]<-filterNames			
-		}
+    if(!is.null(filterNames)){
+      m<-match(filterStatsOrig,colnames(filterStatData))
+      if(any(is.na(m))) stop("error in assigning given filterNames to filterStats")
+      colnames(filterStatData)[m]<-filterNames			
+    }
     filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
     return(object)
     
