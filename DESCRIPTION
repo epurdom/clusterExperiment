@@ -44,7 +44,9 @@ Suggests:
     testthat,
 	scRNAseq,
     MAST,
-	Rtsne
+	Rtsne,
+	scran,
+	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
