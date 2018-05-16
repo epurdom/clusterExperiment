@@ -1076,7 +1076,7 @@ betas          | sequential=TRUE | seqCluster    | beta
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 ```
 
-### Example changing the distance function and clustering algorithm
+### Example changing the distance function
 
 Providing different distance functions is slightly more involved than the other parameters, so we give an example here. 
 
@@ -1139,6 +1139,69 @@ plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 
 
 Notice that using the "tight" methods did not give relevant results (no samples were clustered)
+
+### Example using a user-defined clustering function
+
+Here, we show how to use a user-defined clustering function in `clusterSingle`.
+
+First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
+
+```{r custom}
+SNN_wrap <- function(x, k, steps = 4, ...) {
+  snn <- scran::buildSNNGraph(x, k = k, d = NA, transposed = FALSE)
+  res <- igraph::cluster_walktrap(snn, steps = steps)
+  return(res$membership)
+}
+```
+
+Our wrapper has two required parameters: `x`, a matrix with the data to be clustered; and `k` an integer value that specifies the number of nearest neighbors. The function returns a integer vector with the cluster labels.
+
+`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details.
+
+```{r custom_validate}
+internalFunctionCheck(SNN_wrap, inputType = "X", algorithmType = "K",
+                      outputType="vector")
+```
+
+If it passes all checks, we can then create an object of the S4 class `ClusterFunction` to be used within the package.
+This contains, in addition to the function definition, information of the type of input and output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
+
+```{r custom_s4}
+SNN <- ClusterFunction(SNN_wrap, inputType = "X", algorithmType = "K",
+                     outputType="vector")
+```
+
+Now that we have our `SNN` object, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier.
+
+In this example, we use `clusterSingle` to implement a subsample clustering based on SNN.
+
+```{r custom_clusterSingle}
+ceCustom <- clusterSingle(
+  ce, reduceMethod="PCA", nDims=50,
+  subsample = TRUE, sequential = FALSE,
+  mainClusterArgs = list(clusterFunction = "hierarchical01",
+                         clusterArgs = list(alpha = 0.3),
+                         minSize = 1),
+  subsampleArgs = list(resamp.num=100,
+                       samp.p = 0.7,
+                       clusterFunction = SNN,
+                       clusterArgs = list(k = 10),
+                       ncores = 1)
+)
+ceCustom
+```
+
+<!-- Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. -->
+
+```{r custom_clusterMany, eval=FALSE, include=FALSE}
+## currently does not work
+clFuns<-getBuiltInFunction(c("pam","kmeans","spectral","hierarchicalK"))
+clFuns<-c(clFuns, "SNN"=SNN)
+
+ceCustom <- clusterMany(ce, dimReduce="PCA",nPCADims=50,
+                        clusterFunction=clFuns,
+                        ks=4:15, findBestK=FALSE)
+```
 
 ### Dealing with large numbers of clusterings
 
@@ -1208,6 +1271,43 @@ plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 
 
 **Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+
+### Consensus of subsets of clusterings
+
+A call to `clusterMany` or to `RSEC` can generate many clusterings that result from changing the underlying parameters of a given method (e.g., the number of centers in k-means), the dimensionality reduction, the distance function, or the base algorithm used for the clustering (e.g., PAM vs. k-means).
+
+To highlight interesting structure in the data, it may be useful to understand whether a set of samples tends to cluster together across paramter choices of the same method or across very different methods.
+
+`clusterExperiment` makes it easy to extract a subset of clusterings and to compute a consensus clustering for any given subset, to help addressing this type of questions.
+
+As an example, assume that we want to explore the role of PCA in the clustering results. We can separately calculate a consensus of those clusterings that used 15 or 50 principal components of the data.
+
+First, we use the `getClusterManyParams` function to extract the information on the clusterings performed.
+
+```{r sub_getParams}
+params <- getClusterManyParams(ce)
+head(params)
+```
+
+We can select only the clusterings in which we are interested in and pass them to `makeConsensus` using the `whichClusters` argument.
+
+```{r sub_makeConsensus}
+clusterNames15 <- rownames(params)[which(params$nReducedDims == 15)]
+clusterNames50 <- rownames(params)[which(params$nReducedDims == 50)]
+
+ceSub <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
+                       clusterLabel = "consensusPCA15")
+ceSub <- makeConsensus(ce, whichClusters = clusterNames50, proportion = 0.7,
+                       clusterLabel = "consensusPCA50")
+```
+
+Analogously, many visualization functions have a `whichClusters` argument that can be used to visually inspect the similarities and differences between subsets of clusterings.
+
+```{r sub_visualize}
+plotClusters(ceSub, whichClusters = c(clusterNames15, "consensusPCA15"))
+plotClusters(ceSub, whichClusters = c(clusterNames50, "consensusPCA50"))
+```
+
 
 ## Creating a Hierarchy of Clusters and Merging clusters {#hierarchy}
 
@@ -1444,7 +1544,6 @@ tabl <- "
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 
 ```
-
 
 # Finding Features related to a Clustering {#getBestFeatures}
 

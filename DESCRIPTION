@@ -31,20 +31,22 @@ Imports:
     graphics,
     parallel,
     RSpectra,
-	kernlab,
-	stringr,
-	S4Vectors,
-	grDevices,
-	Rcpp,
-	HDF5Array (>= 1.7.10),
-	DelayedArray (>= 0.5.31)
+	  kernlab,
+	  stringr,
+	  S4Vectors,
+	  grDevices,
+	  Rcpp,
+	  HDF5Array (>= 1.7.10),
+	  DelayedArray (>= 0.5.31)
 Suggests:
     BiocStyle,
     knitr,
     testthat,
-	scRNAseq,
+	  scRNAseq,
     MAST,
-	Rtsne
+	  Rtsne,
+	  scran,
+	  igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
