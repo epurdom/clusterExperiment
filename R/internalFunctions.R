@@ -194,6 +194,11 @@
 .makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,
                       matchClusterLegend=NULL,matchTo=c("clusterIds","name")){ 
   matchTo<-match.arg(matchTo)
+  if(!is.null(matchClusterLegend)){
+    if("matchTo"=="clusterIds") reqNames<-c("color","clusterIds") else reqNames<-c("color","name")
+    ch<-.checkClusterLegendList(matchClusterLegend,allowNames=TRUE,reqNames=reqNames)
+    if(!is.logical(ch)) stop(ch)
+  }
   if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
     ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(clMat,2,function(x){factor(x)}))

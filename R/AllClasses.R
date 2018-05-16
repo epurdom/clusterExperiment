@@ -319,7 +319,7 @@ setMethod(
     if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
     else{
       clusterLegend<-unname(clusterLegend)
-      ch<-.checkIndClusterLegend(clusters,clusterLegend)
+      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
       #need to grab colors/names in given clusterLegend
       autoLegend<-tmp$colorList
