@@ -642,13 +642,10 @@ setMethod(
     badValues<-c("Rowv","Colv","color","annCol","annColors")
     replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","sampleData","clusterLegend")
     if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
-    
-    
-    
+
     ##########
     ###Create the clustering dendrogram (samples):
     ##########
-    
     if(clusterSamples){
       if(inherits(clusterSamplesData, "dendrogram")){
         if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
@@ -745,13 +742,13 @@ setMethod(
       # 2) Make default clusterLegend, including incorporating and checking user-given clusterLegend
       # 3) Make a numeric summary of factors (for if alignSamples==TRUE)
       #-------------------
-      sampleData<-droplevels(sampleData)
+      if(is.data.frame(sampleData)) sampleData<-droplevels(sampleData)
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
       }
       if(length(whSampleDataCont)>0) tmpDf<-sampleData[,-whSampleDataCont,drop=FALSE]
       else tmpDf<-sampleData
-      defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE, matchClusterLegend = clusterLegend, matchTo="clusterIds") 
+      defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE, matchClusterLegend = clusterLegend, matchTo="name") 
       tmpDfNum<-defaultColorLegend$numClusters
       colnames(tmpDfNum)<-colnames(tmpDf)
       #so that annCol has them as factors.
