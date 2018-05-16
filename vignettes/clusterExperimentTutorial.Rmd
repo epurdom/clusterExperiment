@@ -266,7 +266,7 @@ Since "makeConsensus" is a partition of "mergeClusters", there is perfect subset
 plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","makeConsensus"))
 ```
 
-Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering), but the proportion of times across the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
+Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering, and those many matrices are not stored), but rather the proportion of times across the final results of the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
 
 
 **Plot of Dendrogram** We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
