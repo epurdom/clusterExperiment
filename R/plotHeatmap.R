@@ -739,6 +739,7 @@ setMethod(
       #-------------------
       ###Make sampleData explicitly factors, except for whSampleDataCont
       #-------------------
+      sampleData<-droplevels(sampleData)
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
       }
@@ -772,7 +773,7 @@ setMethod(
           if(alignSampleData){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-						clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend)$colorList
+						clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")$colorList
           }
           else{#give each distinct colors, compared to row before
             clusterLegend<-defaultColorLegend$colorList

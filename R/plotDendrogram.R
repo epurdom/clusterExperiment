@@ -130,23 +130,14 @@ setMethod(
 			sData<-NULL
 		}
 		if(!is.null(sData)){
-			sClusterLegend<-.makeColors(as.matrix(sData),colors=massivePalette,makeIntegers=TRUE)
+		  sClusterLegend<-.makeColors(sData,colors=massivePalette,distinctColors=TRUE,matchClusterLegend = clusterLegend,matchTo="name")
 #			.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
-			  
-			#convert sData into matrix with integers
-			if(!is.null(clusterLegend)){
-				if(!is.list(clusterLegend)) stop("clusterLegend must be list in format of clusterLegend(x)")
-				#add colors for sample data with sampleDataLegend
-				whNeedColor<-which(!colnames(sData) %in% names(clusterLegend))
-				#need to add the clusterId value for the colors...
-				
-				
-			}
-			else whNeedColor<-seq_len(ncol(sData))
-			if(length(whNeedColor)>0)	
-				clusterLegend<-c(clusterLegend,sClusterLegend$colorList[whNeedColor])
+			clusterLegend<-sClusterLegend$colorList  
+			sNames<-colnames(sData)
 			sData<-sClusterLegend$numClusters
+      colnames(sData)<-sNames
 			cl<-cbind(cl,sData)
+			
 		}
 		
     if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))

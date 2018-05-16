@@ -188,7 +188,12 @@
 ##Universal way to convert matrix of clusters into default colorLegend
 ## returns  list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 ## only colorList and numClusters absolutely required for return (needed by AllClasses for integer).
-.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
+## If matchClusterLegend, will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
+## (will only match if finds name in matchClusterLegend)
+## Note, does drop levels, so doesn't return colors for missing data...
+.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,
+                      matchClusterLegend=NULL,matchTo=c("clusterIds","name")){ 
+  matchTo<-match.arg(matchTo)
   if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
     ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(clMat,2,function(x){factor(x)}))
@@ -198,7 +203,11 @@
 	if(is.null(clNumMat)) clNumMat<-.makeIntegerClusters(as.matrix(clMat)) #require to not skip a integer value
 	allFactors<-all(apply(clMat,2,function(x){is.factor(x)}))
 	if(!allFactors){
-		clMat<-do.call("data.frame", lapply(seq_len(ncol(clMat)), function(ii){ factor(clMat[,ii]) }))
+		clMat<-do.call("data.frame", lapply(seq_len(ncol(clMat)), function(ii){ 
+		  x<-clMat[,ii]
+		  if(!is.factor(x)) return(factor(clMat[,ii]))
+		  else return(droplevels(x))
+		  }))
   	names(clMat)<-cNames
 	}
 	
@@ -211,10 +220,30 @@
     facInt<-clNumMat[,ii] #assumes adjacent numbers
     nVals<-max(c(facInt,0))
     facOrig<-clMat[,ii] #assumes factors
-		if(!is.null(matchClusterLegend)){
-	    colMat<-matchClusterLegend[[ii]]
-			m<-match(colMat[,"clusterIds"],as.character(facInt))
-	    cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
+    matchName<-cNames[[ii]]
+		if(!is.null(matchClusterLegend[[matchName]])){
+	    colMat<-matchClusterLegend[[matchName]]
+			if(matchTo=="clusterIds"){
+			  m<-match(colMat[,"clusterIds"],as.character(facInt))
+			  cols<-cbind(colMat[,c("clusterIds","color")],"name"=as.character(facOrig)[m])
+			}
+			else{
+			  m<-match(colMat[,"name"],as.character(facOrig))
+			  cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name")])
+			}
+	    if(any(is.na(m))) cols<-cols[!is.na(m),] #incase given legend has names/Ids not found in data
+	    #in case given legend doesn't have values found in data
+	    whMissing<-which(!as.character(facInt)[facInt>0] %in% cols[,"clusterIds"])
+	    if(length(whMissing)>0){ 
+	      #remove colors already in colMat
+	      colors<-currcolors
+	      mColors<-.matchColors(colors,cols[,"color"])
+	      if(any(!is.na(mColors))) colors<-colors[-!is.na(mColors)]
+	      mAdd<-match(unique(facInt[facInt>0][whMissing]),facInt) #make unique value
+	      addMat<-cbind("clusterIds"=as.character(facInt[mAdd]),"color"=colors[seq_along(mAdd)],"name"=as.character(facOrig[mAdd]))
+        cols<-rbind(cols,addMat)
+	     }
+	    
 		}
 		else{
 		  if(nVals>0){
@@ -241,10 +270,19 @@
     cols<-cols[order(cols[,"name"]),,drop=FALSE]
 		rownames(cols)<-NULL
     return(cols)
-  }
+	}
+	#browser()
 	colorList<-lapply(seq_len(ncol(clNumMat)),FUN=perColumnFunction)
   names(colorList)<-cNames
   return(list(colorList=colorList,numClusters=clNumMat,facClusters=clMat))
+}
+
+.matchColors<-function(x,y){
+  #match x colors to y colors, only with rgb definitions
+  if(!is.character(x) || !is.character(y)) stop("colors must be character values")
+  xrgb<-col2rgb(x)
+  yrgb<-col2rgb(y)
+  match(data.frame(xrgb), data.frame(yrgb))
 }
 
 ##Universal way to change character indication of clusterTypes into integer indices.
