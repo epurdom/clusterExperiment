@@ -142,9 +142,11 @@ test_that("plotDendrogram works with sampleData", {
 	expect_silent(plotDendrogram(dend,sampleData="A"))
 	expect_warning(plotDendrogram(dend,sampleData=c("A","B","C")),"implies using columns of colData that are continuous")
 	
+	#note that legA doesn't give colors for everything -- only some. 
 	legA<-leg[4:7,]
 	legA[,"color"]<-tail(massivePalette,4)
 	expect_silent(plotDendrogram(dend,sampleData="A",clusterLegend=list("A"=legA)))
+
 	expect_silent(plotDendrogram(dend,sampleData=c("A","C"),clusterLegend=list("A"=legA)))
 	
 })

@@ -623,8 +623,8 @@ setMethod(
                         breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
                         isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
   ){
-
-
+    
+    
     ##########
     ##Deal with numeric matrix for heatmap ...
     ##########
@@ -642,13 +642,13 @@ setMethod(
     badValues<-c("Rowv","Colv","color","annCol","annColors")
     replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","sampleData","clusterLegend")
     if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
-
-
-
+    
+    
+    
     ##########
     ###Create the clustering dendrogram (samples):
     ##########
-
+    
     if(clusterSamples){
       if(inherits(clusterSamplesData, "dendrogram")){
         if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
@@ -660,15 +660,15 @@ setMethod(
         }
         else{
           ##Call NMF:::cluster_mat so do the same thing:
-
+          
           if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData) & !inherits(clusterSamplesData,"DelayedArray")) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix/DelayedArray class")
           clusterSamplesData<-data.matrix(clusterSamplesData)
           #check valid
           if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
           dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
-
+          
           #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
-
+          
         }
       }
     }
@@ -677,7 +677,7 @@ setMethod(
     }
     if(!is.na(clusterSamples) && clusterSamples && is.null(dendroSamples)) Colv<-TRUE #then just pass the data
     else Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
-
+    
     ##########
     ###Create the clustering dendrogram (features):
     ##########
@@ -697,16 +697,16 @@ setMethod(
           }
           else{
             ##Call NMF:::cluster_mat so do the same thing:
-
+            
             if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData) &  !inherits(clusterFeaturesData,"DelayedArray")) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
             clusterFeaturesData<-data.matrix(clusterFeaturesData)
             #check valid
             if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
             dendroFeatures<-NMF:::cluster_mat(clusterFeaturesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
             #                dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
-
+            
           }
-
+          
         }
       }
       else{
@@ -714,96 +714,89 @@ setMethod(
       }
       if(!is.na(clusterFeatures) && clusterFeatures && is.null(dendroFeatures)) Rowv<-TRUE #then just pass the data
       else Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
-
-
+      
+      
     }
-
-
+    
+    
     ##########
     ##Deal with annotation of samples (sampleData) ...
     ##########
-    #check sampleData input:
-    
     if(!is.null(sampleData)){
+      #----
+      #check sampleData input:
+      #----
       if(!is.matrix(sampleData) & !is.data.frame(sampleData)) stop("sampleData must be a either a matrix or a data.frame")
       if(NCOL(data) != NROW(sampleData)) stop("sampleData must have same number of rows as columns of heatData")
       if(NCOL(sampleData)>10){
         if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
         else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
       }
-			
-      #--- check that no ordered factors...
+      
+      #----
+      # check that no ordered factors...
+      #----
       anyOrdered<-sapply(seq_len(ncol(sampleData)),function(ii){is.ordered(sampleData[,ii])})
       if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
-
+      
       #-------------------
-      ###Make sampleData explicitly factors, except for whSampleDataCont
+      # run .makeColors. This will:
+      # 1) Make sampleData explicitly factors (except for whSampleDataCont variables which are not given to function)
+      # 2) Make default clusterLegend, including incorporating and checking user-given clusterLegend
+      # 3) Make a numeric summary of factors (for if alignSamples==TRUE)
       #-------------------
       sampleData<-droplevels(sampleData)
       if(!is.null(whSampleDataCont)){
         if(any(logical(whSampleDataCont))) whSampleDataCont<-which(whSampleDataCont)
       }
       if(length(whSampleDataCont)>0) tmpDf<-sampleData[,-whSampleDataCont,drop=FALSE]
-			else tmpDf<-sampleData
-			defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE) 
+      else tmpDf<-sampleData
+      defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE, matchClusterLegend = clusterLegend, matchTo="clusterIds") 
       tmpDfNum<-defaultColorLegend$numClusters
-			colnames(tmpDfNum)<-colnames(tmpDf)
-			#so that annCol has them as factors.
-			tmpDf<-defaultColorLegend$facClusters
-			if(length(whSampleDataCont)>0){
-			  annCol<-sampleData
-			  annCol[,-whSampleDataCont]<-tmpDf
-			}			  
-			else annCol<-tmpDf 
-			convertNames <- TRUE
-
-      ##########
-      ##Deal with colors ...
-      ##########
+      colnames(tmpDfNum)<-colnames(tmpDf)
+      #so that annCol has them as factors.
+      tmpDf<-defaultColorLegend$facClusters
+      if(length(whSampleDataCont)>0){
+        annCol<-sampleData
+        annCol[,-whSampleDataCont]<-tmpDf
+      }			  
+      else annCol<-tmpDf 
+      
       #-----
-      #assign default colors
+      #if align samples (ignored if clusterLegend != NULL or no non-continuous variables):
       #-----
-      if(is.null(clusterLegend)){
-        convertNames <- TRUE
-        #------
-        #if not all continuous, assign default colors from palette
-        #------
-        if(is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol)){
-
-          if(alignSampleData){
+      if(is.null(clusterLegend) & alignSampleData & (is.null(whSampleDataCont) || length(whSampleDataCont)<ncol(annCol))){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-						clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")$colorList
-          }
-          else{#give each distinct colors, compared to row before
-            clusterLegend<-defaultColorLegend$colorList
-          }
-        }
+            clusterLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")$colorList
       }
-			else{
-			  #give default values for those not in given clusterLegend
-			  whAdd<-which(!names(defaultColorLegend$colorList)%in% names(clusterLegend))
-			  if(length(whAdd)>0) clusterLegend<-c(clusterLegend,defaultColorLegend$colorList[whAdd])
-			}
+      else clusterLegend<-defaultColorLegend$colorList
+
       #-----
       # Convert to aheatmap format, if needed
       #-----
+      convertNames <- TRUE
       if( any(sapply(clusterLegend,function(x){!is.null(dim(x))}))) {
         annColors<-.convertToAheatmap(clusterLegend, names=convertNames)
       } else {
         annColors<-clusterLegend #in case give in format wanted by aheatmap to begin with; actually .convertToAheatmap would probably handle this fine too. Not clear we need catch.
       }
-      #-----
+      
+      ##########################
       # remove any unused level colors to clean up legend,
       # give names to colors if not given, and
       # make them in same order as in annCol factor
-      #-----
+      ##########################
       whInAnnColors<-which(names(annColors)%in% colnames(annCol))
       if(!is.null(whSampleDataCont) & length(whSampleDataCont)>0){
         whInAnnColors<-setdiff(whInAnnColors,whSampleDataCont)
       }
-			#      browser()
-			prunedList<-lapply(whInAnnColors,function(ii){
+      
+      #-----
+      # Deal with extra levels, only a single level, etc. 
+      # These are all problems with NMF. Need to check on development version.
+      #-----
+      prunedList<-lapply(whInAnnColors,function(ii){
         nam<-names(annColors)[[ii]] #the name of variable
         x<-annColors[[ii]] ##list of colors
         levs<-levels(annCol[,nam])
@@ -827,17 +820,13 @@ setMethod(
       })
       names(prunedList)<-names(annColors)[whInAnnColors]
       annColors[whInAnnColors]<-prunedList
-
-      #-----
-      # Give default colors to any that are missing (because aheatmap runs out of colors...)
-      #-----
-
+      
     }
     else{ #no sampleData provided -- just a heatmap with no annotation
       annCol<-NA
       annColors<-NA
     }
-
+    
     #############
     # put into aheatmap
     #############
@@ -855,7 +844,7 @@ setMethod(
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
-
+      
       #############
       # add labels to clusters at top of heatmap
       #############
@@ -891,15 +880,15 @@ setMethod(
           #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
           grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
           grid::upViewport(0) #take it back up to the top.
-
+          
         }
-
-
-
+        
+        
+        
       }
     }
     else out<-NULL
-
+    
     invisible(list(aheatmapOut=out,sampleData=annCol,clusterLegend=clusterLegend,breaks=breaks))
   }
 )
