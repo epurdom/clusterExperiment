@@ -338,7 +338,7 @@ plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClust
 
 ```{r results="hide",echo=FALSE}
 # a small check to make sure have same clusterings as before
-if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.2"])) stop("rerunning rsec has changed clustering")
+if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.1"])) stop("rerunning rsec has changed clustering")
 ```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
