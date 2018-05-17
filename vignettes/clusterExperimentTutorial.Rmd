@@ -584,7 +584,7 @@ Notice that now the plot has given the estimates from *all* of the methods (the 
 It can be interesting to visualize the clusterings both with the `plotClustersWorkflow`  and the co-Proportion plot (a heatmap of the proportion of times the samples co-clustered):
 
 ```{r mergeClusters_coClustering}
-plotClustersWorkflow(ce,whichClusters="workflow") #, sampleData=c("Biological_Condition","Published2")
+plotClustersWorkflow(ce,whichClusters="workflow") 
 plotCoClustering(ce,whichClusters=c("mergeClusters","makeConsensus"),
                  sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
@@ -1016,7 +1016,7 @@ plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"))
 ** Merge Information** We can also plot the merging information, with `merge="mergeMethod"`, i.e. the method actually used to merge the data. We could alternatively plot any merge method that has been run from a call to `mergeClusters`. 
 
 ```{r plotMerge}
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),sampleData=c("Biological_Condition", "Published1","Published2"),merge="mergeMethod")
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod")
 ```
 
 ** Node information ** Finally, we can also color code the nodes or plot the node names, for example if we want to link them to our `getBestFeatures` results.
@@ -1030,7 +1030,7 @@ We will now go into more detail about important options for the main parts of th
 ## clusterMany {#clusterMany}
 In the quick start section we picked some simple and familiar clustering options that would run quickly and needed little explanation. However, our workflow generally assumes more complex options and more parameter variations are tried. Before getting into the specific options of `clusterMany`, let us first describe some of these more complicated setups, since many of the arguments of `clusterMany` depend on understanding them. 
 
-### Base clustering algorithms and the  `ClusterFunction` class 
+### Base clustering algorithms and the  `ClusterFunction` class {#ClusterFunction}
 
 This package is meant to be able to use and compare different clustering routines. However, the required input, arguments, etc. of different clustering algorithms varies greatly. We create the `ClusterFunction` class so that we can take ensure that the necessary information to fit into our workflow is well defined, and otherwise the other details of the algorithm can be ignored. In general, the user will not need to know the details of this class, since they will use built-in functions provided by the package which can be accessed by character values. To see the set of character values that correspond to built in functions, 
 
@@ -1226,9 +1226,11 @@ plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 
 Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
-### Example using a user-defined clustering function
+### Example using a user-defined clustering algorithm
 
-Here, we show how to use a user-defined clustering function in `clusterSingle`.
+Here, we show how to use a user-defined clustering algorithm in `clusterSingle`. Our clustering algorithm will be a simple nearest-neighbor clustering.
+
+To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (Section)[#ClusterFunction] for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement.  
 
 First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
 
@@ -1240,25 +1242,30 @@ SNN_wrap <- function(x, k, steps = 4, ...) {
 }
 ```
 
-Our wrapper has two required parameters: `x`, a matrix with the data to be clustered; and `k` an integer value that specifies the number of nearest neighbors. The function returns a integer vector with the cluster labels.
+To create a type `K` algorithm, the wrapper must have two required arguments: 
 
-`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details.
+1. an argument for the input data. This can be  `x` if the input is a matrix of $N$ samples on the columns and features on the rows, or `diss` if the input is expected to be a $NxN$ dissimilarity matrix. Both `x` and `diss` can be given as parameters if the algorithm handles either one) 
+2. a parameter `k` specifying the number of clusters. 
+
+Our wrapper function should return a *integer* vector corresponding to the cluster assignments of each sample (see `?ClusterFunction` for information about other types of output available).
+
+`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details. The call to `internalFunctionCheck` contains, in addition to the function definition, arguments specifying information about the type of input, the type of algorithm, and type of output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
 
 ```{r custom_validate}
 internalFunctionCheck(SNN_wrap, inputType = "X", algorithmType = "K",
                       outputType="vector")
 ```
-If it passes all checks, we can then create an object of the S4 class `ClusterFunction` to be used within the package.
-This contains, in addition to the function definition, information of the type of input and output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
+If it passes all checks (returns `TRUE`), we can then create an object of the S4 class `ClusterFunction` to be used within the package using this same set of arguments. If it fails, it will return a character string giving the error (among the checks is running the function on a small randomly generated set of data).
 
+Since we passed the checks, we are ready to define our `ClusterFunction` object.
 ```{r custom_s4}
 SNN <- ClusterFunction(SNN_wrap, inputType = "X", algorithmType = "K",
                      outputType="vector")
 ```
 
-Now that we have our `SNN` object, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier.
+Now that we have our object `SNN`, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier. However, unlike before, you should pass the actual object `SNN`, and not a quoted version (i.e. not `"SNN"`).
 
-In this example, we use `clusterSingle` to implement a subsample clustering based on SNN.
+In this example, we use `clusterSingle` to implement a subsample clustering based on SNN. We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
 
 ```{r custom_clusterSingle}
 ceCustom <- clusterSingle(
@@ -1318,6 +1325,8 @@ ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 
 Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
 -->
+
+
 
 ## Create a unified cluster from many clusters with `makeConsensus` {#makeConsensus}
 
