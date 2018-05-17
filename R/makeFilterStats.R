@@ -30,7 +30,7 @@
 setMethod(
   f = "makeFilterStats",
   signature = "SummarizedExperiment",
-  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE)
+  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE,filterNames=NULL)
   {
     
     ###################
@@ -41,7 +41,11 @@ setMethod(
     if(!all(filterStats %in% listBuiltInFilterStats())){
       stop("Not all of the filterStats given are valid. Must be one of listBuiltInFilterStats().")
     }
-    
+    if(!is.null(filterNames)){
+      if(length(unique(filterStats))!=length(filterStats)) stop("cannot set filterNames if filterStats not unique")
+      if(!is.character(filterNames) || length(filterNames)!=length(filterStats)) stop("invalid values of filterNames")
+      filterStatsOrig<-filterStats #preserve the original order of names
+    }
     ###################
     ##Clean up data:
     ###################
@@ -68,6 +72,11 @@ setMethod(
     if(doCV){
       filterStatData<-cbind(filterStatData, "abscv"=sqrt(filterStatData[,"var"])/abs(filterStatData[,"mean"]))
       #filterStatData<-filterStatData[,origfilterStats] #put it in order, though user shouldn't depend on it.
+    }
+    if(!is.null(filterNames)){
+      m<-match(filterStatsOrig,colnames(filterStatData))
+      if(any(is.na(m))) stop("error in assigning given filterNames to filterStats")
+      colnames(filterStatData)[m]<-filterNames			
     }
     filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
     return(object)
@@ -116,9 +125,7 @@ setMethod(
         if(length(whDo)>0){
           whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
           if(length(whAssigned)>0){
-            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],...)
-            whNew<-match(filterStats[whDo],colnames(rowData(out)))
-            colnames(rowData(out))[whNew]<-newNames[whDo]	
+            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],filterNames=newNames[whDo],...)
           }
           else 
             stop("All samples are unassigned for clustering", clusterLabels(object)[whCluster])

@@ -103,41 +103,42 @@ setMethod(
         
       }
     }
-    
     ###Get the sorted index using the matrix version of plotClusters
     ### out is the result of plotClusters
     if(sortBy=="highlighted"){
-      tempClusters<-clusterMatrix(object)[,c(whichClusters,whichClusterMany),drop=FALSE]
-      out<-plotClusters(tempClusters,plot=FALSE)	 	
-      
-      resM<-out$colors[,c(seq_along(whichClusters)),drop=FALSE]
+      orderOfClusters<-c(whichClusters,whichClusterMany)
+      highIndex<-c(seq_along(whichClusters))
+      cmIndex<-seq_along(orderOfClusters)[-highIndex]
     }
     else{
-      tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichClusters),drop=FALSE]
-      out<-plotClusters(tempClusters,plot=FALSE)
+      orderOfClusters<-c(whichClusterMany,whichClusters)
+      cmIndex<-c(seq_along(whichClusterMany))
+      highIndex<-seq_along(orderOfClusters)[-cmIndex]
+      
     }
-    
+    tempClusters<-clusterMatrix(object)[,orderOfClusters,drop=FALSE]
+    out<-plotClusters(tempClusters,plot=FALSE)	 	
+      
     ### Create color matrix
     ### resM is the highlighted clusters (columns the clusters)
     ### cmM is the clusterMany clusters (columns the clusters)
     
     if(existingColors!="ignore") 
-      existingColorMat<-convertClusterLegend(object, whichClusters=c(whichClusterMany,whichClusters), output="matrixColors")
+      existingColorMat<-convertClusterLegend(object, whichClusters=orderOfClusters, output="matrixColors")
     
     if(existingColors %in% c("all","highlightOnly")){
-      resM<-existingColorMat[,-c(seq_along(whichClusterMany)),drop=FALSE]
+      resM<-existingColorMat[,highIndex,drop=FALSE]
     }
     else{
-      resM<-out$colors[,-c(seq_along(whichClusterMany)),drop=FALSE]
+      resM<-out$colors[,highIndex,drop=FALSE]
       
     }
     if(existingColors =="all"){
-      cmM<-existingColorMat[,-c(seq_along(whichClusters)),drop=FALSE]
+      cmM<-existingColorMat[,cmIndex,drop=FALSE]
     }
     else{
-      cmM<-out$colors[,-c(seq_along(whichClusters)),drop=FALSE] 
+      cmM<-out$colors[,cmIndex,drop=FALSE] 
     }
-    
     
     # make replication of results
     repResults<-lapply(seq_len(ncol(resM)),function(ii){

@@ -1,4 +1,4 @@
-Changes in version 2.1.1-9001 ( Release date: )
+Changes in version 2.1.2-9002 ( Release date: )
 ==============
 
 Changes:
@@ -7,12 +7,18 @@ Changes:
 	- `combineProportion` now `consensusProportion`
 	- `combineMinSize` now `consensusMinSize`
 * Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
+* `plotDendrogram` now allows for plotting of `sampleData` like `plotHeatmap` or `plotClusters`
+
+Changes in version 2.1.2 ( Release date: 2018-05-17)
+==============
 
 Bugs:
 * Fix so that estimates of the proportion non-null in `mergeClusters` are always positive.
+* Fix so that calculation of filter with `ignoreUnassignedVar` doesn't delete existing base filter of same type.
+* Fix `plotClustersWorkflow` where wrong cluster was grabbed to plot.
+* Fix bug in `plotDendrogram` where colors of clusters plotted with could be subsumbed by color of previous clustering. (git Issue `#220`)
 
-Changes in version 2.1.1 ( Release date: 2018-05-18)
-==============
+Changes in version 2.1.1 ( Release date: 2018-05-15)
 
 Bugs: 
 * Fixed error introduced in 2.0.0 where arguments to `mergeCutoff` and `mergeLogFCcutoff` where passed instead to `dendroNDims`.
