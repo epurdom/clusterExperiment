@@ -39,6 +39,7 @@ Imports:
 	  HDF5Array (>= 1.7.10),
 	  DelayedArray (>= 0.5.31)
 Suggests:
+<<<<<<< HEAD
     BiocStyle,
     knitr,
     testthat,
@@ -47,6 +48,16 @@ Suggests:
 	  Rtsne,
 	  scran,
 	  igraph
+=======
+  BiocStyle,
+  knitr,
+  testthat,
+	scRNAseq,
+  MAST,
+	Rtsne,
+	scran,
+	igraph
+>>>>>>> develop
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false

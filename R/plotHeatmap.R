@@ -358,7 +358,7 @@ setMethod(
         if(length(clusterFeaturesData)==1 && isPossibleReducedDims(data,clusterFeaturesData)){
           ##### Dimensionality reduction ####
           if(!isReducedDims(data,clusterFeaturesData)){
-            data<-makeReducedDims(data,reducedDims=clusterFeaturesData,maxDims=nFeatures)
+            data<-makeReducedDims(data,reducedDims=clusterFeaturesData,maxDims=nFeatures,whichAssay=whichAssay)
           }
           heatData<-t(reducedDim(data,type=clusterFeaturesData))
         }
@@ -369,7 +369,7 @@ setMethod(
           if(length(clusterFeaturesData)==1 && isPossibleFilterStats(data, clusterFeaturesData) ){
             ##### Filter ####
             if(!isFilterStats(data,clusterFeaturesData)){
-              data<-makeFilterStats(data,filterStats=clusterFeaturesData)
+              data<-makeFilterStats(data,filterStats=clusterFeaturesData,whichAssay=whichAssay)
             }
             if(is.na(nFeatures)) nFeatures<-min(NROW(data),500)
             data<-filterData(data,filterStats=clusterFeaturesData,percentile=nFeatures)
@@ -538,7 +538,7 @@ setMethod(
           #if hclust, then use the visualizeData data
           #unless visualizeData data is original, in which case use transformed (and possibly filtered)
           if(is.character(visualizeData) && visualizeData=="original")
-            clusterSamplesData<-transformData(data)
+            clusterSamplesData<-transformData(data,whichAssay=whichAssay)
           else clusterSamplesData<-heatData
         }
       }

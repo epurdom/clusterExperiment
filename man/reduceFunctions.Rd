@@ -24,7 +24,7 @@
 \usage{
 \S4method{makeFilterStats}{SummarizedExperiment}(object,
   filterStats = listBuiltInFilterStats(), transFun = NULL,
-  isCount = FALSE, filterNames = NULL)
+  isCount = FALSE, filterNames = NULL, whichAssay = 1)
 
 \S4method{makeFilterStats}{matrixOrHDF5}(object, ...)
 
@@ -35,14 +35,14 @@
 listBuiltInFilterStats()
 
 \S4method{filterData}{SummarizedExperiment}(object, filterStats, cutoff,
-  percentile, absolute = FALSE, keepLarge = TRUE)
+  percentile, absolute = FALSE, keepLarge = TRUE, whichAssay = 1)
 
 \S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod, typeToShow)
 
 \S4method{filterNames}{SummarizedExperiment}(object)
 
 \S4method{makeReducedDims}{SingleCellExperiment}(object, reducedDims = "PCA",
-  maxDims = 500, transFun = NULL, isCount = FALSE)
+  maxDims = 500, transFun = NULL, isCount = FALSE, whichAssay = 1)
 
 \S4method{makeReducedDims}{matrixOrHDF5}(object, ...)
 
@@ -70,6 +70,9 @@ and \code{isCount=FALSE} will give a transformation function
 \code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
+
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
 
 \item{...}{Values passed on the the 'SingleCellExperiment' method.}
 

@@ -118,14 +118,36 @@ colnames(colData(se))[wh]<-c("Published1","Published2")
 
 We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`consensusMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
 
-Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves by running the following code (or setting `eval=TRUE` in the .Rmd file) with the `ncores` option appropriately chosen for their machine. 
-
+Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the example of a common run of RSEC: 
 
 ```{r RSEC, eval=FALSE}
 library(clusterExperiment)
 system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
-	reduceMethod="PCA", nReducedDims=10,consensusMinSize=3,
+	reduceMethod="PCA", nReducedDims=10,
 	ncores=1, random.seed=176201))
+```
+
+However, to exactly replicate the results here, we will set a large number of parameters to make sure that the vignette is back-compatible in case some defaults change. We will explain these parameters as we go along, but many of these parameters are the default. 
+
+```{r RSECExact, eval=FALSE}
+library(clusterExperiment)
+system.time(rsecFluidigm<-RSEC(se, 
+  isCount = TRUE, 
+	k0s = 4:15, 
+  alphas=c(0.1, 0.2, 0.3), 
+  betas = 0.9, 
+  reduceMethod="PCA",
+  nReducedDims=10,
+  minSizes=1,
+ clusterFunction="hierarchical01",
+ consensusMinSize=3,
+ consensusProportion=0.7,
+ dendroReduce= "mad",
+ dendroNDims=1000,
+ mergeMethod="adjP",
+ mergeCutoff=0.01,
+ ncores=1,
+ random.seed=176201))
 ```
 
 Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
@@ -135,9 +157,16 @@ Instead we have saved the results from this call as a data object in the package
 #it will overwrite the rsecFluidigm you made
 library(clusterExperiment)
 data("rsecFluidigm")
+metadata(rsecFluidigm)$packageVersion
 ```
 
-
+```{r results="hide",echo=FALSE}
+# a simple check to make sure have same clusterings as expected
+x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
+y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
+if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
+if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+```
 ### The output 
 
 We can look at the object that was created.
@@ -156,7 +185,10 @@ For right now we will only mention the most basic such function that retrieves t
 
 ```{r primaryCluster}
 head(primaryCluster(rsecFluidigm),20)
+tableClusters(rsecFluidigm)
 ```
+
+
 
 The clusters are encoded by consecutive integers. Notice that some of the samples are assigned the value of `-1`. `-1` is the value assigned in this package for samples that are not assigned to any cluster. Why certain samples are not clustered depends on the underlying choices of the clustering routine and we won't get into here until we learn a bit more about RSEC. Another special value is `-2` discussed in the section on [ClusterExperiment objects](#ceobjects)
 
@@ -181,7 +213,7 @@ We can see the names of more clusterings, and see that the different parameter v
 head(getClusterManyParams(rsecFluidigm))
 ```
 
-### Visualizing the output
+### Visualizing the output {#visualsummary}
 `clusterExperiment` also provides many ways to visualize the output of RSEC (or any set of clusterings run in `clusterExperiment`, as we'll show below). 
 
 **Visualizing many clusterings** The first such useful visualization is a plot of all of the clusterings together using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
@@ -234,13 +266,13 @@ Since "makeConsensus" is a partition of "mergeClusters", there is perfect subset
 plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","makeConsensus"))
 ```
 
-Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering), but the proportion of times across the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
+Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering, and those many matrices are not stored), but rather the proportion of times across the final results of the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
 
 
 **Plot of Dendrogram** We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
-plotDendrogram(rsecFluidigm,whichClusters=c("makeConsensus","mergeClusters"),plotType="colorblock",leafType="sample")
+plotDendrogram(rsecFluidigm,whichClusters=c("makeConsensus","mergeClusters"))
 ```
 
 As shown in this plot, the individual clusters of the `makeConsensus` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `makeConsensus` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
@@ -289,10 +321,24 @@ plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClust
 
 The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
 
-In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering):
+In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering). Again, we will set a lot of parameters to keep the object the same as before:
 
 ```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,consensusMinSize=3)
+rsecFluidigm<-RSEC(rsecFluidigm,
+ consensusMinSize=3,
+ consensusProportion=0.7,
+ dendroReduce= "mad",
+ dendroNDims=1000,
+ mergeMethod="adjP",
+ mergeCutoff=0.01
+ )
+par(mar=plotCMar)
+plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+```
+
+```{r results="hide",echo=FALSE}
+# a small check to make sure have same clusterings as before
+if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.1"])) stop("rerunning rsec has changed clustering")
 ```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
@@ -504,13 +550,9 @@ ce<-makeDendrogram(ce,reduceMethod="var",nDims=500)
 plotDendrogram(ce)
 ```
 
-We can see that clusters 1 and 3 are most closely related, at least in the top 500 most variable genes. 
+Notice that the relative sizes of the clusters are shown as well.
 
-We can see the relative size of the clusters by setting some options in `plotDendrogram`:
-
-```{r makeDendrogram2}
-plotDendrogram(ce,plotType="colorblock",leafType="sample")
-```
+We can see that clusters 1 and 3 are most closely related, at least in the top 500 most variable genes.  
 
 
 Notice I don't need to make the dendrogram again, because it's saved in `ce`.
@@ -542,7 +584,7 @@ Notice that now the plot has given the estimates from *all* of the methods (the 
 It can be interesting to visualize the clusterings both with the `plotClustersWorkflow`  and the co-Proportion plot (a heatmap of the proportion of times the samples co-clustered):
 
 ```{r mergeClusters_coClustering}
-plotClustersWorkflow(ce,whichClusters="workflow") #, sampleData=c("Biological_Condition","Published2")
+plotClustersWorkflow(ce,whichClusters="workflow") 
 plotCoClustering(ce,whichClusters=c("mergeClusters","makeConsensus"),
                  sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
@@ -649,6 +691,8 @@ print(ce)
 However, the user should not assign new values to `clusterIds` which must correspond to the internal ids of the clustering stored in the clustering matrix.
 
 # Visualizing the data {#visual}
+
+In the quick start (above)[#visualsummary] we ran through many plots available for visualizing the data in conjunction with the clusterings. In this section we do not go through all of these plots, but just highlight the details of some plots which are more complicated. 
 
 ## Cluster Alignment plot with `plotClusters`{#plotClusters}
 
@@ -937,6 +981,48 @@ plotHeatmap(ce,clusterSamplesData="primaryCluster",
 
 The function `setBreaks` which is called internally by `plotHeatmap`  is also a stand-alone function that the user can call directly to have greater flexibility in getting breaks for the heatmap. For example it allows the user to specify that the breaks should be symmetric around 0. We also provide some default color spectrum that can be better for different settings or symmetric data around 0 -- see `?showHeatmapPalettes`
 
+
+## Dendrogram of clusters with `plotDendrogram`{#plotDendrogram}
+
+We saw above that we can quickly see the hierarchies of the clusters using the `plotDendrogram` function. 
+
+```{r redoPlotDendro}
+plotDendrogram(ce)
+```
+
+This shows us the dendrogram stored in the object (created from the clustering resulting from the `makeConsensus` step). The relative sizes of each cluster are shown, along with a legend of the clusters. 
+
+### Changing the leaf and plot type 
+Alternatively, we can just make a simpler plot with `plotDendrogram` by use of the `leafType` and `plotType` arguments. The above plot uses the defaults: `leafType="samples"`, meaning plot the individual samples at the leaves of the tree, and `plotType="colorblock"` meaning to display the leaves' values as blocks of colors. Here we change these options
+
+
+```{r plotDendroTypes}
+par(mfrow=c(1,2))
+plotDendrogram(ce,leafType="clusters",plotType="colorblock")
+plotDendrogram(ce,leafType="clusters",plotType="name")
+```
+
+If we have a small number of samples, we can even choose `leafType="samples"` and `plotType="name"` to show the names of the individual samples, but this is usually not the case.
+
+### Changing the information plotted with dendrogram
+
+** Additional clusters ** If the option is `plotType="colorblock"` and `leafType="samples"` (i.e. the default) we can also vary the sample information that is plotted with the dendrogram, much like with `plotHeatmap`. In particular, we can show multiple clusters using the option `whichClusters`.
+
+```{r plotDendroMultiClusters}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"))
+```
+
+
+** Merge Information** We can also plot the merging information, with `merge="mergeMethod"`, i.e. the method actually used to merge the data. We could alternatively plot any merge method that has been run from a call to `mergeClusters`. 
+
+```{r plotMerge}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod")
+```
+
+** Node information ** Finally, we can also color code the nodes or plot the node names, for example if we want to link them to our `getBestFeatures` results.
+
+
+
 # The clustering workflow {#workflow}
 
 We will now go into more detail about important options for the main parts of the clustering workflow.
@@ -944,7 +1030,7 @@ We will now go into more detail about important options for the main parts of th
 ## clusterMany {#clusterMany}
 In the quick start section we picked some simple and familiar clustering options that would run quickly and needed little explanation. However, our workflow generally assumes more complex options and more parameter variations are tried. Before getting into the specific options of `clusterMany`, let us first describe some of these more complicated setups, since many of the arguments of `clusterMany` depend on understanding them. 
 
-### Base clustering algorithms and the  `ClusterFunction` class 
+### Base clustering algorithms and the  `ClusterFunction` class {#ClusterFunction}
 
 This package is meant to be able to use and compare different clustering routines. However, the required input, arguments, etc. of different clustering algorithms varies greatly. We create the `ClusterFunction` class so that we can take ensure that the necessary information to fit into our workflow is well defined, and otherwise the other details of the algorithm can be ignored. In general, the user will not need to know the details of this class, since they will use built-in functions provided by the package which can be accessed by character values. To see the set of character values that correspond to built in functions, 
 
@@ -1140,9 +1226,11 @@ plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
 
 Notice that using the "tight" methods did not give relevant results (no samples were clustered)
 
-### Example using a user-defined clustering function
+### Example using a user-defined clustering algorithm
 
-Here, we show how to use a user-defined clustering function in `clusterSingle`.
+Here, we show how to use a user-defined clustering algorithm in `clusterSingle`. Our clustering algorithm will be a simple nearest-neighbor clustering.
+
+To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (Section)[#ClusterFunction] for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement.  
 
 First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
 
@@ -1154,26 +1242,32 @@ SNN_wrap <- function(x, k, steps = 4, ...) {
 }
 ```
 
-Our wrapper has two required parameters: `x`, a matrix with the data to be clustered; and `k` an integer value that specifies the number of nearest neighbors. The function returns a integer vector with the cluster labels.
+To create a type `K` algorithm, the wrapper must have two required arguments: 
 
-`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details.
+1. an argument for the input data. This can be  `x` if the input is a matrix of $N$ samples on the columns and features on the rows, or `diss` if the input is expected to be a $NxN$ dissimilarity matrix. Both `x` and `diss` can be given as parameters if the algorithm handles either one) 
+2. a parameter `k` specifying the number of clusters. 
+
+Our wrapper function should return a *integer* vector corresponding to the cluster assignments of each sample (see `?ClusterFunction` for information about other types of output available).
+
+`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details. The call to `internalFunctionCheck` contains, in addition to the function definition, arguments specifying information about the type of input, the type of algorithm, and type of output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
 
 ```{r custom_validate}
 internalFunctionCheck(SNN_wrap, inputType = "X", algorithmType = "K",
                       outputType="vector")
 ```
 
-If it passes all checks, we can then create an object of the S4 class `ClusterFunction` to be used within the package.
-This contains, in addition to the function definition, information of the type of input and output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
+If it passes all checks (returns `TRUE`), we can then create an object of the S4 class `ClusterFunction` to be used within the package using this same set of arguments. If it fails, it will return a character string giving the error (among the checks is running the function on a small randomly generated set of data).
+
+Since we passed the checks, we are ready to define our `ClusterFunction` object.
 
 ```{r custom_s4}
 SNN <- ClusterFunction(SNN_wrap, inputType = "X", algorithmType = "K",
                      outputType="vector")
 ```
 
-Now that we have our `SNN` object, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier.
+Now that we have our object `SNN`, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier. However, unlike before, you should pass the actual object `SNN`, and not a quoted version (i.e. not `"SNN"`).
 
-In this example, we use `clusterSingle` to implement a subsample clustering based on SNN.
+In this example, we use `clusterSingle` to implement a subsample clustering based on SNN. We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
 
 ```{r custom_clusterSingle}
 ceCustom <- clusterSingle(
@@ -1233,6 +1327,8 @@ ce<-clusterMany(ce, clusterFunction="pam",ks=2:10,findBestK=TRUE,removeSil=c(TRU
 
 Note that we also provided in the above call the additional arguments `mainClusterArgs`, `seqArgs` and `subsampleArgs` which normally we might neglect with a direct call to `clusterMany`. This is because in creating the `paramMatrix`, `clusterMany` may internally change these default values, and we want to make sure we exactly replicate what we would get from a direct call.
 -->
+
+
 
 ## Create a unified cluster from many clusters with `makeConsensus` {#makeConsensus}
 

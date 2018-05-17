@@ -72,6 +72,13 @@ If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
   the samples with -1/-2 will not be plotted, nor will the category show up in the
   legend.
+
+If the requested \code{reducedDim} method has not been created yet,
+  the function will call \code{\link{makeReducedDims}} on the FIRST assay of
+  \code{x}. The results of this method will be saved as part of the object
+  and returned INVISIBLY (meaning if you don't save the output of the
+  plotting command, the results will vanish). To pick another assay, you
+  should call `makeReducedDims` directly and specify the assay.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

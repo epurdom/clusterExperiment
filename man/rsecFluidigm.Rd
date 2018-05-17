@@ -25,9 +25,28 @@ wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 library(clusterExperiment)
 ncores<-1
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,reduceMethod="PCA",nReducedDims=10,
-ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
- consensusMinSize=3))
+system.time(
+  rsecFluidigm<-RSEC(se, 
+                     isCount = TRUE, 
+                     k0s = 4:15, 
+                     alphas=c(0.1, 0.2, 0.3), 
+                     betas = 0.9,
+                     reduceMethod="PCA", 
+                     nReducedDims=10,
+                     minSizes=1, 
+                     clusterFunction="hierarchical01",
+                     consensusMinSize=3,
+                     consensusProportion=0.7,
+                     dendroReduce= "mad",
+                     dendroNDims=1000,
+                     mergeMethod="adjP",
+                     mergeCutoff=0.01,
+                     ncores=1, 
+                     random.seed=176201)
+)
+metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
+if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
 packageVersion("clusterExperiment")
 devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }

@@ -1,5 +1,4 @@
 Changes in version 2.1.2-9002 ( Release date: )
-==============
 
 Changes:
 * change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`). 
@@ -8,6 +7,7 @@ Changes:
 	- `combineMinSize` now `consensusMinSize`
 * Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
 * `plotDendrogram` now allows for plotting of `sampleData` like `plotHeatmap` or `plotClusters`
+* Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============
@@ -19,6 +19,10 @@ Bugs:
 * Fix bug in `plotDendrogram` where colors of clusters plotted with could be subsumbed by color of previous clustering. (git Issue `#220`)
 
 Changes in version 2.1.1 ( Release date: 2018-05-15)
+<<<<<<< HEAD
+=======
+==============
+>>>>>>> develop
 
 Bugs: 
 * Fixed error introduced in 2.0.0 where arguments to `mergeCutoff` and `mergeLogFCcutoff` where passed instead to `dendroNDims`.
