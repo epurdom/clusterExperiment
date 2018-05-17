@@ -119,6 +119,7 @@ setMethod(
     label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
     #   mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL, 
     
+    
     if(is.na(x@merge_dendrocluster_index)) mergeInfo<-"none"
     if(mergeInfo=="none"){
       mergeInfo<-NULL
@@ -309,7 +310,7 @@ setMethod(
             currMat<-currMat[whExist, ,drop=FALSE]
             
             whExistingColor<-which(currMat[,"color"] %in% newClusterLegendMat[,"color"])
-            
+            updatedCurrCl<-currCl
             if(length(whExistingColor)>0){
               #-----------
               #reassign the cluster id to the one matching existing color id.
@@ -320,7 +321,7 @@ setMethod(
               newId<-newClusterLegendMat[matchNew,"clusterIds"]
               mexist<-match(currCl,oldId)
               newFullId<-as.numeric(newId[mexist])
-              currCl[!is.na(mexist)]<-newFullId[!is.na(mexist)]
+              updatedCurrCl[!is.na(mexist)]<-newFullId[!is.na(mexist)]
               
               #change name so combination, if not already the same
               whDiff<-which(newClusterLegendMat[matchNew,"name"]!=currMat[whExistingColor,"name"])
@@ -344,7 +345,7 @@ setMethod(
               newId2<-seq(from=maxNew+1,by=1,length=length(oldId2)) #replace with this in legend
               mexist2<-match(currCl,oldId2) #match old ids to the clusterings vector
               newFullId2<-as.numeric(newId2[mexist2]) #will get NAs for those that don't match (e.g. have been changed by previous step)
-              currCl[!is.na(mexist2)]<-newFullId2[!is.na(mexist2)]
+              updatedCurrCl[!is.na(mexist2)]<-newFullId2[!is.na(mexist2)]
               
               ## change ids in currMat
               currMat[,"clusterIds"]<-newId2
@@ -359,6 +360,8 @@ setMethod(
               ## add to new cluster color legend
               newClusterLegendMat<-rbind(newClusterLegendMat,currMat)
             }
+            #change them all here (before changed)
+            currCl<-updatedCurrCl
             newCl<-cbind(newCl,currCl)
             
           }
