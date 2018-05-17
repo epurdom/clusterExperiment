@@ -64,7 +64,12 @@ test_that("whichClusters works with clusterMatrix",{
 test_that("adding clusters work as promised",{
   ##########
   #addClusterings
-  expect_silent(c1 <- addClusterings(ccSE, rep(c(-1, 1, 2), each=5),clusterTypes="newUser"))
+	vec<-rep(c(-1, 1, 2), each=5)
+  expect_silent(c1 <- addClusterings(ccSE, vec,clusterTypes="newUser"))
+	expect_silent(c2 <- addClusterings(ccSE, as.character(vec),clusterTypes="newUser"))
+	expect_silent(c3 <- addClusterings(ccSE, factor(vec),clusterTypes="newUser"))
+	expect_equal(c1,c2)
+	expect_equal(c1,c3)
   ###Check retain SE info
   expect_equal(colData(c1),colData(se)) 
   expect_equal(rownames(c1),rownames(se)) 
