@@ -238,13 +238,13 @@ par(mar=plotCMar)
 plotClustersWorkflow(rsecFluidigm)
 ```
 
-**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
+**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster.
 
 ```{r plotBarplotRSEC}
-plotBarplot(rsecFluidigm,main="Final Clustering")
+plotBarplot(rsecFluidigm,main=paste("Distribution of samples of",primaryClusterLabel(rsecFluidigm)))
 ```
 
-We can also pick a particular intermediate clustering, say our intial ensembl clustering before merging.
+We can also pick a particular intermediate clustering, say our intial consensus clustering before merging.
 
 ```{r plotBarplotRSEC.2}
 plotBarplot(rsecFluidigm,whichClusters=c("makeConsensus" ))
@@ -272,6 +272,8 @@ Note that this is not the result from any particular subsampling (which was done
 **Plot of Dendrogram** We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
+plotDMar<-c(8.1,1.1,5.1,8.1)
+par(mar=plotDMar)
 plotDendrogram(rsecFluidigm,whichClusters=c("makeConsensus","mergeClusters"))
 ```
 
@@ -1009,6 +1011,7 @@ If we have a small number of samples, we can even choose `leafType="samples"` an
 ** Additional clusters ** If the option is `plotType="colorblock"` and `leafType="samples"` (i.e. the default) we can also vary the sample information that is plotted with the dendrogram, much like with `plotHeatmap`. In particular, we can show multiple clusters using the option `whichClusters`.
 
 ```{r plotDendroMultiClusters}
+par(mar=plotDMar)
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"))
 ```
 
@@ -1016,6 +1019,7 @@ plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"))
 ** Merge Information** We can also plot the merging information, with `merge="mergeMethod"`, i.e. the method actually used to merge the data. We could alternatively plot any merge method that has been run from a call to `mergeClusters`. 
 
 ```{r plotMerge}
+par(mar=plotDMar)
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod")
 ```
 

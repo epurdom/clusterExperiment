@@ -265,19 +265,10 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "primaryCluster",
-  def = function(x) {
-    standardGeneric("primaryCluster")
-  }
-)
-
-setGeneric(
-  name = "primaryClusterIndex",
-  def = function(x) {
-    standardGeneric("primaryClusterIndex")
-  }
-)
+setGeneric(name = "primaryCluster", def = function(x) { standardGeneric("primaryCluster")})
+setGeneric(name = "primaryClusterIndex", def = function(x) {standardGeneric("primaryClusterIndex")})
+setGeneric(name = "primaryClusterLabel", def = function(x) {standardGeneric("primaryClusterLabel")})
+setGeneric(name = "primaryClusterType", def = function(x) {standardGeneric("primaryClusterType")})
 
 setGeneric(
   name = "primaryClusterIndex<-",
