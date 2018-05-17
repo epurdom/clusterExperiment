@@ -17,7 +17,7 @@ Bugs:
 * Fix `plotClustersWorkflow` where wrong cluster was grabbed to plot.
 * Fix bug in `plotDendrogram` where colors of clusters plotted with could be subsumbed by color of previous clustering. (git Issue `#220`)
 
-Changes in version 2.1.1 ( Release date: 2018-05-08)
+Changes in version 2.1.1 ( Release date: 2018-05-15)
 ==============
 
 Bugs: 
