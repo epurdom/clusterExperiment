@@ -121,3 +121,77 @@ test_that("plotting works wih non default assays", {
   expect_silent(plotHeatmap(small_cc, whichAssay=2))
 
 })
+
+test_that("RSEC works independent of assay order", {
+  multi_se <- SummarizedExperiment(assays = list(counts = simCount,
+                                                 logcounts = log1p(simCount)))
+  multi_se2 <- SummarizedExperiment(assays = list(logcounts = log1p(simCount),
+                                                  counts = simCount))
+  multi_cc <- ClusterExperiment(multi_se, trueCluster)
+  multi_cc2 <- ClusterExperiment(multi_se2, trueCluster)
+
+  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "logcounts"),
+                 "Merging will be done on")
+
+  expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "logcounts"),
+                 "Merging will be done on")
+
+  expect_equal(out1, out2)
+
+  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = 2),
+                 "Merging will be done on")
+
+  expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = 1),
+                 "Merging will be done on")
+
+  expect_equal(out1, out2)
+
+  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="PCA", nReducedDims = 50,
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "counts"),
+                 "Merging will be done on")
+
+  expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="PCA", nReducedDims = 50,
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "counts"),
+                 "Merging will be done on")
+
+  expect_equal(out1, out2)
+
+  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="var",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "logcounts"),
+                 "Merging will be done on")
+
+  expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="var",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            random.seed=495, whichAssay = "logcounts"),
+                 "Merging will be done on")
+
+  expect_equal(out1, out2)
+
+})

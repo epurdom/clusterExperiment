@@ -214,7 +214,7 @@ setMethod(
         if(length(nReducedDims)==0)
           stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
         maxDims<-max(nReducedDims)
-        x<-makeReducedDims(x,reducedDims=dimNam, 
+        x<-makeReducedDims(x,reducedDims=dimNam,
                            maxDims=maxDims,transFun=transFun,isCount=isCount)
       }
       if(length(filtNam)>0){
@@ -271,20 +271,29 @@ setMethod(
     if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn)
       stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
     if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
-      ###This will make it calculate the requested reduceMethod values and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
-      ## Note that if no Filter saved, and asked for filter
-      outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
-      if(class(outval)=="ClusterExperiment") {
-        #lost anything about the meta data, old filtering/reducedDim
-        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-        #but now have lost the newly calculated reducedDim etc.! only have the old ones.
-        if(anyFilterBuiltIn) filterStats(retval)<-filterStats(outval)
-        if(anyDimBuiltIn) reducedDims(retval)<-reducedDims(outval)
-        return(retval)
+
+      dimNam<-reduceMethod[isBuiltInReducedDims(reduceMethod)]
+      filtNam<-reduceMethod[isBuiltInFilterStats(reduceMethod)]
+
+      if(length(dimNam)>0 | length(filtNam)>0){
+        if(length(dimNam)>0){
+          nReducedDims<-na.omit(nReducedDims)
+          if(length(nReducedDims)==0)
+            stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
+          maxDims<-max(nReducedDims)
+          x<-makeReducedDims(x,reducedDims=dimNam, whichAssay = whichAssay,
+                             maxDims=maxDims,transFun=transFun,isCount=isCount)
+        }
+        if(length(filtNam)>0){
+          #Need to think how can pass options to filterData...
+          x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,
+                             isCount=isCount, whichAssay = whichAssay)
+        }
       }
-      else return(outval)
+
+
     }
-    else{
+
       ###############
       #Check inputs of reduceMethod slots
       ##NOTE: For now, IF there is a reducedDim slot, then will not try
@@ -661,8 +670,6 @@ setMethod(
       }
       return(outval)
     }
-
-  }
 )
 
 #' @rdname clusterMany
