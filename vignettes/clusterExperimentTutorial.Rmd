@@ -704,10 +704,16 @@ For simplicity, we'll refer to the first as filtering of the data and second as 
 
 `ClusterExperiment` inherits from the standard Bioconductor `SingleCellExperiment` class.  Briefly, the `SingleCellExperiment` class extends the `SummarizedExperiment` class to give a structure for saving the reduced matrices from dimensionality reductions as we described above.  They are saved in the slot `reducedDims`, which is a `SimpleList` of datasets that have the same number of observations as the original data in the assay slot, but reduced features (`?SingleCellExperiment`). This gives a unified way to save the results of applying a dimensionality reduction method of the second type; the package also gives helper functions to access them, etc. Multiple such dimensionality reductions can be stored since it is a list, and the user gives them names, e.g. "PCA" or "tSNE". 
 
-`ClusterExperiment` uses the slot `reducedDims` to both save the results of dimensionality reductions if they are calculated and and also to reuse them if the necessary ones have already been created. This allows `clusterExperiment` to make use of any dimensionality reduction method so long as the user saves it in the appropriate slot in a `SingleCellExperiment` object. The user can also choose not like before and the function (like `clusterMany`) do the dimensionality reduction (i.e. PCA) internally. The difference is that now the results of the PCA will be stored in the appropriate slot so that they will not need to be recalculated in the future. 
+`ClusterExperiment` uses the slot `reducedDims` to both save the results of dimensionality reductions if they are calculated and and also to reuse them if the necessary ones have already been created. This allows `clusterExperiment` to make use of any dimensionality reduction method so long as the user saves it in the appropriate slot in a `SingleCellExperiment` object. The user can also choose like before to have the function (like `clusterMany`) do the dimensionality reduction (i.e. PCA) internally. The difference is that now the results of the PCA will be stored in the appropriate slot so that they will not need to be recalculated in the future. 
 
 We also added in `clusterExperiment` package a similar procedure for storing the filtering statistics (i.e. statistics calculated on each gene). An example is the the variance across observations, calculated for every gene.  `clusterExperiment` when calculating statistics (like `var` or `mad`) will add the per-gene value of the statistic as a column of the `rowData` of the `ClusterExperiment` object. Similarly, if the user has already calculated a per-gene statistic and saved it as a column in the `rowData` slot, this user-defined statistic can be used for filtering. This means that the user is not limited to the built-in filtering functions provided in `clusterExperiment`.
 
+The functions `makeReducedDims` and `makeFilterStats` calculate the dimensionality reduction and filtering statistics, respectively, provided by `clusterExperiment` and store them in the appropriate slot. To see the current list of built-in functions:
+
+```{r buildInDimReduce}
+listBuiltInReducedDims()
+listBuiltInFilterStats()
+```
 
 # Visualizing the data {#visual}
 
@@ -1447,7 +1453,7 @@ shortNames50<-gsub("reduceMethod=1,nReducedDims=50,nFilterDims=NA,","",clusterNa
 
 ce <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
                        clusterLabel = "consensusPCA15")
-ce <- makeConsensus(ceSub, whichClusters = clusterNames50, proportion = 0.7,
+ce <- makeConsensus(ce, whichClusters = clusterNames50, proportion = 0.7,
                        clusterLabel = "consensusPCA50")
 ```
 
@@ -1457,8 +1463,8 @@ Here we show using this features with `plotClustersWorkflow` for the two differe
 
 ```{r sub_visualize,fig.width=12,fig.height=6}
 par(mar=plotCMar,mfrow=c(1,2))
-plotClustersWorkflow(ceSub, whichClusters ="consensusPCA15",clusterLabel="Consensus",whichClusterMany=match(clusterNames15,clusterLabels(ceSub)),clusterManyLabels=c(shortNames15),axisLine=-1,nBlankLines=1,main="15 PCs")
-plotClustersWorkflow(ceSub, whichClusters = c("consensusPCA50"),clusterLabel="Consensus",clusterManyLabels=shortNames50, whichClusterMany=match(clusterNames50,clusterLabels(ceSub)),nBlankLines=1,main="50 PCs")
+plotClustersWorkflow(ce, whichClusters ="consensusPCA15",clusterLabel="Consensus",whichClusterMany=match(clusterNames15,clusterLabels(ceSub)),clusterManyLabels=c(shortNames15),axisLine=-1,nBlankLines=1,main="15 PCs")
+plotClustersWorkflow(ce, whichClusters = c("consensusPCA50"),clusterLabel="Consensus",clusterManyLabels=shortNames50, whichClusterMany=match(clusterNames50,clusterLabels(ceSub)),nBlankLines=1,main="50 PCs")
 ```
 
 We can also choose a subset and vary the parameters
