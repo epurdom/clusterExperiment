@@ -176,14 +176,14 @@ test_that("plotReducedDims works",{
 	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE))
 
 	#test on object that doesn't have saved:
-	expect_silent(clD<-plotReducedDims(ceSimData,reducedDim="PCA"))
+	expect_warning(clD<-plotReducedDims(ceSimData,reducedDim="PCA"),"will be run on the FIRST assay")
 	expect_equal(NCOL(reducedDim(clD,type="PCA")),2) #default.
 
 	#higher dims.
 	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=1:4))
 	expect_error(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=158:200),"Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
-	expect_silent(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58))
+	expect_warning(plotReducedDims(cl,whichCluster="nReducedDims=10,k=4,findBestK=FALSE,removeSil=TRUE",legend=TRUE,whichDims=51:58),"will be run on the FIRST assay")
 
 
 
