@@ -214,12 +214,12 @@ setMethod(
         if(length(nReducedDims)==0)
           stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
         maxDims<-max(nReducedDims)
-        x<-makeReducedDims(x,reducedDims=dimNam, whichAssay=whichAssay,
+        x<-makeReducedDims(x,reducedDims=dimNam, 
                            maxDims=maxDims,transFun=transFun,isCount=isCount)
       }
       if(length(filtNam)>0){
         #Need to think how can pass options to filterData...
-        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount,whichAssay=whichAssay)
+        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)
       }
     }
     else{

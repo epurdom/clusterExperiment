@@ -323,12 +323,12 @@ setMethod(
 		  x<-transformData(x,transFun=transFun,whichAssay=whichAssay)
 	  }
 	  else if(reduceMethod%in%listBuiltInReducedDims()){
-		  transObj<-makeReducedDims(x,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount,whichAssay=whichAssay)
+		  transObj<-makeReducedDims(x,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
 		  x<-t(reducedDim(transObj,type=reduceMethod))
 	  }
 	  else if(reduceMethod %in% listBuiltInFilterStats()){
-		  transObj<-makeFilterStats(x,filterStat=reduceMethod, transFun=transFun,isCount=isCount,whichAssay=whichAssay)
-		  x<-transformData(filterData(transObj,filterStats=reduceMethod,percentile=nDims), transFun=transFun,isCount=isCount,whichAssay=whichAssay)
+		  transObj<-makeFilterStats(x,filterStat=reduceMethod, transFun=transFun,isCount=isCount)
+		  x<-transformData(filterData(transObj,filterStats=reduceMethod,percentile=nDims), transFun=transFun,isCount=isCount)
 	  }
 	  else stop("invalid value for reduceMethod -- not in built-in filter or reducedDim method")
     }
