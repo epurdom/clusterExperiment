@@ -320,7 +320,7 @@ setMethod(
         warning("specifying nDims has no effect if reduceMethod==`none`")
       }
 	  if(reduceMethod=="none"){
-		  x<-transformData(x,transFun=transFun,whichAssay=whichAssay)
+		  x<-transformData(x,transFun=transFun)
 	  }
 	  else if(reduceMethod%in%listBuiltInReducedDims()){
 		  transObj<-makeReducedDims(x,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)

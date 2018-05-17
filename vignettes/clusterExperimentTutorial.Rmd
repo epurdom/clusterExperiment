@@ -1248,7 +1248,6 @@ Our wrapper has two required parameters: `x`, a matrix with the data to be clust
 internalFunctionCheck(SNN_wrap, inputType = "X", algorithmType = "K",
                       outputType="vector")
 ```
-
 If it passes all checks, we can then create an object of the S4 class `ClusterFunction` to be used within the package.
 This contains, in addition to the function definition, information of the type of input and output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
 
