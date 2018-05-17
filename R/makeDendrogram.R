@@ -93,7 +93,7 @@ setMethod(
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
 
-        ########
+    ########
     ##Transform the data
     ########
     if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
