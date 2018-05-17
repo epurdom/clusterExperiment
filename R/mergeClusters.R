@@ -180,6 +180,7 @@ setMethod(
                         plotInfo="none",
                         nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
                         cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+		if(any(c("whichCluster","whichClusters") %in% names(list(...))) stop("The argument 'whichCluster' is not accepted for this function. The clustering used for merging will always be taken as that clustering that created the currently stored dendrogram (given by 'dendroClusterIndex')")
     dendroSamples<-NULL #currently option is not implemented for matrix version...
     if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
     logFCcutoff<-round(logFCcutoff,digits=1)

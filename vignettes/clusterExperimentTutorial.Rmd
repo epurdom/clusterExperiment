@@ -1530,13 +1530,16 @@ plotDendrogram(ce,leafType="sample",plotType="colorblock")
 We can actually use `plotDendrogram` to compare clusterings too, like `plotClusters` using the `whichClusters` argument to identfy which clusters to show. For example, lets compare our different `makeConsensus` results
 
 ```{r plotRemadeDendrogram_compare}
+par(mar=plotDMar)
 whCM<-grep("makeConsensus",clusterTypes(ce))
 plotDendrogram(ce,whichClusters=whCM,leafType="sample",plotType="colorblock")
 ```
 
 Unlike `plotClusters`, however, there is no aligning of samples to make samples with the same cluster group together. 
 
-**Making this clustering current** Note that if we look at the clusterType of the "makeConsensus,final" cluster, it is not of type "makeConsensus", but "makeConsensus.x". This is because we've run additional `makeConsensus` steps on this data, and the clustering "makeConsensus,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
+#### Designating among many clustering results to use for downstream analysis
+
+Note that if we look at the clusterType of the "makeConsensus,final" cluster, it is not of type "makeConsensus", but "makeConsensus.x". This is because we've run additional `makeConsensus` steps on this data, and the clustering "makeConsensus,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
 
 ```{r clusterTypeOfCombineMany}
 clusterTypes(ce)[which(clusterLabels(ce)=="makeConsensus,final")]
@@ -1555,7 +1558,7 @@ We don't need to recall `makeDendrogram`, since we already used this clustering 
 
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
-Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes a given False Discovery Rate threshold of 0.05 (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see the help of `mergeClusters`). 
+Starting at the bottom of the tree, those clusters that have the percentage of features with differential expression below a certain value (determined by the argument `cutoff`) are merged into a larger cluster. This testing of differences and merging continues until the estimated percentage of non-null DE features is above `cutoff`. This means lower values of `cutoff` result in less merging of clusters. There are multiple methods of estimation of the percentage of non-null features implemented. The option `mergeMethod="adjP"` which we showed earlier is the simplest: the proportion found significant by calculating the proportion of DE genes a given False Discovery Rate threshold of 0.05 (using the Benjamini-Hochberg procedure). However, other more sophisticated methods are also implemented (see `?mergeClusters`). 
 
 Notice that `mergeClusters` will always run based on the clustering that made the currently existing dendrogram. So it is always good to check that it is what we expect. 
 
@@ -1594,7 +1597,7 @@ Notice that now if we call `nodeMergeInfo`, all of the methods now have estimate
 nodeMergeInfo(ce)
 ```
 
-This means in any future calls to `mergeClusters` there will be no more need for calculations of per-gene significance, which will speed up the calls if you just want to change the cutoff (all of the methods used the same input of per-gene p-values, so recalling them each time is computationally inefficient). In practice, the default is `calculateAll=TRUE`, meaning all methods are calculated unless the user specifically requests otherwise.
+This means in any future calls to `mergeClusters` there will be no more need for calculations of per-gene significance, which will speed up the calls if you just want to change the cutoff (all of the methods used the same input of per-gene p-values, so recalculating them each time is computationally inefficient). In practice, the default is `calculateAll=TRUE`, meaning all methods are calculated unless the user specifically requests otherwise.
 
 Now we can pick a cutoff and rerun `mergeClusters`. We'll give it a label to keep it separate from the previous merge clusters run we had made. Note, we can turn off plotting completely by setting `plot=FALSE`.
 
@@ -1623,6 +1626,23 @@ We can use `plotDendrogram` to compare the results. Notice that `plotDendrogram`
 ```{r mergeClusters_compareMerges}
 par(mar=c(1.1,1.1,6.1,2.1))
 plotDendrogram(ce,whichClusters=c("mergeClusters,v3","mergeClusters,v2"),mergeInfo="mergeMethod")
+```
+
+#### Requiring a certain log-fold change
+
+With a large number of cells, it can be overly easy to get significant results, even if the size of the differences is small. Another reasonable constraint is to require the difference between the contrasts to be at least of a certain fold-change for the gene to be counted as different. We allow this option for the merge method `adjP`. Namely, the proportion significant calculated at each node requires both an adjusted p-value less than 0.05 but also that the estimated $log_2$ fold-change have an absolute value greater than an amount specified by the argument `logFCCutoff`.
+
+```{r mergeClusters_logFC}
+ce<-mergeClusters(ce,cutoff=0.05,mergeMethod="adjP", logFCcutoff=2,
+                  clusterLabel="mergeClusters,FC1",plot=FALSE)
+ce
+```
+
+In this case, we can see that it did not make a difference in the merging.
+
+```{r mergeClusters_compareMergesAgain}
+par(mar=c(1.1,1.1,6.1,2.1))
+plotDendrogram(ce,whichClusters=c("mergeClusters,FC1","mergeClusters,v3","mergeClusters,v2"),mergeInfo="mergeMethod")
 ```
 
 ## Keeping track of and rerunning elements of the workflow {#rerun}
