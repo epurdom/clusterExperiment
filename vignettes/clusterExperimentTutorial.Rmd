@@ -160,7 +160,7 @@ data("rsecFluidigm")
 metadata(rsecFluidigm)$packageVersion
 ```
 
-```{r results="hide",echo=FALSE}
+```{r include=FALSE}
 # a simple check to make sure have same clusterings as expected
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
@@ -336,7 +336,7 @@ par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-```{r results="hide",echo=FALSE}
+```{r checkRedoIsSame,include=FALSE}
 # a small check to make sure have same clusterings as before
 if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.1"])) stop("rerunning rsec has changed clustering")
 ```
@@ -1307,7 +1307,7 @@ ceCustom
 
 <!-- Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. -->
 
-```{r custom_clusterMany, eval=FALSE, include=FALSE}
+```{r custom_clusterMany, include=FALSE, eval=FALSE}
 ## currently does not work
 clFuns<-getBuiltInFunction(c("pam","kmeans","spectral","hierarchicalK"))
 clFuns<-c(clFuns, "SNN"=SNN)
