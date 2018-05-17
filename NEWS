@@ -1,4 +1,4 @@
-Changes in version 2.1.1-9001 ( Release date: )
+Changes in version 2.1.1-9003 ( Release date: )
 ==============
 
 Changes:
@@ -11,6 +11,7 @@ Changes:
 Bugs:
 * Fix so that estimates of the proportion non-null in `mergeClusters` are always positive.
 * Fix so that calculation of filter with `ignoreUnassignedVar` doesn't delete existing base filter of same type.
+* Fix `plotClustersWorkflow` where wrong cluster was grabbed to plot.
 
 Changes in version 2.1.1 ( Release date: 2018-05-18)
 ==============
