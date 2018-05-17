@@ -238,7 +238,7 @@ par(mar=plotCMar)
 plotClustersWorkflow(rsecFluidigm)
 ```
 
-**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster, which for the result of `clusterMany` is rather arbitrarily just the first cluster.
+**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster.
 
 ```{r plotBarplotRSEC}
 plotBarplot(rsecFluidigm,main="Final Clustering")
