@@ -472,6 +472,7 @@ The labels shown are those given automatically by `clusterMany` but can be a bit
 ```{r plotCluster_newLabels}
 clOrig<-clusterLabels(ce)
 clOrig<-gsub("Features","",clOrig)
+par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
@@ -631,7 +632,7 @@ Note that this mean the `RSEC` function always calls sequential and subsampling.
 
 # ClusterExperiment Objects {#ceobjects}
 
-The `ce` object that we created by calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SummarizedExperiment`, which means the data and `colData` and other information orginally in the `fluidigm` object are retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the `SummarizedExperiment` object, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
+The `ce` object that we created by calling `clusterMany` is a `ClusterExperiment` object. The `ClusterExperiment` class is used by this package to keep the data and the clusterings together. It inherits from `SingleCellExperiment` class (which inherits from `SummarizedExperiment`) which means the data and `colData` and other information orginally in the `fluidigm` object are retained and can be accessed with the same functions as before. The `ClusterExperiment` object additionally stores clusterings and information about the clusterings along side the data. This helps keep everything together, and like the original `SummarizedExperiment` object we started with, allows for simple things like subsetting to a reduced set of subjects and being confident that the corresponding clusterings, colData, and so forth are similarly subset.
 
 Typing the name at the control prompt results in a quick summary of the object. 
 
@@ -691,6 +692,22 @@ print(ce)
 ```
 
 However, the user should not assign new values to `clusterIds` which must correspond to the internal ids of the clustering stored in the clustering matrix.
+
+## Dimensionality reduction and SingleCellExperiment Class {#dimReduce}
+
+There are two varieties of dimensionality reduction supported in `clusterExperiment` package. 
+
+1. reducing to a subset of features/genes based on the values of a filter statistic calculated for each gene or 
+2. creation of a smaller number of new features that are functions of the original features, i.e. *not* a simple selection of existing variables, but rather create new variables to represent the data
+
+For simplicity, we'll refer to the first as filtering of the data and second as a dimensionality reduction.  This is because in the first case, the reduced data set can be quickly recreated by subseting the original data so long as the per-gene statistics have been saved. This means only a single vector of the length of the number of genes needs to be stored for the first type of dimensionality reduction (filtering) while the second kind requires saving a matrix with a value for each observation for each new variable. 
+
+`ClusterExperiment` inherits from the standard Bioconductor `SingleCellExperiment` class.  Briefly, the `SingleCellExperiment` class extends the `SummarizedExperiment` class to give a structure for saving the reduced matrices from dimensionality reductions as we described above.  They are saved in the slot `reducedDims`, which is a `SimpleList` of datasets that have the same number of observations as the original data in the assay slot, but reduced features (`?SingleCellExperiment`). This gives a unified way to save the results of applying a dimensionality reduction method of the second type; the package also gives helper functions to access them, etc. Multiple such dimensionality reductions can be stored since it is a list, and the user gives them names, e.g. "PCA" or "tSNE". 
+
+`ClusterExperiment` uses the slot `reducedDims` to both save the results of dimensionality reductions if they are calculated and and also to reuse them if the necessary ones have already been created. This allows `clusterExperiment` to make use of any dimensionality reduction method so long as the user saves it in the appropriate slot in a `SingleCellExperiment` object. The user can also choose not like before and the function (like `clusterMany`) do the dimensionality reduction (i.e. PCA) internally. The difference is that now the results of the PCA will be stored in the appropriate slot so that they will not need to be recalculated in the future. 
+
+We also added in `clusterExperiment` package a similar procedure for storing the filtering statistics (i.e. statistics calculated on each gene). An example is the the variance across observations, calculated for every gene.  `clusterExperiment` when calculating statistics (like `var` or `mad`) will add the per-gene value of the statistic as a column of the `rowData` of the `ClusterExperiment` object. Similarly, if the user has already calculated a per-gene statistic and saved it as a column in the `rowData` slot, this user-defined statistic can be used for filtering. This means that the user is not limited to the built-in filtering functions provided in `clusterExperiment`.
+
 
 # Visualizing the data {#visual}
 
@@ -1062,7 +1079,7 @@ We will now go into more detail about important options for the main parts of th
 ## clusterMany {#clusterMany}
 In the quick start section we picked some simple and familiar clustering options that would run quickly and needed little explanation. However, our workflow generally assumes more complex options and more parameter variations are tried. Before getting into the specific options of `clusterMany`, let us first describe some of these more complicated setups, since many of the arguments of `clusterMany` depend on understanding them. 
 
-### Base clustering algorithms and the  `ClusterFunction` class {#ClusterFunction}
+### Base clustering algorithms and the  ClusterFunction class {#ClusterFunction}
 
 This package is meant to be able to use and compare different clustering routines. However, the required input, arguments, etc. of different clustering algorithms varies greatly. We create the `ClusterFunction` class so that we can ensure that the necessary information to fit into our workflow is well defined, and otherwise the other details of the algorithm can be ignored by the workflow. In general, the user will not need to know the details of this class if they want to use the built in functions provided by the package, which can be accessed by character values. To see the set of character values that correspond to built-in functions, 
 
@@ -1167,13 +1184,14 @@ This code changes the `remain.n` option of the sequential step, which governs wh
 ### Arguments of `clusterMany`
 Now that we've explained the underlying architecture of the clustering provided in the package, and how to set the arguments that can't be varied, we discuss the parameters that *can* be varied in `clusterMany`. (There are a few additional arguments available for `clusterMany` that govern how `clusterMany` works, but right now we focus on only the ones that can be given multiple options). 
 
-Recall that arguments in `clusterMany` that take on multiple values mean that the combinations of all the multiple valued arguments will be given as input for a clustering routine. 
+Recall that arguments in `clusterMany` that take on multiple values mean that the combinations of all the multiple valued arguments will be given as input for a clustering routine. These arguments are:
 
 * `sequential` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the sequential strategy should be implemented or not. 
 * `subsample` This parameter consists of logical values, TRUE and/or FALSE, indicating whether the subsampling strategy for determining $D$ should be implemented or not. 
 * `clusterFunction` The clustering functions to be tried in the *main clustering step*. Recall if `subsample=TRUE` is part of the combination, then `clusterFunction` the method that will be used on the matrix $D$ created from subsampling the data. Otherwise, `clusterFunction` is the clustering method that will be used directly on the data. 
 * `ks` The argument 'ks' is interpreted differently for different choices of the other parameters *and can differ from between parameter combinations!*. If `sequential=TRUE` is part of the parameter combination, `ks` defines the argument `k0` of sequential clustering (see `?seqCluster`), which is approximately like the initial starting point for the number of clusters in the sequential process.  Otherwise, `ks` is passed to set `k` of both the main clustering step (and by default that of the subsampled data), and is only relevant if `clusterFunction` is of type "K". When/if `findBestK=TRUE` is part of the combination, `ks` also defines the range of values to search for the best k (see the details in the documentation of `clusterMany` for more).
-* `reduceMethod` These are character strings indicating what choices of dimensionality reduction should be tried. The choices are "PCA","var","mad","abscv", and/or "none". "PCA" indicates clustering on the top principal components. "var","mad",and "abscv" indicate clustering on the top most variable features, as determined by either "var", "mad" or "abscv" per gene. And "none" indicates the whole data set should be used (which is usually going to be computationally intractable). If either "PCA" or "var" are chosen, the following parameters indicate the number of such features to be used (and can be a vector of values to try as we have seen):
+* `reduceMethod` These are character strings indicating what choices of dimensionality reduction should be tried. These can indicate any combination of either filtering statistics or dimensionality reductions. The character strings can either refer to built-in methods, meaning `clusterMany` will do the necessary calculations and save the results as an initial step, OR the vector can refer to filtering statistics/dimensionality reductions that have already been calculated and saved in the object (see (above)[#dimReduce] for more information). The vector cannot be a combination of these two.
+  If either a dimensionality reduction or a filtering statistic are chosen, the following parameters can also be varied to indicate the number of such features to be used (with a vector of values meaning all will be tried):
     * `nFilterDims`
     * `nReducedDims`
 * `distFunction` These are character values giving functions that provide a distance matrix between the samples, when applied to the data. These functions should be accessible in the global environment (`clusterMany` applies `get` to the global environment to access these functions). To make them compatible with the standard R function `dist`, these functions should assume the samples are in the rows, i.e. they should work when applied to t(assay(ce)). We give an example in the next subsection below.
@@ -1282,7 +1300,7 @@ Notice that using the "tight" methods did not give relevant results (no samples 
 
 Here, we show how to use a user-defined clustering algorithm in `clusterSingle`. Our clustering algorithm will be a simple nearest-neighbor clustering.
 
-To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (Section)[#ClusterFunction] for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement.  
+To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (ClusterFunction)[#ClusterFunction] section above for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement.  
 
 First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
 
@@ -1301,13 +1319,13 @@ To create a type `K` algorithm, the wrapper must have two required arguments:
 
 Our wrapper function should return a *integer* vector corresponding to the cluster assignments of each sample (see `?ClusterFunction` for information about other types of output available).
 
-`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow. Please, see `?internalFunctionCheck` for details. The call to `internalFunctionCheck` contains, in addition to the function definition, arguments specifying information about the type of input, the type of algorithm, and type of output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
+`clusterExperiment` provides the function `internalFunctionCheck` that validates user-defined cluster functions. Among other things, it checks that the input and output are compatible with the `clusterExperiment` workflow (see `?internalFunctionCheck` for details). The call to `internalFunctionCheck` contains, in addition to the function definition, arguments specifying information about the type of input, the type of algorithm, and type of output expected by the function. This information is passed to `clusterMany` and `clusterSingle` so that they know what to pass and what to expect from the user-defined method.
 
 ```{r custom_validate}
 internalFunctionCheck(SNN_wrap, inputType = "X", algorithmType = "K",
                       outputType="vector")
 ```
-If it passes all checks (returns `TRUE`), we can then create an object of the S4 class `ClusterFunction` to be used within the package using this same set of arguments. If it fails, it will return a character string giving the error (among the checks is running the function on a small randomly generated set of data).
+If it passes all checks (returns `TRUE`), we can then create an object of the S4 class `ClusterFunction` to be used within the package using this same set of arguments. If it fails, it will return a character string giving the error. Among the checks is running the function on a small randomly generated set of data, so the errors may not be about the format of the function, but also whether the series of code runs.
 
 Since we passed the checks, we are ready to define our `ClusterFunction` object.
 ```{r custom_s4}
@@ -1394,8 +1412,56 @@ plotCoClustering(ce)
 
 `makeConsensus` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimum size of a cluster.
 
+**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `makeConsensus`.
 
-We can also manually choose the set of clusters to use in `makeConsensus` with the argument `whichClusters`. Here we choose only the clusters that correspond to using dimensionality reduction using the most variable features. We also set `minSize` to be lower than the default of 5 to allow for smaller clusters
+
+**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+
+### Consensus from subsets of clusterings
+
+A call to `clusterMany` or to `RSEC` can generate many clusterings that result from changing the underlying parameters of a given method (e.g., the number of centers in k-means), the dimensionality reduction, the distance function, or the base algorithm used for the clustering (e.g., PAM vs. k-means).
+
+To highlight interesting structure in the data, it may be useful to understand whether a set of samples tends to cluster together across paramter choices of the same method or across very different methods.
+
+`clusterExperiment` makes it easy to extract a subset of clusterings and to compute a consensus clustering for any given subset, to help addressing this type of questions, as we have already seen in the section on `makeConsensus`.
+
+As an example, assume that we want to explore the role of PCA in the clustering results. We can separately calculate a consensus of those clusterings that used 15 or 50 principal components of the data.
+
+First, we use the `getClusterManyParams` function to extract the information on the clusterings performed.
+
+```{r sub_getParams}
+params <- getClusterManyParams(ce)
+head(params)
+```
+
+We can select only the clusterings in which we are interested in and pass them to `makeConsensus` using the `whichClusters` argument.
+
+```{r sub_makeConsensus}
+clusterIndices15 <- params$clusteringIndex[which(params$nReducedDims == 15)]
+clusterIndices50 <- params$clusteringIndex[which(params$nReducedDims == 50)]
+#note, the indices will change as we add clusterings!
+clusterNames15 <- clusterLabels(ce)[clusterIndices15]
+clusterNames50 <- clusterLabels(ce)[clusterIndices50]
+shortNames15<-gsub("reduceMethod=1,nReducedDims=15,nFilterDims=NA,","",clusterNames15)
+shortNames50<-gsub("reduceMethod=1,nReducedDims=50,nFilterDims=NA,","",clusterNames50)
+
+ce <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
+                       clusterLabel = "consensusPCA15")
+ce <- makeConsensus(ceSub, whichClusters = clusterNames50, proportion = 0.7,
+                       clusterLabel = "consensusPCA50")
+```
+
+Analogously, we've seen that many visualization functions have a `whichClusters` argument that can be used to visually inspect the similarities and differences between subsets of clusterings. 
+
+Here we show using this features with `plotClustersWorkflow` for the two different consensus clusterings we made. 
+
+```{r sub_visualize,fig.width=12,fig.height=6}
+par(mar=plotCMar,mfrow=c(1,2))
+plotClustersWorkflow(ceSub, whichClusters ="consensusPCA15",clusterLabel="Consensus",whichClusterMany=match(clusterNames15,clusterLabels(ceSub)),clusterManyLabels=c(shortNames15),axisLine=-1,nBlankLines=1,main="15 PCs")
+plotClustersWorkflow(ceSub, whichClusters = c("consensusPCA50"),clusterLabel="Consensus",clusterManyLabels=shortNames50, whichClusterMany=match(clusterNames50,clusterLabels(ceSub)),nBlankLines=1,main="50 PCs")
+```
+
+We can also choose a subset and vary the parameters
 
 ```{r makeConsensus_chooseClusters}
 wh<-getClusterManyParams(ce)$clusteringIndex[getClusterManyParams(ce)$reduceMethod=="var"]
@@ -1410,48 +1476,6 @@ We can compare to all of our other versions of `makeConsensus`. While they do no
 wh<-grep("makeConsensus",clusterTypes(ce))
 par(mar=plotCMar)
 plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
-```
-
-
-**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `makeConsensus`.
-
-
-**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
-
-### Consensus of subsets of clusterings
-
-A call to `clusterMany` or to `RSEC` can generate many clusterings that result from changing the underlying parameters of a given method (e.g., the number of centers in k-means), the dimensionality reduction, the distance function, or the base algorithm used for the clustering (e.g., PAM vs. k-means).
-
-To highlight interesting structure in the data, it may be useful to understand whether a set of samples tends to cluster together across paramter choices of the same method or across very different methods.
-
-`clusterExperiment` makes it easy to extract a subset of clusterings and to compute a consensus clustering for any given subset, to help addressing this type of questions.
-
-As an example, assume that we want to explore the role of PCA in the clustering results. We can separately calculate a consensus of those clusterings that used 15 or 50 principal components of the data.
-
-First, we use the `getClusterManyParams` function to extract the information on the clusterings performed.
-
-```{r sub_getParams}
-params <- getClusterManyParams(ce)
-head(params)
-```
-
-We can select only the clusterings in which we are interested in and pass them to `makeConsensus` using the `whichClusters` argument.
-
-```{r sub_makeConsensus}
-clusterNames15 <- rownames(params)[which(params$nReducedDims == 15)]
-clusterNames50 <- rownames(params)[which(params$nReducedDims == 50)]
-
-ceSub <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
-                       clusterLabel = "consensusPCA15")
-ceSub <- makeConsensus(ce, whichClusters = clusterNames50, proportion = 0.7,
-                       clusterLabel = "consensusPCA50")
-```
-
-Analogously, many visualization functions have a `whichClusters` argument that can be used to visually inspect the similarities and differences between subsets of clusterings.
-
-```{r sub_visualize}
-plotClusters(ceSub, whichClusters = c(clusterNames15, "consensusPCA15"))
-plotClusters(ceSub, whichClusters = c(clusterNames50, "consensusPCA50"))
 ```
 
 
