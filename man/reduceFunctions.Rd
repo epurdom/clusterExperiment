@@ -24,7 +24,7 @@
 \usage{
 \S4method{makeFilterStats}{SummarizedExperiment}(object,
   filterStats = listBuiltInFilterStats(), transFun = NULL,
-  isCount = FALSE)
+  isCount = FALSE, filterNames = NULL)
 
 \S4method{makeFilterStats}{matrixOrHDF5}(object, ...)
 
