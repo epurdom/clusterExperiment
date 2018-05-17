@@ -7,6 +7,7 @@ Changes:
 	- `combineProportion` now `consensusProportion`
 	- `combineMinSize` now `consensusMinSize`
 * Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
+* Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============

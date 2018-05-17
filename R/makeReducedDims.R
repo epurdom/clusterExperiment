@@ -33,7 +33,7 @@
 setMethod(
   f = "makeReducedDims",
   signature = "SingleCellExperiment",
-  definition = function(object,reducedDims="PCA",maxDims=500,transFun=NULL,isCount=FALSE)
+  definition = function(object,reducedDims="PCA",maxDims=500,transFun=NULL,isCount=FALSE,whichAssay=1)
   {
     
     ###################
@@ -61,7 +61,7 @@ setMethod(
     ##Clean up data:
     ###################
     #transform data
-    x<-transformData(object,transFun=transFun,isCount=isCount)
+    x<-transformData(object,transFun=transFun,isCount=isCount,whichAssay=whichAssay)
     #---------
     #Check zero variance genes before doing reducedDims:
     #---------

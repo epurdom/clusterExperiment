@@ -214,12 +214,12 @@ setMethod(
         if(length(nReducedDims)==0)
           stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
         maxDims<-max(nReducedDims)
-        x<-makeReducedDims(x,reducedDims=dimNam,
+        x<-makeReducedDims(x,reducedDims=dimNam, whichAssay=whichAssay,
                            maxDims=maxDims,transFun=transFun,isCount=isCount)
       }
       if(length(filtNam)>0){
         #Need to think how can pass options to filterData...
-        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount)
+        x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,isCount=isCount,whichAssay=whichAssay)
       }
     }
     else{
@@ -609,10 +609,11 @@ setMethod(
             #be conservative and check for the 01 type if any of clusterFunctions are 01.
             algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K"
             redM<-as.character(distParam[ii,"reduceMethod"])
-            if(redM=="none")  dat<-transformData(x,transFun=transFun)
+            if(redM=="none")  dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
             else if(isFilterStats(x,redM))
               dat<-transformData( filterData(x, filterStats=redM,
-                                             percentile=distParam[ii,"nFilterDims"]), transFun=transFun)
+                                             percentile=distParam[ii,"nFilterDims"]),
+																						 transFun=transFun,whichAssay=whichAssay)
             else stop("Internal error: distance should only be will full or filtered data")
             distMat<-.makeDiss(dat, distFunction=distFun, checkDiss=TRUE, algType=algCheckType)
             return(distMat)

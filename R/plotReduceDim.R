@@ -57,6 +57,12 @@ setMethod(
 #'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
 #'   the samples with -1/-2 will not be plotted, nor will the category show up in the
 #'   legend.
+#' @details If the requested \code{reducedDim} method has not been created yet,
+#'   the function will call \code{\link{makeReducedDims}} on the FIRST assay of
+#'   \code{x}. The results of this method will be saved as part of the object
+#'   and returned INVISIBLY (meaning if you don't save the output of the
+#'   plotting command, the results will vanish). To pick another assay, you
+#'   should call `makeReducedDims` directly and specify the assay.
 #' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 #' @rdname plotReducedDims
 #' @return A plot is created. Nothing is returned.
@@ -127,7 +133,10 @@ setMethod(
       if(max(whichDims)>ncol(reducedDim(object,type=reducedDim))) redoDim<-TRUE
     }
     
-    if(redoDim) object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims))
+    if(redoDim){
+     object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims),whichAssay=1)
+		 warning(paste("'makeReducedDims' is being called because requested method",reducedDim,"has not been created yet for this object. 'makeReducedDims' will be run on the FIRST assay; for a different assay call 'makeReducedDims' directly."))	
+    }
     if(reducedDim %in% reducedDimNames(object)){
       
       dat<-reducedDim(object,type=reducedDim)[,whichDims]

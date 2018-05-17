@@ -30,7 +30,7 @@
 setMethod(
   f = "makeFilterStats",
   signature = "SummarizedExperiment",
-  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE,filterNames=NULL)
+  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE,filterNames=NULL,whichAssay=1)
   {
     
     ###################
@@ -50,7 +50,7 @@ setMethod(
     ##Clean up data:
     ###################
     #transform data
-    x<-transformData(object,transFun=transFun,isCount=isCount)
+    x<-transformData(object,transFun=transFun,isCount=isCount,whichAssay=whichAssay)
     
     ###################
     ##Do loop over filterStats values:
@@ -198,7 +198,7 @@ setMethod(
 #' @importFrom stats quantile
 setMethod( 
   f="filterData","SummarizedExperiment",
-  function(object,filterStats,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
+  function(object,filterStats,cutoff,percentile, absolute=FALSE,keepLarge=TRUE, whichAssay=1){
     stat<-filterStats(object,filterStats)
     if(!is.null(dim(stat))){
       if(NCOL(stat)==1) stat<-stat[,1]

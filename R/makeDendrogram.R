@@ -112,10 +112,10 @@ setMethod(
       }
       ###Calculate filters/reduceMethod if needed...
       if(!isReducedDims(x,reduceMethod) & isBuiltInReducedDims(reduceMethod)){
-        x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims)
+        x<-makeReducedDims(x,reducedDims=reduceMethod,maxDims=nDims,whichAssay=whichAssay)
       }
       else if(!isFilterStats(x,reduceMethodName) & isBuiltInFilterStats(reduceMethod)){
-        x<-makeFilterStats(x,filterStat=reduceMethod,
+        x<-makeFilterStats(x,filterStat=reduceMethod, whichAssay=whichAssay,
                            whichClusterIgnoreUnassigned=if(ignoreUnassignedVar) whCl else NULL)
         
       }
