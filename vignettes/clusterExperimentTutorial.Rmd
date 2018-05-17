@@ -1023,7 +1023,7 @@ plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeM
 ** Sample data** We can also include data stored in `colData` slot of the object, so long as it is discrete (i.e. a factor or character vector).
 
 ```{r plotDendro_SampleData}
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),sampleData=c("Biological Condition","Published1","Published2"),merge="mergeMethod")
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),sampleData=c("Biological_Condition","Published1","Published2"),merge="mergeMethod")
 ```
 
 
