@@ -694,7 +694,7 @@ However, the user should not assign new values to `clusterIds` which must corres
 
 In the quick start (above)[#visualsummary] we ran through many plots available for visualizing the data in conjunction with the clusterings. In this section we do not go through all of these plots, but just highlight the details of some plots which are more complicated. 
 
-## Cluster Alignment plot with `plotClusters`{#plotClusters}
+## Cluster Alignment plot with `plotClusters` {#plotClusters}
 
 We demonstrated during the quick start that we can visualize the alignment of multiple clusterings via a Cluster Alignment plot implemented in `plotClusters` or `plotClustersWorkflow` command. Since `plotClustersWorkflow` calls the `plotClusters` command and passes the arguments of `plotClusters` onward, we will focus mainly on the main `plotClusters` command, with the understanding that most of these arguments work for both. 
 
@@ -986,7 +986,7 @@ The function `setBreaks` which is called internally by `plotHeatmap`  is also a 
 
 We saw above that we can quickly see the hierarchies of the clusters using the `plotDendrogram` function. 
 
-```{r redoPlotDendro}
+```{r plotDendro_redoBasic}
 plotDendrogram(ce)
 ```
 
@@ -996,7 +996,7 @@ This shows us the dendrogram stored in the object (created from the clustering r
 Alternatively, we can just make a simpler plot with `plotDendrogram` by use of the `leafType` and `plotType` arguments. The above plot uses the defaults: `leafType="samples"`, meaning plot the individual samples at the leaves of the tree, and `plotType="colorblock"` meaning to display the leaves' values as blocks of colors. Here we change these options
 
 
-```{r plotDendroTypes}
+```{r plotDendro_Types}
 par(mfrow=c(1,2))
 plotDendrogram(ce,leafType="clusters",plotType="colorblock")
 plotDendrogram(ce,leafType="clusters",plotType="name")
@@ -1008,19 +1008,39 @@ If we have a small number of samples, we can even choose `leafType="samples"` an
 
 ** Additional clusters ** If the option is `plotType="colorblock"` and `leafType="samples"` (i.e. the default) we can also vary the sample information that is plotted with the dendrogram, much like with `plotHeatmap`. In particular, we can show multiple clusters using the option `whichClusters`.
 
-```{r plotDendroMultiClusters}
+```{r plotDendro_MultiClusters}
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"))
 ```
 
 
 ** Merge Information** We can also plot the merging information, with `merge="mergeMethod"`, i.e. the method actually used to merge the data. We could alternatively plot any merge method that has been run from a call to `mergeClusters`. 
 
-```{r plotMerge}
+```{r plotDendro_Merge}
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod")
 ```
 
-** Node information ** Finally, we can also color code the nodes or plot the node names, for example if we want to link them to our `getBestFeatures` results.
 
+** Sample data** We can also include data stored in `colData` slot of the object, so long as it is discrete (i.e. a factor or character vector).
+
+```{r plotDendro_SampleData}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),sampleData=c("Biological Condition","Published1","Published2"),merge="mergeMethod")
+```
+
+
+** Node information ** We can pass options to `plot.phylo` to change the output of the dendrogram. For example, we can print the node names or colors   For example, to see the node names, we can set `show.node.label = TRUE` (we have to turn off plotting the merge information, since the merge information is plotted as node labels too.)
+
+```{r plotDendro_NodeNames}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),show.node.label=TRUE)
+```
+
+We can also make the nodes colors (useful for linking up with colors from `plotContrastHeatmap` if using hierarchical contrasts, see below). Here we give own argument `nodeColors` (not that from `plot.phylo`) to make it easier; the argument takes a vector of colors, where the names of the vectors match the node names. Notice, we can plot the merge information with node colors.
+
+```{r plotDendro_NodeColors}
+nodeNames<-paste("Node",1:6,sep="")
+nodeColors<-massivePalette[1:length(nodeNames)]
+names(nodeColors)<-nodeNames
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod",nodeColors=nodeColors)
+```
 
 
 # The clustering workflow {#workflow}
