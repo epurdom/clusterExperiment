@@ -216,7 +216,8 @@ head(getClusterManyParams(rsecFluidigm))
 ### Visualizing the output {#visualsummary}
 `clusterExperiment` also provides many ways to visualize the output of RSEC (or any set of clusterings run in `clusterExperiment`, as we'll show below). 
 
-**Visualizing many clusterings** The first such useful visualization is a plot of all of the clusterings together using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
+#### Visualizing many clusterings 
+The first such useful visualization is a plot of all of the clusterings together using the `plotClusters` command. For this visualization, it is useful to change the amount of space on the left of the plot to allow for the labels of the clusterings, so we will reset the `mar` option in `par`. We also decrease the `axisLine` argument that decides the amount of space between the axis and the labels to give more space to the labels (`axisLine` is passed internally to the `line` option in `axis`).
 
 ```{r plotClusterRSEC}
 defaultMar<-par("mar")
@@ -238,7 +239,8 @@ par(mar=plotCMar)
 plotClustersWorkflow(rsecFluidigm)
 ```
 
-**Barplots** We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster.
+#### Barplots 
+We can examine size distribution of a single clustering with the function `plotBarplot`. By default, the cluster picked will be the primary cluster.
 
 ```{r plotBarplotRSEC}
 plotBarplot(rsecFluidigm,main=paste("Distribution of samples of",primaryClusterLabel(rsecFluidigm)))
@@ -260,7 +262,8 @@ plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"))
 Since "makeConsensus" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
 
 
-**Co-Clustering** We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
+#### Co-Clustering
+We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
 
 ```{r plotCoClustering_rsec}
 plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","makeConsensus"))
@@ -269,7 +272,8 @@ plotCoClustering(rsecFluidigm,whichClusters=c("mergeClusters","makeConsensus"))
 Note that this is not the result from any particular subsampling (which was done repeatedly for each clustering, and those many matrices are not stored), but rather the proportion of times across the final results of the clusterings we ran. The initial consensus clustering in `makeConsensus` was made based on these proportions and a particular cutoff of the required proportion of times the samples needed to be together.
 
 
-**Plot of Dendrogram** We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
+#### Plot of Hierarchy of Clusters
+We can visualize how the initial ensembl cluster in `makeConsensus` was clustered into a hierarchy and merged to give us the final clustering in `mergeClusters`: 
 
 ```{r plotDendroRSEC}
 plotDMar<-c(8.1,1.1,5.1,8.1)
@@ -279,7 +283,8 @@ plotDendrogram(rsecFluidigm,whichClusters=c("makeConsensus","mergeClusters"))
 
 As shown in this plot, the individual clusters of the `makeConsensus` ensembl clustering were hierarchically clustered (hence the note that the dendrogram was made from the `makeConsensus` clustering), and similar sister clusters were merged if there were not enough gene differences between them. 
 
-**2D plot of clusters** Finally, we can plot a 2-dimensional representation of the data with PCA and color code the samples to get a sense of how the data cluster.
+#### 2D plot of clusters 
+Finally, we can plot a 2-dimensional representation of the data with PCA and color code the samples to get a sense of how the data cluster.
 
 ```{r plotReducedDims}
 plotReducedDims(rsecFluidigm)
