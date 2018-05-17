@@ -2,7 +2,7 @@
 #'
 #' These functions are used to add or remove clusters to a
 #' \code{\link{ClusterExperiment}} object.
-#'
+#' @name addClusterings
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.

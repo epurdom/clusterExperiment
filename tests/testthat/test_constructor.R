@@ -296,6 +296,20 @@ test_that("accessing transformed data works as promised",{
   expect_equal(transformData(cc), transformation(cc)(assay(cc)))
 })
 
+test_that("assigning unassigned samples works as promised",{
+	expect_silent(assignUnassigned(cc))
+	expect_silent(ccUn<-assignUnassigned(cc,whichCluster="Cluster2"))
+	expect_true("Cluster2_AllAssigned" %in% clusterLabels(ccUn))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="b"))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="mad"))
+	expect_silent(ceUn<-assignUnassigned(ceSim,reduceMethod="PCA"))
+	expect_equal(reducedDimNames(ceUn),"PCA")
+	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
+	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
+
+	#should check whichAssay....
+})
+
 test_that("workflow functions work",
           {
             ##########

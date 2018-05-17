@@ -34,6 +34,10 @@
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
 \alias{primaryClusterIndex}
+\alias{primaryClusterLabel,ClusterExperiment-method}
+\alias{primaryClusterLabel}
+\alias{primaryClusterLabel,ClusterExperiment-method}
+\alias{primaryClusterType}
 \alias{dendroClusterIndex,ClusterExperiment-method}
 \alias{dendroClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
@@ -99,6 +103,10 @@
 \S4method{primaryCluster}{ClusterExperiment}(x)
 
 \S4method{primaryClusterIndex}{ClusterExperiment}(x)
+
+\S4method{primaryClusterLabel}{ClusterExperiment}(x)
+
+\S4method{primaryClusterLabel}{ClusterExperiment}(x)
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
@@ -179,6 +187,12 @@ clusterMatrix).
 \code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{primaryCluster} returns the primary clustering (as numeric).
+
+\code{primaryClusterIndex} returns/sets the primary clustering index
+(i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{primaryClusterIndex} returns/sets the primary clustering index
+(i.e., which column of clusterMatrix corresponds to the primary clustering).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
