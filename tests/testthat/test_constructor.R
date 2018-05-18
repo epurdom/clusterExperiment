@@ -308,6 +308,7 @@ test_that("assigning unassigned samples works as promised",{
 	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
 	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
 
+
 	#check basic error catching
 	cc2<-addClusterings(cc,rep(-1,ncol(cc)),clusterLabel="allUn")
 	expect_error(assignUnassigned(cc2,whichCluster="allUn"),"All cells are unassigned, cannot assign them")

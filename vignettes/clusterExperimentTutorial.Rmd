@@ -658,7 +658,6 @@ primaryCluster(ce)
 
 Remember that we made multiple calls to `makeConsensus`: only the last such call will be shown when we use `whichClusters="workflow"` in our plotting (see this [section](#rerun) for a discussion of how these repeated calls are handled.)
 
-**Negative Valued Cluster Assignments** The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. '-2' is for samples that were not included in the original input to the clustering. This is useful if, for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
 
 `clusterLabels` gives the column names of the `clusterMatrix`; `clusterMany` has given column names based on the parameter choices, and later steps in the workflow also give a name (or allow the user to set them). 
 
@@ -696,7 +695,28 @@ clusterLegend(ce)[[1]]<-existingColors
 print(ce)
 ```
 
-However, the user should not assign new values to `clusterIds` which must correspond to the internal ids of the clustering stored in the clustering matrix.
+However, the user should not assign new values to `clusterIds` column, as the entries must exactly correspond to the internal ids of the clustering stored in the clustering matrix.
+
+## Samples Unassigned to a Clustering (Negative Valued Cluster Assignments)
+The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. 
+
+**Unassigned Samples (-1)** '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. 
+
+**Missing from Clustering Run (-2)** '-2' is for samples that were not included in the original input to the clustering. This is useful if, for example, you cluster on a subset of the samples, and then want to store this clustering with the clusterings done on all the data. You can create a vector of clusterings that give '-2' to the samples not originally used and then add these clusterings to the `ce` object manually with `addClusters`. 
+
+We can also wish to go back and assign these samples to the best cluster possible. This can be done with the `assignUnassigned` function. This function will assign the samples with negative-valued cluster ids to the cluster to which the sample is the closest. Closest is determined by the euclidean distance between an unassigned sample and the median value of the samples assigned to the cluster. The data used by the function to determine the euclidean distances and medians of clusters can be determine by arguments like we see in `RSEC` and other functions.
+
+```{r assignNeg}
+ce<-assignUnassigned(ce,whichCluster="mergeClusters",reduceMethod="PCA",nDim=50,makePrimary=FALSE, filterIgnoresUnassigned=TRUE,clusterLabel="mergeClusters_AssignToCluster")
+tableClusters(ce,whichCluster="mergeClusters_AssignToCluster")
+```
+
+Note that we chose `makePrimary=FALSE` (not the default) so that our original `mergeClusters` clustering remains the primary one, and doesn't affect our future calls. 
+
+```{r assignNeg_plotClusters}
+plotClusters(ce,whichCluster=c("mergeClusters_AssignToCluster","mergeClusters"))
+```
+
 
 ## Dimensionality reduction and SingleCellExperiment Class {#dimReduce}
 

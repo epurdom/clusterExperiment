@@ -75,6 +75,12 @@ setMethod(
                         unassignedSamples=c("outgroup", "cluster"),
                         whichAssay=1,...)
   {
+		passedArgs<-list(...)
+		checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar")
+		if(!is.null(checkIgnore)){
+			passedArgs<-checkIgnore$passedArgs
+			filterIgnoresUnassigned<-checkIgnore$val
+		}
     unassignedSamples<-match.arg(unassignedSamples)
     whCl<-.convertSingleWhichCluster(x,whichCluster)
     cl<-clusterMatrix(x)[,whCl]
@@ -93,13 +99,20 @@ setMethod(
       x<-datList$objectUpdate
       dat<-datList$dat
       
-      outlist <- makeDendrogram(x=dat, cluster=cl,unassignedSamples=unassignedSamples, ...)
+      outlist <- do.call("makeDendrogram",c(list(
+				x=dat, 
+				cluster=cl,
+				unassignedSamples=unassignedSamples),
+				passedArgs))
     }
     else{
       if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run makeConsensus before running 'makeDendrogram' or choose another option for 'reduceMethod'")
       if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
-      outlist<-makeDendrogram(x=as.dist(1-x@coClustering),cluster=cl,unassignedSamples=unassignedSamples, ...)
-
+     outlist<-do.call("makeDendrogram",c(list(
+			  x=as.dist(1-x@coClustering),
+				cluster=cl,
+				unassignedSamples=unassignedSamples),
+				passedArgs)) 
     }
     x@dendro_samples <- outlist$samples
     x@dendro_clusters <- outlist$clusters
