@@ -222,16 +222,16 @@ head(getClusterManyParams(rsecFluidigm))
 defaultMar<-par("mar")
 plotCMar<-c(1.1,8.1,4.1,1.1)
 par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters="workflow", colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 This plot shows the samples in the columns, and different clusterings on the rows. Each sample is color coded based on its clustering for that row, where the colors have been chosen to try to match up clusters across different clusterings that show large overlap. Moreover, the samples have been ordered so that each subsequent clustering (starting at the top and going down) will try to order the samples to keep the clusters together, without rearranging the clustering blocks of the previous clustering/row.
 
-We also added a `sampleData` argument in our call, indicating that we also want to visualize some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We chose the columns "Biological_Condition" and "Published2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. The data from `sampleData` (when requested) are always shown at the bottom of the plot.
+We also added a `colData` argument in our call, indicating that we also want to visualize some information about the samples saved in the `colData` slot (inherited from our original `fluidigm` object). We chose the columns "Biological_Condition" and "Published2" from `colData`, which correspond to the original biological condition of the experiment, and the clusters reported in the original paper, respectively. The data from `colData` (when requested) are always shown at the bottom of the plot.
 
 Notice that some samples are white. This indicates that they have the value -1, meaning they were not clustered. In fact, for many clusterings, there is a large amount of white here. This is likely do to the fact that there are only `r ncol(rsecFluidigm)` cells here, and the default parameters of RSEC are better suited for a large number of cells, such as seen in more modern single-cell sequencing experiments.  The sequential clustering may be problematic for small numbers of cells.
 
-We can use an alternative version of `plotClusters` called `plotClustersWorkflow` that will better emphasize the more final clusterings from the ensemble/concensus step and merging steps (it currently does not allow for showing the `sampleData` as well, however -- only clustering results). 
+We can use an alternative version of `plotClusters` called `plotClustersWorkflow` that will better emphasize the more final clusterings from the ensemble/concensus step and merging steps (it currently does not allow for showing the `colData` as well, however -- only clustering results). 
 
 ```{r plotClustersWorkflow}
 par(mar=plotCMar)
@@ -316,7 +316,7 @@ We can compare the results of our changes with the `whichClusters` command to ex
 defaultMar<-par("mar")
 plotCMar<-c(1.1,8.1,4.1,1.1)
 par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","makeConsensus.1","mergeClusters","makeConsensus"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters.1","makeConsensus.1","mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
@@ -333,7 +333,7 @@ rsecFluidigm<-RSEC(rsecFluidigm,
  mergeCutoff=0.01
  )
 par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 ```{r checkRedoIsSame,include=FALSE}
@@ -428,14 +428,14 @@ We can visualize the resulting clusterings using the `plotClusters` command as w
 ```{r plotClusterEx1}
 defaultMar<-par("mar")
 par(mar=plotCMar)
-plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", colData=c("Biological_Condition","Published2"), axisLine=-1)
 
 ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
       isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),
       nReducedDims=c(5,15,50),run=TRUE)
 test<-getClusterManyParams(ce)
 ord<-order(test[,"k"],test[,"nFilterDims"],test[,"nReducedDims"])
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
@@ -461,7 +461,7 @@ We will set an order with first the PCA, ordered by number of dimensions, then t
 ord<-order(cmParams[,"reduceMethod"],cmParams[,"nReducedDims"])
 ind<-cmParams[ord,"clusteringIndex"]
 par(mar=plotCMar)
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. 
@@ -470,7 +470,7 @@ The labels shown are those given automatically by `clusterMany` but can be a bit
 ```{r plotCluster_newLabels}
 clOrig<-clusterLabels(ce)
 clOrig<-gsub("Features","",clOrig)
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], sampleData=c("Biological_Condition","Published2"), axisLine=-1)
+plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. 
@@ -586,7 +586,7 @@ It can be interesting to visualize the clusterings both with the `plotClustersWo
 ```{r mergeClusters_coClustering}
 plotClustersWorkflow(ce,whichClusters="workflow") 
 plotCoClustering(ce,whichClusters=c("mergeClusters","makeConsensus"),
-                 sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
+                 colData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
 
 Notice that `mergeClusters` combines clusters based on the actual values of the features, while the `coClustering` plot shows how often the samples clustered together. It is not uncommon that `mergeClusters` will merge clusters that don't look "close" on the `coClustering` plot. This can be due to just the choices of the hierarchical clustering between the clusters, but can also be because the two merged clusters are not often confused for each other across the clustering algorithms, yet still don't have strong differences on individual genes. This can be the case especially when the clustering is done on reduced PCA space, where an accumulation of small differences might consistently separate the samples (so that comparatively few clusterings are "confused" as to the samples). But because the differences are not strong on individual genes, `mergeClusters` combines them. These are ultimately different criteria.
@@ -595,7 +595,7 @@ Finally, we can do a heatmap visualizing this final step of clustering.
 
 ```{r plotHeatmap}
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99,
-            sampleData=c("Biological_Condition", "Published1", "Published2"))
+            colData=c("Biological_Condition", "Published1", "Published2"))
 ```
 
 By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. The argument `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
@@ -725,7 +725,7 @@ We can also add to our plot (categorical) information on each of our subjects fr
 
 ```{r plotClusterEx1_addData}
 par(mar=plotCMar)
-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), 
+plotClusters(ce,whichClusters="workflow", colData=c("Biological_Condition","Published2"), 
                main="Workflow clusters plus other data",axisLine=-1)
 ```
 
@@ -759,7 +759,7 @@ plotClusterLegend(ce,whichCluster="makeConsensus,final")
 Now, we'll run `plotClusters` and save the new colors. We'll save this as a different object so that this is not a permanent change for the rest of the vignette, though in practice we would usually overwrite the existing `ce` to save memory on our computer and not have many versions floating around. 
 
 ```{r plotClusterEx1_setColors}
-ce_temp<-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), 
+ce_temp<-plotClusters(ce,whichClusters="workflow", colData=c("Biological_Condition","Published2"), 
                main="Cluster Alignment of Workflow Clusters",clusterLabels=FALSE, axisLine=-1, resetNames=TRUE,resetColors=TRUE,resetOrderSamples=TRUE)
 ```
 
@@ -795,14 +795,14 @@ plotClusterLegend(ce_temp,whichCluster="mergeClusters")
 Now we will run the `plotClusters` alignment plot, but we will direct the alignment to use the cluster colors we just gave for the "mergeClusters" cluster. We do this by using the argument `existingColors="firstOnly"` -- but as the argument option indicates it only works if the "mergeClusters" clustering is the first clustering in the plot. 
 
 ```{r plotClusterEx1_firstOnlyNoSave}
-plotClusters(ce_temp,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), clusterLabels=FALSE,
+plotClusters(ce_temp,whichClusters="workflow", colData=c("Biological_Condition","Published2"), clusterLabels=FALSE,
                main="Clusters from clusterMany, different order",axisLine=-1,existingColors="firstOnly")
 ```
 
 This just created the visualization. We can also save the results of this as we did before with `resetColors=TRUE`, so that now all of our future clusters make use of this color information. We won't reset the names, however. Note we can avoid making the plot again with the argument `plot=FALSE`.
 
 ```{r plotClusterEx1_firstOnly}
-ce_temp<-plotClusters(ce_temp,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), resetColors=TRUE,
+ce_temp<-plotClusters(ce_temp,whichClusters="workflow", colData=c("Biological_Condition","Published2"), resetColors=TRUE,
                main="Clusters from clusterMany, different order",axisLine=-1, clusterLabels=FALSE, existingColors="firstOnly",plot=FALSE)
 ```
 
@@ -812,11 +812,11 @@ For example, we set the colors above based on the cluster alignment produced in 
 
 ```{r plotClusterEx1_forceColors,fig.width=18,fig.height=9}
 par(mfrow=c(1,2))
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"),
+plotClusters(ce_temp, colData=c("Biological_Condition","Published2"),
              whichClusters="workflow", existingColors="all", clusterLabels=FALSE,
              main="All Workflow Clusters, use existing colors",axisLine=-1)
 
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+plotClusters(ce_temp, colData=c("Biological_Condition","Published2"), 
              existingColors="all", whichClusters="clusterMany", clusterLabels=FALSE,
              main="clusterMany Clusters, use existing colors",
              axisLine=-1)
@@ -829,15 +829,15 @@ Note that the use of `existingColors="firstOnly"` and `existingColors="all"` wil
 
 ```{r plotClusterEx1_compareForceColors,fig.width=18,fig.height=18}
 par(mfrow=c(2,2))
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+plotClusters(ce_temp, colData=c("Biological_Condition","Published2"), 
              existingColors="all", whichClusters="clusterMany", clusterLabels=FALSE,
              main="clusterMany Clusters, use existing colors",
              axisLine=-1)
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+plotClusters(ce_temp, colData=c("Biological_Condition","Published2"), 
                existingColors="firstOnly", whichClusters="clusterMany", clusterLabels=FALSE,
                main="clusterMany Clusters, use existing of first row only",
                axisLine=-1)
-plotClusters(ce_temp, sampleData=c("Biological_Condition","Published2"), 
+plotClusters(ce_temp, colData=c("Biological_Condition","Published2"), 
             existingColors="ignore", whichClusters="clusterMany", clusterLabels=FALSE,
             main="clusterMany Clusters, default\n(ignoring assigned colors)",
             axisLine=-1)
@@ -870,7 +870,7 @@ showPalette(massivePalette,cex=0.5)
 We can use this information to help change our color choices. For example, suppose I want the unassigned samples to be given the color black instead of white. Then I would like to not use the black in `bigPalette` to assign to a clustering. I will use the `colPalette` argument to give a new set of colors that does not include "black". And I will set the unassigned samples using the option `unassignedColor="black"` (there is a similar argument `missingColor` to set the color assigned to those clusters with the identification of "-2", meaning they were not included in the clustering at all).
 
 ```{r removeBlack}
-plotClusters(ce,whichClusters="workflow", sampleData=c("Biological_Condition","Published2"), unassignedColor="black",colPalette=bigPalette[-grep("black",bigPalette)],
+plotClusters(ce,whichClusters="workflow", colData=c("Biological_Condition","Published2"), unassignedColor="black",colPalette=bigPalette[-grep("black",bigPalette)],
                main="Setting unassigned color",axisLine=-1)
 
 ```
@@ -922,7 +922,7 @@ plotHeatmap(ce,whichClusters=whClusterPlot, annLegend=FALSE)
 
 Notice we also passed the option 'annLegend=FALSE' to the underlying `aheatmap` command (with many clusterings shown, it is often not useful to have a legend for all the clusters because the legend doesn't fit on the page!). The many detailed commands of `aheatmap` that are not set internally by `plotHeatmap` can be passed along as well. 
 
-Like `plotClusters`, `plotHeatmap` takes an argument `sampleData`, which refers to columns of the `colData` of that object and can be included.  
+Like `plotClusters`, `plotHeatmap` takes an argument `colData`, which refers to columns of the `colData` of that object and can be included.  
 
 ### Additional options for clustering/ordering samples
 
@@ -941,13 +941,13 @@ show(ce)
 ```
 
 
-We can see, as we expected, that the dendrogram we made from "makeConsensus,final" is still the active dendrogram saved in the `ce` object. Now we will call `plotHeatmap` choosing to display the "mergeClusters" and "makeConsensus,final" clustering, and ordering the samples by the dendrogram in `ce`. We will also display some data about the samples from the `colData` slot using the `sampleData` argument. Notice that instead of giving the index, we can also give the clusterLabels of the clusters we want to show.
+We can see, as we expected, that the dendrogram we made from "makeConsensus,final" is still the active dendrogram saved in the `ce` object. Now we will call `plotHeatmap` choosing to display the "mergeClusters" and "makeConsensus,final" clustering, and ordering the samples by the dendrogram in `ce`. We will also display some data about the samples from the `colData` slot using the `colData` argument. Notice that instead of giving the index, we can also give the clusterLabels of the clusters we want to show.
 
 ```{r plotHeatmap_dendro}
 plotHeatmap(ce,clusterSamplesData="dendrogramValue",
             whichClusters=c("mergeClusters","makeConsensus"),
             main="Heatmap with clusterMany",
-            sampleData=c("Biological_Condition","Published2"),annLegend=FALSE)
+            colData=c("Biological_Condition","Published2"),annLegend=FALSE)
 ```
 
 If there is not a dendrogram stored, `plotHeatmap` will call `makeDendrogram` based on the primary cluster (with the default settings of `makeDendrogram`); calling `makeDendrogram` on `ce` is preferred so that the user can control the choices in how it is done (which we will discuss below). For visualization purposes, the dendrogram for the `makeConsensus` cluster is preferred to that of the `mergeCluster` cluster, since "makeConsensus,final" is just a finer partition of the "mergeClusters" clustering. 
@@ -1022,8 +1022,8 @@ plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeM
 
 ** Sample data** We can also include data stored in `colData` slot of the object, so long as it is discrete (i.e. a factor or character vector).
 
-```{r plotDendro_SampleData}
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),sampleData=c("Biological_Condition","Published1","Published2"),merge="mergeMethod")
+```{r plotDendro_colData}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),colData=c("Biological_Condition","Published1","Published2"),merge="mergeMethod")
 ```
 
 
@@ -1240,7 +1240,7 @@ clusterLabels(ceDist)<-gsub("Dist","",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("distFunction","dist",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("hierarchical","hier",clusterLabels(ceDist))
 par(mar=c(1.1,15.1,1.1,1.1))
-plotClusters(ceDist,axisLine=-2,sampleData=c("Biological_Condition"))
+plotClusters(ceDist,axisLine=-2,colData=c("Biological_Condition"))
 ```
 
 

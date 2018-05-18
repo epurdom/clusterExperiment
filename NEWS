@@ -6,8 +6,9 @@ Changes:
 	- `combineProportion` now `consensusProportion`
 	- `combineMinSize` now `consensusMinSize`
 * Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
-* `plotDendrogram` now allows for plotting of `sampleData` like `plotHeatmap` or `plotClusters`
+* `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
+* Arguments `sampleData` changed to `colData` to match `SummarizedExperiment`. Similarly `alignSampleData` has changed to `alignColData`
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============

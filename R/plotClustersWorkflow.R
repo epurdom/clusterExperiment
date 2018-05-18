@@ -69,7 +69,7 @@ setMethod(
     sortBy<-match.arg(sortBy)
     existingColors<-match.arg(existingColors)
     allClusterMany<-which(clusterTypes(object)=="clusterMany")
-    if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
+    if("colData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'colData' argument. You must use plotClusters for this option.")
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }

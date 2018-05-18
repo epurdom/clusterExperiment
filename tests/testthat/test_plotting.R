@@ -60,10 +60,10 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
 
 
-test_that("`plotClusters` rerun above tests with sampleData included", {
+test_that("`plotClusters` rerun above tests with colData included", {
 
   #test matrix version
-  x<-plotClusters(object=clusterMatrix(ceSim),sampleData=as.data.frame(colData(ceSim)))
+  x<-plotClusters(object=clusterMatrix(ceSim),colData=as.data.frame(colData(ceSim)))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$colors))
   expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),ncol(x$aligned))
   expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
@@ -71,26 +71,26 @@ test_that("`plotClusters` rerun above tests with sampleData included", {
   #test CE version
   test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)) #no colData in test
-  expect_error(plotClusters(test,sampleData=as.data.frame(colData(ceSim))),"no colData for object data")
-  expect_error(plotClusters(ceSim,sampleData=as.data.frame(colData(ceSim))),"invalid values for pulling sampleData")
-  plotClusters(ceSim,sampleData="all")
+  expect_error(plotClusters(test,colData=as.data.frame(colData(ceSim))),"no colData for object data")
+  expect_error(plotClusters(ceSim,colData=as.data.frame(colData(ceSim))),"invalid values for pulling colData")
+  plotClusters(ceSim,colData="all")
   par(mfrow=c(1,2))
-  x2<-plotClusters(ceSim,sampleData="all",resetColors=TRUE)
+  x2<-plotClusters(ceSim,colData="all",resetColors=TRUE)
   x1<-plotClusters(ceSim,resetColors=TRUE)
 
 
   #check NAs
   naSim<-ceSim
   colData(naSim)[sample(10,1:nrow(naSim)),]<-NA
-  plotClusters(naSim,sampleData=c("A","B"))
+  plotClusters(naSim,colData=c("A","B"))
 
   #test the new TRUE option
-  plotClusters(naSim,sampleData=TRUE)
+  plotClusters(naSim,colData=TRUE)
 
   #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
 #  expect_equal(x1,x2)
 #   par(mfrow=c(1,2))
-#   x2<-plotClusters(ceSim,sampleData="all",resetColors=FALSE)
+#   x2<-plotClusters(ceSim,colData="all",resetColors=FALSE)
 #   x1<-plotClusters(ceSim,resetColors=FALSE)
   par(mfrow=c(1,1))
 

@@ -43,7 +43,7 @@
 #'  If not equal to "none", will replicate the kind of plot that 
 #'  \code{\link{mergeClusters}} creates, and the input to \code{mergeInfo} 
 #'  corresponds to that of \code{plotInfo} in \code{mergeClusters}.
-#' @param sampleData index (by integer or name) the sample data stored as a 
+#' @param colData index (by integer or name) the sample data stored as a 
 #'   \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
 #'   ("character" or "factor" variables) will be plotted; indexing of continous 
 #'   variables will be ignored. Whether that data is continuous or not will be 
@@ -51,7 +51,7 @@
 #'   This argument is only relevant if \code{plotType=="colorblock"} and
 #'   \code{leafType=="samples"}
 #' @param clusterLegend Assignment of colors to the clusters or sample data (as
-#'   designated by \code{sampleData} argument) plotted with the dendrogram . If
+#'   designated by \code{colData} argument) plotted with the dendrogram . If
 #'   \code{NULL} or a particular variable/cluster are not assigned a color, 
 #'   colors will be assigned internally for sample data and pull from the
 #'   \code{clusterLegend} slot of the x for the clusters.
@@ -92,7 +92,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,sampleData=NULL,clusterLegend=NULL,...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,colData=NULL,clusterLegend=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -124,12 +124,12 @@ setMethod(
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
 		
 		if(leafType=="samples" & plotType=="colorblock"){
-	    sData<-.pullSampleData(x,sampleData) #returns data.frame
+	    sData<-.pullcolData(x,colData) #returns data.frame
 	    #identify which numeric and remove
 	    if(!is.null(sData)){
 				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
 				if(length(whCont)>0){
-					warning("argument 'sampleData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
+					warning("argument 'colData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
 					if(length(whCont)< ncol(sData)) sData<-sData[,-whCont,drop=FALSE]
 					else sData<-NULL
 				}
@@ -137,8 +137,8 @@ setMethod(
 	    }
 		}
 		else{
-			if(!is.null(sampleData)) 
-				warning("argument sampleData only used if leafType='samples' and plotType='colorblock'. Ignoring input to sampleData.")
+			if(!is.null(colData)) 
+				warning("argument colData only used if leafType='samples' and plotType='colorblock'. Ignoring input to colData.")
 			sData<-NULL
 		}
 		if(!is.null(sData)){
@@ -151,7 +151,7 @@ setMethod(
 			
 		}
     if(!is.null(clusterLegend) || !is.null(sData)){
-      #preserve those in given clusterLegend that don't match sampleData (could go with features/rows)
+      #preserve those in given clusterLegend that don't match colData (could go with features/rows)
       if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
         whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(sClusterLegend$colorList  ))]
         clusterLegend<-c(sClusterLegend$colorList,clusterLegend[whKeep])
