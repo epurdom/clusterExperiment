@@ -76,7 +76,7 @@ setMethod(
                         whichAssay=1,...)
   {
     unassignedSamples<-match.arg(unassignedSamples)
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-.convertSingleWhichCluster(x,whichCluster)
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)

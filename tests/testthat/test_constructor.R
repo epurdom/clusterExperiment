@@ -297,6 +297,7 @@ test_that("accessing transformed data works as promised",{
 })
 
 test_that("assigning unassigned samples works as promised",{
+  #also indirectly tests getReducedData!
 	expect_silent(assignUnassigned(cc))
 	expect_silent(ccUn<-assignUnassigned(cc,whichCluster="Cluster2"))
 	expect_true("Cluster2_AllAssigned" %in% clusterLabels(ccUn))
@@ -307,7 +308,14 @@ test_that("assigning unassigned samples works as promised",{
 	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
 	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
 
+	#check basic error catching
+	cc2<-addClusterings(cc,rep(-1,ncol(cc)),clusterLabel="allUn")
+	expect_error(assignUnassigned(cc2,whichCluster="allUn"),"All cells are unassigned, cannot assign them")
+	cc2<-addClusterings(cc2,rep(2,ncol(cc2)),clusterLabel="allAss")
+	expect_error(assignUnassigned(cc2,whichCluster="allAss"),"No cells are unassigned in the designated cluster")
+
 	#should check whichAssay....
+	
 })
 
 test_that("workflow functions work",
