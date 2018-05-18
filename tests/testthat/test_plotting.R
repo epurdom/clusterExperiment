@@ -72,7 +72,7 @@ test_that("`plotClusters` rerun above tests with colData included", {
   test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
                      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)) #no colData in test
   expect_error(plotClusters(test,colData=as.data.frame(colData(ceSim))),"no colData for object data")
-  expect_error(plotClusters(ceSim,colData=as.data.frame(colData(ceSim))),"invalid values for pulling colData")
+  expect_error(plotClusters(ceSim,colData=as.data.frame(colData(ceSim))),"invalid values for pulling sample data from colData of object")
   plotClusters(ceSim,colData="all")
   par(mfrow=c(1,2))
   x2<-plotClusters(ceSim,colData="all",resetColors=TRUE)
