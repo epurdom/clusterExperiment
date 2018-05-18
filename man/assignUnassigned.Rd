@@ -6,30 +6,41 @@
 \alias{assignUnassigned,ClusterExperiment-method}
 \title{Assign unassigned samples to nearest cluster}
 \usage{
-\S4method{assignUnassigned}{ClusterExperiment}(x, whichCluster = "primary",
-  clusterLabel, makePrimary = TRUE, whichAssay = 1, reduceMethod = "none",
-  nDims = defaultNDims(x, reduceMethod))
+\S4method{assignUnassigned}{ClusterExperiment}(object,
+  whichCluster = "primary", clusterLabel, makePrimary = TRUE,
+  whichAssay = 1, ...)
 }
 \arguments{
-\item{x}{a ClusterExperiment object.}
+\item{object}{A Cluster Experiment object}
 
-\item{whichCluster}{in which clustering to assign the unassigned samples}
+\item{whichCluster}{in which clustering to get cluster assignments and assign
+the unassigned samples}
 
-\item{clusterLabel}{if missing, the current cluster label of the cluster will be appended with the string "_AllAssigned".}
+\item{clusterLabel}{if missing, the current cluster label of the cluster will
+be appended with the string "_AllAssigned".}
 
 \item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
 
-\item{whichAssay}{which assay to use to calculate the median per cluster}
+\item{whichAssay}{which assay to use to calculate the median per cluster and
+take dimensionality reduction (if requested)}
 
-\item{reduceMethod}{which reduction method to apply to the data before taking the median per cluster}
-
-\item{nDims}{the number of dimensions to keep if using a reduceMethod}
+\item{...}{arguments passed to \code{\link{getReducedData}} specifying the
+dimensionality reduction (if any) to be taken of the data for calculating
+the medians of the clusters}
 }
 \description{
-Assigns the unassigned samples in a cluster to the nearest cluster based on distance to the medians of the clusters.
+Assigns the unassigned samples in a cluster to the nearest
+  cluster based on distance to the medians of the clusters.
 }
 \details{
-The function calculates the median values of each variable for each cluster, and then calculates the euclidean distance of each unassigned sample to the median of each cluster. Each unassigned sample is assigned to the cluster for which it closest to the median.
+The function calculates the median values of each variable for each
+  cluster, and then calculates the euclidean distance of each unassigned
+  sample to the median of each cluster. Each unassigned sample is assigned to
+  the cluster for which it closest to the median.
 
-All unassigned samples in the cluster are given a clustering, regardless of whether they are classified as -1 or -2.
+All unassigned samples in the cluster are given a clustering,
+  regardless of whether they are classified as -1 or -2.
+}
+\seealso{
+\code{\link{getReducedData}}
 }

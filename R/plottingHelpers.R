@@ -420,9 +420,7 @@ setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
   definition = function(object,whichCluster="primary",clusterNames,title,...){
-    whichCluster<-.TypeIntoIndices(object,whClusters=whichCluster)
-    if(length(whichCluster)==0) stop("given whichCluster value does not match any clusters")
-    if(length(whichCluster)>1) stop("given whichCluster indicates more than 1 clustering")
+    whichCluster<-.convertSingleWhichCluster(object,whichCluster)
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
       if(is.null(names(clusterNames))) stop("clusterNames must be named vector")

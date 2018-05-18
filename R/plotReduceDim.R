@@ -9,10 +9,8 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
-    wh<-.TypeIntoIndices(object,whClusters=whichCluster)
-    if(length(wh)==0) stop("invalid choice of 'whichCluster'")
-    if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
-    return(plotReducedDims(object,whichCluster=wh,...))
+    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    return(plotReducedDims(object,whichCluster=whCl,...))
     
   })
 

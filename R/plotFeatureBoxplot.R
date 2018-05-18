@@ -11,10 +11,8 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character",feature="ANY"),
   definition = function(object, whichCluster,feature,...)
   {
-  	wh<-.TypeIntoIndices(object,whClusters=whichCluster)
-  	if(length(wh)==0) stop("invalid choice of 'whichCluster'")
-  	if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
-     invisible(plotFeatureBoxplot(object,whichCluster=wh,feature=feature,...))
+    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    invisible(plotFeatureBoxplot(object,whichCluster=whCl,feature=feature,...))
 
   })
 

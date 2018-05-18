@@ -74,6 +74,7 @@ Collate:
     'deprecateFunctions.R'
     'getFeatures.R'
     'getParams.R'
+    'getReducedData.R'
     'mainClustering.R'
     'makeBlankData.R'
     'makeConsensus.R'

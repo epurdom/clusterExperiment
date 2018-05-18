@@ -78,6 +78,9 @@
   )
   return(retval)
 }
+
+
+
 #Returns NULL if no sample data
 .pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
   fixNA<-match.arg(fixNA)
@@ -216,6 +219,13 @@
   return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
 }
 
+
+.convertSingleWhichCluster<-function(object,whichCluster){
+  if(is.character(whichCluster)) whCl<-.TypeIntoIndices(object,whClusters=whichCluster) else whCl<-whichCluster
+  if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+  if(!whCl %in% seq_len(nClusterings(object))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
+  return(whCl)
+}
 ##Universal way to change character indication of clusterTypes into integer indices.
 ##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){

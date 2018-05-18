@@ -9,8 +9,8 @@ setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeRe
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
 setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
-setGeneric(name = "assignUnassigned", def=function(x,...){ standardGeneric("assignUnassigned") })
-
+setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
+setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
 setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
 setGeneric(
   name = "mergeClusterIndex",

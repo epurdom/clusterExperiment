@@ -91,10 +91,6 @@ The argument \code{unassignedSamples} governs what is done with
 
 If any merge information is stored in the input object, it will be
   erased by a call to mergeDendrogram.
-
-If \code{nDims} is missing, it will be given a default value
-  depending on the value of \code{reduceMethod}. See
-  \code{\link{defaultNDims}} for details.
 }
 \examples{
 data(simData)
