@@ -65,7 +65,7 @@ colors from the \code{plotClusters}.}
 new order found.}
 
 \item{colData}{If \code{clusters} is a matrix, \code{colData} gives a 
-matrix of additional cluster/sampleData on the samples to be plotted with 
+matrix of additional cluster/sample data on the samples to be plotted with 
 the clusterings given in clusters. Values in \code{colData} will be 
 added to the end (bottom) of the plot. NAs in the \code{colData} matrix
 will trigger an error. If \code{clusters} is a \code{ClusterExperiment}
