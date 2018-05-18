@@ -10,6 +10,7 @@ Changes:
 * Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 * Add error catch if try to give argument `whichCluster` to `mergeCluster`.
 * Added functions `primaryClusterLabel` and `primaryClusterType`
+* Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============
