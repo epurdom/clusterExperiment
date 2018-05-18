@@ -31,9 +31,6 @@ NULL
 #'   for explanation.
 #' @param ncores integer giving the number of cores. If ncores>1, mclapply will
 #'   be called.
-#' @param largeDataset logical indicating whether a more memory-efficient version
-#'   should be used because the dataset is large. This is a beta option, and is
-#'   in the process of being tested before it becomes the default.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle

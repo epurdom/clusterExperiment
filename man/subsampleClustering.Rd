@@ -59,10 +59,6 @@ arguments will be ignored without warning.}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
-
-\item{largeDataset}{logical indicating whether a more memory-efficient version
-should be used because the dataset is large. This is a beta option, and is
-in the process of being tested before it becomes the default.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
