@@ -1,4 +1,5 @@
-Changes in version 2.1.2-9002 ( Release date: )
+Changes in version 2.1.2-9003 ( Release date: )
+==============
 
 Changes:
 * change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`). 
@@ -9,6 +10,9 @@ Changes:
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 * Arguments `sampleData` changed to `colData` to match `SummarizedExperiment`. Similarly `alignSampleData` has changed to `alignColData`
+* Add error catch if try to give argument `whichCluster` to `mergeCluster`.
+* Added functions `primaryClusterLabel` and `primaryClusterType`
+* Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============

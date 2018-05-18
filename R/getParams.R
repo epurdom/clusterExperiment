@@ -69,9 +69,9 @@ setMethod(
       # params<-params[,notAllNA]
       
       notAllSame<-which(apply(params,2,function(z){length(unique(z))>1}))
-      params<-params[,notAllSame]
+      params<-params[,notAllSame,drop=FALSE]
     }
-    row.names(params)<-clusterLabels(x)[wh]
+		row.names(params)<-clusterLabels(x)[wh]
     params<-data.frame("clusteringIndex"=wh,params)
     return(params)
   }

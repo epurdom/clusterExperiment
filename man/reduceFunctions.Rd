@@ -71,6 +71,10 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
+\item{filterNames}{if given, defines the names that will be assigned to the 
+filtering statistics in the \code{rowData} of the object. If missing, will be 
+just the value of \code{filterStats} argument}
+
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 

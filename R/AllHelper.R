@@ -305,6 +305,33 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
+#' @return \code{primaryClusterIndex} returns/sets the primary clustering index
+#' (i.e., which column of clusterMatrix corresponds to the primary clustering).
+#' @export
+#' @aliases primaryClusterLabel
+setMethod(
+  f = "primaryClusterLabel",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(clusterLabels(x)[primaryClusterIndex(x)])
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{primaryClusterIndex} returns/sets the primary clustering index
+#' (i.e., which column of clusterMatrix corresponds to the primary clustering).
+#' @export
+#' @aliases primaryClusterType
+setMethod(
+  f = "primaryClusterLabel",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(clusterTypes(x)[primaryClusterIndex(x)])
+  }
+)
+
+
+#' @rdname ClusterExperiment-methods
 #' @return \code{dendroClusterIndex} returns/sets the clustering index 
 #' of the clusters used to create dendrogram
 #' (i.e., which column of clusterMatrix corresponds to the clustering).

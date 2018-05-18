@@ -45,8 +45,10 @@ system.time(
                      random.seed=176201)
 )
 metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
-if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
-if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
+if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) 
+ stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8)
+ stop("rsecFluidigm object has changed -- makeConsensus")
 packageVersion("clusterExperiment")
 devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }

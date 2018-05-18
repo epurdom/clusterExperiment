@@ -73,12 +73,16 @@ setMethod(
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }
-    if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
-    if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
+    # if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
+    # if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
     #convert to indices
     if(is.character(whichClusters)){
       whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
       if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
+    }
+    if(is.character(whichClusterMany)){
+      whichClusterMany<- .TypeIntoIndices(object,whClusters=whichClusterMany)
+      if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusterMany argument")
     }
     
     #result labels (yaxis):
