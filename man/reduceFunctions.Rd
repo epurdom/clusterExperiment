@@ -25,9 +25,10 @@
 \alias{listBuiltInReducedDims}
 \title{Return matrix from ClusterExperiment with reduced dimensions}
 \usage{
-\S4method{getReducedData}{ClusterExperiment}(object, reduceMethod, nDims,
-  filterIgnoreUnassigned, whichCluster = "primary", whichAssay = 1,
-  returnValue = c("object", "list"), reducedDimName)
+\S4method{getReducedData}{ClusterExperiment}(object, reduceMethod,
+  filterIgnoresUnassigned, nDims = defaultNDims(object, reduceMethod),
+  whichCluster = "primary", whichAssay = 1, returnValue = c("object",
+  "list"), reducedDimName)
 
 \S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod, typeToShow)
 
@@ -69,15 +70,16 @@ diminsionality reduction/filtering. The option "coCluster" will use the
 co-Clustering matrix stored in the 'coClustering' slot of the
 \code{ClusterExperiment} object}
 
+\item{filterIgnoresUnassigned}{logical. Whether filtering statistics should 
+ignore the unassigned samples within the clustering. Only relevant if 
+'reduceMethod' matches one of built-in filtering statistics in 
+\code{\link{listBuiltInFilterStats}()}, in which case the clustering 
+identified in \code{whichCluster} is passed to \code{makeFilterStats} and
+the unassigned samples are excluded in calculating the statistic. See 
+\code{\link{makeFilterStats}}  for more details.}
+
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
-
-\item{filterIgnoreUnassigned}{logical. Whether filtering statistics should
-ignore the unassigned samples within the clustering. Only relevant if
-'reduceMethod' matches one of built-in filtering statistics in
-\code{\link{listBuiltInFilterStats}()}. In which case the clustering
-identified in \code{whichCluster} is passed to \code{makeFilterStats}. See
-\code{\link{makeFilterStats}}  for more details.}
 
 \item{whichCluster}{an integer index or character string that identifies
 which cluster should be used to make the dendrogram. Default is
@@ -157,10 +159,9 @@ the object}
 \item{object}{object from which user wants to calculate per-row statistics}
 }
 \value{
-If \code{returnValue="object"}, then ta \code{ClusterExperiment}
-  object. If \code{returnValue="list"} a list with elements: with the matrix
-  corresponding to the reduced data set stored as an element of the list in
-  \code{reducedDims} slot. If "list", then a list with elements
+If \code{returnValue="object"}, a \code{ClusterExperiment} object.
+
+If \code{returnValue="list"} a list with elements:
 \itemize{
 \item{\code{objectUpdate}}{object, potentially updated if had to calculate dimensionality reduction or filtering statistic}
 \item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in columns, features in rows}
@@ -218,20 +219,25 @@ Note that this is used internally by functions, but is mainly only
   data available as a matrix for continual use.
 
 If \code{returnValue="object"}, then the output is a single, updated
-  \code{ClusterExperiment} object with the reduced data matrix stored as an
-  element of the list in \code{reducedDims} slot (with name given by \code{reducedDimName} if given). If "list", then a list with
-  one element that is the object and the other that is the reduced data
-  matrix. Either way, the object returned in the list will be updated to
-  contain with the filtering statistics or the dimensionality reduction. The
-  only difference is that if "list", the reduced dimension matrix is NOT
-  saved in the object (and so only really makes a difference if the
-  \code{reduceMethod} argument is a filtering method). The option "list" is
-  mainly for internal use, where we do not want to continually save subseted
-  datasets.
+  \code{ClusterExperiment} object with the reduced data matrix stored as an 
+  element of the list in \code{reducedDims} slot (with name given by
+  \code{reducedDimName} if given). If "list", then a list with one element
+  that is the object and the other that is the reduced data matrix. Either
+  way, the object returned in the list will be updated to contain with the
+  filtering statistics or the dimensionality reduction. The only difference
+  is that if "list", the reduced dimension matrix is NOT saved in the object
+  (and so only really makes a difference if the \code{reduceMethod} argument
+  is a filtering method). The option "list" is mainly for internal use, where
+  we do not want to continually save subseted datasets.
 
 If \code{nDims} is missing, it will be given a default value 
   depending on the value of \code{reduceMethod}. See 
   \code{\link{defaultNDims}} for details.
+
+If \code{filterIgnoresUnassigned} is missing, then it is set to TRUE
+  \emph{unless}: \code{reduceMethod} matches a stored filtering statistic in
+  \code{rowData} AND does not match a built-in filtering method provided by
+  the package.
 
 For a \code{reduceMethod} that corresponds to a filtering statistics
   the current default is 1000 (or the length of the number of features, if

@@ -1735,7 +1735,7 @@ tabl <- "
 - |  | transFun | |
 *makeConsensus*  | propUnassigned = *(default)* | consensusProportion | proportion 
 -  | consensusMinSize    | minSize | |
-*makeDendrogram* | filterIgnoreUnassigned=TRUE | dendroReduce      | reduceMethod | 
+*makeDendrogram* | filterIgnoresUnassigned=TRUE | dendroReduce      | reduceMethod | 
 -  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
 *mergeClusters*   | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 

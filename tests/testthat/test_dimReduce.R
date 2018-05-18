@@ -206,7 +206,7 @@ test_that("getReducedData works as promised",{
   expect_false("PCA" %in% reducedDimNames(out1))
   
   expect_warning(getReducedData(clustNothingDimRed,reduceMethod="PCA",nDim=200,reducedDimName="MyPCA",returnValue="list"),"requesting an existing dimensionality reduction but with greater number of dimensions than available")
-  expect_silent(out3<-getReducedData(clustNothingDimRed,reduceMethod="PCA",nDim=50,reducedDimName="MyPCA",returnValue="list"),"requesting an existing dimensionality reduction but with greater number of dimensions than available")
+  expect_silent(out3<-getReducedData(clustNothingDimRed,reduceMethod="PCA",nDim=50,reducedDimName="MyPCA",returnValue="list"))
   expect_equal(nrow(out3$dataMatrix),50)
   
   #filters
@@ -215,7 +215,7 @@ test_that("getReducedData works as promised",{
   expect_true("filteredBy_mad_clusterSingle" %in% reducedDimNames(out2))
   expect_equal(ncol(reducedDim(out2,"filteredBy_mad_clusterSingle")),50)
   
-  expect_silent(out5<-getReducedData(clustNothing,reduceMethod="mad",filterIgnoreUnassigned=FALSE))
+  expect_silent(out5<-getReducedData(clustNothing,reduceMethod="mad",filterIgnoresUnassigned=FALSE))
   expect_true("mad" %in% filterNames(out5))
   expect_true("filteredBy_mad" %in% reducedDimNames(out5))
   

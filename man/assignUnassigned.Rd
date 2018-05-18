@@ -8,7 +8,7 @@
 \usage{
 \S4method{assignUnassigned}{ClusterExperiment}(object,
   whichCluster = "primary", clusterLabel, makePrimary = TRUE,
-  whichAssay = 1, ...)
+  whichAssay = 1, reduceMethod = "none", ...)
 }
 \arguments{
 \item{object}{A Cluster Experiment object}
@@ -23,6 +23,13 @@ be appended with the string "_AllAssigned".}
 
 \item{whichAssay}{which assay to use to calculate the median per cluster and
 take dimensionality reduction (if requested)}
+
+\item{reduceMethod}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Can be either a
+value stored in either of reducedDims or filterStats slot or a built-in
+diminsionality reduction/filtering. The option "coCluster" will use the
+co-Clustering matrix stored in the 'coClustering' slot of the
+\code{ClusterExperiment} object}
 
 \item{...}{arguments passed to \code{\link{getReducedData}} specifying the
 dimensionality reduction (if any) to be taken of the data for calculating
