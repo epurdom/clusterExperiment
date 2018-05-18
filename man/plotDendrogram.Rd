@@ -10,7 +10,7 @@
   leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
   "ids"), mergeInfo = "none", main, sub, clusterLabelAngle = 45,
   removeOutbranch = TRUE, legend = c("side", "below", "none"),
-  nodeColors = NULL, sampleData = NULL, clusterLegend = NULL, ...)
+  nodeColors = NULL, colData = NULL, clusterLegend = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
@@ -63,7 +63,7 @@ available for 'ape' package >= 4.1-0.6).}
 dendrogram. Names should match the name of the node (calls 
 \code{\link[ape]{nodelabels}}).}
 
-\item{sampleData}{index (by integer or name) the sample data stored as a 
+\item{colData}{index (by integer or name) the sample data stored as a 
 \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
 ("character" or "factor" variables) will be plotted; indexing of continous 
 variables will be ignored. Whether that data is continuous or not will be 
@@ -72,7 +72,7 @@ This argument is only relevant if \code{plotType=="colorblock"} and
 \code{leafType=="samples"}}
 
 \item{clusterLegend}{Assignment of colors to the clusters or sample data (as
-designated by \code{sampleData} argument) plotted with the dendrogram . If
+designated by \code{colData} argument) plotted with the dendrogram . If
 \code{NULL} or a particular variable/cluster are not assigned a color, 
 colors will be assigned internally for sample data and pull from the
 \code{clusterLegend} slot of the x for the clusters.}
