@@ -197,7 +197,7 @@ test_that("plotFeatureBoxplot works",{
 	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
 	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
-	expect_silent(plotFeatureBoxplot(cc,ignoreUnassigned=TRUE,feature=rownames(cc)[2]))
+	expect_silent(plotFeatureBoxplot(cc,plotUnassigned=TRUE,feature=rownames(cc)[2]))
 })
 
 test_that("plotting works with hdf5 assays objects",{

@@ -200,6 +200,12 @@ test_that("getReducedData works as promised",{
   #dimReduce
   expect_silent(out1<-getReducedData(clustNothing,reduceMethod="PCA"))
   expect_true("PCA" %in% reducedDimNames(out1))
+  expect_equal(colData(out1),colData(clustNothing))
+  expect_equal(rownames(out1),rownames(clustNothing))
+  expect_equal(colnames(out1),colnames(clustNothing))
+  expect_equal(metadata(out1),metadata(clustNothing))
+  
+  
   expect_warning(getReducedData(clustNothingDimRed,reduceMethod="PCA"),"will not add reduced dataset to object because already exists method with that name")
   expect_silent(out1<-getReducedData(clustNothing,reduceMethod="PCA",reducedDimName="MyPCA"))
   expect_true("MyPCA" %in% reducedDimNames(out1))

@@ -89,14 +89,14 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 test_that("`makeDendrogram` with reduceMethod options", {
     expect_silent(x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3))
 	expect_error(makeDendrogram(ccSE,reduceMethod=c("PCA","var"),nDims=3))
-    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,ignoreUnassigned=TRUE))
+    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,filterIgnoresUnassigned=TRUE))
     expect_equal(x,x2)
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=TRUE))
     
 })
 test_that("`makeDendrogram` works with whichCluster", {
