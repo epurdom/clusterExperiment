@@ -71,7 +71,7 @@ setMethod(
   f = "makeDendrogram",
   signature = "ClusterExperiment",
   definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
-                        nDims=defaultNDims(x,reduceMethod),ignoreUnassignedVar=TRUE,
+                        nDims=defaultNDims(x,reduceMethod),filterIgnoreUnassigned=TRUE,
                         unassignedSamples=c("outgroup", "cluster"),
                         whichAssay=1,...)
   {
@@ -89,7 +89,7 @@ setMethod(
       #need to change name of reduceMethod to make it match the
       #clustering information if that option chosen.
       datList<-getReducedData(object=x,whichCluster=whCl,reduceMethod=reduceMethod,
-                              nDims=nDims,ignoreUnassignedVar=TRUE,  whichAssay=whichAssay,returnValue="list")
+                              nDims=nDims,filterIgnoreUnassigned=TRUE,  whichAssay=whichAssay,returnValue="list")
       x<-datList$objectUpdate
       dat<-datList$dat
       

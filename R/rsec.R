@@ -195,7 +195,7 @@ setMethod(
       if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
     }
     if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-    dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,ignoreUnassignedVar=TRUE), args1)), silent=TRUE)
+    dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,filterIgnoreUnassigned=TRUE), args1)), silent=TRUE)
 
     #------------
     #mergeClusters

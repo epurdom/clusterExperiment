@@ -10,7 +10,7 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", reduceMethod = "mad",
-  nDims = defaultNDims(x, reduceMethod), ignoreUnassignedVar = TRUE,
+  nDims = defaultNDims(x, reduceMethod), filterIgnoreUnassigned = TRUE,
   unassignedSamples = c("outgroup", "cluster"), whichAssay = 1, ...)
 
 \S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
@@ -37,7 +37,7 @@ co-Clustering matrix stored in the 'coClustering' slot of the
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
 
-\item{ignoreUnassignedVar}{logical. Whether filtering statistics should
+\item{filterIgnoreUnassigned}{logical. Whether filtering statistics should
 ignore the unassigned samples within the clustering. Only relevant if
 'reduceMethod' matches one of built-in filtering statistics in
 \code{\link{listBuiltInFilterStats}()}. In which case the clustering
