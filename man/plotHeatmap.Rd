@@ -33,7 +33,7 @@
 
 \S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
-  whcolDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
+  whColDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
   clusterLegend = NULL, aligncolData = FALSE, unassignedColor = "white",
   missingColor = "grey", breaks = NA, symmetricBreaks = FALSE,
@@ -106,7 +106,7 @@ object. Whether that data is continuous or not will be determined by the
 properties of \code{colData} (no user input is needed). If input to
 \code{data} is matrix, \code{colData} is a matrix of additional data on
 the samples to show above heatmap. In this case, unless indicated by
-\code{whcolDataCont}, \code{colData} will be converted into factors,
+\code{whColDataCont}, \code{colData} will be converted into factors,
 even if numeric. ``-1'' indicates the sample was not assigned to a cluster
 and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.}
 
@@ -120,7 +120,7 @@ features (if FALSE, any input to clusterFeaturesData is ignored).}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{whcolDataCont}{Which of the \code{colData} columns are continuous
+\item{whColDataCont}{Which of the \code{colData} columns are continuous
 and should not be converted to counts. \code{NULL} indicates no additional
 \code{colData}. Only used if \code{data} input is matrix.}
 
@@ -244,7 +244,7 @@ If \code{data} is a \code{ClusterExperiment} object,
 
 If \code{data} is a matrix, then \code{colData} is a data.frame
   of annotation data to be plotted above the heatmap and
-  \code{whcolDataCont} gives the index of the column(s) of this dataset
+  \code{whColDataCont} gives the index of the column(s) of this dataset
   that should be consider continuous. Otherwise the annotation data for
   \code{colData} will be forced into a factor (which will be nonsensical
   for continous data). If \code{data} is a \code{ClusterExperiment} object,
@@ -359,7 +359,7 @@ plotHeatmap(simData, colData=anno, clusterLegend=annoColors)
 
 #give a continuous valued -- need to indicate columns
 anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
-plotHeatmap(simData, colData=anno2, whcolDataCont=3)
+plotHeatmap(simData, colData=anno2, whColDataCont=3)
 
 #compare changing breaks quantile on visual effect
 \dontrun{
