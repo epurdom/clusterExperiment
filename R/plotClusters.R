@@ -231,11 +231,16 @@ setMethod(
                         resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,colData=NULL,clusterLabels=NULL,...)
   {
     existingColors<-match.arg(existingColors)
+    args<-list(...)    
+		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData")
+		if(!is.null(checkIgnore)){
+			args<-checkIgnore$passedArgs
+			colData<-checkIgnore$val
+		}
     colData<-.pullcolData(object,colData,fixNA="unassigned")
     if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
-      args<-list(...)
       plotArg<-TRUE #the default
       if("plot" %in% names(args) ){
         whPlot<-which(names(args)=="plot")
@@ -332,7 +337,7 @@ setMethod(
       
     }
     else{
-      outval<-plotClusters(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels,...)
+			do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
     }
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!
