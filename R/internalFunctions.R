@@ -79,7 +79,7 @@
   return(retval)
 }
 #Returns NULL if no sample data
-.pullcolData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
+.pullColData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
   fixNA<-match.arg(fixNA)
   if(!is.null(wh)){
     sData<-colData(ce)

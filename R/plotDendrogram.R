@@ -124,7 +124,7 @@ setMethod(
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
 		
 		if(leafType=="samples" & plotType=="colorblock"){
-	    sData<-.pullcolData(x,colData) #returns data.frame
+	    sData<-.pullColData(x,colData) #returns data.frame
 	    #identify which numeric and remove
 	    if(!is.null(sData)){
 				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))

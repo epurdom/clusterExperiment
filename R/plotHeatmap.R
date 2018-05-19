@@ -435,7 +435,7 @@ setMethod(
     #---
     #get colData values and subset to those asked for by user
     #---
-    sData<-.pullcolData(data,colData)
+    sData<-.pullColData(data,colData)
     #identify which numeric
     if(!is.null(sData)) whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
     whcolDataCont<-NULL
