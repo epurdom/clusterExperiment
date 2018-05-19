@@ -237,7 +237,7 @@ setMethod(
 			args<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
 		}
-    colData<-.pullcolData(object,colData,fixNA="unassigned")
+    colData<-.pullColData(object,colData,fixNA="unassigned")
     if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
