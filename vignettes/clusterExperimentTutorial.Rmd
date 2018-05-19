@@ -1062,6 +1062,14 @@ par(mar=plotDMar)
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod")
 ```
 
+#### Sample data 
+We can also include data stored in `colData` slot of the object, so long as it is discrete (i.e. a factor or character vector).
+
+```{r plotDendro_colData}
+plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),colData=c("Biological_Condition","Published1","Published2"),merge="mergeMethod")
+```
+
+
 #### Node information
 
 We can pass options to `plot.phylo` to change the output of the dendrogram. For example, we can print the node names or colors   For example, to see the node names, we can set `show.node.label = TRUE` (we have to turn off plotting the merge information, since the merge information is plotted as node labels too.)
@@ -1078,28 +1086,6 @@ nodeNames<-paste("Node",1:6,sep="")
 nodeColors<-massivePalette[1:length(nodeNames)]
 names(nodeColors)<-nodeNames
 par(mar=plotDMar)
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod",nodeColors=nodeColors)
-```
-
-** Sample data** We can also include data stored in `colData` slot of the object, so long as it is discrete (i.e. a factor or character vector).
-
-```{r plotDendro_colData}
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),colData=c("Biological_Condition","Published1","Published2"),merge="mergeMethod")
-```
-
-
-** Node information ** We can pass options to `plot.phylo` to change the output of the dendrogram. For example, we can print the node names or colors   For example, to see the node names, we can set `show.node.label = TRUE` (we have to turn off plotting the merge information, since the merge information is plotted as node labels too.)
-
-```{r plotDendro_NodeNames}
-plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),show.node.label=TRUE)
-```
-
-We can also make the nodes colors (useful for linking up with colors from `plotContrastHeatmap` if using hierarchical contrasts, see below). Here we give own argument `nodeColors` (not that from `plot.phylo`) to make it easier; the argument takes a vector of colors, where the names of the vectors match the node names. Notice, we can plot the merge information with node colors.
-
-```{r plotDendro_NodeColors}
-nodeNames<-paste("Node",1:6,sep="")
-nodeColors<-massivePalette[1:length(nodeNames)]
-names(nodeColors)<-nodeNames
 plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),merge="mergeMethod",nodeColors=nodeColors)
 ```
 
@@ -1337,9 +1323,11 @@ To do so, we need to create a `ClusterFunction` object that defines our algorith
 First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
 
 ```{r custom}
+library(scran)
+library(igraph)
 SNN_wrap <- function(x, k, steps = 4, ...) {
-  snn <- scran::buildSNNGraph(x, k = k, d = NA, transposed = FALSE)
-  res <- igraph::cluster_walktrap(snn, steps = steps)
+  snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE) ##scran package
+  res <- cluster_walktrap(snn, steps = steps) #igraph package
   return(res$membership)
 }
 ```
