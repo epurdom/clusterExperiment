@@ -278,12 +278,12 @@ setMethod(
                         dendro_outbranch=NA,
                         coClustering=NULL,
                         merge_index=NA_real_,
-						merge_cutoff=NA_real_,
+                        merge_cutoff=NA_real_,
                         merge_dendrocluster_index=NA_real_,
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
                         merge_method=NA_character_,
-						clusterLegend=NULL,
+                        clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
     if(NCOL(object) != nrow(clusters)) {
@@ -301,7 +301,7 @@ setMethod(
            `clusters`")
     }
     #fix up names of clusters and match
-
+    
     if(is.null(colnames(clusters))){
       colnames(clusters)<-paste("cluster",seq_len(NCOL(clusters)),sep="")
     }
@@ -317,20 +317,20 @@ setMethod(
     #make clusters consecutive integer valued:
     tmp<-.makeColors(clusters, colors=massivePalette)
     if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
-	else{
-		clusterLegend<-unname(clusterLegend)
-		ch<-.checkIndClusterLegend(clusters,clusterLegend)
-		if(!is.logical(ch)) stop(ch)
-		#need to grab colors/names in given clusterLegend
-		autoLegend<-tmp$colorList
-		clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
-			m<-match(orig[,"clusterIds"],auto[,"name"])
-			if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
-			orig[,"clusterIds"]<-auto[m,"clusterIds"]
-			return(orig)
-
-		},SIMPLIFY=FALSE)
-	}
+    else{
+      clusterLegend<-unname(clusterLegend)
+      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
+      if(!is.logical(ch)) stop(ch)
+      #need to grab colors/names in given clusterLegend
+      autoLegend<-tmp$colorList
+      clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
+        m<-match(orig[,"clusterIds"],auto[,"name"])
+        if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
+        orig[,"clusterIds"]<-auto[m,"clusterIds"]
+        return(orig)
+        
+      },SIMPLIFY=FALSE)
+    }
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
     #can just give object in constructor, and then don't loose any information!
@@ -348,13 +348,13 @@ setMethod(
                dendro_index=dendro_index,
                dendro_outbranch=dendro_outbranch,
                merge_index=merge_index,
-			   merge_cutoff=merge_cutoff,
+               merge_cutoff=merge_cutoff,
                merge_dendrocluster_index=merge_dendrocluster_index,
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,
                merge_method=merge_method,
                coClustering=coClustering
-
+               
     )
     if(checkTransformAndAssay){
       chass<-.checkAssays(out)
