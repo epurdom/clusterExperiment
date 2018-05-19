@@ -192,16 +192,16 @@ test_that("removing clusters work as promised",{
   
 ###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
   #-1 in primary cluster
-whUn<-which(primaryCluster(ccSE) <0)
+  whUn<-which(primaryCluster(ccSE) <0)
   expect_silent(ccR<-removeUnclustered(ccSE))
   expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
   ###Check retain SE info
   expect_equal(colData(ccR),colData(se[,-whUn]) )
-  expect_equal(rownames(ccR),rownames(se)) 
-  expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-  expect_equal(metadata(ccR),metadata(se)) 
-  expect_equal(rowData(ccR),rowData(se)) 
+  expect_equal(rownames(ccR),rownames(se))
+  expect_equal(colnames(ccR),colnames(se[,-whUn]))
+  expect_equal(metadata(ccR),metadata(se))
+  expect_equal(rowData(ccR),rowData(se))
   
 })
 
