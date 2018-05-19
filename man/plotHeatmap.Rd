@@ -35,7 +35,7 @@
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
   whColDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
-  clusterLegend = NULL, aligncolData = FALSE, unassignedColor = "white",
+  clusterLegend = NULL, alignColData = FALSE, unassignedColor = "white",
   missingColor = "grey", breaks = NA, symmetricBreaks = FALSE,
   capBreaksLegend = FALSE, isSymmetric = FALSE,
   overRideClusterLimit = FALSE, plot = TRUE, ...)
@@ -135,7 +135,7 @@ cells (if FALSE, any input to clusterSamplesData is ignored).}
 \code{colData} columns will be assigned colors internally. See details
 for more.}
 
-\item{aligncolData}{Logical as to whether should align the colors of the
+\item{alignColData}{Logical as to whether should align the colors of the
 \code{colData} (only if \code{clusterLegend} not given and
 \code{colData} is not \code{NULL}).}
 
@@ -349,7 +349,7 @@ out <- plotHeatmap(simData, colData=anno)
 out$clusterLegend
 
 #assign colors to the clusters based on plotClusters algorithm
-plotHeatmap(simData, colData=anno, aligncolData=TRUE)
+plotHeatmap(simData, colData=anno, alignColData=TRUE)
 
 #assign colors manually
 annoColors <- list(cluster1=c("black", "red", "green"),

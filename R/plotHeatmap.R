@@ -57,7 +57,7 @@
 #' @param clusterLegend Assignment of colors to the clusters. If \code{NULL},
 #'   \code{colData} columns will be assigned colors internally. See details
 #'   for more.
-#' @param aligncolData Logical as to whether should align the colors of the
+#' @param alignColData Logical as to whether should align the colors of the
 #'   \code{colData} (only if \code{clusterLegend} not given and
 #'   \code{colData} is not \code{NULL}).
 #' @param breaks Either a vector of breaks (should be equal to length 52), or a
@@ -246,7 +246,7 @@
 #' out$clusterLegend
 #'
 #' #assign colors to the clusters based on plotClusters algorithm
-#' plotHeatmap(simData, colData=anno, aligncolData=TRUE)
+#' plotHeatmap(simData, colData=anno, alignColData=TRUE)
 #'
 #' #assign colors manually
 #' annoColors <- list(cluster1=c("black", "red", "green"),
@@ -462,7 +462,7 @@ setMethod(
     if(!"symmetricBreaks" %in% names(userList) && !externalData && visualizeData %in% c("centeredAndScaled","centered")){
       userList$symmetricBreaks<-TRUE
     }
-    userAlign<-"aligncolData" %in% names(userList) & !is.null(userList$aligncolData)
+    userAlign<-"alignColData" %in% names(userList) & !is.null(userList$alignColData)
     userLegend<-"clusterLegend" %in% names(userList) & !is.null(userList$clusterLegend)
     if(userAlign | userLegend){ #if user asks for alignment, don't assign clusterLegend
       if(userLegend){
@@ -485,7 +485,7 @@ setMethod(
       }
       else{
         if(userAlign){
-          al<-userList[["aligncolData"]]
+          al<-userList[["alignColData"]]
           if(al) clLegend<-NULL
         }
       }
@@ -621,7 +621,7 @@ setMethod(
                         clusterSamples=TRUE,showSampleNames=FALSE,
                         clusterFeatures=TRUE,showFeatureNames=FALSE,
                         colorScale=seqPal5,
-                        clusterLegend=NULL,aligncolData=FALSE,
+                        clusterLegend=NULL,alignColData=FALSE,
                         unassignedColor="white",missingColor="grey",
                         breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
                         isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
@@ -770,7 +770,7 @@ setMethod(
       #-----
       #final update of clusterLegend
       #-----
-      if(is.null(clusterLegend) & aligncolData & (is.null(whColDataCont) || length(whColDataCont)<ncol(annCol))){
+      if(is.null(clusterLegend) & alignColData & (is.null(whColDataCont) || length(whColDataCont)<ncol(annCol))){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
             defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
