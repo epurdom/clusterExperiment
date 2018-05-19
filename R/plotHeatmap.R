@@ -314,7 +314,12 @@ setMethod(
   ){
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
-
+    userList<-list(...)    
+		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData")
+		if(!is.null(checkIgnore)){
+			userList<-checkIgnore$passedArgs
+			colData<-checkIgnore$val
+		}
     #########
     ##Determine visualization data and default colorScale based on that
     #########
@@ -454,8 +459,6 @@ setMethod(
     clLegend<-clusterLegend(data)[whCl] #note, clusterLegend gives names even though not stored internally with @clusterLegend so will match, which plotHeatmap needs
     if(length(clLegend)==0) clLegend<-NULL
 
-
-    userList<-list(...)
     if(!"symmetricBreaks" %in% names(userList) && !externalData && visualizeData %in% c("centeredAndScaled","centered")){
       userList$symmetricBreaks<-TRUE
     }
@@ -624,12 +627,17 @@ setMethod(
                         isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
   ){
     
+    aHeatmapArgs<-list(...)  
+		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData")
+		if(!is.null(checkIgnore)){
+			aHeatmapArgs<-checkIgnore$passedArgs
+			colData<-checkIgnore$val
+		}
     
     ##########
     ##Deal with numeric matrix for heatmap ...
     ##########
     heatData<-data.matrix(data)
-    aHeatmapArgs<-list(...)
     aHeatmapDefaultArgs<-as.list(args(NMF::aheatmap))
     getHeatmapValue<- function(string,value=NULL){ #note, doesn't work for pulling function 'reorder' so put in manually
       if(string %in% names(aHeatmapArgs)) val<-aHeatmapArgs[[string]]
