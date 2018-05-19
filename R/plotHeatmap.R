@@ -14,7 +14,7 @@
 #'   properties of \code{colData} (no user input is needed). If input to
 #'   \code{data} is matrix, \code{colData} is a matrix of additional data on
 #'   the samples to show above heatmap. In this case, unless indicated by
-#'   \code{whcolDataCont}, \code{colData} will be converted into factors,
+#'   \code{whColDataCont}, \code{colData} will be converted into factors,
 #'   even if numeric. ``-1'' indicates the sample was not assigned to a cluster
 #'   and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.
 #' @param data data to use to determine the heatmap. Can be a matrix,
@@ -23,7 +23,7 @@
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
 #'   interpretation of parameters depends on the type of the input to
 #'   \code{data}.
-#' @param whcolDataCont Which of the \code{colData} columns are continuous
+#' @param whColDataCont Which of the \code{colData} columns are continuous
 #'   and should not be converted to counts. \code{NULL} indicates no additional
 #'   \code{colData}. Only used if \code{data} input is matrix.
 #' @param visualizeData either a character string, indicating what form of the
@@ -136,7 +136,7 @@
 #'   of the samples.
 #' @details If \code{data} is a matrix, then \code{colData} is a data.frame
 #'   of annotation data to be plotted above the heatmap and
-#'   \code{whcolDataCont} gives the index of the column(s) of this dataset
+#'   \code{whColDataCont} gives the index of the column(s) of this dataset
 #'   that should be consider continuous. Otherwise the annotation data for
 #'   \code{colData} will be forced into a factor (which will be nonsensical
 #'   for continous data). If \code{data} is a \code{ClusterExperiment} object,
@@ -256,7 +256,7 @@
 #'
 #' #give a continuous valued -- need to indicate columns
 #' anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
-#' plotHeatmap(simData, colData=anno2, whcolDataCont=3)
+#' plotHeatmap(simData, colData=anno2, whColDataCont=3)
 #'
 #' #compare changing breaks quantile on visual effect
 #' \dontrun{
@@ -438,17 +438,17 @@ setMethod(
     sData<-.pullColData(data,colData)
     #identify which numeric
     if(!is.null(sData)) whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
-    whcolDataCont<-NULL
+    whColDataCont<-NULL
 
     if(!is.null(clusterData) & !is.null(sData)){
       colData<-data.frame(clusterData,sData,stringsAsFactors=FALSE,check.names=FALSE)
-      if(length(whCont)>0)  whcolDataCont<-whCont+ncol(clusterData)
+      if(length(whCont)>0)  whColDataCont<-whCont+ncol(clusterData)
     }
     else{
       if(!is.null(clusterData)) colData<-clusterData
       if(!is.null(sData)){
         colData<-sData
-        if(length(whCont)>0) whcolDataCont<-whCont
+        if(length(whCont)>0) whColDataCont<-whCont
       }
       if(is.null(sData) & is.null(clusterData)) colData<-NULL
     }
@@ -584,7 +584,7 @@ setMethod(
     do.call("plotHeatmap",c(list(data=heatData,
                                  clusterSamplesData=clusterSamplesData,
                                  clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
-                                 colData=colData,whcolDataCont=whcolDataCont,
+                                 colData=colData,whColDataCont=whColDataCont,
                                  clusterSamples=clusterSamples,labRow=labRow,
                                  clusterLegend=clLegend,clusterFeatures=clusterFeatures,
                                  colorScale=colorScale),userList))
@@ -617,7 +617,7 @@ setMethod(
   definition = function(data,colData=NULL,
                         clusterSamplesData=NULL,
                         clusterFeaturesData=NULL,
-                        whcolDataCont=NULL,
+                        whColDataCont=NULL,
                         clusterSamples=TRUE,showSampleNames=FALSE,
                         clusterFeatures=TRUE,showFeatureNames=FALSE,
                         colorScale=seqPal5,
@@ -746,31 +746,31 @@ setMethod(
       
       #-------------------
       # run .makeColors. This will:
-      # 1) Make colData explicitly factors (except for whcolDataCont variables which are not given to function)
+      # 1) Make colData explicitly factors (except for whColDataCont variables which are not given to function)
       # 2) Make default clusterLegend, including incorporating and checking user-given clusterLegend
       # 3) Make a numeric summary of factors (for if alignSamples==TRUE)
       #-------------------
       if(is.data.frame(colData)) colData<-droplevels(colData)
-      if(!is.null(whcolDataCont)){
-        if(any(logical(whcolDataCont))) whcolDataCont<-which(whcolDataCont)
+      if(!is.null(whColDataCont)){
+        if(any(logical(whColDataCont))) whColDataCont<-which(whColDataCont)
       }
-      if(length(whcolDataCont)>0) tmpDf<-colData[,-whcolDataCont,drop=FALSE]
+      if(length(whColDataCont)>0) tmpDf<-colData[,-whColDataCont,drop=FALSE]
       else tmpDf<-colData
       defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE, matchClusterLegend = clusterLegend, matchTo="name") 
       tmpDfNum<-defaultColorLegend$numClusters
       colnames(tmpDfNum)<-colnames(tmpDf)
       #so that annCol has them as factors.
       tmpDf<-defaultColorLegend$facClusters
-      if(length(whcolDataCont)>0){
+      if(length(whColDataCont)>0){
         annCol<-colData
-        annCol[,-whcolDataCont]<-tmpDf
+        annCol[,-whColDataCont]<-tmpDf
       }			  
       else annCol<-tmpDf 
       
       #-----
       #final update of clusterLegend
       #-----
-      if(is.null(clusterLegend) & aligncolData & (is.null(whcolDataCont) || length(whcolDataCont)<ncol(annCol))){
+      if(is.null(clusterLegend) & aligncolData & (is.null(whColDataCont) || length(whColDataCont)<ncol(annCol))){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
             defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
@@ -791,8 +791,8 @@ setMethod(
       # make them in same order as in annCol factor
       ##########################
       whInAnnColors<-which(names(annColors)%in% colnames(annCol))
-      if(!is.null(whcolDataCont) & length(whcolDataCont)>0){
-        whInAnnColors<-setdiff(whInAnnColors,whcolDataCont)
+      if(!is.null(whColDataCont) & length(whColDataCont)>0){
+        whInAnnColors<-setdiff(whInAnnColors,whColDataCont)
       }
       
       #-----
