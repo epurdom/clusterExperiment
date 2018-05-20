@@ -337,7 +337,7 @@ setMethod(
       
     }
     else{
-			do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
+			outval<-do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
     }
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!

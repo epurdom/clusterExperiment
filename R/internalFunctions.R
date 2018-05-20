@@ -293,6 +293,7 @@
   return(list(colorList=colorList,numClusters=clNumMat,facClusters=clMat))
 }
 
+#' @importFrom grDevices col2rgb 
 .matchColors<-function(x,y){
   #match x colors to y colors, only with rgb definitions
   if(!is.character(x) || !is.character(y)) stop("colors must be character values")
