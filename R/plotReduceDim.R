@@ -49,6 +49,7 @@ setMethod(
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
+#' @param nPerColLegend The number of clusters per column in legend. 
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
 #'   "white", will be coerced to "lightgrey" regardless of user input to
@@ -78,7 +79,7 @@ setMethod(
   f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
   definition = function(object, whichCluster,
-                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
+                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nPerColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
 whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
@@ -167,7 +168,10 @@ whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...
           if(length(wh2)>0) clColor<-clColor[-wh2]
         }
         if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
-        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
+				nPerColLegend<-6
+				nColLegend<-length(clColor) %/% nPerColLegend
+				if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
+        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle,ncol=nColLegend)
       }
       
     }

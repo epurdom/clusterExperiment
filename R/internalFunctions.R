@@ -305,7 +305,7 @@
 
 .convertSingleWhichCluster<-function(object,whichCluster,passedArgs=NULL){
 	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
-		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")}
+		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
 	}
   if(is.character(whichCluster)) whCl<-.TypeIntoIndices(object,whClusters=whichCluster) else whCl<-whichCluster
   if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")

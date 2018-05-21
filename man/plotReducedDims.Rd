@@ -15,9 +15,9 @@
 
 \S4method{plotReducedDims}{ClusterExperiment,numeric}(object, whichCluster,
   reducedDim = "PCA", whichDims = c(1, 2), plotUnassigned = TRUE,
-  legend = TRUE, legendTitle = "", clusterLegend = NULL,
-  unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
-  ylab = NULL, ...)
+  legend = TRUE, legendTitle = "", nPerColLegend = 6,
+  clusterLegend = NULL, unassignedColor = NULL, missingColor = NULL,
+  pch = 19, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -41,6 +41,8 @@ giving the location of the legend (passed to \code{\link{legend}})}
 
 \item{legendTitle}{character value giving title for the legend. If NULL, uses
 the clusterLabels value for clustering.}
+
+\item{nPerColLegend}{The number of clusters per column in legend.}
 
 \item{clusterLegend}{matrix with three columns and colnames
 'clusterIds','name', and 'color' that give the color and name of the
