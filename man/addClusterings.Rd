@@ -4,6 +4,7 @@
 \name{addClusterings}
 \alias{addClusterings}
 \alias{removeClusterings}
+\alias{addClusterings,ClusterExperiment,matrix-method}
 \alias{addClusterings,ClusterExperiment,ClusterExperiment-method}
 \alias{addClusterings,ClusterExperiment,vector-method}
 \alias{removeClusterings,ClusterExperiment,character-method}

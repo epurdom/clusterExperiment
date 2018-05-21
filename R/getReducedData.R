@@ -4,12 +4,6 @@
 #' @rdname reduceFunctions
 #' @aliases getReducedData
 #' @param object A ClusterExperiment Object
-#' @param reduceMethod character A character identifying what type of
-#'   dimensionality reduction to perform before clustering. Can be either a
-#'   value stored in either of reducedDims or filterStats slot or a built-in
-#'   diminsionality reduction/filtering. The option "coCluster" will use the
-#'   co-Clustering matrix stored in the 'coClustering' slot of the
-#'   \code{ClusterExperiment} object
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
 #' @param whichCluster an integer index or character string that identifies
@@ -159,7 +153,7 @@ setMethod(
   make.names(paste(reducedDims,nDims,sep="_"))
 }
 #' @rdname reduceFunctions
-#' @param reduceMethod character. A method or methods for reducing the size of
+#' @param reduceMethod character. A method (or methods) for reducing the size of
 #'   the data, either by filtering the rows (genes) or by a dimensionality
 #'   reduction method. Must either be 1) must match the name of a built-in
 #'   method, in which case if it is not already existing in the object will be

@@ -63,12 +63,13 @@ listBuiltInReducedDims()
 \arguments{
 \item{object}{A ClusterExperiment Object}
 
-\item{reduceMethod}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Can be either a
-value stored in either of reducedDims or filterStats slot or a built-in
-diminsionality reduction/filtering. The option "coCluster" will use the
-co-Clustering matrix stored in the 'coClustering' slot of the
-\code{ClusterExperiment} object}
+\item{reduceMethod}{character. A method (or methods) for reducing the size of
+the data, either by filtering the rows (genes) or by a dimensionality
+reduction method. Must either be 1) must match the name of a built-in
+method, in which case if it is not already existing in the object will be
+passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or
+2) must match a stored filtering statistic or dimensionality reduction in
+the object}
 
 \item{filterIgnoresUnassigned}{logical. Whether filtering statistics should 
 ignore the unassigned samples within the clustering. Only relevant if 
@@ -151,14 +152,6 @@ of the variance. \code{maxDims} should be of same length as
 \code{reducedDims}, indicating the number of dimensions to keep for each
 method (if \code{maxDims} is of length 1, the same number of dimensions
 will be used for each).}
-
-\item{reduceMethod}{character. A method or methods for reducing the size of
-the data, either by filtering the rows (genes) or by a dimensionality
-reduction method. Must either be 1) must match the name of a built-in
-method, in which case if it is not already existing in the object will be
-passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or
-2) must match a stored filtering statistic or dimensionality reduction in
-the object}
 
 \item{object}{object from which user wants to calculate per-row statistics}
 }

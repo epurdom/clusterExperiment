@@ -19,7 +19,7 @@
 #' @return A \code{\link{ClusterExperiment}} object with the added clusters.
 #'
 #' @rdname addClusterings
-#' @aliases addClusterings removeClusterings
+#' @aliases addClusterings removeClusterings addClusterings,ClusterExperiment,matrix-method
 #' @export
 #' @examples
 #' data(simData)

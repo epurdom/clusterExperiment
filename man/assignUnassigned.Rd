@@ -24,12 +24,13 @@ be appended with the string "_AllAssigned".}
 \item{whichAssay}{which assay to use to calculate the median per cluster and
 take dimensionality reduction (if requested)}
 
-\item{reduceMethod}{character A character identifying what type of
-dimensionality reduction to perform before clustering. Can be either a
-value stored in either of reducedDims or filterStats slot or a built-in
-diminsionality reduction/filtering. The option "coCluster" will use the
-co-Clustering matrix stored in the 'coClustering' slot of the
-\code{ClusterExperiment} object}
+\item{reduceMethod}{character. A method (or methods) for reducing the size of
+the data, either by filtering the rows (genes) or by a dimensionality
+reduction method. Must either be 1) must match the name of a built-in
+method, in which case if it is not already existing in the object will be
+passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or
+2) must match a stored filtering statistic or dimensionality reduction in
+the object}
 
 \item{...}{arguments passed to \code{\link{getReducedData}} specifying the
 dimensionality reduction (if any) to be taken of the data for calculating
