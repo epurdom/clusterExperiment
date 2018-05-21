@@ -15,6 +15,7 @@ Changes:
 * Created functions `getReducedData` and `assignUnassigned`.
 * Changed argument `ignoreUnassignedVar` to `filterIgnoresUnassigned` for clarity.
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
+* Added option `nColLegend` to `plotReducedDims`
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============
