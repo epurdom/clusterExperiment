@@ -95,7 +95,7 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-	    whichCluster<-.convertSingleWhichCluster(object,whichCluster)
+	    whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives

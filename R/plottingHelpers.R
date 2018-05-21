@@ -434,7 +434,7 @@ setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
   definition = function(object,whichCluster="primary",clusterNames,title,...){
-    whichCluster<-.convertSingleWhichCluster(object,whichCluster)
+    whichCluster<-.convertSingleWhichCluster(object,whichCluster,list(...))
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
       if(is.null(names(clusterNames))) stop("clusterNames must be named vector")

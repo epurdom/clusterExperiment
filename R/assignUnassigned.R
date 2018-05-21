@@ -30,7 +30,7 @@ setMethod(
   definition = function(object,whichCluster="primary",clusterLabel,
                         makePrimary=TRUE,whichAssay=1,reduceMethod="none",...){
 		
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     cl<-clusterMatrix(object)[,whCl]
 		if(missing(clusterLabel)) clusterLabel<-paste0(clusterLabels(object)[whCl],"_AllAssigned")
 		

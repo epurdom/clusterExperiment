@@ -9,7 +9,7 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     return(plotReducedDims(object,whichCluster=whCl,...))
     
   })
@@ -81,7 +81,7 @@ setMethod(
                         reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-    if(length(whichCluster)!=1) stop("whichCluster must identify a single clustering.")
+whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){

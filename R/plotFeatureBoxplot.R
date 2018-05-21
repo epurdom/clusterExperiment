@@ -11,7 +11,7 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character",feature="ANY"),
   definition = function(object, whichCluster,feature,...)
   {
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     invisible(plotFeatureBoxplot(object,whichCluster=whCl,feature=feature,...))
 
   })

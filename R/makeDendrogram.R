@@ -82,7 +82,7 @@ setMethod(
 			filterIgnoresUnassigned<-checkIgnore$val
 		}
     unassignedSamples<-match.arg(unassignedSamples)
-    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    whCl<-.convertSingleWhichCluster(x,whichCluster,passedArgs)
     cl<-clusterMatrix(x)[,whCl]
     ##erase merge information
     if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
