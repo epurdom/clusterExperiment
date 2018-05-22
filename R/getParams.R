@@ -9,6 +9,10 @@
 #'   
 #' @param x a ClusterExperiment object that contains clusterings from running
 #'   \code{\link{clusterMany}}.
+#' @param searchAll logical, indicating whether all clusterings with 
+#'   \code{clusterMany} label should be allowed (i.e. including those from
+#'    previous ones with labels like \code{clusterMany.1}), or only limited 
+#'    to those in most recent workflow (default).
 #' @param whichClusters The indices (or clusterLabels) of those clusters whose
 #'   labels will be parsed to determine the parameters; should be subset of the
 #'   clusterMany results.
@@ -42,23 +46,25 @@
 setMethod(
   f = "getClusterManyParams",
   signature = signature(x = "ClusterExperiment"),
-  function(x,whichClusters="clusterMany",simplify=TRUE) {
+  function(x,whichClusters="clusterMany",searchAll=FALSE,simplify=TRUE) {
     
     allClTypes<-clusterTypes(x)
-    if(!"clusterMany" %in% allClTypes) stop("x does not have any clusterings that have clusterType exactly equal to 'clusterMany' ")	 #note to self: this makes it impossible to use function on old clusterMany results that have type clusterMany.1 or what ever.		
+		if(includeOld) whCM<-grep("clusterMany",allClTypes)
+		else whCm<-which(allClTypes=="clusterMany")
+    if(length(whCM)==0) stop("x does not have any clusterings that have clusterType 'clusterMany' ")	
     wh <- if(is.character(whichClusters)).TypeIntoIndices(x, whClusters=whichClusters) else whichClusters
     if(length(wh)==0){
       warning("argument whichClusters did not return any clusters; using all clusterMany clusters")
-      wh<-which(allClTypes=="clusterMany")
+      wh<-whCm
     }
-    if(!"clusterMany" %in% allClTypes[wh]){
+    if(!any(wh %in% whCm)){
       warning("argument whichClusters did not return any clusters of type 'clusterMany'; using all clusterMany clusters")
-      wh<-which(allClTypes=="clusterMany")
+      wh<-whCm
     }
     else{
-      if(any(allClTypes[wh] != "clusterMany")){
-        warning("some clusters indicated in 'whichClusters' do not have type 'clusterMany' and will be ignored.") #note to self: again, this makes it impossible to use function on old clusterMany results that have type clusterMany.1 or what ever.
-        wh<-wh[allClTypes[wh] == "clusterMany"]
+      if(any(!wh %in%  whCm)){
+        warning("some clusters indicated in 'whichClusters' do not have type 'clusterMany' and will be ignored.") 
+        wh<-wh[wh %in% whCm]
       }
       
     }

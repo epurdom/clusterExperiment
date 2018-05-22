@@ -56,11 +56,6 @@ NULL
 #'   subsamples are taken) which can cause errors if you then pass the resulting
 #'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
-#' @details Our subsampling algorithm is implemented in C++ and is fast and
-#'   simple but may be memory inefficient if \code{samp.p} is low.
-#'   \code{largeDataset = TRUE} should be more efficient in such situations,
-#'   possibly at the cost of speed. Note that this feature is experimental and
-#'   should be used only by the developers.
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth
 #'   sample were clustered into the same cluster. The percentage is only out of
