@@ -61,7 +61,7 @@ listBuiltInFilterStats()
 listBuiltInReducedDims()
 }
 \arguments{
-\item{object}{A ClusterExperiment Object}
+\item{object}{For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.}
 
 \item{reduceMethod}{character. A method (or methods) for reducing the size of
 the data, either by filtering the rows (genes) or by a dimensionality
@@ -152,8 +152,6 @@ of the variance. \code{maxDims} should be of same length as
 \code{reducedDims}, indicating the number of dimensions to keep for each
 method (if \code{maxDims} is of length 1, the same number of dimensions
 will be used for each).}
-
-\item{object}{object from which user wants to calculate per-row statistics}
 }
 \value{
 If \code{returnValue="object"}, a \code{ClusterExperiment} object.

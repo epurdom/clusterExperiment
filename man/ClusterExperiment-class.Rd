@@ -91,7 +91,10 @@ Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
-\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see Slots)}
+\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see Slots).
+Must be match to given clusters, in that must be valid clusterLegend, and
+the "clusterIds" column matches the value in the clustering matrix.
+Generally, this is not a good way for users to set the clusterLegend slot.}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the
 assay and given transformation function for whether they are valid.}
