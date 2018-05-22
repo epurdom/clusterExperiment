@@ -49,22 +49,22 @@ setMethod(
   function(x,whichClusters="clusterMany",searchAll=FALSE,simplify=TRUE) {
     
     allClTypes<-clusterTypes(x)
-		if(includeOld) whCM<-grep("clusterMany",allClTypes)
-		else whCm<-which(allClTypes=="clusterMany")
+		if(searchAll) whCM<-grep("clusterMany",allClTypes)
+		else whCM<-which(allClTypes=="clusterMany")
     if(length(whCM)==0) stop("x does not have any clusterings that have clusterType 'clusterMany' ")	
     wh <- if(is.character(whichClusters)).TypeIntoIndices(x, whClusters=whichClusters) else whichClusters
     if(length(wh)==0){
       warning("argument whichClusters did not return any clusters; using all clusterMany clusters")
-      wh<-whCm
+      wh<-whCM
     }
-    if(!any(wh %in% whCm)){
+    if(!any(wh %in% whCM)){
       warning("argument whichClusters did not return any clusters of type 'clusterMany'; using all clusterMany clusters")
-      wh<-whCm
+      wh<-whCM
     }
     else{
-      if(any(!wh %in%  whCm)){
+      if(any(!wh %in%  whCM)){
         warning("some clusters indicated in 'whichClusters' do not have type 'clusterMany' and will be ignored.") 
-        wh<-wh[wh %in% whCm]
+        wh<-wh[wh %in% whCM]
       }
       
     }
