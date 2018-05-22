@@ -2,14 +2,14 @@
 # If get that corrupted file, probably copied from laptop or elsewhere that only has tag
 # Do git lfs checkout L5_sumExp.rda
 library(devtools)
-library(profmem)
+#library(profmem)
 load_all()
 #install.packages(pkgs="../../../clusterExperiment",repos=NULL,type="source")
 #library(clusterExperiment)
 load("L5_sumExp.rda")
 outpath<-"resultsDirectory"
 if(!file.exists(outpath)) dir.create(outpath)
-ncores<-5
+ncores<-2
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript clusterManyTest.R <tagString>' where <tagString> will be name on saved file of output.")
 tag<-args[1]
@@ -44,7 +44,7 @@ cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
 				 mainClusterArgs=list(clusterArgs=list("whichHierDist"="dist")), #added this to be back-compatible with previous defauls.
 				 seqArgs=list(top.can=15),#added this to be back-compatible with previous defauls.
                  alphas=c(0.2,0.3), subsample=TRUE, sequential=TRUE,
-                 ncores=ncores, subsampleArgs=list(resamp.num=20,largeDataset=FALSE,
+                 ncores=ncores, subsampleArgs=list(resamp.num=20,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
                  random.seed=21321, run=TRUE)

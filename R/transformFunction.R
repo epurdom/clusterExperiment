@@ -1,23 +1,25 @@
 #' @name transformData
 #' @title Transform the original data in a ClusterExperiment object
-#'
+#' @aliases transformData,matrixOrHDF5-method
 #' @description Provides the transformed data
-#'
-#' @param object a matrix, SummarizedExperiment, SingleCellExperiment or ClusterExperiment object.
-#' @param transFun a transformation function to be applied to the data. If the transformation 
-#' applied to the data creates an error or NA values, then the function will throw an error.
-#' If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-#' and giving this parameter will result in an error.
-#' @param isCount if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-# transformation as defined by \code{function(x){log2(x+1)}}, and \code{isCount=FALSE} 
-#' will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-#' If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-#' and giving this parameter will result in an error.
+#' @param object a matrix, SummarizedExperiment, SingleCellExperiment or
+#'   ClusterExperiment object.
+#' @param transFun a transformation function to be applied to the data. If the
+#'   transformation applied to the data creates an error or NA values, then the
+#'   function will throw an error. If object is of class
+#'   \code{ClusterExperiment}, the stored transformation will be used and giving
+#'   this parameter will result in an error.
+#' @param isCount if \code{transFun=NULL}, then \code{isCount=TRUE} will
+#'   determine the transformation as defined by \code{function(x){log2(x+1)}},
+#'   and \code{isCount=FALSE} will give a transformation function
+#'   \code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+#'   class \code{ClusterExperiment}, the stored transformation will be used and
+#'   giving this parameter will result in an error.
 #' @param ... Values passed on the the 'matrix' method.
 #' @return A DataFrame defined by \code{assay(x)} suitably transformed
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
-#'   the transformation function either defined in x (in the case of a 
-#' \code{ClusterExperiment} object) or by user given values for other classes. 
+#'   the transformation function either defined in x (in the case of a
+#' \code{ClusterExperiment} object) or by user given values for other classes.
 #'
 #'
 #' @examples
@@ -26,12 +28,11 @@
 #' labels <- gl(5, 2)
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
-#' z<-transformData(cc) 
-#' @aliases transformData,matrix-method
+#' z<-transformData(cc)
 #' @export
 setMethod(
   f = "transformData",
-  signature = "matrix",
+  signature = "matrixOrHDF5",
   definition = function(object,transFun=NULL,isCount=FALSE) {
 	  transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
 	  x <- try(transFun(object), silent=TRUE)
@@ -43,14 +44,16 @@ setMethod(
   }
 )
 #' @export
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @rdname transformData
 setMethod(
   f = "transformData",
   signature = "ClusterExperiment",
-  definition = function(object,...) {
-  	if(any(c("transFun","isCount") %in% names(list(...)))) 
-  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-	  return(transformData(assay(object),transFun=transformation(object)))
+  definition = function(object, whichAssay=1, ...) {
+  	if(any(c("transFun","isCount") %in% names(list(...))))
+  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
+	  return(transformData(assay(object, whichAssay),transFun=transformation(object)))
   }
 )
 #' @export
@@ -58,8 +61,8 @@ setMethod(
 setMethod(
   f = "transformData",
   signature = "SingleCellExperiment",
-  definition = function(object,...) {
-	  return(transformData(assay(object),...))
+  definition = function(object, whichAssay=1, ...) {
+	  return(transformData(assay(object, whichAssay),...))
   }
 )
 #' @export
@@ -85,4 +88,4 @@ setMethod(
 
 
 
-	
+

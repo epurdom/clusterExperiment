@@ -20,7 +20,7 @@
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
   whichCluster, feature, plotUnassigned = FALSE, unassignedColor = NULL,
-  missingColor = NULL, main = NULL, assay = NULL, ...)
+  missingColor = NULL, main = NULL, whichAssay = 1, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -31,7 +31,8 @@
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
 
-\item{plotUnassigned}{whether to plot the unassigned samples as a cluster (either -1 or -2)}
+\item{plotUnassigned}{whether to plot the unassigned samples as a cluster
+(either -1 or -2)}
 
 \item{unassignedColor}{If not NULL, should be character value giving the
 color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
@@ -41,13 +42,15 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 
 \item{main}{title of plot. If NULL, given default title.}
 
-\item{assay}{Identifies which assay in the \code{object} should be used for the data to be plotted.}
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
 }
 \value{
 A plot is created. The output of boxplot is returned
 }
 \description{
-Plot a boxplot of the (transformed) values for a particular gene, separated by cluster
+Plot a boxplot of the (transformed) values for a particular
+  gene, separated by cluster
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

@@ -8,7 +8,7 @@
   visualization}
 \usage{
 \S4method{plotClustersWorkflow}{ClusterExperiment}(object,
-  whichClusters = c("mergeClusters", "combineMany"),
+  whichClusters = c("mergeClusters", "makeConsensus"),
   whichClusterMany = NULL, nBlankLines = ceiling(nClusterings(object) *
   0.05), existingColors = c("ignore", "all", "highlightOnly"),
   nSizeResult = ceiling(nClusterings(object) * 0.02), clusterLabels = TRUE,
@@ -32,7 +32,10 @@ to clusterings of clusterType \code{clusterMany}.}
 \item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the highlighted clusterings.}
 
-\item{existingColors}{one of "ignore","all","highlightOnly". Whether the plot should use the stored colors in the \code{ClusterExperiment} object given. "highlightOnly" means only the highlighted clusters will use the stored colors, not the clusterMany clusterings.}
+\item{existingColors}{one of "ignore","all","highlightOnly". Whether the plot
+should use the stored colors in the \code{ClusterExperiment} object given.
+"highlightOnly" means only the highlighted clusters will use the stored
+colors, not the clusterMany clusterings.}
 
 \item{nSizeResult}{the number of rows each highlighted clustering should take up.
 Increasing the number increases the thickness of the rectangles
@@ -73,7 +76,7 @@ This plot is solely intended to make it easier to use the
     clusterings from a call to \code{\link{clusterMany}}. This plot separates
     out the \code{\link{clusterMany}} results from a designated clustering of
     interest, as indicated by the \code{whichClusters} argument
-    (by default clusterings from a call to \code{\link{combineMany}} or 
+    (by default clusterings from a call to \code{\link{makeConsensus}} or 
     \code{\link{mergeClusters}}). In addition the highlighted clusters are
     made bigger so that they can be easily seen.
 }
@@ -84,7 +87,7 @@ data(simData)
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
-cl <- combineMany(cl, proportion=0.7)
+cl <- makeConsensus(cl, proportion=0.7)
 plotClustersWorkflow(cl)
 }
 \seealso{

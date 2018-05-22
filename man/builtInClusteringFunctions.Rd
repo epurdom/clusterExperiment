@@ -121,5 +121,6 @@ listBuiltInTypeK()
 listBuiltInType01()
 }
 \seealso{
-\code{\link{ClusterFunction}}, \code{\link{algorithmType}}, \code{\link{inputType}}
+\code{\link{ClusterFunction}}, \code{\link{algorithmType}},
+  \code{\link{inputType}}
 }

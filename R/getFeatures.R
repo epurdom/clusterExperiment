@@ -5,8 +5,8 @@
 #' @aliases getBestFeatures
 #' @param x data for the test. Can be a numeric matrix or a
 #'   \code{\link{ClusterExperiment}}.
-#' @param cluster A numeric vector with cluster assignments.
-#'   ``-1'' indicates the sample was not assigned to a cluster.
+#' @param cluster A numeric vector with cluster assignments. ``-1'' indicates
+#'   the sample was not assigned to a cluster.
 #' @param contrastType What type of test to do. `F' gives the omnibus
 #'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
 #'   the samples in each side,  `Pairs' does pair-wise contrasts based on the
@@ -15,15 +15,15 @@
 #'   to \code{\link{clusterContrasts}}
 #' @param contrastAdj What type of FDR correction to do for contrasts tests
 #'   (i.e. if contrastType='Dendro' or 'Pairs').
-#' @param isCount logical as to whether input data is count data, in which
-#'   case to perform voom correction to data. See details.
+#' @param isCount logical as to whether input data is count data, in which case
+#'   to perform voom correction to data. See details.
 #' @param ... options to pass to \code{\link{topTable}} or
 #'   \code{\link[limma]{topTableF}} (see \code{\link[limma]{limma}} package)
-#' @param normalize.method character value, passed to \code{\link[limma]{voom}} in
-#'   \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
-#'   Note that the default value is set to "none", which is not the
-#'   default value of \code{\link{voom}}.
-#' @inheritParams clusterContrasts,ClusterExperiment-method
+#' @param normalize.method character value, passed to \code{\link[limma]{voom}}
+#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
+#'   Note that the default value is set to "none", which is not the default
+#'   value of \code{\link{voom}}.
+#' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a
 #'   cluster assignment. It uses limma to fit the models, and limma's functions
 #'   \code{\link[limma]{topTable}} or \code{\link[limma]{topTableF}} to find the
@@ -32,21 +32,19 @@
 #'   certain amount, etc.). In particular, set `number=` to define how many
 #'   significant features to return (where number is per contrast for the
 #'   `Pairs` or `Dendro` option)
-#'
-#' @details When `contrastType` argument implies that the best features should be found
-#'   via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then then `contrastAdj`
-#'   determines the type of multiple testing correction to perform.
-#'   `PerContrast` does FDR correction for each set of contrasts, and does not
-#'   guarantee control across all the different contrasts (so probably not the
-#'   preferred method). `All` calculates the corrected p-values based on FDR
-#'   correction of all of the contrasts tested. `AfterF` controls the FDR based
-#'   on a hierarchical scheme that only tests the contrasts in those genes where
-#'   the omnibus F statistic is significant. If the user selects `AfterF`, the
-#'   user must also supply an option `p.value` to have any effect, and then only
-#'   those significant at that p.value level will be returned. Note that
+#' @details When `contrastType` argument implies that the best features should
+#'   be found via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then
+#'   then `contrastAdj` determines the type of multiple testing correction to
+#'   perform. `PerContrast` does FDR correction for each set of contrasts, and
+#'   does not guarantee control across all the different contrasts (so probably
+#'   not the preferred method). `All` calculates the corrected p-values based on
+#'   FDR correction of all of the contrasts tested. `AfterF` controls the FDR
+#'   based on a hierarchical scheme that only tests the contrasts in those genes
+#'   where the omnibus F statistic is significant. If the user selects `AfterF`,
+#'   the user must also supply an option `p.value` to have any effect, and then
+#'   only those significant at that p.value level will be returned. Note that
 #'   currently the correction for `AfterF` is not guaranteed to control the FDR;
 #'   improvements will be added in the future.
-#'
 #' @details  Note that the default option for \code{\link[limma]{topTable}} is
 #'   to not filter based on adjusted p-values (\code{p.value = 1}) and return
 #'   only the top 10 most significant (\code{number = 10}) -- these are options
@@ -69,13 +67,13 @@
 #'   `ClusterExperiment` object, setting `isCount=TRUE` will cause the program
 #'   to ignore the internally stored transformation function and instead use
 #'   voom with log2(x+0.5). Alternatively, \code{isCount=FALSE} for a
-#'   \code{ClusterExperiment} object will cause the DE to be performed with \code{limma}
-#'   after transforming the data with the stored transformation. Although some
-#'   writing about "voom" seem to suggest that it would be appropriate for
-#'   arbitrary transformations, the authors have cautioned against using it for
-#'   anything other than count data on mailing lists. For this reason we are not
-#'   implementing it for arbitrary transformations at this time (e.g.
-#'   log(FPKM+epsilon) transformations).
+#'   \code{ClusterExperiment} object will cause the DE to be performed with
+#'   \code{limma} after transforming the data with the stored transformation.
+#'   Although some writing about "voom" seem to suggest that it would be
+#'   appropriate for arbitrary transformations, the authors have cautioned
+#'   against using it for anything other than count data on mailing lists. For
+#'   this reason we are not implementing it for arbitrary transformations at
+#'   this time (e.g. log(FPKM+epsilon) transformations).
 #'
 #' @return A \code{data.frame} in the same format as
 #'   \code{\link[limma]{topTable}}, except for the following additional or
@@ -96,9 +94,17 @@
 #' the dendrogram.}
 #' }
 #'
-#' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and Smyth, GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47. http://nar.oxfordjournals.org/content/43/7/e47
-#' @references Law, CW, Chen, Y, Shi, W, and Smyth, GK (2014). Voom: precision weights unlock linear model analysis tools for RNA-seq read counts. Genome Biology 15, R29. http://genomebiology.com/2014/15/2/R29
-#' @references Smyth, G. K. (2004). Linear models and empirical Bayes methods for assessing differential expression in microarray experiments. Statistical Applications in Genetics and Molecular Biology, Volume 3, Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
+#' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and
+#'   Smyth, GK (2015). limma powers differential expression analyses for
+#'   RNA-sequencing and microarray studies. Nucleic Acids Research 43, e47.
+#'   http://nar.oxfordjournals.org/content/43/7/e47
+#' @references Law, CW, Chen, Y, Shi, W, and Smyth, GK (2014). Voom: precision
+#'   weights unlock linear model analysis tools for RNA-seq read counts. Genome
+#'   Biology 15, R29. http://genomebiology.com/2014/15/2/R29
+#' @references Smyth, G. K. (2004). Linear models and empirical Bayes methods
+#'   for assessing differential expression in microarray experiments.
+#'   Statistical Applications in Genetics and Molecular Biology, Volume 3,
+#'   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
 #' @examples
 #' data(simData)
 #'
@@ -148,142 +154,147 @@
 #' @import limma
 #' @importFrom stringr str_pad
 #' @rdname getBestFeatures
-setMethod(f = "getBestFeatures",
-          signature = signature(x = "matrix"),
-          definition = function(x, cluster,
-                                contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                dendro=NULL, pairMat=NULL,
-                                contrastAdj=c("All", "PerContrast", "AfterF"),
-                                isCount=FALSE, normalize.method="none",...) {
+setMethod(
+  f = "getBestFeatures",
+  signature = signature(x = "matrixOrHDF5"),
+  definition = function(x, cluster,
+                        contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                        dendro=NULL, pairMat=NULL,
+                        contrastAdj=c("All", "PerContrast", "AfterF"),
+                        isCount=FALSE, normalize.method="none",...) {
 
-            #... is always sent to topTable, and nothing else
-            cl<-cluster
-            if(is.factor(cl)) {
-              warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
-              cl <- .convertToNum(cl)
-            }
-            
-            dat <- data.matrix(x)
-            contrastType <- match.arg(contrastType)
-            contrastAdj <- match.arg(contrastAdj)
-            returnType <- "Table" 
-            
-            if(is.null(rownames(dat))) {
-              rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
-            }
-            
-            tmp <- dat
-            
-            if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
-              whNA <- which(cl<0)
-              tmp <- tmp[, -whNA]
-              cl <- cl[-whNA]
-            }
-            ###--------
-            ### Fix up the names
-            ###--------
-            pad<-if(length(unique(cl))<100) 2 else 3
-            clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
-            clLevels<-unique(cl[order(clPretty)])
-            clPrettyLevels<-unique(clPretty[order(clPretty)])
-            #get them ordered nicely.
-            clNumFac<-factor(cl,levels=clLevels)
-            
-            if(contrastType=="Dendro") {
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
-              if(is.null(dendro)) {
-                stop("must provide dendro")
-              }
-              if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
-				stop("dendro must be of class 'dendrogram' or 'phylo4'")
-              }
-            }
-            else{
-              clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
-            }
-            
-            if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
-              ###Create fit for running contrasts
-              designContr <- model.matrix(~ 0 + clPrettyFac)
-              colnames(designContr) <- make.names(levels(clPrettyFac))
-              
-              if(isCount) {
-                v <- voom(tmp, design=designContr, plot=FALSE,
-                          normalize.method = normalize.method)
-                fitContr <- lmFit(v, designContr)
-              } else {
-                fitContr <- lmFit(tmp, designContr)
-              }
-            }
-            
-            if(contrastType=="F" || contrastAdj=="AfterF") {
-              xdat<-data.frame("Cluster"=clPrettyFac)
-              designF<-model.matrix(~Cluster,data=xdat)
-              #designF <- model.matrix(~clPrettyFac)
-              
-              if(isCount) {
-                v <- voom(tmp, design=designF, plot=FALSE,
-                          normalize.method = normalize.method)
-                fitF <- lmFit(v, designF)
-              } else {
-                fitF <- lmFit(tmp, designF)
-              }
-            } else {
-              fitF <- NULL
-            }
-            
-            if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
-            tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
-            tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
-            if(returnType=="Index") {
-              whGenes <- tops$IndexInOriginal
-              names(whGenes) <- tops$Feature
-              return(whGenes)
-            }
-            if(returnType=="Table") {
-              return(tops)
-            }
-          }
+    #... is always sent to topTable, and nothing else
+    cl<-cluster
+    if(is.factor(cl)) {
+      warning("cluster is a factor. Converting to numeric, which may not result in valid conversion")
+      cl <- .convertToNum(cl)
+    }
+
+    ###Note: this pulls hdf5 file into memory.
+    dat <- data.matrix(x)
+    contrastType <- match.arg(contrastType)
+    contrastAdj <- match.arg(contrastAdj)
+    returnType <- "Table"
+
+    if(is.null(rownames(dat))) {
+      rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
+    }
+
+    tmp <- dat
+
+    if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+      whNA <- which(cl<0)
+      tmp <- tmp[, -whNA]
+      cl <- cl[-whNA]
+    }
+    ###--------
+    ### Fix up the names
+    ###--------
+    pad<-if(length(unique(cl))<100) 2 else 3
+    clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+    clLevels<-unique(cl[order(clPretty)])
+    clPrettyLevels<-unique(clPretty[order(clPretty)])
+    #get them ordered nicely.
+    clNumFac<-factor(cl,levels=clLevels)
+
+    if(contrastType=="Dendro") {
+      clPrettyFac<-factor(cl,levels=clLevels,labels=clLevels)
+      if(is.null(dendro)) {
+        stop("must provide dendro")
+      }
+      if(!inherits(dendro,"dendrogram") && !inherits(dendro,"phylo4")){
+        stop("dendro must be of class 'dendrogram' or 'phylo4'")
+      }
+    }
+    else{
+      clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
+    }
+
+    if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
+      ###Create fit for running contrasts
+      designContr <- model.matrix(~ 0 + clPrettyFac)
+      colnames(designContr) <- make.names(levels(clPrettyFac))
+
+      if(isCount) {
+        v <- voom(tmp, design=designContr, plot=FALSE,
+                  normalize.method = normalize.method)
+        fitContr <- lmFit(v, designContr)
+      } else {
+        fitContr <- lmFit(tmp, designContr)
+      }
+    }
+
+    if(contrastType=="F" || contrastAdj=="AfterF") {
+      xdat<-data.frame("Cluster"=clPrettyFac)
+      designF<-model.matrix(~Cluster,data=xdat)
+      #designF <- model.matrix(~clPrettyFac)
+
+      if(isCount) {
+        v <- voom(tmp, design=designF, plot=FALSE,
+                  normalize.method = normalize.method)
+        fitF <- lmFit(v, designF)
+      } else {
+        fitF <- lmFit(tmp, designF)
+      }
+    } else {
+      fitF <- NULL
+    }
+
+    if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
+    tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
+    tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+    if(returnType=="Index") {
+      whGenes <- tops$IndexInOriginal
+      names(whGenes) <- tops$Feature
+      return(whGenes)
+    }
+    if(returnType=="Table") {
+      return(tops)
+    }
+  }
 )
 
 #' @rdname getBestFeatures
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @export
-setMethod(f = "getBestFeatures",
-          signature = signature(x = "ClusterExperiment"),
-          definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
-                                isCount=FALSE, ...){
-            contrastType <- match.arg(contrastType)
-			cl<-primaryCluster(x)
-			if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
-            if(contrastType=="Dendro") {
-              if(is.null(x@dendro_clusters)) {
-                stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
-              } else {
-                if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
-					#check if merge from cluster that made dendro
-					if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
-						dendro<-.makeMergeDendrogram(x)
-						if(is.null(dendro)) stop("Could not make merge dendrogram")
-					}
-					else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
-				}
-                else dendro <- x@dendro_clusters
-              }
-            }
-            
-            if(isCount) {
-              .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
+setMethod(
+  f = "getBestFeatures",
+  signature = signature(x = "ClusterExperiment"),
+  definition = function(x,contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
+                        isCount=FALSE, whichAssay=1, ...){
+    contrastType <- match.arg(contrastType)
+    cl<-primaryCluster(x)
+    if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
+    if(contrastType=="Dendro") {
+      if(is.null(x@dendro_clusters)) {
+        stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
+      } else {
+        if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
+          #check if merge from cluster that made dendro
+          if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+            dendro<-.makeMergeDendrogram(x)
+            if(is.null(dendro)) stop("Could not make merge dendrogram")
+          }
+          else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+        }
+        else dendro <- x@dendro_clusters
+      }
+    }
+
+    if(isCount) {
+      .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than
 with the transformation function in the slot `transformation`.
 This makes sense only for counts.")
-              dat <- assay(x)
-            } else {
-              dat <- transformData(x)
-            }
-            
-            getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
-                            isCount=isCount, ...)
-            
-}
+      dat <- assay(x, whichAssay)
+    } else {
+      dat <- transformData(x, whichAssay)
+    }
+
+    getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro,
+                    isCount=isCount, ...)
+
+  }
 )
 
 
@@ -309,8 +320,8 @@ This makes sense only for counts.")
     nGenes<-args$number
   }
   else nGenes<-10 #default of topTable
-  
-  
+
+
   #get raw p-values for all(!)
   getRaw<-function(ii){
     if(contrastAdj%in%c("AfterF","All")) {
@@ -328,7 +339,7 @@ This makes sense only for counts.")
     }
     return(tt)
   }
-  tops<-do.call("rbind",lapply(1:ncontr,getRaw))
+  tops<-do.call("rbind",lapply(seq_len(ncontr),getRaw))
   if(contrastAdj=="AfterF" & p.value<1){
     #get p-value for F test for all genes, and only consider genes with significant F.
     fitF2<-eBayes(fitF)
@@ -342,13 +353,13 @@ This makes sense only for counts.")
     if(p.value<1) tops<-tops[tops$adj.P.Val<p.value,,drop=FALSE]
     if(nGenes<length(rownames(fit$coef))){
       #just return relevant number per contrast
-      tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[1:min(c(nGenes,nrow(x))),,drop=FALSE]}))
+      tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[seq_len(min(c(nGenes,nrow(x)))),,drop=FALSE]}))
     }
   }
   row.names(tops)<-NULL
-  
+
   return(tops)
-  
+
 }
 
 #' @importFrom phylobase descendants nodeLabels subset
@@ -368,7 +379,7 @@ This makes sense only for counts.")
   }
   for(node in clusterNode){
     #first remove tips of children nodes so all children of node in question are tips
-    
+
 	desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     while(length(whDescNodes)>0){
@@ -378,7 +389,7 @@ This makes sense only for counts.")
       desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
       whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     }
-		
+
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
     newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
@@ -386,8 +397,8 @@ This makes sense only for counts.")
 
   ##################
   #Now need to change tip name to be that of the merge cluster
-  #Currently tips should be either 
-  #1) Name of combineMany cluster (i.e. integer) which needs to translate to a merge cluster
+  #Currently tips should be either
+  #1) Name of makeConsensus cluster (i.e. integer) which needs to translate to a merge cluster
   #2) Node name which now should be a merge cluster id
   ##################
   newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
@@ -397,7 +408,7 @@ This makes sense only for counts.")
   #Find the correspondence between old and new
   #replace the old (i.e. non-nodes) with the new
   corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
-  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be 
+  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be
   if(length(whOldCl)>0){
     newTips[whOldCl]<-corrsp[currTips[whOldCl]]
   }
@@ -408,7 +419,7 @@ This makes sense only for counts.")
   newTips[mClusterNode]<-as.character(clusterId)
   names(newTips)<-names(currTips) #this is the internal numbering of the nodes
   phylobase::tipLabels(newPhylo4)<-newTips
-  
+
   #--------
   #just some checks didn't screw up
   #--------
@@ -423,7 +434,7 @@ This makes sense only for counts.")
 	  stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
-  #newPhylo4<-.force.ultrametric(newPhylo4) 
+  #newPhylo4<-.force.ultrametric(newPhylo4)
   #convert back to dendrogram class and return
   ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
   ## as.dendrogram(ape::as.hclust.phylo(object))
@@ -438,12 +449,12 @@ This makes sense only for counts.")
   #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
 
 }
- 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId 
+
+#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
 ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 .force.ultrametric<-function(tree){
 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-	
+
 	allTips<-phylobase::tipLabels(tree)
 	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
 	maxD<-max(depthToTips)

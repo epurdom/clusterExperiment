@@ -48,11 +48,25 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   clustMerged<- makeDendrogram(clustMerged)
   clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
   expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
-  expect_true(!"combineMany.1" %in% clusterTypes(clustMerged2))
+  expect_true(!"makeConsensus.1" %in% clusterTypes(clustMerged2))
   expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
   removeClusterings(clustMerged, whichClusters = "mergeClusters")
 })
 
+
+test_that("`mergeClusters` works with HDF5 assay slot",{
+    expect_silent(cl1 <- clusterSingle(hdfObj, 
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+    expect_silent(clustWithDendro <- makeDendrogram(cl1))
+    expect_message(mergedCE <- mergeClusters(x=clustWithDendro,plot=FALSE,
+            mergeMethod="adjP", plotInfo="mergeMethod"),
+			"Merging will be done on")
+	expect_true(inherits(assay(mergedCE),"DelayedArray"))
+								
+	
+})
 
 test_that("saving merge info works",{
   expect_silent(cl1 <- clusterSingle(smSimData, 
@@ -86,50 +100,56 @@ test_that("saving merge info works",{
                               mergeMethod="adjP", plotInfo="none"))
   
   ##check giving nodePropTable
-  expect_silent(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
-                              cl=primaryCluster(cl1), nodePropTable=mergedList$propDE,
+  expect_message(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedList$nodeProp,
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="Storey", plotInfo="none"))
-  expect_equal(mergedList2$propDE[,"adjP"],mergedList$propDE[,"adjP"])
+                              mergeMethod="Storey", plotInfo="none"),"Using existing results of per-node significance")
+  expect_equal(mergedList2$nodeProp[,"adjP"],mergedList$nodeProp[,"adjP"])
   expect_silent(mergedListStorey<-mergeClusters(x=transformData(cl1), isCount=FALSE,
                                   cl=primaryCluster(cl1), 
                                   dendro=clustWithDendro@dendro_clusters,
                                   mergeMethod="Storey", plotInfo="mergeMethod"))
-  expect_equal(mergedList2$propDE[,"Storey"],mergedListStorey$propDE[,"Storey"])  
-  expect_silent(mergedList2Redo<- mergeClusters(x=transformData(cl1), isCount=FALSE,
-                              cl=primaryCluster(cl1), nodePropTable=mergedList2$propDE,
+  expect_equal(mergedList2$nodeProp[,"Storey"],mergedListStorey$nodeProp[,"Storey"])  
+  expect_message(mergedList2Redo<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedList2$nodeProp,
                               dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="none", plotInfo=c("all")))
+                              mergeMethod="none", plotInfo=c("all")),"Using existing results of per-node significance")
   
+  #------
   #on ClusterExperiment
+  # note need to specify message to see doing it correctly.
+  #------
   expect_message(clustMerged <- mergeClusters(clustWithDendro,
-	   mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE))
+	   mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE),"Merging will be done on")
   expect_equal(clustMerged@merge_dendrocluster_index,clustWithDendro@dendro_index+1)
   expect_equal(clustMerged@merge_dendrocluster_index,clustMerged@dendro_index)
   expect_equal(clustMerged@merge_index,1)
-  #add to existing with different method
+  
+  #add to existing with different method 
   expect_message(clustMerged2 <- mergeClusters(clustMerged, mergeMethod="Storey",
-  	plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE))
+  	plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE),"Merging will be done on")
   expect_equal(clustMerged2@merge_dendrocluster_index,clustMerged@dendro_index+1)
   expect_equal(clustMerged2@merge_dendrocluster_index,clustMerged2@dendro_index)
   expect_equal(clustMerged2@merge_index,1)
   #rerun previous with different cutoff -- no new calculations
   expect_message(clustMerged3 <- mergeClusters(clustMerged2, mergeMethod="Storey",
-  	plotInfo="none",cutoff=0.05,plot=FALSE,calculateAll=FALSE))
+  	plotInfo="none",cutoff=0.05,plot=FALSE,calculateAll=FALSE),"Using existing results of per-node significance")
   expect_equal(clustMerged3@merge_dendrocluster_index,clustMerged2@dendro_index+1)
   expect_equal(clustMerged3@merge_dendrocluster_index,clustMerged3@dendro_index)
   expect_equal(clustMerged3@merge_index,1)
+  #do it again with higher value that actually merges -- check correct index updates, etc...
   expect_message(clustMerged4 <- mergeClusters(clustMerged3, mergeMethod="Storey",
-  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE))
+  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE),"Using existing results of per-node significance")
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged3@dendro_index+1)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged4@dendro_index)
   expect_equal(clustMerged4@merge_index,1)
   expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,2,1,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
+
   #check really gets clusterIds and not names
   expect_silent(clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6])
   expect_message(clustMerged5 <- mergeClusters(clustMerged3, mergeMethod="Storey",
-  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE))
+  	plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=FALSE),"Using existing results of per-node significance")
   expect_equal(clustMerged4@merge_nodeMerge,clustMerged5@merge_nodeMerge)
   #helpful for debugging:
   # plotDendrogram(clustMerged,show.node=TRUE,show.tip.label=TRUE)
@@ -141,7 +161,7 @@ test_that("saving merge info works",{
   expect_equal(mergeMethod(clustMerged4),"Storey")
   
   #check if can calculate all, but do nothing else
-  expect_message(clustMergedAll<-mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=TRUE))
+  expect_message(clustMergedAll<-mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="none",cutoff=0.5,plot=FALSE,calculateAll=TRUE),"Merging will be done on")
   expect_false(is.na(clustMergedAll@merge_dendrocluster_index))
   expect_true(is.na(clustMergedAll@merge_index))
   expect_false(is.null(nodeMergeInfo(clustMergedAll)))
@@ -170,6 +190,122 @@ test_that("saving merge info works",{
   clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
   expect_false(is.null(clustMerged@merge_nodeProp))
 })
+
+
+test_that("logFC works",{
+  expect_silent(cl1 <- clusterSingle(smSimData, 
+       subsample=FALSE, sequential=FALSE, reduceMethod="none",
+	   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+	   isCount=FALSE))
+	   #check cluster is same, otherwise won't get same results...
+  expect_silent(clustWithDendro <- makeDendrogram(cl1,reduceMethod="none"))
+  #--------
+  #matrix version 
+  #--------
+  #only FC
+  expect_silent(mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1),
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="adjP", cutoff=0.1, logFCcutoff=1,calculateAll=FALSE,plotInfo="none",plot=FALSE))
+  expect_true(all(c(clusterExperiment:::.availMergeMethods,"adjP_1.0") %in% colnames(mergedList$nodeProp)))
+
+  #calculate All 
+  expect_silent(mergedListAll <- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1),
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="adjP", cutoff=0.1, logFCcutoff=1,calculateAll=TRUE,plotInfo="none",plot=FALSE))
+  expect_true(all(c(clusterExperiment:::.availMergeMethods,"adjP_1.0") %in% colnames(mergedListAll$nodeProp)))
+  
+  #check calculate all does FC it even if not given as the mergeMethod
+  # (try both "none" and "Storey")
+  expect_silent(mergedListAll2 <- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1),
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="none",
+							   logFCcutoff=1,plotInfo="none",plot=FALSE))
+  expect_true(all(c(clusterExperiment:::.availMergeMethods,"adjP_1.0") %in% colnames(mergedListAll2$nodeProp)))
+  expect_silent(mergedListAll2 <- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1),
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="Storey",
+							   logFCcutoff=1,plotInfo="none",plot=FALSE))
+  expect_true(all(c(clusterExperiment:::.availMergeMethods,"adjP_1.0") %in% colnames(mergedListAll2$nodeProp)))
+  
+  ##check giving nodePropTable but need new calculation ("Storey")
+  expect_silent(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedList$nodeProp,
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="Storey", plotInfo="none",plot=FALSE))
+  expect_equal(mergedList2$nodeProp[,"adjP_1.0"],mergedList$nodeProp[,"adjP_1.0"])
+
+  ##check giving nodePropTable but need new calculation (newFC)
+  ##Also check that actually gives different merging (with logFC10 should)
+  expect_silent(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedList$nodeProp,
+                              dendro=clustWithDendro@dendro_clusters, cutoff=0.1,
+                              mergeMethod="adj", logFCcutoff=10,
+							  plotInfo="none",plot=FALSE))
+  expect_equal(mergedList2$nodeProp[,"adjP_1.0"],mergedList$nodeProp[,"adjP_1.0"])
+  expect_true("adjP_10.0" %in% names(mergedList2$nodeProp))
+  expect_false(all(mergedList2$nodeProp[,"adjP_10.0"] == mergedList$nodeProp[,"adjP"]))
+  expect_false(all(mergedList2$nodeMerge[,"isMerged"] == mergedList$nodeMerge[,"isMerged"]))
+  expect_equal(length(unique(mergedList2$clustering)),3)
+  expect_equal(length(unique(mergedList$clustering)),5)
+
+  ##check giving nodePropTable but DON'T need new calculation ("Storey")
+  expect_message(mergedList3<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedListAll$nodeProp,
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="Storey", plotInfo="none",plot=FALSE),"Using existing results of per-node significance")
+  expect_equal(mergedList2$nodeProp[,"adjP_1.0"],mergedList$nodeProp[,"adjP_1.0"])
+
+  ##check giving nodePropTable but DON'T need new calculation (logFC)
+  expect_message(mergedList2<- mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), nodePropTable=mergedListAll$nodeProp,
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="adjP", logFCcutoff=1, plotInfo="none",plot=FALSE),"Using existing results of per-node significance")
+  expect_equal(mergedList2$nodeProp[,"adjP_1.0"],mergedList$nodeProp[,"adjP_1.0"])
+  
+  ###Test plotting on matrix version:
+  expect_silent(mergeClusters(x=transformData(cl1), isCount=FALSE,
+                              cl=primaryCluster(cl1), 
+                              dendro=clustWithDendro@dendro_clusters,
+                              mergeMethod="adjP", logFCcutoff=10, plotInfo="adjP_10.0"))
+  
+  
+  #----------
+  #on ClusterExperiment
+  #----------
+  expect_message(clustMerged <- mergeClusters(clustWithDendro,
+	   mergeMethod="adjP", plotInfo="none", plot=FALSE, 
+	   calculateAll=FALSE,cutoff=0.1,logFCcutoff=1),"Merging will be done on")
+  expect_true(all(c("adjP_1.0") %in% colnames(clustMerged@merge_nodeProp)))
+  
+  #add to existing with different method
+  expect_message(clustMerged2 <- mergeClusters(clustMerged, mergeMethod="Storey",
+  	plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE),"Merging will be done on")
+  expect_true(all(c("adjP_1.0") %in% colnames(clustMerged2@merge_nodeProp)))
+  
+  #rerun previous with different cutoff but same logFC cutoff -- no new calculations needed
+  expect_message(clustMerged3 <- mergeClusters(clustMerged2, mergeMethod="adjP", logFCcutoff=1,plotInfo="none",cutoff=0.05,plot=FALSE,calculateAll=FALSE),"Using existing results of per-node significance")
+  expect_true(all(c("adjP_1.0") %in% colnames(clustMerged3@merge_nodeProp)))
+
+  #redo with different logFC --- pick logFC large enought that changes the proportions to make sure actually merge on right value
+  expect_message(clustMerged4 <- mergeClusters(clustMerged, mergeMethod="adjP", logFCcutoff=10,plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE),"Merging will be done on")
+  expect_false(all(clustMerged4@merge_nodeProp[,"adjP_10.0"] == clustMerged4@merge_nodeProp[,"adjP"]))
+  expect_false(all(clustMerged4@merge_nodeMerge[,"isMerged"] == clustMerged@merge_nodeMerge[,"isMerged"]))
+  expect_equal(length(unique(primaryCluster(clustMerged4))),3)
+  expect_equal(length(unique(primaryCluster(clustMerged))),5)
+
+  ###Test plotting on CE version:
+  expect_message(clustMerged10 <- mergeClusters(clustWithDendro,
+	   mergeMethod="adjP", plot=TRUE,plotInfo="adjP_10.0", 
+	   calculateAll=FALSE,cutoff=0.1,logFCcutoff=10),"Merging will be done on")
+
+  expect_silent(plotDendrogram(clustMerged10,mergeInfo="adjP_10.0"))
+})
+
+
 test_that("`mergeClusters` preserves the colData and rowData of SE", {
 
   expect_silent(cl <- clusterSingle(smSimSE, 

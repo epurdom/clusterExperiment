@@ -4,13 +4,14 @@ context("Constructor")
 
 test_that("saved rsecFluidigm is still valid object", {
 	data(rsecFluidigm)
-	validObject(rsecFluidigm)
+	expect_true(validObject(rsecFluidigm))
 		  })
 
 		  
 test_that("`ClusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
             expect_error(ClusterExperiment(mat), "is missing, with no default")
-			expect_error(ClusterExperiment(mat,as.numeric(numLabels), transformation=log), info="Error checking transFun")
+			#Also creates warnings, which show up in summary, sort of annoying.
+			expect_error(suppressWarnings(ClusterExperiment(mat,as.numeric(numLabels), transformation=log)), info="Error checking transFun")
             expect_error(ClusterExperiment(mat, numLabels[1:2]),
                          "must be a matrix of rows equal")
             expect_error(ClusterExperiment(as.data.frame(mat), numLabels),
@@ -45,6 +46,13 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 			
 })
 
+test_that("`ClusterExperiment` constructor works with hdf5",{
+    #test creation
+    expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))
+	
+	
+})
+
 test_that("whichClusters works with clusterMatrix",{
 	 expect_silent(x<-dim(clusterMatrix(ceSim)))
 	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)
@@ -56,7 +64,12 @@ test_that("whichClusters works with clusterMatrix",{
 test_that("adding clusters work as promised",{
   ##########
   #addClusterings
-  expect_silent(c1 <- addClusterings(ccSE, rep(c(-1, 1, 2), each=5),clusterTypes="newUser"))
+	vec<-rep(c(-1, 1, 2), each=5)
+  expect_silent(c1 <- addClusterings(ccSE, vec,clusterTypes="newUser"))
+	expect_silent(c2 <- addClusterings(ccSE, as.character(vec),clusterTypes="newUser"))
+	expect_silent(c3 <- addClusterings(ccSE, factor(vec),clusterTypes="newUser"))
+	expect_equal(c1,c2)
+	expect_equal(c1,c3)
   ###Check retain SE info
   expect_equal(colData(c1),colData(se)) 
   expect_equal(rownames(c1),rownames(se)) 
@@ -70,6 +83,13 @@ test_that("adding clusters work as promised",{
   expect_equal(primaryCluster(c1), primaryCluster(ccSE))
   primaryClusterIndex(c1) <- 3
   expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
+  
+  #make sure converts characters and assigns names correctly.
+  set.seed(151789)
+  charValue<-sample(rep(c("-1","A","B","C","D"),times=c(2,3,2,1,7)))
+  newCC<-addClusterings(ccSE,charValue,clusterLabel="characterCluster")
+  #have to do this because have all kinds of attributes different
+  expect_equal(t(as.matrix(tableClusters(newCC,"characterCluster",useNames=TRUE))),t(as.matrix(table(charValue))))
   
   ####check adding a ClusterExperiment to existing CE
   expect_error(addClusterings(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
@@ -143,7 +163,52 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
   expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
   
+  ##########
+  ###Check removing a cluster assignment
+  ########## 
+  c1<-ccSE
+  cL<-clusterLegend(c1)
+  ind<-primaryClusterIndex(c1)
+  cL[[ind]][,"name"]<-letters[1:nrow(cL[[ind]])]
+  clusterLegend(c1)<-cL
+  rmCl<-c(2,3)
+  rmNms<-cL[[ind]][cL[[ind]][,"clusterIds"] %in% as.character(rmCl),"name"]
+  x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmCl)
+  expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
+  newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
+  old<-clusterLegend(x)[[ind]]
+  oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+  expect_equal(oldnms,newnms)
+  
+   x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmNms)
+   expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
+   newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
+   old<-clusterLegend(x)[[ind]]
+   oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+   expect_equal(oldnms,newnms)
+ 
+  
+  
+  ##########
+  #check removing unclustered samples
+  ##########
+  #no -1 in primary cluster
+  matTemp<-abs(labMat)
+  expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
+  expect_equal(ccTemp, removeUnclustered(ccTemp)) 
+  
+###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
+  #-1 in primary cluster
+  whUn<-which(primaryCluster(ccSE) <0)
+  expect_silent(ccR<-removeUnclustered(ccSE))
+  expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
+  ###Check retain SE info
+  expect_equal(colData(ccR),colData(se[,-whUn]) )
+  expect_equal(rownames(ccR),rownames(se))
+  expect_equal(colnames(ccR),colnames(se[,-whUn]))
+  expect_equal(metadata(ccR),metadata(se))
+  expect_equal(rowData(ccR),rowData(se))
   
 })
 
@@ -205,46 +270,60 @@ test_that("subsetting works as promised",{
   expect_equal(clusterExperiment:::filterStats(sceSimData[1:10,]),head(clusterExperiment:::filterStats(sceSimData),10))
 })
 
-test_that("check clusterLegend, remove unclustered cells work as promised", {
-    
-    ##########
-    #check removing unclustered
-    
-    #no -1 in primary cluster
-    matTemp<-abs(labMat)
-    expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
-    expect_equal(ccTemp, removeUnclustered(ccTemp)) 
-    
-	###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
-    #-1 in primary cluster
-	whUn<-which(primaryCluster(ccSE) <0)
-    expect_silent(ccR<-removeUnclustered(ccSE))
-    expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
-	
-    ###Check retain SE info
-    expect_equal(colData(ccR),colData(se[,-whUn]) )
-    expect_equal(rownames(ccR),rownames(se)) 
-    expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-    expect_equal(metadata(ccR),metadata(se)) 
-    expect_equal(rowData(ccR),rowData(se)) 
-
-
-    ##########
-    #clusterLegend
+test_that("check clusterLegend manipulations work as promised", {
     x<-clusterLegend(cc)
     expect_silent(clusterLegend(cc)<-x)
-    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New",clusterLabels=c("new1","new2"),clusterLegend=clusterLegend(ccSE)))
     expect_silent(clusterLegend(c4)[1:2]<-x[1:2])
     expect_silent(clusterLegend(c4)[[1]]<-x[[1]])
 #add wrong dimensions:
     expect_error(clusterLegend(c4)[3]<-list(x[[1]][1:2,]),"each element of `clusterLegend` must be matrix with")
     expect_error(clusterLegend(c4)[[3]]<-x[[1]][1:2,],"must be matrix with")
-            
+	
+    ##########
+	#check adding clusterLegend directly to constructor
+    ##########
+	newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=clusterMatrix(cc),clusterLegend=clusterLegend(cc))
+	expect_equal(cc,newcc)
+
+	newCL<-clusterLegend(cc)
+	newCL[[1]][,"name"]<-letters[1:nrow(newCL[[1]])]
+	cc1<-cc
+	clusterLegend(cc1)<-newCL
+	newClusters<-convertClusterLegend(cc1,output="matrixNames")
+	newCL[[1]][,"clusterIds"]<-newCL[[1]][,"name"]
+	newCL[[1]][,"name"]<-LETTERS[1:nrow(newCL[[1]])]
+  newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=newClusters,clusterLegend=newCL) 
+  expect_equal(clusterLegend(newcc)[[1]][,c("name","color")], newCL[[1]][,c("name","color")])
+	     
 })
 
 test_that("accessing transformed data works as promised",{
   expect_is(transformation(ccSE),"function")
   expect_equal(transformData(cc), transformation(cc)(assay(cc)))
+})
+
+test_that("assigning unassigned samples works as promised",{
+  #also indirectly tests getReducedData!
+	expect_silent(assignUnassigned(cc))
+	expect_silent(ccUn<-assignUnassigned(cc,whichCluster="Cluster2"))
+	expect_true("Cluster2_AllAssigned" %in% clusterLabels(ccUn))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="b"))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="mad"))
+	expect_silent(ceUn<-assignUnassigned(ceSim,reduceMethod="PCA"))
+	expect_equal(reducedDimNames(ceUn),"PCA")
+	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
+	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
+
+
+	#check basic error catching
+	cc2<-addClusterings(cc,rep(-1,ncol(cc)),clusterLabel="allUn")
+	expect_error(assignUnassigned(cc2,whichCluster="allUn"),"All cells are unassigned, cannot assign them")
+	cc2<-addClusterings(cc2,rep(2,ncol(cc2)),clusterLabel="allAss")
+	expect_error(assignUnassigned(cc2,whichCluster="allAss"),"No cells are unassigned in the designated cluster")
+
+	#should check whichAssay....
+	
 })
 
 test_that("workflow functions work",
@@ -262,23 +341,23 @@ test_that("workflow functions work",
             expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
             expect_null(workflowClusters(cc,iteration=NA))
           
-  expect_message(ceNew<-combineMany(ceSim,proportion=0.7))
-  expect_message(ceNew<-combineMany(ceNew,proportion=0.3,clusterLabel="combineMany,v2"))
-  expect_equal(clusterLabels(ceNew)[1:2],c("combineMany,v2","combineMany.1"))
-  expect_equal(clusterTypes(ceNew)[1:2],c("combineMany","combineMany.1"))
-  expect_silent(ceNew2<-setToCurrent(ceNew,whichCluster="combineMany.1"))
-  expect_equal(clusterLabels(ceNew2)[1:2],c("combineMany,v2","combineMany"))
-  expect_equal(clusterTypes(ceNew2)[1:2],c("combineMany.2","combineMany"))
-  expect_silent(ceNew3<-setToCurrent(ceNew2,whichCluster="combineMany.2"))
-  expect_equal(clusterLabels(ceNew3)[1:2],c("combineMany,v2","combineMany.3"))
-  expect_equal(clusterTypes(ceNew3)[1:2],c("combineMany","combineMany.3"))
+  expect_message(ceNew<-makeConsensus(ceSim,proportion=0.7))
+  expect_message(ceNew<-makeConsensus(ceNew,proportion=0.3,clusterLabel="makeConsensus,v2"))
+  expect_equal(clusterLabels(ceNew)[1:2],c("makeConsensus,v2","makeConsensus.1"))
+  expect_equal(clusterTypes(ceNew)[1:2],c("makeConsensus","makeConsensus.1"))
+  expect_silent(ceNew2<-setToCurrent(ceNew,whichCluster="makeConsensus.1"))
+  expect_equal(clusterLabels(ceNew2)[1:2],c("makeConsensus,v2","makeConsensus"))
+  expect_equal(clusterTypes(ceNew2)[1:2],c("makeConsensus.2","makeConsensus"))
+  expect_silent(ceNew3<-setToCurrent(ceNew2,whichCluster="makeConsensus.2"))
+  expect_equal(clusterLabels(ceNew3)[1:2],c("makeConsensus,v2","makeConsensus.3"))
+  expect_equal(clusterTypes(ceNew3)[1:2],c("makeConsensus","makeConsensus.3"))
 
-  expect_silent(ceNew4<-setToFinal(ceNew,whichCluster="combineMany,v2",clusterLabel="Final Version"))
+  expect_silent(ceNew4<-setToFinal(ceNew,whichCluster="makeConsensus,v2",clusterLabel="Final Version"))
   expect_equal(primaryClusterIndex(ceNew4),1)
   expect_equal(clusterLabels(ceNew4)[primaryClusterIndex(ceNew4)],"Final Version")
   expect_equal(clusterTypes(ceNew4)[primaryClusterIndex(ceNew4)],"final")
   
-  expect_silent(ceNew5<-setToFinal(ceNew,whichCluster="combineMany.1",clusterLabel="Final Version"))
+  expect_silent(ceNew5<-setToFinal(ceNew,whichCluster="makeConsensus.1",clusterLabel="Final Version"))
   expect_equal(primaryClusterIndex(ceNew5),2)
   expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
   expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")

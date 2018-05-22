@@ -1,10 +1,10 @@
 #Update here if change workflow values. Also defines the order of them.
-.workflowValues<-c("final","mergeClusters","combineMany","clusterMany")
+.workflowValues<-c("final","mergeClusters","makeConsensus","clusterMany")
 
 #' @title Methods for workflow clusters
 #'
 #' @description The main workflow of the package is made of
-#'   \code{\link{clusterMany}}, \code{\link{combineMany}}, and
+#'   \code{\link{clusterMany}}, \code{\link{makeConsensus}}, and
 #'   \code{\link{mergeClusters}}. The clusterings from these functions (and not
 #'   those obtained in a different way) can be obtained with the functions
 #'   documented here.
@@ -23,7 +23,7 @@
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #'
-#' clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
+#' clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 #' minSize=10)
 #'
 #' clCommon <- makeDendrogram(clCommon)
@@ -55,7 +55,7 @@ setMethod(
 #' @rdname workflowClusters
 #' @return \code{workflowClusterDetails} returns a \code{data.frame} with some
 #'   details on the clusterings, such as the type (e.g., `clusterMany`,
-#'   `combineMany`) and iteration.
+#'   `makeConsensus`) and iteration.
 #' @export
 setMethod(
   f = "workflowClusterDetails",
@@ -93,7 +93,7 @@ setMethod(
 #' @rdname workflowClusters
 #' @return \code{workflowClusterTable} returns a table of how many of the
 #'   clusterings belong to each of the following possible values: `final`,
-#'   `mergeClusters`, `combineMany` and `clusterMany`.
+#'   `mergeClusters`, `makeConsensus` and `clusterMany`.
 #' @export
 setMethod(
   f = "workflowClusterTable",
@@ -107,7 +107,7 @@ setMethod(
 
 #' @rdname workflowClusters
 #' @param whichCluster which cluster to set to current in the workflow
-#' @inheritParams clusterMany,matrix-method
+#' @inheritParams clusterMany
 #' @return \code{setToCurrent} returns a \code{ClusterExperiment} object where
 #'   the indicated cluster of \code{whichCluster} has been set to the most
 #'   current iteration in the workflow. Pre-existing clusters are appropriately
@@ -120,7 +120,7 @@ setMethod(
   definition = function(x,whichCluster,eraseOld=FALSE){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
@@ -149,7 +149,7 @@ setMethod(
   definition = function(x,whichCluster,clusterLabel){
     if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
     if(length(whCl)!=1) warning("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% 1:nClusterings(x)) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
     clusterTypes(x)[whCl]<-"final"
     if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
     primaryClusterIndex(x)<-whCl
@@ -160,55 +160,55 @@ setMethod(
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
 .updateCurrentWorkflow<-function(object,eraseOld,newToAdd){
-    
-    ppIndex<-workflowClusterDetails(object)
-	origLabels<-clusterLabels(object)
-	origTypes<-clusterTypes(object)
-    if(!any(newToAdd %in% .workflowValues[-1])) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
-    whNew<-max(match(newToAdd, .workflowValues))
-    downstreamType<-.workflowValues[2:whNew]
-    if(!is.null(ppIndex)){ #there are pre-existing workflow results
-        curr<-ppIndex[ppIndex[,"iteration"]==0,]
-        if(any(curr[,"type"] %in% downstreamType) || any(ppIndex[,"iteration"]!=0)){
-            if(eraseOld){
-                #removes all past iterations, not just current, except for current iteration that upstream of new one
-                whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
-                if(length(whRm)==nClusterings(object)) return(NULL)
-                else object<-removeClusterings(object,whRm) 
-            }
-            else{
-                #otherwise, only current downstream ones that exist get updated number
-                if(any(curr[,"type"] %in% downstreamType)){
-                  whDown<-which(ppIndex[,"type"] %in% downstreamType)
-                  maxDownstream<-max(ppIndex[whDown,"iteration"])
-                  newIteration<-maxDownstream+1
-                  #check if any upstream have iteration > maxDownstream
-                  whUp<-which(!ppIndex[,"type"] %in% downstreamType)
-                  if(length(whUp)>0){
-                    maxUpstream<-max(ppIndex[whUp,"iteration"])
-                    if(maxUpstream>newIteration) newIteration<-maxUpstream
-                  }
-                    whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
-                    
-                    updateCluster<-origTypes
-                    updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
-                    clusterTypes(object)<-updateCluster
-                    updateLabel<-origLabels
-                    if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those labels that haven't been manually fixed by the user
-                        whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
-                        updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
-                        clusterLabels(object)<-updateLabel
-
-                    }
-
-                }
-            }
+  
+  ppIndex<-workflowClusterDetails(object)
+  origLabels<-clusterLabels(object)
+  origTypes<-clusterTypes(object)
+  if(!any(newToAdd %in% .workflowValues[-1])) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
+  whNew<-max(match(newToAdd, .workflowValues))
+  downstreamType<-.workflowValues[2:whNew]
+  if(!is.null(ppIndex)){ #there are pre-existing workflow results
+    curr<-ppIndex[ppIndex[,"iteration"]==0,]
+    if(any(curr[,"type"] %in% downstreamType) || any(ppIndex[,"iteration"]!=0)){
+      if(eraseOld){
+        #removes all past iterations, not just current, except for current iteration that upstream of new one
+        whRm<- union(curr[curr[,"type"] %in% downstreamType, "index"],ppIndex[ppIndex[,"iteration"]!=0,"index"])
+        if(length(whRm)==nClusterings(object)) return(NULL)
+        else object<-removeClusterings(object,whRm) 
+      }
+      else{
+        #otherwise, only current downstream ones that exist get updated number
+        if(any(curr[,"type"] %in% downstreamType)){
+          whDown<-which(ppIndex[,"type"] %in% downstreamType)
+          maxDownstream<-max(ppIndex[whDown,"iteration"])
+          newIteration<-maxDownstream+1
+          #check if any upstream have iteration > maxDownstream
+          whUp<-which(!ppIndex[,"type"] %in% downstreamType)
+          if(length(whUp)>0){
+            maxUpstream<-max(ppIndex[whUp,"iteration"])
+            if(maxUpstream>newIteration) newIteration<-maxUpstream
+          }
+          whFix<-curr[curr[,"type"] %in% downstreamType, "index"]
+          
+          updateCluster<-origTypes
+          updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
+          clusterTypes(object)<-updateCluster
+          updateLabel<-origLabels
+          if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those labels that haven't been manually fixed by the user
+            whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
+            updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+            clusterLabels(object)<-updateLabel
+            
+          }
+          
         }
+      }
     }
-    object<-.unnameClusterSlots(object) #just to make sure didn't have names on labels or types
-    ch<-.checkClusterTypes(object)
-	if(!is.logical(ch)) stop(ch)
-	ch<-.checkClusterLabels(object)
-	if(!is.logical(ch)) stop(ch)
-	return(object)
+  }
+  object<-.unnameClusterSlots(object) #just to make sure didn't have names on labels or types
+  ch<-.checkClusterTypes(object)
+  if(!is.logical(ch)) stop(ch)
+  ch<-.checkClusterLabels(object)
+  if(!is.logical(ch)) stop(ch)
+  return(object)
 }

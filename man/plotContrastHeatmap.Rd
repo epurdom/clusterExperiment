@@ -12,16 +12,20 @@
 \arguments{
 \item{object}{ClusterExperiment object on which biomarkers were found}
 
-\item{signifTable}{A \code{data.frame} in format of the result of \code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast' and 'IndexInOriginal' giving the grouping and original index of the features in the \code{assay(object)}}
+\item{signifTable}{A \code{data.frame} in format of the result of
+\code{\link{getBestFeatures}}. It must minimally contain columns 'Contrast'
+and 'IndexInOriginal' giving the grouping and original index of the
+features in the \code{assay(object)}}
 
 \item{whichCluster}{if not NULL, indicates cluster used in making the 
 significance table. Used to match to names in \code{clusterLegend(object)} 
 (relevant for one-vs-all contrast so that color aligns).}
 
-\item{contrastColors}{vector of colors to be given to contrasts. Should match 
-the name of the contrasts in the 'Contrast' column of \code{signifTable} or 
-'ContrastName', if given.. If  missing, default colors given by match to the cluster names of 
-\code{whichCluster} (see above), or otherwise given a default assignment.}
+\item{contrastColors}{vector of colors to be given to contrasts. Should match
+the name of the contrasts in the 'Contrast' column of \code{signifTable} or
+'ContrastName', if given.. If  missing, default colors given by match to
+the cluster names of \code{whichCluster} (see above), or otherwise given a
+default assignment.}
 
 \item{...}{Arguments passed to \code{\link{plotHeatmap}}}
 }
@@ -29,13 +33,15 @@ the name of the contrasts in the 'Contrast' column of \code{signifTable} or
 A heatmap is created. The output of \code{plotHeatmap} is returned.
 }
 \description{
-Plots a heatmap of the data, with the genes grouped based on the contrast for which they were significant.
+Plots a heatmap of the data, with the genes grouped based on the
+  contrast for which they were significant.
 }
 \details{
-If the column 'ContrastName' is given in \code{signifTable}, these names will be used to describe the contrast in the legend.
+If the column 'ContrastName' is given in \code{signifTable}, these
+  names will be used to describe the contrast in the legend.
 
-Within each contrast, the genes are sorted by log fold-change 
-if the column "logFC" is in the \code{signifTable} data.frame
+Within each contrast, the genes are sorted by log fold-change if the
+  column "logFC" is in the \code{signifTable} data.frame
 }
 \examples{
 data(simData)
@@ -49,5 +55,6 @@ p.value=0.05, isCount=FALSE)
 plotContrastHeatmap(cl,pairsPerC)
 }
 \seealso{
-\code{\link{plotHeatmap}}, \code{\link{makeBlankData}}, \code{\link{getBestFeatures}}
+\code{\link{plotHeatmap}}, \code{\link{makeBlankData}},
+  \code{\link{getBestFeatures}}
 }

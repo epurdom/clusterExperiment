@@ -10,7 +10,7 @@
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
 \alias{RSEC,ClusterExperiment-method}
-\alias{RSEC,matrix-method}
+\alias{RSEC,matrixOrHDF5-method}
 \alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
@@ -21,34 +21,34 @@
 \S4method{RSEC}{ClusterExperiment}(x, eraseOld = FALSE,
   rerunClusterMany = FALSE, ...)
 
-\S4method{RSEC}{matrix}(x, ...)
+\S4method{RSEC}{matrixOrHDF5}(x, ...)
 
 \S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
   reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
   "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
   "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
   alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
-  combineProportion = 0.7, combineMinSize = 5, dendroReduce = "mad",
-  dendroNDims = 1000, mergeMethod = "adjP", mergeCutoff = 0.05,
-  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, ncores = 1, random.seed = NULL, run = TRUE)
+  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
+  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
-following classes: matrix (with genes in rows), 
+following classes: matrix (with genes in rows),
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
-\code{\link[SingleCellExperiment]{SingleCellExperiment}} 
+\code{\link[SingleCellExperiment]{SingleCellExperiment}}
 or \code{ClusterExperiment}.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply 
-(if ncores>1). For all the other signatures, arguments to be passed to the 
+\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+(if ncores>1). For all the other signatures, arguments to be passed to the
 method for signature \code{list}.}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
@@ -56,94 +56,107 @@ determines whether to rerun the clusterMany step. Useful if want to try
 different parameters for combining clusters after the clusterMany step,
 without the computational costs of the clusterMany step.}
 
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will determine the
-will give a transformation function \code{function(x){x}}. Ignored if \code{transFun=NULL}.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
-\item{transFun}{a transformation function to be applied to the data. If the transformation 
-applied to the data creates an error or NA values, then the function will throw an error.
-If object is of class \code{ClusterExperiment}, the stored transformation will be used 
-and giving this parameter will result in an error.}
+\item{transFun}{a transformation function to be applied to the data. If the
+transformation applied to the data creates an error or NA values, then the
+function will throw an error. If object is of class
+\code{ClusterExperiment}, the stored transformation will be used and giving
+this parameter will result in an error.}
 
-\item{reduceMethod}{character A character identifying what type of 
-dimensionality reduction to perform before clustering. Options are 
-1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
-3) stored filtering or reducedDim values in the object.}
+\item{reduceMethod}{character A character identifying what type of
+dimensionality reduction to perform before clustering. Options are 1)
+"none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 3)
+stored filtering or reducedDim values in the object.}
 
-\item{nFilterDims}{vector of the number of the most variable features to keep 
+\item{nFilterDims}{vector of the number of the most variable features to keep
 (when "var", "abscv", or "mad" is identified in \code{reduceMethod}).}
 
-\item{nReducedDims}{vector of the number of dimensions to use (when 
+\item{nReducedDims}{vector of the number of dimensions to use (when
 \code{reduceMethod} gives a dimensionality reduction method).}
 
-\item{k0s}{the k0 parameter for sequential clustering (see \code{\link{seqCluster}})}
+\item{k0s}{the k0 parameter for sequential clustering (see
+\code{\link{seqCluster}})}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in 
+\item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
 clustering techniques, and can not be a user-defined function. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 
-\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of 
+\item{alphas}{values of alpha to be tried. Only used for clusterFunctions of
 type '01'. Determines tightness required in creating clusters from the
 dissimilarity matrix. Takes on values in [0,1]. See documentation of
 \code{\link{ClusterFunction}}.}
 
 \item{betas}{values of \code{beta} to be tried in sequential steps. Only used
-for \code{sequential=TRUE}. Determines the similarity between two clusters 
+for \code{sequential=TRUE}. Determines the similarity between two clusters
 required in order to deem the cluster stable. Takes on values in [0,1]. See
 documentation of \code{\link{seqCluster}}.}
 
-\item{minSizes}{the minimimum size required for a cluster (in the 
+\item{minSizes}{the minimimum size required for a cluster (in the
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
-\item{combineProportion}{passed to \code{proportion} in \code{\link{combineMany}}}
+\item{consensusProportion}{passed to \code{proportion} in
+\code{\link{makeConsensus}}}
 
-\item{combineMinSize}{passed to \code{minSize} in \code{\link{combineMany}}}
+\item{consensusMinSize}{passed to \code{minSize} in \code{\link{makeConsensus}}}
 
-\item{dendroReduce}{passed to \code{reduceMethod} in \code{\link{makeDendrogram}}}
+\item{dendroReduce}{passed to \code{reduceMethod} in
+\code{\link{makeDendrogram}}}
 
 \item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 
-\item{mergeMethod}{passed to \code{mergeMethod} in \code{\link{mergeClusters}}}
+\item{mergeMethod}{passed to \code{mergeMethod} in
+\code{\link{mergeClusters}}}
 
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
+\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in
+\code{\link{mergeClusters}}}
+
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
-\item{mainClusterArgs}{list of arguments to be passed for the mainClustering step, see
-help pages of \code{\link{mainClustering}}.}
+\item{mainClusterArgs}{list of arguments to be passed for the mainClustering
+step, see help pages of \code{\link{mainClustering}}.}
 
 \item{subsampleArgs}{list of arguments to be passed to the subsampling step
-(if \code{subsample=TRUE}), see help pages of 
+(if \code{subsample=TRUE}), see help pages of
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
 
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
+
 \item{ncores}{the number of threads}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so 
-that all of the runs are run on the same subsample of the data). Note, if 
-'random.seed' is set, argument 'ncores' should NOT be passed via 
+\item{random.seed}{a value to set seed before each run of clusterSingle (so
+that all of the runs are run on the same subsample of the data). Note, if
+'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 (which is preferred for improving speed anyway).}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
-rownames equal to the names of the resulting column names of clMat object 
-that would be returned if \code{run=TRUE}). Even if \code{run=FALSE}, 
+rownames equal to the names of the resulting column names of clMat object
+that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object is returned containing all of 
-the clusterings from the steps of RSEC
+A \code{\link{ClusterExperiment}} object is returned containing all
+  of the clusterings from the steps of RSEC
 }
 \description{
-Implementation of the RSEC algorithm (Resampling-based Sequential Ensemble
-Clustering) for single cell sequencing data. This is a wrapper function
-around the existing ClusterExperiment workflow that results in the output of
-RSEC.
+Implementation of the RSEC algorithm (Resampling-based
+  Sequential Ensemble Clustering) for single cell sequencing data. This is a
+  wrapper function around the existing ClusterExperiment workflow that
+  results in the output of RSEC.
 }

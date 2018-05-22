@@ -63,8 +63,8 @@ NULL
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on 
-#' fluidigm data described in vignette and available in the \code{scRNAseq} 
+#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on
+#' fluidigm data described in vignette and available in the \code{scRNAseq}
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
 #' @keywords data
@@ -81,26 +81,47 @@ NULL
 #' assays(se) <- list(normalized_counts=fq)
 #' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(ClusterExperiment)
+#' library(clusterExperiment)
 #' ncores<-1
-#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,reduceMethod="PCA",nReducedDims=10,
-#'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
-#'  combineMinSize=3))
+#' system.time(
+#'   rsecFluidigm<-RSEC(se, 
+#'                      isCount = TRUE, 
+#'                      k0s = 4:15, 
+#'                      alphas=c(0.1, 0.2, 0.3), 
+#'                      betas = 0.9,
+#'                      reduceMethod="PCA", 
+#'                      nReducedDims=10,
+#'                      minSizes=1, 
+#'                      clusterFunction="hierarchical01",
+#'                      consensusMinSize=3,
+#'                      consensusProportion=0.7,
+#'                      dendroReduce= "mad",
+#'                      dendroNDims=1000,
+#'                      mergeMethod="adjP",
+#'                      mergeCutoff=0.01,
+#'                      ncores=1, 
+#'                      random.seed=176201)
+#' )
+#' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
+#' if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) 
+#'  stop("rsecFluidigm object has changed -- mergeClusters")
+#' if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8)
+#'  stop("rsecFluidigm object has changed -- makeConsensus")
 #' packageVersion("clusterExperiment")
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
-
-###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
-# Note: Merging will be done on ' combineMany ', with clustering index 1
-# Note: If `isCount=TRUE` the data will be transformed with voom() rather than
-# with the transformation function in the slot `transformation`.
-# This makes sense only for counts.
-#    user  system elapsed
-# 170.428   5.408  61.705
-# > packageVersion("clusterExperiment")
-# [1] ‘1.3.3.9001’
-
-# devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
-
-
 NULL
+
+# ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
+# # Note: Merging will be done on ' makeConsensus ', with clustering index 1
+# # Note: If `isCount=TRUE` the data will be transformed with voom() rather than
+# # with the transformation function in the slot `transformation`.
+# # This makes sense only for counts.
+# #    user  system elapsed
+# # 170.428   5.408  61.705
+# # > packageVersion("clusterExperiment")
+# # [1] ‘1.3.3.9001’
+#
+# # devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
+
+

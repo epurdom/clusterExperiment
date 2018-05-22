@@ -16,51 +16,68 @@ test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", 
   expect_equal(x1,x2)
 })
 
+
+test_that("`getBestFeatures` works with HDF5 assay slot",{
+    expect_silent(cl1 <- clusterSingle(hdfObj, 
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+    expect_silent(getBestFeatures(cl1,isCount=FALSE))
+								
+	
+})
 test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
   ## add some unclustered
-  top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",
+  expect_silent(top1 <- getBestFeatures(simData, 
+	  primaryCluster(ceSimData), contrastType="F",
                         isCount=FALSE)
+						)
   idx <- top1$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top1$AveExpr)
 
   ## check defaults
-  topC0 <- getBestFeatures(ceSimData)
-  topC1 <- getBestFeatures(ceSimData, contrastType="F",  isCount=FALSE)
+  expect_silent(topC0 <- getBestFeatures(ceSimData))
+  expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F",  isCount=FALSE))
   expect_equal(topC1, topC0)
 
   expect_equal(topC1, top1)
 
-  top2 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Pairs",
-                        isCount=FALSE)
+  expect_silent(top2 <- getBestFeatures(simData, 
+	  primaryCluster(ceSimData), contrastType="Pairs",
+                        isCount=FALSE))
   idx <- top2$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top2$AveExpr)
-  topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", isCount=FALSE)
+  expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", isCount=FALSE))
   expect_equal(topC2, top2)
 
-  top3 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="OneAgainstAll",
-                        isCount=FALSE)
+  expect_silent(top3 <- getBestFeatures(simData, 
+	  primaryCluster(ceSimData), contrastType="OneAgainstAll",
+                        isCount=FALSE))
   idx <- top3$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top3$AveExpr)
-  topC3 <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", 
-                        isCount=FALSE)
+  expect_silent(topC3 <- getBestFeatures(ceSimData, 
+	  contrastType="OneAgainstAll", 
+      isCount=FALSE))
   expect_equal(topC3, top3)
 
   ### test voom
 
   logcpm <- t(log2(t(simCount + 0.5)/(colSums(simCount) + 1) * 1e+06))
-  voom1 <- getBestFeatures(simCount, primaryCluster(ceSim), contrastType="F",
-                        isCount=TRUE)
+  expect_silent(voom1 <- getBestFeatures(simCount, 
+	  primaryCluster(ceSim), contrastType="F",
+                        isCount=TRUE))
   idx <- voom1$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom1$AveExpr)
 
-  voom2 <- getBestFeatures(simCount, primaryCluster(ceSim), contrastType="Pairs",
-                        isCount=TRUE)
+  expect_silent(voom2 <- getBestFeatures(simCount,
+	   primaryCluster(ceSim), contrastType="Pairs",
+                        isCount=TRUE))
   idx <- voom2$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom2$AveExpr)
 
-  voom3 <- getBestFeatures(simCount, primaryCluster(ceSim), contrastType="OneAgainstAll",
-                        isCount=TRUE)
+  expect_silent(voom3 <- getBestFeatures(simCount, primaryCluster(ceSim), contrastType="OneAgainstAll",
+                        isCount=TRUE))
   idx <- voom3$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom3$AveExpr)
 
@@ -119,8 +136,8 @@ test_that("`plotContrastHeatmap` works", {
 	plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
 	plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
 	plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument")
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"must identify only a single clustering")
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Invalid value for 'whichCluster'. Must be integer between")
 	
 })
 

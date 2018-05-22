@@ -31,11 +31,11 @@
 
 \item{whichCluster}{which cluster to set to current in the workflow}
 
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class 
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results 
-(clusterMany as well as mergeClusters and combineMany). If FALSE, existing 
-workflow results will have "\code{_i}" added to the clusterTypes value, 
-where \code{i} is one more than the largest such existing workflow 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{clusterLabel}{optional string value to give to cluster set to be "final"}
@@ -46,11 +46,11 @@ clusterTypes.}
 
 \code{workflowClusterDetails} returns a \code{data.frame} with some
   details on the clusterings, such as the type (e.g., `clusterMany`,
-  `combineMany`) and iteration.
+  `makeConsensus`) and iteration.
 
 \code{workflowClusterTable} returns a table of how many of the
   clusterings belong to each of the following possible values: `final`,
-  `mergeClusters`, `combineMany` and `clusterMany`.
+  `mergeClusters`, `makeConsensus` and `clusterMany`.
 
 \code{setToCurrent} returns a \code{ClusterExperiment} object where
   the indicated cluster of \code{whichCluster} has been set to the most
@@ -64,7 +64,7 @@ clusterTypes.}
 }
 \description{
 The main workflow of the package is made of
-  \code{\link{clusterMany}}, \code{\link{combineMany}}, and
+  \code{\link{clusterMany}}, \code{\link{makeConsensus}}, and
   \code{\link{mergeClusters}}. The clusterings from these functions (and not
   those obtained in a different way) can be obtained with the functions
   documented here.
@@ -76,7 +76,7 @@ cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 subsample=FALSE)
 
-clCommon <- combineMany(cl, whichClusters="workflow", proportion=0.7,
+clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 minSize=10)
 
 clCommon <- makeDendrogram(clCommon)

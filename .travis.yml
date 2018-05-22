@@ -12,11 +12,16 @@
 #----------------------------------------------------------------
 language: r
 cache: packages
+# Temporarily enable when caching Bioconductor packages
+#script: true
+
+# Temporarily enable when caching Bioconductor packages
+#script: true
 
 # R versions to be tested on
 r:
-  - bioc-release
-#  - bioc-devel
+#  - bioc-release
+  - bioc-devel
 
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false
@@ -31,7 +36,9 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - hadley/devtools@efa894ffa
+  - Bioconductor/S4Vectors
+  - Bioconductor/HDF5Array
+  - Bioconductor/DelayedArray
 
 ## Code coverage
 r_packages:

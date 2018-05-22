@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 1.99.0
+Version: 2.1.2-9007
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -31,17 +31,22 @@ Imports:
     graphics,
     parallel,
     RSpectra,
-	kernlab,
-	stringr,
-	S4Vectors,
-	grDevices
+	  kernlab,
+	  stringr,
+	  S4Vectors,
+	  grDevices,
+	  Rcpp,
+	  HDF5Array (>= 1.7.10),
+	  DelayedArray (>= 0.5.31)
 Suggests:
-    BiocStyle,
-    knitr,
-    testthat,
+  BiocStyle,
+  knitr,
+  testthat,
 	scRNAseq,
-    MAST,
-	Rtsne
+  MAST,
+	Rtsne,
+	scran,
+	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
@@ -55,7 +60,9 @@ Collate:
     'AllHelperClusterFunction.R'
     'AllHelperFilter.R'
     'JiashinJiCode.R'
+    'RcppExports.R'
     'addClusters.R'
+    'assignUnassigned.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
     'builtInClusterFunctions.R'
@@ -63,12 +70,14 @@ Collate:
     'clusterLabels.R'
     'clusterMany.R'
     'clusterSingle.R'
-    'combineMany.R'
     'dataCreation.R'
+    'deprecateFunctions.R'
     'getFeatures.R'
     'getParams.R'
+    'getReducedData.R'
     'mainClustering.R'
     'makeBlankData.R'
+    'makeConsensus.R'
     'makeDendrogram.R'
     'makeFilterStats.R'
     'makeReducedDims.R'
@@ -85,5 +94,7 @@ Collate:
     'rsec.R'
     'seqCluster.R'
     'subsampleClustering.R'
+    'subsampleLoop.R'
     'transformFunction.R'
     'workflowClusters.R'
+LinkingTo: Rcpp

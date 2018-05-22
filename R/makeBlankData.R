@@ -43,11 +43,11 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
     stop("groupsOfFeatures must be a list. Will ignore.")
 
   testIndices <- sapply(groupsOfFeatures,function(x) {
-    is.numeric(x) && all(x %in% 1:NROW(data))
+    is.numeric(x) && all(x %in% seq_len(NROW(data)))
   })
   if (!all(testIndices))
     stop("Invalid list of indices in groupsOfFeatures.")
-  if(is.null(rownames(data))) row.names(data)<-as.character(1:nrow(data))
+  if(is.null(rownames(data))) row.names(data)<-as.character(seq_len(nrow(data)))
   #make list of data of feature groups
   dataList <- lapply(groupsOfFeatures,function(ii){data[ii,,drop=FALSE]})
   rnames <- lapply(dataList,rownames)
@@ -75,8 +75,8 @@ makeBlankData <- function(data,groupsOfFeatures,nBlankLines = 1) {
   if(!is.null(names(groupsOfFeatures)) && length(unique(names(groupsOfFeatures)))==length(names(groupsOfFeatures)) ){
 	  gNames<-names(groupsOfFeatures)
   }
-  else gNames<-paste("Group",1:length(groupsOfFeatures),sep="")
-  groupNames<- lapply(1:length(dataList),function(i){
+  else gNames<-paste("Group",seq_along(groupsOfFeatures),sep="")
+  groupNames<- lapply(seq_along(dataList),function(i){
 	  gname<-rep(gNames[i],times=length(groupsOfFeatures[[i]]))
 	  if(i!=length(dataList)) gname<-c(gname,rep(NA,nBlankLines))
 	  return(gname)

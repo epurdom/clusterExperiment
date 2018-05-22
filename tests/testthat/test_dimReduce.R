@@ -95,6 +95,44 @@ test_that("Filter functions work as expected",{
 	#Need more checks about replacement, etc.
 	
 })
+
+test_that("reduce and filter work with hdf5",{
+	expect_silent(filterNames(hdfSCE))
+
+	expect_silent(f1<-filterData(hdfSCE,filterStats="Filter1",cutoff=1))
+	expect_silent(f1<-filterData(hdfSCE,filterStats="Filter1",cutoff=1))
+	
+	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats="var"))
+	expect_silent(fs<-makeFilterStats(hdfSCE,filterStats=c("mean","var")))
+	expect_silent(out<-filterData(fs,filterStats=c("mean"),cutoff=1))
+	expect_silent(fs<-makeFilterStats(assay(hdfSCE),filterStats="var"))
+
+
+	expect_silent(defaultNDims(hdfObj,"PCA"))
+
+	#add pca to it
+	nDim<-3
+	expect_silent(dr3<-makeReducedDims(hdfObj,reducedDims="PCA",maxDims=nDim))
+	expect_equal(defaultNDims(dr3,"PCA"),3)
+
+	#test directly on hdf5
+	expect_silent(dr3<-makeReducedDims(assay(hdfObj),reducedDims="PCA",maxDims=nDim))
+	
+
+	#test transformation -- need make CE object
+    expect_silent(clustNothing1 <- clusterSingle(hdfObj,
+		  reduceMethod = "none",
+  		  mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[1]]),
+  	       subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+	
+	expect_silent(transformation(clustNothing1)<-function(x){exp(x)})
+	expect_equal(exp(assay(clustNothing1)),unname(transformData(clustNothing1)))
+	
+
+	
+})
+
+
 test_that("filterData works as expected",{
 	
 	###Cutoff filter
@@ -147,6 +185,48 @@ test_that("filterData works as expected",{
 	
 	
 })
+
+test_that("getReducedData works as promised",{
+  expect_silent(clustNothingDimRed <- clusterSingle(sceSimDataDimRed,
+                                               reduceMethod = "none",
+                                               mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[1]]),
+                                               subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+  expect_silent(clustNothing <- clusterSingle(sceSimData,
+                                               reduceMethod = "none",
+                                               mainClusterArgs=list( clusterArgs=list(k=3),clusterFunction=listBuiltInFunctions()[[1]]),
+                                               subsample=FALSE, sequential=FALSE, isCount=FALSE))  	
+  
+
+  #dimReduce
+  expect_silent(out1<-getReducedData(clustNothing,reduceMethod="PCA"))
+  expect_true("PCA" %in% reducedDimNames(out1))
+  expect_equal(colData(out1),colData(clustNothing))
+  expect_equal(rownames(out1),rownames(clustNothing))
+  expect_equal(colnames(out1),colnames(clustNothing))
+  expect_equal(metadata(out1),metadata(clustNothing))
+  
+  
+  expect_warning(getReducedData(clustNothingDimRed,reduceMethod="PCA"),"will not add reduced dataset to object because already exists method with that name")
+  expect_silent(out1<-getReducedData(clustNothing,reduceMethod="PCA",reducedDimName="MyPCA"))
+  expect_true("MyPCA" %in% reducedDimNames(out1))
+  expect_false("PCA" %in% reducedDimNames(out1))
+  
+  expect_warning(getReducedData(clustNothingDimRed,reduceMethod="PCA",nDim=200,reducedDimName="MyPCA",returnValue="list"),"requesting an existing dimensionality reduction but with greater number of dimensions than available")
+  expect_silent(out3<-getReducedData(clustNothingDimRed,reduceMethod="PCA",nDim=50,reducedDimName="MyPCA",returnValue="list"))
+  expect_equal(nrow(out3$dataMatrix),50)
+  
+  #filters
+  expect_silent(out2<-getReducedData(clustNothing,reduceMethod="mad",nDim=50))
+  expect_true("mad_clusterSingle" %in% filterNames(out2))
+  expect_true("filteredBy_mad_clusterSingle" %in% reducedDimNames(out2))
+  expect_equal(ncol(reducedDim(out2,"filteredBy_mad_clusterSingle")),50)
+  
+  expect_silent(out5<-getReducedData(clustNothing,reduceMethod="mad",filterIgnoresUnassigned=FALSE))
+  expect_true("mad" %in% filterNames(out5))
+  expect_true("filteredBy_mad" %in% reducedDimNames(out5))
+  
+  })
+  
 
 test_that("makeFilterStats works as promised",{
 	expect_silent(fs<-makeFilterStats(mat,filterStats="var"))
@@ -206,5 +286,15 @@ test_that("makeFilterStats works as promised",{
 	expect_equal(DataFrame("var"=v[whTop]),clusterExperiment:::filterStats(x,type="var"))
 	expect_equal(log2(countData[whTop,]+1),unname(transformData(x,isCount=TRUE)))
 	
+	
+})
+
+test_that("defaultNDims works",{
+    nDim<-3
+    expect_silent(dr3<-makeReducedDims(ceSimData,reducedDims="PCA",maxDims=nDim))
+    expect_equal(defaultNDims(dr3,"PCA"),3)
+	
+	expect_equal(defaultNDims(SingleCellExperiment(mat),"PCA"),min(dim(mat)))
+	expect_equal(defaultNDims(SingleCellExperiment(ceSimData),"PCA"),50)
 	
 })

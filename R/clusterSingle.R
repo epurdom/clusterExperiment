@@ -1,33 +1,33 @@
 #' General wrapper method to cluster the data
-#' 
-#' Given input data, 
-#'  this function will find clusters, based on a single specification of parameters.
-#' 
+#'
+#' Given input data, this function will find clusters, based on a single
+#' specification of parameters.
+#'
 #' @param x the data on which to run the clustering (features in rows), or a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 #'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
-#' @param diss \code{n x n} data matrix of dissimilarities between the samples 
+#' @param diss \code{n x n} data matrix of dissimilarities between the samples
 #'   on which to run the clustering.
-#' @param subsample logical as to whether to subsample via 
-#'   \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering step is
-#'   done on the co-occurance between clusterings in the subsampled clustering
-#'   results.  If FALSE, the mainClustering step will be run directly on
-#'   \code{x}/\code{diss}
+#' @param subsample logical as to whether to subsample via
+#'   \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
+#'   step is done on the co-occurance between clusterings in the subsampled
+#'   clustering results.  If FALSE, the mainClustering step will be run directly
+#'   on \code{x}/\code{diss}
 #' @param sequential logical whether to use the sequential strategy (see details
 #'   of \code{\link{seqCluster}}). Can be used in combination with
 #'   \code{subsample=TRUE} or \code{FALSE}.
-#' @param mainClusterArgs list of arguments to be passed for the mainClustering step, see
-#'   help pages of \code{\link{mainClustering}}.
+#' @param mainClusterArgs list of arguments to be passed for the mainClustering
+#'   step, see help pages of \code{\link{mainClustering}}.
 #' @param subsampleArgs list of arguments to be passed to the subsampling step
-#'   (if \code{subsample=TRUE}), see help pages of 
+#'   (if \code{subsample=TRUE}), see help pages of
 #'   \code{\link{subsampleClustering}}.
 #' @param seqArgs list of arguments to be passed to \code{\link{seqCluster}}.
-#' @param reduceMethod character A character identifying what type of 
-#'   dimensionality reduction to perform before clustering. Options are 
-#'   1) "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 
-#'   3) stored filtering or reducedDim values in the object. 
-#' @param nDims integer An integer identifying how many dimensions to reduce to 
+#' @param reduceMethod character A character identifying what type of
+#'   dimensionality reduction to perform before clustering. Options are 1)
+#'   "none", 2) one of listBuiltInReducedDims() or listBuiltInFitlerStats OR 3)
+#'   stored filtering or reducedDim values in the object.
+#' @param nDims integer An integer identifying how many dimensions to reduce to
 #'   in the reduction specified by \code{reduceMethod}. Defaults to output of
 #'   \code{\link{defaultNDims}}
 #' @param clusterLabel a string used to describe the clustering. By default it
@@ -35,7 +35,7 @@
 #'   of a call to \code{clusterSingle}.
 #' @param checkDiss logical. Whether to check whether the input \code{diss} is
 #'   valid.
-#' @param ... arguments to be passed on to the method for signature 
+#' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #' @inheritParams transformData
 #' @details \code{clusterSingle} is an 'expert-oriented' function, intended to
@@ -49,9 +49,9 @@
 #'   function to be applied to \code{x} in \code{\link{clusterMany}}).
 #' @details Unlike \code{\link{clusterMany}}, most of the relevant arguments for
 #'   the actual clustering algorithms in \code{clusterSingle} are passed to the
-#'   relevant steps via the arguments \code{mainClusterArgs}, \code{subsampleArgs},
-#'   and \code{seqArgs}. These arguments should be \emph{named} lists with
-#'   parameters that match the corresponding functions:
+#'   relevant steps via the arguments \code{mainClusterArgs},
+#'   \code{subsampleArgs}, and \code{seqArgs}. These arguments should be
+#'   \emph{named} lists with parameters that match the corresponding functions:
 #'   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
 #'   \code{\link{seqCluster}}. These functions are not meant to be called by the
 #'   user, but rather accessed via calls to \code{clusterSingle}. But the user
@@ -61,13 +61,14 @@
 #'   choices of \code{sequential} and \code{subsample}. These restrictions are
 #'   documented below. \itemize{ \item{\code{clusterFunction} for
 #'   \code{mainClusterArgs}: }{The choice of \code{subsample=TRUE} also controls
-#'   what algorithm type of clustering functions can be used in the mainClustering
-#'   step. When \code{subsample=TRUE}, then resulting co-clustering matrix  from
-#'   subsampling is converted to a dissimilarity (specificaly 1-coclustering
-#'   values) and is passed to \code{diss} of \code{\link{mainClustering}}. For this
-#'   reason, the \code{ClusterFunction} object given to \code{\link{mainClustering}}
-#'   via the argument \code{mainClusterArgs} must take input of the form of a
-#'   dissimilarity. When \code{subsample=FALSE} and \code{sequential=TRUE}, the
+#'   what algorithm type of clustering functions can be used in the
+#'   mainClustering step. When \code{subsample=TRUE}, then resulting
+#'   co-clustering matrix  from subsampling is converted to a dissimilarity
+#'   (specificaly 1-coclustering values) and is passed to \code{diss} of
+#'   \code{\link{mainClustering}}. For this reason, the \code{ClusterFunction}
+#'   object given to \code{\link{mainClustering}} via the argument
+#'   \code{mainClusterArgs} must take input of the form of a dissimilarity. When
+#'   \code{subsample=FALSE} and \code{sequential=TRUE}, the
 #'   \code{clusterFunction} passed in \code{clusterArgs} element of
 #'   \code{mainClusterArgs} must define a \code{ClusterFunction} object with
 #'   \code{algorithmType} 'K'.  When \code{subsample=FALSE} and
@@ -83,44 +84,44 @@
 #'   determines the 'k' argument passed to \code{\link{subsampleClustering}}  so
 #'   setting 'k=' in the list given to the subsampleArgs will not do anything
 #'   and will produce a warning to that effect (see documentation of
-#'   \code{\link{seqCluster}}).} \item{Setting \code{k} for mainClustering step: }{If
-#'   \code{sequential=TRUE} then the user should not set \code{k} in the
-#'   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be set
-#'   by the sequential code, which has a iterative reseting of the parameters.
-#'   Specifically if \code{subsample=FALSE}, then the sequential method iterates
-#'   over choices of \code{k} to cluster the input data. And if
-#'   \code{subsample=TRUE}, then the \code{k} in the clustering of mainClustering step
-#'   (assuming the clustering function is of type 'K') will use the \code{k}
-#'   used in the subsampling step to make sure that the \code{k} used in the
-#'   mainClustering step is reasonable. } \item{Setting \code{findBestK} in
-#'   \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
+#'   \code{\link{seqCluster}}).} \item{Setting \code{k} for mainClustering step:
+#'   }{If \code{sequential=TRUE} then the user should not set \code{k} in the
+#'   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be
+#'   set by the sequential code, which has a iterative reseting of the
+#'   parameters. Specifically if \code{subsample=FALSE}, then the sequential
+#'   method iterates over choices of \code{k} to cluster the input data. And if
+#'   \code{subsample=TRUE}, then the \code{k} in the clustering of
+#'   mainClustering step (assuming the clustering function is of type 'K') will
+#'   use the \code{k} used in the subsampling step to make sure that the
+#'   \code{k} used in the mainClustering step is reasonable. } \item{Setting
+#'   \code{findBestK} in \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
 #'   \code{subsample=FALSE}, the user should not set 'findBestK=TRUE' in
 #'   \code{mainClusterArgs}. This is because in this case the sequential method
 #'   changes \code{k}; an error message will be given if this combination of
 #'   options are set. However, if \code{sequential=TRUE} and
 #'   \code{subsample=TRUE}, then passing either 'findBestK=TRUE' or
 #'   'findBestK=FALSE' via \code{mainClusterArgs} will function as expected
-#'   (assuming the \code{clusterFunction} argument passed to \code{mainClusterArgs}
-#'   is of type 'K'). In particular, the sequential step will set the number of
-#'   clusters \code{k} for clustering of each subsample. If findBestK=FALSE, 
-#'   that same \code{k} will be used for mainClustering step that clusters the
-#'   resulting co-occurance matrix after subsampling. If findBestK=TRUE, then 
-#'   \code{\link{mainClustering}} will search for best k. Note that the default 
-#'   'kRange' over which \code{\link{mainClustering}} searches when findBestK=TRUE 
-#'   depends on the input value of \code{k} which is set by the sequential
-#'   method if \code{sequential=TRUE}), see above. The user can change
-#'   \code{kRange} to not depend on \code{k} and to be fixed across all of the
-#'   sequential steps by setting \code{kRange} explicitly in the
-#'   \code{mainClusterArgs} list.} }
+#'   (assuming the \code{clusterFunction} argument passed to
+#'   \code{mainClusterArgs} is of type 'K'). In particular, the sequential step
+#'   will set the number of clusters \code{k} for clustering of each subsample.
+#'   If findBestK=FALSE, that same \code{k} will be used for mainClustering step
+#'   that clusters the resulting co-occurance matrix after subsampling. If
+#'   findBestK=TRUE, then \code{\link{mainClustering}} will search for best k.
+#'   Note that the default 'kRange' over which \code{\link{mainClustering}}
+#'   searches when findBestK=TRUE depends on the input value of \code{k} which
+#'   is set by the sequential method if \code{sequential=TRUE}), see above. The
+#'   user can change \code{kRange} to not depend on \code{k} and to be fixed
+#'   across all of the sequential steps by setting \code{kRange} explicitly in
+#'   the \code{mainClusterArgs} list.} }
 #' @return A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
-#' @return If input was \code{diss}, then the result is a list with values 
-#'   \itemize{ \item{clustering: }{The vector of clustering results} 
+#' @return If input was \code{diss}, then the result is a list with values
+#'   \itemize{ \item{clustering: }{The vector of clustering results}
 #'   \item{clusterInfo: }{A list with information about the parameters run in
 #'   the clustering} \item{diss: }{The dissimilarity matrix used in the
 #'   clustering} }
-#' @details To provide a distance matrix via the argument \code{distFunction}, 
-#'   the function must be defined to take the distance of the rows of a matrix 
-#'   (internally, the function will call \code{distFunction(t(x))}. This is to 
+#' @details To provide a distance matrix via the argument \code{distFunction},
+#'   the function must be defined to take the distance of the rows of a matrix
+#'   (internally, the function will call \code{distFunction(t(x))}. This is to
 #'   be compatible with the input for the \code{dist} function. \code{as.matrix}
 #'   will be performed on the output of \code{distFunction}, so if the object
 #'   returned has a \code{as.matrix} method that will convert the output into a
@@ -130,7 +131,7 @@
 #'   the type of clustering algorithm of \code{clusterFunction}. For type "K"
 #'   the default is to take \code{dist} as the distance function. For type "01",
 #'   the default is to take the (1-cor(x))/2.
-#'   
+#'
 #' @seealso \code{\link{clusterMany}} to compare multiple choices of parameters,
 #'   and \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
 #'   \code{\link{seqCluster}} for the underlying functions called by
@@ -146,7 +147,7 @@
 #' #use clusterSingle to do sequential clustering
 #' #(same as example in seqCluster only using clusterSingle ...)
 # ' set.seed(44261)
-# ' clustSeqHier_v2 <- clusterSingle(simData, 
+# ' clustSeqHier_v2 <- clusterSingle(simData,
 # ' sequential=TRUE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
 # ' clusterFunction="kmeans", clusterArgs=list(nstart=10)),
 # ' seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,
@@ -154,8 +155,8 @@
 #' }
 #'
 #' #use clusterSingle to do just clustering k=3 with no subsampling
-#' clustNothing <- clusterSingle(simData, 
-#'     subsample=FALSE, sequential=FALSE, 
+#' clustNothing <- clusterSingle(simData,
+#'     subsample=FALSE, sequential=FALSE,
 #'     mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #' #compare to standard pam
 #' cluster::pam(t(simData),k=3,cluster.only=TRUE)
@@ -167,17 +168,17 @@ setMethod(
   signature = signature(x = "missing",diss="matrixOrNULL"),
   definition = function(x, diss,...) {
     	clusterSingle(x=NULL,diss=diss,...)
- 
+
 })
 
 #' @rdname clusterSingle
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="missing"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="missing"),
   definition = function(x, diss,...) {
 	  clusterSingle(x=x,diss=NULL,...)
- 
+
 })
 
 
@@ -204,31 +205,35 @@ setMethod(
   f = "clusterSingle",
   signature = signature(x = "ClusterExperiment", diss="missing"),
   definition = function(x, replaceCoClustering=FALSE,...) {
-	if(any(c("transFun","isCount") %in% names(list(...)))) 
-		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
+	if(any(c("transFun","isCount") %in% names(list(...))))
+		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
     outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
     retval<-addClusterings(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
 	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
 	#make sure save the calculated information
-	retval<-.addBackSEInfo(newObj=retval,oldObj=outval) 
+	retval<-.addBackSEInfo(newObj=retval,oldObj=outval)
 	return(retval)
   }
 )
 #' @rdname clusterSingle
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "SingleCellExperiment",diss="missing"),
-  definition = function(x, reduceMethod="none", nDims=defaultNDims(x,reduceMethod),...) {
+  definition = function(x, reduceMethod="none",
+                        nDims=defaultNDims(x,reduceMethod),
+                        whichAssay=1, ...) {
 	  inputArgs<-list(...)
 	isDimReduced<- anyValidReducedDims(x) && isReducedDims(x,reduceMethod)
 	isFilter<-anyValidFilterStats(x) && isFilterStats(x,reduceMethod)
 	if(isDimReduced & isFilter) stop("reduceMethod matches both reducedDimNames and filtering statistic")
 	if(reduceMethod=="none" || (!isDimReduced && !isFilter)){
 		#go to matrix version using assay(x) and will calculate reduceMethod etc.
-		outval<-clusterSingle(assay(x),reduceMethod=reduceMethod,nDims=nDims,...)
+		outval<-clusterSingle(assay(x, whichAssay),reduceMethod=reduceMethod,nDims=nDims,...)
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
 		#but now need the filter/reducedDim
@@ -239,13 +244,13 @@ setMethod(
 	}
 	else{
 		if(isDimReduced){
-			#don't transform PCA!	
+			#don't transform PCA!
 			if(any(names(inputArgs)%in%"transFun") )
 				inputArgs<-inputArgs[!names(inputArgs)%in%"transFun"]
 			if(any(names(inputArgs)%in%"isCount"))
 				inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
 			if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
-			outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,1:nDims])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))		
+			outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,seq_len(nDims)])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))
 		}
 		if(isFilter){
 			#Need to think how can pass options to filterData...
@@ -254,8 +259,8 @@ setMethod(
 		}
 		#add back in the SingleCellExperiment stuff lost
 		retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-	
-	}	
+
+	}
 	return(retval)
   }
 )
@@ -265,9 +270,9 @@ setMethod(
 #' @export
 setMethod(
   f = "clusterSingle",
-  signature = signature(x = "matrixOrNULL",diss="matrixOrNULL"),
+  signature = signature(x = "matrixOrHDF5OrNULL",diss="matrixOrNULL"),
   definition = function(x, diss, subsample=TRUE, sequential=FALSE,
-      mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL, 
+      mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL,
 	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
       nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",checkDiss=TRUE) {
@@ -275,7 +280,7 @@ setMethod(
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
     ##########
-	
+
  	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss)
 	if(is.character(checkOut)) stop(checkOut)
 	else {
@@ -335,8 +340,7 @@ setMethod(
     if(input %in% c("both","diss") && !is.null(mainClusterArgs) && "distFunction" %in% names(mainClusterArgs)){
         if(!is.na(mainClusterArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in mainClusterArgs")
     }
-	
-	
+
 	##########
 	## Start running clustering
 	##########
@@ -350,7 +354,7 @@ setMethod(
       ##########
       ##.clusterWrapper just deciphers choices and makes clustering.
       ##########
-      finalClusterList <- .clusterWrapper(x=x, diss=diss, 
+      finalClusterList <- .clusterWrapper(x=x, diss=diss,
                                           subsample=subsample,
                                           subsampleArgs=subsampleArgs,
                                           mainClusterArgs=mainClusterArgs)
@@ -371,7 +375,7 @@ setMethod(
     ## Convert to ClusterExperiment Object
     ##########
     if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
-	  	
+
       retval <- ClusterExperiment(origX, outlist$clustering,
                 transformation=transFun,
                clusterInfo=clInfo, clusterTypes="clusterSingle",
@@ -396,12 +400,12 @@ setMethod(
 )
 #wrapper that calls the clusterSampling and mainClustering routines in reasonable order.
 #called by both seqCluster and clusterSingle
-#clusterFunction assumed to be in mainClusterArgs and subsampleArgs 
-.clusterWrapper <- function(x, diss, subsample, mainClusterArgs=NULL, subsampleArgs=NULL) 
+#clusterFunction assumed to be in mainClusterArgs and subsampleArgs
+.clusterWrapper <- function(x, diss, subsample, mainClusterArgs=NULL, subsampleArgs=NULL)
 {
     if(subsample){
         #make it a dissimilarity by 1- of the resulting Dbar.
-	    diss<-1-do.call("subsampleClustering", c(list(x=x,diss=diss), subsampleArgs)) 
+	    diss<-1-do.call("subsampleClustering", c(list(x=x,diss=diss), subsampleArgs))
         x<-NULL #disable using x
 
 		##This was to make it automatic so if subsample and didn't give 'k' to mainClustering, would do the same for mainClustering. Now have added this directly to sequential, and then by default if missing from subsampling should pull from mainClustering (i.e. should happen the other way).
@@ -410,8 +414,9 @@ setMethod(
         #     else if(!"k" %in% names(mainClusterArgs)) mainClusterArgs[["k"]]<-subsampleArgs[["k"]] #either sequential sets this value, or get error in subsampleClustering, so always defined.
         # }
     }
-    resList<-do.call("mainClustering",c(list(x=x,diss=diss,format="list", returnData=TRUE),mainClusterArgs)) 
-    return(resList) 
+
+    resList<-do.call("mainClustering",c(list(x=x,diss=diss,format="list", returnData=TRUE),mainClusterArgs))
+    return(resList)
 }
 
 

@@ -74,19 +74,20 @@ matrix in the output. If \code{FALSE} only the clustering vector is
 returned.}
 }
 \value{
-mainClustering returns a vector of cluster assignments (if format="vector")
-  or a list of indices for each cluster (if format="list"). Clusters less
-  than minSize are removed.
+mainClustering returns a vector of cluster assignments (if
+  format="vector") or a list of indices for each cluster (if format="list").
+  Clusters less than minSize are removed.
 }
 \description{
 Given input data, this function will try to find the clusters
   based on the given ClusterFunction object.
 }
 \details{
-\code{mainClustering} is not meant to be called by the user. It is only an
-  exported function so as to be able to clearly document the arguments for
-  \code{mainClustering} which can be passed via the argument \code{mainClusterArgs} in
-  functions like \code{\link{clusterSingle}} and \code{\link{clusterMany}}.
+\code{mainClustering} is not meant to be called by the user. It is
+  only an exported function so as to be able to clearly document the
+  arguments for \code{mainClustering} which can be passed via the argument
+  \code{mainClusterArgs} in functions like \code{\link{clusterSingle}} and
+  \code{\link{clusterMany}}.
 
 Post-processing Arguments: For post-processing the clustering,
   currently only type 'K' algorithms have a defined post-processing.

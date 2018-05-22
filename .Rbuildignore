@@ -3,6 +3,7 @@
 ^.svn
 ^.git
 README[.]md
+update2[.]0[.]md
 
 # Travis-CI et al.
 ^[.]travis[.]yml$
@@ -31,3 +32,4 @@ README[.]md
 ^\.Rproj\.user$
 ^\.\./inst/NEWS$
 ^tests/checkClusterMany/*$
+^appveyor\.yml$

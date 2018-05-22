@@ -1,5 +1,4 @@
 ###Note: any changes to this file should be at the END so as to not mess up the seed calls.
-
 library(clusterExperiment)
 # library(devtools)
 # load_all()
@@ -9,8 +8,6 @@ if(ncol(simData) != 300) {
   #get all kinds of annoyances because using old version.
   #Can delete this once package is stabilized.
 }
-options(getClass.msg=FALSE) #get rid of annoying messages about cache so not printed on build
-
 ## make sure the tests are reproducible
 set.seed(23)
 
@@ -109,3 +106,25 @@ pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
 tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
 reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
 clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
+
+#####################
+## Create hdf5 SCE version
+## Note is matrix of doubles....
+#####################
+hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
+hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
+
+# ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
+# hdfSCE<-sceSimDataDimRed
+# if(file.exists("./sce.h5")) unlink("./sce.h5")
+# assay(hdfSCE) <- HDF5Array::writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
+# #note this creates class of "DelayedMatrix", not class of "HDF5Matrix" -- is that new?
+#
+#
+#
+# #no pca attached
+# hdfObj<-sceSimData
+# ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
+# if(file.exists("./hdfonly.h5")) unlink("./hdfonly.h5")
+# assay(hdfObj) <- HDF5Array::writeHDF5Array(assay(hdfObj), "./hdfonly.h5", "counts")
+

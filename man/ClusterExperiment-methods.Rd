@@ -24,6 +24,10 @@
 \alias{nFeatures}
 \alias{nSamples,ClusterExperiment-method}
 \alias{nSamples}
+\alias{clusterMatrixNames,ClusterExperiment-method}
+\alias{clusterMatrixNames}
+\alias{clusterMatrixColors,ClusterExperiment-method}
+\alias{clusterMatrixColors}
 \alias{clusterMatrix,ClusterExperiment,missing-method}
 \alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,numeric-method}
@@ -34,6 +38,10 @@
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
 \alias{primaryClusterIndex}
+\alias{primaryClusterLabel,ClusterExperiment-method}
+\alias{primaryClusterLabel}
+\alias{primaryClusterLabel,ClusterExperiment-method}
+\alias{primaryClusterType}
 \alias{dendroClusterIndex,ClusterExperiment-method}
 \alias{dendroClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
@@ -90,6 +98,10 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
+\S4method{clusterMatrixNames}{ClusterExperiment}(x, whichClusters, ...)
+
+\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters, ...)
+
 \S4method{clusterMatrix}{ClusterExperiment,missing}(x, whichClusters)
 
 \S4method{clusterMatrix}{ClusterExperiment,numeric}(x, whichClusters)
@@ -99,6 +111,10 @@
 \S4method{primaryCluster}{ClusterExperiment}(x)
 
 \S4method{primaryClusterIndex}{ClusterExperiment}(x)
+
+\S4method{primaryClusterLabel}{ClusterExperiment}(x)
+
+\S4method{primaryClusterLabel}{ClusterExperiment}(x)
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
@@ -130,7 +146,8 @@
 
 \S4method{tableClusters}{ClusterExperiment,missing}(x, whichClusters, ...)
 
-\S4method{tableClusters}{ClusterExperiment,numeric}(x, whichClusters, ...)
+\S4method{tableClusters}{ClusterExperiment,numeric}(x, whichClusters,
+  useNames = TRUE, ...)
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -153,6 +170,9 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{useNames}{for \code{tableClusters}, whether the output should be tabled
+with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
@@ -172,6 +192,10 @@ clusterMatrix).
 
 \code{nSamples} returns the number of samples (same as `ncol`).
 
+\code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+
+\code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+
 \code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{clusterMatrix} returns the matrix with all the clusterings.
@@ -179,6 +203,12 @@ clusterMatrix).
 \code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{primaryCluster} returns the primary clustering (as numeric).
+
+\code{primaryClusterIndex} returns/sets the primary clustering index
+(i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{primaryClusterIndex} returns/sets the primary clustering index
+(i.e., which column of clusterMatrix corresponds to the primary clustering).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
