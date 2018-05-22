@@ -321,12 +321,9 @@ setMethod(
     tmp<-.makeColors(clusters, colors=massivePalette)
     if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
     else{
-      clusterLegend<-unname(clusterLegend)
-      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
-      if(!is.logical(ch)) stop(ch)
       #need to grab colors/names in given clusterLegend -- rerun .makeColors
       clusterLegend<-unname(clusterLegend)
-      ch<-.checkIndClusterLegend(clusters,clusterLegend)
+      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
       # Eventually, use this code instead, but for now, not changing...
       # need to grab colors/names in given clusterLegend -- rerun .makeColors
