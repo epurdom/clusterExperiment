@@ -17,6 +17,7 @@ Changes:
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Added option `nColLegend` to `plotReducedDims`
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
+* Add `clusterMatrixNames` and `clusterMatrixColors` as wrapper to `convertClusterLegend` and return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============

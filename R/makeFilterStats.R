@@ -5,7 +5,6 @@
 #'   stored in reducedDims.
 #' @aliases reduceFunctions makeFilterStats
 #'   makeFilterStats,SummarizedExperiment-method
-#' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. Must be one
 #'   of the character values given by \code{listBuildInFilterStats()}.
 #' @param filterNames if given, defines the names that will be assigned to the 

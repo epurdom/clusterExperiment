@@ -3,7 +3,7 @@
 #'   based on the choices of dimensionality reduction given by the user.
 #' @rdname reduceFunctions
 #' @aliases getReducedData
-#' @param object A ClusterExperiment Object
+#' @param object  For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
 #' @param whichCluster an integer index or character string that identifies

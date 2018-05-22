@@ -259,12 +259,9 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "clusterMatrix",
-  def = function(x,whichClusters) {
-    standardGeneric("clusterMatrix")
-  }
-)
+setGeneric(  name = "clusterMatrix", def = function(x,whichClusters) { standardGeneric("clusterMatrix")})
+setGeneric(  name = "clusterMatrixNames", def = function(x,...) { standardGeneric("clusterMatrixNames")})
+setGeneric(  name = "clusterMatrixColors", def = function(x,...) { standardGeneric("clusterMatrixColors")})
 
 setGeneric(name = "primaryCluster", def = function(x) { standardGeneric("primaryCluster")})
 setGeneric(name = "primaryClusterIndex", def = function(x) {standardGeneric("primaryClusterIndex")})

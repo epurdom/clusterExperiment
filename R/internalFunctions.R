@@ -190,7 +190,8 @@
 }
 ## Universal way to convert matrix of clusters into default colorLegend
 ## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
-## If matchClusterLegend given, will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
+## If matchClusterLegend given will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
+## if matchTo="clusterIds", assume that 'clusterIds' column matches clMat; if "name" assume "name" matches. 
 ## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
 ## Assumes that clMat has already had continuous columns removed
 ## Note, does drop levels, so returned datasets as well as color legend doesn't include missing factor levels
@@ -268,10 +269,13 @@
 		      colors<-currcolors[seq_len( nVals)+add]
 		    }
 		    else colors<-currcolors[seq_len( nVals)]
+        #make matrix for non -1 values
+		    clIds<-sort(unique(facInt[facInt>0]))
+        m<-match(clIds,facInt)
 		    cols<-cbind(
-		      "clusterIds"=levels(factor(facInt[facInt>0])),
+		      "clusterIds"=as.character(clIds),
 		      "color"=colors,
-		      "name"=levels(droplevels(facOrig[facInt>0]))
+		      "name"=as.character(facOrig[m])
 		    )
 		  }
 		  else{ #all <0 cluster values

@@ -84,6 +84,13 @@ test_that("adding clusters work as promised",{
   primaryClusterIndex(c1) <- 3
   expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
   
+  #make sure converts characters and assigns names correctly.
+  set.seed(151789)
+  charValue<-sample(rep(c("-1","A","B","C","D"),times=c(2,3,2,1,7)))
+  newCC<-addClusterings(ccSE,charValue,clusterLabel="characterCluster")
+  #have to do this because have all kinds of attributes different
+  expect_equal(t(as.matrix(tableClusters(newCC,"characterCluster",useNames=TRUE))),t(as.matrix(table(charValue))))
+  
   ####check adding a ClusterExperiment to existing CE
   expect_error(addClusterings(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
   expect_silent(c3<-addClusterings(ccSE,ccSE))

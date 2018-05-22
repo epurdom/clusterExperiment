@@ -231,6 +231,30 @@ setMethod(
   }
 )
 
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+#' @export
+#' @aliases clusterMatrixNames
+setMethod(
+  f = "clusterMatrixNames",
+  signature = c("ClusterExperiment"),
+  definition = function(x,whichClusters,...) {
+    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters,...)
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+#' @export
+#' @aliases clusterMatrixColors
+setMethod(
+  f = "clusterMatrixColors",
+  signature = c("ClusterExperiment"),
+  definition = function(x,whichClusters,...) {
+    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters,...)
+  }
+)
+
 #' @rdname ClusterExperiment-methods
 #' @param whichClusters optional argument that can be either numeric or
 #'   character value. If numeric, gives the indices of the \code{clusterMatrix}
@@ -531,13 +555,16 @@ setMethod(
   })
 
 #' @rdname ClusterExperiment-methods
+#' @param useNames for \code{tableClusters}, whether the output should be tabled
+#'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
 #' @export
 setMethod( 
   f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(x, whichClusters,...)
+  definition = function(x, whichClusters, useNames=TRUE,...)
   { 
-    numCluster<-clusterMatrix(x)[,whichClusters]
+    if(useNames) numCluster<-clusterMatrixNames(x,whichClusters=whichClusters)
+    else numCluster<-clusterMatrix(x)[,whichClusters]
     table(data.frame(numCluster))
   })
 

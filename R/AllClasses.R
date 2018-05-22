@@ -253,7 +253,10 @@ setMethod(
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
-#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots)
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots).
+#'  Must be match to given clusters, in that must be valid clusterLegend, and
+#'  the "clusterIds" column matches the value in the clustering matrix.
+#'  Generally, this is not a good way for users to set the clusterLegend slot.
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -321,6 +324,15 @@ setMethod(
       clusterLegend<-unname(clusterLegend)
       ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
+      #need to grab colors/names in given clusterLegend -- rerun .makeColors
+      clusterLegend<-unname(clusterLegend)
+      ch<-.checkIndClusterLegend(clusters,clusterLegend)
+      if(!is.logical(ch)) stop(ch)
+      # Eventually, use this code instead, but for now, not changing...
+      # need to grab colors/names in given clusterLegend -- rerun .makeColors
+      # tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="clusterIds")
+      # clusterLegend<-tmp$colorList      
+
       #need to grab colors/names in given clusterLegend
       autoLegend<-tmp$colorList
       clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
