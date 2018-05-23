@@ -306,12 +306,11 @@ setMethod(
       #outval -- object with calculated input
       .mynote(paste0("Not all of the methods requested have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
       outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
-     # browser()
+     
       if(class(outval)=="ClusterExperiment") {
         #lost anything about the meta data, old filtering/reducedDim
         #including the newly calculated reducedDim etc.! 
         retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-
         #Note that any that were built in methods have been recalculated so should replace existing
         if(any(isBuiltInFilterStats(reduceMethod))){
           # Note that filterStats<- updates existing filters of the same name and add filters with new names to the existing filters.
@@ -705,6 +704,7 @@ setMethod(
         clInfo <- mapply(pList, out, FUN=function(x, y){
           c(list(choicesParam=x), clusteringInfo(y))
         }, SIMPLIFY=FALSE)
+        
         outval <- ClusterExperiment(x, clusters=clMat,
                                     transformation=transFun,
                                     clusterInfo=clInfo,			                                    clusterTypes="clusterMany",checkTransformAndAssay=FALSE)
@@ -732,12 +732,12 @@ setMethod(
       stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
     outval<-clusterMany(as(x,"SingleCellExperiment"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
                         nReducedDims=nReducedDims, transFun=transformation(x), ...)
-    if(class(outval)=="ClusterExperiment") {
+
+        if(class(outval)=="ClusterExperiment") {
 
       #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously
       x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="clusterMany",newLabelToAdd=NULL)
-
       if(!is.null(x)){
         retval<-.addNewResult(newObj=outval,oldObj=x) #make decisions about what to keep.
 

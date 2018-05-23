@@ -190,16 +190,20 @@ setMethod(
   "SingleCellExperiment",
   function(object,reduceMethod,typeToShow){
     nDims<-rep(NA,length(reduceMethod))
-    isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
-    isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
-    if(isFilter)
-      nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
-    else if(isReducedDims(object,reduceMethod ))
+		isFilter<-isBuiltInFilterStats(reduceMethod) | isFilterStats(object,reduceMethod)
+		isRed<-isReducedDims(object,reduceMethod ) | isBuiltInReducedDims(reduceMethod)
+    isAnyFilter<-any(isFilter)
+    isAnyRed<-any(isRed)
+    if(isAnyFilter)
+      nDims[isBuiltInFilterStats(reduceMethod) | isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
+    if(isAnyRed){
+			if(any(isReducedDims(object,reduceMethod )))
       nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
-    else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
-    if(!missing(typeToShow)){
-      if(typeToShow=="filterStats") nDims<-unique(nDims[isFilter])
-      if(typeToShow=="reducedDims") nDims<-unique(nDims[isRed])
+    	if(any(!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod))) nDims[!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
+		}
+		if(!missing(typeToShow)){ #means pick a single one for each type
+      if(typeToShow=="filterStats") nDims<-min(unique(nDims[isFilter]))
+      if(typeToShow=="reducedDims") nDims<-min(unique(nDims[isRed]))
       if(length(nDims)==0) nDims<-NA
     }
     return(nDims)

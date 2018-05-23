@@ -293,7 +293,6 @@
 		rownames(cols)<-NULL
     return(cols)
 	}
-	#browser()
 	colorList<-lapply(seq_len(ncol(clNumMat)),FUN=perColumnFunction)
   names(colorList)<-cNames
   return(list(colorList=colorList,numClusters=clNumMat,facClusters=clMat))
