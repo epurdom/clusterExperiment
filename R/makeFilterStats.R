@@ -250,27 +250,49 @@ setMethod(
 #'   vector with all the unique valid default values for the \code{typeToShow}
 #'   (note that different dimensionality reduction methods can have different
 #'   maximal dimensions, so the result may not be of length one in this case).
+#' @details For a \code{reduceMethod} that corresponds to a filtering statistics
+#'   the current default is 1000 (or the length of the number of features, if
+#'   less). For a dimensionality reduction saved in the reducedDims slot the
+#'   default is 50 or the maximum number of dimensions if less than 50.
+#' @details \code{reduceMethod} will first be checked to see if it corresponds
+#'   with an existing saved filtering statistic or a dimensionality reduction to
+#'   determine which of these two types it is. If it does not match either, then
+#'   it will be checked against the built in functions provided by the package.
+#'   @examples 
+#'   se<-SingleCellExperiment(matrix(rnorm(5000*100),nrow=5000,ncol=100))
+#'   defaultNDims(se,"PCA")
+#'   defaultNDims(se,"mad")
 #' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
 setMethod( 
   f="defaultNDims",
   "SingleCellExperiment",
   function(object,reduceMethod,typeToShow){
     nDims<-rep(NA,length(reduceMethod))
-    isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
-    isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
-    if(isFilter)
-      nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
-    else if(isReducedDims(object,reduceMethod ))
+		isFilter<-isBuiltInFilterStats(reduceMethod) | isFilterStats(object,reduceMethod)
+		isRed<-isReducedDims(object,reduceMethod ) | isBuiltInReducedDims(reduceMethod)
+    isAnyFilter<-any(isFilter)
+    isAnyRed<-any(isRed)
+    if(isAnyFilter)
+      nDims[isBuiltInFilterStats(reduceMethod) | isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
+    if(isAnyRed){
+			if(any(isReducedDims(object,reduceMethod )))
       nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
-    else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
-    if(!missing(typeToShow)){
-      if(typeToShow=="filterStats") nDims<-unique(nDims[isFilter])
-      if(typeToShow=="reducedDims") nDims<-unique(nDims[isRed])
+    	if(any(!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod))) nDims[!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
+		}
+		if(!missing(typeToShow)){ #means pick a single one for each type
+      if(typeToShow=="filterStats"){
+        if(any(isFilter)) nDims<-min(unique(nDims[isFilter])) else nDims<-NA
+      }
+      if(typeToShow=="reducedDims"){
+        if(any(isRed)) nDims<-min(unique(nDims[isRed])) else nDims<-NA
+      }
       if(length(nDims)==0) nDims<-NA
     }
     return(nDims)
     
   })
+
+
 setMethod( 
   f="defaultNDims","matrixOrHDF5",function(object,...){
     return(defaultNDims(SingleCellExperiment(object),...))
