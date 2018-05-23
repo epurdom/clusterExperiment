@@ -159,11 +159,27 @@ Note that \code{filterData} returns a SingleCellExperiment object.
   To get the actual data out use either assay or \code{\link{transformData}}
   if transformed data is desired.
 
+For a \code{reduceMethod} that corresponds to a filtering statistics
+  the current default is 1000 (or the length of the number of features, if
+  less). For a dimensionality reduction saved in the reducedDims slot the
+  default is 50 or the maximum number of dimensions if less than 50.
+
+\code{reduceMethod} will first be checked to see if it corresponds
+  with an existing saved filtering statistic or a dimensionality reduction to
+  determine which of these two types it is. If it does not match either, then
+  it will be checked against the built in functions provided by the package.
+  @examples 
+  se<-SingleCellExperiment(matrix(rnorm(5000*100),nrow=5000,ncol=100))
+  defaultNDims(se,"PCA")
+  defaultNDims(se,"mad")
+
 The PCA method uses either \code{prcomp} from the \code{stats}
   package or  \code{svds} from the \code{RSpectra} package to perform PCA.
   Both are called on \code{t(assay(x))} with \code{center=TRUE} and
   \code{scale=TRUE} (i.e. the feature are centered and scaled), so that it is
   performing PCA on the correlation matrix of the features.
+
+Note that this function does not check if such a reduceDim value already exists, and will recalculate (and overwrite) if it does.
 }
 \examples{
 data(simData)
