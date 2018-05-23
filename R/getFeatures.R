@@ -429,7 +429,6 @@ This makes sense only for counts.")
   mCl<-clusterMatrix(object)[,object@merge_index]
   mCl<-unique(mCl[mCl>0])
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
   if(!identical(sort(unname(as.character(mCl))),sort(unname(tipLabels(newPhylo4))))){
 	  stop("coding error -- names of new tips of tree do not match cluster ids")
   }

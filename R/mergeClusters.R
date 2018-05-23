@@ -119,9 +119,21 @@
 #'   sample was not clustered.}
 #'		\item{\code{oldClToNew}}{ A table of the old
 #'   cluster labels to the new cluster labels.}
-#'		\item{\code{nodeProp}}{ A table of
-#'   the proportions that are DE on each node.}
-#'		\item{\code{nodeMerge}}{ A table of indicating for each node whether merged or not and the cluster id in the new clustering that corresponds to the node}
+#'		\item{\code{nodeProp}}{ 
+#'A table of the proportions that are DE on each node.This table is saved in the
+#'\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
+#'accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
+#'		}
+#'		\item{\code{nodeMerge}}{ 
+#'		A table of indicating for each node whether merged or not and the cluster id
+#'		in the new clustering that corresponds to the node. Note that a node can be
+#'		merged and not correspond to a node in the new clustering, if its ancestor
+#'		node is also merged. But there must be some node that corresponds to a new
+#'		cluster id if merging has been done. This table is saved in the
+#'		\code{merge_nodeMerge} slot of a \code{ClusterExperiment} object and can be
+#'		accessed along with the nodeProp info with the \code{nodeMergeInfo}
+#'		function.
+#'		}
 #'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
 #'   was based (based on the original clustering).}
 #'   \item{\code{cutoff}}{ The cutoff value for merging.} }
@@ -555,6 +567,13 @@ setMethod(
                                   transformation=transformation(x),
                                   clusterTypes="mergeClusters",
                                   checkTransformAndAssay=FALSE)
+      #check fixed the internal coding issue, i.e. same exact numbers as outlist$clustering:
+      ckTab<-table(primaryCluster(newObj),outlist$clustering)
+      if(nrow(ckTab)!=ncol(ckTab)) stop("coding error -- not same number of clusters after making ClusterExperiment object")
+      if(!all(rownames(ckTab)==colnames(ckTab))) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      if(any(diag(ckTab)==0)) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      if(any(ckTab[upper.tri(ckTab)]!=0)) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      
       #-----
       #add "m" to name of cluster
       #-----
@@ -577,35 +596,37 @@ setMethod(
       retval@merge_method<-outlist$mergeMethod
       retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
       retval@merge_cutoff<-outlist$cutoff
+      retval@merge_nodeMerge<-nodeMerge
       #-----
+      ## Update: This has been fixed, don't need this code...
       ##The above can change the internal coding of the merge clusters (???Why???)
       ##Need to update the nodeMerge to reflect this before save to object.
       ##Do this by matching the outlist$clustering to the new clustering
       #-----
-      if(didMerge){
-
-        if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
-        origOldToNew<-outlist$oldClToNew
-        if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-          #
-          currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
-          #-----
-          ##Match merge Ids in nodeMerge to columns of origOldToNew
-          #-----
-          #get non NAs in nodeMerge
-          whNotNAMerge<-which(!is.na(nodeMerge$mergeClusterId))
-          idsInMergeTable<-nodeMerge$mergeClusterId[whNotNAMerge]
-          #make origOldToNew only these ids in this order
-          origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
-          #make new merge table in same order as these ids by match columns to each other
-          mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
-          #currOldToNew<-currOldToNew[,mCols]
-          nodeMerge$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
-
-        }
-
-      }
-      retval@merge_nodeMerge<-nodeMerge
+      # if(didMerge){
+      # 
+      #   if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
+      #   origOldToNew<-outlist$oldClToNew
+      #   if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
+      #     #
+      #     currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
+      #     #-----
+      #     ##Match merge Ids in nodeMerge to columns of origOldToNew
+      #     #-----
+      #     #get non NAs in nodeMerge
+      #     whNotNAMerge<-which(!is.na(nodeMerge$mergeClusterId))
+      #     idsInMergeTable<-nodeMerge$mergeClusterId[whNotNAMerge]
+      #     #make origOldToNew only these ids in this order
+      #     origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
+      #     #make new merge table in same order as these ids by match columns to each other
+      #     mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
+      #     #currOldToNew<-currOldToNew[,mCols]
+      #     nodeMerge$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
+      # 
+      #   }
+      # 
+      # }
+      # retval@merge_nodeMerge<-nodeMerge
       #------------
       ##Align the colors between mergeClusters and makeConsensus
       #------------

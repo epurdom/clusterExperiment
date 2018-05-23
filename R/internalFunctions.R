@@ -171,7 +171,7 @@
     wh1<-switch(isChar,"TRUE"= x =="-1","FALSE"= x ==-1)
     wh2<-switch(isChar,"TRUE"= x =="-2","FALSE"= x ==-2)
     wh<-wh1 | wh2
-    vals<-unique(x[!wh])
+    vals<-sort(unique(x[!wh])) #if input was 1:n will hopefully make output 1:n matching
     y<-match(x,vals)
     y[wh1]<- -1
     y[wh2]<- -2

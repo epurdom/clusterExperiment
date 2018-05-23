@@ -19,6 +19,11 @@ Changes:
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
 * Add `clusterMatrixNames` and `clusterMatrixColors` as wrapper to `convertClusterLegend` and return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
 
+Bugs:
+* Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`
+* Fix internal .makeIntegerClusters so that if given values `1:K` for input clustering will retain these same values (Issue #227)
+
+
 Changes in version 2.1.2 ( Release date: 2018-05-17)
 ==============
 
