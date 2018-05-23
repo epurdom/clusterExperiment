@@ -275,11 +275,13 @@ setMethod(
       }
     }
     #issue: have to send reduceMethod, but don't know which are which type
-    isExisting<-isReducedDims(x,reduceMethod) || isFilterStats(x,reduceMethod)
-    isBuiltIn<- isBuiltInReducedDims(reduceMethod) || isBuiltInFilterStats(reduceMethod)
+    isExisting<-isReducedDims(x,reduceMethod) | isFilterStats(x,reduceMethod)
+    isBuiltIn<- isBuiltInReducedDims(reduceMethod) | isBuiltInFilterStats(reduceMethod)
     isNone<-reduceMethod=="none"
-    isExisting[isNone]<-TRUE
-    isBuiltIn[isNone]<-TRUE
+    if(any(isNone)){
+      isExisting[isNone]<-TRUE
+      isBuiltIn[isNone]<-TRUE
+    }
     isBuiltInNotExisting<-isBuiltIn & !isExisting
     
     # anyFilter<-anyValidFilterStats(x)
@@ -293,7 +295,6 @@ setMethod(
     if(!all(isNone | isBuiltIn) & !all(isNone | isExisting))
       stop("All values of 'reduceMethod' need to either match an existing (i.e. stored) filtering/dimensionality reduction or they need to all match a built-in function to be calcualted")
 
-    #browser()
     
     if(all(isBuiltIn) & any(isBuiltInNotExisting) ){
       ###########
@@ -305,6 +306,7 @@ setMethod(
       #outval -- object with calculated input
       .mynote(paste0("Not all of the methods requested have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
       outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
+     # browser()
       if(class(outval)=="ClusterExperiment") {
         #lost anything about the meta data, old filtering/reducedDim
         #including the newly calculated reducedDim etc.! 
@@ -313,7 +315,7 @@ setMethod(
         #Note that any that were built in methods have been recalculated so should replace existing
         if(any(isBuiltInFilterStats(reduceMethod))){
           # Note that filterStats<- updates existing filters of the same name and add filters with new names to the existing filters.
-          filterStats(retval)<-filterStats(retval)
+          filterStats(retval)<-filterStats(outval)
         }
         if(any(isBuiltInReducedDims(reduceMethod))){
           # reducedDims actually replaces them completely!
@@ -329,7 +331,7 @@ setMethod(
                 reducedDims(retval)[calculatedDims[wh]]<-reducedDims(outval)[calculatedDims[wh]]
                 calculatedDims<-calculatedDims[-wh]
               }
-              reducedDims(retval)<-cbind(reducedDims(retval),reducedDims(outval))
+              reducedDims(retval)<-c(reducedDims(retval),reducedDims(outval))
                    
             } 
 

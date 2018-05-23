@@ -125,9 +125,15 @@ test_that("`clusterMany` works with reduceMethod a filtering",{
                                              ks=c(3,4),clusterFunction="pam", reduceMethod="mad",
                                              subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"Not all of the methods requested have been calculated")
   
-  expect_message(clustNothing5 <- clusterMany(sceSimDataDimRed, 
+  expect_error(clustNothing5 <- clusterMany(sceSimDataDimRed, 
                                              ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","cv"),
-                                             subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"Not all of the methods requested have been calculated")
+                                             subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"do not match any stored or built-in filtering statistics or dimensionality reduction")
+  expect_message(clustNothing5 <- clusterMany(sceSimDataDimRed, 
+                                            ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","abscv"),
+                                            subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"Not all of the methods requested have been calculated")
+  expect_silent(clusterMany(clustNothing5, 
+                                              ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","abscv"),
+                                              subsample=FALSE, sequential=FALSE, verbose=FALSE))
 })
 test_that("`clusterMany` works with hdf5", {
 	########
