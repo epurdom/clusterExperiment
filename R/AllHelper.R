@@ -335,7 +335,7 @@ setMethod(
 #' @export
 #' @aliases primaryClusterType
 setMethod(
-  f = "primaryClusterLabel",
+  f = "primaryClusterType",
   signature = "ClusterExperiment",
   definition = function(x) {
     return(clusterTypes(x)[primaryClusterIndex(x)])

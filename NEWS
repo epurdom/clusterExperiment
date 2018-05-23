@@ -11,7 +11,8 @@ Changes:
 * Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 * Created functions:
   - `primaryClusterLabel` and `primaryClusterType`
-  - `getReducedData` and `assignUnassigned`.
+  - `getReducedData` 
+  - `assignUnassigned`
   - `clusterMatrixNames` and `clusterMatrixColors` as wrappers to `convertClusterLegend` to return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
 * Arguments changed:
   - `sampleData` changed to `colData` to match `SummarizedExperiment` syntax. Similarly `alignSampleData` has changed to `alignColData`
