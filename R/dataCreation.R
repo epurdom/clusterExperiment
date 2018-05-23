@@ -99,7 +99,7 @@ NULL
 #'                      dendroNDims=1000,
 #'                      mergeMethod="adjP",
 #'                      mergeCutoff=0.01,
-#'                      ncores=1, 
+#'                      ncores=ncores, 
 #'                      random.seed=176201)
 #' )
 #' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
