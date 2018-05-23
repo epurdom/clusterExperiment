@@ -304,7 +304,7 @@ setMethod(
       ## Note that if no Filter saved, and asked for filter
       ############
       #outval -- object with calculated input
-      .mynote(paste0("Not all of the methods requested have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
+      .mynote(paste0("Not all of the methods requested in 'reduceMethod' have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
       outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
      
       if(class(outval)=="ClusterExperiment") {
