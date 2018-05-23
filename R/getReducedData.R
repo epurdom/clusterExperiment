@@ -202,8 +202,12 @@ setMethod(
     	if(any(!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod))) nDims[!isReducedDims(object,reduceMethod )& isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
 		}
 		if(!missing(typeToShow)){ #means pick a single one for each type
-      if(typeToShow=="filterStats") nDims<-min(unique(nDims[isFilter]))
-      if(typeToShow=="reducedDims") nDims<-min(unique(nDims[isRed]))
+      if(typeToShow=="filterStats"){
+        if(any(isFilter)) nDims<-min(unique(nDims[isFilter])) else nDims<-NA
+      }
+      if(typeToShow=="reducedDims"){
+        if(any(isRed)) nDims<-min(unique(nDims[isRed])) else nDims<-NA
+      }
       if(length(nDims)==0) nDims<-NA
     }
     return(nDims)
