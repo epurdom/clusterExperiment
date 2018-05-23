@@ -232,6 +232,18 @@ setMethod(
 #' @rdname clusterMany
 #' @param whichAssay numeric or character specifying which assay to use. See
 #'   \code{\link[SummarizedExperiment]{assay}} for details.
+#' @details The given \code{reduceMethod} values must either be \emph{all} 
+#'   precalculated filtering/dimensionality reduction stored in the appropriate
+#'   location, or must \emph{all} be character values giving a built-in 
+#'   filtering/dimensionality reduction methods to be calculated. If some of the
+#'   filtering/dimensionality methods are already calcualted and stored, but not
+#'   all, then they will \emph{all} be recalculated (and if they are not all 
+#'   built-in methods, this will give an error). So to save computational time 
+#'   with pre-calculated dimensionality reduction, the user must make sure they 
+#'   are \emph{all} precalculated. Also, user-defined values (i.e. not built-in 
+#'   functions) cannot be mixed with built-in functions unless they have already
+#'   been precalculated (see \code{\link{makeFilterStats}} or 
+#'   \code{\link{makeReducedDims}}).
 #' @export
 setMethod(
   f = "clusterMany",
@@ -262,30 +274,74 @@ setMethod(
         if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
       }
     }
-    anyFilter<-anyValidFilterStats(x)
-    anyDim<-anyValidReducedDims(x)
-    anyFilterSaved<-anyFilter && any(isFilterStats(x,reduceMethod))
-    anyDimSaved<-anyDim && any(isReducedDims(x,reduceMethod))
-    anyDimBuiltIn<-any(isBuiltInReducedDims(reduceMethod))
-    anyFilterBuiltIn<-any(isBuiltInFilterStats(reduceMethod))
-    if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn)
-      stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
-    if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
-      ###This will make it calculate the requested reduceMethod values and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
+    #issue: have to send reduceMethod, but don't know which are which type
+    isExisting<-isReducedDims(x,reduceMethod) || isFilterStats(x,reduceMethod)
+    isBuiltIn<- isBuiltInReducedDims(reduceMethod) || isBuiltInFilterStats(reduceMethod)
+    isNone<-reduceMethod=="none"
+    isExisting[isNone]<-TRUE
+    isBuiltIn[isNone]<-TRUE
+    isBuiltInNotExisting<-isBuiltIn & !isExisting
+    
+    # anyFilter<-anyValidFilterStats(x)
+    # anyDim<-anyValidReducedDims(x)
+    # anyFilterSaved<-anyFilter && any(isFilterStats(x,reduceMethod))
+    # anyDimSaved<-anyDim && any(isReducedDims(x,reduceMethod))
+    # anyDimBuiltIn<-any(isBuiltInReducedDims(reduceMethod))
+    # anyFilterBuiltIn<-any(isBuiltInFilterStats(reduceMethod))
+    if(!all(isNone | isBuiltIn | isExisting))
+      stop("Some values of 'reduceMethod' do not match any stored or built-in filtering statistics or dimensionality reduction")
+    if(!all(isNone | isBuiltIn) & !all(isNone | isExisting))
+      stop("All values of 'reduceMethod' need to either match an existing (i.e. stored) filtering/dimensionality reduction or they need to all match a built-in function to be calcualted")
+
+    #browser()
+    
+    if(all(isBuiltIn) & any(isBuiltInNotExisting) ){
+      ###########
+      ###This will make it calculate the requested reduceMethod values by sending to clusterMany matrix version with assay(x) 
+      ### The matrix version will calculate the necessary filtering/reduce dims and 
+      ### and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
       ## Note that if no Filter saved, and asked for filter
+      ############
+      #outval -- object with calculated input
+      .mynote(paste0("Not all of the methods requested have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
       outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
       if(class(outval)=="ClusterExperiment") {
         #lost anything about the meta data, old filtering/reducedDim
+        #including the newly calculated reducedDim etc.! 
         retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-        #but now have lost the newly calculated reducedDim etc.! only have the old ones.
-        if(anyFilterBuiltIn) filterStats(retval)<-filterStats(outval)
-        if(anyDimBuiltIn) reducedDims(retval)<-reducedDims(outval)
+
+        #Note that any that were built in methods have been recalculated so should replace existing
+        if(any(isBuiltInFilterStats(reduceMethod))){
+          # Note that filterStats<- updates existing filters of the same name and add filters with new names to the existing filters.
+          filterStats(retval)<-filterStats(retval)
+        }
+        if(any(isBuiltInReducedDims(reduceMethod))){
+          # reducedDims actually replaces them completely!
+          calculatedDims<-reducedDimNames(outval)
+          if(length(calculatedDims)>0){
+            if(all(calculatedDims %in% reducedDimNames(retval))){
+              reducedDims(retval)[calculatedDims]<-reducedDims(outval)
+              }
+            else{
+              if(any(calculatedDims %in% reducedDimNames(retval))){
+                #replace those that exist already
+                wh<-which(calculatedDims %in% reducedDimNames(retval))
+                reducedDims(retval)[calculatedDims[wh]]<-reducedDims(outval)[calculatedDims[wh]]
+                calculatedDims<-calculatedDims[-wh]
+              }
+              reducedDims(retval)<-cbind(reducedDims(retval),reducedDims(outval))
+                   
+            } 
+
+          }
+        }
         return(retval)
       }
       else return(outval)
     }
     else{
       ###############
+      # Should come here ONLY if all methods needed have been calculated (i.e. built-in function)
       #Check inputs of reduceMethod slots
       ##NOTE: For now, IF there is a reducedDim slot, then will not try
       ##to patch in ones that are missing.
@@ -293,14 +349,11 @@ setMethod(
       ##Either do all of them ahead of time or let all of them be done
       ##during call to clusterMany...
       ###############
-      doNone<-"none" %in% reduceMethod
+      doNone<-any(isNone)
       if(doNone) reduceMethod<-reduceMethod[-grep("none",reduceMethod)]
       if(length(reduceMethod)>0){
         if(any(!isReducedDims(x,reduceMethod) & !isFilterStats(x,reduceMethod))){
-          reduceMethod<-reduceMethod[isReducedDims(x,reduceMethod) | isFilterStats(x,reduceMethod)]
-          if(length(reduceMethod)>0) warning("Not all of reduceMethod value match a reducedDimNames or filtering statistics of the 'SingleCellExperiment' object. Will ignore them:",
-                                             paste(reduceMethod[!isReducedDims(x,reduceMethod) & !isFilterStats(x,reduceMethod)], collapse=","))
-          else stop("No reduceMethod value was given that matches stored reducedDimNames or filtering statistics of the object.")
+          stop("Internal Coding Error -- shouldn't have gotten to this point without catching from earlier error check that all necessary statistics are calculated.")
         }
         #check if nReducedDims values
         if(any(isReducedDims(x,reduceMethod))){
