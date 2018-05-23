@@ -190,8 +190,10 @@
 }
 ## Universal way to convert matrix of clusters into default colorLegend
 ## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
-## If matchClusterLegend given will use names and colors of matchClusterLegend, and just make the ids match the numerical ids created internally.
-## if matchTo="clusterIds", assume that 'clusterIds' column matches clMat; if "name" assume "name" matches. 
+## If giving clNumMat, then will not check for consecutive integers, but will use entries in clNumMat as the clusterIds
+## If matchClusterLegend given will use names and colors of matchClusterLegend
+## if matchTo="clusterIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); 
+## if matchTo="name" assume "name" matches entries of clMat. 
 ## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
 ## Assumes that clMat has already had continuous columns removed
 ## Note, does drop levels, so returned datasets as well as color legend doesn't include missing factor levels

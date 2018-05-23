@@ -41,27 +41,15 @@ setMethod(
     ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
     #Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
+
     subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     nms<-colnames(subMat)
-    newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
-    colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    newClLegend<-lapply(seq_len(NCOL(newMat)),function(ii){
-      colMat<-x@clusterLegend[[ii]]
-      newCl<-newMat[,ii]
-      cl<-subMat[,ii]
-      #remove (possible) levels lost
-      whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
-      if(length(whRm)>0){
-        colMat<-colMat[-whRm,,drop=FALSE]
-      }
-      #convert
-      oldNew<-unique(cbind(old=cl,new=newCl))
-      if(nrow(oldNew)!=nrow(colMat)) stop("error in converting colorLegend")
-      m<-match(colMat[,"clusterIds"],oldNew[,"old"])
-      colMat[,"clusterIds"]<-oldNew[m,"new"]
-      return(colMat)
-    })
+    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
+                          matchClusterLegend=x@clusterLegend,matchTo="name") 
+    newMat<-out$numClusters
+    colnames(newMat)<-nms
+    newClLegend<-out$colorList
     #fix order of samples so same
     newOrder<-rank(x@orderSamples[j])
     #

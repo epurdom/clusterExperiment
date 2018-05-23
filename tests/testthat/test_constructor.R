@@ -214,20 +214,24 @@ test_that("removing clusters work as promised",{
 
 test_that("subsetting works as promised",{
 
-  expect_equal(clusterMatrix(cc[1:2,1]),clusterMatrix(cc)[1,,drop=FALSE]) 
+  ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
+  expect_equal(clusterMatrix(cc[1:2,2]),clusterMatrix(cc)[2,,drop=FALSE]) 
   
-  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),]) 
+  ###But this tests names stay the same regardless, even when renumber.
+  expect_equal(clusterMatrixNamed(cc[1:2,1]),clusterMatrixNamed(cc)[1,,drop=FALSE]) 
+  
+  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
   
   #test subsetting of genes
-  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
   expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
   
   #test subsetting of samples
-  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2),])
+  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2), ,drop=FALSE])
   logVec<-rep(FALSE,length=nSamples(cc))
   logVec[1:2]<-TRUE
-  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
-  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec, ,drop=FALSE]) 
+  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
 
   
   
