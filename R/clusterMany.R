@@ -236,7 +236,7 @@ setMethod(
 #'   precalculated filtering/dimensionality reduction stored in the appropriate
 #'   location, or must \emph{all} be character values giving a built-in 
 #'   filtering/dimensionality reduction methods to be calculated. If some of the
-#'   filtering/dimensionality methods are already calcualted and stored, but not
+#'   filtering/dimensionality methods are already calculated and stored, but not
 #'   all, then they will \emph{all} be recalculated (and if they are not all 
 #'   built-in methods, this will give an error). So to save computational time 
 #'   with pre-calculated dimensionality reduction, the user must make sure they 
@@ -293,7 +293,7 @@ setMethod(
     if(!all(isNone | isBuiltIn | isExisting))
       stop("Some values of 'reduceMethod' do not match any stored or built-in filtering statistics or dimensionality reduction")
     if(!all(isNone | isBuiltIn) & !all(isNone | isExisting))
-      stop("All values of 'reduceMethod' need to either match an existing (i.e. stored) filtering/dimensionality reduction or they need to all match a built-in function to be calcualted")
+      stop("All values of 'reduceMethod' need to either match an existing (i.e. stored) filtering/dimensionality reduction or they need to all match a built-in function to be calculated")
 
     
     if(all(isBuiltIn) & any(isBuiltInNotExisting) ){
