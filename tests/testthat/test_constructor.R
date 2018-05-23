@@ -193,10 +193,10 @@ whUn<-which(primaryCluster(ccSE) <0)
 
   ###Check retain SE info
   expect_equal(colData(ccR),colData(se[,-whUn]) )
-  expect_equal(rownames(ccR),rownames(se)) 
-  expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-  expect_equal(metadata(ccR),metadata(se)) 
-  expect_equal(rowData(ccR),rowData(se)) 
+  expect_equal(rownames(ccR),rownames(se))
+  expect_equal(colnames(ccR),colnames(se[,-whUn]))
+  expect_equal(metadata(ccR),metadata(se))
+  expect_equal(rowData(ccR),rowData(se))
   
 })
 
