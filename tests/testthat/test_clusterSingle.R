@@ -276,14 +276,14 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=FALSE))
-    expect_equal(primaryCluster(cc),c(1,2,2,1,3,3,1,3,1,2,3,3,2,1,1,3,2,2,3,2))
+    expect_equal(primaryCluster(cc),c(3,1,1,3,2,2,3,2,3,1,2,2,1,3,3,2,1,1,2,1))
 	expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
 	expect_silent(cc<-clusterSingle(contData,
 	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
 	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	 	   isCount=FALSE))
-    expect_equal(primaryCluster(cc),c(1,2,2,1,3,3,1,3,1,2,3,3,2,1,1,3,2,2,3,2))
+    expect_equal(primaryCluster(cc),c(3,1,1,3,2,2,3,2,3,1,2,2,1,3,3,2,1,1,2,1))
 
 
    #SE
@@ -320,7 +320,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
         subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=FALSE))
-  expect_equal(primaryCluster(cc),c(1,2,1,2,1,3,2,2,2,1,3,3,3,1,2,3,3,2,3,1))
+  expect_equal(primaryCluster(cc),c(3,1,3,1,3,2,1,1,1,3,2,2,2,3,1,2,2,1,2,3))
 	expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
 
@@ -355,7 +355,7 @@ test_that("`clusterSingle` consistent results (no transformation)", {
 	      subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	      nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=FALSE))
-	expect_equal(primaryCluster(cc),c(1,2,3,1,2,3,1,2,1,2,3,2,3,3,1,3,3,3,2,2))
+	expect_equal(primaryCluster(cc),c(3,2,1,3,2,1,3,2,3,2,1,2,1,1,3,1,1,1,2,2))
 	expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
 
@@ -439,7 +439,7 @@ test_that("`clusterSingle` consistent results (with transformation)", {
         subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
         nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	   isCount=TRUE))
-  expect_equal(primaryCluster(cc),c(1,2,3,3,1,3,1,3,3,3,3,2,3,2,3,3,3,2,2,3))
+  expect_equal(primaryCluster(cc),c(3,2,1,1,3,1,3,1,1,1,1,2,1,2,1,1,1,2,2,1))
 expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 
   #SE
@@ -473,7 +473,7 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 	      subsample=FALSE, sequential=FALSE, reduceMethod="none",
 	      nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 	   isCount=TRUE))
-	expect_equal(primaryCluster(cc),c(1,2,1,2,1,2,1,2,3,1,2,3,2,3,2,2,2,3,3,1))
+	expect_equal(primaryCluster(cc),c(2,1,2,1,2,1,2,1,3,2,1,3,1,3,1,1,1,3,3,2))
 
 	#SE
 	expect_silent(cc2<-clusterSingle(testSE,
