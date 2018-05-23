@@ -26,6 +26,8 @@ Changes:
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`
 * Fix internal .makeIntegerClusters so that if given values `1:K` for input clustering will retain these same values (Issue #227)
+* Fixed bug in giving filtering statistics to `clusterMany`
+* Fixed bug in clusterLabel names assigned to output of `clusterMany`
 
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)

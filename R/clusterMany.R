@@ -562,13 +562,9 @@ setMethod(
         charParam<-as.matrix(param)
         whVary <- which(apply(param,2,function(x){length(unique(x))>1}))
          if(length(whVary)>0) {
-          #for some reason, this code started changing TRUE/FALSE in to 1/0
-          # cnames<-apply(param[,whVary,drop=FALSE],1,function(x){
-          # paste(colnames(param)[whVary],as.character(x),sep="=",collapse=",")})
           makeLabel<- function(ii){
             paste(colnames(param)[whVary],charParam[ii,whVary],sep="=",collapse=",")
           }
-           
           cnames<-sapply(seq_len(nrow(param)),makeLabel)
         } else {
           stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
