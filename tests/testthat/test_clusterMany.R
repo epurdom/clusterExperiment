@@ -72,6 +72,11 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_equal(rowData(clustNothing2),rowData(sceSimDataDimRed))
   expect_equal(reducedDims(clustNothing2),reducedDims(sceSimDataDimRed))
 
+
+
+})
+
+test_that("`clusterMany` works with reduceMethod a reducedDims",{
   #check picking all dims in single reduceMethod same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), 
   	ks=c(3,4),clusterFunction="pam", reduceMethod="none",
@@ -82,7 +87,9 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
   expect_equal(NCOL(clusterMatrix(clustNothing)),2)
   expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
-
+  expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
+  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
+  
   #check picking certain dims in single reduceMethod same as apply directly to matrix 
   #and that get right reducedDim returned
   expect_silent(clustNothing <- clusterMany(simData, 
@@ -90,15 +97,29 @@ test_that("`clusterMany` works with SingleCellExperiment", {
   	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(NCOL(clusterMatrix(clustNothing)),4)
   expect_equal(abs(reducedDim(clustNothing,"PCA")), abs(reducedDim(sceSimDataDimRed,"PCA")[,1:6]))
-
-  expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	  ks=c(3,4),nReducedDims=c(5:6),reduceMethod="PCA",
-      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
-  expect_equal(NCOL(clusterMatrix(clustNothing3)),4)
-  expect_equal(reducedDim(clustNothing3,"PCA"), reducedDim(sceSimDataDimRed,"PCA"))
-
-  expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
-
+  
+  expect_silent(clustNothing2 <- clusterMany(sceSimDataDimRed, 
+                                             ks=c(3,4),nReducedDims=c(5:6),reduceMethod="PCA",
+                                             clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+  expect_equal(NCOL(clusterMatrix(clustNothing2)),4)
+  expect_equal(reducedDim(clustNothing2,"PCA"), reducedDim(sceSimDataDimRed,"PCA"))
+  
+  
+  expect_message(clustNothing4 <- clusterMany(sceSimData, 
+                                              ks=c(3,4),nReducedDims=c(5:6),reduceMethod="PCA",
+                                              clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),
+                 "Not all of the methods requested in 'reduceMethod' have been calculated")
+  expect_equal(clusterMatrix(clustNothing2), clusterMatrix(clustNothing4))
+  
+  expect_message(clustNothingBoth1<-clusterMany(clustNothing4, 
+                                              ks=c(3,4),nReducedDims=c(5:6),reduceMethod=c("PCA","mad"),
+                                              clusterFunction="pam", subsample=FALSE, sequential=FALSE, verbose=FALSE),
+                 "Not all of the methods requested in 'reduceMethod' have been calculated")
+  expect_silent(clustNothingBoth2<-clusterMany(clustNothingBoth1, 
+                             ks=c(3,4),nReducedDims=c(5:6),reduceMethod=c("PCA","mad"),
+                             clusterFunction="pam", subsample=FALSE, sequential=FALSE, verbose=FALSE))
+  expect_equal(clusterMatrix(clustNothingBoth1,which="clusterMany"), clusterMatrix(clustNothingBoth2,which="clusterMany"))
+  
   #check picking reduceMethod="none" same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", reduceMethod="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
@@ -116,8 +137,24 @@ test_that("`clusterMany` works with SingleCellExperiment", {
 
 
 })
-
-
+test_that("`clusterMany` works with reduceMethod a filtering",{
+  expect_message(clustNothing4 <- clusterMany(sceSimDataDimRed, 
+                                             ks=c(3,4),clusterFunction="pam", reduceMethod="mad",
+                                             subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated")
+  
+  expect_error(clustNothing5 <- clusterMany(sceSimDataDimRed, 
+                                             ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","cv"),
+                                             subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"do not match any stored or built-in filtering statistics or dimensionality reduction")
+  expect_message(clustNothing5 <- clusterMany(sceSimDataDimRed, 
+                                            ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","abscv"),
+                                            subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated")
+  expect_true(all(filterNames(sceSimDataDimRed) %in% filterNames(clustNothing5)))
+  expect_true(all(c("mad","abscv","var","mean") %in% filterNames(clustNothing5)))
+  
+  expect_silent(clusterMany(clustNothing5, 
+                                              ks=c(3,4),clusterFunction="pam", reduceMethod=c("mad","abscv"),
+                                              subsample=FALSE, sequential=FALSE, verbose=FALSE))
+})
 test_that("`clusterMany` works with hdf5", {
 	########
 	#Check if use PCA (not in hdf5) changes nothing, as expect.
@@ -167,15 +204,15 @@ test_that("`clusterMany` works changing parameters", {
 	expect_equal(sort(reducedDimNames(cc)),sort(c("PCA")))
 	expect_equal(sort(filterNames(cc)),sort(c("var","abscv","mean","mad")))
 
-	expect_silent(cc2 <- clusterMany(se, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
+	expect_message(cc2 <- clusterMany(se, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
 	reduceMethod=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
-  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated")
 expect_equal(sort(reducedDimNames(cc2)),sort(c("PCA")))
 expect_equal(sort(filterNames(cc2)),sort(c("b","var","abscv","mean","mad")))
 
-	expect_silent(cc3 <- clusterMany(sce, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
+	expect_message(cc3 <- clusterMany(sce, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
 	reduceMethod=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
-  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated")
 expect_equal(sort(reducedDimNames(cc3)),sort(c("PCA")))
 expect_equal(sort(filterNames(cc3)),sort(c("b","var","abscv","mean","mad")))
 
@@ -205,31 +242,31 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
 	# Mixing saved and unsaved (gives warnings/errors)
 	#--------
 	#following gives warning because can't mix saved and calculate internally
-	notAllWarning<-"Not all of reduceMethod value match a reducedDimNames or filtering statistics"
-	expect_warning(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	notAllWarning<-"All values of 'reduceMethod' need to either match an existing"
+	expect_error(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("PCA","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),notAllWarning)
-	expect_warning(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("var","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),notAllWarning)
-	expect_warning(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("PCA","Filter1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),notAllWarning)
-	expect_warning(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(sceFull, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("var","Filter1"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),
 		notAllWarning)	
 	#repeat for ce 
-	expect_warning(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("PCA","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE),notAllWarning)
-	expect_warning(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("PCA","Filter1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE),notAllWarning)
-	expect_warning(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 			reduceMethod=c("var","Red1"),clusterFunction="pam",
 	  		subsample=FALSE, sequential=FALSE,verbose=FALSE),notAllWarning)
-	expect_warning(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_error(clusterMany(cc4, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("var","Filter1"),clusterFunction="pam",
 		subsample=FALSE, sequential=FALSE,verbose=FALSE),
 		notAllWarning)	
@@ -239,34 +276,34 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
 	#--------
 	sceSimData2<-sceFull
 	reducedDims(sceSimData2)<-SimpleList()
-	expect_silent(c1<-clusterMany(sceSimData2, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_message(c1<-clusterMany(sceSimData2, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("PCA"),clusterFunction="pam",
-		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(clusterExperiment:::filterStats(c1),clusterExperiment:::filterStats(sceSimData2))
 	expect_equal(reducedDimNames(c1),"PCA")
 	
 	sceSimData3<-sceFull
 	rowData(sceSimData3)<-NULL
-	expect_silent(c2<-clusterMany(sceSimData3, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_message(c2<-clusterMany(sceSimData3, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("var"),clusterFunction="pam",
-		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+		subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(reducedDims(c2),reducedDims(sceSimData3))
 	expect_equal(filterNames(c2),"var")
 	
 	#repeat for ce
 	ce5<-cc4
 	reducedDims(ce5)<-SimpleList()
-	expect_silent(c1<-clusterMany(ce5, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_message(c1<-clusterMany(ce5, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("PCA"),clusterFunction="pam",
-		subsample=FALSE, sequential=FALSE,verbose=FALSE))
+		subsample=FALSE, sequential=FALSE,verbose=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(clusterExperiment:::filterStats(c1),clusterExperiment:::filterStats(ce5))
 	expect_equal(reducedDimNames(c1),"PCA")
 	
 	ce6<-cc4
 	rowData(ce6)<-NULL
-	expect_silent(c2<-clusterMany(ce6, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
+	expect_message(c2<-clusterMany(ce6, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(2),
 		reduceMethod=c("var"),clusterFunction="pam",
-		subsample=FALSE, sequential=FALSE,verbose=FALSE))
+		subsample=FALSE, sequential=FALSE,verbose=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(reducedDims(c2),reducedDims(ce6))
 	expect_equal(filterNames(c2),"var")
 
@@ -423,9 +460,9 @@ test_that("`clusterMany` consistent results (no transformation)", {
  	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	 	   isCount=FALSE))
-	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
+	expect_message(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE))
+	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -448,9 +485,9 @@ test_that("`clusterMany` consistent results (no transformation)", {
  	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	 	   isCount=FALSE))
-	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
+	expect_message(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE))
+	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -539,9 +576,9 @@ test_that("`clusterMany` consistent results (with transformation)", {
  	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	 	   isCount=TRUE))
-	expect_silent(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
+	expect_message(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=TRUE))
+	   	        nReducedDims=3, nFilterDims=3,isCount=TRUE),"Not all of the methods requested in 'reduceMethod' have been calculated")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -564,9 +601,9 @@ test_that("`clusterMany` consistent results (with transformation)", {
  	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
  	 	   isCount=TRUE))
-	expect_silent(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
+	expect_message(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
 	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=TRUE))
+	   	        nReducedDims=3, nFilterDims=3,isCount=TRUE),"Not all of the methods requested in 'reduceMethod' have been calculated")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
