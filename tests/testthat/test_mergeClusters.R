@@ -287,12 +287,22 @@ test_that("logFC works",{
   expect_true(all(c("adjP_1.0") %in% colnames(clustMerged3@merge_nodeProp)))
 
   #redo with different logFC --- pick logFC large enought that changes the proportions to make sure actually merge on right value
-  expect_message(clustMerged4 <- mergeClusters(clustMerged, mergeMethod="adjP", logFCcutoff=10,plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE),"Merging will be done on")
+  expect_message(clustMerged4 <- mergeClusters(clustMerged, mergeMethod="adjP", 
+                                               logFCcutoff=10,plotInfo="none",cutoff=0.1,plot=FALSE,
+                                               calculateAll=FALSE,clusterLabel="merge, logFC"),
+                 "Merging will be done on")
   expect_false(all(clustMerged4@merge_nodeProp[,"adjP_10.0"] == clustMerged4@merge_nodeProp[,"adjP"]))
   expect_false(all(clustMerged4@merge_nodeMerge[,"isMerged"] == clustMerged@merge_nodeMerge[,"isMerged"]))
   expect_equal(length(unique(primaryCluster(clustMerged4))),3)
   expect_equal(length(unique(primaryCluster(clustMerged))),5)
 
+  ##Check labels not getting corrupted when redo
+  expect_equal(primaryClusterLabel(clustMerged4),"merge, logFC")
+  expect_message(clustMerged5 <- mergeClusters(clustMerged4, mergeMethod="adjP", logFCcutoff=10,plotInfo="none",
+                                               cutoff=0.1,plot=FALSE,calculateAll=FALSE,clusterLabel="merge, logFC"),"Merging will be done on")
+  expect_equal(primaryClusterLabel(clustMerged5),"merge, logFC")
+  
+  
   ###Test plotting on CE version:
   expect_message(clustMerged10 <- mergeClusters(clustWithDendro,
 	   mergeMethod="adjP", plot=TRUE,plotInfo="adjP_10.0", 
@@ -341,3 +351,11 @@ test_that("`mergeClusters` works with unassignedSamples", {
 
 })
 
+test_that("cluster labels not being internally changed from user input",{
+  expect_silent(clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup")))
+  
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",
+                                              plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))
+  
+  
+  })

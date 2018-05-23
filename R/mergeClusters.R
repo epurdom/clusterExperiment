@@ -582,7 +582,8 @@ setMethod(
       #-----
       ##Check if pipeline already ran previously and if so increase
       #-----
-      x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
+      x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="mergeClusters",newLabelToAdd=clusterLabel)
+			
       if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
       else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
       #-----
