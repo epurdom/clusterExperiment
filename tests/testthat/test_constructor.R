@@ -185,9 +185,9 @@ test_that("removing clusters work as promised",{
   expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
   expect_equal(ccTemp, removeUnclustered(ccTemp)) 
   
-###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
-  #-1 in primary cluster
-whUn<-which(primaryCluster(ccSE) <0)
+### The remainder code sometimes causes problems if tested interactively more than once
+### Some problem in the environment???
+	whUn<-which(primaryCluster(ccSE) <0)
   expect_silent(ccR<-removeUnclustered(ccSE))
   expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
