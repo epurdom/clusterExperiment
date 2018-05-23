@@ -2,22 +2,25 @@ Changes in version 2.1.2-9005 ( Release date: )
 ==============
 
 Changes:
-* change `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`). 
+* Change function `combineMany` to `makeConsensus`. `combineMany` is now a deprecated function (it will work, but gives warning to change to `makeConsensus`). 
 * Arguments to `RSEC` changed accordingly:
 	- `combineProportion` now `consensusProportion`
 	- `combineMinSize` now `consensusMinSize`
 * Removed `largeDataset` option to subsampleClustering because no longer provides advantage.
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
-* Arguments `sampleData` changed to `colData` to match `SummarizedExperiment`. Similarly `alignSampleData` has changed to `alignColData`
-* Add error catch if try to give argument `whichCluster` to `mergeCluster`.
-* Added functions `primaryClusterLabel` and `primaryClusterType`
-* Created functions `getReducedData` and `assignUnassigned`.
-* Changed argument `ignoreUnassignedVar` to `filterIgnoresUnassigned` for clarity.
+* Created functions:
+  - `primaryClusterLabel` and `primaryClusterType`
+  - `getReducedData` and `assignUnassigned`.
+  - `clusterMatrixNames` and `clusterMatrixColors` as wrappers to `convertClusterLegend` to return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
+* Arguments changed:
+  - `sampleData` changed to `colData` to match `SummarizedExperiment` syntax. Similarly `alignSampleData` has changed to `alignColData`
+  - `ignoreUnassignedVar` to `filterIgnoresUnassigned` for clarity.
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Added option `nColLegend` to `plotReducedDims`
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
-* Add `clusterMatrixNames` and `clusterMatrixColors` as wrapper to `convertClusterLegend` and return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
+* Added error catch if try to give argument `whichCluster` to `mergeCluster`.
+* Added error catch if give param `whichClusters` to functions that only take `whichCluster` (singular) as an argument
 
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`
@@ -34,10 +37,7 @@ Bugs:
 * Fix bug in `plotDendrogram` where colors of clusters plotted with could be subsumbed by color of previous clustering. (git Issue `#220`)
 
 Changes in version 2.1.1 ( Release date: 2018-05-15)
-<<<<<<< HEAD
-=======
 ==============
->>>>>>> develop
 
 Bugs: 
 * Fixed error introduced in 2.0.0 where arguments to `mergeCutoff` and `mergeLogFCcutoff` where passed instead to `dendroNDims`.
