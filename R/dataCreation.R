@@ -103,11 +103,10 @@ NULL
 #'                      random.seed=176201)
 #' )
 #' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
-#' if(length(tableClusters(rsecFluidigm,whichCluster="mergeClusters")) != 6) 
-#'  stop("rsecFluidigm object has changed -- mergeClusters")
-#' if(length(tableClusters(rsecFluidigm,whichCluster="makeConsensus")) != 8)
-#'  stop("rsecFluidigm object has changed -- makeConsensus")
-#' packageVersion("clusterExperiment")
+#' x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
+#' y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
+#' if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
+#' if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 NULL
