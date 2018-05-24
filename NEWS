@@ -1,4 +1,4 @@
-Changes in version 2.1.2-9005 ( Release date: )
+Changes in version 2.1.3-9001 ( Release date: )
 ==============
 
 Changes:
@@ -26,8 +26,13 @@ Changes:
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`
 * Fix internal .makeIntegerClusters so that if given values `1:K` for input clustering will retain these same values (Issue #227)
-* Fixed bug in giving filtering statistics to `clusterMany`
-* Fixed bug in clusterLabel names assigned to output of `clusterMany`
+
+Changes in version 2.1.3 ( Release date: 2018-05-24)
+==============
+Bugs:
+* Fix bug in how `clusterMany` and `defaultNDims` dealt with filtering choices in `reduceMethod`. 
+* Fixed bug in how `clusterMany` assigned label names 
+* Fixed bug so that `clusterMany` labels are increased (iteration version added) if `clusterMany` is rerun. Also, user-defined labels for functions like `mergeClusters` are now updated with iteration value if they are duplicated.
 
 
 Changes in version 2.1.2 ( Release date: 2018-05-17)

@@ -222,6 +222,19 @@ The argument \code{ks} is interpreted differently for different
 If the input is a \code{ClusterExperiment} object, current
   implementation is that existing \code{orderSamples},\code{coClustering} or
   the many dendrogram slots will be retained.
+
+The given \code{reduceMethod} values must either be \emph{all} 
+  precalculated filtering/dimensionality reduction stored in the appropriate
+  location, or must \emph{all} be character values giving a built-in 
+  filtering/dimensionality reduction methods to be calculated. If some of the
+  filtering/dimensionality methods are already calculated and stored, but not
+  all, then they will \emph{all} be recalculated (and if they are not all 
+  built-in methods, this will give an error). So to save computational time 
+  with pre-calculated dimensionality reduction, the user must make sure they 
+  are \emph{all} precalculated. Also, user-defined values (i.e. not built-in 
+  functions) cannot be mixed with built-in functions unless they have already
+  been precalculated (see \code{\link{makeFilterStats}} or 
+  \code{\link{makeReducedDims}}).
 }
 \examples{
 data(simData)

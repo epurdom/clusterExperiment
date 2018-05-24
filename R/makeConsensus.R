@@ -184,7 +184,7 @@ setMethod(
       coClustering(newObj) <- outlist$percentageShared
     }
     ##Check if pipeline already ran previously and if so increase
-    x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
+		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
 		
     if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
     else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)

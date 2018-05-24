@@ -40,7 +40,7 @@
 \alias{primaryClusterIndex}
 \alias{primaryClusterLabel,ClusterExperiment-method}
 \alias{primaryClusterLabel}
-\alias{primaryClusterLabel,ClusterExperiment-method}
+\alias{primaryClusterType,ClusterExperiment-method}
 \alias{primaryClusterType}
 \alias{dendroClusterIndex,ClusterExperiment-method}
 \alias{dendroClusterIndex}
@@ -114,7 +114,7 @@
 
 \S4method{primaryClusterLabel}{ClusterExperiment}(x)
 
-\S4method{primaryClusterLabel}{ClusterExperiment}(x)
+\S4method{primaryClusterType}{ClusterExperiment}(x)
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
