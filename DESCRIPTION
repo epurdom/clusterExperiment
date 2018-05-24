@@ -46,8 +46,7 @@ Suggests:
   MAST,
 	Rtsne,
 	scran,
-	igraph,
-	covr
+	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
