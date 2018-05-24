@@ -47,5 +47,5 @@ bioc_packages:
   - BiocCheck
 
 after_success:
-#  - Rscript -e 'covr::coveralls()'
+  - Rscript -e 'covr::coveralls(quiet=FALSE)'
   - R CMD BiocCheck .
