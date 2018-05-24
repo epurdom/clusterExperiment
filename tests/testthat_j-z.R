@@ -1,2 +1,2 @@
 library(testthat)
-test_check("clusterExperiment",filter = "^[J-Zj-Z]")
+test_check("clusterExperiment",filter = "^[J-Zj-z]")
