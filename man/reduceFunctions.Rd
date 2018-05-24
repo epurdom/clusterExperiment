@@ -71,6 +71,10 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
+\item{filterNames}{character vector of names to be given to the filtering 
+statistics calculated (these will be the column names of the statistic in 
+the \code{Data.Frame} stored in the \code{colData} slot.)}
+
 \item{...}{Values passed on the the 'SingleCellExperiment' method.}
 
 \item{whichClusterIgnoreUnassigned}{indicates clustering that should be used

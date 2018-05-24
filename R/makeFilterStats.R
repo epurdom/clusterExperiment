@@ -8,6 +8,9 @@
 #' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. Must be one
 #'   of the character values given by \code{listBuildInFilterStats()}.
+#' @param filterNames character vector of names to be given to the filtering 
+#'   statistics calculated (these will be the column names of the statistic in 
+#'   the \code{Data.Frame} stored in the \code{colData} slot.)
 #' @return \code{makeFilterStats} returns a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the
 #'   requested filtering statistics will be added to the \code{DataFrame} in the
