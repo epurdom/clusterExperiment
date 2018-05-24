@@ -92,7 +92,7 @@ setMethod( "filterStats",c("SummarizedExperiment","missing"),
 # #'   They update existing filters of the
 # #'   same name and add filters with new names to the existing filters.
 # #' @aliases filterStats<-
-#' @importFrom S4Vectors DataFrame
+# #' @importFrom S4Vectors DataFrame
 setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, ...,value) {
   isMatrixLike<-is.matrix(value) || class(value)=="DataFrame"
   if(missing(type)){

@@ -1487,8 +1487,8 @@ clusterIndices50 <- params$clusteringIndex[which(params$nReducedDims == 50)]
 #note, the indices will change as we add clusterings!
 clusterNames15 <- clusterLabels(ce)[clusterIndices15]
 clusterNames50 <- clusterLabels(ce)[clusterIndices50]
-shortNames15<-gsub("reduceMethod=1,nReducedDims=15,nFilterDims=NA,","",clusterNames15)
-shortNames50<-gsub("reduceMethod=1,nReducedDims=50,nFilterDims=NA,","",clusterNames50)
+shortNames15<-gsub("reduceMethod=PCA,nReducedDims=15,nFilterDims=NA,","",clusterNames15)
+shortNames50<-gsub("reduceMethod=PCA,nReducedDims=50,nFilterDims=NA,","",clusterNames50)
 
 ce <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
                        clusterLabel = "consensusPCA15")

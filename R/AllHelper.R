@@ -41,7 +41,6 @@ setMethod(
     ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
     #Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
-
     subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values

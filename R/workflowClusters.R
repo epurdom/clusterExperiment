@@ -195,14 +195,22 @@ setMethod(
           updateCluster<-origTypes
           updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
           clusterTypes(object)<-updateCluster
-          if(any(origLabels[whFix]%in%.workflowValues)){ #only change those labels that haven't been manually fixed by the user
+          if(any(origLabels[whFix]%in%.workflowValues) | any(origTypes[whFix]=="clusterMany")){ 
+            #only change those labels that haven't been manually fixed by the user
             updateLabel<-origLabels
-            whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
-            updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+            if(any(origLabels[whFix]%in%.workflowValues)){
+              whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
+              updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+            }
+            if(any(origTypes[whFix]=="clusterMany")){
+              #always update the clusterMany labels because otherwise get repetitive. Mainly for test checks...
+              #should always be different set than the ones above.
+              whCM<-which(origTypes[whFix]=="clusterMany")
+              updateLabel[whFix[whCM]]<-paste(updateLabel[whFix[whCM]],newIteration,sep=".")
+            }
             clusterLabels(object)<-updateLabel
-            
           }
-          else if(!is.null(newLabelToAdd) && newLabelToAdd %in% origLabels[whFix]){
+          else if(!is.null(newLabelToAdd) && any(newLabelToAdd %in% origLabels[whFix])){
             updateLabel<-origLabels
             whDuplicated<-which(updateLabel[whFix]%in%newLabelToAdd)
             updateLabel[whFix[whDuplicated]]<-paste(updateLabel[whFix[whDuplicated]],newIteration,sep=".")
