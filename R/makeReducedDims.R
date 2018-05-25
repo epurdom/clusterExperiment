@@ -18,6 +18,7 @@
 #'   Both are called on \code{t(assay(x))} with \code{center=TRUE} and
 #'   \code{scale=TRUE} (i.e. the feature are centered and scaled), so that it is
 #'   performing PCA on the correlation matrix of the features.
+#' @details Note that this function does not check if such a reduceDim value already exists, and will recalculate (and overwrite) if it does.
 #' @return \code{makeReducedDims} returns a \code{\link{SingleCellExperiment}}
 #'   containing the calculated dimensionality reduction in the \code{reduceDims}
 #'   with names corresponding to the name given in \code{reducedDims}.

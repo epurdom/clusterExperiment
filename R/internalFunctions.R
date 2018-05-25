@@ -78,25 +78,28 @@
   )
   return(retval)
 }
+
+
+
 #Returns NULL if no sample data
-.pullSampleData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
+.pullColData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
   fixNA<-match.arg(fixNA)
   if(!is.null(wh)){
     sData<-colData(ce)
     if(!is.logical(wh)){
       
-      if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sampleData")
+      if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sample data")
       if(is.character(wh)){
         if(all(wh=="all")) wh<-seq_len(NCOL(sData))
         else{
-          if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sampleData (some do not match names of colData)")
+          if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sample data (some do not match names of colData)")
           else wh<-match(wh,colnames(sData))
         }
       }
       else if(is.numeric(wh)){
-        if(!all(wh %in% seq_len(NCOL(sData)))) stop("Invalid indices for for pulling sampleData (some indices are not in 1:NCOL(colData)")
+        if(!all(wh %in% seq_len(NCOL(sData)))) stop("Invalid indices for for pulling sample data (some indices are not in 1:NCOL(colData)")
       }
-      else stop("invalid values for pulling sampleData from colData of object")
+      else stop("invalid values for pulling sample data from colData of object")
       sData<-as.data.frame(sData[,wh,drop=FALSE])
     }
     else{ #if 
@@ -135,6 +138,7 @@
   return(ce)
 }
 
+#.convertToNum works on vector and is basically as.numeric, so that if character valued numbers, will get them, but other wise, arbitrary values based on making input x a factor (so alphabetical).
 .convertToNum<-function(x){
   nms<-names(x)
   if(is.factor(x)){
@@ -152,16 +156,22 @@
   names(x)<-nms
   return(x)
 }
-##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values
+##Universal way to convert matrix of clusters (of any value) into integers, preserving -1, -2 values. Makes them adjacent values. NAs are converted into -1 values.
 .makeIntegerClusters<-function(clMat){
-  if(!is.matrix(clMat)) stop("must give matrix input")
+  if(!is.matrix(clMat)) stop("must give matrix input") #means must be either character or numeric values.
   fun<-function(x){ #make it numbers from 1:length(x), except for -1,-2
     #id special values of -1,-2
     isChar<-as.character(is.character(x))
-    wh1<-switch(isChar,"TRUE"=x =="-1","FALSE"=x ==-1)
-    wh2<-switch(isChar,"TRUE"=x =="-2","FALSE"=x ==-2)
+		
+		#make NA values NA
+		if(any(is.na(x))){
+			if(is.character(x)) x[is.na(x)]<-"-1" 
+			else x[is.na(x)]<- -1 
+		}
+    wh1<-switch(isChar,"TRUE"= x =="-1","FALSE"= x ==-1)
+    wh2<-switch(isChar,"TRUE"= x =="-2","FALSE"= x ==-2)
     wh<-wh1 | wh2
-    vals<-unique(x[!wh])
+    vals<-sort(unique(x[!wh])) #if input was 1:n will hopefully make output 1:n matching
     y<-match(x,vals)
     y[wh1]<- -1
     y[wh2]<- -2
@@ -178,44 +188,135 @@
     return(matrix(fun(clMat),ncol=1))
   }
 }
-##Universal way to convert matrix of clusters into colors
-.makeColors<-function(clMat,colors,unassignedColor="white",missingColor="grey",makeIntegers=TRUE){
+## Universal way to convert matrix of clusters into default colorLegend
+## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
+## If giving clNumMat, then will not check for consecutive integers, but will use entries in clNumMat as the clusterIds
+## If matchClusterLegend given will use names and colors of matchClusterLegend
+## if matchTo="clusterIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); 
+## if matchTo="name" assume "name" matches entries of clMat. 
+## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
+## Assumes that clMat has already had continuous columns removed
+## Note, does drop levels, so returned datasets as well as color legend doesn't include missing factor levels
+.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,
+                      matchClusterLegend=NULL,matchTo=c("clusterIds","name")){ 
+  
+  matchTo<-match.arg(matchTo)
+  if(!is.null(matchClusterLegend)){
+    if(!is.list(matchClusterLegend) ) matchClusterLegend<-.convertToClusterLegend(matchClusterLegend)
+    if("matchTo"=="clusterIds") reqNames<-c("color","clusterIds") else reqNames<-c("color","name")
+    ch<-.checkClusterLegendList(matchClusterLegend,allowNames=TRUE,reqNames=reqNames)
+    if(!is.logical(ch)){
+      #try again in case in aheatmap format
+      if(!all(sapply(matchClusterLegend, function(x) {!is.null(dim(x))}))) matchClusterLegend<-.convertToClusterLegend(matchClusterLegend)
+      ch<-.checkClusterLegendList(matchClusterLegend,allowNames=TRUE,reqNames=reqNames)
+      if(!is.logical(ch)) stop(ch)
+      
+    }
+  }
+  if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
-  if(any(apply(clMat,2,function(x){any(is.na(x))}))) stop("clusters should not have 'NA' values; non-clustered samples should get a '-1' or '-2' value depending on why they are not clustered.")
-  cNames<-colnames(clMat)
-  origClMat<-clMat
-  if(makeIntegers) clMat<-.makeIntegerClusters(clMat) #don't use when call from some plots where very carefully already chosen
-  
-  if(ncol(clMat)>1){
-    colorMat<-apply(clMat,2,function(x){
-      y<-vector("character",length(x))
-      currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
-      y[x>0]<-currcolors[x[x>0]]
-      return(y)
-    })
-    if(nrow(clMat)==1) colorMat<-matrix(colorMat,nrow=1) #in case only 1 sample!
-  }
-  else{
-    if(is.matrix(clMat)) x<-clMat[,1] else x<-clMat
-    y<-vector("character",length(x))
-    currcolors<-rep(colors,length=length(unique(x[x>0]))) #just duplicate colors if more than in existing palate
-    y[x>=0]<-currcolors[x[x>=0]]
-    colorMat<-matrix(y,ncol=1)
-  }
-  colorMat[clMat== -1]<-unassignedColor
-  colorMat[clMat== -2]<-missingColor
-  
-  #convert ids into list of matrices:
-  colorList<-lapply(seq_len(ncol(clMat)),function(ii){
-    mat<-unique(cbind("clusterIds"=clMat[,ii],"color"=colorMat[,ii],"name"=origClMat[,ii]))
-    rownames(mat)<-NULL
-    return(mat)
-  })
+    ###(not sure why this simpler code doesn't give back data.frame with factors: annCol<-apply(clMat,2,function(x){factor(x)}))
+		
+	cNames<-colnames(clMat)
+	#if give clNumMat, can skip this step, save time
+	if(is.null(clNumMat)) clNumMat<-.makeIntegerClusters(as.matrix(clMat)) #require to not skip a integer value
+	allFactors<-all(apply(clMat,2,function(x){is.factor(x)}))
+	if(!allFactors){
+		clMat<-do.call("data.frame", lapply(seq_len(ncol(clMat)), function(ii){ 
+		  x<-clMat[,ii]
+		  if(!is.factor(x)) return(factor(clMat[,ii]))
+		  else return(droplevels(x))
+		  }))
+  	names(clMat)<-cNames
+	}
+	
+  maxPerCol<-apply(clNumMat,2,max) #max cluster value (not including -1,-2)
+  currcolors<-rep(colors,length= max(c(length(colors),sum(maxPerCol)))) #make sure don't run out of colors. Put max in case none are >0
+  if(distinctColors) maxPreviousColor<-c(0,head(cumsum(maxPerCol),-1)) 
+		
+	#make a clusterLegend list
+	perColumnFunction<-function(ii){
+    facInt<-clNumMat[,ii] #assumes adjacent numbers
+    nVals<-max(c(facInt,0))
+    facOrig<-clMat[,ii] #assumes factors
+    matchName<-cNames[[ii]]
+		if(!is.null(matchClusterLegend[[matchName]])){
+	    colMat<-matchClusterLegend[[matchName]]
+			if(matchTo=="clusterIds"){
+			  m<-match(colMat[,"clusterIds"],as.character(facInt))
+			  cols<-cbind(colMat[,c("clusterIds","color"),drop=FALSE],"name"=as.character(facOrig)[m])
+			}
+			else{
+			  m<-match(colMat[,"name"],as.character(facOrig))
+			  cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name"),drop=FALSE])
+			}
+	    if(any(is.na(m))) cols<-cols[!is.na(m),,drop=FALSE] #incase given legend has names/Ids not found in data
+	    #in case given legend doesn't have values found in data
+	    whMissing<-which(!as.character(facInt)[facInt>0] %in% cols[,"clusterIds"])
+	    if(length(whMissing)>0){ 
+	      #remove colors already in colMat
+	      colors<-currcolors
+	      mColors<-.matchColors(colors,cols[,"color"])
+	      if(any(!is.na(mColors))) colors<-colors[-!is.na(mColors)]
+	      mAdd<-match(unique(facInt[facInt>0][whMissing]),facInt) #make unique value
+	      addMat<-cbind("clusterIds"=as.character(facInt[mAdd]),"color"=colors[seq_along(mAdd)],"name"=as.character(facOrig[mAdd]))
+        cols<-rbind(cols,addMat)
+	     }
+	    
+		}
+		else{
+		  if(nVals>0){
+		    if(distinctColors){
+		      add<-maxPreviousColor[[ii]]
+		      colors<-currcolors[seq_len( nVals)+add]
+		    }
+		    else colors<-currcolors[seq_len( nVals)]
+        #make matrix for non -1 values
+		    clIds<-sort(unique(facInt[facInt>0]))
+        m<-match(clIds,facInt)
+		    cols<-cbind(
+		      "clusterIds"=as.character(clIds),
+		      "color"=colors,
+		      "name"=as.character(facOrig[m])
+		    )
+		  }
+		  else{ #all <0 cluster values
+		    cols<-matrix(nrow=0,ncol=3)
+		    colnames(cols)<-c("clusterIds","color","name")
+		  }
+	    if(any(facInt== -1)) 
+				cols<-rbind(cols,c("clusterIds"="-1","color"=unassignedColor,"name"="-1") )
+	    if(any(facInt== -2)) 
+				cols<-rbind(cols,c("clusterIds"="-2","color"=missingColor,"name"="-2") )
+		}
+    cols<-cols[order(cols[,"name"]),,drop=FALSE]
+		rownames(cols)<-NULL
+    return(cols)
+	}
+	colorList<-lapply(seq_len(ncol(clNumMat)),FUN=perColumnFunction)
   names(colorList)<-cNames
-  colnames(colorMat)<-cNames
-  return(list(colorList=colorList,convertedToColor=colorMat,numClusters=clMat))
+  return(list(colorList=colorList,numClusters=clNumMat,facClusters=clMat))
 }
 
+#' @importFrom grDevices col2rgb 
+.matchColors<-function(x,y){
+  #match x colors to y colors, only with rgb definitions
+  if(!is.character(x) || !is.character(y)) stop("colors must be character values")
+  xrgb<-col2rgb(x)
+  yrgb<-col2rgb(y)
+  match(data.frame(xrgb), data.frame(yrgb))
+}
+
+
+.convertSingleWhichCluster<-function(object,whichCluster,passedArgs=NULL){
+	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
+		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
+	}
+  if(is.character(whichCluster)) whCl<-.TypeIntoIndices(object,whClusters=whichCluster) else whCl<-whichCluster
+  if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
+  if(!whCl %in% seq_len(nClusterings(object))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
+  return(whCl)
+}
 ##Universal way to change character indication of clusterTypes into integer indices.
 ##If no match, returns vector length 0
 .TypeIntoIndices<-function(x,whClusters){

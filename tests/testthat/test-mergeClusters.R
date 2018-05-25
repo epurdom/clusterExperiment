@@ -74,25 +74,21 @@ test_that("saving merge info works",{
 	   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
 	   isCount=FALSE))
 	   #check cluster is same, otherwise won't get same results...
-  expect_equal(primaryCluster(cl1),c(1,2,2,3,2,4,3,2,2,5,5,5,6,6,1,4,4,4))
+  expect_equal(primaryCluster(cl1),c(4,1,1,5,1,2,5,1,1,3,3,3,6,6,4,2,2,2))
   #for some reason, clusterSingle not giving reasonable names
-  test<-clusterLegend(cl1)[[1]]
-  test[,"name"]<-test[,"clusterIds"]
-  clusterLegend(cl1)[[1]]<-test
   expect_silent(clustWithDendro <- makeDendrogram(cl1,reduceMethod="none"))
-  #Old dendrogram:
-  # > str(clustWithDendro@dendro_clusters)
+  #Dendrogram:
   # --[dendrogram w/ 2 branches and 6 members at h = 1509]
-  #   |--leaf "5"
-  #   `--[dendrogram w/ 2 branches and 5 members at h = 1455]
-  #      |--[dendrogram w/ 2 branches and 2 members at h = 228]
-  #      |  |--leaf "2"
-  #      |  `--leaf "3"
-  #      `--[dendrogram w/ 2 branches and 3 members at h = 337]
-  #         |--leaf "6"
-  #         `--[dendrogram w/ 2 branches and 2 members at h = 259]
-  #            |--leaf "1"
-  #            `--leaf "4"
+  # |--leaf "3" 
+  # `--[dendrogram w/ 2 branches and 5 members at h = 1455]
+  # |--[dendrogram w/ 2 branches and 2 members at h = 228]
+  # |  |--leaf "1" 
+  # |  `--leaf "5" 
+  # `--[dendrogram w/ 2 branches and 3 members at h = 337]
+  # |--leaf "6" 
+  # `--[dendrogram w/ 2 branches and 2 members at h = 259]
+  # |--leaf "2" 
+  # `--leaf "4"
   #matrix version
   expect_silent(mergedList <- mergeClusters(x=transformData(cl1), isCount=FALSE,
                               cl=primaryCluster(cl1),
@@ -143,7 +139,7 @@ test_that("saving merge info works",{
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged3@dendro_index+1)
   expect_equal(clustMerged4@merge_dendrocluster_index,clustMerged4@dendro_index)
   expect_equal(clustMerged4@merge_index,1)
-  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,2,1,NA))
+  expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,1,3,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
 
   #check really gets clusterIds and not names
@@ -291,12 +287,22 @@ test_that("logFC works",{
   expect_true(all(c("adjP_1.0") %in% colnames(clustMerged3@merge_nodeProp)))
 
   #redo with different logFC --- pick logFC large enought that changes the proportions to make sure actually merge on right value
-  expect_message(clustMerged4 <- mergeClusters(clustMerged, mergeMethod="adjP", logFCcutoff=10,plotInfo="none",cutoff=0.1,plot=FALSE,calculateAll=FALSE),"Merging will be done on")
+  expect_message(clustMerged4 <- mergeClusters(clustMerged, mergeMethod="adjP", 
+                                               logFCcutoff=10,plotInfo="none",cutoff=0.1,plot=FALSE,
+                                               calculateAll=FALSE,clusterLabel="merge, logFC"),
+                 "Merging will be done on")
   expect_false(all(clustMerged4@merge_nodeProp[,"adjP_10.0"] == clustMerged4@merge_nodeProp[,"adjP"]))
   expect_false(all(clustMerged4@merge_nodeMerge[,"isMerged"] == clustMerged@merge_nodeMerge[,"isMerged"]))
   expect_equal(length(unique(primaryCluster(clustMerged4))),3)
   expect_equal(length(unique(primaryCluster(clustMerged))),5)
 
+  ##Check labels not getting corrupted when redo
+  expect_equal(primaryClusterLabel(clustMerged4),"merge, logFC")
+  expect_message(clustMerged5 <- mergeClusters(clustMerged4, mergeMethod="adjP", logFCcutoff=10,plotInfo="none",
+                                               cutoff=0.1,plot=FALSE,calculateAll=FALSE,clusterLabel="merge, logFC"),"Merging will be done on")
+  expect_equal(primaryClusterLabel(clustMerged5),"merge, logFC")
+  
+  
   ###Test plotting on CE version:
   expect_message(clustMerged10 <- mergeClusters(clustWithDendro,
 	   mergeMethod="adjP", plot=TRUE,plotInfo="adjP_10.0", 
@@ -345,3 +351,11 @@ test_that("`mergeClusters` works with unassignedSamples", {
 
 })
 
+test_that("cluster labels not being internally changed from user input",{
+  expect_silent(clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup")))
+  
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",
+                                              plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))
+  
+  
+  })

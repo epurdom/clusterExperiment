@@ -9,10 +9,8 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
-    wh<-.TypeIntoIndices(object,whClusters=whichCluster)
-    if(length(wh)==0) stop("invalid choice of 'whichCluster'")
-    if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
-    return(plotReducedDims(object,whichCluster=wh,...))
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    return(plotReducedDims(object,whichCluster=whCl,...))
     
   })
 
@@ -51,6 +49,8 @@ setMethod(
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
+#' @param nColLegend The number of columns in legend. If missing, picks number 
+#'   of columns internally. 
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
 #'   "white", will be coerced to "lightgrey" regardless of user input to
@@ -80,10 +80,10 @@ setMethod(
   f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
   definition = function(object, whichCluster,
-                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
+                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-    if(length(whichCluster)!=1) stop("whichCluster must identify a single clustering.")
+whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){
@@ -169,7 +169,12 @@ setMethod(
           if(length(wh2)>0) clColor<-clColor[-wh2]
         }
         if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
-        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
+				if(missing(nColLegend)){
+					nPerColLegend<-6
+					nColLegend<-length(clColor) %/% nPerColLegend					
+					if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
+				}
+				        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle,ncol=nColLegend)
       }
       
     }

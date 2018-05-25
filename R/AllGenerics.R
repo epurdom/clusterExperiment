@@ -9,8 +9,8 @@ setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeRe
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
 setGeneric( "tableClusters", function(x,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
-setGeneric(name = "assignUnassigned", def=function(x,...){ standardGeneric("assignUnassigned") })
-
+setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
+setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
 setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
 setGeneric(
   name = "mergeClusterIndex",
@@ -259,31 +259,16 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "clusterMatrix",
-  def = function(x,whichClusters) {
-    standardGeneric("clusterMatrix")
-  }
-)
+setGeneric(  name = "clusterMatrix", def = function(x,whichClusters) { standardGeneric("clusterMatrix")})
+setGeneric(  name = "clusterMatrixNames", def = function(x,...) { standardGeneric("clusterMatrixNames")})
+setGeneric(  name = "clusterMatrixColors", def = function(x,...) { standardGeneric("clusterMatrixColors")})
 
 setGeneric(name = "primaryCluster", def = function(x) { standardGeneric("primaryCluster")})
 setGeneric(name = "primaryClusterIndex", def = function(x) {standardGeneric("primaryClusterIndex")})
 setGeneric(name = "primaryClusterLabel", def = function(x) {standardGeneric("primaryClusterLabel")})
 setGeneric(name = "primaryClusterType", def = function(x) {standardGeneric("primaryClusterType")})
-
-setGeneric(
-  name = "primaryClusterIndex<-",
-  def = function(object, value) {
-    standardGeneric("primaryClusterIndex<-")
-  }
-)
-
-setGeneric(
-  name = "dendroClusterIndex",
-  def = function(x) {
-    standardGeneric("dendroClusterIndex")
-  }
-)
+setGeneric(name = "primaryClusterIndex<-", def = function(object, value) {standardGeneric("primaryClusterIndex<-")})
+setGeneric(name = "dendroClusterIndex",def = function(x) {standardGeneric("dendroClusterIndex")})
 setGeneric(
   name = "coClustering",
   def = function(x) {

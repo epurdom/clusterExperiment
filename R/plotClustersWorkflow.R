@@ -69,16 +69,20 @@ setMethod(
     sortBy<-match.arg(sortBy)
     existingColors<-match.arg(existingColors)
     allClusterMany<-which(clusterTypes(object)=="clusterMany")
-    if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
+    if("colData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'colData' argument. You must use plotClusters for this option.")
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }
-    if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
-    if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
+    # if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
+    # if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
     #convert to indices
     if(is.character(whichClusters)){
       whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
       if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
+    }
+    if(is.character(whichClusterMany)){
+      whichClusterMany<- .TypeIntoIndices(object,whClusters=whichClusterMany)
+      if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusterMany argument")
     }
     
     #result labels (yaxis):

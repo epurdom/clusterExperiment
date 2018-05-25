@@ -84,6 +84,13 @@ test_that("adding clusters work as promised",{
   primaryClusterIndex(c1) <- 3
   expect_false(all(primaryCluster(c1)==primaryCluster(ccSE)))
   
+  #make sure converts characters and assigns names correctly.
+  set.seed(151789)
+  charValue<-sample(rep(c("-1","A","B","C","D"),times=c(2,3,2,1,7)))
+  newCC<-addClusterings(ccSE,charValue,clusterLabel="characterCluster")
+  #have to do this because have all kinds of attributes different
+  expect_equal(t(as.matrix(tableClusters(newCC,"characterCluster",useNames=TRUE))),t(as.matrix(table(charValue))))
+  
   ####check adding a ClusterExperiment to existing CE
   expect_error(addClusterings(ccSE,smSimCE),"Cannot merge clusters from different data") #assays don't match
   expect_silent(c3<-addClusterings(ccSE,ccSE))
@@ -190,37 +197,42 @@ test_that("removing clusters work as promised",{
   expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
   expect_equal(ccTemp, removeUnclustered(ccTemp)) 
   
-###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
-  #-1 in primary cluster
-whUn<-which(primaryCluster(ccSE) <0)
+### The remainder code sometimes causes problems if tested interactively more than once
+### Some problem in the environment???
+### Also triggers problems in subsetting (next)
+	whUn<-which(primaryCluster(ccSE) <0)
   expect_silent(ccR<-removeUnclustered(ccSE))
   expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
   ###Check retain SE info
   expect_equal(colData(ccR),colData(se[,-whUn]) )
-  expect_equal(rownames(ccR),rownames(se)) 
-  expect_equal(colnames(ccR),colnames(se[,-whUn])) 
-  expect_equal(metadata(ccR),metadata(se)) 
-  expect_equal(rowData(ccR),rowData(se)) 
+  expect_equal(rownames(ccR),rownames(se))
+  expect_equal(colnames(ccR),colnames(se[,-whUn]))
+  expect_equal(metadata(ccR),metadata(se))
+  expect_equal(rowData(ccR),rowData(se))
   
 })
 
 test_that("subsetting works as promised",{
 
-  expect_equal(clusterMatrix(cc[1:2,1]),clusterMatrix(cc)[1,,drop=FALSE]) 
+  ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
+  expect_equal(clusterMatrix(cc[1:2,2]),clusterMatrix(cc)[2,,drop=FALSE]) 
   
-  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),]) 
+  ###But this tests names stay the same regardless, even when renumber.
+  expect_equal(clusterMatrixNamed(cc[1:2,1]),clusterMatrixNamed(cc)[1,,drop=FALSE]) 
+  
+  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
   
   #test subsetting of genes
-  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
   expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
   
   #test subsetting of samples
-  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2),])
+  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2), ,drop=FALSE])
   logVec<-rep(FALSE,length=nSamples(cc))
   logVec[1:2]<-TRUE
-  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
-  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec, ,drop=FALSE]) 
+  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
 
   
   
@@ -294,6 +306,29 @@ test_that("check clusterLegend manipulations work as promised", {
 test_that("accessing transformed data works as promised",{
   expect_is(transformation(ccSE),"function")
   expect_equal(transformData(cc), transformation(cc)(assay(cc)))
+})
+
+test_that("assigning unassigned samples works as promised",{
+  #also indirectly tests getReducedData!
+	expect_silent(assignUnassigned(cc))
+	expect_silent(ccUn<-assignUnassigned(cc,whichCluster="Cluster2"))
+	expect_true("Cluster2_AllAssigned" %in% clusterLabels(ccUn))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="b"))
+	expect_silent(assignUnassigned(ceSim,reduceMethod="mad"))
+	expect_silent(ceUn<-assignUnassigned(ceSim,reduceMethod="PCA"))
+	expect_equal(reducedDimNames(ceUn),"PCA")
+	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
+	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
+
+
+	#check basic error catching
+	cc2<-addClusterings(cc,rep(-1,ncol(cc)),clusterLabel="allUn")
+	expect_error(assignUnassigned(cc2,whichCluster="allUn"),"All cells are unassigned, cannot assign them")
+	cc2<-addClusterings(cc2,rep(2,ncol(cc2)),clusterLabel="allAss")
+	expect_error(assignUnassigned(cc2,whichCluster="allAss"),"No cells are unassigned in the designated cluster")
+
+	#should check whichAssay....
+	
 })
 
 test_that("workflow functions work",

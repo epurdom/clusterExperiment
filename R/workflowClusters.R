@@ -124,7 +124,9 @@ setMethod(
     
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
-    newX<-.updateCurrentWorkflow(x,eraseOld=eraseOld,newToAdd=type)
+			#not sure here if should have argument newLabelToAdd
+    newX<-.updateCurrentWorkflow(x,eraseOld=eraseOld,newTypeToAdd=type,newLabelToAdd=NULL)
+		
     clusterTypes(newX)[whCl]<-type
     primaryClusterIndex(newX)<-whCl
     
@@ -159,13 +161,13 @@ setMethod(
 #change current workflow to old iteration
 # add number to it if eraseOld=FALSE
 # delete ALL workflow if eraseOld=TRUE (not just the current iteration)
-.updateCurrentWorkflow<-function(object,eraseOld,newToAdd){
+.updateCurrentWorkflow<-function(object,eraseOld,newTypeToAdd,newLabelToAdd){
   
   ppIndex<-workflowClusterDetails(object)
   origLabels<-clusterLabels(object)
   origTypes<-clusterTypes(object)
-  if(!any(newToAdd %in% .workflowValues[-1])) stop("error in internal coding: newToAdd must be one of .workflowValues. Contact mantainer.")
-  whNew<-max(match(newToAdd, .workflowValues))
+  if(!any(newTypeToAdd %in% .workflowValues[-1])) stop("error in internal coding: newTypeToAdd must be one of .workflowValues. Contact mantainer.")
+  whNew<-max(match(newTypeToAdd, .workflowValues))
   downstreamType<-.workflowValues[2:whNew]
   if(!is.null(ppIndex)){ #there are pre-existing workflow results
     curr<-ppIndex[ppIndex[,"iteration"]==0,]
@@ -193,10 +195,25 @@ setMethod(
           updateCluster<-origTypes
           updateCluster[whFix]<-paste(updateCluster[whFix],newIteration,sep=".")
           clusterTypes(object)<-updateCluster
-          updateLabel<-origLabels
-          if(any(updateLabel[whFix]%in%.workflowValues)){ #only change those labels that haven't been manually fixed by the user
-            whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
-            updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+          if(any(origLabels[whFix]%in%.workflowValues) | any(origTypes[whFix]=="clusterMany")){ 
+            #only change those labels that haven't been manually fixed by the user
+            updateLabel<-origLabels
+            if(any(origLabels[whFix]%in%.workflowValues)){
+              whUnedited<-which(updateLabel[whFix]%in%.workflowValues)
+              updateLabel[whFix[whUnedited]]<-paste(updateLabel[whFix[whUnedited]],newIteration,sep=".")
+            }
+            if(any(origTypes[whFix]=="clusterMany")){
+              #always update the clusterMany labels because otherwise get repetitive. Mainly for test checks...
+              #should always be different set than the ones above.
+              whCM<-which(origTypes[whFix]=="clusterMany")
+              updateLabel[whFix[whCM]]<-paste(updateLabel[whFix[whCM]],newIteration,sep=".")
+            }
+            clusterLabels(object)<-updateLabel
+          }
+          else if(!is.null(newLabelToAdd) && any(newLabelToAdd %in% origLabels[whFix])){
+            updateLabel<-origLabels
+            whDuplicated<-which(updateLabel[whFix]%in%newLabelToAdd)
+            updateLabel[whFix[whDuplicated]]<-paste(updateLabel[whFix[whDuplicated]],newIteration,sep=".")
             clusterLabels(object)<-updateLabel
             
           }

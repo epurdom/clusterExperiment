@@ -126,9 +126,12 @@
 		}
     if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
     if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
-    if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be character")
+    if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be logical")
     if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
-    
+    if(any(object@merge_nodeMerge[,"isMerged"])){
+      wh<-which(object@merge_nodeMerge[,"isMerged"])
+      if(all(is.na(object@merge_nodeMerge[wh,"mergeClusterId"]))) return("mergeClusterId entries of merge_nodeMerge cannot be all NA if there isMerged column that is TRUE")
+    }    
     id<-    object@merge_nodeMerge[,"mergeClusterId"]
     merg<-object@merge_nodeMerge[,"isMerged"]
     if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
@@ -197,64 +200,67 @@
 	return(TRUE)
 }
 
-
-.checkIndClusterLegend<-function(clusters,clusterLegend){
-    ####
-    #make so can call on arbitrary clusterLegend...not need to be object
-    ####
-    if(!is.null(names(clusterLegend))) return("clusterLegend should not have names")
-    if(length(clusterLegend) != NCOL(clusters)) {
-      return("`clusterLegend` must be list of same length as NCOL of
+#this check is just to check object, not whether matches clusters
+.checkClusterLegendList<-function(clusterLegend,allowNames=TRUE,reqNames=c("clusterIds","color","name")){
+  if(!is.list(clusterLegend)) return("clusterLegend must be a list")
+  if(!allowNames & !is.null(names(clusterLegend))) return("clusterLegend should not have names")
+  testIsMatrix <- sapply(clusterLegend, function(x) {!is.null(dim(x))})
+  if(!all(testIsMatrix)) {
+    return("Each element of `clusterLegend` list must be a matrix")
+  }
+  testNames<-sapply(clusterLegend,function(x){
+    if(is.null(colnames(x))) return(FALSE)
+    else{
+      if(!all(reqNames %in% colnames(x))) return(FALSE)
+      else return(TRUE)
+    }
+  })
+  if(!all(testNames)) {
+    return(paste("each element of `clusterLegend` must be matrix with column names defined, with at a minimum the names names:", paste(reqNames,collapse=",")))
+  }
+  testColorCols1 <- sapply(clusterLegend, function(x){is.character(x)})
+  if(!all(testColorCols1)) {
+    return("each element of `clusterLegend` must be matrix of character values")
+  }
+  return(TRUE)
+}
+#this check checks both object (calls .checkClusterLegend) and whether matches clusters
+#make so can call on arbitrary clusterLegend...not need to be CE object
+.checkClustersWithClusterLegend<-function(clusters,clusterLegend){
+  #check structure of clusterLegend list -- for CE object, can't have names.
+  legendCheck<-.checkClusterLegendList(clusterLegend,allowNames=FALSE,reqNames=c("clusterIds","color","name"))
+  if(!is.logical(legendCheck)) return(legendCheck)
+  
+  #check matches clusters
+  if(length(clusterLegend) != NCOL(clusters)) {
+    return("`clusterLegend` must be list of same length as NCOL of
                `clusterMatrix`")
+  }
+  testColorRows <- sapply(clusterLegend, function(x){nrow(x)})
+  testClusterMat <- apply(clusters, 2, function(x) {length(unique(x))})
+  if(!all(testColorRows == testClusterMat)) {
+    return("each element of `clusterLegend` must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in `clusterMatrix`")
+  }
+  testColorCols1 <- sapply(seq_along(clusterLegend), function(ii){
+    col<-clusterLegend[[ii]]
+    x<-clusters[,ii]
+    y<-col[,"clusterIds"]
+    if(is.numeric(x)){
+      y<-as.numeric(y)
     }
-    testIsMatrix <- sapply(clusterLegend,
-                           function(x) {!is.null(dim(x))})
-    if(!all(testIsMatrix)) {
-      return("Each element of `clusterLegend` list must be a matrix")
-    }
-    testColorRows <- sapply(clusterLegend, function(x){nrow(x)})
-    testClusterMat <- apply(clusters, 2, function(x) {length(unique(x))})
-    if(!all(testColorRows == testClusterMat)) {
-      return("each element of `clusterLegend` must be matrix with number of rows equal to the number of clusters (including -1 or -2 values) in `clusterMatrix`")
-    }
-    testColorCols1 <- sapply(clusterLegend, function(x) {
-      "color" %in% colnames(x)})
-    testColorCols2 <- sapply(clusterLegend, function(x) {
-      "clusterIds" %in% colnames(x)})
-    testColorCols3 <- sapply(clusterLegend, function(x) {
-      "name" %in% colnames(x)})
-if(!all(testColorCols1) || !all(testColorCols2) || !all(testColorCols3)) {
-      return("each element of `clusterLegend` must be matrix with at least 3 columns, and at least 3 columns have names `clusterIds`, `color` and `name`")
-    }
-    
-#     testUniqueName <- sapply(clusterLegend, function(x) {
-#       any(duplicated(x[,"name"]))})
-#     if(any(testUniqueName)) return("the column")
-    testColorCols1 <- sapply(clusterLegend, function(x){is.character(x)})
-    if(!all(testColorCols1)) {
-      return("each element of `clusterLegend` must be matrix of character values")
-    }
-    testColorCols1 <- sapply(seq_along(clusterLegend), function(ii){
-      col<-clusterLegend[[ii]]
-	  x<-clusters[,ii]
-	  y<-col[,"clusterIds"]
-	  if(is.numeric(x)){
-		  y<-as.numeric(y)
-	  }
-      
-      return(all(y %in% x) & all(x %in% y))
-    })
-    if( !all(testColorCols1)) {
-      return("each element of `clusterLegend` must be matrix with column
+    return(all(y %in% x) & all(x %in% y))
+  })
+  if( !all(testColorCols1)) {
+    return("each element of `clusterLegend` must be matrix with column
              `clusterIds` matching the corresponding
              clusterMatrix values")
-    }
-
-	return(TRUE)
+  }
+  
+  return(TRUE)
 }
 .checkClusterLegend<-function(object){
 	if(!all(is.na(object@clusterMatrix))){ #what does this mean, how can they be all NA?
-		return(.checkIndClusterLegend(clusters=object@clusterMatrix,clusterLegend=object@clusterLegend))
+		return(.checkClustersWithClusterLegend(clusters=object@clusterMatrix,clusterLegend=object@clusterLegend))
 	}
 	return(TRUE)
 }

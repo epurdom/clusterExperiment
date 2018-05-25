@@ -22,3 +22,14 @@ setMethod(
 		makeConsensus(x,...)
 	}
 	)
+
+
+.depricateArgument<-function(passedArgs,newArgName,oldArgName){
+	if(oldArgName %in% names(passedArgs)){
+		warning(paste0("the argument name '",oldArgName,"' has been changed to '",newArgName,"'. Please change future calls to reflect this, as the old argument will be depricated in future releases."))
+		val<-passedArgs[[oldArgName]]
+		passedArgs<-passedArgs[-which(names(passedArgs)==oldArgName)]
+		return(list(passedArgs=passedArgs,val=val))
+	}
+	else return(NULL)
+}

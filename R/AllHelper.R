@@ -43,25 +43,12 @@ setMethod(
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
     subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
     nms<-colnames(subMat)
-    newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
-    colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    newClLegend<-lapply(seq_len(NCOL(newMat)),function(ii){
-      colMat<-x@clusterLegend[[ii]]
-      newCl<-newMat[,ii]
-      cl<-subMat[,ii]
-      #remove (possible) levels lost
-      whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
-      if(length(whRm)>0){
-        colMat<-colMat[-whRm,,drop=FALSE]
-      }
-      #convert
-      oldNew<-unique(cbind(old=cl,new=newCl))
-      if(nrow(oldNew)!=nrow(colMat)) stop("error in converting colorLegend")
-      m<-match(colMat[,"clusterIds"],oldNew[,"old"])
-      colMat[,"clusterIds"]<-oldNew[m,"new"]
-      return(colMat)
-    })
+    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
+                          matchClusterLegend=x@clusterLegend,matchTo="name") 
+    newMat<-out$numClusters
+    colnames(newMat)<-nms
+    newClLegend<-out$colorList
     #fix order of samples so same
     newOrder<-rank(x@orderSamples[j])
     #
@@ -231,6 +218,30 @@ setMethod(
   }
 )
 
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+#' @export
+#' @aliases clusterMatrixNames
+setMethod(
+  f = "clusterMatrixNames",
+  signature = c("ClusterExperiment"),
+  definition = function(x,whichClusters,...) {
+    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters,...)
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+#' @export
+#' @aliases clusterMatrixColors
+setMethod(
+  f = "clusterMatrixColors",
+  signature = c("ClusterExperiment"),
+  definition = function(x,whichClusters,...) {
+    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters,...)
+  }
+)
+
 #' @rdname ClusterExperiment-methods
 #' @param whichClusters optional argument that can be either numeric or
 #'   character value. If numeric, gives the indices of the \code{clusterMatrix}
@@ -323,7 +334,7 @@ setMethod(
 #' @export
 #' @aliases primaryClusterType
 setMethod(
-  f = "primaryClusterLabel",
+  f = "primaryClusterType",
   signature = "ClusterExperiment",
   definition = function(x) {
     return(clusterTypes(x)[primaryClusterIndex(x)])
@@ -531,13 +542,16 @@ setMethod(
   })
 
 #' @rdname ClusterExperiment-methods
+#' @param useNames for \code{tableClusters}, whether the output should be tabled
+#'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
 #' @export
 setMethod( 
   f = "tableClusters",
   signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(x, whichClusters,...)
+  definition = function(x, whichClusters, useNames=TRUE,...)
   { 
-    numCluster<-clusterMatrix(x)[,whichClusters]
+    if(useNames) numCluster<-clusterMatrixNames(x,whichClusters=whichClusters)
+    else numCluster<-clusterMatrix(x)[,whichClusters]
     table(data.frame(numCluster))
   })
 

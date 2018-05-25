@@ -95,9 +95,7 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-      if(is.character(whichCluster)) whichCluster <- .TypeIntoIndices(object, whClusters=whichCluster)
-      if(length(whichCluster)>1) stop("Must indicate single clustering in 'whichCluster'")
-      if(length(whichCluster)==0 || whichCluster<1 || whichCluster>nClusterings(object)) stop("Did not indicate valid cluster in whichCluster argument")
+	    whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives
