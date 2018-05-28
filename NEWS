@@ -15,6 +15,7 @@ Changes:
   - `assignUnassigned`
 	- `renameClusters` and `recolorClusters` to assign new names/colors to clusters within a particular clustering
   - `clusterMatrixNames` and `clusterMatrixColors` as wrappers to `convertClusterLegend` to return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
+	- `plotTableClusters` for plotting a heatmap showing the results of `tableClusters`
 * Arguments changed:
   - `sampleData` changed to `colData` to match `SummarizedExperiment` syntax. Similarly `alignSampleData` has changed to `alignColData`
   - `ignoreUnassignedVar` to `filterIgnoresUnassigned` for clarity.

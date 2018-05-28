@@ -72,10 +72,6 @@
 \alias{orderSamples<-}
 \alias{clusterTypes<-,ClusterExperiment,character-method}
 \alias{clusterTypes<-}
-\alias{tableClusters,ClusterExperiment,character-method}
-\alias{tableClusters}
-\alias{tableClusters,ClusterExperiment,missing-method}
-\alias{tableClusters,ClusterExperiment,numeric-method}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
 \S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
@@ -151,13 +147,6 @@
 \S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{clusterTypes}{ClusterExperiment,character}(object) <- value
-
-\S4method{tableClusters}{ClusterExperiment,character}(x, whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,missing}(x, whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,numeric}(x, whichClusters,
-  useNames = TRUE, ...)
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -180,9 +169,6 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
-
-\item{useNames}{for \code{tableClusters}, whether the output should be tabled
-with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 }
 \value{
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
