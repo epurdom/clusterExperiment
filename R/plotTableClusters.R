@@ -8,7 +8,7 @@
 #' plotting. This means they will also be ignored in the calculations of the proportions 
 #' (if \code{margin} not NA).
 #' @param margin if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
-#' \code{\link[package=base]{prop.table}} will be called and the argument \code{\margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
+#' \code{\link[package=base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
 #' @rdname plotTableClusters
 #' @seealso \code{\link[package=base]{prop.table}}
 #' @export
