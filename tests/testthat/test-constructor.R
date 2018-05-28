@@ -232,6 +232,11 @@ test_that("subsetting works as promised",{
 	
 	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
 	
+	#test pulls colors correctly.
+	cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]
+	cl<-clusterLegend(cc)[["Cluster1"]]
+	expect_equal(cl2[,c("color","name")],cl[match(cl2[,"name"],cl[,"name"]),c("color","name")])
+	
 	
   ###But this tests names stay the same regardless, even when renumber.
   expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 
