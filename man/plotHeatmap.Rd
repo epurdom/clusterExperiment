@@ -5,6 +5,7 @@
 \alias{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap}
 \alias{plotHeatmap,SummarizedExperiment-method}
+\alias{plotHeatmap,table-method}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,data.frame-method}
 \alias{plotHeatmap,ExpressionSet-method}
@@ -18,6 +19,8 @@
 
 \S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
   transFun = NULL, ...)
+
+\S4method{plotHeatmap}{table}(data, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
   clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",

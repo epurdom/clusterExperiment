@@ -213,6 +213,17 @@ test_that("removing clusters work as promised",{
   
 })
 
+test_that("rename/color works as promised",{
+	#need better tests here that actually do what wanted. Currently just test no error.
+	newName<-letters[1:nClusters(cc)["Cluster1"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))
+
+	newColors<-palette()[1:nClusters(cc)["Cluster1"]]
+	names(newColors)<-as.character(1:nClusters(cc)["Cluster1"])
+	expect_silent(ccColored<-recolorClusters(cc,whichCluster="Cluster1",value=newColors))
+})
+
 test_that("subsetting works as promised",{
 
   ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.

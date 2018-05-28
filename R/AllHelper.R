@@ -510,6 +510,28 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
+#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @export
+#' @aliases recolorClusters
+setMethod( 
+  f = "recolorClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary") {
+		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		
+		if(is.null(names(value)) || !all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names matching the 'clusterIds' column of the requested clusterLegend")
+			
+			m<-match(names(value),mat[,"clusterIds"])
+		mat[m,"color"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+		
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
 #' @return \code{orderSamples} returns/sets the orderSamples slot.
 #' @export
 #' @aliases orderSamples

@@ -298,6 +298,17 @@ setMethod(
     plotHeatmap(as(data,"SingleCellExperiment"),...)
   })
 
+
+#' @rdname plotHeatmap
+#' @export
+setMethod(
+  f = "plotHeatmap",
+  signature = signature(data = "table"),
+  definition = function(data,...
+  ){
+    plotHeatmap(unclass(data),...)
+  })
+
 #' @rdname plotHeatmap
 #' @param nBlankLines Only applicable if input is \code{ClusterExperiment} object. Indicates the number of lines to put between groups of features if \code{clusterFeaturesData} gives groups of genes (see details and \code{\link{makeBlankData}}).
 setMethod(
