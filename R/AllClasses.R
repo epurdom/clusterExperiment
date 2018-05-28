@@ -48,16 +48,6 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #' If created from \code{\link{clusterSingle}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
-#' @slot merge_index index of the current merged cluster
-#' @slot merge_cutoff value for the cutoff used to determine whether to merge
-#'   clusters
-#' @slot merge_dendrocluster_index index of the cluster merged with the current
-#'   merge
-#' @slot merge_nodeMerge data.frame of information about nodes merged in the
-#'   current merge
-#' @slot merge_nodeProp data.frame of information of proportion estimated
-#'   non-null at each node of dendrogram
-#' @slot merge_method character indicating method used for merging
 #' \itemize{
 #' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
 #' found, a matrix of information regarding the algorithm behavior for each
@@ -66,6 +56,17 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
 #' found, a character string explaining what triggered the algorithm to stop.}
 #' }
+#' @slot merge_index index of the current merged cluster
+#' @slot merge_cutoff value for the cutoff used to determine whether to merge
+#'   clusters
+#' @slot merge_dendrocluster_index index of the cluster merged with the current
+#'   merge
+#' @slot merge_nodeMerge data.frame of information about nodes merged in the
+#'   current merge. See \code{\link{mergeClusters}}
+#' @slot merge_nodeProp data.frame of information of proportion estimated
+#'   non-null at each node of dendrogram. See \code{\link{mergeClusters}}
+#' @slot merge_method character indicating method used for merging. See 
+#'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
 #' @slot dendro_samples dendrogram. A dendrogram containing the cluster
@@ -321,12 +322,9 @@ setMethod(
     tmp<-.makeColors(clusters, colors=massivePalette)
     if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
     else{
-      clusterLegend<-unname(clusterLegend)
-      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
-      if(!is.logical(ch)) stop(ch)
       #need to grab colors/names in given clusterLegend -- rerun .makeColors
       clusterLegend<-unname(clusterLegend)
-      ch<-.checkIndClusterLegend(clusters,clusterLegend)
+      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
       # Eventually, use this code instead, but for now, not changing...
       # need to grab colors/names in given clusterLegend -- rerun .makeColors

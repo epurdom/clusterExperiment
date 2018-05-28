@@ -197,9 +197,10 @@ test_that("removing clusters work as promised",{
   expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
   expect_equal(ccTemp, removeUnclustered(ccTemp)) 
   
-###This is giving me error with new SCE class, but once I put in browser to check it out, works!!! Some kind of unloadNamespace problem?
-  #-1 in primary cluster
-  whUn<-which(primaryCluster(ccSE) <0)
+### The remainder code sometimes causes problems if tested interactively more than once
+### Some problem in the environment???
+### Also triggers problems in subsetting (next)
+	whUn<-which(primaryCluster(ccSE) <0)
   expect_silent(ccR<-removeUnclustered(ccSE))
   expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
@@ -214,20 +215,39 @@ test_that("removing clusters work as promised",{
 
 test_that("subsetting works as promised",{
 
-  expect_equal(clusterMatrix(cc[1:2,1]),clusterMatrix(cc)[1,,drop=FALSE]) 
+  ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
+	newName<-letters[1:nClusters(cc)["Cluster1"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))
+	expect_equal(tableClusters(cc,whichCluster="Cluster1",useNames =FALSE),tableClusters(ccNamed,whichCluster="Cluster1",useNames =FALSE))
+	
+	cc<-ccNamed
+  expect_equal(clusterMatrix(cc[1:2,2]),clusterMatrix(cc)[2,,drop=FALSE]) 
   
-  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),]) 
+	#test if have duplicated names
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"))
+	newName<-LETTERS[1:nClusters(cc)["Cluster2"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster2"])
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName)
+	
+	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
+	
+	
+  ###But this tests names stay the same regardless, even when renumber.
+  expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 
+  
+  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
   
   #test subsetting of genes
-  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
   expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
   
   #test subsetting of samples
-  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2),])
+  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2), ,drop=FALSE])
   logVec<-rep(FALSE,length=nSamples(cc))
   logVec[1:2]<-TRUE
-  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec,]) 
-  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),]) 
+  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec, ,drop=FALSE]) 
+  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
 
   
   

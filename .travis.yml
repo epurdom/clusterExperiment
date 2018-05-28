@@ -13,10 +13,8 @@
 language: r
 cache: packages
 # Temporarily enable when caching Bioconductor packages
-#script: true
+# script: true
 
-# Temporarily enable when caching Bioconductor packages
-#script: true
 
 # R versions to be tested on
 r:
@@ -35,10 +33,10 @@ notifications:
     on_failure: change
 
 ## Use patched devtools
-r_github_packages:
-  - Bioconductor/S4Vectors
-  - Bioconductor/HDF5Array
-  - Bioconductor/DelayedArray
+#r_github_packages:
+#  - Bioconductor/S4Vectors
+#  - Bioconductor/HDF5Array
+#  - Bioconductor/DelayedArray
 
 ## Code coverage
 r_packages:
@@ -49,5 +47,5 @@ bioc_packages:
   - BiocCheck
 
 after_success:
-  - Rscript -e 'covr::coveralls()'
+  - Rscript -e 'covr::coveralls(quiet=FALSE)'
   - R CMD BiocCheck .

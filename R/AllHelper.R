@@ -41,27 +41,24 @@ setMethod(
     ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
     #Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
-    subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
+		
+		#pull names out so can match it to the clusterLegend. 
+    subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		
+		#danger if not unique names
+		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
+		if(any(whNotUniqueNames)){
+			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
+			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
+			subMat[,whNotUniqueNames]<-subMatInt
+		}
     nms<-colnames(subMat)
-    newMat<-.makeIntegerClusters(subMat) #need separate so can compare to fix up clusterLegend
-    colnames(newMat)<-nms
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    newClLegend<-lapply(seq_len(NCOL(newMat)),function(ii){
-      colMat<-x@clusterLegend[[ii]]
-      newCl<-newMat[,ii]
-      cl<-subMat[,ii]
-      #remove (possible) levels lost
-      whRm<-which(!colMat[,"clusterIds"] %in% as.character(cl))
-      if(length(whRm)>0){
-        colMat<-colMat[-whRm,,drop=FALSE]
-      }
-      #convert
-      oldNew<-unique(cbind(old=cl,new=newCl))
-      if(nrow(oldNew)!=nrow(colMat)) stop("error in converting colorLegend")
-      m<-match(colMat[,"clusterIds"],oldNew[,"old"])
-      colMat[,"clusterIds"]<-oldNew[m,"new"]
-      return(colMat)
-    })
+    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
+                          matchClusterLegend=x@clusterLegend,matchTo="name") 
+    newMat<-out$numClusters
+    colnames(newMat)<-nms
+    newClLegend<-out$colorList
     #fix order of samples so same
     newOrder<-rank(x@orderSamples[j])
     #
@@ -347,7 +344,7 @@ setMethod(
 #' @export
 #' @aliases primaryClusterType
 setMethod(
-  f = "primaryClusterLabel",
+  f = "primaryClusterType",
   signature = "ClusterExperiment",
   definition = function(x) {
     return(clusterTypes(x)[primaryClusterIndex(x)])
@@ -476,6 +473,7 @@ setMethod(
       return(out)
     }
 )
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterLegend<-
@@ -484,6 +482,28 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="list"),
   definition = function(object, value) {
     object@clusterLegend<-unname(value)
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @export
+#' @aliases renameClusters
+setMethod( 
+  f = "renameClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary") {
+		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		
+		if(is.null(names(value)) || !all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names matching the 'clusterIds' column of the requested clusterLegend")
+			
+			m<-match(names(value),mat[,"clusterIds"])
+		mat[m,"name"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+		
     ch<-.checkClusterLegend(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }

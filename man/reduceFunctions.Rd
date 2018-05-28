@@ -264,6 +264,8 @@ The PCA method uses either \code{prcomp} from the \code{stats}
   Both are called on \code{t(assay(x))} with \code{center=TRUE} and
   \code{scale=TRUE} (i.e. the feature are centered and scaled), so that it is
   performing PCA on the correlation matrix of the features.
+
+Note that this function does not check if such a reduceDim value already exists, and will recalculate (and overwrite) if it does.
 }
 \examples{
 data(simData)

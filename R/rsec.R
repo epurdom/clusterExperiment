@@ -59,8 +59,8 @@ setMethod(
 	  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
       newObj <- RSEC(as(x,"SingleCellExperiment"),  transFun=transformation(x),...)
       ##Check if pipeline already ran previously and if so increase
-      x<-.updateCurrentWorkflow(x,eraseOld,.workflowValues[-1]) #even if didn't make mergeClusters, still update it all
-      if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
+			x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd=.workflowValues[-1],newLabelToAdd=NULL)      
+			if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
       else{
 		  retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
 

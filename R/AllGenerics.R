@@ -112,19 +112,9 @@ setGeneric(
   }
 )
 
-setGeneric(
-    name = "clusterLegend",
-    def = function(x) {
-        standardGeneric("clusterLegend")
-    }
-)
-
-setGeneric(
-    name = "clusterLegend<-",
-    def = function(object, value) {
-        standardGeneric("clusterLegend<-")
-    }
-)
+setGeneric("clusterLegend", function(x) { standardGeneric("clusterLegend")})
+setGeneric("clusterLegend<-", function(object, value){standardGeneric("clusterLegend<-") })
+setGeneric("renameClusters", function(object,value,...) { standardGeneric("renameClusters")})
 
 setGeneric(
     name = "orderSamples",

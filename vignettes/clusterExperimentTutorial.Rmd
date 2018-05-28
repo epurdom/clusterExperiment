@@ -1338,7 +1338,7 @@ Notice that using the "tight" methods did not give relevant results (no samples 
 
 Here, we show how to use a user-defined clustering algorithm in `clusterSingle`. Our clustering algorithm will be a simple nearest-neighbor clustering.
 
-To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (ClusterFunction)[#ClusterFunction] section above for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement.  
+To do so, we need to create a `ClusterFunction` object that defines our algorithm. `ClusterFunction` objects recognize clustering algorithms of two different types, based on the required input from the user: `01` or `K`  (see (ClusterFunction)[#ClusterFunction] section above for more). Type `K` refers to a clustering algorithm where the user must specify the number of clusters as input parameter, and this is the type of algorithm we will implement (though as we'll see, in fact our clustering algorithm doesn't have the user specify the number of clusters...).  
 
 First, we need to define a wrapper function that performs the clustering. Here, we define a simple shared nearest-neighbor clustering using functions from the `scran` and the `igraph` packages.
 
@@ -1351,11 +1351,14 @@ SNN_wrap <- function(x, k, steps = 4, ...) {
   return(res$membership)
 }
 ```
+Here the argument `k` defines the number of nearest-neighbors to use in constructing the nearest neighbor graph.
 
 To create a type `K` algorithm, the wrapper must have two required arguments: 
 
 1. an argument for the input data. This can be  `x` if the input is a matrix of $N$ samples on the columns and features on the rows, or `diss` if the input is expected to be a $NxN$ dissimilarity matrix. Both `x` and `diss` can be given as parameters if the algorithm handles either one) 
-2. a parameter `k` specifying the number of clusters. 
+2. a parameter `k` specifying the number of clusters (or any other integer-valued parameter that the clustering relies on)
+
+Our `k` value for `SNN_wrap` will not in fact specify the number of clusters, but that is not actually required anywhere. But setting it up as type `K` mainly distinguishes it from the `01` type (which expects a dissimilarity matrix taking values between 0 and 1 in its dissimilarity entries, as input). Also setting it up as type `K` allows us to use the `findBestK` option, where a range of `k` values is tried and those with the best results (in silhouette width) is reported.
 
 Our wrapper function should return a *integer* vector corresponding to the cluster assignments of each sample (see `?ClusterFunction` for information about other types of output available).
 
@@ -1484,8 +1487,8 @@ clusterIndices50 <- params$clusteringIndex[which(params$nReducedDims == 50)]
 #note, the indices will change as we add clusterings!
 clusterNames15 <- clusterLabels(ce)[clusterIndices15]
 clusterNames50 <- clusterLabels(ce)[clusterIndices50]
-shortNames15<-gsub("reduceMethod=1,nReducedDims=15,nFilterDims=NA,","",clusterNames15)
-shortNames50<-gsub("reduceMethod=1,nReducedDims=50,nFilterDims=NA,","",clusterNames50)
+shortNames15<-gsub("reduceMethod=PCA,nReducedDims=15,nFilterDims=NA,","",clusterNames15)
+shortNames50<-gsub("reduceMethod=PCA,nReducedDims=50,nFilterDims=NA,","",clusterNames50)
 
 ce <- makeConsensus(ce, whichClusters = clusterNames15, proportion = 0.7,
                        clusterLabel = "consensusPCA15")
