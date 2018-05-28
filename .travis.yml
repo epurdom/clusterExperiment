@@ -13,13 +13,13 @@
 language: r
 cache: packages
 # Temporarily enable when caching Bioconductor packages
-# script: true
+#script: true
 
 
 # R versions to be tested on
 r:
-#  - bioc-release
-  - bioc-devel
+  - bioc-release
+#  - bioc-devel
 
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false
@@ -47,5 +47,5 @@ bioc_packages:
   - BiocCheck
 
 after_success:
-  - Rscript -e 'covr::coveralls(quiet=FALSE)'
+#  - Rscript -e 'covr::coveralls(quiet=FALSE)'
   - R CMD BiocCheck .
