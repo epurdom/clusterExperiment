@@ -212,7 +212,7 @@
       if(!is.logical(ch)) stop(ch)
       
     }
-		if(is.null(names(matchClusterLegend)) || any(!names(matchClusterLegend) %in% colnames(clMat))) stop("Internal programming error in matching colors to name -- missing names and/or not matching clusterings")
+		# if(is.null(names(matchClusterLegend)) || any(!names(matchClusterLegend) %in% colnames(clMat))) stop("Internal programming error in matching colors to name -- missing names and/or not matching clusterings")
   }
   if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")

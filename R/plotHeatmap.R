@@ -591,7 +591,6 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-
     do.call("plotHeatmap",c(list(data=heatData,
                                  clusterSamplesData=clusterSamplesData,
                                  clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
@@ -787,6 +786,7 @@ setMethod(
             defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
       }
       #preserve those in given clusterLegend that don't match colData (could go with features/rows)
+			
       if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
         whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend$colorList))]
         clusterLegend<-c(defaultColorLegend$colorList,clusterLegend[whKeep])

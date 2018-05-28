@@ -13,7 +13,7 @@
 \S4method{plotTableClusters}{ClusterExperiment}(object, whichClusters,
   ignoreUnassigned = FALSE, margin = NA, ...)
 
-\S4method{plotTableClusters}{matrix}(object, ...)
+\S4method{plotTableClusters}{matrix}(object, cluster = FALSE, ...)
 
 \S4method{tableClusters}{ClusterExperiment,character}(object, whichClusters,
   ...)
@@ -30,6 +30,9 @@
 
 \item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, \code{\link[package=base]{prop.table}} will be called and the argument \code{\margin} will be passed to \code{prop.table} to determine how proportions should be calculated.}
 
+\item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
+to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
+
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 }
@@ -38,4 +41,6 @@ Plot heatmap of cross-tabs of two clusterings
 }
 \seealso{
 \code{\link[package=base]{prop.table}}
+
+\code{\link{plotHeatmap}}
 }

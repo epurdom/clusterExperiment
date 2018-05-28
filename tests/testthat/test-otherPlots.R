@@ -200,6 +200,11 @@ test_that("plotFeatureBoxplot works",{
 	expect_silent(plotFeatureBoxplot(cc,plotUnassigned=TRUE,feature=rownames(cc)[2]))
 })
 
+test_that("plotting Table clusters works",{
+	plotTableClusters(cc,whichClusters=c(1,2))
+	
+})
+
 test_that("plotting works with hdf5 assays objects",{
 	##plotClusters
     expect_silent(cl1 <- clusterSingle(hdfSCE, reduceMethod="PCA",
