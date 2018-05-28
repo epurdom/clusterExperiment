@@ -27,7 +27,10 @@
 #' #load CE object
 #' data(rsecFluidigm)
 #' smallCE<-rsecFluidigm[,1:50]
+#' #assign the unassigned samples
 #' assignUnassigned(smallCE, makePrimary=TRUE)
+#' 
+#' #note how samples are REMOVED:
 #' removeUnassigned(smallCE)
 #' @inheritParams addClusterings 
 #' @inheritParams reduceFunctions

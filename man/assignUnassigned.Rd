@@ -65,6 +65,16 @@ All unassigned samples in the cluster are given a clustering,
   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so they may
   be unclustered in other clusters found in \code{clusterMatrix(object)}).
 }
+\examples{
+#load CE object
+data(rsecFluidigm)
+smallCE<-rsecFluidigm[,1:50]
+#assign the unassigned samples
+assignUnassigned(smallCE, makePrimary=TRUE)
+
+#note how samples are REMOVED:
+removeUnassigned(smallCE)
+}
 \seealso{
 \code{\link{getReducedData}}
 }
