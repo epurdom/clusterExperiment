@@ -437,7 +437,7 @@ setMethod(
     whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
     #
     if(length(whCl)>0){
-      clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
+      clusterData<-clusterMatrixNamed(data,whichClusters=whCl)
     }
     else{
       if(any( whichClusters!="none")) warning("given whichClusters value does not match any clusters, none will be plotted")

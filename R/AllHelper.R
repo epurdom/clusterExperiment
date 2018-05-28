@@ -117,7 +117,7 @@ setMethod(
   f = "primaryClusterNamed",
   signature = "ClusterExperiment",
   definition = function(x) {
-    clusterMatrixNamed(x)[,primaryClusterIndex(x)]
+    clusterMatrixNamed(x,whichCluster="primary")
   })
 
 #' @rdname ClusterExperiment-methods

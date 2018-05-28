@@ -23,6 +23,12 @@
 #' @return The function \code{assignUnassigned} returns a \code{ClusterExperiment}
 #' object with the unassigned samples assigned to one of the existing clusters. 
 #' @seealso \code{\link{getReducedData}}
+#' @examples
+#' #load CE object
+#' data(rsecFluidigm)
+#' smallCE<-rsecFluidigm[,1:50]
+#' assignUnassigned(smallCE, makePrimary=TRUE)
+#' removeUnassigned(smallCE)
 #' @inheritParams addClusterings 
 #' @inheritParams reduceFunctions
 #' @export
@@ -35,8 +41,7 @@ setMethod(
     whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     cl<-clusterMatrix(object)[,whCl]
 		if(missing(clusterLabel)) clusterLabel<-paste0(clusterLabels(object)[whCl],"_AllAssigned")
-		
-    whichUnassigned<-which(cl<0)
+		whichUnassigned<-which(cl<0)
 		if(length(whichUnassigned)>0){
 				if(length(whichUnassigned)< length(cl)){
 			    ########
