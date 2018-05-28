@@ -240,7 +240,7 @@ setMethod(
       fitF <- NULL
     }
 
-    if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeNegative = TRUE)
+    if(contrastType!="F") contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeUnassigned = TRUE)
     tops <- if(contrastType=="F") .getBestFGenes(fitF,...) else .testContrasts(contr.result$contrastMatrix,contrastNames=contr.result$contrastNames,fit=fitContr,fitF=fitF,contrastAdj=contrastAdj,...)
     tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
     if(returnType=="Index") {
