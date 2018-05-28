@@ -62,6 +62,8 @@
 \alias{clusterLegend}
 \alias{clusterLegend<-,ClusterExperiment,list-method}
 \alias{clusterLegend<-}
+\alias{renameClusters,ClusterExperiment,character-method}
+\alias{renameClusters}
 \alias{orderSamples,ClusterExperiment-method}
 \alias{orderSamples}
 \alias{orderSamples<-,ClusterExperiment,numeric-method}
@@ -135,6 +137,9 @@
 \S4method{clusterLegend}{ClusterExperiment}(x)
 
 \S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
+
+\S4method{renameClusters}{ClusterExperiment,character}(object, value,
+  whichCluster = "primary")
 
 \S4method{orderSamples}{ClusterExperiment}(x)
 
@@ -226,6 +231,8 @@ of the clusters used to create dendrogram
 \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
+
+\code{renameClusters} changes the names assigned to clusters within a clustering
 
 \code{orderSamples} returns/sets the orderSamples slot.
 }

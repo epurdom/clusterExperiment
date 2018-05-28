@@ -54,9 +54,9 @@ setMethod(
 		}
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
-                          matchClusterLegend=x@clusterLegend,matchTo="name") 
-    newMat<-out$numClusters
+		#shouldn't need give colors, but function needs argument
+    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+		newMat<-out$numClusters
     colnames(newMat)<-nms
     newClLegend<-out$colorList
     #fix order of samples so same
