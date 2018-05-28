@@ -13,6 +13,7 @@ Changes:
   - `primaryClusterLabel` and `primaryClusterType`
   - `getReducedData` 
   - `assignUnassigned`
+	- `renameClusters` to assign new names to clusters within a particular clustering
   - `clusterMatrixNames` and `clusterMatrixColors` as wrappers to `convertClusterLegend` to return matrix like `clusterMatrix` only with the names or colors in place of the internal cluster ids.
 * Arguments changed:
   - `sampleData` changed to `colData` to match `SummarizedExperiment` syntax. Similarly `alignSampleData` has changed to `alignColData`

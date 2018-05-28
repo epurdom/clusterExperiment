@@ -41,7 +41,17 @@ setMethod(
     ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
     #Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
-    subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
+		
+		#pull names out so can match it to the clusterLegend. 
+    subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		
+		#danger if not unique names
+		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
+		if(any(whNotUniqueNames)){
+			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
+			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
+			subMat[,whNotUniqueNames]<-subMatInt
+		}
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
     out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
@@ -463,6 +473,7 @@ setMethod(
       return(out)
     }
 )
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterLegend<-
@@ -471,6 +482,28 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="list"),
   definition = function(object, value) {
     object@clusterLegend<-unname(value)
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @export
+#' @aliases renameClusters
+setMethod( 
+  f = "renameClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary") {
+		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		
+		if(is.null(names(value)) || !all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names matching the 'clusterIds' column of the requested clusterLegend")
+			
+			m<-match(names(value),mat[,"clusterIds"])
+		mat[m,"name"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+		
     ch<-.checkClusterLegend(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }

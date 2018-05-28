@@ -216,10 +216,25 @@ test_that("removing clusters work as promised",{
 test_that("subsetting works as promised",{
 
   ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
+	newName<-letters[1:nClusters(cc)["Cluster1"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))
+	expect_equal(tableClusters(cc,whichCluster="Cluster1",useNames =FALSE),tableClusters(ccNamed,whichCluster="Cluster1",useNames =FALSE))
+	
+	cc<-ccNamed
   expect_equal(clusterMatrix(cc[1:2,2]),clusterMatrix(cc)[2,,drop=FALSE]) 
   
+	#test if have duplicated names
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"))
+	newName<-LETTERS[1:nClusters(cc)["Cluster2"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster2"])
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName)
+	
+	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
+	
+	
   ###But this tests names stay the same regardless, even when renumber.
-  expect_equal(clusterMatrixNamed(cc[1:2,1]),clusterMatrixNamed(cc)[1,,drop=FALSE]) 
+  expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 
   
   expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
   

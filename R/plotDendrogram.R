@@ -143,7 +143,6 @@ setMethod(
 		}
 		if(!is.null(sData)){
 		  sClusterLegend<-.makeColors(sData,colors=massivePalette,distinctColors=TRUE,matchClusterLegend = clusterLegend,matchTo="name")
-#			.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
 			sNames<-colnames(sData)
 			sData<-sClusterLegend$numClusters
       colnames(sData)<-sNames
