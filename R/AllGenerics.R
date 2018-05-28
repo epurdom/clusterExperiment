@@ -1,38 +1,31 @@
 setGeneric(".matchToStats", function(object,...) { standardGeneric(".matchToStats")})
-setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
 setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
 setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
-setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
 setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
+
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
+setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+
 setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric( "plotTableClusters", function(object,...){ standardGeneric("plotTableClusters") })
 
-setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
 setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
-setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
-setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
-setGeneric(
-  name = "mergeClusterIndex",
-  def=function(x,...){
-    standardGeneric("mergeClusterIndex")
-  }
-)
+setGeneric( name = "removeUnassigned", def = function(object,...) {
+	standardGeneric("removeUnassigned")})
 
-setGeneric(
-  name = "mergeMethod",
-  def=function(x,...){
-    standardGeneric("mergeMethod")
-  }
-)
-setGeneric(
-  name = "mergeCutoff",
-  def=function(x,...){
-    standardGeneric("mergeCutoff")
-  }
-)
+setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
+
+###Merge Info
+setGeneric("getMergeCorrespond", def=function(x,...){ standardGeneric("getMergeCorrespond")})
+setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMergeInfo") })
+setGeneric(name = "mergeClusterIndex",def=function(x,...){ standardGeneric("mergeClusterIndex")})
+setGeneric(name = "mergeMethod",def=function(x,...){standardGeneric("mergeMethod")})
+setGeneric(name = "mergeCutoff", def=function(x,...){ standardGeneric("mergeCutoff")})
+
+setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 
 setGeneric(
   name = "plotClustersWorkflow",
@@ -252,22 +245,17 @@ setGeneric(
   }
 )
 
-setGeneric(  name = "clusterMatrix", def = function(x,whichClusters) { standardGeneric("clusterMatrix")})
-setGeneric( name = "clusterMatrixNamed", def = function(x,...) { standardGeneric("clusterMatrixNamed")})
-setGeneric(  name = "clusterMatrixColors", def = function(x,...) { standardGeneric("clusterMatrixColors")})
-setGeneric(name = "primaryCluster", def = function(x) { standardGeneric("primaryCluster")})
-setGeneric(name = "primaryClusterIndex", def = function(x) {standardGeneric("primaryClusterIndex")})
-setGeneric(name = "primaryClusterLabel", def = function(x) {standardGeneric("primaryClusterLabel")})
-setGeneric(name = "primaryClusterType", def = function(x) {standardGeneric("primaryClusterType")})
+setGeneric("clusterMatrix", function(x,whichClusters) { standardGeneric("clusterMatrix")})
+setGeneric("clusterMatrixNamed", function(x,...) { standardGeneric("clusterMatrixNamed")})
+setGeneric("clusterMatrixColors", function(x,...) { standardGeneric("clusterMatrixColors")})
+setGeneric("primaryCluster", function(x) { standardGeneric("primaryCluster")})
+setGeneric("primaryClusterIndex", function(x) {standardGeneric("primaryClusterIndex")})
+setGeneric("primaryClusterLabel", function(x) {standardGeneric("primaryClusterLabel")})
+setGeneric("primaryClusterType", function(x) {standardGeneric("primaryClusterType")})
+setGeneric("primaryClusterNamed",function(x) { standardGeneric("primaryClusterNamed")})
 setGeneric(name = "primaryClusterIndex<-", def = function(object, value) {standardGeneric("primaryClusterIndex<-")})
 setGeneric(name = "dendroClusterIndex",def = function(x) {standardGeneric("dendroClusterIndex")})
-setGeneric(
-  name = "coClustering",
-  def = function(x) {
-    standardGeneric("coClustering")
-  }
-)
-
+setGeneric( name = "coClustering", def = function(x) { standardGeneric("coClustering")})
 setGeneric(
   name = "coClustering<-",
   def = function(object, value) {
@@ -296,19 +284,12 @@ setGeneric( name = "addClusterings", def = function(x, y,...) {
     standardGeneric("addClusterings")})
 setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
     standardGeneric("removeClusterings")})
-setGeneric( name = "removeUnclustered", def = function(x) {
-	standardGeneric("removeUnclustered")})
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
 setGeneric( name = "makeConsensus", def = function(x, whichClusters, ...) {
     standardGeneric("makeConsensus")})
 
 
-setGeneric(
-  name = "primaryClusterNamed",
-  def = function(x) {
-    standardGeneric("primaryClusterNamed")
-  }
-)
+
 
 setGeneric(
   name = "getBestFeatures",

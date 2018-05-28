@@ -171,19 +171,6 @@ setMethod(
   }
 )
 
-#' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
-#'   be unclustered in other clusters found in \code{clusterMatrix(x)}).
-#' @rdname addClusterings
-#' @aliases removeUnclustered
-#' @export
-setMethod(
-  f = "removeUnclustered",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x[,primaryCluster(x) >= 0])
-  }
-)
 
 
 #' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)

@@ -4,11 +4,16 @@
 \name{assignUnassigned}
 \alias{assignUnassigned}
 \alias{assignUnassigned,ClusterExperiment-method}
+\alias{removeUnassigned,ClusterExperiment-method}
+\alias{removeUnassigned}
 \title{Assign unassigned samples to nearest cluster}
 \usage{
 \S4method{assignUnassigned}{ClusterExperiment}(object,
   whichCluster = "primary", clusterLabel, makePrimary = TRUE,
   whichAssay = 1, reduceMethod = "none", ...)
+
+\S4method{removeUnassigned}{ClusterExperiment}(object,
+  whichCluster = "primary")
 }
 \arguments{
 \item{object}{A Cluster Experiment object}
@@ -36,18 +41,29 @@ the object}
 dimensionality reduction (if any) to be taken of the data for calculating
 the medians of the clusters}
 }
+\value{
+The function \code{assignUnassigned} returns a \code{ClusterExperiment}
+object with the unassigned samples assigned to one of the existing clusters.
+
+The function \code{removeUnassigned} returns a \code{ClusterExperiment}
+object with the unassigned samples removed.
+}
 \description{
 Assigns the unassigned samples in a cluster to the nearest
   cluster based on distance to the medians of the clusters.
 }
 \details{
-The function calculates the median values of each variable for each
+The function \code{assignUnassigned} calculates the median values of each variable for each
   cluster, and then calculates the euclidean distance of each unassigned
   sample to the median of each cluster. Each unassigned sample is assigned to
   the cluster for which it closest to the median.
 
 All unassigned samples in the cluster are given a clustering,
   regardless of whether they are classified as -1 or -2.
+
+\code{removeUnclustered} removes all samples that are unclustered
+  (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so they may
+  be unclustered in other clusters found in \code{clusterMatrix(object)}).
 }
 \seealso{
 \code{\link{getReducedData}}

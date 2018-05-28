@@ -9,8 +9,6 @@
 \alias{addClusterings,ClusterExperiment,vector-method}
 \alias{removeClusterings,ClusterExperiment,character-method}
 \alias{removeClusterings,ClusterExperiment,numeric-method}
-\alias{removeUnclustered,ClusterExperiment-method}
-\alias{removeUnclustered}
 \alias{removeClusters,ClusterExperiment,numeric-method}
 \alias{removeClusters}
 \alias{removeClusters,ClusterExperiment,character-method}
@@ -27,8 +25,6 @@
 \S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters, ...)
 
 \S4method{removeClusterings}{ClusterExperiment,numeric}(x, whichClusters)
-
-\S4method{removeUnclustered}{ClusterExperiment}(x)
 
 \S4method{removeClusters}{ClusterExperiment,numeric}(x, whichClusters,
   clustersToRemove, clusterLabels = NULL)
@@ -90,10 +86,6 @@ addClusterings adds y to x, and is thus not symmetric in the two
  \code{primaryCluster} is one of the clusters removed, the
  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
-
-\code{removeUnclustered} removes all samples that are unclustered
-  (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
-  be unclustered in other clusters found in \code{clusterMatrix(x)}).
 
 \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
 }

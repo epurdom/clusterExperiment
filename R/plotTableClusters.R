@@ -21,7 +21,7 @@
 #' #give arbitrary names to clusters for demonstration
 #' cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichClusters=1)
 #' tableClusters(cl,whichClusters=1:2)
-#' #heatmap of the counts in each entry:
+#' #heatmap of the counts in each entry of table:
 #' plotTableClusters(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
 
 #' @export

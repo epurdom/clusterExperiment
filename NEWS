@@ -19,6 +19,10 @@ Changes:
 * Arguments changed:
   - `sampleData` changed to `colData` to match `SummarizedExperiment` syntax. Similarly `alignSampleData` has changed to `alignColData`
   - `ignoreUnassignedVar` to `filterIgnoresUnassigned` for clarity.
+	- `removeNegative` to `removeUnassigned` in `getBestFeatures` for uniformity
+* Depricated functions:
+	- `removeUnclustered` (replaced with `removeUnassigned`)
+	- `combineMany` (replaced with `makeConsensus`)
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Added option `nColLegend` to `plotReducedDims`
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
