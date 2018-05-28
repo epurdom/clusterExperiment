@@ -319,27 +319,16 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    tmp<-.makeColors(clusters, colors=massivePalette)
-    if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
+    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="clusterIds")
+    if(is.null(clusterLegend)){
+    	clusterLegend<-tmp$colorList
+    } 
     else{
-      #need to grab colors/names in given clusterLegend -- rerun .makeColors
+      #need to check matches the clusters, which .makeColors doesn't do.
       clusterLegend<-unname(clusterLegend)
       ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
-      # Eventually, use this code instead, but for now, not changing...
-      # need to grab colors/names in given clusterLegend -- rerun .makeColors
-      # tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="clusterIds")
-      # clusterLegend<-tmp$colorList      
-
-      #need to grab colors/names in given clusterLegend
-      autoLegend<-tmp$colorList
-      clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
-        m<-match(orig[,"clusterIds"],auto[,"name"])
-        if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
-        orig[,"clusterIds"]<-auto[m,"clusterIds"]
-        return(orig)
-        
-      },SIMPLIFY=FALSE)
+ 			clusterLegend<-tmp$colorList      
     }
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
