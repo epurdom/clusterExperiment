@@ -693,12 +693,11 @@ length(clusterLegend(ce))
 clusterLegend(ce)[1:2]
 ```
 
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. We can assign new values with a simple assignment operator. Here we change the internal cluster names of the first clustering from lowercase to uppercase "M":
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. We can assign new values with a simple assignment operator. Here we change the internal cluster names of the first clustering from lowercase to uppercase "M" using the function `renameClusters`:
 
 ```{r CEClusterLengendAssign}
-existingColors<-clusterLegend(ce)[[1]]
-existingColors[,"name"]<-gsub("m","M",existingColors[,"name"])
-clusterLegend(ce)[[1]]<-existingColors
+newName<-gsub("m","M",clusterLegend(ce)[[1]][,"name"])
+renameClusters(ce,whichClusters=1,value=newName)
 print(ce)
 ```
 
@@ -840,11 +839,16 @@ ce_temp<-ce
 clusterLegend(ce_temp)[["mergeClusters"]]
 ```
 
-We will just assign new colors to the `color` column. We can also give them new names too.
+We will just assign new colors to the `color` column with the `recolorClusters` function. We can also give them new names too with `renameClusters`.
 
 ```{r plotClusterEx1_assignColors}
-clusterLegend(ce_temp)[["mergeClusters"]][,"color"]<-c("white","blue","green","cyan","purple")
-clusterLegend(ce_temp)[["mergeClusters"]][,"name"]<-c("Not assigned","Cluster1","Cluster2","Cluster3","Cluster4")
+newColors<-c("white","blue","green","cyan","purple")
+newNames<-c("Not assigned","Cluster1","Cluster2","Cluster3","Cluster4")
+#note we make sure they are assigned to the right cluster Ids by giving the 
+#clusterIds as names to the new vectors
+names(newColors)<-names(newNames)<-clusterLegend(ce_temp)[["mergeClusters"]][,"clusterIds"]
+renameClusters(ce_temp,whichClusters="mergeClusters",value=newNames)
+recolorClusters(ce_temp,whichClusters="mergeClusters",value=newColors)
 ```
 
 We use the `plotClusterLegend` to check that we assigned them as we expected:
