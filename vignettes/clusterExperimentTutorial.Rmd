@@ -697,7 +697,7 @@ We can see that each element of `clusterLegend` consists of a matrix, with numbe
 
 ```{r CEClusterLengendAssign}
 newName<-gsub("m","M",clusterLegend(ce)[[1]][,"name"])
-renameClusters(ce,whichClusters=1,value=newName)
+renameClusters(ce,whichCluster=1,value=newName)
 print(ce)
 ```
 
