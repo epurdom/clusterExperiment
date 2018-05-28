@@ -809,6 +809,7 @@ setMethod(
       #-----
       # Deal with extra levels, only a single level, etc. 
       # These are all problems with NMF. Need to check on development version.
+			# Also, doesn't deal with if in rowData...
       #-----
       prunedList<-lapply(whInAnnColors,function(ii){
         nam<-names(annColors)[[ii]] #the name of variable

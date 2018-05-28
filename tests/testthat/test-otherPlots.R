@@ -201,8 +201,9 @@ test_that("plotFeatureBoxplot works",{
 })
 
 test_that("plotting Table clusters works",{
-	plotTableClusters(cc,whichClusters=c(1,2))
-	plotTableClusters(tableClusters(cc,whichClusters=c(1,2)))
+	expect_silent(plotTableClusters(cc,whichClusters=c(1,2)))
+	expect_silent(plotTableClusters(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))
+	expect_silent(plotTableClusters(tableClusters(cc,whichClusters=c(1,2))))
 })
 
 test_that("plotting works with hdf5 assays objects",{

@@ -106,26 +106,7 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixNamed} returns a matrix with cluster labels.
-#' @export
-#' @aliases clusterMatrixNamed
-#' @param x,object a ClusterExperiment object.
-setMethod(
-  f = "clusterMatrixNamed",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    clMat<-clusterMatrix(x)
-    out<-do.call("cbind",lapply(seq_len(ncol(clMat)),function(ii){
-      cl<-clMat[,ii]
-      leg<-clusterLegend(x)[[ii]]
-      leg[,"name"][match(cl,leg[,"clusterIds"])]
-    }))
-    colnames(out)<-colnames(clMat)
-    rownames(out)<-NULL
-    return(out)
-  }
-)
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
@@ -228,18 +209,19 @@ setMethod(
   }
 )
 
-
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+#' @return \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
-#' @aliases clusterMatrixNames
+#' @aliases clusterMatrixNamed
+#' @param x,object a ClusterExperiment object.
 setMethod(
-  f = "clusterMatrixNames",
-  signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters,...) {
-    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters,...)
+  f = "clusterMatrixNamed",
+  signature = "ClusterExperiment",
+  definition = function(x, whichClusters="all") {
+    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters)
   }
 )
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
 #' @export
@@ -247,8 +229,8 @@ setMethod(
 setMethod(
   f = "clusterMatrixColors",
   signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters,...) {
-    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters,...)
+  definition = function(x,whichClusters) {
+    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters)
   }
 )
 
@@ -497,8 +479,14 @@ setMethod(
   definition = function(object, value,whichCluster="primary") {
 		whCl<-.convertSingleWhichCluster(object,whichCluster)
 		mat<-clusterLegend(object)[[whCl]]
-		
-		if(is.null(names(value)) || !all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names matching the 'clusterIds' column of the requested clusterLegend")
+		clVals<-as.numeric(mat[,"clusterIds"])
+		if(is.null(names(value))){
+			
+			if(length(value)== nrow(mat)) names(value)<-mat[,"clusterIds"]
+			else if(length(value)==length(clVals[clVals>0])) names(value)<-mat[clVals>0,"clusterIds"]
+			else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
+		} 
+		if(!all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names that match the 'clusterIds' column of the requested clusterLegend")
 			
 			m<-match(names(value),mat[,"clusterIds"])
 		mat[m,"name"]<-value

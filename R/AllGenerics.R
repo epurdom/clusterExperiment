@@ -253,9 +253,8 @@ setGeneric(
 )
 
 setGeneric(  name = "clusterMatrix", def = function(x,whichClusters) { standardGeneric("clusterMatrix")})
-setGeneric(  name = "clusterMatrixNames", def = function(x,...) { standardGeneric("clusterMatrixNames")})
+setGeneric( name = "clusterMatrixNamed", def = function(x,...) { standardGeneric("clusterMatrixNamed")})
 setGeneric(  name = "clusterMatrixColors", def = function(x,...) { standardGeneric("clusterMatrixColors")})
-
 setGeneric(name = "primaryCluster", def = function(x) { standardGeneric("primaryCluster")})
 setGeneric(name = "primaryClusterIndex", def = function(x) {standardGeneric("primaryClusterIndex")})
 setGeneric(name = "primaryClusterLabel", def = function(x) {standardGeneric("primaryClusterLabel")})
@@ -303,12 +302,6 @@ setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("cluste
 setGeneric( name = "makeConsensus", def = function(x, whichClusters, ...) {
     standardGeneric("makeConsensus")})
 
-setGeneric(
-  name = "clusterMatrixNamed",
-  def = function(x) {
-    standardGeneric("clusterMatrixNamed")
-  }
-)
 
 setGeneric(
   name = "primaryClusterNamed",

@@ -8,8 +8,6 @@
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \alias{show,ClusterExperiment-method}
-\alias{clusterMatrixNamed,ClusterExperiment-method}
-\alias{clusterMatrixNamed}
 \alias{primaryClusterNamed,ClusterExperiment-method}
 \alias{primaryClusterNamed}
 \alias{transformation,ClusterExperiment-method}
@@ -24,8 +22,8 @@
 \alias{nFeatures}
 \alias{nSamples,ClusterExperiment-method}
 \alias{nSamples}
-\alias{clusterMatrixNames,ClusterExperiment-method}
-\alias{clusterMatrixNames}
+\alias{clusterMatrixNamed,ClusterExperiment-method}
+\alias{clusterMatrixNamed}
 \alias{clusterMatrixColors,ClusterExperiment-method}
 \alias{clusterMatrixColors}
 \alias{clusterMatrix,ClusterExperiment,missing-method}
@@ -82,8 +80,6 @@
 
 \S4method{show}{ClusterExperiment}(object)
 
-\S4method{clusterMatrixNamed}{ClusterExperiment}(x)
-
 \S4method{primaryClusterNamed}{ClusterExperiment}(x)
 
 \S4method{transformation}{ClusterExperiment}(x)
@@ -98,9 +94,9 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrixNames}{ClusterExperiment}(x, whichClusters, ...)
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x, whichClusters = "all")
 
-\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters, ...)
+\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
 
 \S4method{clusterMatrix}{ClusterExperiment,missing}(x, whichClusters)
 
@@ -171,8 +167,6 @@ clusterings. \code{whichClusters} can be a character value identifying the
 clusterings is returned.}
 }
 \value{
-\code{clusterMatrixNamed} returns a matrix with cluster labels.
-
 \code{primaryClusterNamed} returns the primary cluster (using cluster
 labels).
 
@@ -188,7 +182,7 @@ clusterMatrix).
 
 \code{nSamples} returns the number of samples (same as `ncol`).
 
-\code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+\code{clusterMatrixNamed} returns a matrix with cluster labels.
 
 \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
 
