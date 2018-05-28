@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotTableClusters}
 \alias{plotTableClusters}
-\alias{plotTableClusters,matrix-method}
+\alias{plotTableClusters,table-method}
 \alias{tableClusters,ClusterExperiment,character-method}
 \alias{tableClusters}
 \alias{tableClusters,ClusterExperiment,missing-method}
@@ -13,7 +13,8 @@
 \S4method{plotTableClusters}{ClusterExperiment}(object, whichClusters,
   ignoreUnassigned = FALSE, margin = NA, ...)
 
-\S4method{plotTableClusters}{matrix}(object, cluster = FALSE, ...)
+\S4method{plotTableClusters}{table}(object, clusterLegend = NULL,
+  cluster = FALSE, ...)
 
 \S4method{tableClusters}{ClusterExperiment,character}(object, whichClusters,
   ...)
@@ -26,9 +27,12 @@
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
-\item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters in the plotting.}
+\item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters in the 
+plotting. This means they will also be ignored in the calculations of the proportions 
+(if \code{margin} not NA).}
 
-\item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, \code{\link[package=base]{prop.table}} will be called and the argument \code{\margin} will be passed to \code{prop.table} to determine how proportions should be calculated.}
+\item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
+\code{\link[package=base]{prop.table}} will be called and the argument \code{\margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.}
 
 \item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
 to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
