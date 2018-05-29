@@ -847,8 +847,8 @@ newNames<-c("Not assigned","Cluster1","Cluster2","Cluster3","Cluster4")
 #note we make sure they are assigned to the right cluster Ids by giving the 
 #clusterIds as names to the new vectors
 names(newColors)<-names(newNames)<-clusterLegend(ce_temp)[["mergeClusters"]][,"clusterIds"]
-renameClusters(ce_temp,whichClusters="mergeClusters",value=newNames)
-recolorClusters(ce_temp,whichClusters="mergeClusters",value=newColors)
+renameClusters(ce_temp,whichCluster="mergeClusters",value=newNames)
+recolorClusters(ce_temp,whichCluster="mergeClusters",value=newColors)
 ```
 
 We use the `plotClusterLegend` to check that we assigned them as we expected:
