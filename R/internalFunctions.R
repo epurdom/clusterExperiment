@@ -192,7 +192,7 @@
 ## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
 ## If giving clNumMat, then will not check for consecutive integers, but will use entries in clNumMat as the clusterIds
 ## If matchClusterLegend given will use names and colors of matchClusterLegend
-## if matchTo="numIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); will keep clusterId and color of clusterLegend
+## if matchTo="numIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); will keep clusterId and color of clusterLegend -- NOT name
 ## if matchTo="givenIds", assume 'clusterIds' matches entries of clMat; will keep name and color of clusterLegend
 ## if matchTo="name" assume "name" matches entries of clMat; will keep name and color of clusterLegend
 ## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
