@@ -26,10 +26,10 @@
 
 \S4method{removeClusterings}{ClusterExperiment,numeric}(x, whichClusters)
 
-\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichClusters,
-  clustersToRemove, clusterLabels = NULL)
+\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichCluster,
+  clustersToRemove, makePrimary = FALSE, clusterLabels = NULL)
 
-\S4method{removeClusters}{ClusterExperiment,character}(x, whichClusters, ...)
+\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster, ...)
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}
@@ -61,6 +61,9 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{whichCluster}{Clustering from which to remove clusters for
+\code{removeCluster}. Note that it is a singular cluster.}
 
 \item{clustersToRemove}{numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).}
 }

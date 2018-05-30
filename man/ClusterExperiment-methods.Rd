@@ -8,8 +8,6 @@
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \alias{show,ClusterExperiment-method}
-\alias{primaryClusterNamed,ClusterExperiment-method}
-\alias{primaryClusterNamed}
 \alias{transformation,ClusterExperiment-method}
 \alias{transformation}
 \alias{transformation<-,ClusterExperiment,function-method}
@@ -38,12 +36,14 @@
 \alias{primaryClusterIndex}
 \alias{primaryClusterLabel,ClusterExperiment-method}
 \alias{primaryClusterLabel}
+\alias{primaryClusterNamed,ClusterExperiment-method}
+\alias{primaryClusterNamed}
 \alias{primaryClusterType,ClusterExperiment-method}
 \alias{primaryClusterType}
-\alias{dendroClusterIndex,ClusterExperiment-method}
-\alias{dendroClusterIndex}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
+\alias{dendroClusterIndex,ClusterExperiment-method}
+\alias{dendroClusterIndex}
 \alias{coClustering,ClusterExperiment-method}
 \alias{coClustering}
 \alias{coClustering<-,ClusterExperiment,matrix-method}
@@ -80,8 +80,6 @@
 
 \S4method{show}{ClusterExperiment}(object)
 
-\S4method{primaryClusterNamed}{ClusterExperiment}(x)
-
 \S4method{transformation}{ClusterExperiment}(x)
 
 \S4method{transformation}{ClusterExperiment,`function`}(object) <- value
@@ -110,11 +108,13 @@
 
 \S4method{primaryClusterLabel}{ClusterExperiment}(x)
 
+\S4method{primaryClusterNamed}{ClusterExperiment}(x)
+
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
-\S4method{dendroClusterIndex}{ClusterExperiment}(x)
-
 \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
+
+\S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
 \S4method{coClustering}{ClusterExperiment}(x)
 
@@ -167,9 +167,6 @@ clusterings. \code{whichClusters} can be a character value identifying the
 clusterings is returned.}
 }
 \value{
-\code{primaryClusterNamed} returns the primary cluster (using cluster
-labels).
-
 \code{transformation} prints the function used to transform the data
 prior to clustering.
 
@@ -199,6 +196,9 @@ clusterMatrix).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{primaryClusterNamed} returns the primary cluster (using cluster
+labels).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
