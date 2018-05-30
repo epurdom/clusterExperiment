@@ -108,17 +108,6 @@ setMethod(
 
 
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
-#' labels).
-#' @export
-#' @aliases primaryClusterNamed
-setMethod(
-  f = "primaryClusterNamed",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    clusterMatrixNamed(x,whichCluster="primary")
-  })
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{transformation} prints the function used to transform the data
@@ -319,6 +308,17 @@ setMethod(
     return(clusterLabels(x)[primaryClusterIndex(x)])
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
+#' labels).
+#' @export
+#' @aliases primaryClusterNamed
+setMethod(
+  f = "primaryClusterNamed",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    as.vector(clusterMatrixNamed(x,whichCluster="primary"))
+  })
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{primaryClusterIndex} returns/sets the primary clustering index
@@ -330,21 +330,6 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     return(clusterTypes(x)[primaryClusterIndex(x)])
-  }
-)
-
-
-#' @rdname ClusterExperiment-methods
-#' @return \code{dendroClusterIndex} returns/sets the clustering index 
-#' of the clusters used to create dendrogram
-#' (i.e., which column of clusterMatrix corresponds to the clustering).
-#' @export
-#' @aliases dendroClusterIndex
-setMethod(
-  f = "dendroClusterIndex",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x@dendro_index)
   }
 )
 
@@ -360,6 +345,21 @@ setReplaceMethod(
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @return \code{dendroClusterIndex} returns/sets the clustering index 
+#' of the clusters used to create dendrogram
+#' (i.e., which column of clusterMatrix corresponds to the clustering).
+#' @export
+#' @aliases dendroClusterIndex
+setMethod(
+  f = "dendroClusterIndex",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(x@dendro_index)
+  }
+)
+
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{coClustering} returns/sets the co-clustering matrix.

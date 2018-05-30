@@ -236,9 +236,9 @@ test_that("plotDendrogram works with cluster missing", {
   
   ## make all -2
   dend2<-dend
-  mat<-clusterMatrix(dend2)
-  mat[1,1]<- -2
-  dend2@clusterMatrix<-mat
+  dmat<-clusterMatrix(dend2)
+  dmat[1,1]<- -2
+  dend2@clusterMatrix<-dmat
   leg<-dend2@clusterLegend[[1]]
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg

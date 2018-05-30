@@ -126,10 +126,9 @@ test_that("adding clusters work as promised",{
   expect_equal(rowData(c4),rowData(se)) 
 })  
 
-test_that("removing clusters work as promised",{
+test_that("removeClusterings work as promised",{
   ##########
   #check removeClusterings
-  
   #single cluster
   expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
   expect_silent(c5<-removeClusterings(c4,1))
@@ -163,31 +162,37 @@ test_that("removing clusters work as promised",{
   expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
   expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
   
+})
+
+test_that("removeClusters work as promised",{
   ##########
   ###Check removing a cluster assignment
   ########## 
   c1<-ccSE
+	ind<-primaryClusterIndex(c1)
+	expect_silent(c1<-renameClusters(c1,whichCluster="primary",letters[1:nClusters(c1)[ind]]))
   cL<-clusterLegend(c1)
-  ind<-primaryClusterIndex(c1)
-  cL[[ind]][,"name"]<-letters[1:nrow(cL[[ind]])]
-  clusterLegend(c1)<-cL
+	clmat<-cL[[ind]]
   rmCl<-c(2,3)
-  rmNms<-cL[[ind]][cL[[ind]][,"clusterIds"] %in% as.character(rmCl),"name"]
-  x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmCl)
+  rmNms<-clmat[clmat[,"clusterIds"] %in% as.character(rmCl),"name"]
+	#note removeClusters creates new clustering with those clusters removed
+  expect_silent(x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmCl,makePrimary=TRUE))
   expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
   newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
-  old<-clusterLegend(x)[[ind]]
-  oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+	#what expect clusterLegend to be after removal
+  oldnms<-clmat[!clmat[,"name"] %in% rmNms,"name"]
   expect_equal(oldnms,newnms)
   
-   x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmNms)
+   expect_silent(x<-removeClusters(c1,whichCluster="primary",clustersToRemove=rmNms,makePrimary=TRUE))
    expect_equal(sum(primaryCluster(x)==-1), sum(primaryCluster(c1) %in% c(-1,2,3)))
    newnms<-clusterLegend(x)[[primaryClusterIndex(x)]][,"name"]
-   old<-clusterLegend(x)[[ind]]
-   oldnms<-old[!old[,"name"] %in% rmNms,"name"]
+   oldnms<-clmat[!clmat[,"name"] %in% rmNms,"name"]
    expect_equal(oldnms,newnms)
  
   
+})
+
+test_that("removeUnassigned work as promised",{
   
   ##########
   #check removing unclustered samples
@@ -195,13 +200,13 @@ test_that("removing clusters work as promised",{
   #no -1 in primary cluster
   matTemp<-abs(labMat)
   expect_silent(ccTemp<-ClusterExperiment(mat,matTemp,transformation=function(x){x}))
-  expect_equal(ccTemp, removeUnclustered(ccTemp)) 
+  expect_equal(ccTemp, removeUnassigned(ccTemp)) 
   
 ### The remainder code sometimes causes problems if tested interactively more than once
 ### Some problem in the environment???
 ### Also triggers problems in subsetting (next)
 	whUn<-which(primaryCluster(ccSE) <0)
-  expect_silent(ccR<-removeUnclustered(ccSE))
+  expect_silent(ccR<-removeUnassigned(ccSE))
   expect_equal(NCOL(ccR), NCOL(ccSE)-length(whUn))
 
   ###Check retain SE info
@@ -362,20 +367,19 @@ test_that("assigning unassigned samples works as promised",{
 	
 })
 
-test_that("workflow functions work",
-          {
-            ##########
-            #check workflow stuff
-            expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterTypes=c("clusterMany","mergeClusters")))
-            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),2))
-            
-            expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5)),clusterTypes=c("clusterMany")))
-            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
-            
-            expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterTypes=c("clusterMany","mergeClusters.1")))
-            expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
-            expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
-            expect_null(workflowClusters(cc,iteration=NA))
+test_that("workflow functions work",{
+  ##########
+  #check workflow stuff
+  expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 1,3), each=5)),clusterTypes=c("clusterMany","mergeClusters")))
+  expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),2))
+  
+  expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5)),clusterTypes=c("clusterMany")))
+  expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
+  
+  expect_silent(ppC<-addClusterings(cc,cbind(rep(c(-1, 1,2), each=5),rep(c(2, 3,1), each=5)),clusterTypes=c("clusterMany","mergeClusters.1")))
+  expect_equal(dim(workflowClusters(ppC)),c(nSamples(cc),1))
+  expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
+  expect_null(workflowClusters(cc,iteration=NA))
           
   expect_message(ceNew<-makeConsensus(ceSim,proportion=0.7))
   expect_message(ceNew<-makeConsensus(ceNew,proportion=0.3,clusterLabel="makeConsensus,v2"))
@@ -397,4 +401,4 @@ test_that("workflow functions work",
   expect_equal(primaryClusterIndex(ceNew5),2)
   expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
   expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")
-          })
+})

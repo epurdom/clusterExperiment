@@ -254,10 +254,15 @@ setMethod(
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
-#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots).
-#'  Must be match to given clusters, in that must be valid clusterLegend, and
-#'  the "clusterIds" column matches the value in the clustering matrix.
-#'  Generally, this is not a good way for users to set the clusterLegend slot.
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see details).
+
+#' @details The \code{clusterLegend} argument to \code{ClusterExperiment} 
+#'  must be a valid clusterLegend format and match the values in \code{clusters}, 
+#' in that the "clusterIds" column must matches the value in the clustering matrix
+#'  \code{clusters}. If \code{names(clusterLegend)==NULL}, it is assumed that the 
+#'  entries of \code{clusterLegend} are in the same order as the columns of 
+#'  \code{clusters}. Generally, this is not a good way for users to set the
+#' clusterLegend slot.
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -319,7 +324,8 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="clusterIds")
+    	
+    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
     if(is.null(clusterLegend)){
     	clusterLegend<-tmp$colorList
     } 

@@ -278,7 +278,7 @@ setGeneric(
 )
 
 
-setGeneric( name = "removeClusters", def = function(x, whichClusters,...) {
+setGeneric( name = "removeClusters", def = function(x, whichCluster,...) {
     standardGeneric("removeClusters")})
 setGeneric( name = "addClusterings", def = function(x, y,...) {
     standardGeneric("addClusterings")})

@@ -192,18 +192,19 @@
 ## returns  list(colorList=colorList,numClusters=clMat,facClusters=clMat))
 ## If giving clNumMat, then will not check for consecutive integers, but will use entries in clNumMat as the clusterIds
 ## If matchClusterLegend given will use names and colors of matchClusterLegend
-## if matchTo="clusterIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); 
-## if matchTo="name" assume "name" matches entries of clMat. 
+## if matchTo="numIds", assume that 'clusterIds' column matches clNumMat (so only makes sense if giving clNumMat); will keep clusterId and color of clusterLegend
+## if matchTo="givenIds", assume 'clusterIds' matches entries of clMat; will keep name and color of clusterLegend
+## if matchTo="name" assume "name" matches entries of clMat; will keep name and color of clusterLegend
 ## (will only match if finds name or clusterIds in matchClusterLegend, depending on value of matchTo)
 ## Assumes that clMat has already had continuous columns removed
 ## Note, does drop levels, so returned datasets as well as color legend doesn't include missing factor levels
 .makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,
-                      matchClusterLegend=NULL,matchTo=c("clusterIds","name")){ 
+                      matchClusterLegend=NULL,matchTo=c("givenIds","numIds","name")){ 
   
   matchTo<-match.arg(matchTo)
   if(!is.null(matchClusterLegend)){
     if(!is.list(matchClusterLegend) ) matchClusterLegend<-.convertToClusterLegend(matchClusterLegend)
-    if("matchTo"=="clusterIds") reqNames<-c("color","clusterIds") else reqNames<-c("color","name")
+    if("matchTo"%in% c("numIds","givenIds")) reqNames<-c("color","clusterIds") else reqNames<-c("color","name")
     ch<-.checkClusterLegendList(matchClusterLegend,allowNames=TRUE,reqNames=reqNames)
     if(!is.logical(ch)){
       #try again in case in aheatmap format
@@ -212,7 +213,9 @@
       if(!is.logical(ch)) stop(ch)
       
     }
-		# if(is.null(names(matchClusterLegend)) || any(!names(matchClusterLegend) %in% colnames(clMat))) stop("Internal programming error in matching colors to name -- missing names and/or not matching clusterings")
+		if(is.null(names(matchClusterLegend)) && !is.null(colnames(clMat)) && length(matchClusterLegend)==ncol(clMat)){
+			names(matchClusterLegend)<-colnames(clMat)
+		}
   }
   if(ncol(clMat)==1) distinctColors<-FALSE
   if(any(apply(clMat,2,function(x){length(unique(x))})>length(colors))) warning("too many clusters to have unique color assignments")
@@ -243,10 +246,13 @@
     matchName<-cNames[[ii]]
 		if(!is.null(matchClusterLegend[[matchName]])){
 	    colMat<-matchClusterLegend[[matchName]]
-			if(matchTo=="clusterIds"){
+			if(matchTo=="numIds"){
 			  m<-match(colMat[,"clusterIds"],as.character(facInt))
 			  cols<-cbind(colMat[,c("clusterIds","color"),drop=FALSE],"name"=as.character(facOrig)[m])
 			}
+			else if(matchTo=="givenIds"){
+			  m<-match(colMat[,"clusterIds"],as.character(facOrig))
+			 cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name"),drop=FALSE]) 			}
 			else{
 			  m<-match(colMat[,"name"],as.character(facOrig))
 			  cols<-cbind("clusterIds"=facInt[m],colMat[,c("color","name"),drop=FALSE])

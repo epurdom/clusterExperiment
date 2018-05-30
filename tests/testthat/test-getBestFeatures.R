@@ -115,9 +115,7 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
 })
 
 test_that("`plotContrastHeatmap` works", {
-    mat<-clusterLegend(ceSimData)[[1]]
-    mat[,"name"]<-letters[1:nrow(mat)]
-    clusterLegend(ceSimData)[[1]]<-mat
+	ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]])
     topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", isCount=FALSE)
 	  plotContrastHeatmap(ceSimData,signifTable=topC2)
 
