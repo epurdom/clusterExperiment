@@ -46,7 +46,8 @@ Plot heatmap of cross-tabs of two clusterings
 \details{
 Note that the cluster labels in \code{plotTableClusters} and 
 \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
-because \code{tableClusters} calls the R function \code{table}, which makes this
+because \code{tableClusters} calls the R function \code{table}, which makes this 
+conversion
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k
