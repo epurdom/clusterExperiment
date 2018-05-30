@@ -224,7 +224,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @param whichClusters optional argument that can be either numeric or
+#' @param whichClusters argument that can be either numeric or
 #'   character value. If numeric, gives the indices of the \code{clusterMatrix}
 #'   to return; this can also be used to defined an ordering for the
 #'   clusterings. \code{whichClusters} can be a character value identifying the 
@@ -471,6 +471,8 @@ setReplaceMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @param whichCluster argument to identify cluster, taking input like 
+#' \code{whichClusters}, only requires that only a single clustering can be identified. 
 #' @export
 #' @aliases renameClusters
 setMethod( 
@@ -498,7 +500,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @return \code{recolorClusters} changes the colors assigned to clusters within a clustering
 #' @export
 #' @aliases recolorClusters
 setMethod( 

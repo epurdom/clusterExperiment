@@ -156,7 +156,7 @@ objects may be passed to these functions.}
 
 \item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
 
-\item{whichClusters}{optional argument that can be either numeric or
+\item{whichClusters}{argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
 clusterings. \code{whichClusters} can be a character value identifying the 
@@ -165,6 +165,9 @@ clusterings. \code{whichClusters} can be a character value identifying the
 'all' or 'workflow' to indicate choosing all clusters or choosing all 
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
+
+\item{whichCluster}{argument to identify cluster, taking input like 
+\code{whichClusters}, only requires that only a single clustering can be identified.}
 }
 \value{
 \code{transformation} prints the function used to transform the data
@@ -219,7 +222,7 @@ of the clusters used to create dendrogram
 
 \code{renameClusters} changes the names assigned to clusters within a clustering
 
-\code{renameClusters} changes the names assigned to clusters within a clustering
+\code{recolorClusters} changes the colors assigned to clusters within a clustering
 
 \code{orderSamples} returns/sets the orderSamples slot.
 }

@@ -52,7 +52,7 @@ matrix, the column names of that matrix will be used by default, if
 
 \item{...}{Passed to signature \code{ClusterExperiment,matrix}.}
 
-\item{whichClusters}{optional argument that can be either numeric or
+\item{whichClusters}{argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
 clusterings. \code{whichClusters} can be a character value identifying the 
