@@ -1,7 +1,6 @@
 #' @name plotTableClusters
 #' @title Plot heatmap of cross-tabs of 2 clusterings
-#' @description Plot heatmap of cross-tabs of two clusterings
-#' @aliases plotTableClusters
+#' @description Plot heatmap of cross-tabulations of two clusterings
 #' @aliases plotTableClusters,ClusterExperiment-method
 #' @param object ClusterExperiment object (or matrix with table result)
 #' @param ignoreUnassigned logical as to whether to ignore unassigned clusters in the 
@@ -9,6 +8,8 @@
 #' (if \code{margin} not NA).
 #' @param margin if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
 #' \code{\link[package=base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
+#' @param whichClusters which clusters to tabulate. For \code{plotTableClusters} should
+#'  be 2 clusters, for \code{tableClusters} can indicate arbitrary number.
 #' @rdname plotTableClusters
 #' @seealso \code{\link[package=base]{prop.table}}
 #' @examples
@@ -19,11 +20,10 @@
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
 #' #give arbitrary names to clusters for demonstration
-#' cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichClusters=1)
+#' cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichCluster=1)
 #' tableClusters(cl,whichClusters=1:2)
 #' #heatmap of the counts in each entry of table:
 #' plotTableClusters(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
-
 #' @export
 setMethod( 
   f = "plotTableClusters",
@@ -72,6 +72,8 @@ setMethod(
 #' @rdname plotTableClusters
 #' @param cluster logical, whether to cluster the rows and columns of the table. Passed
 #'  to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.
+#' @param clusterLegend list in \code{clusterLegend} format that gives colors for the
+#'  clusters tabulated.
 #' @seealso \code{\link{plotHeatmap}}
 #' @details Note that the cluster labels in \code{plotTableClusters} and 
 #' \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 

@@ -3,6 +3,7 @@
 \docType{methods}
 \name{plotTableClusters}
 \alias{plotTableClusters}
+\alias{plotTableClusters,ClusterExperiment-method}
 \alias{plotTableClusters,table-method}
 \alias{tableClusters,ClusterExperiment,character-method}
 \alias{tableClusters}
@@ -27,12 +28,18 @@
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
+\item{whichClusters}{which clusters to tabulate. For \code{plotTableClusters} should
+be 2 clusters, for \code{tableClusters} can indicate arbitrary number.}
+
 \item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters in the 
 plotting. This means they will also be ignored in the calculations of the proportions 
 (if \code{margin} not NA).}
 
 \item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
 \code{\link[package=base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.}
+
+\item{clusterLegend}{list in \code{clusterLegend} format that gives colors for the
+clusters tabulated.}
 
 \item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
 to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
@@ -41,7 +48,7 @@ to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatm
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 }
 \description{
-Plot heatmap of cross-tabs of two clusterings
+Plot heatmap of cross-tabulations of two clusterings
 }
 \details{
 Note that the cluster labels in \code{plotTableClusters} and 
@@ -57,7 +64,7 @@ cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 removeSil=c(TRUE,FALSE))
 #give arbitrary names to clusters for demonstration
-cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichClusters=1)
+cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichCluster=1)
 tableClusters(cl,whichClusters=1:2)
 #heatmap of the counts in each entry of table:
 plotTableClusters(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
