@@ -55,11 +55,11 @@ Plot a boxplot of the (transformed) values for a particular
 \examples{
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
-
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
-clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-removeSil=c(TRUE,FALSE))
-renameCluster(cl, whichCluster=1, value=letters[1:nClusters(cl)[1]]
+   clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+   removeSil=c(TRUE,FALSE))
+cl<-renameClusters(cl, whichCluster=1, 
+   value=letters[1:nClusters(cl)[1]])
 plotFeatureBoxplot(cl,feature=1)
 }
 \seealso{
