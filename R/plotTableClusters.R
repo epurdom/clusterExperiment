@@ -76,6 +76,7 @@ setMethod(
 #' @details Note that the cluster labels in \code{plotTableClusters} and 
 #' \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
 #' because \code{tableClusters} calls the R function \code{table}, which makes this 
+#' @inheritParams plotHeatmap
 #' conversion.
 #' @seealso \code{\link[base]{table}}
 #' @export
