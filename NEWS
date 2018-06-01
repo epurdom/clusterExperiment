@@ -24,6 +24,7 @@ Changes:
 	- `whichAssay` to all functions to allow the user to select the assay on which the operations will be performed.
 	- `stopOnErrors` to `RSEC`
 	- `nColLegend` to `plotReducedDims`
+	- `subsample` and `sequential` to `RSEC` to allow for opting out of those options (but default is `TRUE` unlike `clusterMany`)
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.

@@ -26,13 +26,13 @@
 \S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
   reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
   "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
-  "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
-  alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
-  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
-  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, stopOnErrors = FALSE,
-  run = TRUE)
+  "reducedDims"), k0s = 4:15, subsample = TRUE, sequential = TRUE,
+  clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
+  betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
+  dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
+  mergeLogFCcutoff, verbose = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
+  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -83,6 +83,16 @@ stored filtering or reducedDim values in the object.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see
 \code{\link{seqCluster}})}
+
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
+step is done on the co-occurance between clusterings in the subsampled
+clustering results.  If FALSE, the mainClustering step will be run directly
+on \code{x}/\code{diss}}
+
+\item{sequential}{logical whether to use the sequential strategy (see details
+of \code{\link{seqCluster}}). Can be used in combination with
+\code{subsample=TRUE} or \code{FALSE}.}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
