@@ -74,6 +74,7 @@ setMethod(
 #'  to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.
 #' @param clusterLegend list in \code{clusterLegend} format that gives colors for the
 #'  clusters tabulated.
+#' @param ... arguments passed on to \code{plotHeatmap}
 #' @seealso \code{\link{plotHeatmap}}
 #' @details Note that the cluster labels in \code{plotTableClusters} and 
 #' \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
@@ -109,7 +110,7 @@ setMethod(
 		plotHeatmap(tableAll[,order2],
 			colData=cData, annRow=rData,
 			clusterLegend=clusterLegend,
-			clusterFeatures=cluster,clusterSamples=cluster
+			clusterFeatures=cluster,clusterSamples=cluster,...
 			)
 		invisible(tableAll[,order2])
   	

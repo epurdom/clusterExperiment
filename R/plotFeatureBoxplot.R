@@ -110,7 +110,7 @@ setMethod(
     }
     if(is.null(main)){
       if(!is.null(rownames(object))) main<-paste("Gene expression of",rownames(object)[feature])
-      else paste("Gene expression of feature number",feature)
+      else paste("Gene expression of feature, index number",feature)
     }
     cl<-factor(cl,levels=if(uniqueNames) clLegend[,"name"] else clLegend[,"clusterIds"])
     invisible(boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...))

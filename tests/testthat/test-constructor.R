@@ -248,11 +248,21 @@ test_that("subsetting works as promised",{
 	
 	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
 	
-	#test pulls colors correctly.
+	#test pulls colors and names correctly. have ids in clus
+	ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]
+	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
 	cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]
 	cl<-clusterLegend(cc)[["Cluster1"]]
-	expect_equal(cl2[,c("color","name")],cl[match(cl2[,"name"],cl[,"name"]),c("color","name")])
+	#check that all of new in old and vice versa(i.e. didn't give them new names)
+	expect_equal(sort(cl2[,"name"]),oldNames)
+	#check right color with name
+	m<-match(cl2[,"name"],cl[,"name"])
+	expect_equal(cl2[,c("color","name")],cl[m,c("color","name")])
 	
+	###Subset entire clusters and check get them all, etc.
+	wh<-which(clusterMatrixNamed(cc) %in% oldNames)
+	#check same tabulations
+	expect_equal(tableClusters(cc[,wh],whichCluster="Cluster1"),tableClusters(cc,whichCluster="Cluster1")[oldNames])
 	
   ###But this tests names stay the same regardless, even when renumber.
   expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 

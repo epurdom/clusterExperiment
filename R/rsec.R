@@ -182,7 +182,7 @@ setMethod(
   }
   genFormals
 }
-.postClusterMany<-function(ce,stopOnErrors,...){
+.postClusterMany<-function(ce,stopOnErrors=FALSE,...){
   defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
   #remove those without anything defined
   defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",signature="SingleCellExperiment"),function(x){!isTRUE(x=="")}))]
