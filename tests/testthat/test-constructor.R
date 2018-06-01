@@ -250,9 +250,9 @@ test_that("subsetting works as promised",{
 	
 	#test pulls colors and names correctly. have ids in clus
 	ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]
-	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
 	cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]
 	cl<-clusterLegend(cc)[["Cluster1"]]
+	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
 	#check that all of new in old and vice versa(i.e. didn't give them new names)
 	expect_equal(sort(cl2[,"name"]),oldNames)
 	#check right color with name
