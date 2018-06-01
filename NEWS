@@ -20,14 +20,16 @@ Changes:
 	- `renameClusters` and `recolorClusters`: assign new names/colors to clusters within a particular clustering
   - `clusterMatrixColors`: wrapper to `convertClusterLegend` to return matrix like `clusterMatrix` only with colors in place of the internal cluster ids (like existing `clusterMatrixNamed`)
 	- `plotTableClusters` for plotting a heatmap showing the results of `tableClusters`
+* Added arguments:
+	- `whichAssay` to all functions to allow the user to select the assay on which the operations will be performed.
+	- `stopOnErrors` to `RSEC`
+	- `nColLegend` to `plotReducedDims`
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
-* Added option `whichAssay` to functions to allow the user to select the assay on which the operations will be performed.
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
-* Added option `nColLegend` to `plotReducedDims`
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
+* Added `table` method to `plotHeatmap` (for plotting heatmap of results of `table` function)
 * Added error catch if try to give argument `whichCluster` to `mergeCluster`.
 * Added error catch if give param `whichClusters` to functions that only take `whichCluster` (singular) as an argument
-* Added `table` method to `plotHeatmap` (for plotting heatmap of results of `table` function)
 
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`

@@ -31,7 +31,8 @@
   consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
   mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE)
+  whichAssay = 1, ncores = 1, random.seed = NULL, stopOnErrors = FALSE,
+  run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -142,6 +143,13 @@ that all of the runs are run on the same subsample of the data). Note, if
 'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 (which is preferred for improving speed anyway).}
+
+\item{stopOnErrors}{logical. If \code{FALSE}, if RSEC hits an error \emph{after} 
+the \code{clusterMany} step, it will return the results up to that point, rather 
+than generating a stop error. The text of error will be printed as a NOTE. This 
+allows the user to get the results to that point, so as to not have to rerun 
+the computationally heavy earlier steps. The \code{TRUE} option is only provided 
+for debugging purposes.}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
