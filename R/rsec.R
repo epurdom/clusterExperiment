@@ -21,6 +21,12 @@
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
 #'   without the computational costs of the clusterMany step.
+#' @param stopOnErrors logical. If \code{FALSE}, if RSEC hits an error \emph{after} 
+#'  the \code{clusterMany} step, it will return the results up to that point, rather 
+#'  than generating a stop error. The text of error will be printed as a NOTE. This 
+#'  allows the user to get the results to that point, so as to not have to rerun 
+#'  the computationally heavy earlier steps. The \code{TRUE} option is only provided 
+#'  for debugging purposes.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all
 #'   of the clusterings from the steps of RSEC
 #' @inheritParams clusterMany
@@ -92,24 +98,28 @@ setMethod(
 setMethod(
   f = "RSEC",
   signature = signature(x = "SingleCellExperiment"),
-  definition = function(x, isCount=FALSE,transFun=NULL,
-                        reduceMethod="PCA",
-                        nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
-                        nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), k0s=4:15,
-                        clusterFunction="hierarchical01", #listBuiltInType01(),
-                        alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
-                        consensusProportion=0.7,
-                        consensusMinSize,
-                        dendroReduce,
-                        dendroNDims,
-                        mergeMethod="adjP",
-                        mergeCutoff,
-                        mergeLogFCcutoff,
-                        verbose=FALSE,
-                        mainClusterArgs=NULL,
-                        subsampleArgs=NULL,
-                        seqArgs=NULL, whichAssay = 1,
-                        ncores=1, random.seed=NULL, run=TRUE
+  definition = function(x, 
+		isCount=FALSE,
+		transFun=NULL,
+    reduceMethod="PCA",
+    nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
+    nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), 
+		k0s=4:15,
+    clusterFunction="hierarchical01", #listBuiltInType01(),
+    alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
+    consensusProportion=0.7,
+    consensusMinSize,
+    dendroReduce,
+    dendroNDims,
+    mergeMethod="adjP",
+    mergeCutoff,
+    mergeLogFCcutoff,
+    verbose=FALSE,
+    mainClusterArgs=NULL,
+    subsampleArgs=NULL,
+    seqArgs=NULL, whichAssay = 1,
+    ncores=1, random.seed=NULL, 
+		stopOnErrors=FALSE, run=TRUE
   )
   {
     if(reduceMethod=="none"){
@@ -133,7 +143,8 @@ setMethod(
     if(run){
       #first add ones that have default value
       passedArgs<-list(ce=ce,consensusProportion=consensusProportion,
-                       mergeMethod=mergeMethod,whichAssay=whichAssay)
+                       mergeMethod=mergeMethod,whichAssay=whichAssay,
+											 stopOnErrors=stopOnErrors)
       #add those who will use default value from the function -- is there easier way
       if(!missing(consensusProportion))
         passedArgs<-c(passedArgs,consensusProportion=consensusProportion)
@@ -169,7 +180,7 @@ setMethod(
   }
   genFormals
 }
-.postClusterMany<-function(ce,...){
+.postClusterMany<-function(ce,stopOnErrors,...){
   defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
   #remove those without anything defined
   defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",signature="SingleCellExperiment"),function(x){!isTRUE(x=="")}))]
@@ -215,12 +226,23 @@ setMethod(
         if(!inherits(mergeTry,"try-error")){
           ce<-mergeTry
         }
-        else .mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
+        else{
+        	if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
+					else stop(mergeTry)
+        }
       }
       else .mynote("clusters will not be merged because argument 'mergeMethod' was not given (or was equal to 'none')")
     }
-    else .mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
+    else{
+    	if(!stopOnErrors).mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
+			else stop(dendroTry)
+    	
+    }
   }
-  else .mynote(paste("makeConsensus encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
+  else{
+  	if(!stopOnErrors).mynote(paste("makeConsensus encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
+		else stop(combineTry)
+  	
+  }
   return(ce)
 }
