@@ -25,6 +25,7 @@ Changes:
 	- `stopOnErrors` to `RSEC`
 	- `nColLegend` to `plotReducedDims`
 	- `subsample` and `sequential` to `RSEC` to allow for opting out of those options (but default is `TRUE` unlike `clusterMany`)
+* `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"`. 
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.

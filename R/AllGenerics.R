@@ -24,7 +24,7 @@ setGeneric(name = "nodeMergeInfo", def=function(x,...){ standardGeneric("nodeMer
 setGeneric(name = "mergeClusterIndex",def=function(x,...){ standardGeneric("mergeClusterIndex")})
 setGeneric(name = "mergeMethod",def=function(x,...){standardGeneric("mergeMethod")})
 setGeneric(name = "mergeCutoff", def=function(x,...){ standardGeneric("mergeCutoff")})
-
+setGeneric(name="eraseMergeInfo",def=function(x,...){ standardGeneric("eraseMergeInfo")})
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 
 setGeneric(

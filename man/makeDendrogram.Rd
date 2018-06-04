@@ -91,7 +91,7 @@ The argument \code{unassignedSamples} governs what is done with
   for the \code{@dendro_samples} slot.
 
 If any merge information is stored in the input object, it will be
-  erased by a call to mergeDendrogram.
+  erased by a call to makeDendrogram.
 }
 \examples{
 data(simData)
