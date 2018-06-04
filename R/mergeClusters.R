@@ -248,7 +248,7 @@ setMethod(
 				otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
 		    otherVals<-c(otherVals,adjPFCMethod)
     }
-		else otherVls<-adjPFCMethod
+		else otherVals<-adjPFCMethod
 			
     possibleValues<-unique(c("none", "all","mergeMethod",.availMergeMethods,otherVals))
     plotInfo<-match.arg(plotInfo,possibleValues)
