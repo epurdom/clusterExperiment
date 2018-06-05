@@ -346,12 +346,13 @@ setMethod(
   f = "subsetByCluster",
   signature = "ClusterExperiment",
   definition = function(x,value,whichCluster="primary",matchTo=c("name","clusterIds")) {
-    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    
+		whCl<-.convertSingleWhichCluster(x,whichCluster)
 		matchTo<-match.arg(matchTo)
 		if(matchTo=="name"){
-			cl<-clusterMatrixNamed[,whCl]
+			cl<-clusterMatrixNamed(x)[,whCl]
 		}
-		else cl<-clusterMatrix[,whCl]
+		else cl<-clusterMatrix(x)[,whCl]
 		return(x[,which(cl %in% value)])
   }
 )
