@@ -34,14 +34,15 @@
 #'	as the number of rows of the new data (i.e. with blanks) giving the group name  
 #'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
 #'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-#'   names will be used, other wise "Feature Group1", "Feature Group2", etc. The NA rows are given 
-#'   NA values. 
+#'   names will be used, other wise "Feature Group1", "Feature Group2", etc. 
+#'   The NA rows are given NA values. 
+#'  }
 #'  \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the same length 
 #'	as the number of columns of the new data (i.e. with blanks) giving the group name  
 #'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
 #'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-#'   names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are given 
-#'   NA values. 
+#'   names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are 
+#'   given NA values. 
 #'   }	
 #' }
 #'

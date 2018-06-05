@@ -116,12 +116,23 @@ slot of the object.}
  the returned data because they are not necessarily unique. However, they can be 
  given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
  \code{\link{plotHeatmap}}.}
- \item{"groupNamesWBlanks"}{ A vector of characters of the same length 
+ \item{"colNamesWBlanks"}{ A vector of characters giving the colnames for the
+ data, including blanks for the NA rows. They can be 
+ given to the \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
+ \code{\link{plotHeatmap}}.}
+ \item{"featureGroupNamesWBlanks"}{ A vector of characters of the same length 
 as the number of rows of the new data (i.e. with blanks) giving the group name  
  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-  names will be used, other wise "Group1", "Group2", etc. The NA rows are given 
-  NA values. 
+  names will be used, other wise "Feature Group1", "Feature Group2", etc. 
+  The NA rows are given NA values. 
+ }
+ \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the same length 
+as the number of columns of the new data (i.e. with blanks) giving the group name  
+ for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
+  list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
+  names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are 
+  given NA values. 
   }	
 }
 
