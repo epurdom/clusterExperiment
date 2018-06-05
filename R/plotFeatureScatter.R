@@ -21,16 +21,20 @@ setMethod(
 #'  will not be plotted.
 #' @param features the indices of the features (either numeric or character 
 #'  matching rownames of object) to be plotted.
+#' @param jitterData logical. Whether to jitter the data (useful for low counts)
+#' @rdname plotFeatureScatter
+#' @export
 setMethod(
   f = "plotFeatureScatter",
   signature = signature(object = "ClusterExperiment",features="numeric"),
-  definition = function(object, features, whichCluster, plotUnassigned=TRUE,unassignedColor="grey",missingColor="white",whichAssay=1,legendLocation=NA,...)
+  definition = function(object, features, whichCluster, plotUnassigned=TRUE,unassignedColor="grey",missingColor="white",whichAssay=1,legendLocation=NA,jitterData=FALSE,...)
   {
 		if(length(features)<2) stop("plotFeatureScatter requires at least 2 features")
     whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
  
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[features,]
+		if(jitterData) dat<-jitter(dat)
 		if(is.null(rownames(dat))){
 			rownames(dat)<-paste("Feature",features,sep=" ")
 		}

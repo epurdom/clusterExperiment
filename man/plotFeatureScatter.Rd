@@ -4,15 +4,44 @@
 \name{plotFeatureScatter}
 \alias{plotFeatureScatter}
 \alias{plotFeatureScatter,ClusterExperiment-method}
+\alias{plotFeatureScatter,ClusterExperiment,numeric-method}
 \title{Plot scatter plot of feature values colored by cluster}
 \usage{
 \S4method{plotFeatureScatter}{ClusterExperiment,character}(object, features,
   ...)
+
+\S4method{plotFeatureScatter}{ClusterExperiment,numeric}(object, features,
+  whichCluster, plotUnassigned = TRUE, unassignedColor = "grey",
+  missingColor = "white", whichAssay = 1, legendLocation = NA,
+  jitterData = FALSE, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
 
+\item{features}{the indices of the features (either numeric or character 
+matching rownames of object) to be plotted.}
+
 \item{...}{arguments passed to \code{\link{boxplot}}}
+
+\item{whichCluster}{which clusters to show on the plot}
+
+\item{plotUnassigned}{whether to plot the unassigned samples as a cluster
+(either -1 or -2)}
+
+\item{unassignedColor}{If not NULL, should be character value giving the
+color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
+
+\item{missingColor}{If not NULL, should be character value giving the color
+for missing (-2) samples (overrides \code{clusterLegend}) default.}
+
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
+
+\item{legendLocation}{character value passed to \code{location} argument of 
+\code{plotClusterLegend} indicating where to put the legend. If NA, legend 
+will not be plotted.}
+
+\item{jitterData}{logical. Whether to jitter the data (useful for low counts)}
 }
 \description{
 Plot a scatter plot of the (transformed) values for a set of
