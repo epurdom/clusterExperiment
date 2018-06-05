@@ -22,12 +22,14 @@ Changes:
   - `clusterMatrixColors`: wrapper to `convertClusterLegend` to return matrix like `clusterMatrix` only with colors in place of the internal cluster ids (like existing `clusterMatrixNamed`)
 	- `plotTableClusters` for plotting a heatmap showing the results of `tableClusters`
 	- `subsetByCluster` for subsetting CE object to only those samples in a particular cluster(s) of a clustering.
+	- `plotFeatureScatter` for a scatter plot of 2+ features colored by cluster
 * Added arguments:
 	- `whichAssay` to all functions to allow the user to select the assay on which the operations will be performed.
 	- `stopOnErrors` to `RSEC`
 	- `nColLegend` to `plotReducedDims`
 	- `subsample` and `sequential` to `RSEC` to allow for opting out of those options (but default is `TRUE` unlike `clusterMany`)
 	- `nBlankSamples` and `groupsOfSamples` to `makeBlankData` to allow for separating samples (columns)
+	- `add` and `location` to `plotClusterLegend`
 * `makeBlankData` will now allow for making blank columns to separate groups of samples.
 * `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"` 
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`

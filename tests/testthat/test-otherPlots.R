@@ -206,6 +206,24 @@ test_that("plotting Table clusters works",{
 	expect_silent(plotTableClusters(tableClusters(cc,whichClusters=c(1,2))))
 })
 
+test_that("plotFeatureScatter works",{
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2,3),whichCluster=1,pch=19))
+	expect_error(plotFeatureScatter(object=cc,features=c("Gene1","Gene4"),whichCluster=1),"not all of features match one")
+
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19))
+
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19,plotUnassigned=FALSE))
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),unassignedColor="black",whichCluster=1,pch=19,legend="topright"))
+
+	cc2<-cc
+	rownames(cc2)<-NULL
+	plotFeatureScatter(object=cc2,features=c(1,2),whichCluster=1,pch=19)
+	plotFeatureScatter(object=cc2,features=c(1,2,3),whichCluster=1,pch=19)
+
+})
+
 test_that("plotting works with hdf5 assays objects",{
 	##plotClusters
     expect_silent(cl1 <- clusterSingle(hdfSCE, reduceMethod="PCA",

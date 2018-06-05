@@ -8,6 +8,7 @@ setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeRe
 
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
 setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+setGeneric("plotFeatureScatter", function(object,features,...) { standardGeneric("plotFeatureScatter")})
 
 setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })
 setGeneric( "plotTableClusters", function(object,...){ standardGeneric("plotTableClusters") })

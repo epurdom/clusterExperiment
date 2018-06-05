@@ -52,7 +52,8 @@ seqPal4
 seqPal1
 
 \S4method{plotClusterLegend}{ClusterExperiment}(object,
-  whichCluster = "primary", clusterNames, title, ...)
+  whichCluster = "primary", clusterNames, title, add = FALSE,
+  location = if (add) "topright" else "center", ...)
 }
 \arguments{
 \item{data}{matrix with samples on columns and features on rows.}
@@ -103,6 +104,11 @@ argument is missing, will use the names in the "name" column of the clusterLegen
 slot of the object.}
 
 \item{title}{title for the clusterLegend plot}
+
+\item{add}{logical. Whether legend should be added to the existing plot.}
+
+\item{location}{character passed to \code{x} argument of legend indicating 
+where to place legend.}
 
 \item{...}{arguments passed to legend}
 }

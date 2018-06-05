@@ -104,7 +104,7 @@ setMethod(
       warning("Non-unique names for the clusters. Will order them by internal cluster ids")
       cl<-clusterMatrix(object)[,whichCluster,drop=FALSE]
     }
-    if(!is.null(dim(col))){
+    if(!is.null(dim(cl))){
       if(ncol(cl)>1) stop("only a single cluster may be used in whichCluster")
       else cl<-cl[,1]
     }
