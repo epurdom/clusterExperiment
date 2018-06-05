@@ -26,11 +26,21 @@
 #'  the returned data because they are not necessarily unique. However, they can be 
 #'  given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
 #'  \code{\link{plotHeatmap}}.}
-#'  \item{"groupNamesWBlanks"}{ A vector of characters of the same length 
+#'  \item{"colNamesWBlanks"}{ A vector of characters giving the colnames for the
+#'  data, including blanks for the NA rows. They can be 
+#'  given to the \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
+#'  \code{\link{plotHeatmap}}.}
+#'  \item{"featureGroupNamesWBlanks"}{ A vector of characters of the same length 
 #'	as the number of rows of the new data (i.e. with blanks) giving the group name  
 #'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
 #'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-#'   names will be used, other wise "Group1", "Group2", etc. The NA rows are given 
+#'   names will be used, other wise "Feature Group1", "Feature Group2", etc. The NA rows are given 
+#'   NA values. 
+#'  \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the same length 
+#'	as the number of columns of the new data (i.e. with blanks) giving the group name  
+#'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
+#'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
+#'   names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are given 
 #'   NA values. 
 #'   }	
 #' }
@@ -103,7 +113,7 @@ makeBlankData <- function(data,groupsOfFeatures=NULL,groupsOfSamples=NULL,nBlank
 	  if(!is.null(names(groupsOfFeatures)) && length(unique(names(groupsOfFeatures)))==length(names(groupsOfFeatures)) ){
 		  gNames<-names(groupsOfFeatures)
 	  }
-	  else gNames<-paste("Feature Group",seq_along(groupsOfFeatures),sep="")
+	  else gNames<-paste("FeatureGroup",seq_along(groupsOfFeatures),sep="")
 	  groupNames<- lapply(seq_along(dataList),function(i){
 		  gname<-rep(gNames[i],times=length(groupsOfFeatures[[i]]))
 		  if(i!=length(dataList)) gname<-c(gname,rep(NA,nBlankFeatures))
@@ -146,7 +156,7 @@ makeBlankData <- function(data,groupsOfFeatures=NULL,groupsOfSamples=NULL,nBlank
 	  if(!is.null(names(groupsOfSamples)) && length(unique(names(groupsOfSamples)))==length(names(groupsOfSamples)) ){
 		  gNames<-names(groupsOfSamples)
 	  }
-	  else gNames<-paste("Sample Group",seq_along(groupsOfSamples),sep="")
+	  else gNames<-paste("SampleGroup",seq_along(groupsOfSamples),sep="")
 	  groupNames<- lapply(seq_along(dataList),function(i){
 		  gname<-rep(gNames[i],times=length(groupsOfSamples[[i]]))
 		  if(i!=length(dataList)) gname<-c(gname,rep(NA,nBlankSamples))
