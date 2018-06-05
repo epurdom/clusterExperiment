@@ -346,7 +346,7 @@ setMethod(
   f = "subsetByCluster",
   signature = "ClusterExperiment",
   definition = function(x,value,whichCluster="primary",matchTo=c("name","clusterIds")) {
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-.convertSingleWhichCluster(x,whichCluster)
 		matchTo<-match.arg(matchTo)
 		if(matchTo=="name"){
 			cl<-clusterMatrixNamed[,whCl]
