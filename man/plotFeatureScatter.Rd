@@ -13,7 +13,7 @@
 \S4method{plotFeatureScatter}{ClusterExperiment,numeric}(object, features,
   whichCluster, plotUnassigned = TRUE, unassignedColor = "grey",
   missingColor = "white", whichAssay = 1, legendLocation = NA,
-  jitterData = FALSE, ...)
+  jitterFactor = NA, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -41,7 +41,9 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 \code{plotClusterLegend} indicating where to put the legend. If NA, legend 
 will not be plotted.}
 
-\item{jitterData}{logical. Whether to jitter the data (useful for low counts)}
+\item{jitterFactor}{numeric. If NA, no jittering is done. Otherwise, passed to 
+\code{factor} of function \code{\link[package=base]{jitter}}
+ (useful for low counts)}
 }
 \description{
 Plot a scatter plot of the (transformed) values for a set of
