@@ -565,14 +565,14 @@ setMethod(
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,whRows)})
-      blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
+      blankData<-makeBlankData(data=heatData,groupsOfFeatures=groupFeatures,nBlankFeatures=nBlankLines)
       #replace heatData with one with blanks -- won't cluster them now...
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       clusterFeatures<-FALSE
 
       if(!is.null(names(groupFeatures))){
-        annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks,levels=names(groupFeatures)))
+        annRow<-list("Gene Group"=factor(blankData$featureGroupNamesWBlanks,levels=names(groupFeatures)))
         #show color-coding of gene groupings:
         if("annRow" %in% names(userList)){
           stop("Cannot provide 'annRow' if grouping features")

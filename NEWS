@@ -13,6 +13,7 @@ Changes:
   - `ignoreUnassignedVar` -> `filterIgnoresUnassigned` in `mergeClusters` (and other functions) for clarity.
 	- `removeNegative` -> `removeUnassigned` in `getBestFeatures` for uniformity
 	-  Removed `largeDataset` option to `subsampleClustering` because no longer provides advantage.
+	- `nBlankFeatures` -> `nBlankFeatures` in `makeBlankData` to allow for samples
 * Created functions:
   - `primaryClusterLabel` and `primaryClusterType`
   - `getReducedData` 
@@ -25,7 +26,9 @@ Changes:
 	- `stopOnErrors` to `RSEC`
 	- `nColLegend` to `plotReducedDims`
 	- `subsample` and `sequential` to `RSEC` to allow for opting out of those options (but default is `TRUE` unlike `clusterMany`)
-* `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"`. 
+	- `nBlankSamples` and `groupsOfSamples` to `makeBlankData` to allow for separating samples (columns)
+* `makeBlankData` will now allow for making blank columns to separate groups of samples.
+* `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"` 
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.

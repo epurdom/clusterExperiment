@@ -155,12 +155,15 @@ setMethod(
     repResults<-do.call("cbind",repResults)
     ##Add blanks
     if(highlightOnTop){
-      bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(resM,cmM)),
+						groupsOfFeatures=list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),
+						nBlankFeatures=nBlankLines
+						)
       whNotRes<-(length(whichClusters)+1):nrow(bd$dataWBlanks) #includes blanks
       whCM<-whNotRes[-c(seq_len(nBlankLines))] #no blanks
     } 	
     else{
-      bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(cmM,resM)), groupsOfFeatures= list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankFeatures=nBlankLines)
       whNotRes<-  seq_len(length(whichClusterMany)+nBlankLines) #includes blanks
       whCM<-  seq_along(whichClusterMany) #no blanks
     }  

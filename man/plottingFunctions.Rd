@@ -23,7 +23,8 @@
 \title{Convert clusterLegend into useful formats}
 \format{An object of class \code{character} of length 56.}
 \usage{
-makeBlankData(data, groupsOfFeatures, nBlankLines = 1)
+makeBlankData(data, groupsOfFeatures = NULL, groupsOfSamples = NULL,
+  nBlankFeatures = 1, nBlankSamples = 1)
 
 \S4method{convertClusterLegend}{ClusterExperiment}(object,
   output = c("plotAndLegend", "aheatmapFormat", "matrixNames",
@@ -57,10 +58,17 @@ seqPal1
 \item{data}{matrix with samples on columns and features on rows.}
 
 \item{groupsOfFeatures}{list, with each element of the list containing a
-vector of numeric indices.}
+vector of numeric indices of features (rows).}
 
-\item{nBlankLines}{the number of blank lines to add in the data matrix to
-separate the groups of indices (will govern the amount of white space if
+\item{groupsOfSamples}{list, with each element of the list containing a
+vector of numeric indices of samples (columns).}
+
+\item{nBlankFeatures}{the number of blank lines to add in the data matrix to
+separate the groups of feature indices (will govern the amount of white space if
+data is then fed to heatmap.)}
+
+\item{nBlankSamples}{the number of blank lines to add in the data matrix to
+separate the groups of sample indices (will govern the amount of white space if
 data is then fed to heatmap.)}
 
 \item{object}{a \code{ClusterExperiment} object.}

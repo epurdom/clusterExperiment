@@ -136,7 +136,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
 })
 
 test_that("`makeBlankData` works", {
-  ##call directly
+  ##call directly, features
   gps<-list(c(3,6,7),c(2,1))
   expect_silent(xx<-makeBlankData(assay(smSimCE),groupsOfFeatures=gps))
   expect_equal(nrow(xx$dataWBlanks),length(xx$rowNamesWBlanks))
@@ -146,6 +146,36 @@ test_that("`makeBlankData` works", {
   expect_equal(whBlankRows,whBlankNames)
   expect_equal(whBlankRows,4)
 
+  ##call directly, samples
+  gps<-list(c(3,6,7),c(2,1))
+  expect_silent(xy<-makeBlankData(assay(smSimCE),groupsOfSamples=gps))
+  expect_equal(ncol(xy$dataWBlanks),length(xy$colNamesWBlanks))
+  whBlankNames<-which(xy$colNamesWBlanks=="")
+  expect_equal(xy$colNamesWBlanks[-whBlankNames],as.character(unlist(gps)) )
+  whBlankCols<-as.numeric(which(apply(xy$dataWBlanks,2,function(x){all(is.na(x))})))
+  expect_equal(whBlankCols,whBlankNames)
+  expect_equal(whBlankCols,4)
+
+
+  ##call directly, features and samples
+  gpsR<-list(c(3,6,7),c(2,1))
+  gpsC<-list(c(8,1,3),c(9,10))
+  expect_silent(yy<-makeBlankData(assay(smSimCE),groupsOfFeatures=gpsR,groupsOfSamples=gpsC))
+  expect_equal(ncol(yy$dataWBlanks),length(yy$colNamesWBlanks))
+  expect_equal(nrow(yy$dataWBlanks),length(yy$rowNamesWBlanks))
+  whBlankNames<-which(yy$colNamesWBlanks=="")
+  expect_equal(yy$colNamesWBlanks[-whBlankNames],as.character(unlist(gpsC)) )
+  whBlankCols<-as.numeric(which(apply(yy$dataWBlanks,2,function(x){all(is.na(x))})))
+  expect_equal(whBlankCols,whBlankNames)
+  expect_equal(whBlankCols,4)
+  
+	whBlankNames<-which(yy$rowNamesWBlanks=="")
+  expect_equal(yy$rowNamesWBlanks[-whBlankNames],as.character(unlist(gpsR)) )
+  whBlankRows<-as.numeric(which(apply(yy$dataWBlanks,1,function(x){all(is.na(x))})))
+  expect_equal(whBlankRows,whBlankNames)
+  expect_equal(whBlankRows,4)
+
+  
   ##call within plotHeatmap (serves as test of NA capabilities)
   expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps))
   expect_warning(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=40))
