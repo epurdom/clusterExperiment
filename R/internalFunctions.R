@@ -73,27 +73,33 @@
 
 #Returns NULL if no sample data
 .pullColData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
+		.pullData(ce=ce,wh=wh,fixNA=fixNA,type="colData")
+}
+.pullRowData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing")){
+		.pullData(ce=ce,wh=wh,fixNA=fixNA,type="rowData")
+}
+.pullData<-function(ce,wh,fixNA=c("keepNA","unassigned","missing"),type=c("colData","rowData")){
+	type<-match.arg(type)
   fixNA<-match.arg(fixNA)
   if(!is.null(wh)){
-    sData<-colData(ce)
-    if(!is.logical(wh)){
-      
-      if(NCOL(sData)==0) stop("no colData for object data, so cannot pull sample data")
+    sData<-switch(type,"colData"=colData(ce),"rowData"=rowData(ce))
+		if(!is.logical(wh)){      
+      if(NCOL(sData)==0) stop(sprintf("no %s available for object, so cannot pull requested columns",type))
       if(is.character(wh)){
-        if(all(wh=="all")) wh<-seq_len(NCOL(sData))
+        if(all(wh=="all")) wh<- seq_len(NCOL(sData))
         else{
-          if(!all(wh %in% colnames(sData))) stop("Invalid names for pulling sample data (some do not match names of colData)")
+          if(!all(wh %in% colnames(sData))) stop(sprintf("Invalid names for pulling %s (some do not match names of %s)",type,type))
           else wh<-match(wh,colnames(sData))
         }
       }
       else if(is.numeric(wh)){
-        if(!all(wh %in% seq_len(NCOL(sData)))) stop("Invalid indices for for pulling sample data (some indices are not in 1:NCOL(colData)")
+        if(!all(wh %in% seq_len(NCOL(sData)))) stop(sprintf("Invalid indices for for pulling %s data (some indices are not in 1:NCOL(%s))",type,type))
       }
-      else stop("invalid values for pulling sample data from colData of object")
+      else stop(sprintf("invalid values for pulling columns from %s of object",type))
       sData<-as.data.frame(sData[,wh,drop=FALSE])
     }
     else{ #if 
-      if(wh) sData<- colData(ce)
+      if(wh) sData<- switch(type,"colData"=colData(ce),"rowData"=rowData(ce))
       else sData<-NULL
     }
   }
@@ -122,6 +128,10 @@
   }
   return(sData)
 }
+
+
+
+
 
 .unnameClusterSlots<-function(ce){
   names(ce@clusterLegend)<-names(ce@clusterInfo)<-names(ce@clusterTypes)<-NULL

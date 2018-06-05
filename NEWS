@@ -1,4 +1,4 @@
-Changes in version 2.1.3-9004 ( Release date: )
+Changes in version 2.1.3-9008 ( Release date: )
 ==============
 
 Changes:
@@ -27,6 +27,7 @@ Changes:
 	- `nColLegend` to `plotReducedDims`
 	- `subsample` and `sequential` to `RSEC` to allow for opting out of those options (but default is `TRUE` unlike `clusterMany`)
 	- `nBlankSamples` and `groupsOfSamples` to `makeBlankData` to allow for separating samples (columns)
+	- `rowData` in `plotHeatmap`
 * `makeBlankData` will now allow for making blank columns to separate groups of samples.
 * `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"` 
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`

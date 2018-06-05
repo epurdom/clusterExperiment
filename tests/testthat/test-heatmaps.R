@@ -61,11 +61,17 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
   
   
   #test colData
-  expect_error(plotHeatmap(cc,colData="A"), "no colData for object data")
+  expect_error(plotHeatmap(cc,colData="A"), "no colData available for object")
+  expect_error(plotHeatmap(cc,rowData="a",clusterFeaturesData="all"), "no rowData available for object")
   
   expect_silent(plotHeatmap(smSimCE,colData="all"))
   expect_silent(plotHeatmap(smSimCE,colData="A",plot=plotAll))
   expect_silent(plotHeatmap(smSimCE,colData=2:3,plot=plotAll))
+
+
+  expect_silent(plotHeatmap(smSimCE,rowData="all"))
+  expect_silent(plotHeatmap(smSimCE,rowData="a",plot=plotAll))
+  expect_silent(plotHeatmap(smSimCE,rowData=2:3,plot=plotAll))
   
   #check that it pulls the names, not the clusterIds.
   clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
@@ -155,6 +161,7 @@ test_that("`makeBlankData` works", {
   whBlankCols<-as.numeric(which(apply(xy$dataWBlanks,2,function(x){all(is.na(x))})))
   expect_equal(whBlankCols,whBlankNames)
   expect_equal(whBlankCols,4)
+  expect_silent(plotHeatmap(xy$dataWBlanks,clusterSamples=FALSE))
 
 
   ##call directly, features and samples

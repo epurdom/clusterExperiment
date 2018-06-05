@@ -27,14 +27,14 @@
   "primaryCluster"), clusterFeaturesData = "var", nFeatures = NA,
   visualizeData = c("transformed", "centeredAndScaled", "original"),
   whichClusters = c("primary", "workflow", "all", "none"), colData = NULL,
-  clusterFeatures = TRUE, nBlankLines = 2, colorScale, whichAssay = 1,
-  ...)
+  rowData = NULL, clusterFeatures = TRUE, nBlankLines = 2, colorScale,
+  whichAssay = 1, ...)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
 \S4method{plotHeatmap}{ExpressionSet}(data, ...)
 
-\S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL,
+\S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL, rowData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
   whColDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
@@ -102,16 +102,24 @@ clusterFeaturesData will be ignored.}
 indicating what clusters should be visualized with the heatmap.}
 
 \item{colData}{If input to \code{data} is either a
-\code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
-\code{SingleCellExperiment}, then \code{colData} must index the
-colData stored as a \code{DataFrame} in \code{colData} slot of the
-object. Whether that data is continuous or not will be determined by the
-properties of \code{colData} (no user input is needed). If input to
-\code{data} is matrix, \code{colData} is a matrix of additional data on
-the samples to show above heatmap. In this case, unless indicated by
-\code{whColDataCont}, \code{colData} will be converted into factors,
-even if numeric. ``-1'' indicates the sample was not assigned to a cluster
-and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.}
+ \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
+ \code{SingleCellExperiment}, then \code{colData} must index the
+ colData stored as a \code{DataFrame} in \code{colData} slot of the
+ object. If \code{colData=TRUE} or \code{codeData="all"} then all values in the 
+\code{colData} slot will be plotted. Whether that data is continuous or not will 
+ be determined by the
+ properties of \code{colData} (no user input is needed). If input to
+ \code{data} is matrix, \code{colData} is a matrix of additional data on
+ the samples to show above heatmap. In this case, unless indicated by
+ \code{whColDataCont}, \code{colData} will be converted into factors,
+ even if numeric. ``-1'' indicates the sample was not assigned to a cluster
+ and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.}
+
+\item{rowData}{See \code{colData} argument above. Note that passing "all" or
+\code{TRUE} to \code{rowData} will result in the plotting of any filtering 
+statistics (including those called by \code{plotHeatmap}). Unlike \code{colData}, 
+the colors assigned to \code{rowData} are set by the defaults in \code{aheatmap} #'   and are not adjusted internally to use our palette of colors. Use 
+\code{colorLegend} to adjust the colors for the \code{rowData}.}
 
 \item{clusterFeatures}{Logical as to whether to do hiearchical clustering of
 features (if FALSE, any input to clusterFeaturesData is ignored).}
@@ -260,16 +268,21 @@ If \code{data} is a matrix, then \code{colData} is a data.frame
 If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterFeaturesData} is not a dataset, but instead indicates which
   features should be shown in the heatmap. In this case
-  \code{clusterFeatures} can be one of the following: \itemize{ \item{"all"}{
-  All rows/genes will be shown} \item{character giving dimensionality
+  \code{clusterFeatures} can be one of the following: 
+  \itemize{ \item{"all"}{
+  All rows/genes will be shown} 
+  \item{character giving dimensionality
   reduction}{Should match one of values saved in \code{reducedDims} slot or a
   builtin function in \code{listBuiltInReducedDims()}. \code{nFeatures} then
   gives the number of dimensions to show. The heatmap will then be of the
-  dimension reduction vectors} \item{character giving filtering}{ Should
+  dimension reduction vectors} 
+  \item{character giving filtering}{ Should
   match one of values saved in \code{filterStats} slot or a builtin function
   in \code{listBuiltInFilterStats()}. \code{nFeatures} gives the number of
-  genes to keep after filtering.} \item{character giving gene/row names}{ }
-  \item{vector of integers giving row indices}{ } \item{a list of indices or
+  genes to keep after filtering.} 
+  \item{character giving gene/row names}{ }
+  \item{vector of integers giving row indices}{ } 
+  \item{a list of indices or
   rownames}{This is used to indicate that the features should be grouped
   according to the elements of the list, with blank (white) space between
   them (see \code{\link{makeBlankData}} for more details). In this case, no
@@ -300,8 +313,8 @@ Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
   corresponding to the levels of the column of \code{colData}), or should
   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
   object. Color assignments to the rows/genes should also be passed via
-  \code{clusterLegend} (assuming \code{annRow} is an argument passed to
-  \code{...}). If \code{clusterFeaturesData} is a \emph{named} list
+  \code{clusterLegend} (assuming \code{rowData} is given. 
+If \code{clusterFeaturesData} is a \emph{named} list
   describing groupings of genes then the colors for those groups can be given
   in \code{clusterLegend} under the name "Gene Group".
 

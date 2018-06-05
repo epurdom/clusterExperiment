@@ -108,7 +108,7 @@ setMethod(
 		names(cData)<-varNames[2]
 		if(!is.null(clusterLegend)) names(clusterLegend)<-make.names(names(clusterLegend))
 		plotHeatmap(tableAll[,order2],
-			colData=cData, annRow=rData,
+			colData=cData, rowData=rData,
 			clusterLegend=clusterLegend,
 			clusterFeatures=cluster,clusterSamples=cluster,...
 			)

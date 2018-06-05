@@ -10,13 +10,20 @@
 #'   \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
 #'   \code{SingleCellExperiment}, then \code{colData} must index the
 #'   colData stored as a \code{DataFrame} in \code{colData} slot of the
-#'   object. Whether that data is continuous or not will be determined by the
+#'   object. If \code{colData=TRUE} or \code{codeData="all"} then all values in the 
+#'  \code{colData} slot will be plotted. Whether that data is continuous or not will 
+#'   be determined by the
 #'   properties of \code{colData} (no user input is needed). If input to
 #'   \code{data} is matrix, \code{colData} is a matrix of additional data on
 #'   the samples to show above heatmap. In this case, unless indicated by
 #'   \code{whColDataCont}, \code{colData} will be converted into factors,
 #'   even if numeric. ``-1'' indicates the sample was not assigned to a cluster
 #'   and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.
+#' @param rowData See \code{colData} argument above. Note that passing "all" or  
+#'   \code{TRUE} to \code{rowData} will result in the plotting of any filtering 
+#'   statistics (including those called by \code{plotHeatmap}). Unlike \code{colData}, 
+#'   the colors assigned to \code{rowData} are set by the defaults in \code{aheatmap} #'   and are not adjusted internally to use our palette of colors. Use 
+#'   \code{colorLegend} to adjust the colors for the \code{rowData}.
 #' @param data data to use to determine the heatmap. Can be a matrix,
 #'   \code{\link{ClusterExperiment}},
 #'   \code{\link[SingleCellExperiment]{SingleCellExperiment}}or
@@ -148,16 +155,21 @@
 #' @details If \code{data} is a \code{ClusterExperiment} object,
 #'   \code{clusterFeaturesData} is not a dataset, but instead indicates which
 #'   features should be shown in the heatmap. In this case
-#'   \code{clusterFeatures} can be one of the following: \itemize{ \item{"all"}{
-#'   All rows/genes will be shown} \item{character giving dimensionality
+#'   \code{clusterFeatures} can be one of the following: 
+#'   \itemize{ \item{"all"}{
+#'   All rows/genes will be shown} 
+#'   \item{character giving dimensionality
 #'   reduction}{Should match one of values saved in \code{reducedDims} slot or a
 #'   builtin function in \code{listBuiltInReducedDims()}. \code{nFeatures} then
 #'   gives the number of dimensions to show. The heatmap will then be of the
-#'   dimension reduction vectors} \item{character giving filtering}{ Should
+#'   dimension reduction vectors} 
+#'   \item{character giving filtering}{ Should
 #'   match one of values saved in \code{filterStats} slot or a builtin function
 #'   in \code{listBuiltInFilterStats()}. \code{nFeatures} gives the number of
-#'   genes to keep after filtering.} \item{character giving gene/row names}{ }
-#'   \item{vector of integers giving row indices}{ } \item{a list of indices or
+#'   genes to keep after filtering.} 
+#'   \item{character giving gene/row names}{ }
+#'   \item{vector of integers giving row indices}{ } 
+#'   \item{a list of indices or
 #'   rownames}{This is used to indicate that the features should be grouped
 #'   according to the elements of the list, with blank (white) space between
 #'   them (see \code{\link{makeBlankData}} for more details). In this case, no
@@ -185,8 +197,8 @@
 #'   corresponding to the levels of the column of \code{colData}), or should
 #'   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
 #'   object. Color assignments to the rows/genes should also be passed via
-#'   \code{clusterLegend} (assuming \code{annRow} is an argument passed to
-#'   \code{...}). If \code{clusterFeaturesData} is a \emph{named} list
+#'   \code{clusterLegend} (assuming \code{rowData} is given. 
+#' If \code{clusterFeaturesData} is a \emph{named} list
 #'   describing groupings of genes then the colors for those groups can be given
 #'   in \code{clusterLegend} under the name "Gene Group".
 #' @details If you have a factor with many levels, it is important to note that
@@ -319,7 +331,7 @@ setMethod(
                         clusterFeaturesData="var", nFeatures=NA,
                         visualizeData=c("transformed","centeredAndScaled","original"),
                         whichClusters= c("primary","workflow","all","none"),
-                        colData=NULL,clusterFeatures=TRUE, nBlankLines=2,
+                        colData=NULL,rowData=NULL,clusterFeatures=TRUE, nBlankLines=2,
                         colorScale, whichAssay=1,
                         ...
   ){
@@ -357,21 +369,23 @@ setMethod(
     ####
     ##Transform data and determine which features to use
     ####
-    # clusterFeaturesData <- .convertTry(clusterFeaturesData,
-    #                                    try(match.arg(clusterFeaturesData),
-    #                                        silent=TRUE))
-
     if(is.list(clusterFeaturesData)){
       groupFeatures<-clusterFeaturesData
       clusterFeaturesData<-unlist(clusterFeaturesData)
     }
     else groupFeatures<-NULL
+    if(!is.null(groupFeatures) & !is.null(rowData)){
+      stop("Cannot provide 'rowData' if grouping features via 'groupFeatures'")
+    }
+		if(externalData & !is.null(rowData))
+			stop("Cannot provide 'rowData' if providing a separate matrix via 'visualizeData' option.")
     if(!externalData){
       if(!clusterFeatures && visualizeData=="original"){
         heatData<-assay(data, whichAssay)
       }
       else{
         if(length(clusterFeaturesData)==1 && isPossibleReducedDims(data,clusterFeaturesData)){
+					if(!is.null(rowData)) stop("Cannot request row data if also requesting features to be based on a reduced dims method")
           ##### Dimensionality reduction ####
           if(!isReducedDims(data,clusterFeaturesData)){
             data<-makeReducedDims(data,reducedDims=clusterFeaturesData,maxDims=nFeatures,whichAssay=whichAssay)
@@ -379,7 +393,7 @@ setMethod(
           heatData<-t(reducedDim(data,type=clusterFeaturesData))
         }
         else{
-          #remaining options subset the data,
+					#remaining options subset the data,
           #either by filtering or by user-specified genes
           #These operations will filter the input data object to only the relevant genes
           if(length(clusterFeaturesData)==1 && isPossibleFilterStats(data, clusterFeaturesData) ){
@@ -426,7 +440,36 @@ setMethod(
     else{
       heatData<-visualizeData
     }
+		
+    #################
+    ###Deal with grouping of genes
+    #################
+    if(!is.null(groupFeatures)){
+      #convert groupFeatures to indices on new set of data.
+      groupFeatures<-lapply(groupFeatures,function(x){match(x,whRows)})
+      blankData<-makeBlankData(data=heatData,groupsOfFeatures=groupFeatures,nBlankFeatures=nBlankLines)
+      #replace heatData with one with blanks -- won't cluster them now...
+      heatData<-data.matrix(blankData$dataWBlanks)
+      labRow<-blankData$rowNamesWBlanks
+      clusterFeatures<-FALSE
 
+      if(!is.null(names(groupFeatures))){
+        rowData<-list("Gene Group"=factor(blankData$featureGroupNamesWBlanks,levels=names(groupFeatures)))
+        #show color-coding of gene groupings:
+        if(!"Gene Group" %in% names(clLegend)){
+          nGroups<-length(groupFeatures)
+          groupColors<-bigPalette[seq_len(nGroups)]
+          names(groupColors)<-levels(annRow[["Gene Group"]])
+          clLegend<-c(clLegend, "Gene Group"=list(groupColors))
+        }
+      }
+    }
+    else{
+      labRow<-rownames(heatData)
+	    #this way will pull rowData after the filtering, so should work...
+			rowData<-.pullRowData(data,rowData)
+			
+    }
 
     ######
     #Make colData based on clusterings and columns of colData
@@ -479,7 +522,7 @@ setMethod(
       if(userLegend){
         userClLegend<-userList[["clusterLegend"]]
         annotNames<-colnames(colData)
-        if("annRow" %in% names(userList)) annotNames<-c(annotNames,colnames(userList$annRow))
+        if(!is.null(rowData)) annotNames<-c(annotNames,colnames(rowData))
         if(!is.null(groupFeatures)) annotNames<-c(annotNames,"Gene Group")
         userClLegend<-userClLegend[names(userClLegend) %in% annotNames]
         if(length(userClLegend)==0){
@@ -559,42 +602,12 @@ setMethod(
       else stop("clusterSamplesData must be either character, or vector of indices of samples")
     }
 
-    #################
-    ###Deal with grouping of genes
-    #################
-    if(!is.null(groupFeatures)){
-      #convert groupFeatures to indices on new set of data.
-      groupFeatures<-lapply(groupFeatures,function(x){match(x,whRows)})
-      blankData<-makeBlankData(data=heatData,groupsOfFeatures=groupFeatures,nBlankFeatures=nBlankLines)
-      #replace heatData with one with blanks -- won't cluster them now...
-      heatData<-data.matrix(blankData$dataWBlanks)
-      labRow<-blankData$rowNamesWBlanks
-      clusterFeatures<-FALSE
 
-      if(!is.null(names(groupFeatures))){
-        annRow<-list("Gene Group"=factor(blankData$featureGroupNamesWBlanks,levels=names(groupFeatures)))
-        #show color-coding of gene groupings:
-        if("annRow" %in% names(userList)){
-          stop("Cannot provide 'annRow' if grouping features")
-          # if(is.list(userList$annRow)) userList$annRow<-c(userList$annRow,annRow)
-          # else userList$annRow<-c(list(userList$annRow),annRow)
-        }
-        else userList$annRow<-annRow
-        if(!"Gene Group" %in% names(clLegend)){
-          nGroups<-length(groupFeatures)
-          groupColors<-bigPalette[seq_len(nGroups)]
-          names(groupColors)<-levels(annRow[["Gene Group"]])
-          clLegend<-c(clLegend, "Gene Group"=list(groupColors))
-        }
-      }
-    }
-    else{
-      labRow<-rownames(heatData)
-    }
     do.call("plotHeatmap",c(list(data=heatData,
                                  clusterSamplesData=clusterSamplesData,
                                  clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
-                                 colData=colData,whColDataCont=whColDataCont,
+                                 colData=colData,rowData=rowData,
+																 whColDataCont=whColDataCont,
                                  clusterSamples=clusterSamples,labRow=labRow,
                                  clusterLegend=clLegend,clusterFeatures=clusterFeatures,
                                  colorScale=colorScale),userList))
@@ -624,7 +637,7 @@ setMethod(
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "matrixOrHDF5"),
-  definition = function(data,colData=NULL,
+  definition = function(data,colData=NULL, rowData=NULL,
                         clusterSamplesData=NULL,
                         clusterFeaturesData=NULL,
                         whColDataCont=NULL,
@@ -657,8 +670,8 @@ setMethod(
       }
       return(val)
     }
-    badValues<-c("Rowv","Colv","color","annCol","annColors")
-    replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","colData","clusterLegend")
+    badValues<-c("Rowv","Colv","color","annCol","annColors","annRow")
+    replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","colData","clusterLegend","rowData")
     if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
 
     ##########
@@ -858,7 +871,7 @@ setMethod(
       out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
-                         annCol = annCol,annColors=annColors,breaks=breaks,...)
+                         annCol = annCol,annRow=rowData,annColors=annColors,breaks=breaks,...)
       
       #############
       # add labels to clusters at top of heatmap
