@@ -15,7 +15,8 @@ setGeneric( "plotTableClusters", function(object,...){ standardGeneric("plotTabl
 setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
 setGeneric( name = "removeUnassigned", def = function(object,...) {
 	standardGeneric("removeUnassigned")})
-
+setGeneric(name="subsetByCluster", def = function(x,...) {
+	standardGeneric("subsetByCluster")})
 setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
 
 ###Merge Info

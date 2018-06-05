@@ -40,6 +40,8 @@
 \alias{primaryClusterNamed}
 \alias{primaryClusterType,ClusterExperiment-method}
 \alias{primaryClusterType}
+\alias{subsetByCluster,ClusterExperiment-method}
+\alias{subsetByCluster}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
 \alias{dendroClusterIndex,ClusterExperiment-method}
@@ -112,6 +114,9 @@
 
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
+\S4method{subsetByCluster}{ClusterExperiment}(x, value,
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
+
 \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
@@ -168,6 +173,11 @@ clusterings is returned.}
 
 \item{whichCluster}{argument to identify cluster, taking input like 
 \code{whichClusters}, only requires that only a single clustering can be identified.}
+
+\item{matchTo}{for subsetting, whether to match to the cluster name
+(\code{"name"}) or internal cluster id (\code{"clusterIds"})}
+
+\item{value}{values of the cluster to match to for subsetting}
 }
 \value{
 \code{transformation} prints the function used to transform the data
@@ -205,6 +215,9 @@ labels).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{subsetByCluster} subsets the object by clusters in a clustering
+and returns a ClusterExperiment object with only those samples
 
 \code{dendroClusterIndex} returns/sets the clustering index 
 of the clusters used to create dendrogram
