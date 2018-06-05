@@ -36,8 +36,8 @@ setMethod(
 		if(ignoreUnassigned){
 			rNms<-rownames(tableAll)
 			cNms<-colnames(tableAll)
-			mat1<-cL[[whCl[1]]]
-			mat2<-cL[[whCl[2]]]
+			mat1<-cL[[1]]
+			mat2<-cL[[2]]
 			#convert names to clusterIds to check for missing
 			rNms<-mat1[match(rNms,mat1[,"name"]),"clusterIds"]
 			cNms<-mat2[match(cNms,mat2[,"name"]),"clusterIds"]
