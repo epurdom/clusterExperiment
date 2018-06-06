@@ -56,7 +56,9 @@ setMethod(
 #' @inheritParams plotReducedDims
 #' @seealso \code{\link{boxplot}}
 #' @rdname plotFeatureBoxplot
-#' @return A plot is created. The output of boxplot is returned
+#' @return A plot is created. The output of boxplot is returned (see
+#' \code{\link{boxplot}}), with an additional element \code{colors} that 
+#'  gives the colors assigned to each boxplot (pulled from \code{clusterLegend})
 #' @examples
 #' data(simData)
 #' #Create a ClusterExperiment object
@@ -97,7 +99,7 @@ setMethod(
     }
     clLegend<-orderedLegend
     if(uniqueNames){
-      cl<-convertClusterLegend(object,output="matrixNames",whichClusters=whichCluster)
+      cl<-clusterMatrixNamed(object)[,whichCluster]
       cl<-factor(cl,levels=orderedLegend[,"name"])
     }
     else{
@@ -113,5 +115,7 @@ setMethod(
       else paste("Gene expression of feature, index number",feature)
     }
     cl<-factor(cl,levels=if(uniqueNames) clLegend[,"name"] else clLegend[,"clusterIds"])
-    invisible(boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...))
+    bxpOut<-boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...)
+		bxpOut<-c(bxpOut,list(colors=clLegend[,"color"],clusterIds=clLegend[,"clusterIds"]))
+		invisible(bxpOut)
   })
