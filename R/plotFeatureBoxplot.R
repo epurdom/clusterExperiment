@@ -81,18 +81,23 @@ setMethod(
 
     clLegend<-clusterLegend(object)[[whichCluster]]
     uniqueNames<-length(unique(clLegend[,"name"]))==nrow(clLegend)
-    #put in alpha order by cluster name / id:
+		
+    #-----
+		#put in alpha order by cluster name / id (except for the missing ones)
+    #-----
     whNotMissing<-which(as.numeric(clLegend[,"clusterIds"])>0)
     if(length(whNotMissing)>0){
-      orderedLegend<-clLegend[whNotMissing,]
-      if(uniqueNames) orderedLegend<-orderedLegend[order(orderedLegend[,"name"]),]
-      else orderedLegend<-orderedLegend[order(orderedLegend[,"name"],orderedLegend[,"clusterIds"]),]
+      orderedLegend<-clLegend[whNotMissing,,drop=FALSE]
+      if(uniqueNames) orderedLegend<-orderedLegend[order(orderedLegend[,"name"]), ,drop=FALSE]
+      else orderedLegend<-orderedLegend[order(orderedLegend[,"name"],orderedLegend[,"clusterIds"]), ,drop=FALSE]
     }
-    #add missing if exist to end.
+    #-----
+		#if plot unassigned, then add unassigned back to the end of group
+    #-----
     whMissing<-which(as.numeric(clLegend[,"clusterIds"])<0)
-    if(length(whMissing)>0 & !plotUnassigned){
-      if(length(whNotMissing)>0) orderedLegend<-rbind(orderedLegend,clLegend[whMissing,])
-      else orderedLegend<-clLegend[whMissing,]
+    if(length(whMissing)>0 & plotUnassigned){
+      if(length(whNotMissing)>0) orderedLegend<-rbind(orderedLegend,clLegend[whMissing, ,drop=FALSE])
+      else orderedLegend<-clLegend[whMissing, ,drop=FALSE]
       if(!is.null(unassignedColor) & any(orderedLegend[,"clusterIds"]=="-1"))
         orderedLegend[orderedLegend[,"clusterIds"]=="-1","color"]<-unassignedColor
       if(!is.null(missingColor) & any(orderedLegend[,"clusterIds"]=="-2"))

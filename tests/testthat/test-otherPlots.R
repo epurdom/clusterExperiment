@@ -198,6 +198,12 @@ test_that("plotFeatureBoxplot works",{
 	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
 	expect_silent(plotFeatureBoxplot(cc,plotUnassigned=TRUE,feature=rownames(cc)[2]))
+	#check if only 1 non-negative cluster in clustering
+	expect_silent(out<-plotFeatureBoxplot(cl[,1:10],whichCluster=2,feature=2,plotUnassigned=FALSE))
+	expect_equal(ncol(out$stats),1)
+	#check if only 1 cluster in clustering
+	expect_silent(out<-plotFeatureBoxplot(cl[,1:20],whichCluster="primary",feature=2))
+	expect_equal(ncol(out$stats),1)
 })
 
 test_that("plotting Table clusters works",{

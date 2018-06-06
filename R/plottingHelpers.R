@@ -130,7 +130,7 @@ setMethod(
 #' showPalette()
 #' showPalette(massivePalette,cex=0.6)
 showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
-  oldMar<-par("mar")
+  oldPar<-par(no.readonly = TRUE)
   wh<-which
   if(is.null(wh)){
     wh<-seq_along(colPalette)
@@ -161,6 +161,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
       text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
       if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
   }
+	par(oldPar)
 }
 
 #' @rdname plottingFunctions
