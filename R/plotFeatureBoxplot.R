@@ -57,8 +57,9 @@ setMethod(
 #' @seealso \code{\link{boxplot}}
 #' @rdname plotFeatureBoxplot
 #' @return A plot is created. The output of boxplot is returned (see
-#' \code{\link{boxplot}}), with an additional element \code{colors} that 
-#'  gives the colors assigned to each boxplot (pulled from \code{clusterLegend})
+#' \code{\link{boxplot}}), with additional elements \code{colors} and 
+#'  \code{clusterIds} that gives the colors and internal ids that match 
+#'  each boxplot (pulled from \code{clusterLegend} but in the order of plot)
 #' @examples
 #' data(simData)
 #' #Create a ClusterExperiment object

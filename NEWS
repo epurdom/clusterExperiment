@@ -1,4 +1,4 @@
-Changes in version 2.1.3-9004 ( Release date: )
+Changes in version 2.1.3-9011 ( Release date: )
 ==============
 
 Changes:
@@ -38,6 +38,7 @@ Changes:
 * Added `table` method to `plotHeatmap` (for plotting heatmap of results of `table` function)
 * Added error catch if try to give argument `whichCluster` to `mergeCluster`.
 * Added error catch if give param `whichClusters` to functions that only take `whichCluster` (singular) as an argument
+* `plotFeatureBoxplot` now returns (invisibly) the colors and clusterIds with the boxplot information.
 
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`

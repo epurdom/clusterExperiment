@@ -46,7 +46,10 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 \code{\link[SummarizedExperiment]{assay}} for details.}
 }
 \value{
-A plot is created. The output of boxplot is returned
+A plot is created. The output of boxplot is returned (see
+\code{\link{boxplot}}), with additional elements \code{colors} and 
+ \code{clusterIds} that gives the colors and internal ids that match 
+ each boxplot (pulled from \code{clusterLegend} but in the order of plot)
 }
 \description{
 Plot a boxplot of the (transformed) values for a particular
