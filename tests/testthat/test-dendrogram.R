@@ -89,14 +89,14 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 test_that("`makeDendrogram` with reduceMethod options", {
     expect_silent(x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3))
 	expect_error(makeDendrogram(ccSE,reduceMethod=c("PCA","var"),nDims=3))
-    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,ignoreUnassigned=TRUE))
+    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,filterIgnoresUnassigned=TRUE))
     expect_equal(x,x2)
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,ignoreUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,ignoreUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,ignoreUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=TRUE))
     
 })
 test_that("`makeDendrogram` works with whichCluster", {
@@ -132,6 +132,23 @@ test_that("`makeDendrogram` works with whichCluster", {
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"only single cluster in clustering -- cannot run getBestFeatures")
 	expect_silent(primaryClusterIndex(bigCE)<-3)
 	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
+})
+
+test_that("plotDendrogram works with colData", {
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg[,"name"]<-letters[1:nrow(leg)]
+  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+	dend <- makeDendrogram(ccSE)
+	expect_silent(plotDendrogram(dend,colData="A"))
+	expect_warning(plotDendrogram(dend,colData=c("A","B","C")),"implies using columns of colData that are continuous")
+	
+	#note that legA doesn't give colors for everything -- only some. 
+	legA<-leg[4:7,]
+	legA[,"color"]<-tail(massivePalette,4)
+	expect_silent(plotDendrogram(dend,colData="A",clusterLegend=list("A"=legA)))
+
+	expect_silent(plotDendrogram(dend,colData=c("A","C"),clusterLegend=list("A"=legA)))
+	
 })
 
 test_that("plotDendrogram works with outgroup", {
@@ -219,9 +236,9 @@ test_that("plotDendrogram works with cluster missing", {
   
   ## make all -2
   dend2<-dend
-  mat<-clusterMatrix(dend2)
-  mat[1,1]<- -2
-  dend2@clusterMatrix<-mat
+  dmat<-clusterMatrix(dend2)
+  dmat[1,1]<- -2
+  dend2@clusterMatrix<-dmat
   leg<-dend2@clusterLegend[[1]]
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg

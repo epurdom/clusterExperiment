@@ -10,7 +10,7 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", reduceMethod = "mad",
-  nDims = defaultNDims(x, reduceMethod), ignoreUnassignedVar = TRUE,
+  nDims = defaultNDims(x, reduceMethod), filterIgnoresUnassigned = TRUE,
   unassignedSamples = c("outgroup", "cluster"), whichAssay = 1, ...)
 
 \S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
@@ -37,11 +37,12 @@ co-Clustering matrix stored in the 'coClustering' slot of the
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
 
-\item{ignoreUnassignedVar}{logical. Whether filtering statistics should
-ignore the unassigned samples within the clustering. Only relevant if
-'reduceMethod' matches one of built-in filtering statistics in
-\code{\link{listBuiltInFilterStats}()}. In which case the clustering
-identified in \code{whichCluster} is passed to \code{makeFilterStats}. See
+\item{filterIgnoresUnassigned}{logical. Whether filtering statistics should 
+ignore the unassigned samples within the clustering. Only relevant if 
+'reduceMethod' matches one of built-in filtering statistics in 
+\code{\link{listBuiltInFilterStats}()}, in which case the clustering 
+identified in \code{whichCluster} is passed to \code{makeFilterStats} and
+the unassigned samples are excluded in calculating the statistic. See 
 \code{\link{makeFilterStats}}  for more details.}
 
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only
@@ -90,11 +91,7 @@ The argument \code{unassignedSamples} governs what is done with
   for the \code{@dendro_samples} slot.
 
 If any merge information is stored in the input object, it will be
-  erased by a call to mergeDendrogram.
-
-If \code{nDims} is missing, it will be given a default value
-  depending on the value of \code{reduceMethod}. See
-  \code{\link{defaultNDims}} for details.
+  erased by a call to makeDendrogram.
 }
 \examples{
 data(simData)

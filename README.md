@@ -4,9 +4,11 @@ Functions for running and comparing many different clusterings of single-cell se
 
 ## News and Updates
 
-Version 2.0.0 is now available on with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
+* Note that some important bugs were fixed since the Bioconductor release. They have been updated in the release version of Bioconductor (version 2.0.2) as well as the development version. 
 
-The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
+* Version 2.0.0 is now available on Bioconductor with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
+
+  The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
 
 ## Publications
 

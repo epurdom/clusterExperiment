@@ -61,6 +61,8 @@
 #'   features to be at least this large in absolute value. Value will be rounded
 #'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
 #'   any other method, this parameter is ignored.
+#' @param forceCalculate This forces the function to erase previously saved merge 
+#'   results and recalculate the merging. 
 #' @param ... for signature \code{matrix}, arguments passed to the
 #'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
 #'   For signature \code{ClusterExperiment} arguments passed to the method for
@@ -119,15 +121,30 @@
 #'   sample was not clustered.}
 #'		\item{\code{oldClToNew}}{ A table of the old
 #'   cluster labels to the new cluster labels.}
-#'		\item{\code{nodeProp}}{ A table of
-#'   the proportions that are DE on each node.}
-#'		\item{\code{nodeMerge}}{ A table of indicating for each node whether merged or not and the cluster id in the new clustering that corresponds to the node}
+#'		\item{\code{nodeProp}}{ 
+#'A table of the proportions that are DE on each node.This table is saved in the
+#'\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
+#'accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
+#'		}
+#'		\item{\code{nodeMerge}}{ 
+#'		A table of indicating for each node whether merged or not and the cluster id
+#'		in the new clustering that corresponds to the node. Note that a node can be
+#'		merged and not correspond to a node in the new clustering, if its ancestor
+#'		node is also merged. But there must be some node that corresponds to a new
+#'		cluster id if merging has been done. This table is saved in the
+#'		\code{merge_nodeMerge} slot of a \code{ClusterExperiment} object and can be
+#'		accessed along with the nodeProp info with the \code{nodeMergeInfo}
+#'		function.
+#'		}
 #'   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
 #'   was based (based on the original clustering).}
 #'   \item{\code{cutoff}}{ The cutoff value for merging.} }
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new
 #'   \code{ClusterExperiment} object with an additional clustering based on the
-#'   merging. This becomes the new primary clustering.
+#'   merging. This becomes the new primary clustering. Note that even if
+#'   \code{mergeMethod="none"}, the returned object will erase any old merge
+#'   information, update the work flow numbering, and return the newly calculated 
+#'   merge information.  
 #' @references Ji and Cai (2007), "Estimating the Null and the Proportion
 #' of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
 #' @references Efron (2004) "Large-scale simultaneous hypothesis testing:
@@ -180,6 +197,8 @@ setMethod(
                         plotInfo="none",
                         nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
                         cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+		
+		if(any(c("whichCluster","whichClusters") %in% names(list(...)))) stop("The argument 'whichCluster' is not accepted for this function. The clustering used for merging will always be taken as that clustering that created the currently stored dendrogram (given by 'dendroClusterIndex')")
     dendroSamples<-NULL #currently option is not implemented for matrix version...
     if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
     logFCcutoff<-round(logFCcutoff,digits=1)
@@ -222,8 +241,15 @@ setMethod(
 
     }
 
-    otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
-    otherVals<-c(otherVals,adjPFCMethod)
+    ### check valid existing table
+    if(!is.null(nodePropTable)){
+      if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
+      if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
+				otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
+		    otherVals<-c(otherVals,adjPFCMethod)
+    }
+		else otherVals<-adjPFCMethod
+			
     possibleValues<-unique(c("none", "all","mergeMethod",.availMergeMethods,otherVals))
     plotInfo<-match.arg(plotInfo,possibleValues)
 
@@ -235,11 +261,6 @@ setMethod(
     ############
     #determine whether need to calculate, or if already in nodePropTable
     ############
-    ### check valid existing table
-    if(!is.null(nodePropTable)){
-      if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
-      if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
-    }
     needCalculate<-is.null(nodePropTable) || any(!whMethodCalculate %in% names(nodePropTable)) || any(is.na(nodePropTable[,whMethodCalculate]))
 
     ############
@@ -501,7 +522,9 @@ setMethod(
                         plotType=c("colorblock","name","ids"),
                         plot=TRUE,
                         whichAssay=1,
+												forceCalculate=FALSE,
                         ...) {
+    if(forceCalculate) x<-.eraseMerge(x)
     plotType<-match.arg(plotType)
     leafType<-match.arg(leafType)
     if(is.null(x@dendro_clusters)) {
@@ -543,7 +566,14 @@ setMethod(
                              dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
                              isCount=isCount,mergeMethod=mergeMethod, ...)
     nodeMerge<-outlist$nodeMerge
-    if(mergeMethod!="none"){#
+    #-----
+    ##Check if pipeline already ran previously and if so increase and erase old merge
+		##Note even if didn't ask to actually create merge information, calculating the merge information will have the same effect.
+    #-----
+		x<-.updateCurrentWorkflow(x, eraseOld, newTypeToAdd="mergeClusters", newLabelToAdd=clusterLabel)
+		x<-.eraseMerge(x)
+		
+		if(mergeMethod!="none"){#
       #######################
       ##add a new cluster, but only if there was a merging
       #######################
@@ -554,15 +584,20 @@ setMethod(
                                   transformation=transformation(x),
                                   clusterTypes="mergeClusters",
                                   checkTransformAndAssay=FALSE)
+      #check fixed the internal coding issue, i.e. same exact numbers as outlist$clustering:
+      ckTab<-table(primaryCluster(newObj),outlist$clustering)
+      if(nrow(ckTab)!=ncol(ckTab)) stop("coding error -- not same number of clusters after making ClusterExperiment object")
+      if(!all(rownames(ckTab)==colnames(ckTab))) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      if(any(diag(ckTab)==0)) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      if(any(ckTab[upper.tri(ckTab)]!=0)) stop("coding error -- not same cluster ids after making ClusterExperiment object")
+      
       #-----
       #add "m" to name of cluster
       #-----
       newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
       clusterLabels(newObj) <- clusterLabel
-      #-----
-      ##Check if pipeline already ran previously and if so increase
-      #-----
-      x<-.updateCurrentWorkflow(x,eraseOld,"mergeClusters")
+      
+			
       if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
       else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
       #-----
@@ -576,34 +611,6 @@ setMethod(
       retval@merge_method<-outlist$mergeMethod
       retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
       retval@merge_cutoff<-outlist$cutoff
-      #-----
-      ##The above can change the internal coding of the merge clusters (???Why???)
-      ##Need to update the nodeMerge to reflect this before save to object.
-      ##Do this by matching the outlist$clustering to the new clustering
-      #-----
-      if(didMerge){
-
-        if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
-        origOldToNew<-outlist$oldClToNew
-        if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-          #
-          currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
-          #-----
-          ##Match merge Ids in nodeMerge to columns of origOldToNew
-          #-----
-          #get non NAs in nodeMerge
-          whNotNAMerge<-which(!is.na(nodeMerge$mergeClusterId))
-          idsInMergeTable<-nodeMerge$mergeClusterId[whNotNAMerge]
-          #make origOldToNew only these ids in this order
-          origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
-          #make new merge table in same order as these ids by match columns to each other
-          mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
-          #currOldToNew<-currOldToNew[,mCols]
-          nodeMerge$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
-
-        }
-
-      }
       retval@merge_nodeMerge<-nodeMerge
       #------------
       ##Align the colors between mergeClusters and makeConsensus
@@ -620,14 +627,8 @@ setMethod(
       #But do not update the clustering, etc from above.
       ##############
       retval<-x
-      saveNodeTable<-is.na(x@merge_index)
-      if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
-      if(saveNodeTable ){
-
-        retval@merge_nodeProp <-outlist$nodeProp
-      }
-      if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
-
+      retval@merge_nodeProp <-outlist$nodeProp
+			retval@merge_dendrocluster_index<-retval@dendro_index
     }
     ch<-.checkMerge(retval)
     if(!is.logical(ch)) stop(ch)
@@ -751,7 +752,29 @@ setMethod(
   }
 )
 
-
+#' @rdname mergeClusters
+#' @return \code{eraseMergeInfo} returns object with all previously saved merge info removed.
+#' @aliases eraseMergeInfo
+#' @export
+setMethod(
+  f = "eraseMergeInfo",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    x<-.eraseMerge(x)
+		return(x)
+  }
+)
+.eraseMerge<-function(x){
+  x@merge_index<-NA_real_
+  x@merge_dendrocluster_index<-NA_real_
+  x@merge_method<-NA_character_
+  x@merge_cutoff<-NA_real_
+  x@merge_nodeProp<-NULL
+  x@merge_nodeMerge<-NULL
+  ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  else return(x)
+}
 
 .myTryFunc<-function(FUN,showWarnings,...){
 

@@ -1,4 +1,5 @@
 setGeneric("combineMany", function(x,...) { standardGeneric("combineMany")})
+setGeneric("removeUnclustered",function(x,...) {standardGeneric("removeUnclustered")})
 
 #' @name clusterExperiment-deprecated
 #' @aliases clusterExperiment-deprecated combineMany combineMany,ANY-method
@@ -9,6 +10,7 @@ setGeneric("combineMany", function(x,...) { standardGeneric("combineMany")})
 #'   the replacement indicated below:
 #'  \itemize{
 #'    \item{\code{combineMany}: \code{\link{makeConsensus}}}
+#'    \item{\code{removeUnclustered}: \code{\link{removeUnassigned}}}
 #'  }
 #' @export
 #' @param x any object
@@ -22,3 +24,21 @@ setMethod(
 		makeConsensus(x,...)
 	}
 	)
+setMethod(
+  f = "removeUnclustered",
+  signature = signature(x = "ANY"),
+  definition = function(x,...) {
+		.Deprecated("removeUnassigned")
+		removeUnassigned(x,...)
+  }
+)
+
+.depricateArgument<-function(passedArgs,newArgName,oldArgName){
+	if(oldArgName %in% names(passedArgs)){
+		warning(paste0("the argument name '",oldArgName,"' has been changed to '",newArgName,"'. Please change future calls to reflect this, as the old argument will be depricated in future releases."))
+		val<-passedArgs[[oldArgName]]
+		passedArgs<-passedArgs[-which(names(passedArgs)==oldArgName)]
+		return(list(passedArgs=passedArgs,val=val))
+	}
+	else return(NULL)
+}

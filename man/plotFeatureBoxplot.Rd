@@ -4,30 +4,23 @@
 \name{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot,ClusterExperiment,character,ANY-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,missing,ANY-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,numeric,character-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,numeric,numeric-method}
+\alias{plotFeatureBoxplot,ClusterExperiment,numeric-method}
 \title{Plot boxplot of feature values by cluster}
 \usage{
-\S4method{plotFeatureBoxplot}{ClusterExperiment,character,ANY}(object,
-  whichCluster, feature, ...)
+\S4method{plotFeatureBoxplot}{ClusterExperiment,character}(object, feature,
+  whichCluster, ...)
 
-\S4method{plotFeatureBoxplot}{ClusterExperiment,missing,ANY}(object,
-  whichCluster, feature, ...)
-
-\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,character}(object,
-  whichCluster, feature, ...)
-
-\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, plotUnassigned = FALSE, unassignedColor = NULL,
-  missingColor = NULL, main = NULL, whichAssay = 1, ...)
+\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric}(object, feature,
+  whichCluster = "primary", plotUnassigned = FALSE,
+  unassignedColor = NULL, missingColor = NULL, main = NULL,
+  whichAssay = 1, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
 
-\item{whichCluster}{which clusters to show on the plot}
-
 \item{feature}{identification of feature to plot, either row name or index}
+
+\item{whichCluster}{which clusters to show on the plot}
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
 
@@ -46,20 +39,24 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 \code{\link[SummarizedExperiment]{assay}} for details.}
 }
 \value{
-A plot is created. The output of boxplot is returned
+A plot is created. The output of boxplot is returned (see
+\code{\link{boxplot}}), with additional elements \code{colors} and 
+ \code{clusterIds} that gives the colors and internal ids that match 
+ each boxplot (pulled from \code{clusterLegend} but in the order of plot)
 }
 \description{
 Plot a boxplot of the (transformed) values for a particular
   gene, separated by cluster
 }
 \examples{
-#clustering using pam: try using different dimensions of pca and different k
 data(simData)
-
+#Create a ClusterExperiment object
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
-clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-removeSil=c(TRUE,FALSE))
-clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned = FALSE)[1]]
+   clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+   removeSil=c(TRUE,FALSE))
+#give names to the clusters
+cl<-renameClusters(cl, whichCluster=1, 
+   value=letters[1:nClusters(cl)[1]])
 plotFeatureBoxplot(cl,feature=1)
 }
 \seealso{

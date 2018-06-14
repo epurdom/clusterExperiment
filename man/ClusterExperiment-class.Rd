@@ -91,7 +91,7 @@ Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
-\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see Slots)}
+\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see details).}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the
 assay and given transformation function for whether they are valid.}
@@ -123,6 +123,14 @@ Note that when subsetting the data, the co-clustering and
  dendrogram information are lost.
 }
 \details{
+The \code{clusterLegend} argument to \code{ClusterExperiment} 
+ must be a valid clusterLegend format and match the values in \code{clusters}, 
+in that the "clusterIds" column must matches the value in the clustering matrix
+ \code{clusters}. If \code{names(clusterLegend)==NULL}, it is assumed that the 
+ entries of \code{clusterLegend} are in the same order as the columns of 
+ \code{clusters}. Generally, this is not a good way for users to set the
+clusterLegend slot.
+
 The \code{ClusterExperiment} constructor function gives
   clusterLabels based on the column names of the input
   matrix/SingleCellExperiment. If missing, will assign labels
@@ -152,7 +160,15 @@ labels.}
 \item{\code{clusterInfo}}{list. A list with info about the clustering.
 If created from \code{\link{clusterSingle}}, clusterInfo will include the
 parameter used for the call, and the call itself. If \code{sequential = TRUE}
-it will also include the following components.}
+it will also include the following components.
+\itemize{
+\item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
+found, a matrix of information regarding the algorithm behavior for each
+cluster (the starting and stopping K for each cluster, and the number of
+iterations for each cluster).}
+\item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
+found, a character string explaining what triggered the algorithm to stop.}
+}}
 
 \item{\code{merge_index}}{index of the current merged cluster}
 
@@ -163,20 +179,13 @@ clusters}
 merge}
 
 \item{\code{merge_nodeMerge}}{data.frame of information about nodes merged in the
-current merge}
+current merge. See \code{\link{mergeClusters}}}
 
 \item{\code{merge_nodeProp}}{data.frame of information of proportion estimated
-non-null at each node of dendrogram}
+non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 
-\item{\code{merge_method}}{character indicating method used for merging
-\itemize{
-\item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
-found, a matrix of information regarding the algorithm behavior for each
-cluster (the starting and stopping K for each cluster, and the number of
-iterations for each cluster).}
-\item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
-found, a character string explaining what triggered the algorithm to stop.}
-}}
+\item{\code{merge_method}}{character indicating method used for merging. See 
+\code{\link{mergeClusters}}}
 
 \item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}

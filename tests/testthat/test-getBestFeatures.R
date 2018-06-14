@@ -115,9 +115,7 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
 })
 
 test_that("`plotContrastHeatmap` works", {
-    mat<-clusterLegend(ceSimData)[[1]]
-    mat[,"name"]<-letters[1:nrow(mat)]
-    clusterLegend(ceSimData)[[1]]<-mat
+	ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]])
     topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", isCount=FALSE)
 	  plotContrastHeatmap(ceSimData,signifTable=topC2)
 
@@ -136,8 +134,8 @@ test_that("`plotContrastHeatmap` works", {
 	plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
 	plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
 	plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"Must indicate single clustering in 'whichCluster'")
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Did not indicate valid cluster in whichCluster argument")
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"must identify only a single clustering")
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Invalid value for 'whichCluster'. Must be integer between")
 	
 })
 

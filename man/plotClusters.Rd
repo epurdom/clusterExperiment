@@ -14,13 +14,13 @@
 
 \S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
   existingColors = c("ignore", "all", "firstOnly"), resetNames = FALSE,
-  resetColors = FALSE, resetOrderSamples = FALSE, sampleData = NULL,
+  resetColors = FALSE, resetOrderSamples = FALSE, colData = NULL,
   clusterLabels = NULL, ...)
 
 \S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{plotClusters}{matrix,missing}(object, whichClusters,
-  orderSamples = NULL, sampleData = NULL, reuseColors = FALSE,
+  orderSamples = NULL, colData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
   missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
   colPalette = massivePalette, input = c("clusters", "colors"),
@@ -64,14 +64,14 @@ colors from the \code{plotClusters}.}
 \code{orderSamples} slot in the \code{ClusterExperiment} object with the
 new order found.}
 
-\item{sampleData}{If \code{clusters} is a matrix, \code{sampleData} gives a 
-matrix of additional cluster/sampleData on the samples to be plotted with 
-the clusterings given in clusters. Values in \code{sampleData} will be 
-added to the end (bottom) of the plot. NAs in the \code{sampleData} matrix
+\item{colData}{If \code{clusters} is a matrix, \code{colData} gives a 
+matrix of additional cluster/sample data on the samples to be plotted with 
+the clusterings given in clusters. Values in \code{colData} will be 
+added to the end (bottom) of the plot. NAs in the \code{colData} matrix
 will trigger an error. If \code{clusters} is a \code{ClusterExperiment}
-object, the input in \code{sampleData} refers to columns of the the
+object, the input in \code{colData} refers to columns of the the
 \code{colData} slot of the \code{ClusterExperiment} object to be plotted
-with the clusters. In this case, \code{sampleData} can be TRUE (i.e. all
+with the clusters. In this case, \code{colData} can be TRUE (i.e. all
 columns will be plotted), or an index or a character vector that references
 a column or column name, respectively, of the \code{colData} slot of the
 \code{ClusterExperiment} object. If there are NAs in the \code{colData}
@@ -79,7 +79,7 @@ columns, they will be encoded as 'unassigned' and receive the same color as
 'unassigned' samples in the clustering.}
 
 \item{clusterLabels}{names to go with the columns (clusterings) in matrix 
-\code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the 
+\code{colorMat}. If \code{colData} argument is not \code{NULL}, the 
 \code{clusterLabels} argument must include names for the sample data too. 
 If the user gives only names for the clusterings, the code will try to 
 anticipate that and use the column names of the sample data, but this is

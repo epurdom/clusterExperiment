@@ -15,7 +15,7 @@
 
 \S4method{plotReducedDims}{ClusterExperiment,numeric}(object, whichCluster,
   reducedDim = "PCA", whichDims = c(1, 2), plotUnassigned = TRUE,
-  legend = TRUE, legendTitle = "", clusterLegend = NULL,
+  legend = TRUE, legendTitle = "", nColLegend = 6, clusterLegend = NULL,
   unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
   ylab = NULL, ...)
 }
@@ -42,13 +42,16 @@ giving the location of the legend (passed to \code{\link{legend}})}
 \item{legendTitle}{character value giving title for the legend. If NULL, uses
 the clusterLabels value for clustering.}
 
+\item{nColLegend}{The number of columns in legend. If missing, picks number 
+of columns internally.}
+
 \item{clusterLegend}{matrix with three columns and colnames
 'clusterIds','name', and 'color' that give the color and name of the
 clusters in whichCluster. If NULL, pulls the information from
 \code{object}.}
 
 \item{unassignedColor}{If not NULL, should be character value giving the
-color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
+color for unassigned (-1) samples (overrides \code{clusterLegend}) default.}
 
 \item{missingColor}{If not NULL, should be character value giving the color
 for missing (-2) samples (overrides \code{clusterLegend}) default.}
@@ -72,6 +75,13 @@ If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
   the samples with -1/-2 will not be plotted, nor will the category show up in the
   legend.
+
+If the requested \code{reducedDim} method has not been created yet,
+  the function will call \code{\link{makeReducedDims}} on the FIRST assay of
+  \code{x}. The results of this method will be saved as part of the object
+  and returned INVISIBLY (meaning if you don't save the output of the
+  plotting command, the results will vanish). To pick another assay, you
+  should call `makeReducedDims` directly and specify the assay.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

@@ -5,9 +5,11 @@
 #'   stored in reducedDims.
 #' @aliases reduceFunctions makeFilterStats
 #'   makeFilterStats,SummarizedExperiment-method
-#' @param object object from which user wants to calculate per-row statistics
 #' @param filterStats character vector of statistics to calculate. Must be one
 #'   of the character values given by \code{listBuildInFilterStats()}.
+#' @param filterNames if given, defines the names that will be assigned to the 
+#'  filtering statistics in the \code{rowData} of the object. If missing, will be 
+#'  just the value of \code{filterStats} argument
 #' @return \code{makeFilterStats} returns a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with the
 #'   requested filtering statistics will be added to the \code{DataFrame} in the
@@ -30,7 +32,7 @@
 setMethod(
   f = "makeFilterStats",
   signature = "SummarizedExperiment",
-  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE)
+  definition = function(object,filterStats=listBuiltInFilterStats(),transFun=NULL,isCount=FALSE,filterNames=NULL,whichAssay=1)
   {
     
     ###################
@@ -41,12 +43,16 @@ setMethod(
     if(!all(filterStats %in% listBuiltInFilterStats())){
       stop("Not all of the filterStats given are valid. Must be one of listBuiltInFilterStats().")
     }
-    
+    if(!is.null(filterNames)){
+      if(length(unique(filterStats))!=length(filterStats)) stop("cannot set filterNames if filterStats not unique")
+      if(!is.character(filterNames) || length(filterNames)!=length(filterStats)) stop("invalid values of filterNames")
+      filterStatsOrig<-filterStats #preserve the original order of names
+    }
     ###################
     ##Clean up data:
     ###################
     #transform data
-    x<-transformData(object,transFun=transFun,isCount=isCount)
+    x<-transformData(object,transFun=transFun,isCount=isCount,whichAssay=whichAssay)
     
     ###################
     ##Do loop over filterStats values:
@@ -68,6 +74,11 @@ setMethod(
     if(doCV){
       filterStatData<-cbind(filterStatData, "abscv"=sqrt(filterStatData[,"var"])/abs(filterStatData[,"mean"]))
       #filterStatData<-filterStatData[,origfilterStats] #put it in order, though user shouldn't depend on it.
+    }
+    if(!is.null(filterNames)){
+      m<-match(filterStatsOrig,colnames(filterStatData))
+      if(any(is.na(m))) stop("error in assigning given filterNames to filterStats")
+      colnames(filterStatData)[m]<-filterNames			
     }
     filterStats(object)<-filterStatData #should leave in place existing ones, update conflicting ones, and add new ones!
     return(object)
@@ -116,9 +127,7 @@ setMethod(
         if(length(whDo)>0){
           whAssigned<-which(clusterMatrix(object)[,whCluster]>0)
           if(length(whAssigned)>0){
-            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],...)
-            whNew<-match(filterStats[whDo],colnames(rowData(out)))
-            colnames(rowData(out))[whNew]<-newNames[whDo]	
+            out<-makeFilterStats(object[,whAssigned],filterStats=filterStats[whDo],filterNames=newNames[whDo],...)
           }
           else 
             stop("All samples are unassigned for clustering", clusterLabels(object)[whCluster])
@@ -136,9 +145,7 @@ setMethod(
   }
 )
 
-.makeClusterFilterStats<-function(filterStats,clusterName){
-	make.names(paste(filterStats,clusterName,sep="_"))
-}
+
 #' @rdname reduceFunctions
 #' @export
 listBuiltInFilterStats<-function(){c('var', 'abscv', 'mad','mean','iqr','median')}
@@ -191,7 +198,7 @@ setMethod(
 #' @importFrom stats quantile
 setMethod( 
   f="filterData","SummarizedExperiment",
-  function(object,filterStats,cutoff,percentile, absolute=FALSE,keepLarge=TRUE){
+  function(object,filterStats,cutoff,percentile, absolute=FALSE,keepLarge=TRUE, whichAssay=1){
     stat<-filterStats(object,filterStats)
     if(!is.null(dim(stat))){
       if(NCOL(stat)==1) stat<-stat[,1]
@@ -223,51 +230,6 @@ setMethod(
     
   }
 )	
-
-#' @rdname reduceFunctions
-#' @param reduceMethod character. A method or methods for reducing the size of
-#'   the data, either by filtering the rows (genes) or by a dimensionality
-#'   reduction method. Must either be 1) must match the name of a built-in
-#'   method, in which case if it is not already existing in the object will be
-#'   passed to \code{\link{makeFilterStats}} or \code{link{makeReducedDims}}, or
-#'   2) must match a stored filtering statistic or dimensionality reduction in
-#'   the object
-#' @param typeToShow character (optional). If given, should be one of
-#'   "filterStats" or "reducedDims" to indicate of the values in the
-#'   reduceMethod vector, only show those corresponding to "filterStats" or
-#'   "reducedDims" options.
-#' @return \code{defaultNDims} returns a numeric vector giving the default
-#'   dimensions the methods in \code{clusterExperiment} will use for reducing
-#'   the size of the data. If \code{typeToShow} is missing, the resulting vector
-#'   will be equal to the length of \code{reduceMethod}. Otherwise, it will be a
-#'   vector with all the unique valid default values for the \code{typeToShow}
-#'   (note that different dimensionality reduction methods can have different
-#'   maximal dimensions, so the result may not be of length one in this case).
-#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
-setMethod( 
-  f="defaultNDims",
-  "SingleCellExperiment",
-  function(object,reduceMethod,typeToShow){
-    nDims<-rep(NA,length(reduceMethod))
-    isFilter<-isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)
-    isRed<-isReducedDims(object,reduceMethod ) || isBuiltInReducedDims(reduceMethod)
-    if(isFilter)
-      nDims[isBuiltInFilterStats(reduceMethod) || isFilterStats(object,reduceMethod)]<-min(1000,NROW(object))
-    else if(isReducedDims(object,reduceMethod ))
-      nDims[isReducedDims(object,reduceMethod)] <- ncolReducedDims(object)[reduceMethod[isReducedDims(object,reduceMethod )]]
-    else if(isBuiltInReducedDims(reduceMethod)) nDims[isBuiltInReducedDims(reduceMethod)]<-min(c(50,dim(object)))
-    if(!missing(typeToShow)){
-      if(typeToShow=="filterStats") nDims<-unique(nDims[isFilter])
-      if(typeToShow=="reducedDims") nDims<-unique(nDims[isRed])
-      if(length(nDims)==0) nDims<-NA
-    }
-    return(nDims)
-    
-  })
-setMethod( 
-  f="defaultNDims","matrixOrHDF5",function(object,...){
-    return(defaultNDims(SingleCellExperiment(object),...))
-  })
 
 
 #' @rdname reduceFunctions

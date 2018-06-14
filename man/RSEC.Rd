@@ -26,12 +26,13 @@
 \S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
   reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
   "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
-  "reducedDims"), k0s = 4:15, clusterFunction = "hierarchical01",
-  alphas = c(0.1, 0.2, 0.3), betas = 0.9, minSizes = 1,
-  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
-  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE)
+  "reducedDims"), k0s = 4:15, subsample = TRUE, sequential = TRUE,
+  clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
+  betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
+  dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
+  mergeLogFCcutoff, verbose = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
+  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -82,6 +83,16 @@ stored filtering or reducedDim values in the object.}
 
 \item{k0s}{the k0 parameter for sequential clustering (see
 \code{\link{seqCluster}})}
+
+\item{subsample}{logical as to whether to subsample via
+\code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
+step is done on the co-occurance between clusterings in the subsampled
+clustering results.  If FALSE, the mainClustering step will be run directly
+on \code{x}/\code{diss}}
+
+\item{sequential}{logical whether to use the sequential strategy (see details
+of \code{\link{seqCluster}}). Can be used in combination with
+\code{subsample=TRUE} or \code{FALSE}.}
 
 \item{clusterFunction}{function used for the clustering. Note that unlike in
 \code{\link{clusterSingle}}, this must be a character vector of pre-defined
@@ -142,6 +153,13 @@ that all of the runs are run on the same subsample of the data). Note, if
 'random.seed' is set, argument 'ncores' should NOT be passed via
 subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 (which is preferred for improving speed anyway).}
+
+\item{stopOnErrors}{logical. If \code{FALSE}, if RSEC hits an error \emph{after} 
+the \code{clusterMany} step, it will return the results up to that point, rather 
+than generating a stop error. The text of error will be printed as a NOTE. This 
+allows the user to get the results to that point, so as to not have to rerun 
+the computationally heavy earlier steps. The \code{TRUE} option is only provided 
+for debugging purposes.}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with

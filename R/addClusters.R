@@ -2,7 +2,7 @@
 #'
 #' These functions are used to add or remove clusters to a
 #' \code{\link{ClusterExperiment}} object.
-#'
+#' @name addClusterings
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
@@ -19,7 +19,7 @@
 #' @return A \code{\link{ClusterExperiment}} object with the added clusters.
 #'
 #' @rdname addClusterings
-#' @aliases addClusterings removeClusterings
+#' @aliases addClusterings removeClusterings addClusterings,ClusterExperiment,matrix-method
 #' @export
 #' @examples
 #' data(simData)
@@ -171,34 +171,22 @@ setMethod(
   }
 )
 
-#' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
-#'   be unclustered in other clusters found in \code{clusterMatrix(x)}).
-#' @rdname addClusterings
-#' @aliases removeUnclustered
-#' @export
-setMethod(
-  f = "removeUnclustered",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x[,primaryCluster(x) >= 0])
-  }
-)
 
 
 #' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
 #' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
+#' @param whichCluster Clustering from which to remove clusters for
+#'  \code{removeCluster}. Note that it is a singular cluster.
 #' @rdname addClusterings
 #' @aliases removeClusters
 #' @export
 setMethod(
   f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove,clusterLabels=NULL) {
-    if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
-    makePrimary<-whichClusters==x@primaryIndex
-    cl<-clusterMatrix(x)[,whichClusters]
-    leg<-clusterLegend(x)[[whichClusters]]
+  definition = function(x,whichCluster,clustersToRemove,makePrimary=FALSE,clusterLabels=NULL) {
+    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    cl<-clusterMatrix(x)[,whCl]
+    leg<-clusterLegend(x)[[whCl]]
     if(is.character(clustersToRemove)){
       m<- match(clustersToRemove,leg[,"name"] )
       if(any(is.na(m)))
@@ -207,12 +195,12 @@ setMethod(
     }
     if(is.numeric(clustersToRemove)){
       if(any(!clustersToRemove %in% cl)) stop("invalid clusterIds in 'clustersToRemove'")
-      if(any(clustersToRemove== -1)) stop("cannot remove -1 clusters using this function")
+      if(any(clustersToRemove== -1)) stop("cannot remove -1 clusters using this function. See 'assignUnassigned' to assign unassigned samples.")
       cl[cl %in% clustersToRemove]<- -1
     }
     else stop("clustersToRemove must be either character or numeric")
     if(is.null(clusterLabels)){
-      currlabel<-clusterLabels(x)[whichClusters]
+      currlabel<-clusterLabels(x)[whCl]
       clusterLabels<-paste0(currlabel,"_unassignClusters")
     }
     if(clusterLabels %in% clusterLabels(x))
@@ -225,7 +213,9 @@ setMethod(
     if(length(whRm)>0){
       newleg<-newleg[-whRm,,drop=FALSE]
     }
-    return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=list(newleg),makePrimary=makePrimary))
+		newCl<-list(newleg)
+		#names(newCl)<-clusterLabels
+    return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=newCl,makePrimary=makePrimary))
 
 
   }
@@ -235,8 +225,8 @@ setMethod(
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichClusters,...) {
-    whichClusters<-.TypeIntoIndices(x,whichClusters)
-    removeClusters(x,whichClusters,...)
+  definition = function(x, whichCluster,...) {
+    whichCluster<-.TypeIntoIndices(x,whichCluster)
+    removeClusters(x,whichCluster,...)
   }
 )

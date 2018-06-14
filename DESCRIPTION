@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.1.1-9001
+Version: 2.1.3-9013
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -31,20 +31,22 @@ Imports:
     graphics,
     parallel,
     RSpectra,
-	kernlab,
-	stringr,
-	S4Vectors,
-	grDevices,
-	Rcpp,
-	HDF5Array (>= 1.7.10),
-	DelayedArray (>= 0.5.31)
+	  kernlab,
+	  stringr,
+	  S4Vectors,
+	  grDevices,
+	  Rcpp,
+	  HDF5Array (>= 1.7.10),
+	  DelayedArray (>= 0.5.31)
 Suggests:
-    BiocStyle,
-    knitr,
-    testthat,
+  BiocStyle,
+  knitr,
+  testthat,
 	scRNAseq,
-    MAST,
-	Rtsne
+  MAST,
+	Rtsne,
+	scran,
+	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
@@ -60,6 +62,7 @@ Collate:
     'JiashinJiCode.R'
     'RcppExports.R'
     'addClusters.R'
+    'assignUnassigned.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
     'builtInClusterFunctions.R'
@@ -71,6 +74,7 @@ Collate:
     'deprecateFunctions.R'
     'getFeatures.R'
     'getParams.R'
+    'getReducedData.R'
     'mainClustering.R'
     'makeBlankData.R'
     'makeConsensus.R'
@@ -84,8 +88,10 @@ Collate:
     'plotContrastHeatmap.R'
     'plotDendrogram.R'
     'plotFeatureBoxplot.R'
+    'plotFeatureScatter.R'
     'plotHeatmap.R'
     'plotReduceDim.R'
+    'plotTableClusters.R'
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'

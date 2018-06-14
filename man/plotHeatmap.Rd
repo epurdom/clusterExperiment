@@ -5,6 +5,7 @@
 \alias{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap}
 \alias{plotHeatmap,SummarizedExperiment-method}
+\alias{plotHeatmap,table-method}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,data.frame-method}
 \alias{plotHeatmap,ExpressionSet-method}
@@ -19,25 +20,27 @@
 \S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
   transFun = NULL, ...)
 
+\S4method{plotHeatmap}{table}(data, ...)
+
 \S4method{plotHeatmap}{ClusterExperiment}(data,
   clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
   "primaryCluster"), clusterFeaturesData = "var", nFeatures = NA,
   visualizeData = c("transformed", "centeredAndScaled", "original"),
-  whichClusters = c("primary", "workflow", "all", "none"),
-  sampleData = NULL, clusterFeatures = TRUE, nBlankLines = 2, colorScale,
-  whichAssay = 1, ...)
+  whichClusters = c("primary", "workflow", "all", "none"), colData = NULL,
+  clusterFeatures = TRUE, nBlankLines = 2, colorScale, whichAssay = 1,
+  ...)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
 \S4method{plotHeatmap}{ExpressionSet}(data, ...)
 
-\S4method{plotHeatmap}{matrixOrHDF5}(data, sampleData = NULL,
+\S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
-  whSampleDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
+  whColDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
   clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
-  clusterLegend = NULL, alignSampleData = FALSE,
-  unassignedColor = "white", missingColor = "grey", breaks = NA,
-  symmetricBreaks = FALSE, capBreaksLegend = FALSE, isSymmetric = FALSE,
+  clusterLegend = NULL, alignColData = FALSE, unassignedColor = "white",
+  missingColor = "grey", breaks = NA, symmetricBreaks = FALSE,
+  capBreaksLegend = FALSE, isSymmetric = FALSE,
   overRideClusterLimit = FALSE, plot = TRUE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data,
@@ -98,15 +101,15 @@ clusterFeaturesData will be ignored.}
 \item{whichClusters}{character string, or vector of characters or integers,
 indicating what clusters should be visualized with the heatmap.}
 
-\item{sampleData}{If input to \code{data} is either a
+\item{colData}{If input to \code{data} is either a
 \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
-\code{SingleCellExperiment}, then \code{sampleData} must index the
-sampleData stored as a \code{DataFrame} in \code{colData} slot of the
+\code{SingleCellExperiment}, then \code{colData} must index the
+colData stored as a \code{DataFrame} in \code{colData} slot of the
 object. Whether that data is continuous or not will be determined by the
 properties of \code{colData} (no user input is needed). If input to
-\code{data} is matrix, \code{sampleData} is a matrix of additional data on
+\code{data} is matrix, \code{colData} is a matrix of additional data on
 the samples to show above heatmap. In this case, unless indicated by
-\code{whSampleDataCont}, \code{sampleData} will be converted into factors,
+\code{whColDataCont}, \code{colData} will be converted into factors,
 even if numeric. ``-1'' indicates the sample was not assigned to a cluster
 and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.}
 
@@ -120,9 +123,9 @@ features (if FALSE, any input to clusterFeaturesData is ignored).}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{whSampleDataCont}{Which of the \code{sampleData} columns are continuous
+\item{whColDataCont}{Which of the \code{colData} columns are continuous
 and should not be converted to counts. \code{NULL} indicates no additional
-\code{sampleData}. Only used if \code{data} input is matrix.}
+\code{colData}. Only used if \code{data} input is matrix.}
 
 \item{clusterSamples}{Logical as to whether to do hierarchical clustering of
 cells (if FALSE, any input to clusterSamplesData is ignored).}
@@ -132,12 +135,12 @@ cells (if FALSE, any input to clusterSamplesData is ignored).}
 \item{showFeatureNames}{Logical as to whether show feature names.}
 
 \item{clusterLegend}{Assignment of colors to the clusters. If \code{NULL},
-\code{sampleData} columns will be assigned colors internally. See details
+\code{colData} columns will be assigned colors internally. See details
 for more.}
 
-\item{alignSampleData}{Logical as to whether should align the colors of the
-\code{sampleData} (only if \code{clusterLegend} not given and
-\code{sampleData} is not \code{NULL}).}
+\item{alignColData}{Logical as to whether should align the colors of the
+\code{colData} (only if \code{clusterLegend} not given and
+\code{colData} is not \code{NULL}).}
 
 \item{unassignedColor}{color assigned to cluster values of '-1'
 ("unassigned").}
@@ -183,7 +186,7 @@ Returns (invisibly) a list with elements
 \itemize{
 \item{\code{aheatmapOut}}{ The output from the final call of
 \code{\link[NMF]{aheatmap}}.}
-\item{\code{sampleData}}{ the annotation data.frame given to the argument
+\item{\code{colData}}{ the annotation data.frame given to the argument
 \code{annCol} in \code{aheatmap}.}
 \item{\code{clusterLegend}}{ the annotation colors given to the argument
 \code{annColors} \code{aheatmap}.}
@@ -242,14 +245,14 @@ If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterSamplesData} can be a integer valued vector giving the order
   of the samples.
 
-If \code{data} is a matrix, then \code{sampleData} is a data.frame
+If \code{data} is a matrix, then \code{colData} is a data.frame
   of annotation data to be plotted above the heatmap and
-  \code{whSampleDataCont} gives the index of the column(s) of this dataset
+  \code{whColDataCont} gives the index of the column(s) of this dataset
   that should be consider continuous. Otherwise the annotation data for
-  \code{sampleData} will be forced into a factor (which will be nonsensical
+  \code{colData} will be forced into a factor (which will be nonsensical
   for continous data). If \code{data} is a \code{ClusterExperiment} object,
-  \code{sampleData} should refer to a index or column name of the
-  \code{colData} slot of \code{data}. In this case \code{sampleData} will be
+  \code{colData} should refer to a index or column name of the
+  \code{colData} slot of \code{data}. In this case \code{colData} will be
   added to any choices of clusterings chosen by the \code{whichClusters}
   argument (if any). If both clusterings and sample data are chosen, the
   clusterings will be shown closest to data (i.e. on bottom).
@@ -291,10 +294,10 @@ Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
 \code{clusterLegend} takes the place of argument \code{annColors}
   from \code{aheatmap} for giving colors to the annotation on the heatmap.
   \code{clusterLegend} should be list of length equal to
-  \code{ncol(sampleData)} with names equal to the colnames of
-  \code{sampleData}. Each element of the list should be a either the format
+  \code{ncol(colData)} with names equal to the colnames of
+  \code{colData}. Each element of the list should be a either the format
   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
-  corresponding to the levels of the column of \code{sampleData}), or should
+  corresponding to the levels of the column of \code{colData}), or should
   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
   object. Color assignments to the rows/genes should also be passed via
   \code{clusterLegend} (assuming \code{annRow} is an argument passed to
@@ -304,7 +307,7 @@ Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
 
 If you have a factor with many levels, it is important to note that
   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
-  \code{sampleData}, and in fact runs out of colors and the remaining levels
+  \code{colData}, and in fact runs out of colors and the remaining levels
   get the color white. Thus if you have many factors or many levels in those
   factors, you should set their colors via \code{clusterLegend}.
 
@@ -313,7 +316,7 @@ Many arguments can be passed on to \code{aheatmap}, however, some are set
   \code{Rowv} or \code{Colv} will cause errors. \code{color} in
   \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
   \code{annCol} to give annotation to the samples is replaced by the
-  \code{sampleData}; moreover, the \code{annColors} option in \code{aheatmap}
+  \code{colData}; moreover, the \code{annColors} option in \code{aheatmap}
   will also be set internally to give more vibrant colors than the default in
   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
   also be set in the \code{clusterLegend} slot ). Other options should be
@@ -339,27 +342,27 @@ plotHeatmap(ce)
 colors <- bigPalette[20:23]
 names(colors) <- 1:3
 plotHeatmap(data=simCount, clusterSamplesData=simData,
-sampleData=data.frame(cl), clusterLegend=list(colors))
+colData=data.frame(cl), clusterLegend=list(colors))
 
 #show two different clusters
 anno <- data.frame(cluster1=cl, cluster2=cl2)
-out <- plotHeatmap(simData, sampleData=anno)
+out <- plotHeatmap(simData, colData=anno)
 
 #return the values to see format for giving colors to the annotations
 out$clusterLegend
 
 #assign colors to the clusters based on plotClusters algorithm
-plotHeatmap(simData, sampleData=anno, alignSampleData=TRUE)
+plotHeatmap(simData, colData=anno, alignColData=TRUE)
 
 #assign colors manually
 annoColors <- list(cluster1=c("black", "red", "green"),
 cluster2=c("blue","purple","yellow"))
 
-plotHeatmap(simData, sampleData=anno, clusterLegend=annoColors)
+plotHeatmap(simData, colData=anno, clusterLegend=annoColors)
 
 #give a continuous valued -- need to indicate columns
 anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
-plotHeatmap(simData, sampleData=anno2, whSampleDataCont=3)
+plotHeatmap(simData, colData=anno2, whColDataCont=3)
 
 #compare changing breaks quantile on visual effect
 \dontrun{

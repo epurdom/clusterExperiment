@@ -13,6 +13,8 @@
 \alias{mergeMethod}
 \alias{mergeClusterIndex,ClusterExperiment-method}
 \alias{mergeClusterIndex}
+\alias{eraseMergeInfo,ClusterExperiment-method}
+\alias{eraseMergeInfo}
 \alias{getMergeCorrespond,ClusterExperiment-method}
 \alias{getMergeCorrespond}
 \title{Merge clusters based on dendrogram}
@@ -27,7 +29,7 @@
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
   clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
   plotType = c("colorblock", "name", "ids"), plot = TRUE, whichAssay = 1,
-  ...)
+  forceCalculate = FALSE, ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 
@@ -36,6 +38,8 @@
 \S4method{mergeMethod}{ClusterExperiment}(x)
 
 \S4method{mergeClusterIndex}{ClusterExperiment}(x)
+
+\S4method{eraseMergeInfo}{ClusterExperiment}(x)
 
 \S4method{getMergeCorrespond}{ClusterExperiment}(x, by = c("merge",
   "original"))
@@ -137,6 +141,9 @@ the leaves ("name") (only if x is a ClusterExperiment object).}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
+\item{forceCalculate}{This forces the function to erase previously saved merge 
+results and recalculate the merging.}
+
 \item{by}{indicates whether output from \code{getMergeCorrespond} should be
 a vector/list with elements corresponding to merge cluster ids or elements
 corresponding to the original clustering ids. See return value for details.}
@@ -149,16 +156,31 @@ If `x` is a matrix, it returns (invisibly) a list with elements
   sample was not clustered.}
 	\item{\code{oldClToNew}}{ A table of the old
   cluster labels to the new cluster labels.}
-	\item{\code{nodeProp}}{ A table of
-  the proportions that are DE on each node.}
-	\item{\code{nodeMerge}}{ A table of indicating for each node whether merged or not and the cluster id in the new clustering that corresponds to the node}
+	\item{\code{nodeProp}}{ 
+A table of the proportions that are DE on each node.This table is saved in the
+\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
+accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
+	}
+	\item{\code{nodeMerge}}{ 
+	A table of indicating for each node whether merged or not and the cluster id
+	in the new clustering that corresponds to the node. Note that a node can be
+	merged and not correspond to a node in the new clustering, if its ancestor
+	node is also merged. But there must be some node that corresponds to a new
+	cluster id if merging has been done. This table is saved in the
+	\code{merge_nodeMerge} slot of a \code{ClusterExperiment} object and can be
+	accessed along with the nodeProp info with the \code{nodeMergeInfo}
+	function.
+	}
   \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
   was based (based on the original clustering).}
   \item{\code{cutoff}}{ The cutoff value for merging.} }
 
 If `x` is a \code{\link{ClusterExperiment}}, it returns a new
   \code{ClusterExperiment} object with an additional clustering based on the
-  merging. This becomes the new primary clustering.
+  merging. This becomes the new primary clustering. Note that even if
+  \code{mergeMethod="none"}, the returned object will erase any old merge
+  information, update the work flow numbering, and return the newly calculated 
+  merge information.
 
 \code{nodeMergeInfo} returns information collected about the nodes
   during merging as a data.frame with the following entries:
@@ -180,6 +202,8 @@ column of NAs means that the method in question hasn't been calculated yet.}
 \code{mergeMethod} returns the method used for the current merge.
 
 \code{mergeClusterIndex} returns the index of the clustering used for the current merge.
+
+\code{eraseMergeInfo} returns object with all previously saved merge info removed.
 
 \code{getMergeCorrespond} returns the correspondence between the
   merged cluster and its originating cluster. If \code{by="original"} returns

@@ -13,12 +13,12 @@
 #'   method (if \code{maxDims} is of length 1, the same number of dimensions
 #'   will be used for each).
 #' @param ... Values passed on the the 'SingleCellExperiment' method.
-#' @inheritParams transformData
 #' @details The PCA method uses either \code{prcomp} from the \code{stats}
 #'   package or  \code{svds} from the \code{RSpectra} package to perform PCA.
 #'   Both are called on \code{t(assay(x))} with \code{center=TRUE} and
 #'   \code{scale=TRUE} (i.e. the feature are centered and scaled), so that it is
 #'   performing PCA on the correlation matrix of the features.
+#' @details Note that this function does not check if such a reduceDim value already exists, and will recalculate (and overwrite) if it does.
 #' @return \code{makeReducedDims} returns a \code{\link{SingleCellExperiment}}
 #'   containing the calculated dimensionality reduction in the \code{reduceDims}
 #'   with names corresponding to the name given in \code{reducedDims}.
@@ -33,7 +33,7 @@
 setMethod(
   f = "makeReducedDims",
   signature = "SingleCellExperiment",
-  definition = function(object,reducedDims="PCA",maxDims=500,transFun=NULL,isCount=FALSE)
+  definition = function(object,reducedDims="PCA",maxDims=500,transFun=NULL,isCount=FALSE,whichAssay=1)
   {
     
     ###################
@@ -61,7 +61,7 @@ setMethod(
     ##Clean up data:
     ###################
     #transform data
-    x<-transformData(object,transFun=transFun,isCount=isCount)
+    x<-transformData(object,transFun=transFun,isCount=isCount,whichAssay=whichAssay)
     #---------
     #Check zero variance genes before doing reducedDims:
     #---------

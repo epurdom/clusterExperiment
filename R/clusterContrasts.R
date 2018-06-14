@@ -19,7 +19,7 @@
 #'   the clusters in \code{cluster} (excluding "-1" categories). Each row is a
 #'   pair to be compared and must match the names of the clusters in the vector 
 #'   \code{cluster}.
-#' @param removeNegative logical, whether to remove negative valued clusters 
+#' @param removeUnassigned logical, whether to remove negative valued clusters 
 #'   from the design matrix. Appropriate to pick TRUE (default) if design will 
 #'   be input into linear model on samples that excludes -1.
 #' @param outputType character string. Gives format for the resulting contrast 
@@ -30,7 +30,7 @@
 #' @details The input vector must be numeric clusters, but the external commands
 #'   that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require 
 #'   syntatically valid R names. For this reason, the names of the levels will 
-#'   be "X1" instead of "1". And negative values (if removeNegative=FALSE) will 
+#'   be "X1" instead of "1". And negative values (if removeUnassigned=FALSE) will 
 #'   be "X.1","X.2", etc.
 #' @return List with components:
 #'\itemize{ 
@@ -80,12 +80,12 @@ setMethod(
   f = "clusterContrasts",
   signature = "vector",
   definition = function(cluster,contrastType=c("Dendro", "Pairs", "OneAgainstAll"),
-                        dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeNegative=TRUE){
+                        dendro=NULL, pairMat=NULL,outputType=c("limma","MAST"),removeUnassigned=TRUE){
     outputType<-match.arg(outputType)
     if(outputType=="MAST" & !requireNamespace("MAST", quietly = TRUE)) stop("for outputType 'MAST', you must have package 'MAST' from Bioconductor installed.")
     
     cluster<-.convertToNum(cluster)
-    if(removeNegative) cl<-cluster[cluster>0] else cl<-cluster
+    if(removeUnassigned) cl<-cluster[cluster>0] else cl<-cluster
     
     ###--------
     ### Fix up the names
@@ -154,14 +154,14 @@ setMethod(
         paste(yPretty[1],yPretty[2],sep="-")
       })
     }
-    #     if(!removeNegative){
+    #     if(!removeUnassigned){
     #         levnames<-levels(cl)
     #         whNeg<-which(cluster<0)
     #         if(length(whNeg)>0){
     #             levnames[whNeg]<-paste("Neg",cluster[whNeg],sep="")
     #         }
     #     }
-    #     if(removeNegative){
+    #     if(removeUnassigned){
     #         levnames<-levels(factor(cluster[cluster>0]))
     #     }
     levnames<-if(contrastType!="Dendro") clPrettyLevels else make.names(as.character(clLevels))

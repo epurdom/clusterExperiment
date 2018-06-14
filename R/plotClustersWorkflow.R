@@ -69,16 +69,20 @@ setMethod(
     sortBy<-match.arg(sortBy)
     existingColors<-match.arg(existingColors)
     allClusterMany<-which(clusterTypes(object)=="clusterMany")
-    if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
+    if("colData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'colData' argument. You must use plotClusters for this option.")
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }
-    if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
-    if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
+    # if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
+    # if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
     #convert to indices
     if(is.character(whichClusters)){
       whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
       if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
+    }
+    if(is.character(whichClusterMany)){
+      whichClusterMany<- .TypeIntoIndices(object,whClusters=whichClusterMany)
+      if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusterMany argument")
     }
     
     #result labels (yaxis):
@@ -103,41 +107,42 @@ setMethod(
         
       }
     }
-    
     ###Get the sorted index using the matrix version of plotClusters
     ### out is the result of plotClusters
     if(sortBy=="highlighted"){
-      tempClusters<-clusterMatrix(object)[,c(whichClusters,whichClusterMany),drop=FALSE]
-      out<-plotClusters(tempClusters,plot=FALSE)	 	
-      
-      resM<-out$colors[,c(seq_along(whichClusters)),drop=FALSE]
+      orderOfClusters<-c(whichClusters,whichClusterMany)
+      highIndex<-c(seq_along(whichClusters))
+      cmIndex<-seq_along(orderOfClusters)[-highIndex]
     }
     else{
-      tempClusters<-clusterMatrix(object)[,c(whichClusterMany,whichClusters),drop=FALSE]
-      out<-plotClusters(tempClusters,plot=FALSE)
+      orderOfClusters<-c(whichClusterMany,whichClusters)
+      cmIndex<-c(seq_along(whichClusterMany))
+      highIndex<-seq_along(orderOfClusters)[-cmIndex]
+      
     }
-    
+    tempClusters<-clusterMatrix(object)[,orderOfClusters,drop=FALSE]
+    out<-plotClusters(tempClusters,plot=FALSE)	 	
+      
     ### Create color matrix
     ### resM is the highlighted clusters (columns the clusters)
     ### cmM is the clusterMany clusters (columns the clusters)
     
     if(existingColors!="ignore") 
-      existingColorMat<-convertClusterLegend(object, whichClusters=c(whichClusterMany,whichClusters), output="matrixColors")
+      existingColorMat<-convertClusterLegend(object, whichClusters=orderOfClusters, output="matrixColors")
     
     if(existingColors %in% c("all","highlightOnly")){
-      resM<-existingColorMat[,-c(seq_along(whichClusterMany)),drop=FALSE]
+      resM<-existingColorMat[,highIndex,drop=FALSE]
     }
     else{
-      resM<-out$colors[,-c(seq_along(whichClusterMany)),drop=FALSE]
+      resM<-out$colors[,highIndex,drop=FALSE]
       
     }
     if(existingColors =="all"){
-      cmM<-existingColorMat[,-c(seq_along(whichClusters)),drop=FALSE]
+      cmM<-existingColorMat[,cmIndex,drop=FALSE]
     }
     else{
-      cmM<-out$colors[,-c(seq_along(whichClusters)),drop=FALSE] 
+      cmM<-out$colors[,cmIndex,drop=FALSE] 
     }
-    
     
     # make replication of results
     repResults<-lapply(seq_len(ncol(resM)),function(ii){
@@ -150,12 +155,15 @@ setMethod(
     repResults<-do.call("cbind",repResults)
     ##Add blanks
     if(highlightOnTop){
-      bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(resM,cmM)),
+						groupsOfFeatures=list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),
+						nBlankFeatures=nBlankLines
+						)
       whNotRes<-(length(whichClusters)+1):nrow(bd$dataWBlanks) #includes blanks
       whCM<-whNotRes[-c(seq_len(nBlankLines))] #no blanks
     } 	
     else{
-      bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(cmM,resM)), groupsOfFeatures= list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankFeatures=nBlankLines)
       whNotRes<-  seq_len(length(whichClusterMany)+nBlankLines) #includes blanks
       whCM<-  seq_along(whichClusterMany) #no blanks
     }  
