@@ -23,13 +23,15 @@
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = "none", nodePropTable = NULL, calculateAll = TRUE,
   showWarnings = FALSE, cutoff = 0.05, plot = TRUE,
-  DEMethod = c("edgeR", "limma", "limma-voom"), logFCcutoff = 0, ...)
+  DEMethod = c("edgeR", "limma", "limma-voom"), logFCcutoff = 0,
+  weights = NULL, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
   clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
   plotType = c("colorblock", "name", "ids"), plot = TRUE, whichAssay = 1,
-  forceCalculate = FALSE, ...)
+  forceCalculate = FALSE, weights = if ("weights" \%in\% assayNames(x))
+  "weights" else NULL, ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 
@@ -101,15 +103,12 @@ clusters.}
 \item{plot}{logical as to whether to plot the dendrogram with the merge
 results}
 
-\item{DEMethod}{passed to \code{\link{getBestFeatures}}, determining the type 
-of DEMethod to use for calculating the p-values.}
-
 \item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is
 "adjP", in which case the calculation of the proportion of individual tests
 significant will also require that the estimated log-fold change of the
 features to be at least this large in absolute value. Value will be rounded
 to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
-any other method, this parameter is ignored.}
+any other method, this parameter is ignored. Note that the logFC is based on}
 
 \item{...}{for signature \code{matrix}, arguments passed to the
 \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.

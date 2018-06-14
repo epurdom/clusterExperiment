@@ -14,8 +14,8 @@
   ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
-  "Dendro", "Pairs", "OneAgainstAll"), whichAssay, DEMethod, weights = NULL,
-  ...)
+  "Dendro", "Pairs", "OneAgainstAll"), whichAssay = 1, DEMethod,
+  weights = if ("weights" \%in\% assayNames(x)) "weights" else NULL, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a
@@ -45,7 +45,10 @@ pair to be compared and must match the names of the clusters in the vector
 should be a matrix of weights, 
 of the same dimensions as \code{x}. If \code{x} is a \code{ClusterExperiment} object
 \code{weights} can be a either a matrix, as previously described, or a character or 
- numeric index to an assay in \code{x} that contains the weights.}
+ numeric index to an assay in \code{x} that contains the weights. We recommend that 
+weights be stored as an assay with name \code{"weights"} so that the weights will 
+also be used with \code{\link{mergeClusters}}, and this is the default. Setting 
+\code{weights=NULL} ensures that weights will NOT be used, and only the standard edgeR.}
 
 \item{contrastAdj}{What type of FDR correction to do for contrasts tests
 (i.e. if contrastType='Dendro' or 'Pairs').}
@@ -70,8 +73,12 @@ to the matrix version.}
 }
 \value{
 A \code{data.frame} in the same format as
-  \code{\link[limma]{topTable}}, except for the following additional or
-  changed columns:
+  \code{\link[limma]{topTable}}, or \code{\link[edgeR]{topTags}}. The output differs
+ between these two programs, mainly in the naming of columns. Furthermore, if weights 
+ are used, an additional column \code{padjFilter} is included as the result of running 
+ \code{\link[zinbwave]{glmWeightedF}} with default option 
+ \code{independentFiltering = TRUE}. The following column names are the same between all 
+ of the DE methods.
 \itemize{
 
 \item{\code{Feature}}{ This is the column called 'ProbeID' by
@@ -86,6 +93,10 @@ applicable, depends on \code{contrastType} argument)}
 \item{\code{ContrastName}}{ The name of the contrast that the results
 corresponds to. For dendrogram searches, this will be the node of the tree of
 the dendrogram.}
+
+\item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
+
+\item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or \code{FWER} in \code{topTags})}
 }
 }
 \description{
@@ -107,13 +118,15 @@ getBestFeatures returns the top ranked features corresponding to a
   analysis will be performed. Three options are available: limma, edgeR, and 
   limma with a voom corrections. The last two options are only appropriate 
   for count data. If the input \code{x} is a \code{ClusterExperiment} object,
-  and \code{DEMethod="limma"}, then the data analyzed for DE will be after 
+  and \code{DEMethod="limma"}, then the data analyzed for DE will be \emph{after}
   taking the transformation of the data (as given in the transformation slot 
   of the object). For the options "limma-voom" and "edgeR", the
   transformation slot will be ignored and only the counts data (as specified
   by the \code{whichAssay} slot) will be passed to the programs. Note that
   for "limma-voom" this implies that the data will be transformed by voom
-  with the function log2(x+0.5)
+  with the function log2(x+0.5). If \code{weights} is not \code{NULL}, and 
+  \code{DEMethod="edgeR"}, then the function \code{glmWeightedF} from the 
+  \code{zinbwave} package is run; otherwise \code{glmLRT} from \code{edgeR}.
 
 Note that the argument \code{DEMethod} replaces the previous option
   \code{isCount}, to decide on the method of DE.
@@ -201,4 +214,8 @@ Smyth, G. K. (2004). Linear models and empirical Bayes methods
   for assessing differential expression in microarray experiments.
   Statistical Applications in Genetics and Molecular Biology, Volume 3,
   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
+}
+\seealso{
+\code{\link[package=edgeR]{glmLRT}} \code{\link[package=zinbwave]{glmWeightedF}}
+  \code{\link[package=limma]{topTable}} \code{\link[package=limma]{topTags}}
 }

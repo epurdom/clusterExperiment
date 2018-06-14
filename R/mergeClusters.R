@@ -35,8 +35,6 @@
 #'   \code{mergeMethod} argument). \code{plotInfo} can also show the information
 #'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to
 #'   this argument in  the form of "adjP_2.0", for example.
-#' @param DEMethod passed to \code{\link{getBestFeatures}}, determining the type 
-#'  of DEMethod to use for calculating the p-values.
 #' @param plot logical as to whether to plot the dendrogram with the merge
 #'   results
 #' @param nodePropTable Only for matrix version. Matrix of results from previous
@@ -60,7 +58,8 @@
 #'   significant will also require that the estimated log-fold change of the
 #'   features to be at least this large in absolute value. Value will be rounded
 #'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
-#'   any other method, this parameter is ignored.
+#'   any other method, this parameter is ignored. Note that the logFC is based on 
+#    \code{log2} (the results of \code{\link{getBestFeatures}})
 #' @param forceCalculate This forces the function to erase previously saved merge 
 #'   results and recalculate the merging. 
 #' @param ... for signature \code{matrix}, arguments passed to the
@@ -69,6 +68,7 @@
 #'   signature \code{matrix} and then if do not match those arguments, will be
 #'   passed onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany
+#' @inheritParams getBestFeatures
 #'
 #' @details \strong{Estimation of Proportion non-null} "Storey" refers to the
 #'   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
@@ -81,16 +81,9 @@
 #'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
 #'   refers to the proportion of genes that are found significant based on a FDR
 #'   adjusted p-values (method "BH") and a cutoff of 0.05.
-#' @details  \strong{Count correction} If  \code{isCount=TRUE}, and the input is
-#'   a matrix, \code{log2(count + 1)} will be used for
-#'   \code{\link{makeDendrogram}} and the original data with voom correction
-#'   will be used in \code{\link{getBestFeatures}}). If input is
-#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
-#'   means that the log2(1+count) will be used as the transformation, like for
-#'   the matrix case as well as the voom calculation, and will NOT use the
-#'   transformation stored in the object. If FALSE, then transformData(x) will be
-#'   given to the input and will be used for both \code{makeDendrogram} and
-#'   \code{getBestFeatures}, with no voom correction.
+#' @details  \strong{DEMethod} If  \code{DEMethod=="limma"}, and \code{x} is a \code{ClusterExperiment} object, then transformData(x) will be
+#'   given as the input to \code{getBestFeatures}. Otherwise, the original data stored in 
+#'  the assay will be passed to \code{getBestFeatures} (and the remaining methods assume the data will be counts.)
 #' @details \strong{Control of Plotting} If \code{mergeMethod} is not equal to
 #'   'none' then the plotting will indicate where the clusters will be merged by
 #'   making dotted lines of edges that are merged together (assuming
@@ -196,7 +189,7 @@ setMethod(
                         mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
                         plotInfo="none",
                         nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-                        cutoff=0.05, plot=TRUE,DEMethod=c("edgeR","limma","limma-voom"), logFCcutoff=0, ...){
+                        cutoff=0.05, plot=TRUE,DEMethod, logFCcutoff=0, weights=NULL,...){
 		
 		if(any(c("whichCluster","whichClusters") %in% names(list(...)))) stop("The argument 'whichCluster' is not accepted for this function. The clustering used for merging will always be taken as that clustering that created the currently stored dendrogram (given by 'dendroClusterIndex')")
     dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -268,10 +261,17 @@ setMethod(
     ############
     if(needCalculate){
       #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
+			denote<-sprintf("Significance tests will use %s method",DEMethod)
+			if(DEMethod=="edgeR"){
+				if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
+				else denote<-paste0(denote,".")
+			}
+			else denote<-paste0(denote,".")
+			.mynote(denote)
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
                                   contrastAdj=c("All"),
-                                  number=nrow(x), p.value=1, DEMethod=DEMethod)
+                                  number=nrow(x), p.value=1, DEMethod=DEMethod, weights=weights)
       #divide table into each node and calculate proportion.
       sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
         storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
@@ -514,7 +514,7 @@ setMethod(
 setMethod(
   f = "mergeClusters",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x, eraseOld=FALSE,isCount=FALSE,
+  definition = function(x, eraseOld=FALSE,
                         mergeMethod="none",
                         plotInfo="all",
                         clusterLabel="mergeClusters",
@@ -523,6 +523,8 @@ setMethod(
                         plot=TRUE,
                         whichAssay=1,
 												forceCalculate=FALSE,
+												weights=if("weights" %in% assayNames(x)) "weights" else NULL,
+												DEMethod,
                         ...) {
     if(forceCalculate) x<-.eraseMerge(x)
     plotType<-match.arg(plotType)
@@ -534,7 +536,6 @@ setMethod(
       cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
       .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
     }
-    if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than with the transformation function in the slot `transformation`. This makes sense only for counts.")
     if(!x@dendro_outbranch){
       if(any(cl<0) & leafType=="samples"){
         warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
@@ -561,10 +562,13 @@ setMethod(
       else propTable<-NULL
     }
     else propTable<-NULL
-    outlist <- mergeClusters(x=if(!isCount) transformData(x, whichAssay=whichAssay) else assay(x, whichAssay),
+    if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
+    		weights<-assay(x, weights) 
+    }
+    outlist <- mergeClusters(x=if(DEMethod=="limma") transformData(x, whichAssay=whichAssay) else assay(x, whichAssay),
                              cl=cl, nodePropTable=propTable,
                              dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
-                             isCount=isCount,mergeMethod=mergeMethod, ...)
+                             mergeMethod=mergeMethod, weights=weights,...)
     nodeMerge<-outlist$nodeMerge
     #-----
     ##Check if pipeline already ran previously and if so increase and erase old merge

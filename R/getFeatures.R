@@ -22,7 +22,10 @@
 #' should be a matrix of weights, 
 #' of the same dimensions as \code{x}. If \code{x} is a \code{ClusterExperiment} object
 #' \code{weights} can be a either a matrix, as previously described, or a character or 
-#'  numeric index to an assay in \code{x} that contains the weights.
+#'  numeric index to an assay in \code{x} that contains the weights. We recommend that 
+#' weights be stored as an assay with name \code{"weights"} so that the weights will 
+#' also be used with \code{\link{mergeClusters}}, and this is the default. Setting 
+#' \code{weights=NULL} ensures that weights will NOT be used, and only the standard edgeR.
 #' @param ... If \code{x} is a matrix, these are options to pass to
 #'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see
 #'   \code{\link[limma]{limma}} package). If \code{x} is a
@@ -45,13 +48,15 @@
 #'   analysis will be performed. Three options are available: limma, edgeR, and 
 #'   limma with a voom corrections. The last two options are only appropriate 
 #'   for count data. If the input \code{x} is a \code{ClusterExperiment} object,
-#'   and \code{DEMethod="limma"}, then the data analyzed for DE will be after 
+#'   and \code{DEMethod="limma"}, then the data analyzed for DE will be \emph{after}
 #'   taking the transformation of the data (as given in the transformation slot 
 #'   of the object). For the options "limma-voom" and "edgeR", the
 #'   transformation slot will be ignored and only the counts data (as specified
 #'   by the \code{whichAssay} slot) will be passed to the programs. Note that
 #'   for "limma-voom" this implies that the data will be transformed by voom
-#'   with the function log2(x+0.5)
+#'   with the function log2(x+0.5). If \code{weights} is not \code{NULL}, and 
+#'   \code{DEMethod="edgeR"}, then the function \code{glmWeightedF} from the 
+#'   \code{zinbwave} package is run; otherwise \code{glmLRT} from \code{edgeR}.
 #' @details Note that the argument \code{DEMethod} replaces the previous option
 #'   \code{isCount}, to decide on the method of DE.
 #' @details When `contrastType` argument implies that the best features should
@@ -76,8 +81,12 @@
 #'   the default value of \code{p.value = 1} will not result in any effect on
 #'   the adjusted p-value otherwise.
 #' @return A \code{data.frame} in the same format as
-#'   \code{\link[limma]{topTable}}, except for the following additional or
-#'   changed columns:
+#'   \code{\link[limma]{topTable}}, or \code{\link[edgeR]{topTags}}. The output differs
+#'  between these two programs, mainly in the naming of columns. Furthermore, if weights 
+#'  are used, an additional column \code{padjFilter} is included as the result of running 
+#'  \code{\link[zinbwave]{glmWeightedF}} with default option 
+#'  \code{independentFiltering = TRUE}. The following column names are the same between all 
+#'  of the DE methods.
 #' \itemize{
 #'
 #' \item{\code{Feature}}{ This is the column called 'ProbeID' by
@@ -92,6 +101,10 @@
 #' \item{\code{ContrastName}}{ The name of the contrast that the results
 #' corresponds to. For dendrogram searches, this will be the node of the tree of
 #' the dendrogram.}
+#' 
+#' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
+#' 
+#' \item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or \code{FWER} in \code{topTags})}
 #' }
 #'
 #' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and
@@ -105,6 +118,8 @@
 #'   for assessing differential expression in microarray experiments.
 #'   Statistical Applications in Genetics and Molecular Biology, Volume 3,
 #'   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
+#' @seealso \code{\link[package=edgeR]{glmLRT}} \code{\link[package=zinbwave]{glmWeightedF}}
+#'   \code{\link[package=limma]{topTable}} \code{\link[package=limma]{topTags}}
 #' @examples
 #' data(simData)
 #'
@@ -153,7 +168,6 @@
 #' @export
 #' @import limma
 #' @importFrom stringr str_pad
-#' @import edgeR
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
 signature = signature(x = "matrix"),
@@ -165,7 +179,7 @@ definition = function(x, cluster,
 											normalize.method="none",...) {
   
   
-  #... is always sent to topTable, and nothing else
+  #... is always sent to topTable/topTags, and nothing else
 	DEMethod<-match.arg(DEMethod)
   cl<-cluster
   if(is.factor(cl)) {
@@ -177,19 +191,13 @@ definition = function(x, cluster,
   contrastType <- match.arg(contrastType)
   contrastAdj <- match.arg(contrastAdj)
   returnType <- "Table" 
-    
-  
-	
-	
-	
-	
   if(is.null(rownames(dat))) {
     rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
   }
-  
-  tmp <- dat
-  
-  if(any(cl<0)){ #only use those assigned to a cluster to get good genes.
+	
+  #only use those assigned to a cluster to get good genes.
+  tmp <- dat  
+  if(any(cl<0)){ 
     whNA <- which(cl<0)
     tmp <- tmp[, -whNA]
     cl <- cl[-whNA]
@@ -232,10 +240,10 @@ definition = function(x, cluster,
       fitContr <- lmFit(v, designContr)
 		}
 		else if(DEMethod=="edgeR"){
-      fitContr<- DGEList(tmp)
+      fitContr<- edgeR::DGEList(tmp)
       if(!is.null(weights)) fitContr$weights <- weights
-      fitContr <- estimateDisp(fitContr, designContr)
-      fitContr <- glmFit(fitContr,design = designContr)
+      fitContr <- edgeR::estimateDisp(fitContr, designContr)
+      fitContr <- edgeR::glmFit(fitContr,design = designContr)
 			
 		}
 		else if(DEMethod=="limma"){
@@ -246,7 +254,6 @@ definition = function(x, cluster,
   if(contrastType=="F" || contrastAdj=="AfterF") {
     xdat<-data.frame("Cluster"=clPrettyFac)
     designF<-model.matrix(~Cluster,data=xdat)
-    #designF <- model.matrix(~clPrettyFac)
     
     if(DEMethod == "limma-voom"){
       v <- voom(tmp, design=designF, plot=FALSE,
@@ -254,36 +261,30 @@ definition = function(x, cluster,
       fitF <- lmFit(v, designF)
     }
 		else if(DEMethod=="edgeR"){
-        fitF<- DGEList(tmp)
+        fitF<- edgeR::DGEList(tmp)
         if(!is.null(weights)) fitF$weights <- weights
-        fitF <- estimateDisp(fitF, design = designF)
-        fitF <- glmFit(fitF,design = designF)
-        #disp <- estimateDisp(tmp, design = designF)$common.dispersion
-        #fitF <- glmFit(tmp, dispersion = disp,design = designF, weights= weights )
+        fitF <- edgeR::estimateDisp(fitF, design = designF)
+        fitF <- edgeR::glmFit(fitF,design = designF)
     } else if(DEMethod=="limma") {
       fitF <- lmFit(tmp, designF)
     }
   } else {
     fitF <- NULL
   }
-  
-		
-	<<<<<<< HEAD
-	
+  	
   if(contrastType!="F"){
 		contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeUnassigned = TRUE)
 
   }
   
   if(contrastType=="F"){
-    tops <- .getBestFGenes(fitF, weights = weights,...)
+    tops <- .getBestFGenes(fitF, DEMethod=DEMethod,...)
   }
   else{
     tops<-.testContrasts(contr.result$contrastMatrix,
 			contrastNames=contr.result$contrastNames,
-			fit=fitContr,fitF=fitF,
-			contrastAdj=contrastAdj, 
-			weights = weights,...)
+			fit=fitContr,fitF=fitF,DEMethod=DEMethod,
+			contrastAdj=contrastAdj, ...)
   }
   tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
   
@@ -309,7 +310,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = 
     function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
-             whichAssay,DEMethod, weights=NULL,...)
+             whichAssay=1,DEMethod, weights=if("weights" %in% assayNames(x)) "weights" else NULL,...)
       {
       contrastType <- match.arg(contrastType)
     cl<-primaryCluster(x)
@@ -334,55 +335,15 @@ setMethod(
     else dat<-assay(x,whichAssay)
     
     if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
-    		getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, weights),...) 
+    		getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
     }
-    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=weights,...)
+    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
     
   }
 )
 
-#' @rdname getBestFeatures
-#' @param whichAssay numeric or character specifying which assay to use. See
-#'   \code{\link[SummarizedExperiment]{assay}} for details.
-#' @export
-setMethod(
-  f = "getBestFeatures",
-  signature = signature(x = "ClusterExperiment"),
-  definition = 
-    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
-             whichAssay,DEMethod,...)
-    {
-      contrastType <- match.arg(contrastType)
-      cl<-primaryCluster(x)
-      if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
-      if(contrastType=="Dendro") {
-        if(is.null(x@dendro_clusters)) {
-          stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
-        } else {
-          if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
-            #check if merge from cluster that made dendro
-            if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
-              dendro<-.makeMergeDendrogram(x)
-              if(is.null(dendro)) stop("Could not make merge dendrogram")
-            }
-            else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
-          }
-          else dendro <- x@dendro_clusters
-        }
-      }
-      passedArgs<-list(...)
-      if(DEMethod=="limma") dat<-transformData(x,whichAssay=whichAssay)
-      else dat<-assay(x,whichAssay)
-      
-      if("weights" %in% names(assays(x)) & !"weights" %in% names(passedArgs)){
-        getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, "weights"),...)
-      }
-      else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, ...)
-      
-    }
-)
-
-.getBestFGenes<-function(fit, DEMethod, weights = NULL,...){
+#' @importFrom zinbwave glmWeightedF
+.getBestFGenes<-function(fit, DEMethod, ...){
 	if(DEMethod%in% c("limma","limma-voom")){
 	  ## basic limma design
 	  fit2 <- eBayes(fit)
@@ -390,41 +351,26 @@ setMethod(
 	  colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
 	}
 	else if(DEMethod=="edgeR"){
-    weights<- fit$weights
-    if(!is.null(weights)){
-      lrt <- glmWeightedF(fit, coef = c(2:ncol(fit$design)) )#Test if all the betas are zero i.e if the groups have the same gene expression
+    if(!is.null(fit$weights)){
+      lrt <- zinbwave::glmWeightedF(fit, coef = c(2:ncol(fit$design)) )#Test if all the betas are zero i.e if the groups have the same gene expression
     }
     else{
-      lrt = glmLRT(fit, coef = c(2:ncol(fit$design)))
+      lrt <- edgeR::glmLRT(fit, coef = c(2:ncol(fit$design)))
     }
-		
-		
-	  if(!is.null(weights)) fit <- glmWeightedF(fit, coef = 3) ##??? Kevin, why coef 3? Have you checked this works?
+    tops<-edgeR::topTags(lrt,...)
+		#Note, fit$coefficients are natural log, while output of topTags is log2 (see topTags documentation). Hence to add intercept, need to multiply by log2(exp(1))
+    tops<- data.frame(Feature = rownames(tops), logFC.Intercept=log2(exp(1))*fit$coefficients[rownames(tops),"(Intercept)"],tops) 
+	  colnames(tops)[colnames(tops)=="PValue"]<-"P.Value"
+	  if("FDR" %in% colnames(tops)) colnames(tops)[colnames(tops)=="FDR"]<-"adj.P.Val"
+		if("FWER" %in% colnames(tops)) colnames(tops)[colnames(tops)=="FWER"]<-"adj.P.Val"
 
-    topT<-topTags(lrt,...)
-    
-    #Kevin, you should use topTags and then convert those column names to match output of limma so 1 standard format.	  
-    ##              logFC   logCPM       LR       PValue   padjFilter          FDR
-    ## VIM      -4.768620 13.21770 47.43920 2.378498e-10 2.378498e-08 2.378498e-08
-    ## FOS      -5.314301 14.50175 37.39214 8.940291e-09 4.470146e-07 4.470146e-07
-    
-    ### MATCH the LIMMA output:
-    
-    tops<- data.frame(ProbeID = rownames(topT), X.Intercept. = fit$coefficients[rownames(topT),1],
-                      fit$coefficients[rownames(topT),  c(2:ncol(fit$design))], 
-                      logCPM = topT$table$logCPM, LR = topT$table$LR, 
-                      P.Value = topT$table$PValue, adj.P.Val = topT$table$FDR )
-    ## Here the columns exactly match the LIMMA output except two of them:
-    ## LR instead of F since my understanding is that in edgeR a likelihood ratio test is performed instead of an F-test
-    ## logCPM instead of AveExp from limma. I wasn't sure about this one but from what I read the two are a measure 
-    ## of average expression. One is provided by limma and the other by edgeR.
   }
   
   return(tops)
 }
 
 
-.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj, DEMethod,weights = NULL, ...){
+.testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj, DEMethod,...){
   ncontr<-ncol(contr.matrix)
   if(DEMethod%in%c("limma","limma-voom")){
     fit2<-contrasts.fit(fit,contr.matrix)
@@ -452,16 +398,23 @@ setMethod(
       else{
         tt<-topTable(fit2,coef=ii, genelist=rownames(fit2$coef),...)
       }
+	    colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     }
-    else{
-#      if(!is.null(weights)) fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
-      if(DEMethod=="edgeR") fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
-      tt<- topTags(fit2, n= nGenes)
-      if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
-      tt<- data.frame(ID=rownames(tt), tt)
-      colnames(tt)[5:6]<- c("P.Value", "adj.P.Val") #match the output style of limma
+    if(DEMethod=="edgeR") {
+      if(!is.null(fit2$weights)) fit2 <- zinbwave::glmWeightedF(fit2, contrast = contr.matrix[,ii])
+      else fit2 <- edgeR::glmLRT(fit2, contrast = contr.matrix[,ii])
+      if(contrastAdj%in%c("AfterF","All")) {
+        tt<-edgeR::topTags(fit2, n=length(rownames(fit2$coef)),p.value=1,adjust.method="none")
+      }
+      else{
+        tt<-edgeR::topTags(fit2,...)
+      }
+			if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
+      tt<- data.frame("Feature"=rownames(tt), tt)
+			colnames(tt)[colnames(tt)=="PValue"]<-"P.Value"
+			if("FWER" %in% colnames(tt)) colnames(tt)[colnames(tt)=="FWER"]<-"adj.P.Val"
+			if("FDR" %in% colnames(tt)) colnames(tt)[colnames(tt)=="FDR"]<-"adj.P.Val"
     }
-    colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     if(nrow(tt)>0){
       tt<-data.frame("Contrast"=unname(colnames(contr.matrix)[ii]),tt,row.names=NULL)
       if(!is.null(contrastNames)){
@@ -475,16 +428,20 @@ setMethod(
     #get p-value for F test for all genes, and only consider genes with significant F/LRT.
     if(DEMethod%in%c("limma","limma-voom")){
       fitF2<-eBayes(fitF)
-      topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH")
+      topsF<-topTable(fitF2,genelist=rownames(fit$coef),number=length(rownames(fit$coef)),adjust.method="BH",p.value=1)
       whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
     }
     else if(DEMethod %in% c("edgeR")) {
-      if(!is.null(weights)) fitF<- glmWeightedF(fitF, coef = c(2:ncol(fit$design)))
-      lrt<-fitF$table
-      whGenesSigF<-rownames(lrt)[which(lrt$padjFilter < p.value)]
+	    if(!is.null(fitF$weights)){
+	      lrt <- zinbwave::glmWeightedF(fitF, coef = c(2:ncol(fitF$design)) )#Test if all the betas are zero i.e if the groups have the same gene expression
+	    }
+	    else{
+	      lrt <- edgeR::glmLRT(fitF, coef = c(2:ncol(fitF$design)))
+	    }
+			topsF<-edgeR::topTags(lrt,genelist=rownames(fitF$coef),n=length(rownames(fitF$coef)),adjust.method="BH",p.value=1)
+      whGenesSigF<-rownames(topsF)[which(topsF$FDR < p.value)]
     }
     tops<-tops[tops$Feature %in% whGenesSigF,]
-    
   }
   #do FDR correction on all raw p-values (that remain)
   if(contrastAdj%in%c("AfterF","All")) {
@@ -495,9 +452,7 @@ setMethod(
       tops<-do.call("rbind",by(tops,tops$Contrast,function(x){x[seq_len(min(c(nGenes,nrow(x)))),,drop=FALSE]}))
     }
   }
-  row.names(tops)<-NULL
-#  tops<- tops[,-ncol(tops)] #In order to have the same column names. The last column we get from topTable is the B statistic which I think we're not interested in
-  
+  row.names(tops)<-NULL  
   return(tops)
 
 }

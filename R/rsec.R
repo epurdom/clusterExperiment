@@ -63,7 +63,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
-	  if(any(c("transFun","isCount") %in% names(list(...))))
+	  	if(any(c("transFun","isCount") %in% names(list(...))))
 	  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
       newObj <- RSEC(as(x,"SingleCellExperiment"),  transFun=transformation(x),...)
       ##Check if pipeline already ran previously and if so increase
@@ -72,9 +72,9 @@ setMethod(
       else{
 		  retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
 
-	  }
-	  filterStats(retval)<-filterStats(newObj)
-	  reducedDims(retval)<-reducedDims(newObj)
+		  }
+		  filterStats(retval)<-filterStats(newObj)
+		  reducedDims(retval)<-reducedDims(newObj)
     }
     else{
       retval<-.postClusterMany(x,...)
@@ -118,7 +118,7 @@ setMethod(
     mergeMethod="adjP",
     mergeCutoff,
     mergeLogFCcutoff,
-		mergeDEMethod,
+		mergeDEMethod=if(isCount) "edgeR" else "limma",
     verbose=FALSE,
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
@@ -163,11 +163,11 @@ setMethod(
         passedArgs<-c(passedArgs,mergeCutoff=mergeCutoff)
       if(!missing(mergeLogFCcutoff)) 
         passedArgs<-c(passedArgs,mergeLogFCcutoff=mergeLogFCcutoff)
+			mergeDEMethod<-eval(mergeDEMethod)
 			if(!missing(mergeDEMethod))
-				passedArgs<-c(passedArgs,mergeDEMethod=mergeDEMethod)
+				passedArgs<-c(passedArgs,mergeDEMethod=eval(mergeDEMethod))
       ce<-do.call(".postClusterMany",passedArgs)
-      #.postClusterMany(ce,consensusProportion=consensusProportion,consensusMinSize=consensusMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
-    }
+      }
     return(ce)
   })
 
@@ -224,13 +224,20 @@ setMethod(
       if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
         args1<-list()
         args1 <- c(args1, "whichAssay"=passedArgs$whichAssay)
+        args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
         if("mergeCutoff" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeCutoff)
         if("mergeLogFCCutoff" %in% names(passedArgs)){
           args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)
         }
-				if("mergeDEMethod" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeDEMethod)
-        args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
-        mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")])), silent=TRUE)
+				if("mergeDEMethod" %in% names(passedArgs)){
+					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
+					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
+					
+				} 
+				else{
+					mergeTry<-"mergeDEMethod argument is missing with no default"
+					class(mergeTry)<-"try-error"
+				}
         if(!inherits(mergeTry,"try-error")){
           ce<-mergeTry
         }

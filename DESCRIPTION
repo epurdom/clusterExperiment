@@ -37,7 +37,9 @@ Imports:
 	  grDevices,
 	  Rcpp,
 	  HDF5Array (>= 1.7.10),
-	  DelayedArray (>= 0.5.31)
+	  DelayedArray (>= 0.5.31),
+		edgeR,
+		zinbwave
 Suggests:
   BiocStyle,
   knitr,
