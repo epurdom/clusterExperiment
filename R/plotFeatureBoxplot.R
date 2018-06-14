@@ -8,32 +8,8 @@
 #' @export
 setMethod(
   f = "plotFeatureBoxplot",
-  signature = signature(object = "ClusterExperiment",whichCluster="character",feature="ANY"),
-  definition = function(object, whichCluster,feature,...)
-  {
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
-    invisible(plotFeatureBoxplot(object,whichCluster=whCl,feature=feature,...))
-
-  })
-
-#' @rdname plotFeatureBoxplot
-#' @export
-setMethod(
-  f = "plotFeatureBoxplot",
-  signature = signature(object = "ClusterExperiment",whichCluster="missing",feature="ANY"),
-  definition = function(object, whichCluster,feature,...)
-  {
-    invisible(plotFeatureBoxplot(object,whichCluster="primaryCluster",feature=feature,...))
-
-  })
-
-
-#' @rdname plotFeatureBoxplot
-#' @export
-setMethod(
-  f = "plotFeatureBoxplot",
-  signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="character"),
-  definition = function(object, whichCluster,feature,...)
+  signature = signature(object = "ClusterExperiment",feature="character"),
+  definition = function(object, feature,whichCluster,...)
   {
     m<-match(feature,rownames(object))
     if(is.na(m)) stop("feature does not match one of the rownames of this object")
@@ -73,12 +49,12 @@ setMethod(
 #' @export
 setMethod(
   f = "plotFeatureBoxplot",
-  signature = signature(object = "ClusterExperiment",whichCluster="numeric",feature="numeric"),
-  definition = function(object, whichCluster, feature,plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,whichAssay=1,...)
+  signature = signature(object = "ClusterExperiment",feature="numeric"),
+  definition = function(object,  feature,whichCluster="primary",plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,whichAssay=1,...)
   {
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[feature,]
-
     clLegend<-clusterLegend(object)[[whichCluster]]
     uniqueNames<-length(unique(clLegend[,"name"]))==nrow(clLegend)
 		

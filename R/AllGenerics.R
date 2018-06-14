@@ -7,7 +7,7 @@ setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("make
 setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
 
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})
-setGeneric("plotFeatureBoxplot", function(object,whichCluster,feature,...) { standardGeneric("plotFeatureBoxplot")})
+setGeneric("plotFeatureBoxplot", function(object,feature,...) { standardGeneric("plotFeatureBoxplot")})
 setGeneric("plotFeatureScatter", function(object,features,...) { standardGeneric("plotFeatureScatter")})
 
 setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })

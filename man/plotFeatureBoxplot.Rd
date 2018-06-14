@@ -4,30 +4,23 @@
 \name{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot,ClusterExperiment,character,ANY-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,missing,ANY-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,numeric,character-method}
-\alias{plotFeatureBoxplot,ClusterExperiment,numeric,numeric-method}
+\alias{plotFeatureBoxplot,ClusterExperiment,numeric-method}
 \title{Plot boxplot of feature values by cluster}
 \usage{
-\S4method{plotFeatureBoxplot}{ClusterExperiment,character,ANY}(object,
-  whichCluster, feature, ...)
+\S4method{plotFeatureBoxplot}{ClusterExperiment,character}(object, feature,
+  whichCluster, ...)
 
-\S4method{plotFeatureBoxplot}{ClusterExperiment,missing,ANY}(object,
-  whichCluster, feature, ...)
-
-\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,character}(object,
-  whichCluster, feature, ...)
-
-\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric,numeric}(object,
-  whichCluster, feature, plotUnassigned = FALSE, unassignedColor = NULL,
-  missingColor = NULL, main = NULL, whichAssay = 1, ...)
+\S4method{plotFeatureBoxplot}{ClusterExperiment,numeric}(object, feature,
+  whichCluster = "primary", plotUnassigned = FALSE,
+  unassignedColor = NULL, missingColor = NULL, main = NULL,
+  whichAssay = 1, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
 
-\item{whichCluster}{which clusters to show on the plot}
-
 \item{feature}{identification of feature to plot, either row name or index}
+
+\item{whichCluster}{which clusters to show on the plot}
 
 \item{...}{arguments passed to \code{\link{boxplot}}}
 
