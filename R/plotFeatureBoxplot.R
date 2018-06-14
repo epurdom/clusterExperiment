@@ -9,7 +9,7 @@
 setMethod(
   f = "plotFeatureBoxplot",
   signature = signature(object = "ClusterExperiment",feature="character"),
-  definition = function(object, feature,whichCluster,...)
+  definition = function(object, feature,whichCluster="primary",...)
   {
     m<-match(feature,rownames(object))
     if(is.na(m)) stop("feature does not match one of the rownames of this object")
