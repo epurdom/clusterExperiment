@@ -139,5 +139,8 @@ test_that("`plotContrastHeatmap` works", {
 	
 })
 
-
-
+test_that("`getBestFeatures` works with weights", {
+	weights<-matrix(runif(nrow(seSimCount)*ncol(seSimCount)),nrow=nrow(seSimCount),ncol=ncol(seSimCount))
+	getBestFeatures(seSimCount,weights=weights,DEMethod="edgeR")
+	
+})

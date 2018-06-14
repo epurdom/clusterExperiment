@@ -164,8 +164,6 @@ definition = function(x, cluster,
                       DEMethod=c("edgeR","limma","limma-voom"),
 											normalize.method="none",...) {
   
-  #if weights is NULL, then the differential expression uses limma voom
-  #if a weight matrix is provided and isCount is True, then glmFit from edgeR is used.
   
   #... is always sent to topTable, and nothing else
 	DEMethod<-match.arg(DEMethod)
@@ -179,7 +177,12 @@ definition = function(x, cluster,
   contrastType <- match.arg(contrastType)
   contrastAdj <- match.arg(contrastAdj)
   returnType <- "Table" 
+    
   
+	
+	
+	
+	
   if(is.null(rownames(dat))) {
     rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
   }
@@ -194,6 +197,7 @@ definition = function(x, cluster,
       weights<- weights[,-whNA]
     }
   }
+	
   ###--------
   ### Fix up the names
   ###--------
@@ -216,7 +220,7 @@ definition = function(x, cluster,
   else{
     clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
   }
-  
+	
   if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
     ###Create fit for running contrasts
     designContr <- model.matrix(~ 0 + clPrettyFac)
@@ -263,6 +267,9 @@ definition = function(x, cluster,
     fitF <- NULL
   }
   
+		
+	<<<<<<< HEAD
+	
   if(contrastType!="F"){
 		contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeUnassigned = TRUE)
 
@@ -291,6 +298,7 @@ definition = function(x, cluster,
   }
 }
 )
+
 
 #' @rdname getBestFeatures
 #' @param whichAssay numeric or character specifying which assay to use. See
@@ -333,10 +341,48 @@ setMethod(
   }
 )
 
+#' @rdname getBestFeatures
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
+#' @export
+setMethod(
+  f = "getBestFeatures",
+  signature = signature(x = "ClusterExperiment"),
+  definition = 
+    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
+             whichAssay,DEMethod,...)
+    {
+      contrastType <- match.arg(contrastType)
+      cl<-primaryCluster(x)
+      if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
+      if(contrastType=="Dendro") {
+        if(is.null(x@dendro_clusters)) {
+          stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
+        } else {
+          if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
+            #check if merge from cluster that made dendro
+            if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+              dendro<-.makeMergeDendrogram(x)
+              if(is.null(dendro)) stop("Could not make merge dendrogram")
+            }
+            else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+          }
+          else dendro <- x@dendro_clusters
+        }
+      }
+      passedArgs<-list(...)
+      if(DEMethod=="limma") dat<-transformData(x,whichAssay=whichAssay)
+      else dat<-assay(x,whichAssay)
+      
+      if("weights" %in% names(assays(x)) & !"weights" %in% names(passedArgs)){
+        getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, "weights"),...)
+      }
+      else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, ...)
+      
+    }
+)
 
 .getBestFGenes<-function(fit, DEMethod, weights = NULL,...){
-  ##Kevin -- need to fix this code so that works based on combination of DEMethod and weights (i.e. can run edgeR with no weights)
-  ##Check what I've done below.
 	if(DEMethod%in% c("limma","limma-voom")){
 	  ## basic limma design
 	  fit2 <- eBayes(fit)
@@ -344,17 +390,40 @@ setMethod(
 	  colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
 	}
 	else if(DEMethod=="edgeR"){
+    weights<- fit$weights
+    if(!is.null(weights)){
+      lrt <- glmWeightedF(fit, coef = c(2:ncol(fit$design)) )#Test if all the betas are zero i.e if the groups have the same gene expression
+    }
+    else{
+      lrt = glmLRT(fit, coef = c(2:ncol(fit$design)))
+    }
+		
+		
 	  if(!is.null(weights)) fit <- glmWeightedF(fit, coef = 3) ##??? Kevin, why coef 3? Have you checked this works?
-	  tops<-topTags(fit,...)
-	  
+
+    topT<-topTags(lrt,...)
+    
     #Kevin, you should use topTags and then convert those column names to match output of limma so 1 standard format.	  
-	  ##              logFC   logCPM       LR       PValue   padjFilter          FDR
-	  ## VIM      -4.768620 13.21770 47.43920 2.378498e-10 2.378498e-08 2.378498e-08
-	  ## FOS      -5.314301 14.50175 37.39214 8.940291e-09 4.470146e-07 4.470146e-07
-	}
-	
-	return(tops)
+    ##              logFC   logCPM       LR       PValue   padjFilter          FDR
+    ## VIM      -4.768620 13.21770 47.43920 2.378498e-10 2.378498e-08 2.378498e-08
+    ## FOS      -5.314301 14.50175 37.39214 8.940291e-09 4.470146e-07 4.470146e-07
+    
+    ### MATCH the LIMMA output:
+    
+    tops<- data.frame(ProbeID = rownames(topT), X.Intercept. = fit$coefficients[rownames(topT),1],
+                      fit$coefficients[rownames(topT),  c(2:ncol(fit$design))], 
+                      logCPM = topT$table$logCPM, LR = topT$table$LR, 
+                      P.Value = topT$table$PValue, adj.P.Val = topT$table$FDR )
+    ## Here the columns exactly match the LIMMA output except two of them:
+    ## LR instead of F since my understanding is that in edgeR a likelihood ratio test is performed instead of an F-test
+    ## logCPM instead of AveExp from limma. I wasn't sure about this one but from what I read the two are a measure 
+    ## of average expression. One is provided by limma and the other by edgeR.
+  }
+  
+  return(tops)
 }
+
+
 .testContrasts<-function(contr.matrix, contrastNames=NULL, fit,fitF,contrastAdj, DEMethod,weights = NULL, ...){
   ncontr<-ncol(contr.matrix)
   if(DEMethod%in%c("limma","limma-voom")){
@@ -365,7 +434,6 @@ setMethod(
     fit2<-fit
   }
   args<-list(...)
- 
   if("p.value" %in% names(args)){
     p.value<-args$p.value
   }
@@ -375,10 +443,9 @@ setMethod(
     nGenes<-args$number
   }
   else nGenes<-10 #default of topTable
-
   #get raw p-values for all(!)
   getRaw<-function(ii){
-    if(is.null(weights)){
+    if(DEMethod%in%c("limma","limma-voom")){
       if(contrastAdj%in%c("AfterF","All")) {
         tt<-topTable(fit2,coef=ii, number=length(rownames(fit2$coef)),p.value=1,adjust.method="none",genelist=rownames(fit2$coef))
       }
@@ -387,12 +454,12 @@ setMethod(
       }
     }
     else{
-      #Devin, does this really have to be done separately for each contrast? That doesn't make sense...
-      if(!is.null(weights)) fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
+#      if(!is.null(weights)) fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
+      if(DEMethod=="edgeR") fit2 <- glmWeightedF(fit2, contrast = contr.matrix[,ii])
       tt<- topTags(fit2, n= nGenes)
       if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
       tt<- data.frame(ID=rownames(tt), tt)
-      colnames(tt)[5:6]<- c("P.Value", "adj.P.Val")
+      colnames(tt)[5:6]<- c("P.Value", "adj.P.Val") #match the output style of limma
     }
     colnames(tt)[colnames(tt)=="ID"]<-"Feature"
     if(nrow(tt)>0){
@@ -412,7 +479,7 @@ setMethod(
       whGenesSigF<-topsF$ProbeID[which(topsF$adj.P.Val < p.value)]
     }
     else if(DEMethod %in% c("edgeR")) {
-      if(!is.null(weights)) fitF<- glmWeightedF(fitF, contrast= contr.matrix) #why does this have contr.matrix? Should be like above for the F, not need contrasts...
+      if(!is.null(weights)) fitF<- glmWeightedF(fitF, coef = c(2:ncol(fit$design)))
       lrt<-fitF$table
       whGenesSigF<-rownames(lrt)[which(lrt$padjFilter < p.value)]
     }
@@ -429,7 +496,8 @@ setMethod(
     }
   }
   row.names(tops)<-NULL
-
+#  tops<- tops[,-ncol(tops)] #In order to have the same column names. The last column we get from topTable is the B statistic which I think we're not interested in
+  
   return(tops)
 
 }
@@ -437,23 +505,23 @@ setMethod(
 
 #' @importFrom phylobase descendants nodeLabels subset
 .makeMergeDendrogram<-function(object){
-	if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
+  if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
-	if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
+  if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
-		#test mergeClusters actually subset of the cluster says merged
+  #test mergeClusters actually subset of the cluster says merged
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
   clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
   phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
   newPhylo4<-phylo4Obj
   if(names(rootNode(phylo4Obj)) %in% clusterNode){
-	  stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
+    stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
   }
   for(node in clusterNode){
     #first remove tips of children nodes so all children of node in question are tips
-
-	desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
+    
+    desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     while(length(whDescNodes)>0){
       tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))) #internal ids, not names, and no names to it
@@ -462,12 +530,11 @@ setMethod(
       desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
       whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
     }
-
     #should only have tips now
     tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
     newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
   }
-
+  
   ##################
   #Now need to change tip name to be that of the merge cluster
   #Currently tips should be either
@@ -476,7 +543,7 @@ setMethod(
   ##################
   newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
   #
-
+  
   #Solve 1) First:
   #Find the correspondence between old and new
   #replace the old (i.e. non-nodes) with the new
@@ -503,7 +570,7 @@ setMethod(
   mCl<-unique(mCl[mCl>0])
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
   if(!identical(sort(unname(as.character(mCl))),sort(unname(tipLabels(newPhylo4))))){
-	  stop("coding error -- names of new tips of tree do not match cluster ids")
+    stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
   #newPhylo4<-.force.ultrametric(newPhylo4)
@@ -546,5 +613,3 @@ setMethod(
 #' 	phylobase::edgeLength(tree)<-allLen
 #' 	tree
 #' }
-
-
