@@ -55,9 +55,8 @@ setMethod(
     whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[feature,]
-    clLegend<-clusterLegend(object)[[whichCluster]]
+    clLegend<-clusterLegend(object)[[whCl]]
     uniqueNames<-length(unique(clLegend[,"name"]))==nrow(clLegend)
-		
     #-----
 		#put in alpha order by cluster name / id (except for the missing ones)
     #-----
@@ -67,6 +66,7 @@ setMethod(
       if(uniqueNames) orderedLegend<-orderedLegend[order(orderedLegend[,"name"]), ,drop=FALSE]
       else orderedLegend<-orderedLegend[order(orderedLegend[,"name"],orderedLegend[,"clusterIds"]), ,drop=FALSE]
     }
+		else orderedLegend<-clLegend
     #-----
 		#if plot unassigned, then add unassigned back to the end of group
     #-----
@@ -81,12 +81,12 @@ setMethod(
     }
     clLegend<-orderedLegend
     if(uniqueNames){
-      cl<-clusterMatrixNamed(object)[,whichCluster]
+      cl<-clusterMatrixNamed(object)[,whCl]
       cl<-factor(cl,levels=orderedLegend[,"name"])
     }
     else{
       warning("Non-unique names for the clusters. Will order them by internal cluster ids")
-      cl<-clusterMatrix(object)[,whichCluster,drop=FALSE]
+      cl<-clusterMatrix(object)[,whCl,drop=FALSE]
     }
     if(!is.null(dim(cl))){
       if(ncol(cl)>1) stop("only a single cluster may be used in whichCluster")
