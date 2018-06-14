@@ -30,7 +30,7 @@
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
   dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
-  mergeLogFCcutoff, verbose = FALSE, mainClusterArgs = NULL,
+  mergeLogFCcutoff, mergeDEMethod, verbose = FALSE, mainClusterArgs = NULL,
   subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
   random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }
@@ -130,6 +130,9 @@ are left unassigned.}
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
 \item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in
+\code{\link{mergeClusters}}}
+
+\item{mergeDEMethod}{passed to \code{DEMethod} argument in 
 \code{\link{mergeClusters}}}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}

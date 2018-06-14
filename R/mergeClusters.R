@@ -35,8 +35,8 @@
 #'   \code{mergeMethod} argument). \code{plotInfo} can also show the information
 #'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to
 #'   this argument in  the form of "adjP_2.0", for example.
-#' @param isCount logical as to whether input data is a count matrix. See
-#'   details.
+#' @param DEMethod passed to \code{\link{getBestFeatures}}, determining the type 
+#'  of DEMethod to use for calculating the p-values.
 #' @param plot logical as to whether to plot the dendrogram with the merge
 #'   results
 #' @param nodePropTable Only for matrix version. Matrix of results from previous
@@ -196,7 +196,7 @@ setMethod(
                         mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
                         plotInfo="none",
                         nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-                        cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+                        cutoff=0.05, plot=TRUE,DEMethod=c("edgeR","limma","limma-voom"), logFCcutoff=0, ...){
 		
 		if(any(c("whichCluster","whichClusters") %in% names(list(...)))) stop("The argument 'whichCluster' is not accepted for this function. The clustering used for merging will always be taken as that clustering that created the currently stored dendrogram (given by 'dendroClusterIndex')")
     dendroSamples<-NULL #currently option is not implemented for matrix version...
@@ -271,7 +271,7 @@ setMethod(
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
                                   contrastAdj=c("All"),
-                                  number=nrow(x), p.value=1, isCount=isCount)
+                                  number=nrow(x), p.value=1, DEMethod=DEMethod)
       #divide table into each node and calculate proportion.
       sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
         storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA

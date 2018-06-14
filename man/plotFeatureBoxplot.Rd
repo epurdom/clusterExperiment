@@ -8,7 +8,7 @@
 \title{Plot boxplot of feature values by cluster}
 \usage{
 \S4method{plotFeatureBoxplot}{ClusterExperiment,character}(object, feature,
-  whichCluster, ...)
+  whichCluster = "primary", ...)
 
 \S4method{plotFeatureBoxplot}{ClusterExperiment,numeric}(object, feature,
   whichCluster = "primary", plotUnassigned = FALSE,

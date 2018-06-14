@@ -22,8 +22,8 @@
 \S4method{mergeClusters}{matrixOrHDF5}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = "none", nodePropTable = NULL, calculateAll = TRUE,
-  showWarnings = FALSE, cutoff = 0.05, plot = TRUE, isCount = TRUE,
-  logFCcutoff = 0, ...)
+  showWarnings = FALSE, cutoff = 0.05, plot = TRUE,
+  DEMethod = c("edgeR", "limma", "limma-voom"), logFCcutoff = 0, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
   isCount = FALSE, mergeMethod = "none", plotInfo = "all",
@@ -101,8 +101,8 @@ clusters.}
 \item{plot}{logical as to whether to plot the dendrogram with the merge
 results}
 
-\item{isCount}{logical as to whether input data is a count matrix. See
-details.}
+\item{DEMethod}{passed to \code{\link{getBestFeatures}}, determining the type 
+of DEMethod to use for calculating the p-values.}
 
 \item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is
 "adjP", in which case the calculation of the proportion of individual tests
@@ -123,6 +123,13 @@ passed onto \code{\link{plot.phylo}}.}
 workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
+
+\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
+determine the transformation as defined by \code{function(x){log2(x+1)}},
+and \code{isCount=FALSE} will give a transformation function
+\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
+class \code{ClusterExperiment}, the stored transformation will be used and
+giving this parameter will result in an error.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By
 default it is equal to "mergeClusters", to indicate that this clustering is

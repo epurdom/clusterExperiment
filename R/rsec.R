@@ -17,6 +17,8 @@
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
 #' @param mergeLogFCcutoff passed to \code{logFCcutoff} in
 #'   \code{\link{mergeClusters}}
+#' @param mergeDEMethod passed to \code{DEMethod} argument in 
+#'  \code{\link{mergeClusters}}
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
@@ -116,6 +118,7 @@ setMethod(
     mergeMethod="adjP",
     mergeCutoff,
     mergeLogFCcutoff,
+		mergeDEMethod,
     verbose=FALSE,
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
@@ -160,6 +163,8 @@ setMethod(
         passedArgs<-c(passedArgs,mergeCutoff=mergeCutoff)
       if(!missing(mergeLogFCcutoff)) 
         passedArgs<-c(passedArgs,mergeLogFCcutoff=mergeLogFCcutoff)
+			if(!missing(mergeDEMethod))
+				passedArgs<-c(passedArgs,mergeDEMethod=mergeDEMethod)
       ce<-do.call(".postClusterMany",passedArgs)
       #.postClusterMany(ce,consensusProportion=consensusProportion,consensusMinSize=consensusMinSize,dendroReduce=dendroReduce,dendroNDims=dendroNDims,mergeMethod=mergeMethod,mergeCutoff=mergeCutoff,mergeLogFCcutoff=mergeLogFCcutoff,isCount=isCount)
     }
@@ -223,6 +228,7 @@ setMethod(
         if("mergeLogFCCutoff" %in% names(passedArgs)){
           args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)
         }
+				if("mergeDEMethod" %in% names(passedArgs)) args1<-c(args1,"cutoff"=passedArgs$mergeDEMethod)
         args1<-c(args1,"mergeMethod"=passedArgs$mergeMethod)
         mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1, passedArgs[c("isCount")])), silent=TRUE)
         if(!inherits(mergeTry,"try-error")){

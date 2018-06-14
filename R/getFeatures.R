@@ -18,6 +18,11 @@
 #' @param DEMethod character vector describing how the differential expression 
 #'   analysis should be performed (replaces previous argument \code{isCount}.
 #'   See details.
+#' @param weights weights to use in by edgeR. If \code{x} is a matrix, then weights
+#' should be a matrix of weights, 
+#' of the same dimensions as \code{x}. If \code{x} is a \code{ClusterExperiment} object
+#' \code{weights} can be a either a matrix, as previously described, or a character or 
+#'  numeric index to an assay in \code{x} that contains the weights.
 #' @param ... If \code{x} is a matrix, these are options to pass to
 #'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see
 #'   \code{\link[limma]{limma}} package). If \code{x} is a
@@ -296,7 +301,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = 
     function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
-             whichAssay,DEMethod,...)
+             whichAssay,DEMethod, weights=NULL,...)
       {
       contrastType <- match.arg(contrastType)
     cl<-primaryCluster(x)
@@ -320,10 +325,10 @@ setMethod(
     if(DEMethod=="limma") dat<-transformData(x,whichAssay=whichAssay)
     else dat<-assay(x,whichAssay)
     
-    if("weights" %in% names(assays(x)) & !"weights" %in% names(passedArgs)){
-      getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, "weights"),...)
+    if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
+    		getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, weights),...) 
     }
-    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, ...)
+    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=weights,...)
     
   }
 )
