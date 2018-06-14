@@ -13,7 +13,7 @@ Changes:
   - `ignoreUnassignedVar` -> `filterIgnoresUnassigned` in `mergeClusters` (and other functions) for clarity.
 	- `removeNegative` -> `removeUnassigned` in `getBestFeatures` for uniformity
 	-  Removed `largeDataset` option to `subsampleClustering` because no longer provides advantage.
-	- `nBlankFeatures` -> `nBlankFeatures` in `makeBlankData` to allow for samples
+	- `nBlank` -> `nBlankFeatures` in `makeBlankData` to allow for samples
 * Created functions:
   - `primaryClusterLabel` and `primaryClusterType`
   - `getReducedData` 
@@ -22,7 +22,7 @@ Changes:
   - `clusterMatrixColors`: wrapper to `convertClusterLegend` to return matrix like `clusterMatrix` only with colors in place of the internal cluster ids (like existing `clusterMatrixNamed`)
 	- `plotTableClusters` for plotting a heatmap showing the results of `tableClusters`
 	- `subsetByCluster` for subsetting CE object to only those samples in a particular cluster(s) of a clustering.
-	- `plotFeatureScatter` for a scatter plot of 2+ features colored by cluster
+	- `plotFeatureScatter` for a scatter plot of 2+ features (genes) colored by cluster
 * Added arguments:
 	- `whichAssay` to all functions to allow the user to select the assay on which the operations will be performed.
 	- `stopOnErrors` to `RSEC`
@@ -31,18 +31,18 @@ Changes:
 	- `nBlankSamples` and `groupsOfSamples` to `makeBlankData` to allow for separating samples (columns)
 	- `add` and `location` to `plotClusterLegend`
 * `makeBlankData` will now allow for making blank columns to separate groups of samples.
-* `mergeClusters` behavior changed so that now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"` 
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
 * Added `table` method to `plotHeatmap` (for plotting heatmap of results of `table` function)
 * Added error catch if try to give argument `whichCluster` to `mergeCluster`.
 * Added error catch if give param `whichClusters` to functions that only take `whichCluster` (singular) as an argument
-* `plotFeatureBoxplot` now returns (invisibly) the colors and clusterIds with the boxplot information.
+* `plotFeatureBoxplot` now returns (invisibly) the colors and clusterIds along with the boxplot information.
 
 Bugs:
 * Add check for merge_nodeMerge table that `mergeClusterId` column can't be NA for entries where `isMerged=TRUE`
 * Fix internal .makeIntegerClusters so that if given values `1:K` for input clustering will retain these same values (Issue #227)
+* `mergeClusters` now returned object saves the merge information (and deletes old info and updates clusterType/clusterLabel of existing merge clusters), even if `mergeMethod="none"`. 
 
 Changes in version 2.1.3 ( Release date: 2018-05-24)
 ==============
