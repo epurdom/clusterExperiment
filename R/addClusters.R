@@ -158,7 +158,7 @@ setMethod(
 
 		#fix merge info:
 		#erase merge info if either dendro or merge index deleted.
-	  if(mergeClusterIndex(x) %in% whichClusters) || x@merge_dendrocluster_index %in% whichClusters){
+	  if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
       merge_index=NA_real_
       merge_cutoff=NA_real_
       merge_dendrocluster_index=NA_real_
