@@ -165,7 +165,7 @@ metadata(rsecFluidigm)$packageVersion
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
 ```
 ### The output 
 

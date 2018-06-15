@@ -82,7 +82,7 @@ setMethod(
 		  reducedDims(retval)<-reducedDims(newObj)
     }
     else{
-      retval<-do.call(".postClusterMany",c(list(x=x),passedArgs))
+      retval<-do.call(".postClusterMany",c(list(ce=x),passedArgs))
     }
 
     return(retval)
