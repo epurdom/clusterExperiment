@@ -18,7 +18,9 @@
 #' @param mergeLogFCcutoff passed to \code{logFCcutoff} in
 #'   \code{\link{mergeClusters}}
 #' @param mergeDEMethod passed to \code{DEMethod} argument in 
-#'  \code{\link{mergeClusters}}
+#'  \code{\link{mergeClusters}}. By default, unless 
+#'  otherwise chosen by the user, if \code{isCount=TRUE}, then
+#'  \code{mergeDEMethod="edgeR"}, otherwise \code{mergeDEMethod="limma"}.  
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
@@ -53,19 +55,21 @@ setMethod(
   definition = function(x,...){RSEC(data.matrix(x),...)}
 )
 
-
-
-
 #' @export
 #' @rdname RSEC
 setMethod(
   f = "RSEC",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
+		passedArgs<-list(...)
+		if("isCount" %in% names(passedArgs) & !"mergeDEMethod" %in% names(passedArgs)){
+			if(passedArgs$isCount) passedArgs$mergeDEMethod<-"edgeR"
+			else passedArgs$mergeDEMethod<-"limma"
+		}
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
 	  	if(any(c("transFun","isCount") %in% names(list(...))))
-	  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
-      newObj <- RSEC(as(x,"SingleCellExperiment"),  transFun=transformation(x),...)
+	  		warning("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' has no effect other than to set a default for 'mergeDEMethod' (if not set by user).")
+      newObj <- do.call("RSEC",c(list(x=as(x,"SingleCellExperiment"),  transFun=transformation(x)),passedArgs))
       ##Check if pipeline already ran previously and if so increase
 			x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd=.workflowValues[-1],newLabelToAdd=NULL)      
 			if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
@@ -77,7 +81,7 @@ setMethod(
 		  reducedDims(retval)<-reducedDims(newObj)
     }
     else{
-      retval<-.postClusterMany(x,...)
+      retval<-do.call(".postClusterMany",c(list(x=x),passedArgs))
     }
 
     return(retval)

@@ -260,7 +260,7 @@ setMethod(
     ### calculate the estimated proportions
     ############
     if(needCalculate){
-      #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
+
 			#			denote<-sprintf("Significance tests will use %s method",DEMethod)
 			# if(DEMethod=="edgeR"){
 			# 	if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
@@ -268,6 +268,14 @@ setMethod(
 			# }
 			# else denote<-paste0(denote,".")
 			# .mynote(denote)
+			if(missing(DEMethod)){
+				
+			}
+			else{
+				
+			}
+
+      #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
                                   contrastAdj=c("All"),
