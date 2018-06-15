@@ -268,12 +268,6 @@ setMethod(
 			# }
 			# else denote<-paste0(denote,".")
 			# .mynote(denote)
-			if(missing(DEMethod)){
-				
-			}
-			else{
-				
-			}
 
       #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
       sigTable <- getBestFeatures(x, cl,
@@ -535,6 +529,13 @@ setMethod(
 												DEMethod,
                         ...) {
     if(forceCalculate) x<-.eraseMerge(x)
+		else{
+			if(!is.na(x@merge_demethod)){
+				if(!missing(DEMethod)) stop("Setting argument 'DEMethod' is not allowed if there is already saved merge information that will be used. To rerun merge with different 'DEMethod' set 'forceCalculate=TRUE'.")
+				else DEMethod<-x@merge_demethod
+			}
+			
+		}
     plotType<-match.arg(plotType)
     leafType<-match.arg(leafType)
     if(is.null(x@dendro_clusters)) {
@@ -642,6 +643,7 @@ setMethod(
       retval@merge_nodeProp <-outlist$nodeProp
 			retval@merge_dendrocluster_index<-retval@dendro_index
     }
+		retval@merge_demethod<-DEMethod
     ch<-.checkMerge(retval)
     if(!is.logical(ch)) stop(ch)
     if(plot){
