@@ -138,6 +138,9 @@ test_that("`plotContrastHeatmap` works", {
 test_that("`getBestFeatures` works with weights", {
 	set.seed(258179)
 	weights<-matrix(runif(nrow(seSimCount)*ncol(seSimCount)),nrow=nrow(seSimCount),ncol=ncol(seSimCount))
+	ceSimW<-ceSim
+	assay(ceSimW,"weights")<-weights
+
 	expect_silent(outW<-getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="F"))
 	expect_silent(outNW<-getBestFeatures(ceSim,weights=NULL,DEMethod="edgeR",contrastType="F"))
 	expect_silent(outV<-getBestFeatures(ceSim,weights=weights,DEMethod="limma-voom",contrastType="F"))
@@ -149,9 +152,23 @@ test_that("`getBestFeatures` works with weights", {
 	expect_silent(getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="PerContrast"))
 	expect_silent(getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="AfterF"))
 	
+	#-------
+	##Test get right answers with weights (have to remove unassigned)
+	#-------
+	cleanSim<-removeUnassigned(ceSimW)
+	pairsContrasts<-clusterContrasts(cleanSim,contrastType="Pairs")
+  designContr <- model.matrix(~ 0 + factor(primaryCluster(cleanSim)))
+  fitContr<- edgeR::DGEList(assay(cleanSim,1))
+  fitContr$weights <- assay(cleanSim,"weights")
+  fitContr <- edgeR::estimateDisp(fitContr, designContr)
+  fitContr <- edgeR::glmFit(fitContr,design = )
+  lrt <- zinbwave::glmWeightedF(fitContr, contrast = pairsContrasts$contrastMatrix[,1])
+  resultsManual<- edgeR::topTags(lrt)
+	expect_silent(outWClean<-getBestFeatures(cleanSim,DEMethod="edgeR",contrastAdj="PerContrast",contrastType="Pairs"))
+	resultsC1<-outWClean[outWClean$Contrast == colnames(pairsContrasts$contrastMatrix)[1],]
+	expect_equal(unname(data.matrix(resultsC1[,c("logFC","logCPM","LR","P.Value","padjFilter","adj.P.Val")])), unname(data.matrix(data.frame(resultsManual))))
+	
 	### check when weights in assay picks them up automatically (when have right name...)
-	ceSimW<-ceSim
-	assay(ceSimW,"weights")<-weights
 	expect_silent(outNW_C2<-getBestFeatures(ceSimW,weights=NULL,DEMethod="edgeR",contrastType="Pairs"))
 	expect_equal(outNW_C2,outNW_C)
 
