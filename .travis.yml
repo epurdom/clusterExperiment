@@ -21,6 +21,13 @@ r:
   - bioc-release
 #  - bioc-devel
 
+# External dependencies
+addons:
+  apt:
+    packages:
+      - gsl-bin
+      - libgsl-dev
+
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false
 
@@ -38,18 +45,10 @@ notifications:
 #  - Bioconductor/HDF5Array
 #  - Bioconductor/DelayedArray
 
-# External dependencies
-addons:
-  apt:
-    packages:
-      - gsl-bin
-      - libgsl-dev
 
 ## Code coverage
 r_packages:
   - covr
-  - gsl
-  - copula
 
 ## BiocCheck
 bioc_packages:
