@@ -10,8 +10,7 @@
 \S4method{getBestFeatures}{matrixOrHDF5}(x, cluster, contrastType = c("F",
   "Dendro", "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
   weights = NULL, contrastAdj = c("All", "PerContrast", "AfterF"),
-  DEMethod = c("edgeR", "limma", "limma-voom"), normalize.method = "none",
-  ...)
+  DEMethod = c("edgeR", "limma", "limma-voom"), dgeArgs = NULL, ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
   "Dendro", "Pairs", "OneAgainstAll"), whichAssay = 1, DEMethod,
@@ -58,10 +57,7 @@ and only the standard edgeR.}
 analysis should be performed (replaces previous argument \code{isCount}. 
 See details.}
 
-\item{normalize.method}{character value, passed to \code{\link[limma]{voom}} 
-in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}. 
-Note that the default value is set to "none", which is not the default 
-value of \code{\link{voom}}.}
+\item{dgeArgs}{a list of arguments to pass to \code{\link[edgeR]{DGEList}} which is the starting point for both \code{edgeR} and \code{limma-voom} methods of DE. This includes normalization factors/total count values etc.}
 
 \item{...}{If \code{x} is a matrix, these are options to pass to 
 \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 

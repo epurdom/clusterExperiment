@@ -40,7 +40,7 @@ system.time(
                      dendroReduce= "mad",
                      dendroNDims=1000,
                      mergeMethod="adjP",
-                     mergeCutoff=0.01,
+                     mergeCutoff=0.03,
                      ncores=ncores, 
                      random.seed=176201)
 )
@@ -48,7 +48,7 @@ metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
 devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }

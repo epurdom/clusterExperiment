@@ -28,15 +28,12 @@
 #'   weights will also be used with \code{\link{mergeClusters}}, and this is the
 #'   default. Setting \code{weights=NULL} ensures that weights will NOT be used,
 #'   and only the standard edgeR.
+#' @param dgeArgs a list of arguments to pass to \code{\link[edgeR]{DGEList}} which is the starting point for both \code{edgeR} and \code{limma-voom} methods of DE. This includes normalization factors/total count values etc. 
 #' @param ... If \code{x} is a matrix, these are options to pass to 
 #'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 
 #'   \code{\link[limma]{limma}} package). If \code{x} is a 
 #'   \code{ClusterExperiment} object, these arguments can also be those to pass 
 #'   to the matrix version.
-#' @param normalize.method character value, passed to \code{\link[limma]{voom}} 
-#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}. 
-#'   Note that the default value is set to "none", which is not the default 
-#'   value of \code{\link{voom}}.
 #' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a 
 #'   cluster assignment. It uses either limma or edgeR to fit the models, and 
@@ -179,7 +176,7 @@ definition = function(x, cluster,
                       dendro=NULL, pairMat=NULL, weights = NULL,
                       contrastAdj=c("All", "PerContrast", "AfterF"),
                       DEMethod=c("edgeR","limma","limma-voom"),
-											normalize.method="none",...) {
+											dgeArgs=NULL,...) {
   
   
   #... is always sent to topTable/topTags, and nothing else
@@ -232,41 +229,38 @@ definition = function(x, cluster,
     clPrettyFac<-factor(cl,levels=clLevels,labels=clPrettyLevels)
   }
 	
+  if(DEMethod %in% c("limma-voom","edgeR")){
+  	dge<-do.call(edgeR::DGEList,c(list(counts=tmp),dgeArgs))
+    if(!is.null(weights) & DEMethod=="edgeR") dge$weights <- weights
+  }
   if(contrastType %in% c("Pairs", "Dendro", "OneAgainstAll")) {
     ###Create fit for running contrasts
     designContr <- model.matrix(~ 0 + clPrettyFac)
     colnames(designContr) <- make.names(levels(clPrettyFac))
-    
     if(DEMethod == "limma-voom"){
-      v <- voom(tmp, design=designContr, plot=FALSE,
-                normalize.method = normalize.method)
+      v <- voom(dge, design=designContr, plot=FALSE,
+                normalize.method = "none")
       fitContr <- lmFit(v, designContr)
 		}
 		else if(DEMethod=="edgeR"){
-      fitContr<- edgeR::DGEList(tmp)
-      if(!is.null(weights)) fitContr$weights <- weights
-      fitContr <- edgeR::estimateDisp(fitContr, designContr)
+      fitContr <- edgeR::estimateDisp(dge, designContr)
       fitContr <- edgeR::glmFit(fitContr,design = designContr)
-			
 		}
 		else if(DEMethod=="limma"){
       fitContr <- lmFit(tmp, designContr)
     }
-  }
-  
+  }  
   if(contrastType=="F" || contrastAdj=="AfterF") {
     xdat<-data.frame("Cluster"=clPrettyFac)
     designF<-model.matrix(~Cluster,data=xdat)
     
     if(DEMethod == "limma-voom"){
-      v <- voom(tmp, design=designF, plot=FALSE,
-                normalize.method = normalize.method)
+      v <- voom(dge, design=designF, plot=FALSE,
+                normalize.method = "none")
       fitF <- lmFit(v, designF)
     }
 		else if(DEMethod=="edgeR"){
-        fitF<- edgeR::DGEList(tmp)
-        if(!is.null(weights)) fitF$weights <- weights
-        fitF <- edgeR::estimateDisp(fitF, design = designF)
+        fitF <- edgeR::estimateDisp(dge, design = designF)
         fitF <- edgeR::glmFit(fitF,design = designF)
     } else if(DEMethod=="limma") {
       fitF <- lmFit(tmp, designF)
@@ -277,9 +271,7 @@ definition = function(x, cluster,
   	
   if(contrastType!="F"){
 		contr.result<-clusterContrasts(clNumFac,contrastType=contrastType,dendro=dendro,pairMat=pairMat,outputType = "limma", removeUnassigned = TRUE)
-
   }
-  
   if(contrastType=="F"){
     tops <- .getBestFGenes(fitF, DEMethod=DEMethod,...)
   }
