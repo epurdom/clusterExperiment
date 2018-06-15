@@ -106,6 +106,10 @@
   if(!is.na(object@merge_index) & is.na(object@merge_method)) return("if merge_index not NA, must have value for merge_method")
   if(is.na(object@merge_index) & !is.na(object@merge_cutoff)) return("merge_index NA but merge_cutoff has value")
   if(!is.na(object@merge_index) & is.na(object@merge_cutoff)) return("if merge_index not NA, must have value for merge_cutoff")
+
+	if(is.na(object@merge_index) & !is.na(object@merge_demethod)) return("merge_index NA but merge_demethod has value")
+	if(!is.na(object@merge_index) & is.na(object@merge_demethod)) return("if merge_index not NA, must have value for merge_demethod")
+
   
   if(!is.na(object@merge_index) & is.na(object@merge_dendrocluster_index)) return("if merge_index not NA, must have value for merge_dendrocluster_index")
   if(is.na(object@merge_index) & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
@@ -121,6 +125,8 @@
     if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
 	allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','Node')
 	
+		if(length(object@merge_demethod)!=1 || !object@merge_demethod %in% .demethods)
+			 return(paste("merge_demethod must be one of:",paste(.demethods,collapse=",")))
 	if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
 		      return(paste("merge_nodeMerge must have 4 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
 		}

@@ -119,6 +119,7 @@ setClass(
 	merge_index="numeric",
 	merge_dendrocluster_index="numeric",
 	merge_method="character",
+	merge_demethod="character",
 	merge_cutoff="numeric",
 	merge_nodeProp="data.frameOrNULL",
 	merge_nodeMerge="data.frameOrNULL"
@@ -292,6 +293,7 @@ setMethod(
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
                         merge_method=NA_character_,
+												merge_demethod=NA_character_,
                         clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
@@ -358,6 +360,7 @@ setMethod(
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,
                merge_method=merge_method,
+							 merge_demethod=merge_demethod,
                coClustering=coClustering
                
     )

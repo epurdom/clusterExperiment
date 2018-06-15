@@ -1,3 +1,4 @@
+.demethods<-c("edgeR","limma","limma-voom")
 #' @title Function for finding best features associated with clusters
 #' @description Calls limma on input data to determine features most associated
 #'   with found clusters (based on an F-statistic, pairwise comparisons, or
