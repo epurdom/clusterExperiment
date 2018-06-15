@@ -696,7 +696,9 @@ length(clusterLegend(ce))
 clusterLegend(ce)[1:2]
 ```
 
-We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. We can assign new values with a simple assignment operator. Here we change the internal cluster names of the first clustering from lowercase to uppercase "M" using the function `renameClusters`:
+We can see that each element of `clusterLegend` consists of a matrix, with number of rows equal to the number of clusters in the clustering. The columns store information about that cluster. `clusterIds` is the internal id (integer) used in `clusterMatrix` to identify the cluster, `name` is a name for the cluster, and `color` is a color for that cluster. `color` is used in plotting and visualizing the clusters, and `name` is an arbitrary character string for a cluster. They are automatically given default values when the `ClusterExperiment` object is created, but we will see under the description of visualization methods how the user might want to manipulate these for better plotting results. 
+
+We can assign new values with a simple assignment operator, but we also provide the functions `renameClusters` and `recolorClusters` to help do this. Here we change the internal cluster names of the first clustering from lowercase to uppercase "M" using the function `renameClusters`:
 
 ```{r CEClusterLengendAssign}
 newName<-gsub("m","M",clusterLegend(ce)[[1]][,"name"])
@@ -704,9 +706,54 @@ renameClusters(ce,whichCluster=1,value=newName)
 print(ce)
 ```
 
-However, the user should not assign new values to `clusterIds` column, as the entries must exactly correspond to the internal ids of the clustering stored in the clustering matrix.
+Note that if you choose to not use these functions and instead replace the whole matrix (e.g. `clusterLegend(ce)[[1]]<- ...`) you should be careful not assign new values to `clusterIds` column, as the entries must exactly correspond to the internal ids of the clustering stored in the clustering matrix.
 
-## Samples Unassigned to a Clustering (Negative Valued Cluster Assignments)
+## Subsetting ClusterExperiment objects
+
+Like `SummarizedExperiment` or `SingleCellExperiment` classes, standard subsetting of a `ClusterExeriment` object will result in a new `ClusterExperiment` object with all of the relevant parts of the data similarly subsetted. 
+
+
+```{r basicSubsetting}
+smallCe<-ce[1:5,1:10]
+smallCe
+
+```
+
+Notice from looking at the `clusterMatrix` below that the clustering results have been subset and that after subsetting, the internal cluster ids may change (because they are required to be consecutive). 
+
+```{r matrixAfterSubset}
+clusterMatrix(smallCe)[,1:4]
+clusterMatrix(ce)[1:10,1:4]
+```
+
+However, the names (and colors) of each cluster should stay the same, which we can see by looking at the `clusterLegend` information
+
+```{r lookAtSubset}
+clusterLegend(smallCe)[["mergeClusters"]]
+clusterLegend(ce)[["mergeClusters"]]
+```
+
+However subsetting will lose some saved information. In particular, the hierarchy of the clusters that you created with `makeDendrogram` will be deleted in the new object, as will any saved information about the merging in the `mergeClusters` step (since that depended on the dendrogram which is now gone). 
+
+```{r afterSubsetting}
+nodeMergeInfo(ce)
+nodeMergeInfo(smallCe)
+```
+
+The actual clustering created in the `mergeClusters` step, however, are retained as we've seen above. 
+
+Another useful type of subsetting can be to subset to only samples contained in a set of particular clusters within a clustering. This can be useful, for example, if you want to visualize the data in only those clusters. The function `subsetByCluster` allows you to do this, and it returns a new `ClusterExperiment` object with only those samples. The required input is to identify the values of the clusters you want to keep (by default matching to the clusters' names)
+ 
+```{r subsampleByCluster}
+subCe<-subsetByCluster(ce,whichCluster="mergeClusters",value=c("m1","m2"))
+subCe
+```
+
+The object `subCe` now can be used for visualizing, or any other analysis. 
+
+This kind of subsetting can also be useful in comparing clusterings, where the user might want to subset to all of the samples assigned to Cluster 1 in one clustering and then see what clusters that corresponds to in the other clusterings.
+
+## Samples not assigned to a cluster (Negative Valued Cluster Assignments)
 The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. 
 
 **Unassigned Samples (-1)** '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. 
@@ -726,6 +773,7 @@ Note that we chose `makePrimary=FALSE` (not the default) so that our original `m
 plotClusters(ce,whichCluster=c("mergeClusters_AssignToCluster","mergeClusters"))
 ```
 
+You can also create a new object where all of the samples that are not assigned are removed with the `removeUnassigned` function. This is just a special case of `subsetByCluster` (above) for the special case of subsetting down to those samples assigned to any cluster.
 
 ## Dimensionality reduction and SingleCellExperiment Class {#dimReduce}
 
