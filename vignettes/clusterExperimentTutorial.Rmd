@@ -1927,7 +1927,15 @@ The `getBestFeatures` method for `ClusterExperiment` objects has an argument `DE
 
 * **`limma-voom`** refers to calling limma with the `voom`[@Law:2014ff] correction which uses the normal linear model of `limma` but deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 
-* **`edgeR`** Performs a likelihood-ratio test (`glmLRT` function in `edgeR` [@Robinson:2010cw]) based on a negative binomial distribution and a empirical bayes estimation of the dispersion. Weights can be provided, in which case the LRT is performed using the function `glmWeightedF` in the `zinbwave` package. This allows for the incorporation of weights due to zero-inflation in the negative binomial model and was found empirically by [@] to have the best performance for zero-inflated data. 
+* **`edgeR`** Performs a likelihood-ratio test (`glmLRT` function in `edgeR` [@Robinson:2010cw]) based on a negative binomial distribution and a empirical bayes estimation of the dispersion. 
+
+* **`edgeR` with zero-inflated weights** Weights can be provided to `getBestFeatures`, in which case the LRT is performed using the function `glmWeightedF` in the `zinbwave` package following the work of [@VandenBerge2018]. The best way to do this is to save the weights in an assay entitled `weights`. Here is an example of mock code:
+
+```{r exampleCode,eval=FALSE}
+assay(rsecFluidigm,"weights")<- myweights
+```
+
+If the initial `SummarizedExperiment` object is set up this way, then the functions `getBestFeatures`, `mergeClusters` , and `RSEC` will all automatically look for such an assay in order to use these weights, if `DEMethod="edgeR"`. Indeed for `RSEC` this is the *only* way to get weights used -- unlike `getBestFeatures` and `mergeClusters`, `RSEC` doesn't give a way for the user to make choices about the weights (this is to simplify the number of parameters).  For `getBestFeatures` and `mergeClusters` you can manually set the argument `weights` to be `NULL` to force the functions to NOT use the weights stored here  (and the standard edgeR routine is followed instead) or alternatively set `weights` to be another assay name or even a matrix of weights.
 
 
 
