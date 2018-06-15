@@ -38,6 +38,13 @@ notifications:
 #  - Bioconductor/HDF5Array
 #  - Bioconductor/DelayedArray
 
+# External dependencies
+addons:
+  apt:
+    packages:
+      - gsl-bin
+      - libgsl-dev
+
 ## Code coverage
 r_packages:
   - covr
