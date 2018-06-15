@@ -170,7 +170,7 @@
 #' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
-signature = signature(x = "matrix"),
+signature = signature(x = "matrixOrHDF5"),
 definition = function(x, cluster,
                       contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"),
                       dendro=NULL, pairMat=NULL, weights = NULL,

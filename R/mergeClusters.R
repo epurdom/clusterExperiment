@@ -261,13 +261,13 @@ setMethod(
     ############
     if(needCalculate){
       #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
-			denote<-sprintf("Significance tests will use %s method",DEMethod)
-			if(DEMethod=="edgeR"){
-				if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
-				else denote<-paste0(denote,".")
-			}
-			else denote<-paste0(denote,".")
-			.mynote(denote)
+			#			denote<-sprintf("Significance tests will use %s method",DEMethod)
+			# if(DEMethod=="edgeR"){
+			# 	if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
+			# 	else denote<-paste0(denote,".")
+			# }
+			# else denote<-paste0(denote,".")
+			# .mynote(denote)
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
                                   contrastAdj=c("All"),
