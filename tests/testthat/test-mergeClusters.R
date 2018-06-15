@@ -17,25 +17,34 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                               mergeMethod="adjP", plotInfo="mergeMethod")
   
 	#check plotting types:
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none",plotInfo="all")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="adjP")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr")
-  expect_warning(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="locfdr",showWarnings=TRUE))
-  expect_error(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="none", plotInfo="mergeMethod"),"can only plot 'mergeMethod' results if one method is selected")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="none")
+  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
+	 mergeMethod="none",plotInfo="all")
+  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+		mergeMethod="none", plotInfo="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+		mergeMethod="none", plotInfo="locfdr")
+  expect_warning(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
+		 mergeMethod="none", plotInfo="locfdr",showWarnings=TRUE))
+  expect_error(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
+	 mergeMethod="none", plotInfo="mergeMethod"),
+	 "can only plot 'mergeMethod' results if one method is selected")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", 
+		DEMethod="limma", plotInfo="none")
 
   #check all methods run
   for(method in clusterExperiment:::.availMergeMethods){
-	  clustMerged <- mergeClusters(clustWithDendro, mergeMethod=method, plotInfo="mergeMethod")
+	  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+			mergeMethod=method, plotInfo="mergeMethod")
   }
   
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="samples",plotType="name")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma",
+		 plotInfo="mergeMethod",leafType="samples",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="samples",plotType="name")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
+	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="name")
 
   expect_error(mergeClusters(x=transformData(clustWithDendro), DEMethod="limma",
                                cl=primaryCluster(clustWithDendro),plot="none",
@@ -44,10 +53,10 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
                  "Not a valid input dendrogram")
 
   #test if already exists
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP")
+  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma")
   primaryClusterIndex(clustMerged)<-2
   clustMerged<- makeDendrogram(clustMerged)
-  clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP")
+  clustMerged2<-mergeClusters(clustMerged,mergeMethod="adjP", DEMethod="limma")
   expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
   expect_true(!"makeConsensus.1" %in% clusterTypes(clustMerged2))
   expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
@@ -62,7 +71,7 @@ test_that("`mergeClusters` works with HDF5 assay slot",{
 			isCount=FALSE))
     expect_silent(clustWithDendro <- makeDendrogram(cl1))
     expect_message(mergedCE <- mergeClusters(x=clustWithDendro,plot=FALSE,
-            mergeMethod="adjP", plotInfo="mergeMethod"),
+            mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod"),
 			"Merging will be done on")
 	expect_true(inherits(assay(mergedCE),"DelayedArray"))
 								
