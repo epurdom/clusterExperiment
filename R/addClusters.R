@@ -133,6 +133,7 @@ setMethod(
     newClusterInfo<-clusteringInfo(x)[-whichClusters]
     newClusterType<-clusterTypes(x)[-whichClusters]
     newClusterColors<-clusterLegend(x)[-whichClusters]
+		
     dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
     dend_ind<-dendroClusterIndex(x)
@@ -150,7 +151,6 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
-
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
                               clusters=newClLabels,
                               transformation=transformation(x),

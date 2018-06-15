@@ -28,7 +28,9 @@
 #'   weights will also be used with \code{\link{mergeClusters}}, and this is the
 #'   default. Setting \code{weights=NULL} ensures that weights will NOT be used,
 #'   and only the standard edgeR.
-#' @param dgeArgs a list of arguments to pass to \code{\link[edgeR]{DGEList}} which is the starting point for both \code{edgeR} and \code{limma-voom} methods of DE. This includes normalization factors/total count values etc. 
+#' @param dgeArgs a list of arguments to pass to \code{\link[edgeR]{DGEList}}
+#'   which is the starting point for both \code{edgeR} and \code{limma-voom}
+#'   methods of DE. This includes normalization factors/total count values etc.
 #' @param ... If \code{x} is a matrix, these are options to pass to 
 #'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 
 #'   \code{\link[limma]{limma}} package). If \code{x} is a 
