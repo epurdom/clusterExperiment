@@ -41,6 +41,7 @@ notifications:
 ## Code coverage
 r_packages:
   - covr
+  - gsl
   - copula
 
 ## BiocCheck
