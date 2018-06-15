@@ -31,6 +31,7 @@
     retval@merge_nodeMerge<-oldObj@merge_nodeMerge
     retval@merge_cutoff<-oldObj@merge_cutoff
     retval@merge_method<-oldObj@merge_method
+		retval@merge_demethod<-oldObj@merge_demethod
   }
   if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
     retval@merge_nodeProp<-oldObj@merge_nodeProp
@@ -44,6 +45,7 @@
   return(retval)
 }
 
+#this function keeps everything from new, except grabs SE info from old
 .addBackSEInfo<-function(newObj,oldObj){
   retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
                             clusters=clusterMatrix(newObj),
@@ -62,6 +64,7 @@
                             merge_nodeProp=newObj@merge_nodeProp,
                             merge_nodeMerge=newObj@merge_nodeMerge,
                             merge_method=newObj@merge_method,
+                            merge_demethod=newObj@merge_demethod,
                             primaryIndex=primaryClusterIndex(newObj),
                             clusterLegend=clusterLegend(newObj),
                             checkTransformAndAssay=FALSE

@@ -162,6 +162,7 @@ setMethod(
       merge_nodeProp=NULL
       merge_nodeMerge=NULL
       merge_method=NA_character_
+			merge_demethod=NA_character_
 	  }
 		else{
       merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
@@ -170,7 +171,8 @@ setMethod(
       merge_nodeProp=x@merge_nodeProp
       merge_nodeMerge=x@merge_nodeMerge
       merge_method=x@merge_method
-		}
+      merge_demethod=x@merge_demethod
+				}
 
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
                               clusters=newClLabels,
@@ -188,7 +190,8 @@ setMethod(
 												      merge_nodeProp=merge_nodeProp,
 												      merge_nodeMerge=merge_nodeMerge,
 												      merge_method=merge_method,
-                              coClustering=coMat,
+												      merge_demethod=merge_demethod,                              
+															coClustering=coMat,
                               orderSamples=orderSamples,
                               clusterLegend=newClusterColors,
                               checkTransformAndAssay=FALSE

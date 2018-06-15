@@ -532,7 +532,7 @@ setMethod(
     if(forceCalculate) x<-.eraseMerge(x)
 		else{
 			if(!is.na(x@merge_demethod)){
-				if(!missing(DEMethod)) stop("Setting argument 'DEMethod' is not allowed if there is already saved merge information that will be used. To rerun merge with different 'DEMethod' set 'forceCalculate=TRUE'.")
+				if(!missing(DEMethod) && x@merge_demethod != DEMethod) stop("Setting argument 'DEMethod' is not allowed if there is already saved merge information that will be used. To rerun merge with different 'DEMethod' set 'forceCalculate=TRUE'.")
 				else DEMethod<-x@merge_demethod
 			}
 			
