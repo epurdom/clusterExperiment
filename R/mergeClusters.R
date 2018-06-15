@@ -568,7 +568,7 @@ setMethod(
     outlist <- mergeClusters(x=if(DEMethod=="limma") transformData(x, whichAssay=whichAssay) else assay(x, whichAssay),
                              cl=cl, nodePropTable=propTable,
                              dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
-                             mergeMethod=mergeMethod, weights=weights,...)
+                             mergeMethod=mergeMethod, DEMethod=DEMethod, weights=weights,...)
     nodeMerge<-outlist$nodeMerge
     #-----
     ##Check if pipeline already ran previously and if so increase and erase old merge

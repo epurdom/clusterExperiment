@@ -129,15 +129,15 @@
 #'
 #' #basic F test, return all, even if not significant:
 #' testF <- getBestFeatures(cl, contrastType="F", number=nrow(simData),
-#' isCount=FALSE)
+#' DEMethod="limma")
 #'
 #' #Do all pairwise, only return significant, try different adjustments:
 #' pairsPerC <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="PerContrast",
-#' p.value=0.05, isCount=FALSE)
+#' p.value=0.05, DEMethod="limma")
 #' pairsAfterF <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="AfterF",
-#' p.value=0.05, isCount=FALSE)
+#' p.value=0.05, DEMethod="limma")
 #' pairsAll <- getBestFeatures(cl, contrastType="Pairs", contrastAdj="All",
-#' p.value=0.05, isCount=FALSE)
+#' p.value=0.05, DEMethod="limma")
 #'
 #' #not useful for this silly example, but could look at overlap with Venn
 #' allGenes <- paste("Row", 1:nrow(simData),sep="")
@@ -161,7 +161,7 @@
 #' # compare results to if used simData instead (not on count scale).
 #' # Again, not relevant for this silly example, but basic principle useful
 #' testFVoom <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
-#' number=nrow(simData), isCount=TRUE)
+#' number=nrow(simData), DEMethod="limma")
 #' plot(testF$P.Value[order(testF$Index)],
 #' testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 #'
