@@ -133,14 +133,19 @@ setMethod(
     newClusterInfo<-clusteringInfo(x)[-whichClusters]
     newClusterType<-clusterTypes(x)[-whichClusters]
     newClusterColors<-clusterLegend(x)[-whichClusters]
-    dend_samples <- x@dendro_samples
-    dend_cl <- x@dendro_clusters
-    dend_ind<-dendroClusterIndex(x)
-    dend_out<-x@dendro_outbranch
+   
+
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
     if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+    else 
+			pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+		
+		#fix dendro info
+	  dend_samples <- x@dendro_samples
+    dend_cl <- x@dendro_clusters
+    dend_ind<-dendroClusterIndex(x)
+    dend_out<-x@dendro_outbranch
     if(dendroClusterIndex(x) %in% whichClusters){
       dend_cl<-NULL
       dend_samples<-NULL
@@ -150,6 +155,25 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
+
+		#fix merge info:
+		#erase merge info if either dendro or merge index deleted.
+	  if(mergeClusterIndex(x) %in% whichClusters) || x@merge_dendrocluster_index %in% whichClusters){
+      merge_index=NA_real_
+      merge_cutoff=NA_real_
+      merge_dendrocluster_index=NA_real_
+      merge_nodeProp=NULL
+      merge_nodeMerge=NULL
+      merge_method=NA_character_
+	  }
+		else{
+      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_cutoff=x@merge_cutoff
+      merge_nodeProp=x@merge_nodeProp
+      merge_nodeMerge=x@merge_nodeMerge
+      merge_method=x@merge_method
+		}
 
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
                               clusters=newClLabels,
@@ -161,6 +185,12 @@ setMethod(
                               dendro_clusters=dend_cl,
                               dendro_index=dend_ind,
                               dendro_outbranch=dend_out,
+															merge_index=merge_index,
+															merge_dendrocluster_index=merge_dendrocluster_index,
+												      merge_cutoff=merge_cutoff,
+												      merge_nodeProp=merge_nodeProp,
+												      merge_nodeMerge=merge_nodeMerge,
+												      merge_method=merge_method,
                               coClustering=coMat,
                               orderSamples=orderSamples,
                               clusterLegend=newClusterColors,
