@@ -339,6 +339,7 @@ In what follows, we'll go back to the original (default) RSEC settings by rerunn
 
 ```{r plotClusterRSECReset}
 rsecFluidigm<-RSEC(rsecFluidigm,
+	isCount=TRUE,
  consensusMinSize=3,
  consensusProportion=0.7,
  dendroReduce= "mad",
@@ -363,13 +364,13 @@ A common practice after determining a set of clusters is to perform differential
 
 Since this is a common task, we provide the function `getBestFeatures` to perform various kinds of differential expression analysis between the clusters. A common F-statistic between groups can be chosen. However, we find that it is far more informative to do pairwise comparisons between clusters, or one cluster against all, in order to find genes that are specific to a particular cluster. An option for all of these choices is provided in the `getBestFeatures` function. 
 
-The `getBestFeatures` function uses the DE analysis provided by the `limma` package [@Smyth:2004gh, @Ritchie:2015fa]. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package [@Law:2014ff] to account for the mean-variance relationship that is common in count data. The tests performed by `getBestFeatures` are specific contrasts between clustering groups; these contrasts can be retrieved without performing the tests using `clusterContrasts`, including in a format appropriate for the `MAST` algorithm.
+The `getBestFeatures` function uses the DE analysis provided by the `limma` package [@Smyth:2004gh, @Ritchie:2015fa] or `edgeR` package [@Robinson:2010cw]. In addition, the `getBestFeatures` function provides an option to do use the "voom" correction in the `limma` package [@Law:2014ff] to account for the mean-variance relationship that is common in count data. The tests performed by `getBestFeatures` are specific contrasts between clustering groups; these contrasts can be retrieved without performing the tests using `clusterContrasts`, including in a format appropriate for the `MAST` algorithm.
 
 As mentioned above, there are several types of tests that can be performed to identify features that are different between the clusters which we describe in the section entitled [Finding Features related to a Clustering](getBestFeatures). Here we simply perform all pairwise tests between the clusters. 
 
 ```{r getBestFeatures}
 pairsAllRSEC<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05,
-                          number=nrow(rsecFluidigm))
+                          number=nrow(rsecFluidigm),DEMethod="edgeR")
 head(pairsAllRSEC)
 ```
 
@@ -579,18 +580,20 @@ ce
 
 Now we are ready to actually merge clusters together. We run `mergeClusters` that will go up this hierarchy and compare the level of differential expression (DE) in each pair. In other words, if we focus on the left side of the tree, DE tests are run, between 1 and 3, and between 6 and 8. If there is not enough DE between each of these (based on a cutoff that can be set by the user), then clusters 1 and 3 and/or 6 and 8 will be merged. And so on up the tree.
 
-If the dataset it not too large,  is can be useful to first run `mergeClusters` without actually saving the results so as to preview what the final clustering will be (and perhaps to help in setting the cutoff).
+If the dataset it not too large,  is can be useful to first run `mergeClusters` without actually saving the results so as to preview what the final clustering will be (and perhaps to help in setting the cutoff). 
 
 ```{r mergeClustersPlot}
-mergeClusters(ce,mergeMethod="adjP",plotInfo="mergeMethod")
+mergeClusters(ce,mergeMethod="adjP",DEMethod="edgeR",plotInfo="mergeMethod")
 ```
 
-The default is cutoff is `cutoff=0.1`, meaning those nodes with less than 10% of genes estimated to be differentially expressed between its two children groupings of samples are merged. This is pretty stringent, and as we see it results in no clusterings being kept. 
+Notice that unlike our `RSEC` calls, we have to explicitly choose the DE method that is used in our call to `mergeClusters`. `RSEC` chooses the method by default based on the value of `isCount` argument (but the user can set it in `RSEC` with `mergeDEMethod` argument). Since our data is counts, we choose the DE method to be `edgeR` (which is also what `RSEC` chooses by default since we set `isCount=TRUE`). 
+
+The default cutoff is `cutoff=0.1`, meaning those nodes with less than 10% of genes estimated to be differentially expressed between its two children groupings of samples are merged. This is pretty stringent, and as we see it results in no clusterings being kept. 
 
 However, the plot tells us the estimate of that proportion for each node. We can decide on a better cutoff using that information. We choose instead `cutoff=0.01`:
 
 ```{r mergeClusters}
-ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.01)
+ce<-mergeClusters(ce,mergeMethod="adjP",DEMethod="edgeR",cutoff=0.01)
 par(mar=plotCMar)
 ```
 
@@ -620,7 +623,7 @@ By choosing "dendrogramValue" for the clustering of the samples, we will be show
 The above explanation follows the simple example of PAM. The original RSEC result called `RSEC` which calls these steps internally. Many of the options described above can be set through a call to RSEC, but some are restricted for simplicity. A detail explanation of the differences can be found in the section [RSEC]{#RSEC} below. But briefly, the following RSEC command, which uses most of the arguments of `RSEC`:
 
 ```{r quasiRsecCode, eval=FALSE}
-rsecOut<-RSEC(se, reduceMethod="PCA", nReducedDims=c(50,10), k0s=4:15,
+rsecOut<-RSEC(se, isCount=TRUE, reduceMethod="PCA", nReducedDims=c(50,10), k0s=4:15,
         alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9), minSizes=c(1,5), clusterFunction="hierarchical01",
         consensusProportion=0.7, consensusMinSize=5,
         dendroReduce="mad",dendroNDims=500,
@@ -633,10 +636,10 @@ would be equivalent to the following individual steps:
 ```{r stepCode,eval=FALSE}
 ce<-clusterMany(se,ks=4:15,alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9),minSizes=c(1,5),
 	clusterFunction="hierarchical01", sequential=TRUE,subsample=TRUE,
-         reduceMethod="PCA",nFilterDims=c(50,10))
+         reduceMethod="PCA",nFilterDims=c(50,10),isCount=TRUE)
 ce<-makeConsensus(ce, proportion=0.7, minSize=5)
 ce<-makeDendrogram(ce,reduceMethod="mad",nDims=500)
-ce<-mergeClusters(ce,mergeMethod="adjP",cutoff=0.05,plot=FALSE)
+ce<-mergeClusters(ce,mergeMethod="adjP",DEMethod="edgeR",cutoff=0.05,plot=FALSE)
 ```
 
 Note that this mean the `RSEC` function always calls sequential and subsampling. 
@@ -1778,13 +1781,15 @@ tabl <- "
 - |  | random.seed | |
 - |  | isCount | |
 - |  | transFun | |
+-  |  | isCount | |  
 *makeConsensus*  | propUnassigned = *(default)* | consensusProportion | proportion 
 -  | consensusMinSize    | minSize | |
 *makeDendrogram* | filterIgnoresUnassigned=TRUE | dendroReduce      | reduceMethod | 
 -  | unassignedSamples= *(default)* | dendroNDims       | nDims |  
 *mergeClusters*   | plot=FALSE | mergeMethod     | | 
 -  | | mergeCutoff | cutoff | 
--  |  | isCount | | argument used for both mergeMethod and clusterMany 
+-  | | mergeDEMethod | DEMethod |
+-  | | mergeLogFCcutoff | logFCcutoff |
 "
 
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
@@ -1795,11 +1800,10 @@ cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 
 The function `getBestFeatures` finds features in the data that are strongly differentiated between the clusters of a given clustering. Finding the best features is generally the last step in the workflow, once a final clustering has been decided upon, though as we have seen it is also called internally in `mergeClusters` to decide between which clusters to merge together. 
 
-The function `getBestFeatures` calls `limma` [@Smyth:2004gh, @Ritchie:2015fa] on input data to determine the gene features most associated with a particular clustering.  `getBestFeatures` picks the `primaryCluster` of a `ClusterExperiment` object as the clustering to use to find features. If the standard workflow is followed, this will be the last completed step (usually the result of `mergeClusters` or manually choosing a final cluster via `setToFinal`). The primaryCluster can of course be changed by setting `primaryClusterIndex` to point to a different clustering. 
+The function `getBestFeatures` calls either `limma` [@Smyth:2004gh, @Ritchie:2015fa] or `edgeR` [@Robinson:2010cw] on input data to determine the gene features most associated with a particular clustering.  `getBestFeatures` picks the `primaryCluster` of a `ClusterExperiment` object as the clustering to use to find features. If the standard workflow is followed, this will be the last completed step (usually the result of `mergeClusters` or manually choosing a final cluster via `setToFinal`). The primaryCluster can of course be changed by setting `primaryClusterIndex` to point to a different clustering. 
 
 
-
-The basic implementation is that of `limma` which fits a linear model per feature and tests for the significance of parameters of that linear model. The main contribution of `getBestFeatures` is to interface with `limma` so as to pick appropriate parameters or tests for comparing clusters. Naturally, `getBestFeatures` also seamlessly works with `ClusterExperiment` objects to minimize the burden on the user. The output is in the form of `topTable` in `limma`, i.e. a data.frame giving the relevant features, the p-value, etc. 
+The basic implementation of these functions fits a linear model per feature and tests for the significance of parameters of that linear model, with appropriate adjustment to a negative binomial model in the case of `edgeR`. The main contribution of `getBestFeatures` is to interface with `limma`  or `edgeR` so as to pick appropriate parameters or tests for comparing clusters. Naturally, `getBestFeatures` also seamlessly works with `ClusterExperiment` objects to minimize the burden on the user. The output is in the form of `topTable` or `topTags` in `limma` or `edgeR` respectively, i.e. a data.frame giving the relevant features, the p-value, etc. 
 
 
 ## Types of Significance Tests
@@ -1814,7 +1818,7 @@ Note that for all of these contrasts, we are making use of all of the data, not 
 The option `type="Pairs"`, which we saw earlier, performs all pair-wise tests between the clusters for each feature, testing for each pair of clusters whether the mean of the feature is different between the two clusters. Here is the example from above using all pairwise comparisons on the results of rsec:
 
 ```{r getBestFeatures_onlyTopPairs}
-pairsAllTop<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05)
+pairsAllTop<-getBestFeatures(rsecFluidigm,contrastType="Pairs",DEMethod="edgeR",p.value=0.05)
 dim(pairsAllTop)
 head(pairsAllTop)
 ```
@@ -1827,7 +1831,7 @@ In addition to the columns provided by `topTable`, the column "Contrast" tells u
 The choice `type="OneAgainsAll"` performs a comparison of a cluster against the mean of all of the other clusters. 
 
 ```{r getBestFeatures_oneAgainstAll}
-best1vsAll<-getBestFeatures(rsecFluidigm,contrastType="OneAgainstAll",p.value=0.05,number=NROW(rsecFluidigm))
+best1vsAll<-getBestFeatures(rsecFluidigm,contrastType="OneAgainstAll",DEMethod="edgeR",p.value=0.05,number=NROW(rsecFluidigm))
 head(best1vsAll)
 ```
 
@@ -1843,7 +1847,7 @@ plotContrastHeatmap(rsecFluidigm,signifTable=best1vsAll,nBlankLines=10, whichClu
 The option `type="Dendro"` is more complex; it assumes that there is a hierarchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, `getBestFeatures` defines a contrast or comparison of the mean expression between the daughter nodes. 
 
 ```{r getBestFeatures_dendro}
-bestDendro<-getBestFeatures(rsecFluidigm,contrastType="Dendro",p.value=0.05,number=NROW(rsecFluidigm))
+bestDendro<-getBestFeatures(rsecFluidigm,contrastType="Dendro",DEMethod="edgeR",p.value=0.05,number=NROW(rsecFluidigm))
 head(bestDendro)
 ```
 
@@ -1869,16 +1873,20 @@ plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("makeConsensus"
 
 ## Analysis for count and other RNASeq data
 
-The `getBestFeatures` method for `ClusterExperiment` objects has an argument `isCount`. If this is marked `TRUE` then the data in `assay(x)` is assumed to be counts, and the call to `limma` uses the `voom`[@Law:2014ff] correction. This correction deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  
+The `getBestFeatures` method for `ClusterExperiment` objects has an argument `DEMethod` to determine what kind of DE method should be run. The options are `limma`, `limma-voom` and `edgeR`. The last two options assume that `assay(x)` are counts. 
 
-If instead `isCount=FALSE`, then `limma` is performed on `transformData(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object. In this case, there is no `voom` correction. 
+* **`limma`** In this case, the data is assumed to be continous and roughly normal and the `limma` DE method is performed on `transformData(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object.  
 
-Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. Setting `isCount=TRUE` even if the data in the assay slot is not count will have this effect. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+* **`limma-voom`** refers to calling limma with the `voom`[@Law:2014ff] correction which uses the normal linear model of `limma` but deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+
+* **`edgeR`** Performs a likelihood-ratio test (`glmLRT` function in `edgeR` [@Robinson:2010cw]) based on a negative binomial distribution and a empirical bayes estimation of the dispersion. Weights can be provided, in which case the LRT is performed using the function `glmWeightedF` in the `zinbwave` package. This allows for the incorporation of weights due to zero-inflation in the negative binomial model and was found empirically by [@] to have the best performance for zero-inflated data. 
+
+
 
 
 ## Piping into other DE routines
 
-Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` can be piped into programs that allow for contrasts in their linear models like edgeR [@Robinson:2010cw] for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` or `edgeR` can be piped into programs that allow for contrasts in their linear models like edgeR  for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
 
 Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
 
@@ -1911,10 +1919,14 @@ pass_filter <- apply(assay(se2, "rsem_tpm"), 1, function(x) length(x[x >= 10]) >
 se2 <- se2[pass_filter,]
 dim(se2)
 
-rsecTPM <- RSEC(se2, whichAssay = "rsem_tpm", transFun = log1p,
+rsecTPM <- RSEC(se2, whichAssay = "rsem_tpm", transFun = log1p, mergeDEMethod="limma",
               reduceMethod="PCA", nReducedDims=10, consensusMinSize=3, 
               ncores=1, random.seed=176201)
 ```
+
+Note that in this case, the merging is done after determining DE with `limma` rather than `edgeR` since we no longer have count values. 
+
+**Switching between assays and transformations** If you plan to use different assays for different functions, be careful about the built-in transformation function that is saved in `ClusterExperiment` objects -- and which will be applied to any assay! The data will be silently transformed by pretty much every function in the package before any calculations are performed. You can set the transformation function with the command `transformation(x)<-...`, including setting it to the identify `function(x){x}`. If you plan on using a dimensionality reduction like PCA, then if they are already saved in the object (using `reducedDims`) then the functions in the `RSEC` workflow will use those and not need to transform the data. But setting `isCount=TRUE` in `RSEC` will set the transformation of the object (and also by default sets the `DEMethod` for `mergeClusters` unless the user over-rides it) even if RSEC uses the saved dimensionality reductions and the data is never transformed for the clustering analysis. 
 
 # Session Information
 This vignette was compiled under:
