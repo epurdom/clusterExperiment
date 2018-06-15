@@ -145,7 +145,7 @@ system.time(rsecFluidigm<-RSEC(se,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.01,
+ mergeCutoff=0.03,
  ncores=1,
  random.seed=176201))
 ```
@@ -345,7 +345,7 @@ rsecFluidigm<-RSEC(rsecFluidigm,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.01
+ mergeCutoff=0.03
  )
 par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
@@ -593,8 +593,7 @@ The default cutoff is `cutoff=0.1`, meaning those nodes with less than 10% of ge
 However, the plot tells us the estimate of that proportion for each node. We can decide on a better cutoff using that information. We choose instead `cutoff=0.01`:
 
 ```{r mergeClusters}
-ce<-mergeClusters(ce,mergeMethod="adjP",DEMethod="edgeR",cutoff=0.01)
-par(mar=plotCMar)
+ce<-mergeClusters(ce,mergeMethod="adjP",DEMethod="edgeR",cutoff=0.05)
 ```
 
 Notice that now the plot has given the estimates from *all* of the methods (the default set by `plotInfo` argument), not just the `adjP` method. But the dotted lines of the dendrogram indicate the merging performed by the actual choices in merging made in the command (`mergeMethod="adjP"` and `cutoff=0.01`).
@@ -602,6 +601,7 @@ Notice that now the plot has given the estimates from *all* of the methods (the 
 It can be interesting to visualize the clusterings both with the `plotClustersWorkflow`  and the co-Proportion plot (a heatmap of the proportion of times the samples co-clustered):
 
 ```{r mergeClusters_coClustering}
+par(mar=plotCMar)
 plotClustersWorkflow(ce,whichClusters="workflow") 
 plotCoClustering(ce,whichClusters=c("mergeClusters","makeConsensus"),
                  colData=c("Biological_Condition","Published2"),annLegend=FALSE)
