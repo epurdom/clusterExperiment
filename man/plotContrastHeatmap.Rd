@@ -51,7 +51,7 @@ sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k
 
 #Do all pairwise, only return significant, try different adjustments:
 pairsPerC <- getBestFeatures(cl, contrastType="Pairs", number=5,
-p.value=0.05, isCount=FALSE)
+p.value=0.05, DEMethod="limma")
 plotContrastHeatmap(cl,pairsPerC)
 }
 \seealso{

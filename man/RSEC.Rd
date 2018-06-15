@@ -30,9 +30,10 @@
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
   dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
-  mergeLogFCcutoff, mergeDEMethod, verbose = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
-  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
+  mergeLogFCcutoff, mergeDEMethod = if (isCount) "edgeR" else "limma",
+  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, whichAssay = 1, ncores = 1, random.seed = NULL,
+  stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -53,8 +54,8 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 
 \item{rerunClusterMany}{logical. If the object is a ClusterExperiment object,
-determines whether to rerun the clusterMany step. Useful if want to try
-different parameters for combining clusters after the clusterMany step,
+determines whether to rerun the clusterMany step. Useful if want to try 
+different parameters for combining clusters after the clusterMany step, 
 without the computational costs of the clusterMany step.}
 
 \item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
@@ -81,7 +82,7 @@ stored filtering or reducedDim values in the object.}
 \item{nReducedDims}{vector of the number of dimensions to use (when
 \code{reduceMethod} gives a dimensionality reduction method).}
 
-\item{k0s}{the k0 parameter for sequential clustering (see
+\item{k0s}{the k0 parameter for sequential clustering (see 
 \code{\link{seqCluster}})}
 
 \item{subsample}{logical as to whether to subsample via
@@ -114,26 +115,29 @@ documentation of \code{\link{seqCluster}}.}
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
-\item{consensusProportion}{passed to \code{proportion} in
+\item{consensusProportion}{passed to \code{proportion} in 
 \code{\link{makeConsensus}}}
 
-\item{consensusMinSize}{passed to \code{minSize} in \code{\link{makeConsensus}}}
+\item{consensusMinSize}{passed to \code{minSize} in
+\code{\link{makeConsensus}}}
 
-\item{dendroReduce}{passed to \code{reduceMethod} in
+\item{dendroReduce}{passed to \code{reduceMethod} in 
 \code{\link{makeDendrogram}}}
 
 \item{dendroNDims}{passed to \code{nDims} in \code{\link{makeDendrogram}}}
 
-\item{mergeMethod}{passed to \code{mergeMethod} in
+\item{mergeMethod}{passed to \code{mergeMethod} in 
 \code{\link{mergeClusters}}}
 
 \item{mergeCutoff}{passed to \code{cutoff} in \code{\link{mergeClusters}}}
 
-\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in
+\item{mergeLogFCcutoff}{passed to \code{logFCcutoff} in 
 \code{\link{mergeClusters}}}
 
 \item{mergeDEMethod}{passed to \code{DEMethod} argument in 
-\code{\link{mergeClusters}}}
+\code{\link{mergeClusters}}. By default, unless otherwise chosen by the
+user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
+\code{mergeDEMethod="limma"}.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
@@ -157,12 +161,12 @@ that all of the runs are run on the same subsample of the data). Note, if
 subsampleArgs; instead set the argument 'ncores' of clusterMany directly
 (which is preferred for improving speed anyway).}
 
-\item{stopOnErrors}{logical. If \code{FALSE}, if RSEC hits an error \emph{after} 
-the \code{clusterMany} step, it will return the results up to that point, rather 
-than generating a stop error. The text of error will be printed as a NOTE. This 
-allows the user to get the results to that point, so as to not have to rerun 
-the computationally heavy earlier steps. The \code{TRUE} option is only provided 
-for debugging purposes.}
+\item{stopOnErrors}{logical. If \code{FALSE}, if RSEC hits an error
+\emph{after} the \code{clusterMany} step, it will return the results up to
+that point, rather than generating a stop error. The text of error will be
+printed as a NOTE. This allows the user to get the results to that point,
+so as to not have to rerun the computationally heavy earlier steps. The
+\code{TRUE} option is only provided for debugging purposes.}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
@@ -172,7 +176,7 @@ however, the function will create the dimensionality reductions of the data
 indicated by the user input.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object is returned containing all
+A \code{\link{ClusterExperiment}} object is returned containing all 
   of the clusterings from the steps of RSEC
 }
 \description{

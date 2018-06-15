@@ -2,6 +2,7 @@ Changes in version 2.1.3-9011 ( Release date: )
 ==============
 
 Changes:
+* Add functionality to `getBestFeatures` to allow `edgeR` for DE, as well as weights used with `edgeR` for `zinbwave` compatability.
 * Change function names (old function name is now depricated):
 	- `combineMany` -> `makeConsensus`
 	- `removeUnclustered` -> `removeUnassigned`

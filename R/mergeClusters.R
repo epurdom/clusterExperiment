@@ -7,65 +7,65 @@
 #' @name mergeClusters
 #' @aliases mergeClusters mergeClusters,matrixOrHDF5-method
 #'
-#' @param x data to perform the test on. It can be a matrix or a
+#' @param x data to perform the test on. It can be a matrix or a 
 #'   \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments to compare to. ``-1''
+#' @param cl A numeric vector with cluster assignments to compare to. ``-1'' 
 #'   indicates the sample was not assigned to a cluster.
 #' @param dendro dendrogram providing hierarchical clustering of clusters in cl.
-#'   If x is a matrix, then the default is \code{dendro=NULL} and the function
-#'   will calculate the dendrogram with the given (x, cl) pair using
-#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}}
-#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In
-#'   this case, this means that \code{\link{makeDendrogram}} needs to be called
+#'   If x is a matrix, then the default is \code{dendro=NULL} and the function 
+#'   will calculate the dendrogram with the given (x, cl) pair using 
+#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}} 
+#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In 
+#'   this case, this means that \code{\link{makeDendrogram}} needs to be called 
 #'   before \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
-#'   used to merge clusters (if 'none', no merging will be done). See details
+#'   used to merge clusters (if 'none', no merging will be done). See details 
 #'   for description of methods.
-#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two
-#'   clusters with the proportion of DE below cutoff will be merged. Must be a
-#'   value between 0, 1, where lower values will make it harder to merge
+#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two 
+#'   clusters with the proportion of DE below cutoff will be merged. Must be a 
+#'   value between 0, 1, where lower values will make it harder to merge 
 #'   clusters.
-#' @param plotInfo what type of information about the merging will be shown on
-#'   the dendrogram. If 'all', then all the estimates of proportion non-null
+#' @param plotInfo what type of information about the merging will be shown on 
+#'   the dendrogram. If 'all', then all the estimates of proportion non-null 
 #'   will be plotted at each node of the dendrogram; if 'mergeMethod', then only
 #'   the value used in the \code{mergeClusters} command is plotted at each node.
-#'   If 'none', then no proportions will be added to the dendrogram, though the
-#'   dendrogram will be drawn. 'plotInfo' can also be one of the valid input to
-#'   \code{mergeMethod} (even if that method is not the method chosen in
+#'   If 'none', then no proportions will be added to the dendrogram, though the 
+#'   dendrogram will be drawn. 'plotInfo' can also be one of the valid input to 
+#'   \code{mergeMethod} (even if that method is not the method chosen in 
 #'   \code{mergeMethod} argument). \code{plotInfo} can also show the information
-#'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to
+#'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to 
 #'   this argument in  the form of "adjP_2.0", for example.
-#' @param plot logical as to whether to plot the dendrogram with the merge
+#' @param plot logical as to whether to plot the dendrogram with the merge 
 #'   results
 #' @param nodePropTable Only for matrix version. Matrix of results from previous
-#'   run of \code{mergeClusters} as returned by matrix version of
-#'   \code{mergeClusters}. Useful if just want to change the cutoff. Not
+#'   run of \code{mergeClusters} as returned by matrix version of 
+#'   \code{mergeClusters}. Useful if just want to change the cutoff. Not 
 #'   generally intended for user but used internally by package.
-#' @param calculateAll logical. Whether to calculate the estimates for all
-#'   methods. This reduces computation costs for any future calls to
-#'   \code{mergeClusters} since the results can be passed to future calls of
+#' @param calculateAll logical. Whether to calculate the estimates for all 
+#'   methods. This reduces computation costs for any future calls to 
+#'   \code{mergeClusters} since the results can be passed to future calls of 
 #'   \code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
 #'   automatically).
-#' @param showWarnings logical. Whether to show warnings given by the methods.
-#'   The 'locfdr' method in particular frequently spits out warnings (which may
-#'   indicate that its estimates are not reliable). Setting
-#'   \code{showWarnings=FALSE} will suppress all warnings from all methods (not
-#'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by
-#'   default to avoid large number of warnings being produced by "locfdr", but
+#' @param showWarnings logical. Whether to show warnings given by the methods. 
+#'   The 'locfdr' method in particular frequently spits out warnings (which may 
+#'   indicate that its estimates are not reliable). Setting 
+#'   \code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+#'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+#'   default to avoid large number of warnings being produced by "locfdr", but 
 #'   users may want to be more careful to check the warnings for themselves.
-#' @param logFCcutoff Relevant only if the \code{mergeMethod} selected is
+#' @param logFCcutoff Relevant only if the \code{mergeMethod} selected is 
 #'   "adjP", in which case the calculation of the proportion of individual tests
-#'   significant will also require that the estimated log-fold change of the
+#'   significant will also require that the estimated log-fold change of the 
 #'   features to be at least this large in absolute value. Value will be rounded
-#'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
-#'   any other method, this parameter is ignored. Note that the logFC is based on 
-#    \code{log2} (the results of \code{\link{getBestFeatures}})
-#' @param forceCalculate This forces the function to erase previously saved merge 
-#'   results and recalculate the merging. 
-#' @param ... for signature \code{matrix}, arguments passed to the
-#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
-#'   For signature \code{ClusterExperiment} arguments passed to the method for
-#'   signature \code{matrix} and then if do not match those arguments, will be
+#'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For 
+#'   any other method, this parameter is ignored. Note that the logFC is based
+#'   on \code{log2} (the results of \code{\link{getBestFeatures}})
+#' @param forceCalculate This forces the function to erase previously saved
+#'   merge results and recalculate the merging.
+#' @param ... for signature \code{matrix}, arguments passed to the 
+#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
+#'   For signature \code{ClusterExperiment} arguments passed to the method for 
+#'   signature \code{matrix} and then if do not match those arguments, will be 
 #'   passed onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany
 #' @inheritParams getBestFeatures

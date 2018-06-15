@@ -4,34 +4,35 @@
 #'   Sequential Ensemble Clustering) for single cell sequencing data. This is a
 #'   wrapper function around the existing ClusterExperiment workflow that
 #'   results in the output of RSEC.
-#' @param k0s the k0 parameter for sequential clustering (see
+#' @param k0s the k0 parameter for sequential clustering (see 
 #'   \code{\link{seqCluster}})
-#' @param consensusProportion passed to \code{proportion} in
+#' @param consensusProportion passed to \code{proportion} in 
 #'   \code{\link{makeConsensus}}
-#' @param consensusMinSize passed to \code{minSize} in \code{\link{makeConsensus}}
-#' @param dendroReduce passed to \code{reduceMethod} in
+#' @param consensusMinSize passed to \code{minSize} in
+#'   \code{\link{makeConsensus}}
+#' @param dendroReduce passed to \code{reduceMethod} in 
 #'   \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
-#' @param mergeMethod passed to \code{mergeMethod} in
+#' @param mergeMethod passed to \code{mergeMethod} in 
 #'   \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
-#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in
+#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in 
 #'   \code{\link{mergeClusters}}
 #' @param mergeDEMethod passed to \code{DEMethod} argument in 
-#'  \code{\link{mergeClusters}}. By default, unless 
-#'  otherwise chosen by the user, if \code{isCount=TRUE}, then
-#'  \code{mergeDEMethod="edgeR"}, otherwise \code{mergeDEMethod="limma"}.  
+#'   \code{\link{mergeClusters}}. By default, unless otherwise chosen by the
+#'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
+#'   \code{mergeDEMethod="limma"}.
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
-#'   determines whether to rerun the clusterMany step. Useful if want to try
-#'   different parameters for combining clusters after the clusterMany step,
+#'   determines whether to rerun the clusterMany step. Useful if want to try 
+#'   different parameters for combining clusters after the clusterMany step, 
 #'   without the computational costs of the clusterMany step.
-#' @param stopOnErrors logical. If \code{FALSE}, if RSEC hits an error \emph{after} 
-#'  the \code{clusterMany} step, it will return the results up to that point, rather 
-#'  than generating a stop error. The text of error will be printed as a NOTE. This 
-#'  allows the user to get the results to that point, so as to not have to rerun 
-#'  the computationally heavy earlier steps. The \code{TRUE} option is only provided 
-#'  for debugging purposes.
-#' @return A \code{\link{ClusterExperiment}} object is returned containing all
+#' @param stopOnErrors logical. If \code{FALSE}, if RSEC hits an error
+#'   \emph{after} the \code{clusterMany} step, it will return the results up to
+#'   that point, rather than generating a stop error. The text of error will be
+#'   printed as a NOTE. This allows the user to get the results to that point,
+#'   so as to not have to rerun the computationally heavy earlier steps. The
+#'   \code{TRUE} option is only provided for debugging purposes.
+#' @return A \code{\link{ClusterExperiment}} object is returned containing all 
 #'   of the clusterings from the steps of RSEC
 #' @inheritParams clusterMany
 #' @name RSEC

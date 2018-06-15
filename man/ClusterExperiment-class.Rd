@@ -35,7 +35,8 @@ ClusterExperiment(object, clusters, ...)
   coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
   merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
   merge_nodeMerge = NULL, merge_method = NA_character_,
-  clusterLegend = NULL, checkTransformAndAssay = TRUE)
+  merge_demethod = NA_character_, clusterLegend = NULL,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{object}{a matrix or \code{SummarizedExperiment} or

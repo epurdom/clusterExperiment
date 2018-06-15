@@ -22,16 +22,15 @@
 \S4method{mergeClusters}{matrixOrHDF5}(x, cl, dendro = NULL,
   mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
   plotInfo = "none", nodePropTable = NULL, calculateAll = TRUE,
-  showWarnings = FALSE, cutoff = 0.05, plot = TRUE,
-  DEMethod = c("edgeR", "limma", "limma-voom"), logFCcutoff = 0,
-  weights = NULL, ...)
+  showWarnings = FALSE, cutoff = 0.05, plot = TRUE, DEMethod,
+  logFCcutoff = 0, weights = NULL, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  isCount = FALSE, mergeMethod = "none", plotInfo = "all",
-  clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
-  plotType = c("colorblock", "name", "ids"), plot = TRUE, whichAssay = 1,
-  forceCalculate = FALSE, weights = if ("weights" \%in\% assayNames(x))
-  "weights" else NULL, ...)
+  mergeMethod = "none", plotInfo = "all", clusterLabel = "mergeClusters",
+  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
+  "ids"), plot = TRUE, whichAssay = 1, forceCalculate = FALSE,
+  weights = if ("weights" \%in\% assayNames(x)) "weights" else NULL, DEMethod,
+  ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 
@@ -47,73 +46,74 @@
   "original"))
 }
 \arguments{
-\item{x}{data to perform the test on. It can be a matrix or a
+\item{x}{data to perform the test on. It can be a matrix or a 
 \code{\link{ClusterExperiment}}.}
 
-\item{cl}{A numeric vector with cluster assignments to compare to. ``-1''
+\item{cl}{A numeric vector with cluster assignments to compare to. ``-1'' 
 indicates the sample was not assigned to a cluster.}
 
 \item{dendro}{dendrogram providing hierarchical clustering of clusters in cl.
-If x is a matrix, then the default is \code{dendro=NULL} and the function
-will calculate the dendrogram with the given (x, cl) pair using
-\code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}}
-object, the dendrogram in the slot \code{dendro_clusters} will be used. In
-this case, this means that \code{\link{makeDendrogram}} needs to be called
+If x is a matrix, then the default is \code{dendro=NULL} and the function 
+will calculate the dendrogram with the given (x, cl) pair using 
+\code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}} 
+object, the dendrogram in the slot \code{dendro_clusters} will be used. In 
+this case, this means that \code{\link{makeDendrogram}} needs to be called 
 before \code{mergeClusters}.}
 
 \item{mergeMethod}{method for calculating proportion of non-null that will be
-used to merge clusters (if 'none', no merging will be done). See details
+used to merge clusters (if 'none', no merging will be done). See details 
 for description of methods.}
 
-\item{plotInfo}{what type of information about the merging will be shown on
-the dendrogram. If 'all', then all the estimates of proportion non-null
+\item{plotInfo}{what type of information about the merging will be shown on 
+the dendrogram. If 'all', then all the estimates of proportion non-null 
 will be plotted at each node of the dendrogram; if 'mergeMethod', then only
 the value used in the \code{mergeClusters} command is plotted at each node.
-If 'none', then no proportions will be added to the dendrogram, though the
-dendrogram will be drawn. 'plotInfo' can also be one of the valid input to
-\code{mergeMethod} (even if that method is not the method chosen in
+If 'none', then no proportions will be added to the dendrogram, though the 
+dendrogram will be drawn. 'plotInfo' can also be one of the valid input to 
+\code{mergeMethod} (even if that method is not the method chosen in 
 \code{mergeMethod} argument). \code{plotInfo} can also show the information
-corresponding  to "adjP" with a fold-change cutoff, by giving a value to
+corresponding  to "adjP" with a fold-change cutoff, by giving a value to 
 this argument in  the form of "adjP_2.0", for example.}
 
 \item{nodePropTable}{Only for matrix version. Matrix of results from previous
-run of \code{mergeClusters} as returned by matrix version of
-\code{mergeClusters}. Useful if just want to change the cutoff. Not
+run of \code{mergeClusters} as returned by matrix version of 
+\code{mergeClusters}. Useful if just want to change the cutoff. Not 
 generally intended for user but used internally by package.}
 
-\item{calculateAll}{logical. Whether to calculate the estimates for all
-methods. This reduces computation costs for any future calls to
-\code{mergeClusters} since the results can be passed to future calls of
+\item{calculateAll}{logical. Whether to calculate the estimates for all 
+methods. This reduces computation costs for any future calls to 
+\code{mergeClusters} since the results can be passed to future calls of 
 \code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
 automatically).}
 
-\item{showWarnings}{logical. Whether to show warnings given by the methods.
-The 'locfdr' method in particular frequently spits out warnings (which may
-indicate that its estimates are not reliable). Setting
-\code{showWarnings=FALSE} will suppress all warnings from all methods (not
-just "locfdr"). By default this is set to \code{showWarnings=FALSE} by
-default to avoid large number of warnings being produced by "locfdr", but
+\item{showWarnings}{logical. Whether to show warnings given by the methods. 
+The 'locfdr' method in particular frequently spits out warnings (which may 
+indicate that its estimates are not reliable). Setting 
+\code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+default to avoid large number of warnings being produced by "locfdr", but 
 users may want to be more careful to check the warnings for themselves.}
 
-\item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two
-clusters with the proportion of DE below cutoff will be merged. Must be a
-value between 0, 1, where lower values will make it harder to merge
+\item{cutoff}{minimimum value required for NOT merging a cluster, i.e. two 
+clusters with the proportion of DE below cutoff will be merged. Must be a 
+value between 0, 1, where lower values will make it harder to merge 
 clusters.}
 
-\item{plot}{logical as to whether to plot the dendrogram with the merge
+\item{plot}{logical as to whether to plot the dendrogram with the merge 
 results}
 
-\item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is
+\item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is 
 "adjP", in which case the calculation of the proportion of individual tests
-significant will also require that the estimated log-fold change of the
+significant will also require that the estimated log-fold change of the 
 features to be at least this large in absolute value. Value will be rounded
-to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
-any other method, this parameter is ignored. Note that the logFC is based on}
+to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For 
+any other method, this parameter is ignored. Note that the logFC is based
+on \code{log2} (the results of \code{\link{getBestFeatures}})}
 
-\item{...}{for signature \code{matrix}, arguments passed to the
-\code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
-For signature \code{ClusterExperiment} arguments passed to the method for
-signature \code{matrix} and then if do not match those arguments, will be
+\item{...}{for signature \code{matrix}, arguments passed to the 
+\code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
+For signature \code{ClusterExperiment} arguments passed to the method for 
+signature \code{matrix} and then if do not match those arguments, will be 
 passed onto \code{\link{plot.phylo}}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
@@ -122,13 +122,6 @@ passed onto \code{\link{plot.phylo}}.}
 workflow results will have "\code{_i}" added to the clusterTypes value,
 where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
-
-\item{isCount}{if \code{transFun=NULL}, then \code{isCount=TRUE} will
-determine the transformation as defined by \code{function(x){log2(x+1)}},
-and \code{isCount=FALSE} will give a transformation function
-\code{function(x){x}}. Ignored if \code{transFun=NULL}. If object is of
-class \code{ClusterExperiment}, the stored transformation will be used and
-giving this parameter will result in an error.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By
 default it is equal to "mergeClusters", to indicate that this clustering is
@@ -147,8 +140,8 @@ the leaves ("name") (only if x is a ClusterExperiment object).}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{forceCalculate}{This forces the function to erase previously saved merge 
-results and recalculate the merging.}
+\item{forceCalculate}{This forces the function to erase previously saved
+merge results and recalculate the merging.}
 
 \item{by}{indicates whether output from \code{getMergeCorrespond} should be
 a vector/list with elements corresponding to merge cluster ids or elements
@@ -240,16 +233,9 @@ Takes an input of hierarchical clusterings of clusters and
   refers to the proportion of genes that are found significant based on a FDR
   adjusted p-values (method "BH") and a cutoff of 0.05.
 
-\strong{Count correction} If  \code{isCount=TRUE}, and the input is
-  a matrix, \code{log2(count + 1)} will be used for
-  \code{\link{makeDendrogram}} and the original data with voom correction
-  will be used in \code{\link{getBestFeatures}}). If input is
-  \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
-  means that the log2(1+count) will be used as the transformation, like for
-  the matrix case as well as the voom calculation, and will NOT use the
-  transformation stored in the object. If FALSE, then transformData(x) will be
-  given to the input and will be used for both \code{makeDendrogram} and
-  \code{getBestFeatures}, with no voom correction.
+\strong{DEMethod} If  \code{DEMethod=="limma"}, and \code{x} is a \code{ClusterExperiment} object, then transformData(x) will be
+  given as the input to \code{getBestFeatures}. Otherwise, the original data stored in 
+ the assay will be passed to \code{getBestFeatures} (and the remaining methods assume the data will be counts.)
 
 \strong{Control of Plotting} If \code{mergeMethod} is not equal to
   'none' then the plotting will indicate where the clusters will be merged by

@@ -1,93 +1,95 @@
 .demethods<-c("edgeR","limma","limma-voom")
 #' @title Function for finding best features associated with clusters
-#' @description Calls limma on input data to determine features most associated
-#'   with found clusters (based on an F-statistic, pairwise comparisons, or
+#' @description Calls limma on input data to determine features most associated 
+#'   with found clusters (based on an F-statistic, pairwise comparisons, or 
 #'   following a tree that clusters the clusters).
 #' @aliases getBestFeatures
-#' @param x data for the test. Can be a numeric matrix or a
+#' @param x data for the test. Can be a numeric matrix or a 
 #'   \code{\link{ClusterExperiment}}.
-#' @param cluster A numeric vector with cluster assignments. ``-1'' indicates
+#' @param cluster A numeric vector with cluster assignments. ``-1'' indicates 
 #'   the sample was not assigned to a cluster.
-#' @param contrastType What type of test to do. `F' gives the omnibus
-#'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of
-#'   the samples in each side,  `Pairs' does pair-wise contrasts based on the
-#'   pairs given in pairMat (if pairMat=NULL, does all pairwise), and
-#'   `OneAgainstAll' compares each cluster to the average of all others. Passed
+#' @param contrastType What type of test to do. `F' gives the omnibus 
+#'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of 
+#'   the samples in each side,  `Pairs' does pair-wise contrasts based on the 
+#'   pairs given in pairMat (if pairMat=NULL, does all pairwise), and 
+#'   `OneAgainstAll' compares each cluster to the average of all others. Passed 
 #'   to \code{\link{clusterContrasts}}
-#' @param contrastAdj What type of FDR correction to do for contrasts tests
+#' @param contrastAdj What type of FDR correction to do for contrasts tests 
 #'   (i.e. if contrastType='Dendro' or 'Pairs').
 #' @param DEMethod character vector describing how the differential expression 
-#'   analysis should be performed (replaces previous argument \code{isCount}.
+#'   analysis should be performed (replaces previous argument \code{isCount}. 
 #'   See details.
-#' @param weights weights to use in by edgeR. If \code{x} is a matrix, then weights
-#' should be a matrix of weights, 
-#' of the same dimensions as \code{x}. If \code{x} is a \code{ClusterExperiment} object
-#' \code{weights} can be a either a matrix, as previously described, or a character or 
-#'  numeric index to an assay in \code{x} that contains the weights. We recommend that 
-#' weights be stored as an assay with name \code{"weights"} so that the weights will 
-#' also be used with \code{\link{mergeClusters}}, and this is the default. Setting 
-#' \code{weights=NULL} ensures that weights will NOT be used, and only the standard edgeR.
-#' @param ... If \code{x} is a matrix, these are options to pass to
-#'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see
-#'   \code{\link[limma]{limma}} package). If \code{x} is a
-#'   \code{ClusterExperiment} object, these arguments can also be those to pass
+#' @param weights weights to use in by edgeR. If \code{x} is a matrix, then
+#'   weights should be a matrix of weights, of the same dimensions as \code{x}.
+#'   If \code{x} is a \code{ClusterExperiment} object \code{weights} can be a
+#'   either a matrix, as previously described, or a character or numeric index
+#'   to an assay in \code{x} that contains the weights. We recommend that 
+#'   weights be stored as an assay with name \code{"weights"} so that the
+#'   weights will also be used with \code{\link{mergeClusters}}, and this is the
+#'   default. Setting \code{weights=NULL} ensures that weights will NOT be used,
+#'   and only the standard edgeR.
+#' @param ... If \code{x} is a matrix, these are options to pass to 
+#'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 
+#'   \code{\link[limma]{limma}} package). If \code{x} is a 
+#'   \code{ClusterExperiment} object, these arguments can also be those to pass 
 #'   to the matrix version.
-#' @param normalize.method character value, passed to \code{\link[limma]{voom}}
-#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}.
-#'   Note that the default value is set to "none", which is not the default
+#' @param normalize.method character value, passed to \code{\link[limma]{voom}} 
+#'   in \code{\link[limma]{limma}} package. Only used if \code{countData=TRUE}. 
+#'   Note that the default value is set to "none", which is not the default 
 #'   value of \code{\link{voom}}.
 #' @inheritParams clusterContrasts
 #' @details getBestFeatures returns the top ranked features corresponding to a 
-#'   cluster assignment. It uses either limma or edgeR to fit the models, and
-#'   limma/edgeR functions \code{\link[limma]{topTable}} or
-#'   \code{\link[limma]{topTableF}} to find the best features. See the options
-#'   of these functions to put better control on what gets returned (e.g. only
-#'   if significant, only if log-fc is above a certain amount, etc.). In
+#'   cluster assignment. It uses either limma or edgeR to fit the models, and 
+#'   limma/edgeR functions \code{\link[limma]{topTable}} or 
+#'   \code{\link[limma]{topTableF}} to find the best features. See the options 
+#'   of these functions to put better control on what gets returned (e.g. only 
+#'   if significant, only if log-fc is above a certain amount, etc.). In 
 #'   particular, set `number=` to define how many significant features to return
 #'   (where number is per contrast for the `Pairs` or `Dendro` option)
 #' @details  \code{DEMethod} triggers what type of differential expression 
 #'   analysis will be performed. Three options are available: limma, edgeR, and 
 #'   limma with a voom corrections. The last two options are only appropriate 
 #'   for count data. If the input \code{x} is a \code{ClusterExperiment} object,
-#'   and \code{DEMethod="limma"}, then the data analyzed for DE will be \emph{after}
-#'   taking the transformation of the data (as given in the transformation slot 
-#'   of the object). For the options "limma-voom" and "edgeR", the
-#'   transformation slot will be ignored and only the counts data (as specified
-#'   by the \code{whichAssay} slot) will be passed to the programs. Note that
-#'   for "limma-voom" this implies that the data will be transformed by voom
-#'   with the function log2(x+0.5). If \code{weights} is not \code{NULL}, and 
-#'   \code{DEMethod="edgeR"}, then the function \code{glmWeightedF} from the 
-#'   \code{zinbwave} package is run; otherwise \code{glmLRT} from \code{edgeR}.
-#' @details Note that the argument \code{DEMethod} replaces the previous option
+#'   and \code{DEMethod="limma"}, then the data analyzed for DE will be
+#'   \emph{after} taking the transformation of the data (as given in the
+#'   transformation slot of the object). For the options "limma-voom" and
+#'   "edgeR", the transformation slot will be ignored and only the counts data
+#'   (as specified by the \code{whichAssay} slot) will be passed to the
+#'   programs. Note that for "limma-voom" this implies that the data will be
+#'   transformed by voom with the function log2(x+0.5). If \code{weights} is not
+#'   \code{NULL}, and \code{DEMethod="edgeR"}, then the function
+#'   \code{glmWeightedF} from the \code{zinbwave} package is run; otherwise
+#'   \code{glmLRT} from \code{edgeR}.
+#' @details Note that the argument \code{DEMethod} replaces the previous option 
 #'   \code{isCount}, to decide on the method of DE.
-#' @details When `contrastType` argument implies that the best features should
-#'   be found via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then
-#'   then `contrastAdj` determines the type of multiple testing correction to
-#'   perform. `PerContrast` does FDR correction for each set of contrasts, and
-#'   does not guarantee control across all the different contrasts (so probably
+#' @details When `contrastType` argument implies that the best features should 
+#'   be found via contrasts (i.e. 'contrastType' is `Pairs` or `Dendro`), then 
+#'   then `contrastAdj` determines the type of multiple testing correction to 
+#'   perform. `PerContrast` does FDR correction for each set of contrasts, and 
+#'   does not guarantee control across all the different contrasts (so probably 
 #'   not the preferred method). `All` calculates the corrected p-values based on
-#'   FDR correction of all of the contrasts tested. `AfterF` controls the FDR
+#'   FDR correction of all of the contrasts tested. `AfterF` controls the FDR 
 #'   based on a hierarchical scheme that only tests the contrasts in those genes
 #'   where the omnibus F statistic is significant. If the user selects `AfterF`,
-#'   the user must also supply an option `p.value` to have any effect, and then
-#'   only those significant at that p.value level will be returned. Note that
+#'   the user must also supply an option `p.value` to have any effect, and then 
+#'   only those significant at that p.value level will be returned. Note that 
 #'   currently the correction for `AfterF` is not guaranteed to control the FDR;
 #'   improvements will be added in the future.
-#' @details  Note that the default option for \code{\link[limma]{topTable}} is
-#'   to not filter based on adjusted p-values (\code{p.value = 1}) and return
-#'   only the top 10 most significant (\code{number = 10}) -- these are options
-#'   the user can change (these arguments are passed via the \code{...} in
-#'   \code{getBestFeatures}). In particular, it only makes sense to set
-#'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05);
-#'   the default value of \code{p.value = 1} will not result in any effect on
+#' @details  Note that the default option for \code{\link[limma]{topTable}} is 
+#'   to not filter based on adjusted p-values (\code{p.value = 1}) and return 
+#'   only the top 10 most significant (\code{number = 10}) -- these are options 
+#'   the user can change (these arguments are passed via the \code{...} in 
+#'   \code{getBestFeatures}). In particular, it only makes sense to set 
+#'   \code{requireF = TRUE} if \code{p.value} is meaningful (e.g. 0.1 or 0.05); 
+#'   the default value of \code{p.value = 1} will not result in any effect on 
 #'   the adjusted p-value otherwise.
-#' @return A \code{data.frame} in the same format as
-#'   \code{\link[limma]{topTable}}, or \code{\link[edgeR]{topTags}}. The output differs
-#'  between these two programs, mainly in the naming of columns. Furthermore, if weights 
-#'  are used, an additional column \code{padjFilter} is included as the result of running 
-#'  \code{\link[zinbwave]{glmWeightedF}} with default option 
-#'  \code{independentFiltering = TRUE}. The following column names are the same between all 
-#'  of the DE methods.
+#' @return A \code{data.frame} in the same format as 
+#'   \code{\link[limma]{topTable}}, or \code{\link[edgeR]{topTags}}. The output
+#'   differs between these two programs, mainly in the naming of columns.
+#'   Furthermore, if weights are used, an additional column \code{padjFilter} is
+#'   included as the result of running \code{\link[zinbwave]{glmWeightedF}} with
+#'   default option \code{independentFiltering = TRUE}. The following column
+#'   names are the same between all of the DE methods.
 #' \itemize{
 #'
 #' \item{\code{Feature}}{ This is the column called 'ProbeID' by
