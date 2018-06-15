@@ -155,14 +155,14 @@ test_that("`getBestFeatures` works with weights", {
 	#-------
 	##Test get right answers with weights (have to remove unassigned)
 	#-------
-	cleanSim<-removeUnassigned(ceSimW)
+	cleanSim<-removeUnassigned(ceSimW,whichCluster="primary")
 	pairsContrasts<-clusterContrasts(cleanSim,contrastType="Pairs")
   designContr <- model.matrix(~ 0 + factor(primaryCluster(cleanSim)))
   fitContr<- edgeR::DGEList(assay(cleanSim,1))
   fitContr$weights <- assay(cleanSim,"weights")
   fitContr <- edgeR::estimateDisp(fitContr, designContr)
-  fitContr <- edgeR::glmFit(fitContr,design = )
-  lrt <- zinbwave::glmWeightedF(fitContr, contrast = pairsContrasts$contrastMatrix[,1])
+  fitContr <- edgeR::glmFit(fitContr,design = designContr)
+  lrt <- zinbwave::glmWeightedF(fitContr, contrast = pairsContrasts$contrastMatrix[,1,drop=FALSE])
   resultsManual<- edgeR::topTags(lrt)
 	expect_silent(outWClean<-getBestFeatures(cleanSim,DEMethod="edgeR",contrastAdj="PerContrast",contrastType="Pairs"))
 	resultsC1<-outWClean[outWClean$Contrast == colnames(pairsContrasts$contrastMatrix)[1],]
