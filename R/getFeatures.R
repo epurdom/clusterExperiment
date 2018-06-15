@@ -455,7 +455,7 @@ setMethod(
 }
 
 
-#' @importFrom phylobase descendants nodeLabels subset
+#' @importFrom phylobase descendants nodeLabels subset tipLabels
 .makeMergeDendrogram<-function(object){
   if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
@@ -521,7 +521,7 @@ setMethod(
   mCl<-clusterMatrix(object)[,object@merge_index]
   mCl<-unique(mCl[mCl>0])
   if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-  if(!identical(sort(unname(as.character(mCl))),sort(unname(tipLabels(newPhylo4))))){
+  if(!identical(sort(unname(as.character(mCl))),sort(unname(phylobase::tipLabels(newPhylo4))))){
     stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
