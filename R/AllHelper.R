@@ -494,6 +494,25 @@ setReplaceMethod(
   }
 )
 
+
+.checkMatch<-function(clMat,value,matchTo){
+	if(is.null(names(value))){
+		if(length(value)== nrow(clMat)) names(value)<-clMat[,"clusterIds"]
+		else if(length(value)==length(clVals[clVals>0])) names(value)<-clMat[clVals>0,"clusterIds"]
+		else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
+			matchTo<-"clusterIds"
+	} 
+	if(matchTo=="name"){
+		if(!all(names(value) %in% clMat[,"name"])) stop("'value' must be vector with names that matches the 'name' column of the requested clusterLegend")
+			m<-match(names(value),clMat[,"name"])
+	}
+	else{
+		if(!all(names(value) %in% clMat[,"clusterIds"])) stop("'value' must be vector with names that matches the 'clusterIds' column of the requested clusterLegend")
+			m<-match(names(value),clMat[,"clusterIds"])
+		
+	}
+	return(m)
+}
 #' @rdname ClusterExperiment-methods
 #' @return \code{renameClusters} changes the names assigned to clusters within a clustering
 #' @param whichCluster argument to identify cluster, taking input like 
@@ -507,22 +526,7 @@ setMethod(
 		matchTo<-match.arg(matchTo)
 		whCl<-.convertSingleWhichCluster(object,whichCluster)
 		mat<-clusterLegend(object)[[whCl]]
-		clVals<-as.numeric(mat[,"clusterIds"])
-		if(is.null(names(value))){
-			if(length(value)== nrow(mat)) names(value)<-mat[,"clusterIds"]
-			else if(length(value)==length(clVals[clVals>0])) names(value)<-mat[clVals>0,"clusterIds"]
-			else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
-				matchTo<-"clusterIds"
-		} 
-		if(matchTo=="name"){
-			if(!all(names(value) %in% mat[,"name"])) stop("'value' must be vector with names that matches the 'name' column of the requested clusterLegend")
-				m<-match(names(value),mat[,"name"])
-		}
-		else{
-			if(!all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names that matches the 'clusterIds' column of the requested clusterLegend")
-				m<-match(names(value),mat[,"clusterIds"])
-			
-		}
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
 		mat[m,"name"]<-value
 		clusterLegend(object)[[whCl]]<-mat
 		
@@ -542,23 +546,7 @@ setMethod(
 		matchTo<-match.arg(matchTo)
 		whCl<-.convertSingleWhichCluster(object,whichCluster)
 		mat<-clusterLegend(object)[[whCl]]
-		
-		if(is.null(names(value))){
-			if(length(value)== nrow(mat)) names(value)<-mat[,"clusterIds"]
-			else if(length(value)==length(clVals[clVals>0])) names(value)<-mat[clVals>0,"clusterIds"]
-			else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
-				matchTo<-"clusterIds"
-		} 
-		if(matchTo=="name"){
-			if(!all(names(value) %in% mat[,"name"])) stop("'value' must be vector with names that matches the 'name' column of the requested clusterLegend")
-				m<-match(names(value),mat[,"name"])
-		}
-		else{
-			if(!all(names(value) %in% mat[,"clusterIds"])) stop("'value' must be vector with names that matches the 'clusterIds' column of the requested clusterLegend")
-				m<-match(names(value),mat[,"clusterIds"])
-			
-		}
-	
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
 		mat[m,"color"]<-value
 		clusterLegend(object)[[whCl]]<-mat
 		
