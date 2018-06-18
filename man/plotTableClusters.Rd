@@ -36,7 +36,7 @@ plotting. This means they will also be ignored in the calculations of the propor
 (if \code{margin} not NA).}
 
 \item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
-\code{\link[package=base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.}
+\code{\link[base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.}
 
 \item{...}{arguments passed on to \code{plotHeatmap}}
 
@@ -72,7 +72,7 @@ tableClusters(cl,whichClusters=1:2)
 plotTableClusters(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
 }
 \seealso{
-\code{\link[package=base]{prop.table}}
+\code{\link[base]{prop.table}}
 
 \code{\link{plotHeatmap}}
 

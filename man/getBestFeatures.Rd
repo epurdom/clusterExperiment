@@ -57,7 +57,9 @@ and only the standard edgeR.}
 analysis should be performed (replaces previous argument \code{isCount}. 
 See details.}
 
-\item{dgeArgs}{a list of arguments to pass to \code{\link[edgeR]{DGEList}} which is the starting point for both \code{edgeR} and \code{limma-voom} methods of DE. This includes normalization factors/total count values etc.}
+\item{dgeArgs}{a list of arguments to pass to \code{\link[edgeR]{DGEList}}
+which is the starting point for both \code{edgeR} and \code{limma-voom}
+methods of DE. This includes normalization factors/total count values etc.}
 
 \item{...}{If \code{x} is a matrix, these are options to pass to 
 \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 
@@ -182,21 +184,25 @@ vennDiagram(vennC, main="FDR Overlap")
 
 #Do one cluster against all others
 oneAll <- getBestFeatures(cl, contrastType="OneAgainstAll", contrastAdj="All",
-p.value=0.05)
+p.value=0.05,DEMethod="limma")
 
 #Do dendrogram testing
 hcl <- makeDendrogram(cl)
 allDendro <- getBestFeatures(hcl, contrastType="Dendro", contrastAdj=c("All"),
-number=ncol(simData), p.value=0.05)
+number=ncol(simData), p.value=0.05,DEMethod="limma")
 
 # do DE on counts using voom
 # compare results to if used simData instead (not on count scale).
-# Again, not relevant for this silly example, but basic principle useful
 testFVoom <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
-number=nrow(simData), DEMethod="limma")
+number=nrow(simData), DEMethod="limma-voom")
 plot(testF$P.Value[order(testF$Index)],
 testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
+# do DE on counts using edgeR, compare voom
+testFEdge <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
+number=nrow(simData), DEMethod="edgeR")
+plot(testFVoom$P.Value[order(testFVoom$Index)],
+testFEdge$P.Value[order(testFEdge$Index)],log="xy")
 }
 \references{
 Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and
@@ -214,6 +220,6 @@ Smyth, G. K. (2004). Linear models and empirical Bayes methods
   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
 }
 \seealso{
-\code{\link[package=edgeR]{glmLRT}} \code{\link[package=zinbwave]{glmWeightedF}}
-  \code{\link[package=limma]{topTable}} \code{\link[package=limma]{topTags}}
+\code{\link[edgeR]{glmLRT}} \code{\link[zinbwave]{glmWeightedF}}
+  \code{\link[limma]{topTable}} \code{\link[limma]{topTags}}
 }

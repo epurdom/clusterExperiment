@@ -745,7 +745,7 @@ The actual clustering created in the `mergeClusters` step, however, are retained
 Another useful type of subsetting can be to subset to only samples contained in a set of particular clusters within a clustering. This can be useful, for example, if you want to visualize the data in only those clusters. The function `subsetByCluster` allows you to do this, and it returns a new `ClusterExperiment` object with only those samples. The required input is to identify the values of the clusters you want to keep (by default matching to the clusters' names)
  
 ```{r subsampleByCluster}
-subCe<-subsetByCluster(ce,whichCluster="mergeClusters",value=c("m1","m2"))
+subCe<-subsetByCluster(ce,whichCluster="mergeClusters",clusterValue=c("m1","m2"))
 subCe
 ```
 

@@ -188,6 +188,9 @@ non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 \item{\code{merge_method}}{character indicating method used for merging. See 
 \code{\link{mergeClusters}}}
 
+\item{\code{merge_demethod}}{character indicating the DE method used for merging. See 
+\code{\link{mergeClusters}}}
+
 \item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}
 

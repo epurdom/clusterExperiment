@@ -177,14 +177,14 @@ test_that("`getBestFeatures` works with weights", {
 	
 	##Test mergeClusters
 	expect_silent(ceSimW<-makeDendrogram(ceSimW))
-	expect_message(mergeClusters(ceSimW,DEMethod="edgeR"),"Significance tests will use edgeR method , along with weights correction.")
-	expect_message(mergeClusters(ceSimW,DEMethod="edgeR",weights=NULL,forceCalculate=TRUE),"Significance tests will use edgeR method.")
+	expect_message(mergeClusters(ceSimW,DEMethod="edgeR"),"Merging will be done on")
+	expect_message(mergeClusters(ceSimW,DEMethod="edgeR",weights=NULL,forceCalculate=TRUE),"Merging will be done on")
 	
 	##Test RSEC
-	expect_error(RSEC(ceSimW,sequential=FALSE,subsample=FALSE,ks=4:15,isCount=TRUE,stopOnError=TRUE),"mergeDEMethod argument is missing with no default")
+	expect_message(RSEC(ceSimW,sequential=FALSE,subsample=FALSE,ks=4:15,isCount=TRUE,stopOnError=TRUE),"merging with these parameters did not result in any clusters being merged")
 	
 	sceCountData<-SingleCellExperiment(simCount)
 	reducedDims(sceCountData) <- reducedDims(sceSimDataDimRed)	
-	RSEC(sceCountData,sequential=TRUE,subsample=FALSE,clusterFunction="pam",k0s=4:15,isCount=TRUE, stopOnError=TRUE)
+	expect_message(RSEC(sceCountData,sequential=TRUE,subsample=FALSE,clusterFunction="pam",k0s=4:15,isCount=TRUE, stopOnError=TRUE),"Merging will be done on")
 	
 })

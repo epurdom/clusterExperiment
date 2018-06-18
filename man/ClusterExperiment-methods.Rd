@@ -114,7 +114,7 @@
 
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
-\S4method{subsetByCluster}{ClusterExperiment}(x, value,
+\S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
   whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
 \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
@@ -171,13 +171,13 @@ clusterings. \code{whichClusters} can be a character value identifying the
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
 
+\item{clusterValue}{values of the cluster to match to for subsetting}
+
 \item{whichCluster}{argument to identify cluster, taking input like 
 \code{whichClusters}, only requires that only a single clustering can be identified.}
 
 \item{matchTo}{for subsetting, whether to match to the cluster name
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
-
-\item{value}{values of the cluster to match to for subsetting}
 }
 \value{
 \code{transformation} prints the function used to transform the data

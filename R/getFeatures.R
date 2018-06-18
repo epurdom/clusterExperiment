@@ -120,8 +120,8 @@
 #'   for assessing differential expression in microarray experiments.
 #'   Statistical Applications in Genetics and Molecular Biology, Volume 3,
 #'   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
-#' @seealso \code{\link[package=edgeR]{glmLRT}} \code{\link[package=zinbwave]{glmWeightedF}}
-#'   \code{\link[package=limma]{topTable}} \code{\link[package=limma]{topTags}}
+#' @seealso \code{\link[edgeR]{glmLRT}} \code{\link[zinbwave]{glmWeightedF}}
+#'   \code{\link[limma]{topTable}} \code{\link[limma]{topTags}}
 #' @examples
 #' data(simData)
 #'
@@ -152,21 +152,25 @@
 #'
 #' #Do one cluster against all others
 #' oneAll <- getBestFeatures(cl, contrastType="OneAgainstAll", contrastAdj="All",
-#' p.value=0.05)
+#' p.value=0.05,DEMethod="limma")
 #'
 #' #Do dendrogram testing
 #' hcl <- makeDendrogram(cl)
 #' allDendro <- getBestFeatures(hcl, contrastType="Dendro", contrastAdj=c("All"),
-#' number=ncol(simData), p.value=0.05)
+#' number=ncol(simData), p.value=0.05,DEMethod="limma")
 #'
 #' # do DE on counts using voom
 #' # compare results to if used simData instead (not on count scale).
-#' # Again, not relevant for this silly example, but basic principle useful
 #' testFVoom <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
-#' number=nrow(simData), DEMethod="limma")
+#' number=nrow(simData), DEMethod="limma-voom")
 #' plot(testF$P.Value[order(testF$Index)],
 #' testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 #'
+#' # do DE on counts using edgeR, compare voom
+#' testFEdge <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
+#' number=nrow(simData), DEMethod="edgeR")
+#' plot(testFVoom$P.Value[order(testFVoom$Index)],
+#' testFEdge$P.Value[order(testFEdge$Index)],log="xy")
 #' @export
 #' @import limma
 #' @importFrom stringr str_pad

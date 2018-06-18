@@ -324,8 +324,8 @@ test_that("subsetting by clusterworks as promised",{
 	newName<-letters[1:nClusters(cc)["Cluster1"]]
 	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
 	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))
-	expect_silent(x<-subsetByCluster(ccNamed,value=c("a","b")))
-	expect_silent(y<-subsetByCluster(ccNamed,value=c("1","2"),matchTo="clusterIds"))
+	expect_silent(x<-subsetByCluster(ccNamed,clusterValue=c("a","b")))
+	expect_silent(y<-subsetByCluster(ccNamed,clusterValue=c("1","2"),matchTo="clusterIds"))
 	expect_equal(x,y)
 })
 

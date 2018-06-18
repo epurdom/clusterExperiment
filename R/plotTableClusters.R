@@ -7,11 +7,11 @@
 #' plotting. This means they will also be ignored in the calculations of the proportions 
 #' (if \code{margin} not NA).
 #' @param margin if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
-#' \code{\link[package=base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
+#' \code{\link[base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
 #' @param whichClusters which clusters to tabulate. For \code{plotTableClusters} should
 #'  be 2 clusters, for \code{tableClusters} can indicate arbitrary number.
 #' @rdname plotTableClusters
-#' @seealso \code{\link[package=base]{prop.table}}
+#' @seealso \code{\link[base]{prop.table}}
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)

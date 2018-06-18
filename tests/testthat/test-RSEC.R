@@ -58,7 +58,7 @@ expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="non
  expect_equal(dendOut@dendro_outbranch,rsecOut@dendro_outbranch)
 
  #now should be the same, check all objects except dendro_samples because very big:
- mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", DEMethod="edgeR",cutoff = 0.05,isCount=TRUE)
+ mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", DEMethod="edgeR",cutoff = 0.05)
  expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
  expect_equal(mergeOut@dendro_clusters,rsecOut@dendro_clusters)
  expect_equal(mergeOut@dendro_outbranch,rsecOut@dendro_outbranch)

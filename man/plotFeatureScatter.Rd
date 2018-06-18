@@ -42,7 +42,7 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 will not be plotted.}
 
 \item{jitterFactor}{numeric. If NA, no jittering is done. Otherwise, passed to 
-\code{factor} of function \code{\link[package=base]{jitter}}
+\code{factor} of function \code{\link[base]{jitter}}
  (useful for low counts)}
 }
 \description{

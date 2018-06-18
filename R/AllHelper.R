@@ -337,7 +337,7 @@ setMethod(
 #' @rdname ClusterExperiment-methods
 #' @return \code{subsetByCluster} subsets the object by clusters in a clustering
 #' and returns a ClusterExperiment object with only those samples
-#' @param value values of the cluster to match to for subsetting
+#' @param clusterValue values of the cluster to match to for subsetting
 #' @param matchTo for subsetting, whether to match to the cluster name
 #'   (\code{"name"}) or internal cluster id (\code{"clusterIds"})
 #' @export
@@ -345,7 +345,7 @@ setMethod(
 setMethod(
   f = "subsetByCluster",
   signature = "ClusterExperiment",
-  definition = function(x,value,whichCluster="primary",matchTo=c("name","clusterIds")) {
+  definition = function(x,clusterValue,whichCluster="primary",matchTo=c("name","clusterIds")) {
     
 		whCl<-.convertSingleWhichCluster(x,whichCluster)
 		matchTo<-match.arg(matchTo)
@@ -353,7 +353,7 @@ setMethod(
 			cl<-clusterMatrixNamed(x)[,whCl]
 		}
 		else cl<-clusterMatrix(x)[,whCl]
-		return(x[,which(cl %in% value)])
+		return(x[,which(cl %in% clusterValue)])
   }
 )
 

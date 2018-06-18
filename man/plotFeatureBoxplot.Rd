@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotFeatureBoxplot}
 \alias{plotFeatureBoxplot}
-\alias{plotFeatureBoxplot,ClusterExperiment,character,ANY-method}
+\alias{plotFeatureBoxplot,ClusterExperiment,character-method}
 \alias{plotFeatureBoxplot,ClusterExperiment,numeric-method}
 \title{Plot boxplot of feature values by cluster}
 \usage{

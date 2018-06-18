@@ -3,7 +3,7 @@
 #' @description Plot a boxplot of the (transformed) values for a particular
 #'   gene, separated by cluster
 #' @aliases plotFeatureBoxplot
-#'   plotFeatureBoxplot,ClusterExperiment,character,ANY-method
+#'   plotFeatureBoxplot,ClusterExperiment,character-method
 #' @rdname plotFeatureBoxplot
 #' @export
 setMethod(
