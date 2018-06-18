@@ -497,7 +497,8 @@ setReplaceMethod(
 
 .checkMatch<-function(clMat,value,matchTo){
 	if(is.null(names(value))){
-		if(length(value)== nrow(clMat)) names(value)<-clMat[,"clusterIds"]
+		clVals<-clMat[,"clusterIds"]
+		if(length(value)== nrow(clMat)) names(value)<-clVals
 		else if(length(value)==length(clVals[clVals>0])) names(value)<-clMat[clVals>0,"clusterIds"]
 		else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
 			matchTo<-"clusterIds"
