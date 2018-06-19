@@ -37,8 +37,8 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top1$AveExpr)
 
   ## check defaults
-  expect_silent(topC0 <- getBestFeatures(ceSimData, DEMethod="limma"))
-  expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F",  DEMethod="limma"))
+  expect_silent(topC0 <- getBestFeatures(ceSimData))
+  expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F"))
   expect_equal(topC1, topC0)
 
   expect_equal(topC1, top1)
