@@ -22,7 +22,7 @@ setMethod(
 #' @param features the indices of the features (either numeric or character 
 #'  matching rownames of object) to be plotted.
 #' @param jitterFactor numeric. If NA, no jittering is done. Otherwise, passed to 
-#' \code{factor} of function \code{\link[package=base]{jitter}}
+#' \code{factor} of function \code{\link[base]{jitter}}
 #'  (useful for low counts)
 #' @rdname plotFeatureScatter
 #' @export
