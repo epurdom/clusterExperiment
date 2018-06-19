@@ -169,11 +169,11 @@
 #' #(Note argument 'use.edge.length' can improve
 #' #readability)
 #' merged <- mergeClusters(cl, plotInfo="all",
-#' mergeMethod="adjP", use.edge.length=FALSE)
+#' mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma")
 #'
 #' #Simpler plot with just dendrogram and single method
 #' merged <- mergeClusters(cl, plotInfo="mergeMethod",
-#' mergeMethod="adjP", use.edge.length=FALSE,
+#' mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma",
 #' leafType="clusters",plotType="name")
 #'
 #' #compare merged to original

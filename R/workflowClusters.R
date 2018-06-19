@@ -28,7 +28,7 @@
 #'
 #' clCommon <- makeDendrogram(clCommon)
 #'
-#' clMerged <- mergeClusters(clCommon,mergeMethod="adjP")
+#' clMerged <- mergeClusters(clCommon,mergeMethod="adjP", DEMethod="limma")
 #'
 #' head(workflowClusters(clMerged))
 #' workflowClusterDetails(clMerged)

@@ -92,6 +92,9 @@ Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
+\item{merge_demethod}{character, Sets the
+\code{merge_demethod} slot (see Slots)}
+
 \item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see details).}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the

@@ -252,6 +252,8 @@ setMethod(
 #'@param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
 #'@param merge_dendrocluster_index integer. Sets the
 #'  \code{merge_dendrocluster_index} slot (see Slots)
+#'@param merge_demethod character, Sets the
+#'  \code{merge_demethod} slot (see Slots)
 #'@param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see
 #'  Slots)
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see

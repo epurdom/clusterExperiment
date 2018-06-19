@@ -2,7 +2,7 @@
 #' @title Plot scatter plot of feature values colored by cluster
 #' @description Plot a scatter plot of the (transformed) values for a set of
 #'   gene expression values, colored by cluster
-#' @aliases plotFeatureScatter plotFeatureScatter,ClusterExperiment-method
+#' @aliases plotFeatureScatter plotFeatureScatter,ClusterExperiment,character-method
 #' @inheritParams plotFeatureBoxplot
 #' @rdname plotFeatureScatter
 #' @export

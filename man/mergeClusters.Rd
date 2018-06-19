@@ -102,6 +102,10 @@ clusters.}
 \item{plot}{logical as to whether to plot the dendrogram with the merge 
 results}
 
+\item{DEMethod}{character vector describing how the differential expression 
+analysis should be performed (replaces previous argument \code{isCount}. 
+See details.}
+
 \item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is 
 "adjP", in which case the calculation of the proportion of individual tests
 significant will also require that the estimated log-fold change of the 
@@ -109,6 +113,16 @@ features to be at least this large in absolute value. Value will be rounded
 to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For 
 any other method, this parameter is ignored. Note that the logFC is based
 on \code{log2} (the results of \code{\link{getBestFeatures}})}
+
+\item{weights}{weights to use in by edgeR. If \code{x} is a matrix, then
+weights should be a matrix of weights, of the same dimensions as \code{x}.
+If \code{x} is a \code{ClusterExperiment} object \code{weights} can be a
+either a matrix, as previously described, or a character or numeric index
+to an assay in \code{x} that contains the weights. We recommend that 
+weights be stored as an assay with name \code{"weights"} so that the
+weights will also be used with \code{\link{mergeClusters}}, and this is the
+default. Setting \code{weights=NULL} ensures that weights will NOT be used,
+and only the standard edgeR.}
 
 \item{...}{for signature \code{matrix}, arguments passed to the 
 \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
@@ -296,11 +310,11 @@ cl <- makeDendrogram(cl)
 #(Note argument 'use.edge.length' can improve
 #readability)
 merged <- mergeClusters(cl, plotInfo="all",
-mergeMethod="adjP", use.edge.length=FALSE)
+mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma")
 
 #Simpler plot with just dendrogram and single method
 merged <- mergeClusters(cl, plotInfo="mergeMethod",
-mergeMethod="adjP", use.edge.length=FALSE,
+mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma",
 leafType="clusters",plotType="name")
 
 #compare merged to original

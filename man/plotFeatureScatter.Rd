@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotFeatureScatter}
 \alias{plotFeatureScatter}
-\alias{plotFeatureScatter,ClusterExperiment-method}
+\alias{plotFeatureScatter,ClusterExperiment,character-method}
 \alias{plotFeatureScatter,ClusterExperiment,numeric-method}
 \title{Plot scatter plot of feature values colored by cluster}
 \usage{

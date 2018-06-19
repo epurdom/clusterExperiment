@@ -1,4 +1,5 @@
 .demethods<-c("edgeR","limma","limma-voom")
+#' @name getBestFeatures
 #' @title Function for finding best features associated with clusters
 #' @description Calls limma on input data to determine features most associated 
 #'   with found clusters (based on an F-statistic, pairwise comparisons, or 
@@ -121,7 +122,7 @@
 #'   Statistical Applications in Genetics and Molecular Biology, Volume 3,
 #'   Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
 #' @seealso \code{\link[edgeR]{glmLRT}} \code{\link[zinbwave]{glmWeightedF}}
-#'   \code{\link[limma]{topTable}} \code{\link[limma]{topTags}}
+#'   \code{\link[limma]{topTable}} \code{\link[edgeR]{topTags}}
 #' @examples
 #' data(simData)
 #'
