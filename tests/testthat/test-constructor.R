@@ -231,28 +231,36 @@ test_that("rename/color works as promised",{
 
 test_that("subsetting works as promised",{
 
+	
   ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
 	newName<-letters[1:nClusters(cc)["Cluster1"]]
 	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
-	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName,matchTo="clusterIds"))
 	expect_equal(tableClusters(cc,whichCluster="Cluster1",useNames =FALSE),tableClusters(ccNamed,whichCluster="Cluster1",useNames =FALSE))
 	
 	cc<-ccNamed
-  expect_equal(clusterMatrix(cc[1:2,2]),clusterMatrix(cc)[2,,drop=FALSE]) 
+	expect_silent(test1<-clusterMatrix(cc[1:2,2]))
+	expect_silent(test2<-clusterMatrix(cc)[2,,drop=FALSE])
+  expect_equal(test1,test2) 
   
 	#test if have duplicated names
-	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"))
+	# changed ccNamed so not unique names in Cluster1 
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"),matchTo="clusterIds")
 	newName<-LETTERS[1:nClusters(cc)["Cluster2"]]
 	names(newName)<-as.character(1:nClusters(cc)["Cluster2"])
-	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName)
-	
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName,matchTo="clusterIds")	
 	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
 	
-	#test pulls colors and names correctly. have ids in clus
-	ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]
-	cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]
-	cl<-clusterLegend(cc)[["Cluster1"]]
+	#####
+	#test pulls colors and names correctly. 
+	#####
+	# get clusterLegend info without subsetting
+	expect_silent(ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]) 
+	expect_silent(cl<-clusterLegend(cc)[["Cluster1"]])
 	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
+
+	# get it via subsetting
+	expect_silent(cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]) #do it via subsetting
 	#check that all of new in old and vice versa(i.e. didn't give them new names)
 	expect_equal(sort(cl2[,"name"]),oldNames)
 	#check right color with name
