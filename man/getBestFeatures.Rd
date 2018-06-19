@@ -3,6 +3,7 @@
 \docType{methods}
 \name{getBestFeatures}
 \alias{getBestFeatures}
+\alias{getBestFeatures,matrixOrHDF5-method}
 \alias{getBestFeatures,ClusterExperiment-method}
 \title{Function for finding best features associated with clusters}
 \usage{
