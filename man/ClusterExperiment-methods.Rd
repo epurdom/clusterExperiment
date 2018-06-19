@@ -138,10 +138,10 @@
 \S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
 
 \S4method{renameClusters}{ClusterExperiment,character}(object, value,
-  whichCluster = "primary")
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
 \S4method{recolorClusters}{ClusterExperiment,character}(object, value,
-  whichCluster = "primary")
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
 \S4method{orderSamples}{ClusterExperiment}(x)
 

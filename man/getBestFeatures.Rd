@@ -200,7 +200,7 @@ testFVoom$P.Value[order(testFVoom$Index)],log="xy")
 
 # do DE on counts using edgeR, compare voom
 testFEdge <- getBestFeatures(simCount, primaryCluster(cl), contrastType="F",
-number=nrow(simData), DEMethod="edgeR")
+n=nrow(simData), DEMethod="edgeR")
 plot(testFVoom$P.Value[order(testFVoom$Index)],
 testFEdge$P.Value[order(testFEdge$Index)],log="xy")
 }
