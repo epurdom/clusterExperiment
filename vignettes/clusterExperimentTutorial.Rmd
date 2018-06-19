@@ -753,7 +753,7 @@ The object `subCe` now can be used for visualizing, or any other analysis.
 
 This kind of subsetting can also be useful in comparing clusterings, where the user might want to subset to all of the samples assigned to Cluster 1 in one clustering and then see what clusters that corresponds to in the other clusterings.
 
-## Samples not assigned to a cluster (Negative Valued Cluster Assignments)
+## Samples not assigned to a cluster (Negative Valued Cluster Assignments){#unassigned}
 The different clusters are stored as consecutive integers, with '-1' and '-2' having special meaning. 
 
 **Unassigned Samples (-1)** '-1' refers to samples that were not clustered by the clustering algorithm. In our example, we removed clusters that didn't meet specific size criterion, so they were assigned '-1'. 
@@ -1853,6 +1853,7 @@ The function `getBestFeatures` calls either `limma` [@Smyth:2004gh, @Ritchie:201
 
 The basic implementation of these functions fits a linear model per feature and tests for the significance of parameters of that linear model, with appropriate adjustment to a negative binomial model in the case of `edgeR`. The main contribution of `getBestFeatures` is to interface with `limma`  or `edgeR` so as to pick appropriate parameters or tests for comparing clusters. Naturally, `getBestFeatures` also seamlessly works with `ClusterExperiment` objects to minimize the burden on the user. The output is in the form of `topTable` or `topTags` in `limma` or `edgeR` respectively, i.e. a data.frame giving the relevant features, the p-value, etc. 
 
+Note that `getBestFeatures` will remove all samples unassigned to a cluster (i.e. `-1` or `-2`), so that these samples will not in anyway influence the DE analysis (see [#unassigned] for more information about unassigned samples). 
 
 ## Types of Significance Tests
 
@@ -1919,13 +1920,14 @@ plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("makeConsensus"
 ```
 
 
-## Analysis for count and other RNASeq data
+## DE Analysis for count and other RNASeq data
 
 The `getBestFeatures` method for `ClusterExperiment` objects has an argument `DEMethod` to determine what kind of DE method should be run. The options are `limma`, `limma-voom` and `edgeR`. The last two options assume that `assay(x)` are counts. 
 
+
 * **`limma`** In this case, the data is assumed to be continous and roughly normal and the `limma` DE method is performed on `transformData(x)`, i.e. the data after transformation of the data with the transformation stored in the `ClusterExperiment` object.  
 
-* **`limma-voom`** refers to calling limma with the `voom`[@Law:2014ff] correction which uses the normal linear model of `limma` but deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` however, is by default set to `normalize.method = "none"` in the call to `voom` (though the user can set `normalize.method` in the call to `getBestFeatures`).  Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
+* **`limma-voom`** refers to calling limma with the `voom`[@Law:2014ff] correction which uses the normal linear model of `limma` but deals with the mean-variance relationship that is found with count data. This means that the differential expression analysis is done on $log_2(x+0.5)$. This is *regardless of what transformation is stored in the `ClusterExperiment` object*! The `voom` call within `getBestFeatures` sets `normalize.method = "none"` in the call to `voom`.  Unlike edgeR or DESeq, the voom correction does not explicitly require a count matrix, and therefore it has been proposed that it can be used on FPKM or TPM entries, or data normalized via RUV. However, the authors of the package do not recommend using voom on anything other than counts, see e.g. [this discussion](https://support.bioconductor.org/p/45749/). 
 
 * **`edgeR`** Performs a likelihood-ratio test (`glmLRT` function in `edgeR` [@Robinson:2010cw]) based on a negative binomial distribution and a empirical bayes estimation of the dispersion. 
 
@@ -1937,22 +1939,23 @@ assay(rsecFluidigm,"weights")<- myweights
 
 If the initial `SummarizedExperiment` object is set up this way, then the functions `getBestFeatures`, `mergeClusters` , and `RSEC` will all automatically look for such an assay in order to use these weights, if `DEMethod="edgeR"`. Indeed for `RSEC` this is the *only* way to get weights used -- unlike `getBestFeatures` and `mergeClusters`, `RSEC` doesn't give a way for the user to make choices about the weights (this is to simplify the number of parameters).  For `getBestFeatures` and `mergeClusters` you can manually set the argument `weights` to be `NULL` to force the functions to NOT use the weights stored here  (and the standard edgeR routine is followed instead) or alternatively set `weights` to be another assay name or even a matrix of weights.
 
-
-
+**Normalization Factors** Both `limma-voom` and `edgeR` calls first set up a `DGEList` object which is then given to either the `voom` function in the `limma` package or the `estimateDisp` function of `edgeR`. The argument `counts` to the `DGEList` function is given by the data in the assay, but you can pass other arguments to the call to `DGEList` by giving them in a list format to the argument `dgeArgs` of `getBestFeatures` (or the other functions that call `getBestFeatures`). In particular, you can pass arguments such as `norm.factors` or `lib.size` to specify normalization factors, which will then be used by the `voom`/`edgeR` commands. 
 
 ## Piping into other DE routines
 
-Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` or `edgeR` can be piped into programs that allow for contrasts in their linear models like edgeR  for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
+Ultimately, for many settings, the user may prefer to use other techniques for differential expression analysis or have more control over certain aspects of it. The function `clusterContrasts` may be called by the user to get the contrasts that are defined within `getBestFeatures` (e.g. dendrogram contrasts or pairwise contrasts). These contrasts, which are in the format needed for `limma` or `edgeR` can be piped into programs that allow for contrasts in their linear models for mRNA-Seq; they can also be chosen to be returned in the formated needed by MAST [@Finak:2015id] for single-cell sequencing by settting `outputType="MAST"`. 
 
-Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts`
-
-
-## Additional considerations
-
-The user should be careful about questions of multiple comparisons when all of these multiple contrasts are being performed on each feature; the default is to correct across all of these tests (see the help of `getBestFeatures` and the argument `contrastAdj` for more). As noted in the introduction, p-values created in this way are reusing the data (since the data was also used for creating the clusters) and hence should not be considered valid p-values regardless.
+Similarly, more complicated normalizations, like RUV [@GagnonBartsch:2011jv], adjust each gene individually for unwanted batch or other variation within the linear model. In this case, a matrix $W$ that describes this variation should be included in the linear model. Again, this can be done in other programs, using the contrasts provided by `clusterContrasts` in combination with $W$. 
 
 
-As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned *for each contrast*. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
+## Multiple Testing adjustments
+
+The user should be careful about questions of multiple comparisons when so many  contrasts are being performed on each feature; the default is to correct across all of these tests (see the help of `getBestFeatures` and the argument `contrastAdj` for more). As noted in the introduction, p-values created in this way are reusing the data (since the data was also used for creating the clusters) and hence should not be considered valid p-values regardless.
+
+
+As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTable` (or `topTags` for `edgeR`) to decide which genes should be returned (and in what order). In particular, we can set an adjusted p-value cutoff for each contrast, and set `number` to control the number of genes returned *for each contrast*. By setting `number` to be the length of all genes, and `p.value=0.05`, we can return all genes for each contrast that have adjusted p-values less than 0.05. All of the arguments to `topTable` regarding what results are returned and in what order can be given by the user at the call to `getBestFeatures`.
+
+
 
 # Working with other `assays()`
 
