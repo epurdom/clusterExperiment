@@ -428,4 +428,11 @@ test_that("workflow functions work",{
   expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
   expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")
 })
-
+test_that("tableClusters works",{
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="primary",value=letters[1:5]))
+	expect_silent(tableClusters(cc,tableMethod="union"))
+	expect_silent(tableClusters(ccNamed,whichClusters=c(1,2),tableMethod="union",useNames=FALSE))
+	expect_silent(tableClusters(ccNamed,whichClusters=c(1,2),tableMethod="union",useNames=TRUE))
+	expect_silent(tableClusters(ccNamed,whichClusters=c(1,2),tableMethod="intersect",useNames=FALSE))
+	expect_silent(tableClusters(ccNamed,whichClusters=c(1,2),tableMethod="intersect",useNames=TRUE))
+})

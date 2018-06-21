@@ -23,20 +23,30 @@
 \S4method{tableClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{tableClusters}{ClusterExperiment,numeric}(object, whichClusters,
-  useNames = TRUE, ...)
+  useNames = TRUE, tableMethod = c("intersect", "union"), ...)
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
-\item{whichClusters}{which clusters to tabulate. For \code{plotTableClusters} should
-be 2 clusters, for \code{tableClusters} can indicate arbitrary number.}
+\item{whichClusters}{which clusters to tabulate. For \code{plotTableClusters}
+should be 2 clusters, for \code{tableClusters} can indicate arbitrary
+number.}
 
-\item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters in the 
-plotting. This means they will also be ignored in the calculations of the proportions 
-(if \code{margin} not NA).}
+\item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters
+in the plotting. This means they will also be ignored in the calculations
+of the proportions (if \code{margin} not NA).}
 
-\item{margin}{if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
-\code{\link[base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.}
+\item{margin}{if NA, the counts from \code{tableClusters} will be plotted.
+Otherwise, \code{\link[base]{prop.table}} will be called and the argument
+\code{margin} will be passed to \code{prop.table} to determine whether
+proportions should be calculated. If '1', then the proportions in the rows
+sum to 1, if '2' the proportions in the columns sum to 1. If 'NULL' then
+the proportion across the entire matrix will sum to 1. For a symmetric
+version, you can set \code{margin=0}, and the entry displayed in each cell
+will be the proportion equal to the size of the intersection over the size
+of the union of the clusters (a Jaccard similarity between the clusters),
+in which case each entry is a proportion but no combination of the entries 
+sum to 1.}
 
 \item{...}{arguments passed on to \code{plotHeatmap}}
 
@@ -48,6 +58,8 @@ to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatm
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
+
+\item{tableMethod}{the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.}
 }
 \description{
 Plot heatmap of cross-tabulations of two clusterings
