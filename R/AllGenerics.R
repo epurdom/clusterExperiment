@@ -11,7 +11,8 @@ setGeneric("plotFeatureBoxplot", function(object,feature,...) { standardGeneric(
 setGeneric("plotFeatureScatter", function(object,features,...) { standardGeneric("plotFeatureScatter")})
 
 setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })
-setGeneric( "plotTableClusters", function(object,...){ standardGeneric("plotTableClusters") })
+setGeneric( "plotClustersTable", function(object,...){ standardGeneric("plotClustersTable") })
+setGeneric("bubblePlot", function(propTable,sizeTable,...) { standardGeneric("bubblePlot")})
 
 setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
 setGeneric( name = "removeUnassigned", def = function(object,...) {

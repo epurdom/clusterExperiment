@@ -1,7 +1,7 @@
-#' @name plotTableClusters
+#' @name plotClustersTable
 #' @title Plot heatmap of cross-tabs of 2 clusterings
 #' @description Plot heatmap of cross-tabulations of two clusterings
-#' @aliases plotTableClusters,ClusterExperiment-method
+#' @aliases plotClustersTable,ClusterExperiment-method
 #' @param object ClusterExperiment object (or matrix with table result)
 #' @param ignoreUnassigned logical as to whether to ignore unassigned clusters
 #'   in the plotting. This means they will also be ignored in the calculations
@@ -17,10 +17,10 @@
 #'   of the union of the clusters (a Jaccard similarity between the clusters),
 #'   in which case each entry is a proportion but no combination of the entries 
 #'   sum to 1.
-#' @param whichClusters which clusters to tabulate. For \code{plotTableClusters}
+#' @param whichClusters which clusters to tabulate. For \code{plotClustersTable}
 #'   should be 2 clusters, for \code{tableClusters} can indicate arbitrary
 #'   number.
-#' @rdname plotTableClusters
+#' @rdname plotClustersTable
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
@@ -33,16 +33,18 @@
 #' cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichCluster=1)
 #' tableClusters(cl,whichClusters=1:2)
 #' #heatmap of the counts in each entry of table:
-#' plotTableClusters(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
+#' plotClustersTable(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
 #' @export
 setMethod( 
-  f = "plotTableClusters",
+  f = "plotClustersTable",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, whichClusters,ignoreUnassigned=FALSE,margin=NA,...){
     whCl<-.TypeIntoIndices(object,whClusters=whichClusters)
     if(length(whCl)!=2) stop("invalid choice of 'whichClusters' -- must be exactly 2 clusterings chosen.")
 		tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
-
+		#if ever gets slow, could do this directly so not call tableClusters twice...
+		if(margin==0) denomTab<-.makeUnion(tableAll)
+				
 		cL<-clusterLegend(object)[whCl]
 		if(ignoreUnassigned){
 			rNms<-rownames(tableAll)
@@ -57,6 +59,7 @@ setMethod(
 				wh<-which(! rNms %in% c("-1","-2"))
 				if(length(wh)>0){
 					tableAll<-tableAll[wh, ,drop=FALSE]
+					if(margin==0) denomTab<-denomTab[wh, ,drop=FALSE]
 					#deal with fact that plotHeatmap doesn't fix problem with rowData!
 					mat1<-mat1[mat1[,"clusterIds"] %in% rNms[wh], ,drop=FALSE]
 					cL[[1]]<-mat1
@@ -66,34 +69,39 @@ setMethod(
 			}
 			if("-1" %in% cNms || "-2" %in% cNms){
 				wh<-which(! cNms %in% c("-1","-2"))
-				if(length(wh)>0) tableAll<-tableAll[, wh,drop=FALSE]
+				if(length(wh)>0){
+					tableAll<-tableAll[, wh,drop=FALSE]
+					if(margin==0) denomTab<-denomTab[, wh ,drop=FALSE]
+				}
 				else stop("All of the second clustering are unassigned, cannot use ignoreUnassigned=TRUE")
 			}
 			
 		}
 		
+		#must be after the ignoreUnassigned so as to get rid of those before calculate
 		if(!is.na(margin)){
 			if(margin==0){
-				denomTab<-tableClusters(object,whichCluster=whCl,tableMethod="union",useNames=TRUE)
-				tableAll<-tableAll/denomTab
+				plotTable<-tableAll/denomTab
 			}
 			else{
-				tableAll<-prop.table(tableAll,margin=margin)
+				plotTable<-prop.table(tableAll,margin=margin)
 			}
 		}
-		plotTableClusters(tableAll,clusterLegend=cL,...)
+		else plotTable<-tableAll
+		plotClustersTable(plotTable,clusterLegend=cL,sizeTable=tableAll,...)
 }
 )
 
 		
-#' @rdname plotTableClusters
+#' @rdname plotClustersTable
 #' @param cluster logical, whether to cluster the rows and columns of the table. Passed
 #'  to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.
 #' @param clusterLegend list in \code{clusterLegend} format that gives colors for the
 #'  clusters tabulated.
-#' @param ... arguments passed on to \code{plotHeatmap}
+#' @param ... arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
+#'  depending on choice of \code{plotType}
 #' @seealso \code{\link{plotHeatmap}}
-#' @details Note that the cluster labels in \code{plotTableClusters} and 
+#' @details Note that the cluster labels in \code{plotClustersTable} and 
 #' \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
 #' because \code{tableClusters} calls the R function \code{table}, which makes this 
 #' conversion
@@ -102,9 +110,10 @@ setMethod(
 #' @seealso \code{\link[base]{table}}
 #' @export
 setMethod( 
-  f = "plotTableClusters",
+  f = "plotClustersTable",
   signature = signature(object = "table"),
-  definition = function(object,clusterLegend=NULL,cluster=FALSE, ...){
+  definition = function(object,clusterLegend=NULL,cluster=FALSE,plotType=c("heatmap","bubble"), sizeTable=object, ...){
+		plotType<-match.arg(plotType)
 		tableAll<-object
 		varNames<-make.names(names(dimnames(tableAll)))
  	 	
@@ -124,18 +133,25 @@ setMethod(
  	 	cData<-data.frame(colnames(tableAll)[order2])
 		names(cData)<-varNames[2]
 		if(!is.null(clusterLegend)) names(clusterLegend)<-make.names(names(clusterLegend))
-		plotHeatmap(tableAll[,order2],
-			colData=cData, annRow=rData,
-			clusterLegend=clusterLegend,
-			clusterFeatures=cluster,clusterSamples=cluster,...
-			)
+		if(plotType=="heatmap"){
+			passedArgs<-list(...)
+			if(!"colorScale" %in% names(passedArgs)){
+				passedArgs$colorScale<-colorRampPalette(c("white","black"))(12)
+			}
+			passedArgs<-c(list(data=tableAll[,order2],colData=cData, annRow=rData,
+					clusterLegend=clusterLegend,
+					clusterFeatures=cluster,clusterSamples=cluster)
+					,passedArgs)
+			do.call("plotHeatmap",passedArgs)
+		}
+			if(plotType=="bubble") bubblePlot(propTable=tableAll[,order2],sizeTable=sizeTable[,order2],...)
 		invisible(tableAll[,order2])
   	
   }
 	)
 
 #' @aliases tableClusters
-#' @rdname plotTableClusters
+#' @rdname plotClustersTable
 #' @export
 setMethod( 
   f = "tableClusters",
@@ -148,7 +164,7 @@ setMethod(
     
   })
 
-#' @rdname plotTableClusters
+#' @rdname plotClustersTable
 #' @export
 setMethod( 
   f = "tableClusters",
@@ -159,7 +175,7 @@ setMethod(
     
   })
 
-#' @rdname plotTableClusters
+#' @rdname plotClustersTable
 #' @param useNames for \code{tableClusters}, whether the output should be tabled
 #'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
 #' @param tableMethod the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.
@@ -172,25 +188,150 @@ setMethod(
 		tableMethod<-match.arg(tableMethod)
     if(useNames) numCluster<-clusterMatrixNamed(object,whichClusters=whichClusters)
     else numCluster<-clusterMatrix(object)[,whichClusters]
-    if(tableMethod=="intersect" | length(whichClusters)==1) return(table(data.frame(numCluster)))
-		else{
-			runique<-unique(as.character(numCluster[,1]))
-			cunique<-unique(as.character(numCluster[,2]))
-			ustr<-"_+_,_"
-			combUnique<-expand.grid(runique,cunique)
-			vals<-apply(combUnique,1,function(x){
-				sum(numCluster[,1]==x[1] | numCluster[,2]==x[2])
-			})
-			names(vals)<-paste(as.character(combUnique[,1]),as.character(combUnique[,2]),sep=ustr)
-			tab<-do.call("rbind",lapply(runique,function(rval){
-				v<-paste(rval,cunique,sep=ustr)
-				return(vals[v])
-			}))
-			rownames(tab)<-runique
-			colnames(tab)<-cunique
-			names(attributes(tab)$dimnames)<-colnames(numCluster)
-			class(tab)<-"table"
-			
-			return(tab)
-		} 
-  })
+			tabAll<-table(data.frame(numCluster))
+    if(tableMethod=="intersect" | length(whichClusters)==1) return(tabAll)
+		else return(.makeUnion(tabAll))
+})
+
+.makeUnion<-function(tabAll){
+	unionTab<-outer(rowSums(tabAll),colSums(tabAll), FUN = "+") - tabAll
+	rownames(unionTab)<-rownames(tabAll)
+	colnames(unionTab)<-colnames(tabAll)
+	names(attributes(unionTab)$dimnames)<-names(attributes(tabAll)$dimnames)
+	class(unionTab)<-"table"
+	return(unionTab)
+}
+
+
+#' @rdname plotClustersTable
+#' @param propTable table of proportions
+#' @param sizeTable table of sizes
+#' @param gridColor color for grid lines
+#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by setting the maximum size of any circle in the matrix to have \code{cex=10}
+#' @param ylab label for y-axis. If missing, uses the name for rows in sizeTable
+#' @param xlab label for x-axis. If missing, uses the name for columns in sizeTable
+#' @param legend whether to draw legend along top
+#' @details \code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$. 
+setMethod( 
+  f = "bubblePlot",
+  signature = signature(propTable = "table",sizeTable="table"),
+	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
+		ylab,xlab,legend=TRUE,las=2){
+	 nc.row <- nrow(propTable)
+	 nc.col <- nrow(propTable)
+	propTable<-propTable[nc.row:1,]
+	sizeTable<-sizeTable[nc.row:1,]
+	 expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
+  # set up plotting window
+	xlim<-c(1,nc.col)
+	xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
+	ylim<-c(1,nc.row)
+	ylim<-ylim+.1*diff(ylim)*c(-1,1) #increase size 10% around
+  plot(0,0,type="n",xlim = xlim, ylim = ylim, ylab="",xlab="",axes=FALSE,frame.plot=FALSE)
+   
+  # get x-y coords for a grid
+  xx <- rep(1:nc.col, each = nc.row)
+  yy <- rep(1:nc.row, times = nc.col)
+    
+    
+  # set color based on % overlap
+  color <- .colorby(c(0,expect.overlap,propTable))[-c(1,2)]
+    
+  # put plotting information into data.frame, so we can sort by size (want
+  # smaller points plotted over larger points)
+  df <- data.frame(xx,yy, color,
+      sizeTable = as.numeric(sizeTable), 
+      propTable = as.numeric(propTable))[order(as.numeric(sizeTable), decreasing = TRUE),]
+  df <- df[df$sizeTable > 0,]
+    
+  # grid
+  abline(v = 1:nc.col,col=gridColor)
+  abline(h = 1:nc.row,col=gridColor)
+  # rect(-1,nc.row+1,nc.col+1,nc.row+20, col='white', lty=0) # top
+  # rect(-1,-20,nc.col+1,0, col='white', lty=0) # bottom
+  # rect(-20,-1,0,nc.row+1, col='white', lty=0) # left
+  # rect(nc.col+1,-1,nc.col+20,nc.row+1, col='white', lty=0) # right
+    
+  # plot points
+	cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
+	if(missing(cexFactor)){
+		maxCex<-10
+		cexFactor<-max(cex.pch)*maxCex
+	}
+	cex.pch<-cex.pch*cexFactor
+  points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
+    
+  # labels for plots
+  axis(1,at=1:nc.row,colnames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  axis(2,at=1:nc.col,rownames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
+  if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
+	if(!is.null(xlab)) title(xlab=xlab)
+	if(!is.null(ylab)) title(ylab=ylab)
+		
+	# text(rep(-1,nc.row), 1:nc.row, rownames(sizeTable), cex=.5, adj=1)
+	#   text(1:nc.col, rep(-.5,nc.col), colnames(sizeTable), cex=.5, srt=90, adj=1)
+	#text(-3,nc.row/2, "RSEC Clusters", srt=90)
+    
+  # % overlap legend
+	if(legend){
+    legend.pal <- grDevices::colorRampPalette(colors=RColorBrewer::brewer.pal(11,'Spectral')[-6])
+		
+		#legend for color scale
+    legend.vals <- pretty(c(0,1),n=50)
+		nboxes<-length(legend.vals)
+    ind <- legend.vals < expect.overlap
+		legend.col<-rep(NA,length=length(legend.vals))
+    legend.col[ind] <- legend.pal(sum(legend.vals < expect.overlap))
+    legend.col[!ind] <- RColorBrewer::brewer.pal(11,'Spectral')[11]
+		usr<-par("usr")
+		x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
+		width<-(x[2]-x[1])/2
+		y<-rep(usr[4]+diff(usr[3:4]*.05), length=nboxes)
+		height<-diff(usr[3:4])*.01
+		xspace<-diff(usr[1:2])*.01
+		yspace<-diff(usr[3:4])*.01
+
+		xlabPos<-seq(1,nboxes,length=6)    
+		rect(xright=x-width,xleft=x+width,
+			ybottom=y-height,ytop=y+height,
+			border=NA,col=legend.col,xpd=NA)
+#		points(x,y, pch=15, col = legend.col,xpd=NA,cex=3)
+    text(x=mean(x), unique(y)+height+yspace, "Value of %",xpd=NA,pos=3)
+    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], cex=1,xpd=NA,pos=1)
+
+    # bubble size legend
+		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=6)[-1] #smallest is never needed
+		nvals<-length(legSizeVals) #because can't precisely control 'pretty'
+		xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
+		yc<-rep(unique(y), length=nvals)
+		points(xc, yc,
+        cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
+				col=rgb(0,0,0,.4), pch=16,xpd=NA)
+    text(x=xc, y=yc-height-yspace, labels=legSizeVals, cex=1,xpd=NA,pos=1)
+    text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
+	}
+
+})
+		
+#' @importFrom scales alpha
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom grDevices colorRampPalette
+.colorby <- function(x, alpha = 1, colors = NULL){
+    if(is.null(colors)){
+        colors <- RColorBrewer::brewer.pal(11,'Spectral')[-6]
+        #colors <- c(brewer.pal(10,'Paired')[10],'grey85',brewer.pal(10,'Paired')[4])
+        #colors <- c(colorRampPalette(c(brewer.pal(9,'Set1')[4],rgb(0,0,0)))(100)[65], brewer.pal(9,'Set1')[2], colorRampPalette(c(brewer.pal(9,'Set1')[3],rgb(1,1,1)))(100)[65])
+    }
+    mypal <- grDevices::colorRampPalette(colors)
+    if(class(x) %in% c('character','logical')){
+        x <- as.factor(x)
+    }
+    if(class(x) %in% c('integer','numeric')){
+        x <- cut(x, breaks = 100)
+    }
+    if(class(x)=='factor'){
+        return(scales::alpha(mypal(length(levels(x)))[x],alpha=alpha))
+    }
+}
+		

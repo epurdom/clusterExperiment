@@ -261,10 +261,10 @@ plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"))
 
 Since "makeConsensus" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
 
-A related plot is to plot a heatmap of the contingency table between two clusterings provided by `plotTableClusters`. This function plots a heatmap of the results of `tableClusters`, optionally converting them to proportions using `prop.table` function based on the parameter `margin`. Here, we'll set `margin=1`, meaning we will show each row (corresponding to a cluster of the  `mergeCluster` clustering), as a proportion -- i.e. how the samples in that row's cluster are distributed across the clusters of the other clustering, `makeConsensus`
+A related plot is to plot a heatmap of the contingency table between two clusterings provided by `plotClustersTable`. This function plots a heatmap of the results of `tableClusters`, optionally converting them to proportions using `prop.table` function based on the parameter `margin`. Here, we'll set `margin=1`, meaning we will show each row (corresponding to a cluster of the  `mergeCluster` clustering), as a proportion -- i.e. how the samples in that row's cluster are distributed across the clusters of the other clustering, `makeConsensus`
 
-```{r plotTableClusters}
-plotTableClusters(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"), margin=1)
+```{r plotClustersTable}
+plotClustersTable(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"), margin=1)
 ```
 
 Again, since `makeConsensus` clusters are all completely contained in `mergeClusters`, this plot has less information than if we were comparing competing clusterings (e.g. different results from `mergingClusters`, see below). For example, there is nothing on  the off-diagonal. But we can still see about how the smaller `makeConsensus` make up the `mergeClusters`.
