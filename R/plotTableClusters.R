@@ -72,7 +72,7 @@ setMethod(
 			
 		}
 		
-		if(is.na(margin)){
+		if(!is.na(margin)){
 			if(margin==0){
 				denomTab<-tableClusters(object,whichCluster=whCl,tableMethod="union",useNames=TRUE)
 				tableAll<-tableAll/denomTab
