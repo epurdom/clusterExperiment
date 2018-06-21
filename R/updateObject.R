@@ -1,14 +1,27 @@
 #' @title Update old ClusterExperiment object to current class definition
-#'
-#' @description This function updates ClusterExperiment objects from previous versions of package into the current definition
-#' @param object a \code{ClusterExperiment} (or \code{clusterExperiment} from older 
-#' versions). Must have at a minimum a slot \code{clusterMatrix}.
+#' @description This function updates ClusterExperiment objects from previous
+#'   versions of package into the current definition
+#' @param object a \code{ClusterExperiment} (or \code{clusterExperiment} from
+#'   older versions). Must have at a minimum a slot \code{clusterMatrix}.
 #' @inheritParams BiocGenerics::updateObject
-#' @details The function creates a valid \code{ClusterExperiment} object by adding the default values of missing slots. It does so by calling the \code{\link{ClusterExperiment}} function, which imputs default (empty) values for missing slots.
-#' @details The object is required to have minimal components to be updated. Specifically, it must have all the required elements of a Summarized Experiment as well as the basic slots of a ClusterExperiment object which have not changed over time. These are:   \code{clusterMatrix},\code{primaryIndex},\code{clusterInfo},\code{transformation}, \code{clusterTypes},\code{clusterLegend},\code{orderSamples}.
-#' @details The function currently only works for object of \code{ClusterExperiment}, not the older name \code{clusterExperiment}. 
-#' @return A valid \code{ClusterExperiment} object based on the current definition of 
-#' ClusterExperiment.
+#' @details The function creates a valid \code{ClusterExperiment} object by
+#'   adding the default values of missing slots. It does so by calling the
+#'   \code{\link{ClusterExperiment}} function, which imputs default (empty)
+#'   values for missing slots.
+#' @details The object is required to have minimal components to be updated.
+#'   Specifically, it must have all the required elements of a Summarized
+#'   Experiment as well as the basic slots of a ClusterExperiment object which
+#'   have not changed over time. These are:  
+#'   \code{clusterMatrix},\code{primaryIndex},\code{clusterInfo},\code{transformation},
+#'   \code{clusterTypes},\code{clusterLegend},\code{orderSamples}.
+#' @details If \emph{any} of the dendrogram-related slots are missing, ALL of
+#'   the dendrogram \emph{and} merge related slots will be cleared to default
+#'   values. Similarly, if \emph{any} of the merge-related slots are missing,
+#'   ALL of the merge-related slots will be cleared to the default values.
+#' @details The function currently only works for object of
+#'   \code{ClusterExperiment}, not the older name \code{clusterExperiment}.
+#' @return A valid \code{ClusterExperiment} object based on the current
+#'   definition of ClusterExperiment.
 #' @seealso \code{\link{ClusterExperiment}}
 #' @export
 #' @importFrom BiocGenerics updateObject
