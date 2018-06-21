@@ -14,9 +14,11 @@ License: Artistic-2.0
 Depends:
     R (>= 3.4.2),
     SingleCellExperiment,
-	SummarizedExperiment
+	SummarizedExperiment,
+	BiocGenerics
 Imports:
     methods,
+		Biobase,
     NMF,
     RColorBrewer,
     ape (>= 5.0),

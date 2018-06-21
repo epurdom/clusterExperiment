@@ -1,6 +1,8 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedMatrix
+#' @importMethodsFrom BiocGenerics updateObject
+
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
@@ -344,6 +346,7 @@ setMethod(
     }
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
+		
     #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                object,
