@@ -428,3 +428,13 @@ test_that("workflow functions work",{
   expect_equal(clusterLabels(ceNew5)[primaryClusterIndex(ceNew5)],"Final Version")
   expect_equal(clusterTypes(ceNew5)[primaryClusterIndex(ceNew5)],"final")
 })
+test_that("update function works",{
+	#create old "clusterExperiment" class
+#	myClass <- setClass("clusterExperiment", slots= ...., contains ="SummarizedExperiment")
+	
+	#create 2.0.0 "ClusterExperiment" class (but call it something else?)
+	
+	
+	
+	
+})

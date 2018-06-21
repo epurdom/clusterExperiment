@@ -100,5 +100,6 @@ Collate:
     'subsampleClustering.R'
     'subsampleLoop.R'
     'transformFunction.R'
+    'updateObject.R'
     'workflowClusters.R'
 LinkingTo: Rcpp

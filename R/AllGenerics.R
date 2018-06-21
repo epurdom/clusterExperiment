@@ -1,3 +1,4 @@
+setGeneric("updateObject", function(object) { standardGeneric("updateObject")})
 setGeneric(".matchToStats", function(object,...) { standardGeneric(".matchToStats")})
 
 setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
