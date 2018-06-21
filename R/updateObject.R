@@ -6,6 +6,7 @@
 #' @inheritParams BiocGenerics::updateObject
 #' @details The function creates a valid \code{ClusterExperiment} object by adding the default values of missing slots. It does so by calling the \code{\link{ClusterExperiment}} function, which imputs default (empty) values for missing slots.
 #' @details The object is required to have minimal components to be updated. Specifically, it must have all the required elements of a Summarized Experiment as well as the basic slots of a ClusterExperiment object which have not changed over time. These are:   \code{clusterMatrix},\code{primaryIndex},\code{clusterInfo},\code{transformation}, \code{clusterTypes},\code{clusterLegend},\code{orderSamples}.
+#' @details The function currently only works for object of \code{ClusterExperiment}, not the older name \code{clusterExperiment}. 
 #' @return A valid \code{ClusterExperiment} object based on the current definition of 
 #' ClusterExperiment.
 #' @seealso \code{\link{ClusterExperiment}}
@@ -14,8 +15,14 @@
 setMethod(
   f = "updateObject",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object#, ..., verbose=FALSE
-  ){
+  definition = function(object, checkTransformAndAssay=FALSE,...,verbose=FALSE){
+		#create snames, which is the slots the object actually has
+		#and will eventually be narrowed down to only those slots will pass to `ClusterExperiment`
+		#list names of all current required slots
+		ceSlots<-slotNames(object)
+		testSnames<-sapply(ceSlots,.hasSlot,object=object)
+		snames<-ceSlots[testSnames]
+
 		#--------
 		#check has at least the required slots of SummarizedExperiment class
 		#--------
@@ -23,14 +30,6 @@ setMethod(
 			missSE<-which(!slotNames("SummarizedExperiment") %in% snames)
 			stop("given object does not have the basic slots of SummarizedExperiment, cannot be updated (missing:",paste(slotNames("SummarizedExperiment")[missSE],collapse=","),"). To construct a ClusterExperiment object from its original components, use the function 'ClusterExperiment'")
 		}
-			
-
-		#list names of all current required slots
-		ceSlots<-slotNames(object)
-		testSnames<-sapply(ceSlots,.hasSlot,object=object)
-		snames<-ceSlots[testSnames]
-
-
 
 	#--------
 	#check has minimal required slots of a clusterExperiment object of any version
@@ -44,18 +43,18 @@ setMethod(
 	#--------
 	#extract either SE or SCE object
 	#--------
-	if(canCoerce(object,"SummarizedExperiment")) se<-as(object,"SummarizedExperiment")
-	# if(canCoerce(object,"SingleCellExperiment")){
-	# 	#if object was from before SCE requirement (2.0.0)
-	# 	se<-as(object,"SingleCellExperiment")
-	# }
-	# else{
-	# 	if(canCoerce(object,"SummarizedExperiment")) se<-as(object,"SummarizedExperiment")
-	# 	else stop("cannot coerce object to SummarizedExperiment")
-	# }
+	# if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
+	if(canCoerce(object,"SingleCellExperiment")){
+		#if object was from before SCE requirement (2.0.0)
+		se<-updateObject(as(object,"SingleCellExperiment"))
+	}
+	else{
+		if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
+		else stop("cannot coerce object to SummarizedExperiment")
+	}
 
 	#--------
-	# Ignore slots that have to be in groups, with warnings
+	# Ignore slots that have to come together, with warnings
 	#--------
 
 	dendroSlots<-c("dendro_samples", "dendro_clusters",
@@ -67,13 +66,13 @@ setMethod(
 "merge_nodeProp", "merge_nodeMerge")
 
 	if(any(!dendroSlots %in% snames)& any(dendroSlots %in% snames)){
-		warning("'object' does not contain ALL required slots saving the dendro-related information. Will remove all dendro AND merge related slots")
+		warning("'object' does not contain ALL required slots saving the dendro-related information. Updated object will remove all dendro AND merge related slots")
 		snames<-snames[-which(snames %in% dendroSlots)]
 		snames<-snames[-which(snames %in% mergeSlots)]
 	}
 
 	if(any(!mergeSlots %in% snames) & any(mergeSlots %in% snames)){
-		warning("'object' does not contain ALL required slots saving the merge-related information.  Will remove all merge related slots")
+		warning("'object' does not contain ALL required slots saving the merge-related information.  Updated object will remove all merge related slots")
 		snames<-snames[-which(snames %in% mergeSlots)]
 	}
 
@@ -90,13 +89,11 @@ setMethod(
 "merge_nodeProp", "merge_nodeMerge")
 	snames<-snames[snames %in% myslots]
 
-
 	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
 	if(!inherits(object,"try-error")){
-		object<-callNextMethod()
 		return(object)
 	} 
-		else stop("Attempt to convert did not result in valid object. Here is the error from 'ClusterExperiment':\n",out)
+		else stop("Attempt to convert did not result in valid object. Here is the error from 'ClusterExperiment':\n",object)
 }
 )
 

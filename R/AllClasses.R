@@ -1,7 +1,6 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedMatrix
-#' @importMethodsFrom BiocGenerics updateObject
 
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
