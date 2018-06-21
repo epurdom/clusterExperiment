@@ -23,7 +23,7 @@ Changes:
   - `assignUnassigned`: assigns unassigned samples to nearest cluster
 	- `renameClusters` and `recolorClusters`: assign new names/colors to clusters within a particular clustering
   - `clusterMatrixColors`: wrapper to `convertClusterLegend` to return matrix like `clusterMatrix` only with colors in place of the internal cluster ids (like existing `clusterMatrixNamed`)
-	- `plotTableClusters` for plotting a heatmap showing the results of `tableClusters`
+	- `plotClustersTable` for plotting a heatmap showing the results of `tableClusters`
 	- `subsetByCluster` for subsetting CE object to only those samples in a particular cluster(s) of a clustering.
 	- `plotFeatureScatter` for a scatter plot of 2+ features (genes) colored by cluster
 * Added arguments:

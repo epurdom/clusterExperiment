@@ -205,10 +205,24 @@ test_that("plotFeatureBoxplot works",{
 	expect_equal(ncol(out$stats),1)
 })
 
-test_that("plotting Table clusters works",{
-	expect_silent(plotTableClusters(cc,whichClusters=c(1,2)))
-	expect_silent(plotTableClusters(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))
-	expect_silent(plotTableClusters(tableClusters(cc,whichClusters=c(1,2))))
+test_that("plotClustersTable works",{
+	#test where should be diagonal
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2)))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=0))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=NA))
+	expect_silent(plotClustersTable(tableClusters(cc,whichClusters=c(1,2))))
+
+	#test more complicated
+	ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]])
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,plotType="bubble"))
+
+	
 })
 
 test_that("plotFeatureScatter works",{
