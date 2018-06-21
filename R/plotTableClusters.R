@@ -43,7 +43,7 @@ setMethod(
     if(length(whCl)!=2) stop("invalid choice of 'whichClusters' -- must be exactly 2 clusterings chosen.")
 		tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
 		#if ever gets slow, could do this directly so not call tableClusters twice...
-		if(margin==0) denomTab<-.makeUnion(tableAll)
+		if(!is.na(margin)& margin==0) denomTab<-.makeUnion(tableAll)
 				
 		cL<-clusterLegend(object)[whCl]
 		if(ignoreUnassigned){
@@ -59,7 +59,7 @@ setMethod(
 				wh<-which(! rNms %in% c("-1","-2"))
 				if(length(wh)>0){
 					tableAll<-tableAll[wh, ,drop=FALSE]
-					if(margin==0) denomTab<-denomTab[wh, ,drop=FALSE]
+					if(!is.na(margin) & margin==0) denomTab<-denomTab[wh, ,drop=FALSE]
 					#deal with fact that plotHeatmap doesn't fix problem with rowData!
 					mat1<-mat1[mat1[,"clusterIds"] %in% rNms[wh], ,drop=FALSE]
 					cL[[1]]<-mat1
@@ -71,7 +71,7 @@ setMethod(
 				wh<-which(! cNms %in% c("-1","-2"))
 				if(length(wh)>0){
 					tableAll<-tableAll[, wh,drop=FALSE]
-					if(margin==0) denomTab<-denomTab[, wh ,drop=FALSE]
+					if(!is.na(margin)& margin==0) denomTab<-denomTab[, wh ,drop=FALSE]
 				}
 				else stop("All of the second clustering are unassigned, cannot use ignoreUnassigned=TRUE")
 			}

@@ -91,7 +91,7 @@ Collate:
     'plotFeatureScatter.R'
     'plotHeatmap.R'
     'plotReduceDim.R'
-    'plotClustersTable.R'
+    'plotTableClusters.R'
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'
