@@ -3,13 +3,23 @@
 #' @description Plot heatmap of cross-tabulations of two clusterings
 #' @aliases plotTableClusters,ClusterExperiment-method
 #' @param object ClusterExperiment object (or matrix with table result)
-#' @param ignoreUnassigned logical as to whether to ignore unassigned clusters in the 
-#' plotting. This means they will also be ignored in the calculations of the proportions 
-#' (if \code{margin} not NA).
-#' @param margin if NA, the counts from \code{tableClusters} will be plotted. Otherwise, 
-#' \code{\link[base]{prop.table}} will be called and the argument \code{margin} #' will be passed to \code{prop.table} to determine how proportions should be calculated.
-#' @param whichClusters which clusters to tabulate. For \code{plotTableClusters} should
-#'  be 2 clusters, for \code{tableClusters} can indicate arbitrary number.
+#' @param ignoreUnassigned logical as to whether to ignore unassigned clusters
+#'   in the plotting. This means they will also be ignored in the calculations
+#'   of the proportions (if \code{margin} not NA).
+#' @param margin if NA, the counts from \code{tableClusters} will be plotted.
+#'   Otherwise, \code{\link[base]{prop.table}} will be called and the argument
+#'   \code{margin} will be passed to \code{prop.table} to determine whether
+#'   proportions should be calculated. If '1', then the proportions in the rows
+#'   sum to 1, if '2' the proportions in the columns sum to 1. If 'NULL' then
+#'   the proportion across the entire matrix will sum to 1. For a symmetric
+#'   version, you can set \code{margin=0}, and the entry displayed in each cell
+#'   will be the proportion equal to the size of the intersection over the size
+#'   of the union of the clusters (a Jaccard similarity between the clusters),
+#'   in which case each entry is a proportion but no combination of the entries 
+#'   sum to 1.
+#' @param whichClusters which clusters to tabulate. For \code{plotTableClusters}
+#'   should be 2 clusters, for \code{tableClusters} can indicate arbitrary
+#'   number.
 #' @rdname plotTableClusters
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples
@@ -31,7 +41,8 @@ setMethod(
   definition = function(object, whichClusters,ignoreUnassigned=FALSE,margin=NA,...){
     whCl<-.TypeIntoIndices(object,whClusters=whichClusters)
     if(length(whCl)!=2) stop("invalid choice of 'whichClusters' -- must be exactly 2 clusterings chosen.")
-		tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE)
+		tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
+
 		cL<-clusterLegend(object)[whCl]
 		if(ignoreUnassigned){
 			rNms<-rownames(tableAll)
@@ -61,8 +72,14 @@ setMethod(
 			
 		}
 		
-		if(!is.na(margin)){
-			tableAll<-prop.table(tableAll,margin=margin)
+		if(is.na(margin)){
+			if(margin==0){
+				denomTab<-tableClusters(object,whichCluster=whCl,tableMethod="union",useNames=TRUE)
+				tableAll<-tableAll/denomTab
+			}
+			else{
+				tableAll<-prop.table(tableAll,margin=margin)
+			}
 		}
 		plotTableClusters(tableAll,clusterLegend=cL,...)
 }
@@ -145,13 +162,35 @@ setMethod(
 #' @rdname plotTableClusters
 #' @param useNames for \code{tableClusters}, whether the output should be tabled
 #'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
+#' @param tableMethod the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.
 #' @export
 setMethod( 
   f = "tableClusters",
   signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(object, whichClusters, useNames=TRUE,...)
+  definition = function(object, whichClusters, useNames=TRUE, tableMethod=c("intersect","union"),...)
   { 
+		tableMethod<-match.arg(tableMethod)
     if(useNames) numCluster<-clusterMatrixNamed(object,whichClusters=whichClusters)
     else numCluster<-clusterMatrix(object)[,whichClusters]
-    table(data.frame(numCluster))
+    if(tableMethod=="intersect" | length(whichClusters)==1) return(table(data.frame(numCluster)))
+		else{
+			runique<-unique(as.character(numCluster[,1]))
+			cunique<-unique(as.character(numCluster[,2]))
+			ustr<-"_+_,_"
+			combUnique<-expand.grid(runique,cunique)
+			vals<-apply(combUnique,1,function(x){
+				sum(numCluster[,1]==x[1] | numCluster[,2]==x[2])
+			})
+			names(vals)<-paste(as.character(combUnique[,1]),as.character(combUnique[,2]),sep=ustr)
+			tab<-do.call("rbind",lapply(runique,function(rval){
+				v<-paste(rval,cunique,sep=ustr)
+				return(vals[v])
+			}))
+			rownames(tab)<-runique
+			colnames(tab)<-cunique
+			names(attributes(tab)$dimnames)<-colnames(numCluster)
+			class(tab)<-"table"
+			
+			return(tab)
+		} 
   })
