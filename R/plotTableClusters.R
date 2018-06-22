@@ -217,6 +217,8 @@ setMethod(
   signature = signature(propTable = "table",sizeTable="table"),
 	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
 		ylab,xlab,legend=TRUE,las=2){
+	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
+		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
 	 nc.row <- nrow(propTable)
 	 nc.col <- nrow(propTable)
 	propTable<-propTable[nc.row:1,]
