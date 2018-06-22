@@ -211,12 +211,13 @@ setMethod(
 #' @param ylab label for y-axis. If missing, uses the name for rows in sizeTable
 #' @param xlab label for x-axis. If missing, uses the name for columns in sizeTable
 #' @param legend whether to draw legend along top
+#' @param colorScale the color scale for the values of the proportion table
 #' @details \code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$. 
 setMethod( 
   f = "bubblePlot",
   signature = signature(propTable = "table",sizeTable="table"),
 	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
-		ylab,xlab,legend=TRUE,las=2){
+		ylab,xlab,legend=TRUE,las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
 #browser()
 	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
 		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
@@ -224,7 +225,6 @@ setMethod(
 	 nc.col <- ncol(propTable)
 	propTable<-propTable[nc.row:1,]
 	sizeTable<-sizeTable[nc.row:1,]
-	 expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
   # set up plotting window
 	xlim<-c(1,nc.col)
 	xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
@@ -234,11 +234,11 @@ setMethod(
    
   # get x-y coords for a grid
   xx <- rep(1:nc.col, each = nc.row)
-  yy <- rep(1:nc.row, times = nc.col)
-    
+  yy <- rep(1:nc.row, times = nc.col)   
     
   # set color based on % overlap
-  color <- .colorby(c(0,expect.overlap,propTable))[-c(1,2)]
+  expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
+  color <- .colorby(c(0,expect.overlap,propTable),colors=colorScale)[-c(1,2)]
     
   # put plotting information into data.frame, so we can sort by size (want
   # smaller points plotted over larger points)
@@ -320,12 +320,7 @@ setMethod(
 #' @importFrom scales alpha
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
-.colorby <- function(x, alpha = 1, colors = NULL){
-    if(is.null(colors)){
-        colors <- RColorBrewer::brewer.pal(11,'Spectral')[-6]
-        #colors <- c(brewer.pal(10,'Paired')[10],'grey85',brewer.pal(10,'Paired')[4])
-        #colors <- c(colorRampPalette(c(brewer.pal(9,'Set1')[4],rgb(0,0,0)))(100)[65], brewer.pal(9,'Set1')[2], colorRampPalette(c(brewer.pal(9,'Set1')[3],rgb(1,1,1)))(100)[65])
-    }
+.colorby <- function(x, alpha = 1, colors){
     mypal <- grDevices::colorRampPalette(colors)
     if(class(x) %in% c('character','logical')){
         x <- as.factor(x)
