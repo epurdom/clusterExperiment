@@ -238,8 +238,10 @@ setMethod(
     
   # set color based on % overlap
   expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
-  color <- .colorby(c(0,expect.overlap,propTable),colors=colorScale)[-c(1,2)]
-    
+  legend.vals <- pretty(c(0,1),n=50)
+	allColors<-.colorby(c(propTable,0,expect.overlap,legend.vals),colors=colorScale)
+  color <- head(allColors,nc.col*nc.row)
+  legend.col<-tail(allColors,length(legend.vals))
   # put plotting information into data.frame, so we can sort by size (want
   # smaller points plotted over larger points)
   df <- data.frame(xx,yy, color,
@@ -278,15 +280,8 @@ setMethod(
     
   # % overlap legend
 	if(legend){
-    legend.pal <- grDevices::colorRampPalette(colors=RColorBrewer::brewer.pal(11,'Spectral')[-6])
-		
 		#legend for color scale
-    legend.vals <- pretty(c(0,1),n=50)
 		nboxes<-length(legend.vals)
-    ind <- legend.vals < expect.overlap
-		legend.col<-rep(NA,length=length(legend.vals))
-    legend.col[ind] <- legend.pal(sum(legend.vals < expect.overlap))
-    legend.col[!ind] <- RColorBrewer::brewer.pal(11,'Spectral')[11]
 		usr<-par("usr")
 		x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
 		width<-(x[2]-x[1])/2

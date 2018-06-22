@@ -28,7 +28,8 @@
   useNames = TRUE, tableMethod = c("intersect", "union"), ...)
 
 \S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
-  0, 0.05), cexFactor, ylab, xlab, legend = TRUE, las = 2)
+  0, 0.05), cexFactor, ylab, xlab, legend = TRUE, las = 2,
+  colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
@@ -80,6 +81,8 @@ with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 \item{xlab}{label for x-axis. If missing, uses the name for columns in sizeTable}
 
 \item{legend}{whether to draw legend along top}
+
+\item{colorScale}{the color scale for the values of the proportion table}
 }
 \description{
 Plot heatmap of cross-tabulations of two clusterings
