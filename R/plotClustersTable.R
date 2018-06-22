@@ -207,7 +207,8 @@ setMethod(
 #' @param propTable table of proportions
 #' @param sizeTable table of sizes
 #' @param gridColor color for grid lines
-#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by setting the maximum size of any circle in the matrix to have \code{cex=10}
+#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.
+#' @param maxCex largest value of cex for any point (others will scale proportionally smaller). 
 #' @param ylab label for y-axis. If missing, uses the name for rows in sizeTable
 #' @param xlab label for x-axis. If missing, uses the name for columns in sizeTable
 #' @param legend whether to draw legend along top
@@ -216,7 +217,7 @@ setMethod(
 setMethod( 
   f = "bubblePlot",
   signature = signature(propTable = "table",sizeTable="table"),
-	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
+	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),maxCex=8,cexFactor,
 		ylab,xlab,legend=TRUE,las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
 #browser()
 	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
@@ -260,7 +261,6 @@ setMethod(
   # plot points
 	cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
 	if(missing(cexFactor)){
-		maxCex<-10
 		cexFactor<-maxCex/max(cex.pch)
 	}
 	cex.pch<-cex.pch*cexFactor

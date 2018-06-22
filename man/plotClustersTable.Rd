@@ -28,7 +28,7 @@
   useNames = TRUE, tableMethod = c("intersect", "union"), ...)
 
 \S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
-  0, 0.05), cexFactor, ylab, xlab, legend = TRUE, las = 2,
+  0, 0.05), maxCex = 8, cexFactor, ylab, xlab, legend = TRUE, las = 2,
   colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
 }
 \arguments{
@@ -74,7 +74,9 @@ with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
 \item{gridColor}{color for grid lines}
 
-\item{cexFactor}{factor to multiple by to get values of circles. If missing, finds value automatically, namely by setting the maximum size of any circle in the matrix to have \code{cex=10}}
+\item{maxCex}{largest value of cex for any point (others will scale proportionally smaller).}
+
+\item{cexFactor}{factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.}
 
 \item{ylab}{label for y-axis. If missing, uses the name for rows in sizeTable}
 
