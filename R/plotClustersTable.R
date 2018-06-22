@@ -261,7 +261,7 @@ setMethod(
 	cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
 	if(missing(cexFactor)){
 		maxCex<-10
-		cexFactor<-max(cex.pch)*maxCex
+		cexFactor<-maxCex/max(cex.pch)
 	}
 	cex.pch<-cex.pch*cexFactor
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
