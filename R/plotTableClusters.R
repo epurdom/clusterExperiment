@@ -217,10 +217,11 @@ setMethod(
   signature = signature(propTable = "table",sizeTable="table"),
 	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
 		ylab,xlab,legend=TRUE,las=2){
+#browser()
 	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
 		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
 	 nc.row <- nrow(propTable)
-	 nc.col <- nrow(propTable)
+	 nc.col <- ncol(propTable)
 	propTable<-propTable[nc.row:1,]
 	sizeTable<-sizeTable[nc.row:1,]
 	 expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
@@ -264,8 +265,8 @@ setMethod(
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
-  axis(1,at=1:nc.row,colnames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
-  axis(2,at=1:nc.col,rownames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  axis(1,at=1:nc.col,colnames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  axis(2,at=1:nc.row,rownames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
   if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
   if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
 	if(!is.null(xlab)) title(xlab=xlab)
