@@ -299,7 +299,7 @@ setMethod(
     text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], cex=1,xpd=NA,pos=1)
 
     # bubble size legend
-		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=6)[-1] #smallest is never needed
+		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
 		nvals<-length(legSizeVals) #because can't precisely control 'pretty'
 		xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
 		yc<-rep(unique(y), length=nvals)
