@@ -267,16 +267,13 @@ setMethod(
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
-  axis(1,at=1:nc.col,colnames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
-  axis(2,at=1:nc.row,rownames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  axis(1,at=1:nc.col,colnames(sizeTable), adj=1,tick=FALSE,las=las)
+  axis(2,at=1:nc.row,rownames(sizeTable), adj=1,tick=FALSE,las=las)
   if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
   if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
 	if(!is.null(xlab)) title(xlab=xlab)
 	if(!is.null(ylab)) title(ylab=ylab)
 		
-	# text(rep(-1,nc.row), 1:nc.row, rownames(sizeTable), cex=.5, adj=1)
-	#   text(1:nc.col, rep(-.5,nc.col), colnames(sizeTable), cex=.5, srt=90, adj=1)
-	#text(-3,nc.row/2, "RSEC Clusters", srt=90)
     
   # % overlap legend
 	if(legend){
@@ -294,9 +291,8 @@ setMethod(
 		rect(xright=x-width,xleft=x+width,
 			ybottom=y-height,ytop=y+height,
 			border=NA,col=legend.col,xpd=NA)
-#		points(x,y, pch=15, col = legend.col,xpd=NA,cex=3)
     text(x=mean(x), unique(y)+height+yspace, "Value of %",xpd=NA,pos=3)
-    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], cex=1,xpd=NA,pos=1)
+    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
 
     # bubble size legend
 		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
@@ -306,7 +302,7 @@ setMethod(
 		points(xc, yc,
         cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
 				col=rgb(0,0,0,.4), pch=16,xpd=NA)
-    text(x=xc, y=yc-height-yspace, labels=legSizeVals, cex=1,xpd=NA,pos=1)
+    text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
     text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
 	}
 
