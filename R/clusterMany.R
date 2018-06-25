@@ -362,7 +362,7 @@ setMethod(
             warning("NA values have no meaning for the argument nFilterDims and will be ignored")
             nFilterDims<-na.omit(nFilterDims)
           }
-          if(missing(nFilterDims) || length(nFilterDims)==0){
+          if(length(nFilterDims)==0){
             stop("no valid nFilterDims values given, but reduceMethod values given indicate a filterStat to be used.")
           }
         }
