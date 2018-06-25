@@ -9,13 +9,15 @@
 \alias{tableClusters}
 \alias{tableClusters,ClusterExperiment,missing-method}
 \alias{tableClusters,ClusterExperiment,numeric-method}
+\alias{bubblePlot,table,table-method}
 \title{Plot heatmap of cross-tabs of 2 clusterings}
 \usage{
 \S4method{plotClustersTable}{ClusterExperiment}(object, whichClusters,
   ignoreUnassigned = FALSE, margin = NA, ...)
 
 \S4method{plotClustersTable}{table}(object, clusterLegend = NULL,
-  cluster = FALSE, ...)
+  cluster = FALSE, plotType = c("heatmap", "bubble"), sizeTable = object,
+  ...)
 
 \S4method{tableClusters}{ClusterExperiment,character}(object, whichClusters,
   ...)
@@ -24,6 +26,10 @@
 
 \S4method{tableClusters}{ClusterExperiment,numeric}(object, whichClusters,
   useNames = TRUE, tableMethod = c("intersect", "union"), ...)
+
+\S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
+  0, 0.05), maxCex = 8, cexFactor, ylab, xlab, legend = TRUE, las = 2,
+  colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
@@ -48,7 +54,8 @@ of the union of the clusters (a Jaccard similarity between the clusters),
 in which case each entry is a proportion but no combination of the entries 
 sum to 1.}
 
-\item{...}{arguments passed on to \code{plotHeatmap}}
+\item{...}{arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
+depending on choice of \code{plotType}}
 
 \item{clusterLegend}{list in \code{clusterLegend} format that gives colors for the
 clusters tabulated.}
@@ -56,10 +63,28 @@ clusters tabulated.}
 \item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
 to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
 
+\item{sizeTable}{table of sizes}
+
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
 \item{tableMethod}{the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.}
+
+\item{propTable}{table of proportions}
+
+\item{gridColor}{color for grid lines}
+
+\item{maxCex}{largest value of cex for any point (others will scale proportionally smaller).}
+
+\item{cexFactor}{factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.}
+
+\item{ylab}{label for y-axis. If missing, uses the name for rows in sizeTable}
+
+\item{xlab}{label for x-axis. If missing, uses the name for columns in sizeTable}
+
+\item{legend}{whether to draw legend along top}
+
+\item{colorScale}{the color scale for the values of the proportion table}
 }
 \description{
 Plot heatmap of cross-tabulations of two clusterings
@@ -69,6 +94,8 @@ Note that the cluster labels in \code{plotClustersTable} and
 \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
 because \code{tableClusters} calls the R function \code{table}, which makes this 
 conversion
+
+\code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

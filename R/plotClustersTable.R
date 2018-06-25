@@ -207,23 +207,24 @@ setMethod(
 #' @param propTable table of proportions
 #' @param sizeTable table of sizes
 #' @param gridColor color for grid lines
-#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by setting the maximum size of any circle in the matrix to have \code{cex=10}
+#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.
+#' @param maxCex largest value of cex for any point (others will scale proportionally smaller). 
 #' @param ylab label for y-axis. If missing, uses the name for rows in sizeTable
 #' @param xlab label for x-axis. If missing, uses the name for columns in sizeTable
 #' @param legend whether to draw legend along top
+#' @param colorScale the color scale for the values of the proportion table
 #' @details \code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$. 
 setMethod( 
   f = "bubblePlot",
   signature = signature(propTable = "table",sizeTable="table"),
-	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),cexFactor,
-		ylab,xlab,legend=TRUE,las=2){
+	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),maxCex=8,cexFactor,
+		ylab,xlab,legend=TRUE,las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
 	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
 		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
 	 nc.row <- nrow(propTable)
-	 nc.col <- nrow(propTable)
+	 nc.col <- ncol(propTable)
 	propTable<-propTable[nc.row:1,]
 	sizeTable<-sizeTable[nc.row:1,]
-	 expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
   # set up plotting window
 	xlim<-c(1,nc.col)
 	xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
@@ -233,12 +234,14 @@ setMethod(
    
   # get x-y coords for a grid
   xx <- rep(1:nc.col, each = nc.row)
-  yy <- rep(1:nc.row, times = nc.col)
-    
+  yy <- rep(1:nc.row, times = nc.col)   
     
   # set color based on % overlap
-  color <- .colorby(c(0,expect.overlap,propTable))[-c(1,2)]
-    
+  expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
+  legend.vals <- pretty(c(0,1),n=50)
+	allColors<-.colorby(c(propTable,0,expect.overlap,legend.vals),colors=colorScale)
+  color <- head(allColors,nc.col*nc.row)
+  legend.col<-tail(allColors,length(legend.vals))
   # put plotting information into data.frame, so we can sort by size (want
   # smaller points plotted over larger points)
   df <- data.frame(xx,yy, color,
@@ -257,35 +260,24 @@ setMethod(
   # plot points
 	cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
 	if(missing(cexFactor)){
-		maxCex<-10
-		cexFactor<-max(cex.pch)*maxCex
+		cexFactor<-maxCex/max(cex.pch)
 	}
 	cex.pch<-cex.pch*cexFactor
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
-  axis(1,at=1:nc.row,colnames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
-  axis(2,at=1:nc.col,rownames(sizeTable), cex=.5, adj=1,tick=FALSE,las=las)
+  axis(1,at=1:nc.col,colnames(sizeTable), adj=1,tick=FALSE,las=las)
+  axis(2,at=1:nc.row,rownames(sizeTable), adj=1,tick=FALSE,las=las)
   if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
   if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
 	if(!is.null(xlab)) title(xlab=xlab)
 	if(!is.null(ylab)) title(ylab=ylab)
 		
-	# text(rep(-1,nc.row), 1:nc.row, rownames(sizeTable), cex=.5, adj=1)
-	#   text(1:nc.col, rep(-.5,nc.col), colnames(sizeTable), cex=.5, srt=90, adj=1)
-	#text(-3,nc.row/2, "RSEC Clusters", srt=90)
     
   # % overlap legend
 	if(legend){
-    legend.pal <- grDevices::colorRampPalette(colors=RColorBrewer::brewer.pal(11,'Spectral')[-6])
-		
 		#legend for color scale
-    legend.vals <- pretty(c(0,1),n=50)
 		nboxes<-length(legend.vals)
-    ind <- legend.vals < expect.overlap
-		legend.col<-rep(NA,length=length(legend.vals))
-    legend.col[ind] <- legend.pal(sum(legend.vals < expect.overlap))
-    legend.col[!ind] <- RColorBrewer::brewer.pal(11,'Spectral')[11]
 		usr<-par("usr")
 		x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
 		width<-(x[2]-x[1])/2
@@ -298,19 +290,18 @@ setMethod(
 		rect(xright=x-width,xleft=x+width,
 			ybottom=y-height,ytop=y+height,
 			border=NA,col=legend.col,xpd=NA)
-#		points(x,y, pch=15, col = legend.col,xpd=NA,cex=3)
     text(x=mean(x), unique(y)+height+yspace, "Value of %",xpd=NA,pos=3)
-    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], cex=1,xpd=NA,pos=1)
+    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
 
     # bubble size legend
-		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=6)[-1] #smallest is never needed
+		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
 		nvals<-length(legSizeVals) #because can't precisely control 'pretty'
 		xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
 		yc<-rep(unique(y), length=nvals)
 		points(xc, yc,
         cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
 				col=rgb(0,0,0,.4), pch=16,xpd=NA)
-    text(x=xc, y=yc-height-yspace, labels=legSizeVals, cex=1,xpd=NA,pos=1)
+    text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
     text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
 	}
 
@@ -319,12 +310,7 @@ setMethod(
 #' @importFrom scales alpha
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
-.colorby <- function(x, alpha = 1, colors = NULL){
-    if(is.null(colors)){
-        colors <- RColorBrewer::brewer.pal(11,'Spectral')[-6]
-        #colors <- c(brewer.pal(10,'Paired')[10],'grey85',brewer.pal(10,'Paired')[4])
-        #colors <- c(colorRampPalette(c(brewer.pal(9,'Set1')[4],rgb(0,0,0)))(100)[65], brewer.pal(9,'Set1')[2], colorRampPalette(c(brewer.pal(9,'Set1')[3],rgb(1,1,1)))(100)[65])
-    }
+.colorby <- function(x, alpha = 1, colors){
     mypal <- grDevices::colorRampPalette(colors)
     if(class(x) %in% c('character','logical')){
         x <- as.factor(x)
