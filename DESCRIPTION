@@ -41,6 +41,7 @@ Imports:
 	  HDF5Array (>= 1.7.10),
 	  DelayedArray (>= 0.5.31),
 		edgeR,
+		scales,
 		zinbwave
 Suggests:
   BiocStyle,
