@@ -4,27 +4,27 @@
 #'   Sequential Ensemble Clustering) for single cell sequencing data. This is a
 #'   wrapper function around the existing ClusterExperiment workflow that
 #'   results in the output of RSEC.
-#' @param k0s the k0 parameter for sequential clustering (see 
+#' @param k0s the k0 parameter for sequential clustering (see
 #'   \code{\link{seqCluster}})
-#' @param consensusProportion passed to \code{proportion} in 
+#' @param consensusProportion passed to \code{proportion} in
 #'   \code{\link{makeConsensus}}
 #' @param consensusMinSize passed to \code{minSize} in
 #'   \code{\link{makeConsensus}}
-#' @param dendroReduce passed to \code{reduceMethod} in 
+#' @param dendroReduce passed to \code{reduceMethod} in
 #'   \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}
-#' @param mergeMethod passed to \code{mergeMethod} in 
+#' @param mergeMethod passed to \code{mergeMethod} in
 #'   \code{\link{mergeClusters}}
 #' @param mergeCutoff passed to \code{cutoff} in \code{\link{mergeClusters}}
-#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in 
+#' @param mergeLogFCcutoff passed to \code{logFCcutoff} in
 #'   \code{\link{mergeClusters}}
-#' @param mergeDEMethod passed to \code{DEMethod} argument in 
+#' @param mergeDEMethod passed to \code{DEMethod} argument in
 #'   \code{\link{mergeClusters}}. By default, unless otherwise chosen by the
 #'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
 #'   \code{mergeDEMethod="limma"}.
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
-#'   determines whether to rerun the clusterMany step. Useful if want to try 
-#'   different parameters for combining clusters after the clusterMany step, 
+#'   determines whether to rerun the clusterMany step. Useful if want to try
+#'   different parameters for combining clusters after the clusterMany step,
 #'   without the computational costs of the clusterMany step.
 #' @param stopOnErrors logical. If \code{FALSE}, if RSEC hits an error
 #'   \emph{after} the \code{clusterMany} step, it will return the results up to
@@ -32,7 +32,7 @@
 #'   printed as a NOTE. This allows the user to get the results to that point,
 #'   so as to not have to rerun the computationally heavy earlier steps. The
 #'   \code{TRUE} option is only provided for debugging purposes.
-#' @return A \code{\link{ClusterExperiment}} object is returned containing all 
+#' @return A \code{\link{ClusterExperiment}} object is returned containing all
 #'   of the clusterings from the steps of RSEC
 #' @inheritParams clusterMany
 #' @name RSEC
@@ -72,7 +72,7 @@ setMethod(
 	  		warning("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' has no effect other than to set a default for 'mergeDEMethod' (if not set by user).")
       newObj <- do.call("RSEC",c(list(x=as(x,"SingleCellExperiment"),  transFun=transformation(x)),passedArgs))
       ##Check if pipeline already ran previously and if so increase
-			x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd=.workflowValues[-1],newLabelToAdd=NULL)      
+			x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd=.workflowValues[-1],newLabelToAdd=NULL)
 			if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
       else{
 		  retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
@@ -105,12 +105,12 @@ setMethod(
 setMethod(
   f = "RSEC",
   signature = signature(x = "SingleCellExperiment"),
-  definition = function(x, 
+  definition = function(x,
 		isCount=FALSE,
 		transFun=NULL,
     reduceMethod="PCA",
     nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
-    nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"), 
+    nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"),
 		k0s=4:15,
 		subsample=TRUE,
 		sequential=TRUE,
@@ -128,7 +128,7 @@ setMethod(
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
     seqArgs=NULL, whichAssay = 1,
-    ncores=1, random.seed=NULL, 
+    ncores=1, random.seed=NULL,
 		stopOnErrors=FALSE, run=TRUE
   )
   {
@@ -237,8 +237,8 @@ setMethod(
 				if("mergeDEMethod" %in% names(passedArgs)){
 					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
 					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
-					
-				} 
+
+				}
 				else{
 					mergeTry<-"mergeDEMethod argument is missing with no default"
 					class(mergeTry)<-"try-error"
@@ -256,13 +256,13 @@ setMethod(
     else{
     	if(!stopOnErrors).mynote(paste("makeDendrogram encountered following error and therefore clusters were not merged:\n", dendroTry))
 			else stop(dendroTry)
-    	
+
     }
   }
   else{
   	if(!stopOnErrors).mynote(paste("makeConsensus encountered following error and therefore clusters from clusterMany were not combined:\n", combineTry))
 		else stop(combineTry)
-  	
+
   }
   return(ce)
 }

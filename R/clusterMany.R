@@ -275,34 +275,6 @@ setMethod(
       }
     }
 
-    # anyFilter<-anyValidFilterStats(x)
-    # anyDim<-anyValidReducedDims(x)
-    # anyFilterSaved<-anyFilter && any(isFilterStats(x,reduceMethod))
-    # anyDimSaved<-anyDim && any(isReducedDims(x,reduceMethod))
-    # anyDimBuiltIn<-any(isBuiltInReducedDims(reduceMethod))
-    # anyFilterBuiltIn<-any(isBuiltInFilterStats(reduceMethod))
-    # if(!all(reduceMethod=="none") & !anyFilter & !anyFilterBuiltIn & !anyDim & !anyDimBuiltIn)
-    #   stop("'reduceMethod' does not match any stored or builtin filtering statistics or dimensionality reduction")
-    # if(!all(reduceMethod=="none") & ((!anyFilter & !anyDimSaved & anyFilterBuiltIn) || (!anyDim & !anyFilterSaved & anyDimBuiltIn)) ){
-    #
-    #   dimNam<-reduceMethod[isBuiltInReducedDims(reduceMethod)]
-    #   filtNam<-reduceMethod[isBuiltInFilterStats(reduceMethod)]
-    #
-    #   if(length(dimNam)>0 | length(filtNam)>0){
-    #     if(length(dimNam)>0){
-    #       nReducedDims<-na.omit(nReducedDims)
-    #       if(length(nReducedDims)==0)
-    #         stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
-    #       maxDims<-max(nReducedDims)
-    #       x<-makeReducedDims(x,reducedDims=dimNam, whichAssay = whichAssay,
-    #                          maxDims=maxDims,transFun=transFun,isCount=isCount)
-    #     }
-    #     if(length(filtNam)>0){
-    #       #Need to think how can pass options to filterData...
-    #       x<-makeFilterStats(x,filterStat=filtNam, transFun=transFun,
-    #                          isCount=isCount, whichAssay = whichAssay)
-    #     }
-
     #issue: have to send reduceMethod, but don't know which are which type
     isExisting<-isReducedDims(x,reduceMethod) | isFilterStats(x,reduceMethod)
     isBuiltIn<- isBuiltInReducedDims(reduceMethod) | isBuiltInFilterStats(reduceMethod)
@@ -326,50 +298,39 @@ setMethod(
 
 
     if(all(isBuiltIn) & any(isBuiltInNotExisting) ){
-      ###########
-      ###This will make it calculate the requested reduceMethod values by sending to clusterMany matrix version with assay(x)
-      ### The matrix version will calculate the necessary filtering/reduce dims and
-      ### and then send it back to here as a SingleCellExperiment object without the args of reduceMethod, etc. ...
-      ## Note that if no Filter saved, and asked for filter
-      ############
-      #outval -- object with calculated input
+
       .mynote(paste0("Not all of the methods requested in 'reduceMethod' have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
-      outval<-do.call(clusterMany,c(list(x=assay(x, whichAssay)),inputArgs[!names(inputArgs)%in%"x"]))
 
-      if(class(outval)=="ClusterExperiment") {
-        #lost anything about the meta data, old filtering/reducedDim
-        #including the newly calculated reducedDim etc.!
-        retval<-.addBackSEInfo(newObj=outval,oldObj=x)
-        #Note that any that were built in methods have been recalculated so should replace existing
-        if(any(isBuiltInFilterStats(reduceMethod))){
-          # Note that filterStats<- updates existing filters of the same name and add filters with new names to the existing filters.
-          filterStats(retval)<-filterStats(outval)
+      reduceMethod<-unique(reduceMethod)
+      doNone<-any(reduceMethod=="none")
+
+      #check can given reduceMethod values match built in options.
+      dimNam<-reduceMethod[isBuiltInReducedDims(reduceMethod)]
+      filtNam<-reduceMethod[isBuiltInFilterStats(reduceMethod)]
+      nValid<-length(c(dimNam,filtNam))
+
+      if(doNone) nValid<-nValid+1
+
+      if(!doNone & length(dimNam)==0 & length(filtNam)==0)
+        stop("reduceMethod values given are not in built-in dimensionality reduction or built-in filters (and there is no such stored objects if a SingleCellExperiment object). Option 'none' also not given, so nothing to do.")
+      else if(length(reduceMethod)!=nValid)
+        warning("Some reduceMethod values given are not in built in dimensionality reduction or built in filters (and there is no such stored objects if a SingleCellExperiment object). Ignoring options.")
+
+      if(length(dimNam)>0 | length(filtNam)>0){
+        if(length(dimNam)>0){
+          nReducedDims<-na.omit(nReducedDims)
+          if(length(nReducedDims)==0)
+            stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
+          maxDims<-max(nReducedDims)
+          x<-makeReducedDims(x,reducedDims=dimNam, whichAssay = whichAssay,
+                             maxDims=maxDims,transFun=transFun,isCount=isCount)
         }
-        if(any(isBuiltInReducedDims(reduceMethod))){
-          # reducedDims actually replaces them completely!
-          calculatedDims<-reducedDimNames(outval)
-          if(length(calculatedDims)>0){
-            if(all(calculatedDims %in% reducedDimNames(retval))){
-              reducedDims(retval)[calculatedDims]<-reducedDims(outval)
-              }
-            else{
-              if(any(calculatedDims %in% reducedDimNames(retval))){
-                #replace those that exist already
-                wh<-which(calculatedDims %in% reducedDimNames(retval))
-                reducedDims(retval)[calculatedDims[wh]]<-reducedDims(outval)[calculatedDims[wh]]
-                calculatedDims<-calculatedDims[-wh]
-              }
-              reducedDims(retval)<-c(reducedDims(retval),reducedDims(outval))
-
-            }
-
-          }
+        if(length(filtNam)>0){
+          #Need to think how can pass options to filterData...
+          x<-makeFilterStats(x,filterStat=filtNam, whichAssay = whichAssay,
+                             transFun=transFun,isCount=isCount)
         }
-        return(retval)
-
       }
-
-
     }
 
       ###############
