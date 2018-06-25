@@ -8,10 +8,6 @@
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \alias{show,ClusterExperiment-method}
-\alias{clusterMatrixNamed,ClusterExperiment-method}
-\alias{clusterMatrixNamed}
-\alias{primaryClusterNamed,ClusterExperiment-method}
-\alias{primaryClusterNamed}
 \alias{transformation,ClusterExperiment-method}
 \alias{transformation}
 \alias{transformation<-,ClusterExperiment,function-method}
@@ -24,8 +20,8 @@
 \alias{nFeatures}
 \alias{nSamples,ClusterExperiment-method}
 \alias{nSamples}
-\alias{clusterMatrixNames,ClusterExperiment-method}
-\alias{clusterMatrixNames}
+\alias{clusterMatrixNamed,ClusterExperiment-method}
+\alias{clusterMatrixNamed}
 \alias{clusterMatrixColors,ClusterExperiment-method}
 \alias{clusterMatrixColors}
 \alias{clusterMatrix,ClusterExperiment,missing-method}
@@ -40,12 +36,16 @@
 \alias{primaryClusterIndex}
 \alias{primaryClusterLabel,ClusterExperiment-method}
 \alias{primaryClusterLabel}
+\alias{primaryClusterNamed,ClusterExperiment-method}
+\alias{primaryClusterNamed}
 \alias{primaryClusterType,ClusterExperiment-method}
 \alias{primaryClusterType}
-\alias{dendroClusterIndex,ClusterExperiment-method}
-\alias{dendroClusterIndex}
+\alias{subsetByCluster,ClusterExperiment-method}
+\alias{subsetByCluster}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
+\alias{dendroClusterIndex,ClusterExperiment-method}
+\alias{dendroClusterIndex}
 \alias{coClustering,ClusterExperiment-method}
 \alias{coClustering}
 \alias{coClustering<-,ClusterExperiment,matrix-method}
@@ -62,16 +62,16 @@
 \alias{clusterLegend}
 \alias{clusterLegend<-,ClusterExperiment,list-method}
 \alias{clusterLegend<-}
+\alias{renameClusters,ClusterExperiment,character-method}
+\alias{renameClusters}
+\alias{recolorClusters,ClusterExperiment,character-method}
+\alias{recolorClusters}
 \alias{orderSamples,ClusterExperiment-method}
 \alias{orderSamples}
 \alias{orderSamples<-,ClusterExperiment,numeric-method}
 \alias{orderSamples<-}
 \alias{clusterTypes<-,ClusterExperiment,character-method}
 \alias{clusterTypes<-}
-\alias{tableClusters,ClusterExperiment,character-method}
-\alias{tableClusters}
-\alias{tableClusters,ClusterExperiment,missing-method}
-\alias{tableClusters,ClusterExperiment,numeric-method}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
 \S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
@@ -81,10 +81,6 @@
 \S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ClusterExperiment}(object)
-
-\S4method{clusterMatrixNamed}{ClusterExperiment}(x)
-
-\S4method{primaryClusterNamed}{ClusterExperiment}(x)
 
 \S4method{transformation}{ClusterExperiment}(x)
 
@@ -98,9 +94,9 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrixNames}{ClusterExperiment}(x, whichClusters, ...)
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x, whichClusters = "all")
 
-\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters, ...)
+\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
 
 \S4method{clusterMatrix}{ClusterExperiment,missing}(x, whichClusters)
 
@@ -114,11 +110,16 @@
 
 \S4method{primaryClusterLabel}{ClusterExperiment}(x)
 
+\S4method{primaryClusterNamed}{ClusterExperiment}(x)
+
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
-\S4method{dendroClusterIndex}{ClusterExperiment}(x)
+\S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
 \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
+
+\S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
 \S4method{coClustering}{ClusterExperiment}(x)
 
@@ -136,18 +137,17 @@
 
 \S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
 
+\S4method{renameClusters}{ClusterExperiment,character}(object, value,
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
+
+\S4method{recolorClusters}{ClusterExperiment,character}(object, value,
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
+
 \S4method{orderSamples}{ClusterExperiment}(x)
 
 \S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{clusterTypes}{ClusterExperiment,character}(object) <- value
-
-\S4method{tableClusters}{ClusterExperiment,character}(x, whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,missing}(x, whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,numeric}(x, whichClusters,
-  useNames = TRUE, ...)
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -161,7 +161,7 @@ objects may be passed to these functions.}
 
 \item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
 
-\item{whichClusters}{optional argument that can be either numeric or
+\item{whichClusters}{argument that can be either numeric or
 character value. If numeric, gives the indices of the \code{clusterMatrix}
 to return; this can also be used to defined an ordering for the
 clusterings. \code{whichClusters} can be a character value identifying the 
@@ -171,15 +171,15 @@ clusterings. \code{whichClusters} can be a character value identifying the
 \code{\link{workflowClusters}}. If missing, the entire matrix of all
 clusterings is returned.}
 
-\item{useNames}{for \code{tableClusters}, whether the output should be tabled
-with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
+\item{clusterValue}{values of the cluster to match to for subsetting}
+
+\item{whichCluster}{argument to identify cluster, taking input like 
+\code{whichClusters}, only requires that only a single clustering can be identified.}
+
+\item{matchTo}{for subsetting, whether to match to the cluster name
+(\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 }
 \value{
-\code{clusterMatrixNamed} returns a matrix with cluster labels.
-
-\code{primaryClusterNamed} returns the primary cluster (using cluster
-labels).
-
 \code{transformation} prints the function used to transform the data
 prior to clustering.
 
@@ -192,7 +192,7 @@ clusterMatrix).
 
 \code{nSamples} returns the number of samples (same as `ncol`).
 
-\code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+\code{clusterMatrixNamed} returns a matrix with cluster labels.
 
 \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
 
@@ -210,8 +210,14 @@ clusterMatrix).
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
 
+\code{primaryClusterNamed} returns the primary cluster (using cluster
+labels).
+
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
+
+\code{subsetByCluster} subsets the object by clusters in a clustering
+and returns a ClusterExperiment object with only those samples
 
 \code{dendroClusterIndex} returns/sets the clustering index 
 of the clusters used to create dendrogram
@@ -226,6 +232,10 @@ of the clusters used to create dendrogram
 \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
+
+\code{renameClusters} changes the names assigned to clusters within a clustering
+
+\code{recolorClusters} changes the colors assigned to clusters within a clustering
 
 \code{orderSamples} returns/sets the orderSamples slot.
 }

@@ -41,7 +41,7 @@ setMethod(
 #' @param xlab Label for x axis
 #' @param ylab Label for y axis
 #' @param unassignedColor If not NULL, should be character value giving the
-#'   color for unassigned (-2) samples (overrides \code{clusterLegend}) default.
+#'   color for unassigned (-1) samples (overrides \code{clusterLegend}) default.
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param plotUnassigned logical as to whether unassigned (either -1 or -2

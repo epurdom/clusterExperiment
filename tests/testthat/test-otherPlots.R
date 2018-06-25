@@ -195,9 +195,54 @@ test_that("plotFeatureBoxplot works",{
 		removeSil=c(TRUE,FALSE)))
 	expect_silent(clusterLegend(cl)[[1]][,"name"]<-letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
 	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
-	expect_error(plotFeatureBoxplot(cc),"is missing, with no default")
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
 	expect_silent(plotFeatureBoxplot(cc,plotUnassigned=TRUE,feature=rownames(cc)[2]))
+	#check if only 1 non-negative cluster in clustering
+	expect_silent(out<-plotFeatureBoxplot(cl[,1:10],whichCluster=2,feature=2,plotUnassigned=FALSE))
+	expect_equal(ncol(out$stats),1)
+	#check if only 1 cluster in clustering
+	expect_silent(out<-plotFeatureBoxplot(cl[,1:20],whichCluster="primary",feature=2))
+	expect_equal(ncol(out$stats),1)
+})
+
+test_that("plotClustersTable works",{
+	#test where should be diagonal
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2)))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=0))
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=NA))
+	expect_silent(plotClustersTable(tableClusters(cc,whichClusters=c(1,2))))
+
+	#test more complicated
+	#force different numbers of clusters
+	ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]])
+	ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,plotType="bubble"))
+
+	
+})
+
+test_that("plotFeatureScatter works",{
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2,3),whichCluster=1,pch=19))
+	expect_error(plotFeatureScatter(object=cc,features=c("Gene1","Gene4"),whichCluster=1),"not all of features match one")
+
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19))
+
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19,plotUnassigned=FALSE))
+	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),unassignedColor="black",whichCluster=1,pch=19,legend="topright"))
+
+	cc2<-cc
+	rownames(cc2)<-NULL
+	plotFeatureScatter(object=cc2,features=c(1,2),whichCluster=1,pch=19)
+	plotFeatureScatter(object=cc2,features=c(1,2,3),whichCluster=1,pch=19)
+
 })
 
 test_that("plotting works with hdf5 assays objects",{

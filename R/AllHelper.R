@@ -41,12 +41,22 @@ setMethod(
     ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
     #Following Martin Morgan advice, do "new" rather than @<- to create changed object
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
-    subMat<-as.matrix(x@clusterMatrix[j, ,drop=FALSE])
+		
+		#pull names out so can match it to the clusterLegend. 
+    subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		
+		#danger if not unique names
+		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
+		if(any(whNotUniqueNames)){
+			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
+			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
+			subMat[,whNotUniqueNames]<-subMatInt
+		}
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette, #shouldn't need these, but function needs argument
-                          matchClusterLegend=x@clusterLegend,matchTo="name") 
-    newMat<-out$numClusters
+		#shouldn't need give colors, but function needs argument
+    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+		newMat<-out$numClusters
     colnames(newMat)<-nms
     newClLegend<-out$colorList
     #fix order of samples so same
@@ -96,38 +106,8 @@ setMethod(
   }
 )
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixNamed} returns a matrix with cluster labels.
-#' @export
-#' @aliases clusterMatrixNamed
-#' @param x,object a ClusterExperiment object.
-setMethod(
-  f = "clusterMatrixNamed",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    clMat<-clusterMatrix(x)
-    out<-do.call("cbind",lapply(seq_len(ncol(clMat)),function(ii){
-      cl<-clMat[,ii]
-      leg<-clusterLegend(x)[[ii]]
-      leg[,"name"][match(cl,leg[,"clusterIds"])]
-    }))
-    colnames(out)<-colnames(clMat)
-    rownames(out)<-NULL
-    return(out)
-  }
-)
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
-#' labels).
-#' @export
-#' @aliases primaryClusterNamed
-setMethod(
-  f = "primaryClusterNamed",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    clusterMatrixNamed(x)[,primaryClusterIndex(x)]
-  })
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{transformation} prints the function used to transform the data
@@ -218,18 +198,19 @@ setMethod(
   }
 )
 
-
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixNames} returns the matrix with all the clusterings, using the internally stored names of each cluster
+#' @return \code{clusterMatrixNamed} returns a matrix with cluster labels.
 #' @export
-#' @aliases clusterMatrixNames
+#' @aliases clusterMatrixNamed
+#' @param x,object a ClusterExperiment object.
 setMethod(
-  f = "clusterMatrixNames",
-  signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters,...) {
-    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters,...)
+  f = "clusterMatrixNamed",
+  signature = "ClusterExperiment",
+  definition = function(x, whichClusters="all") {
+    convertClusterLegend(x,output="matrixNames",whichClusters=whichClusters)
   }
 )
+
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
 #' @export
@@ -237,13 +218,13 @@ setMethod(
 setMethod(
   f = "clusterMatrixColors",
   signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters,...) {
-    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters,...)
+  definition = function(x,whichClusters) {
+    convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters)
   }
 )
 
 #' @rdname ClusterExperiment-methods
-#' @param whichClusters optional argument that can be either numeric or
+#' @param whichClusters argument that can be either numeric or
 #'   character value. If numeric, gives the indices of the \code{clusterMatrix}
 #'   to return; this can also be used to defined an ordering for the
 #'   clusterings. \code{whichClusters} can be a character value identifying the 
@@ -327,6 +308,17 @@ setMethod(
     return(clusterLabels(x)[primaryClusterIndex(x)])
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @return \code{primaryClusterNamed} returns the primary cluster (using cluster
+#' labels).
+#' @export
+#' @aliases primaryClusterNamed
+setMethod(
+  f = "primaryClusterNamed",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    as.vector(clusterMatrixNamed(x,whichCluster="primary"))
+  })
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{primaryClusterIndex} returns/sets the primary clustering index
@@ -343,18 +335,28 @@ setMethod(
 
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{dendroClusterIndex} returns/sets the clustering index 
-#' of the clusters used to create dendrogram
-#' (i.e., which column of clusterMatrix corresponds to the clustering).
+#' @return \code{subsetByCluster} subsets the object by clusters in a clustering
+#' and returns a ClusterExperiment object with only those samples
+#' @param clusterValue values of the cluster to match to for subsetting
+#' @param matchTo for subsetting, whether to match to the cluster name
+#'   (\code{"name"}) or internal cluster id (\code{"clusterIds"})
 #' @export
-#' @aliases dendroClusterIndex
+#' @aliases subsetByCluster
 setMethod(
-  f = "dendroClusterIndex",
+  f = "subsetByCluster",
   signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x@dendro_index)
+  definition = function(x,clusterValue,whichCluster="primary",matchTo=c("name","clusterIds")) {
+    
+		whCl<-.convertSingleWhichCluster(x,whichCluster)
+		matchTo<-match.arg(matchTo)
+		if(matchTo=="name"){
+			cl<-clusterMatrixNamed(x)[,whCl]
+		}
+		else cl<-clusterMatrix(x)[,whCl]
+		return(x[,which(cl %in% clusterValue)])
   }
 )
+
 
 #' @rdname ClusterExperiment-methods
 #' @export
@@ -368,6 +370,21 @@ setReplaceMethod(
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
+#' @rdname ClusterExperiment-methods
+#' @return \code{dendroClusterIndex} returns/sets the clustering index 
+#' of the clusters used to create dendrogram
+#' (i.e., which column of clusterMatrix corresponds to the clustering).
+#' @export
+#' @aliases dendroClusterIndex
+setMethod(
+  f = "dendroClusterIndex",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(x@dendro_index)
+  }
+)
+
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{coClustering} returns/sets the co-clustering matrix.
@@ -463,6 +480,7 @@ setMethod(
       return(out)
     }
 )
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases clusterLegend<-
@@ -471,6 +489,68 @@ setReplaceMethod(
   signature = signature(object="ClusterExperiment", value="list"),
   definition = function(object, value) {
     object@clusterLegend<-unname(value)
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+
+.checkMatch<-function(clMat,value,matchTo){
+	if(is.null(names(value))){
+		clVals<-clMat[,"clusterIds"]
+		if(length(value)== nrow(clMat)) names(value)<-clVals
+		else if(length(value)==length(clVals[clVals>0])) names(value)<-clMat[clVals>0,"clusterIds"]
+		else stop("length of argument 'value' not equal to number of clusters, nor does it have names to identify it to 'clusterIds' of this clustering.")
+			matchTo<-"clusterIds"
+	} 
+	if(matchTo=="name"){
+		if(!all(names(value) %in% clMat[,"name"])) stop("'value' must be vector with names that matches the 'name' column of the requested clusterLegend")
+			m<-match(names(value),clMat[,"name"])
+	}
+	else{
+		if(!all(names(value) %in% clMat[,"clusterIds"])) stop("'value' must be vector with names that matches the 'clusterIds' column of the requested clusterLegend")
+			m<-match(names(value),clMat[,"clusterIds"])
+		
+	}
+	return(m)
+}
+#' @rdname ClusterExperiment-methods
+#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
+#' @param whichCluster argument to identify cluster, taking input like 
+#' \code{whichClusters}, only requires that only a single clustering can be identified. 
+#' @export
+#' @aliases renameClusters
+setMethod( 
+  f = "renameClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
+		matchTo<-match.arg(matchTo)
+		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
+		mat[m,"name"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+		
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @return \code{recolorClusters} changes the colors assigned to clusters within a clustering
+#' @export
+#' @aliases recolorClusters
+setMethod( 
+  f = "recolorClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
+		matchTo<-match.arg(matchTo)
+		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
+		mat[m,"color"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+		
     ch<-.checkClusterLegend(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
@@ -516,66 +596,3 @@ setReplaceMethod(
   }
 )
 
-
-#' @aliases tableClusters
-#' @rdname ClusterExperiment-methods
-setMethod( 
-  f = "tableClusters",
-  signature = signature(x = "ClusterExperiment",whichClusters="character"),
-  definition = function(x, whichClusters,...)
-  {
-    wh<-.TypeIntoIndices(x,whClusters=whichClusters)
-    if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-    return(tableClusters(x,whichClusters=wh,...))
-    
-  })
-
-#' @rdname ClusterExperiment-methods
-#' @export
-setMethod( 
-  f = "tableClusters",
-  signature = signature(x = "ClusterExperiment",whichClusters="missing"),
-  definition = function(x, whichClusters,...)
-  {
-    tableClusters(x,whichClusters="primaryCluster")
-    
-  })
-
-#' @rdname ClusterExperiment-methods
-#' @param useNames for \code{tableClusters}, whether the output should be tabled
-#'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
-#' @export
-setMethod( 
-  f = "tableClusters",
-  signature = signature(x = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(x, whichClusters, useNames=TRUE,...)
-  { 
-    if(useNames) numCluster<-clusterMatrixNames(x,whichClusters=whichClusters)
-    else numCluster<-clusterMatrix(x)[,whichClusters]
-    table(data.frame(numCluster))
-  })
-
-
-# # Need to implement: wrapper to get a nice summary of the parameters choosen, similar to that of paramMatrix of clusterMany (and compatible with it)
-# #' @rdname ClusterExperiment-class
-# setMethod(
-#   f= "paramValues",
-#   signature = "ClusterExperiment",
-#   definition=function(x,type){
-#     whCC<-which(clusterTypes(x)==type)
-#     if(length(wwCC)==0) stop("No clusterings of type equal to ",type,"are found")
-#     if(type=="clusterMany"){
-#       #recreate the paramMatrix return value
-#       paramMatrix<-do.call("rbind",lapply(wwCC,function(ii){
-#         data.frame(index=ii,clusteringInfo(x)[[ii]]["choicesParam"])
-#       }))
-#
-#     }
-#     else if(type=="clusterSingle"){
-#
-#     }
-#     else{
-#       return(clusteringInfo(x)[whCC])
-#     }
-#   }
-# )

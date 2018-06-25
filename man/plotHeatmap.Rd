@@ -5,6 +5,7 @@
 \alias{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap}
 \alias{plotHeatmap,SummarizedExperiment-method}
+\alias{plotHeatmap,table-method}
 \alias{plotHeatmap,ClusterExperiment-method}
 \alias{plotHeatmap,data.frame-method}
 \alias{plotHeatmap,ExpressionSet-method}
@@ -18,6 +19,8 @@
 
 \S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
   transFun = NULL, ...)
+
+\S4method{plotHeatmap}{table}(data, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
   clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
@@ -317,7 +320,9 @@ Many arguments can be passed on to \code{aheatmap}, however, some are set
   will also be set internally to give more vibrant colors than the default in
   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
   also be set in the \code{clusterLegend} slot ). Other options should be
-  passed on to \code{aheatmap}, though they have not been all tested.
+  passed on to \code{aheatmap}, though they have not been all tested. Useful options
+ include \code{treeheight=0} to suppress plotting of the dendrograms, and
+ \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 
 \code{plotCoClustering} is a convenience function to plot the heatmap
 of the co-clustering matrix stored in the \code{coClustering} slot of a

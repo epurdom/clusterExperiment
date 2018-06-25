@@ -1,6 +1,7 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedMatrix
+
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
@@ -67,6 +68,8 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #'   non-null at each node of dendrogram. See \code{\link{mergeClusters}}
 #' @slot merge_method character indicating method used for merging. See 
 #'   \code{\link{mergeClusters}}
+#' @slot merge_demethod character indicating the DE method used for merging. See 
+#'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
 #' @slot dendro_samples dendrogram. A dendrogram containing the cluster
@@ -119,6 +122,7 @@ setClass(
 	merge_index="numeric",
 	merge_dendrocluster_index="numeric",
 	merge_method="character",
+	merge_demethod="character",
 	merge_cutoff="numeric",
 	merge_nodeProp="data.frameOrNULL",
 	merge_nodeMerge="data.frameOrNULL"
@@ -249,15 +253,22 @@ setMethod(
 #'@param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
 #'@param merge_dendrocluster_index integer. Sets the
 #'  \code{merge_dendrocluster_index} slot (see Slots)
+#'@param merge_demethod character, Sets the
+#'  \code{merge_demethod} slot (see Slots)
 #'@param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see
 #'  Slots)
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
-#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots).
-#'  Must be match to given clusters, in that must be valid clusterLegend, and
-#'  the "clusterIds" column matches the value in the clustering matrix.
-#'  Generally, this is not a good way for users to set the clusterLegend slot.
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see details).
+
+#' @details The \code{clusterLegend} argument to \code{ClusterExperiment} 
+#'  must be a valid clusterLegend format and match the values in \code{clusters}, 
+#' in that the "clusterIds" column must matches the value in the clustering matrix
+#'  \code{clusters}. If \code{names(clusterLegend)==NULL}, it is assumed that the 
+#'  entries of \code{clusterLegend} are in the same order as the columns of 
+#'  \code{clusters}. Generally, this is not a good way for users to set the
+#' clusterLegend slot.
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -287,6 +298,7 @@ setMethod(
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
                         merge_method=NA_character_,
+												merge_demethod=NA_character_,
                         clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
@@ -319,30 +331,21 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    tmp<-.makeColors(clusters, colors=massivePalette)
-    if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
+    	
+    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
+    if(is.null(clusterLegend)){
+    	clusterLegend<-tmp$colorList
+    } 
     else{
-      #need to grab colors/names in given clusterLegend -- rerun .makeColors
+      #need to check matches the clusters, which .makeColors doesn't do.
       clusterLegend<-unname(clusterLegend)
       ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
       if(!is.logical(ch)) stop(ch)
-      # Eventually, use this code instead, but for now, not changing...
-      # need to grab colors/names in given clusterLegend -- rerun .makeColors
-      # tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="clusterIds")
-      # clusterLegend<-tmp$colorList      
-
-      #need to grab colors/names in given clusterLegend
-      autoLegend<-tmp$colorList
-      clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
-        m<-match(orig[,"clusterIds"],auto[,"name"])
-        if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
-        orig[,"clusterIds"]<-auto[m,"clusterIds"]
-        return(orig)
-        
-      },SIMPLIFY=FALSE)
+ 			clusterLegend<-tmp$colorList      
     }
     clustersNum<-tmp$numClusters
     colnames(clustersNum)<-colnames(clusters)
+		
     #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                object,
@@ -363,6 +366,7 @@ setMethod(
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,
                merge_method=merge_method,
+							 merge_demethod=merge_demethod,
                coClustering=coClustering
                
     )

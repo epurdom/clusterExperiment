@@ -133,14 +133,17 @@ setMethod(
     newClusterInfo<-clusteringInfo(x)[-whichClusters]
     newClusterType<-clusterTypes(x)[-whichClusters]
     newClusterColors<-clusterLegend(x)[-whichClusters]
-    dend_samples <- x@dendro_samples
-    dend_cl <- x@dendro_clusters
-    dend_ind<-dendroClusterIndex(x)
-    dend_out<-x@dendro_outbranch
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
     if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
-    else pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+    else 
+			pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+		
+		#fix dendro info
+	  dend_samples <- x@dendro_samples
+    dend_cl <- x@dendro_clusters
+    dend_ind<-dendroClusterIndex(x)
+    dend_out<-x@dendro_outbranch
     if(dendroClusterIndex(x) %in% whichClusters){
       dend_cl<-NULL
       dend_samples<-NULL
@@ -150,6 +153,26 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
+		#fix merge info:
+		#erase merge info if either dendro or merge index deleted.
+	  if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
+      merge_index=NA_real_
+      merge_cutoff=NA_real_
+      merge_dendrocluster_index=NA_real_
+      merge_nodeProp=NULL
+      merge_nodeMerge=NULL
+      merge_method=NA_character_
+			merge_demethod=NA_character_
+	  }
+		else{
+      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_cutoff=x@merge_cutoff
+      merge_nodeProp=x@merge_nodeProp
+      merge_nodeMerge=x@merge_nodeMerge
+      merge_method=x@merge_method
+      merge_demethod=x@merge_demethod
+				}
 
     retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
                               clusters=newClLabels,
@@ -161,7 +184,14 @@ setMethod(
                               dendro_clusters=dend_cl,
                               dendro_index=dend_ind,
                               dendro_outbranch=dend_out,
-                              coClustering=coMat,
+															merge_index=merge_index,
+															merge_dendrocluster_index=merge_dendrocluster_index,
+												      merge_cutoff=merge_cutoff,
+												      merge_nodeProp=merge_nodeProp,
+												      merge_nodeMerge=merge_nodeMerge,
+												      merge_method=merge_method,
+												      merge_demethod=merge_demethod,                              
+															coClustering=coMat,
                               orderSamples=orderSamples,
                               clusterLegend=newClusterColors,
                               checkTransformAndAssay=FALSE
@@ -171,34 +201,22 @@ setMethod(
   }
 )
 
-#' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the \code{primaryCluster} of x (so they may
-#'   be unclustered in other clusters found in \code{clusterMatrix(x)}).
-#' @rdname addClusterings
-#' @aliases removeUnclustered
-#' @export
-setMethod(
-  f = "removeUnclustered",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x[,primaryCluster(x) >= 0])
-  }
-)
 
 
 #' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
 #' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
+#' @param whichCluster Clustering from which to remove clusters for
+#'  \code{removeCluster}. Note that it is a singular cluster.
 #' @rdname addClusterings
 #' @aliases removeClusters
 #' @export
 setMethod(
   f = "removeClusters",
   signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters,clustersToRemove,clusterLabels=NULL) {
-    if(length(whichClusters)!=1) stop("whichClusters should identify a single clustering.")
-    makePrimary<-whichClusters==x@primaryIndex
-    cl<-clusterMatrix(x)[,whichClusters]
-    leg<-clusterLegend(x)[[whichClusters]]
+  definition = function(x,whichCluster,clustersToRemove,makePrimary=FALSE,clusterLabels=NULL) {
+    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    cl<-clusterMatrix(x)[,whCl]
+    leg<-clusterLegend(x)[[whCl]]
     if(is.character(clustersToRemove)){
       m<- match(clustersToRemove,leg[,"name"] )
       if(any(is.na(m)))
@@ -207,12 +225,12 @@ setMethod(
     }
     if(is.numeric(clustersToRemove)){
       if(any(!clustersToRemove %in% cl)) stop("invalid clusterIds in 'clustersToRemove'")
-      if(any(clustersToRemove== -1)) stop("cannot remove -1 clusters using this function")
+      if(any(clustersToRemove== -1)) stop("cannot remove -1 clusters using this function. See 'assignUnassigned' to assign unassigned samples.")
       cl[cl %in% clustersToRemove]<- -1
     }
     else stop("clustersToRemove must be either character or numeric")
     if(is.null(clusterLabels)){
-      currlabel<-clusterLabels(x)[whichClusters]
+      currlabel<-clusterLabels(x)[whCl]
       clusterLabels<-paste0(currlabel,"_unassignClusters")
     }
     if(clusterLabels %in% clusterLabels(x))
@@ -225,7 +243,9 @@ setMethod(
     if(length(whRm)>0){
       newleg<-newleg[-whRm,,drop=FALSE]
     }
-    return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=list(newleg),makePrimary=makePrimary))
+		newCl<-list(newleg)
+		#names(newCl)<-clusterLabels
+    return(addClusterings(x, cl,  clusterLabels = clusterLabels,clusterLegend=newCl,makePrimary=makePrimary))
 
 
   }
@@ -235,8 +255,8 @@ setMethod(
 setMethod(
   f = "removeClusters",
   signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichClusters,...) {
-    whichClusters<-.TypeIntoIndices(x,whichClusters)
-    removeClusters(x,whichClusters,...)
+  definition = function(x, whichCluster,...) {
+    whichCluster<-.TypeIntoIndices(x,whichCluster)
+    removeClusters(x,whichCluster,...)
   }
 )

@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.1.3-9001
+Version: 2.1.3-9019
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -12,11 +12,13 @@ Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 3.4.2),
+    R (>= 3.5.0),
     SingleCellExperiment,
-	SummarizedExperiment
+	SummarizedExperiment,
+	BiocGenerics
 Imports:
     methods,
+		Biobase,
     NMF,
     RColorBrewer,
     ape (>= 5.0),
@@ -37,7 +39,10 @@ Imports:
 	  grDevices,
 	  Rcpp,
 	  HDF5Array (>= 1.7.10),
-	  DelayedArray (>= 0.5.31)
+	  DelayedArray (>= 0.5.31),
+		edgeR,
+		scales,
+		zinbwave
 Suggests:
   BiocStyle,
   knitr,
@@ -84,10 +89,12 @@ Collate:
     'mergeClusters.R'
     'plotBarplot.R'
     'plotClusters.R'
+    'plotClustersTable.R'
     'plotClustersWorkflow.R'
     'plotContrastHeatmap.R'
     'plotDendrogram.R'
     'plotFeatureBoxplot.R'
+    'plotFeatureScatter.R'
     'plotHeatmap.R'
     'plotReduceDim.R'
     'plottingHelpers.R'
@@ -96,5 +103,6 @@ Collate:
     'subsampleClustering.R'
     'subsampleLoop.R'
     'transformFunction.R'
+    'updateObject.R'
     'workflowClusters.R'
 LinkingTo: Rcpp

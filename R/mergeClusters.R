@@ -7,66 +7,68 @@
 #' @name mergeClusters
 #' @aliases mergeClusters mergeClusters,matrixOrHDF5-method
 #'
-#' @param x data to perform the test on. It can be a matrix or a
+#' @param x data to perform the test on. It can be a matrix or a 
 #'   \code{\link{ClusterExperiment}}.
-#' @param cl A numeric vector with cluster assignments to compare to. ``-1''
+#' @param cl A numeric vector with cluster assignments to compare to. ``-1'' 
 #'   indicates the sample was not assigned to a cluster.
 #' @param dendro dendrogram providing hierarchical clustering of clusters in cl.
-#'   If x is a matrix, then the default is \code{dendro=NULL} and the function
-#'   will calculate the dendrogram with the given (x, cl) pair using
-#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}}
-#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In
-#'   this case, this means that \code{\link{makeDendrogram}} needs to be called
+#'   If x is a matrix, then the default is \code{dendro=NULL} and the function 
+#'   will calculate the dendrogram with the given (x, cl) pair using 
+#'   \code{\link{makeDendrogram}}. If x is a \code{\link{ClusterExperiment}} 
+#'   object, the dendrogram in the slot \code{dendro_clusters} will be used. In 
+#'   this case, this means that \code{\link{makeDendrogram}} needs to be called 
 #'   before \code{mergeClusters}.
 #' @param mergeMethod method for calculating proportion of non-null that will be
-#'   used to merge clusters (if 'none', no merging will be done). See details
+#'   used to merge clusters (if 'none', no merging will be done). See details 
 #'   for description of methods.
-#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two
-#'   clusters with the proportion of DE below cutoff will be merged. Must be a
-#'   value between 0, 1, where lower values will make it harder to merge
+#' @param cutoff minimimum value required for NOT merging a cluster, i.e. two 
+#'   clusters with the proportion of DE below cutoff will be merged. Must be a 
+#'   value between 0, 1, where lower values will make it harder to merge 
 #'   clusters.
-#' @param plotInfo what type of information about the merging will be shown on
-#'   the dendrogram. If 'all', then all the estimates of proportion non-null
+#' @param plotInfo what type of information about the merging will be shown on 
+#'   the dendrogram. If 'all', then all the estimates of proportion non-null 
 #'   will be plotted at each node of the dendrogram; if 'mergeMethod', then only
 #'   the value used in the \code{mergeClusters} command is plotted at each node.
-#'   If 'none', then no proportions will be added to the dendrogram, though the
-#'   dendrogram will be drawn. 'plotInfo' can also be one of the valid input to
-#'   \code{mergeMethod} (even if that method is not the method chosen in
+#'   If 'none', then no proportions will be added to the dendrogram, though the 
+#'   dendrogram will be drawn. 'plotInfo' can also be one of the valid input to 
+#'   \code{mergeMethod} (even if that method is not the method chosen in 
 #'   \code{mergeMethod} argument). \code{plotInfo} can also show the information
-#'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to
+#'   corresponding  to "adjP" with a fold-change cutoff, by giving a value to 
 #'   this argument in  the form of "adjP_2.0", for example.
-#' @param isCount logical as to whether input data is a count matrix. See
-#'   details.
-#' @param plot logical as to whether to plot the dendrogram with the merge
+#' @param plot logical as to whether to plot the dendrogram with the merge 
 #'   results
 #' @param nodePropTable Only for matrix version. Matrix of results from previous
-#'   run of \code{mergeClusters} as returned by matrix version of
-#'   \code{mergeClusters}. Useful if just want to change the cutoff. Not
+#'   run of \code{mergeClusters} as returned by matrix version of 
+#'   \code{mergeClusters}. Useful if just want to change the cutoff. Not 
 #'   generally intended for user but used internally by package.
-#' @param calculateAll logical. Whether to calculate the estimates for all
-#'   methods. This reduces computation costs for any future calls to
-#'   \code{mergeClusters} since the results can be passed to future calls of
+#' @param calculateAll logical. Whether to calculate the estimates for all 
+#'   methods. This reduces computation costs for any future calls to 
+#'   \code{mergeClusters} since the results can be passed to future calls of 
 #'   \code{mergeClusters} (and for \code{ClusterExperiment} objects this is done
 #'   automatically).
-#' @param showWarnings logical. Whether to show warnings given by the methods.
-#'   The 'locfdr' method in particular frequently spits out warnings (which may
-#'   indicate that its estimates are not reliable). Setting
-#'   \code{showWarnings=FALSE} will suppress all warnings from all methods (not
-#'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by
-#'   default to avoid large number of warnings being produced by "locfdr", but
+#' @param showWarnings logical. Whether to show warnings given by the methods. 
+#'   The 'locfdr' method in particular frequently spits out warnings (which may 
+#'   indicate that its estimates are not reliable). Setting 
+#'   \code{showWarnings=FALSE} will suppress all warnings from all methods (not 
+#'   just "locfdr"). By default this is set to \code{showWarnings=FALSE} by 
+#'   default to avoid large number of warnings being produced by "locfdr", but 
 #'   users may want to be more careful to check the warnings for themselves.
-#' @param logFCcutoff Relevant only if the \code{mergeMethod} selected is
+#' @param logFCcutoff Relevant only if the \code{mergeMethod} selected is 
 #'   "adjP", in which case the calculation of the proportion of individual tests
-#'   significant will also require that the estimated log-fold change of the
+#'   significant will also require that the estimated log-fold change of the 
 #'   features to be at least this large in absolute value. Value will be rounded
-#'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For
-#'   any other method, this parameter is ignored.
-#' @param ... for signature \code{matrix}, arguments passed to the
-#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram.
-#'   For signature \code{ClusterExperiment} arguments passed to the method for
-#'   signature \code{matrix} and then if do not match those arguments, will be
+#'   to nearest tenth of an integer via \code{round(logFCcutoff,digits=1)}. For 
+#'   any other method, this parameter is ignored. Note that the logFC is based
+#'   on \code{log2} (the results of \code{\link{getBestFeatures}})
+#' @param forceCalculate This forces the function to erase previously saved
+#'   merge results and recalculate the merging.
+#' @param ... for signature \code{matrix}, arguments passed to the 
+#'   \code{\link{plot.phylo}} function of \code{ape} that plots the dendrogram. 
+#'   For signature \code{ClusterExperiment} arguments passed to the method for 
+#'   signature \code{matrix} and then if do not match those arguments, will be 
 #'   passed onto \code{\link{plot.phylo}}.
 #' @inheritParams clusterMany
+#' @inheritParams getBestFeatures
 #'
 #' @details \strong{Estimation of Proportion non-null} "Storey" refers to the
 #'   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
@@ -79,16 +81,9 @@
 #'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
 #'   refers to the proportion of genes that are found significant based on a FDR
 #'   adjusted p-values (method "BH") and a cutoff of 0.05.
-#' @details  \strong{Count correction} If  \code{isCount=TRUE}, and the input is
-#'   a matrix, \code{log2(count + 1)} will be used for
-#'   \code{\link{makeDendrogram}} and the original data with voom correction
-#'   will be used in \code{\link{getBestFeatures}}). If input is
-#'   \code{\link{ClusterExperiment}}, then setting \code{isCount=TRUE} also
-#'   means that the log2(1+count) will be used as the transformation, like for
-#'   the matrix case as well as the voom calculation, and will NOT use the
-#'   transformation stored in the object. If FALSE, then transformData(x) will be
-#'   given to the input and will be used for both \code{makeDendrogram} and
-#'   \code{getBestFeatures}, with no voom correction.
+#' @details  \strong{DEMethod} If  \code{DEMethod=="limma"}, and \code{x} is a \code{ClusterExperiment} object, then transformData(x) will be
+#'   given as the input to \code{getBestFeatures}. Otherwise, the original data stored in 
+#'  the assay will be passed to \code{getBestFeatures} (and the remaining methods assume the data will be counts.)
 #' @details \strong{Control of Plotting} If \code{mergeMethod} is not equal to
 #'   'none' then the plotting will indicate where the clusters will be merged by
 #'   making dotted lines of edges that are merged together (assuming
@@ -106,6 +101,7 @@
 #'   the dotted edges are still drawn. If you just want plot of the dendrogram,
 #'   with no merging performed nor demonstrated on the plot, see
 #'   \code{\link{plotDendrogram}}.
+#' @details \strong{Saving and Reusing of results} By default, the function saves the results in the \code{ClusterExperiment} object and will not recalculate them if not needed. Note that by default \code{calculateAll=TRUE}, which means that regardless of the value of \code{mergeMethod}, all the methods will be calculated so that those results will be stored and if you change the mergeMethod, no additional calculations are needed. Since the computationally intensive step is the running the DE method on the genes, this is a big savings (all of the methods then calculate the proportion from those results). However, note that if \code{calculateAll=TRUE} and ANY of the methods returned NA for any value, the calculation will be redone. Thus if, for example, the \code{locfdr} function does not run successfully and returns NA, the function will always recalculate each time, even if you don't specifically want the results of \code{locfdr}. In this case, it makes sense to turn \code{calculateAll=FALSE}.
 #' @details If the dendrogram was made with option
 #'   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
 #'   other samples), then you cannot choose the option
@@ -139,7 +135,10 @@
 #'   \item{\code{cutoff}}{ The cutoff value for merging.} }
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new
 #'   \code{ClusterExperiment} object with an additional clustering based on the
-#'   merging. This becomes the new primary clustering.
+#'   merging. This becomes the new primary clustering. Note that even if
+#'   \code{mergeMethod="none"}, the returned object will erase any old merge
+#'   information, update the work flow numbering, and return the newly calculated 
+#'   merge information.  
 #' @references Ji and Cai (2007), "Estimating the Null and the Proportion
 #' of Nonnull Effects in Large-Scale Multiple Comparisons", JASA 102: 495-906.
 #' @references Efron (2004) "Large-scale simultaneous hypothesis testing:
@@ -170,11 +169,11 @@
 #' #(Note argument 'use.edge.length' can improve
 #' #readability)
 #' merged <- mergeClusters(cl, plotInfo="all",
-#' mergeMethod="adjP", use.edge.length=FALSE)
+#' mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma")
 #'
 #' #Simpler plot with just dendrogram and single method
 #' merged <- mergeClusters(cl, plotInfo="mergeMethod",
-#' mergeMethod="adjP", use.edge.length=FALSE,
+#' mergeMethod="adjP", use.edge.length=FALSE, DEMethod="limma",
 #' leafType="clusters",plotType="name")
 #'
 #' #compare merged to original
@@ -191,7 +190,8 @@ setMethod(
                         mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
                         plotInfo="none",
                         nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
-                        cutoff=0.05, plot=TRUE,isCount=TRUE, logFCcutoff=0, ...){
+                        cutoff=0.05, plot=TRUE,DEMethod, logFCcutoff=0, weights=NULL,...){
+		
 		if(any(c("whichCluster","whichClusters") %in% names(list(...)))) stop("The argument 'whichCluster' is not accepted for this function. The clustering used for merging will always be taken as that clustering that created the currently stored dendrogram (given by 'dendroClusterIndex')")
     dendroSamples<-NULL #currently option is not implemented for matrix version...
     if(!is.numeric(logFCcutoff) || logFCcutoff<0) stop("Invalid value for the parameter 'logFCcutoff'")
@@ -235,8 +235,15 @@ setMethod(
 
     }
 
-    otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
-    otherVals<-c(otherVals,adjPFCMethod)
+    ### check valid existing table
+    if(!is.null(nodePropTable)){
+      if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
+      if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
+				otherVals<-colnames(nodePropTable)[!colnames(nodePropTable)%in%c("Node","Contrast")]
+		    otherVals<-c(otherVals,adjPFCMethod)
+    }
+		else otherVals<-adjPFCMethod
+			
     possibleValues<-unique(c("none", "all","mergeMethod",.availMergeMethods,otherVals))
     plotInfo<-match.arg(plotInfo,possibleValues)
 
@@ -248,22 +255,26 @@ setMethod(
     ############
     #determine whether need to calculate, or if already in nodePropTable
     ############
-    ### check valid existing table
-    if(!is.null(nodePropTable)){
-      if(!all(c("Node","Contrast") %in% colnames(nodePropTable))) stop("nodePropTable must have columns with names 'Node' and 'Contrast'")
-      if(!all(.availMergeMethods %in% colnames(nodePropTable))) stop("All of the methods' names must be included in colnames of nodePropTable (with NA if not calculated):", paste(.availMergeMethods,collapse=",",sep=""))
-    }
     needCalculate<-is.null(nodePropTable) || any(!whMethodCalculate %in% names(nodePropTable)) || any(is.na(nodePropTable[,whMethodCalculate]))
 
     ############
     ### calculate the estimated proportions
     ############
     if(needCalculate){
+
+			#			denote<-sprintf("Significance tests will use %s method",DEMethod)
+			# if(DEMethod=="edgeR"){
+			# 	if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
+			# 	else denote<-paste0(denote,".")
+			# }
+			# else denote<-paste0(denote,".")
+			# .mynote(denote)
+
       #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
                                   contrastAdj=c("All"),
-                                  number=nrow(x), p.value=1, isCount=isCount)
+                                  number=nrow(x), p.value=1, DEMethod=DEMethod, weights=weights)
       #divide table into each node and calculate proportion.
       sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
         storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
@@ -296,7 +307,7 @@ setMethod(
     ############
     phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
     if(mergeMethod != "none"){
-      valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 2)})
+			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
       nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
 
       #find nodes where *all* descendants are below cutoff
@@ -506,7 +517,7 @@ setMethod(
 setMethod(
   f = "mergeClusters",
   signature = signature(x = "ClusterExperiment"),
-  definition = function(x, eraseOld=FALSE,isCount=FALSE,
+  definition = function(x, eraseOld=FALSE,
                         mergeMethod="none",
                         plotInfo="all",
                         clusterLabel="mergeClusters",
@@ -514,7 +525,18 @@ setMethod(
                         plotType=c("colorblock","name","ids"),
                         plot=TRUE,
                         whichAssay=1,
+												forceCalculate=FALSE,
+												weights=if("weights" %in% assayNames(x)) "weights" else NULL,
+												DEMethod,
                         ...) {
+    if(forceCalculate) x<-.eraseMerge(x)
+		else{
+			if(!is.na(x@merge_demethod)){
+				if(!missing(DEMethod) && x@merge_demethod != DEMethod) stop("Setting argument 'DEMethod' is not allowed if there is already saved merge information that will be used. To rerun merge with different 'DEMethod' set 'forceCalculate=TRUE'.")
+				else DEMethod<-x@merge_demethod
+			}
+			
+		}
     plotType<-match.arg(plotType)
     leafType<-match.arg(leafType)
     if(is.null(x@dendro_clusters)) {
@@ -524,7 +546,6 @@ setMethod(
       cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
       .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
     }
-    if(isCount) .mynote("If `isCount=TRUE` the data will be transformed with voom() rather than with the transformation function in the slot `transformation`. This makes sense only for counts.")
     if(!x@dendro_outbranch){
       if(any(cl<0) & leafType=="samples"){
         warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
@@ -551,12 +572,22 @@ setMethod(
       else propTable<-NULL
     }
     else propTable<-NULL
-    outlist <- mergeClusters(x=if(!isCount) transformData(x, whichAssay=whichAssay) else assay(x, whichAssay),
+    if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
+    		weights<-assay(x, weights) 
+    }
+    outlist <- mergeClusters(x=if(DEMethod=="limma") transformData(x, whichAssay=whichAssay) else assay(x, whichAssay),
                              cl=cl, nodePropTable=propTable,
                              dendro=x@dendro_clusters, plotInfo=plotInfo,plot=FALSE,
-                             isCount=isCount,mergeMethod=mergeMethod, ...)
+                             mergeMethod=mergeMethod, DEMethod=DEMethod, weights=weights,...)
     nodeMerge<-outlist$nodeMerge
-    if(mergeMethod!="none"){#
+    #-----
+    ##Check if pipeline already ran previously and if so increase and erase old merge
+		##Note even if didn't ask to actually create merge information, calculating the merge information will have the same effect.
+    #-----
+		x<-.updateCurrentWorkflow(x, eraseOld, newTypeToAdd="mergeClusters", newLabelToAdd=clusterLabel)
+		x<-.eraseMerge(x)
+		
+		if(mergeMethod!="none"){#
       #######################
       ##add a new cluster, but only if there was a merging
       #######################
@@ -579,10 +610,7 @@ setMethod(
       #-----
       newObj<-.addPrefixToClusterNames(newObj,prefix="m",whCluster=1)
       clusterLabels(newObj) <- clusterLabel
-      #-----
-      ##Check if pipeline already ran previously and if so increase
-      #-----
-			x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="mergeClusters",newLabelToAdd=clusterLabel)
+      
 			
       if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x)
       else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
@@ -598,36 +626,6 @@ setMethod(
       retval@merge_dendrocluster_index<-retval@dendro_index #update here because otherwise won't be right number.
       retval@merge_cutoff<-outlist$cutoff
       retval@merge_nodeMerge<-nodeMerge
-      #-----
-      ## Update: This has been fixed, don't need this code...
-      ##The above can change the internal coding of the merge clusters (???Why???)
-      ##Need to update the nodeMerge to reflect this before save to object.
-      ##Do this by matching the outlist$clustering to the new clustering
-      #-----
-      # if(didMerge){
-      # 
-      #   if(all(is.na(nodeMerge$mergeClusterId))) stop("internal coding error -- merging done but no non-NA value in 'mergeClusterId' value") #just in case. Should be at least 1
-      #   origOldToNew<-outlist$oldClToNew
-      #   if(ncol(origOldToNew)>1){ #otherwise, only 1 cluster left, and will always have right number
-      #     #
-      #     currOldToNew<-tableClusters(retval,whichClusters=c(dendroClusterIndex(retval),mergeClusterIndex(retval)))
-      #     #-----
-      #     ##Match merge Ids in nodeMerge to columns of origOldToNew
-      #     #-----
-      #     #get non NAs in nodeMerge
-      #     whNotNAMerge<-which(!is.na(nodeMerge$mergeClusterId))
-      #     idsInMergeTable<-nodeMerge$mergeClusterId[whNotNAMerge]
-      #     #make origOldToNew only these ids in this order
-      #     origOldToNew<-origOldToNew[,match(idsInMergeTable,colnames(origOldToNew)),drop=FALSE]
-      #     #make new merge table in same order as these ids by match columns to each other
-      #     mCols<-match(apply(origOldToNew,2,paste,collapse=","),apply(currOldToNew,2,paste,collapse=","))
-      #     #currOldToNew<-currOldToNew[,mCols]
-      #     nodeMerge$mergeClusterId[whNotNAMerge]<-as.numeric(colnames(currOldToNew)[mCols])
-      # 
-      #   }
-      # 
-      # }
-      # retval@merge_nodeMerge<-nodeMerge
       #------------
       ##Align the colors between mergeClusters and makeConsensus
       #------------
@@ -643,15 +641,10 @@ setMethod(
       #But do not update the clustering, etc from above.
       ##############
       retval<-x
-      saveNodeTable<-is.na(x@merge_index)
-      if(saveNodeTable && !is.na(x@merge_index) && x@merge_dendrocluster_index!=x@dendro_index) saveNodeTable<-FALSE
-      if(saveNodeTable ){
-
-        retval@merge_nodeProp <-outlist$nodeProp
-      }
-      if(is.na(retval@merge_index)) retval@merge_dendrocluster_index<-retval@dendro_index
-
+      retval@merge_nodeProp <-outlist$nodeProp
+			retval@merge_dendrocluster_index<-retval@dendro_index
     }
+		retval@merge_demethod<-DEMethod
     ch<-.checkMerge(retval)
     if(!is.logical(ch)) stop(ch)
     if(plot){
@@ -774,7 +767,29 @@ setMethod(
   }
 )
 
-
+#' @rdname mergeClusters
+#' @return \code{eraseMergeInfo} returns object with all previously saved merge info removed.
+#' @aliases eraseMergeInfo
+#' @export
+setMethod(
+  f = "eraseMergeInfo",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    x<-.eraseMerge(x)
+		return(x)
+  }
+)
+.eraseMerge<-function(x){
+  x@merge_index<-NA_real_
+  x@merge_dendrocluster_index<-NA_real_
+  x@merge_method<-NA_character_
+  x@merge_cutoff<-NA_real_
+  x@merge_nodeProp<-NULL
+  x@merge_nodeMerge<-NULL
+  ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  else return(x)
+}
 
 .myTryFunc<-function(FUN,showWarnings,...){
 

@@ -11,7 +11,7 @@
 
 \S4method{clusterContrasts}{vector}(cluster, contrastType = c("Dendro",
   "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  outputType = c("limma", "MAST"), removeNegative = TRUE)
+  outputType = c("limma", "MAST"), removeUnassigned = TRUE)
 }
 \arguments{
 \item{cluster}{Either a vector giving contrasts assignments or a 
@@ -40,7 +40,7 @@ pair to be compared and must match the names of the clusters in the vector
 matrix. Currently the two options are the format appropriate for 
 \code{\link[limma]{limma}} and \code{\link[MAST]{MAST}} package.}
 
-\item{removeNegative}{logical, whether to remove negative valued clusters 
+\item{removeUnassigned}{logical, whether to remove negative valued clusters 
 from the design matrix. Appropriate to pick TRUE (default) if design will 
 be input into linear model on samples that excludes -1.}
 }
@@ -64,7 +64,7 @@ Uses clustering to create different types of contrasts to be
 The input vector must be numeric clusters, but the external commands
   that make the contrast matrix (e.g. \code{\link{makeContrasts}}) require 
   syntatically valid R names. For this reason, the names of the levels will 
-  be "X1" instead of "1". And negative values (if removeNegative=FALSE) will 
+  be "X1" instead of "1". And negative values (if removeUnassigned=FALSE) will 
   be "X.1","X.2", etc.
 }
 \examples{

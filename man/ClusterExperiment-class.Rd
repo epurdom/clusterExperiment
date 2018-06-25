@@ -35,7 +35,8 @@ ClusterExperiment(object, clusters, ...)
   coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
   merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
   merge_nodeMerge = NULL, merge_method = NA_character_,
-  clusterLegend = NULL, checkTransformAndAssay = TRUE)
+  merge_demethod = NA_character_, clusterLegend = NULL,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{object}{a matrix or \code{SummarizedExperiment} or
@@ -91,10 +92,10 @@ Slots)}
 
 \item{merge_method}{character, Sets the \code{merge_method} slot (see Slots)}
 
-\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see Slots).
-Must be match to given clusters, in that must be valid clusterLegend, and
-the "clusterIds" column matches the value in the clustering matrix.
-Generally, this is not a good way for users to set the clusterLegend slot.}
+\item{merge_demethod}{character, Sets the
+\code{merge_demethod} slot (see Slots)}
+
+\item{clusterLegend}{list, Sets the \code{clusterLegend} slot (see details).}
 
 \item{checkTransformAndAssay}{logical. Whether to check the content of the
 assay and given transformation function for whether they are valid.}
@@ -126,6 +127,14 @@ Note that when subsetting the data, the co-clustering and
  dendrogram information are lost.
 }
 \details{
+The \code{clusterLegend} argument to \code{ClusterExperiment} 
+ must be a valid clusterLegend format and match the values in \code{clusters}, 
+in that the "clusterIds" column must matches the value in the clustering matrix
+ \code{clusters}. If \code{names(clusterLegend)==NULL}, it is assumed that the 
+ entries of \code{clusterLegend} are in the same order as the columns of 
+ \code{clusters}. Generally, this is not a good way for users to set the
+clusterLegend slot.
+
 The \code{ClusterExperiment} constructor function gives
   clusterLabels based on the column names of the input
   matrix/SingleCellExperiment. If missing, will assign labels
@@ -180,6 +189,9 @@ current merge. See \code{\link{mergeClusters}}}
 non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 
 \item{\code{merge_method}}{character indicating method used for merging. See 
+\code{\link{mergeClusters}}}
+
+\item{\code{merge_demethod}}{character indicating the DE method used for merging. See 
 \code{\link{mergeClusters}}}
 
 \item{\code{clusterTypes}}{character vector with the origin of each column of

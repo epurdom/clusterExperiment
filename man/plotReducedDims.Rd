@@ -51,7 +51,7 @@ clusters in whichCluster. If NULL, pulls the information from
 \code{object}.}
 
 \item{unassignedColor}{If not NULL, should be character value giving the
-color for unassigned (-2) samples (overrides \code{clusterLegend}) default.}
+color for unassigned (-1) samples (overrides \code{clusterLegend}) default.}
 
 \item{missingColor}{If not NULL, should be character value giving the color
 for missing (-2) samples (overrides \code{clusterLegend}) default.}

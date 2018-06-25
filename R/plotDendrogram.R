@@ -83,7 +83,7 @@
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
 #' cl <- makeDendrogram(cl) 
-#' cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
+#' cl <- mergeClusters(cl,mergeMethod="adjP",DEMethod="limma",cutoff=0.1,plot=FALSE) 
 #' plotDendrogram(cl) 
 #' plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 #' 
@@ -143,7 +143,6 @@ setMethod(
 		}
 		if(!is.null(sData)){
 		  sClusterLegend<-.makeColors(sData,colors=massivePalette,distinctColors=TRUE,matchClusterLegend = clusterLegend,matchTo="name")
-#			.makeColors<-function(clMat, colors,clNumMat=NULL,unassignedColor="white",missingColor="grey", distinctColors=FALSE,matchClusterLegend=NULL){ 
 			sNames<-colnames(sData)
 			sData<-sClusterLegend$numClusters
       colnames(sData)<-sNames

@@ -49,7 +49,7 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
 	#--------
     #Check remove clusters when have dendrogram
 	#--------
-	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none"),"Merging will be done on ' clusterSingle ', with clustering index 1")
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none",DEMethod="limma"),"Merging will be done on ' clusterSingle ', with clustering index 1")
     expect_silent(removeClusterings(clustMerged,whichClusters="mergeClusters")) #remove merged, keep one with dendrogram
     expect_silent(removeClusterings(clustMerged,whichClusters=2)) #remove one with dendrogram
   
@@ -124,7 +124,7 @@ test_that("`makeDendrogram` works with whichCluster", {
     
     
     #--- check mergeClusters updates dendrogram correctly
-    expect_message(bigCE<-mergeClusters(bigCE,mergeMethod="adjP",cutoff=0.2),"Merging will be done on ")
+    expect_message(bigCE<-mergeClusters(bigCE,mergeMethod="adjP",cutoff=0.2, DEMethod="limma"),"Merging will be done on ")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
@@ -215,7 +215,7 @@ test_that("plotDendrogram works with whichClusters", {
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   expect_silent(dend <- makeDendrogram(ccSE))
-  expect_message(dend<-mergeClusters(dend))
+  expect_message(dend<-mergeClusters(dend,DEMethod="limma"))
   expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))
   
   
@@ -236,9 +236,9 @@ test_that("plotDendrogram works with cluster missing", {
   
   ## make all -2
   dend2<-dend
-  mat<-clusterMatrix(dend2)
-  mat[1,1]<- -2
-  dend2@clusterMatrix<-mat
+  dmat<-clusterMatrix(dend2)
+  dmat[1,1]<- -2
+  dend2@clusterMatrix<-dmat
   leg<-dend2@clusterLegend[[1]]
   leg<-leg[-which(leg[,"clusterIds"]== -1),]
   dend2@clusterLegend[[1]]<-leg

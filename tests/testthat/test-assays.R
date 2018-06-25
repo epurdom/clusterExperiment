@@ -71,7 +71,7 @@ test_that("mergeClusters works with non default assays", {
                                      subsample=FALSE, sequential=FALSE))
 
   expect_silent(cl3 <- makeDendrogram(cl3, whichAssay = "logcounts"))
-  expect_message(merged <- mergeClusters(x=cl3, whichAssay = "logcounts"),
+  expect_message(merged <- mergeClusters(x=cl3, whichAssay = "logcounts",DEMethod="limma"),
                  "Merging will be done on")
 
 })

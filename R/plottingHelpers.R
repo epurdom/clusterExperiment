@@ -130,7 +130,7 @@ setMethod(
 #' showPalette()
 #' showPalette(massivePalette,cex=0.6)
 showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
-  oldMar<-par("mar")
+  oldPar<-par(no.readonly = TRUE)
   wh<-which
   if(is.null(wh)){
     wh<-seq_along(colPalette)
@@ -161,6 +161,7 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
       text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
       if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
   }
+	par(oldPar)
 }
 
 #' @rdname plottingFunctions
@@ -427,13 +428,16 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 #'  that correspond to the clusterIds in the ClusterExperiment object. If this
 #'  argument is missing, will use the names in the "name" column of the clusterLegend
 #'  slot of the object.
+#' @param add logical. Whether legend should be added to the existing plot.
+#' @param location character passed to \code{x} argument of legend indicating 
+#'  where to place legend.
 #' @param ... arguments passed to legend
 #' @rdname plottingFunctions
 #' @aliases plotClusterLegend
 setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
-  definition = function(object,whichCluster="primary",clusterNames,title,...){
+  definition = function(object,whichCluster="primary",clusterNames,title,add=FALSE,location=if(add)"topright" else "center",...){
     whichCluster<-.convertSingleWhichCluster(object,whichCluster,list(...))
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
@@ -464,8 +468,13 @@ setMethod(
       ord<-c(which(!isNeg),which(isNeg))
     }
     else ord<-seq_len(nrow(legMat))
-    plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-    legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+    if(!add){
+			plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+		}
+		else{
+			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+		}
     
     
   })

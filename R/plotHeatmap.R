@@ -203,7 +203,9 @@
 #'   will also be set internally to give more vibrant colors than the default in
 #'   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
 #'   also be set in the \code{clusterLegend} slot ). Other options should be
-#'   passed on to \code{aheatmap}, though they have not been all tested.
+#'   passed on to \code{aheatmap}, though they have not been all tested. Useful options
+#'  include \code{treeheight=0} to suppress plotting of the dendrograms, and
+#'  \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 #'
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
@@ -296,6 +298,17 @@ setMethod(
   definition = function(data, isCount=FALSE,transFun=NULL,...
   ){
     plotHeatmap(as(data,"SingleCellExperiment"),...)
+  })
+
+
+#' @rdname plotHeatmap
+#' @export
+setMethod(
+  f = "plotHeatmap",
+  signature = signature(data = "table"),
+  definition = function(data,...
+  ){
+    plotHeatmap(unclass(data),...)
   })
 
 #' @rdname plotHeatmap
@@ -426,7 +439,7 @@ setMethod(
     whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
     #
     if(length(whCl)>0){
-      clusterData<-clusterMatrixNamed(data)[,whCl,drop=FALSE]
+      clusterData<-clusterMatrixNamed(data,whichClusters=whCl)
     }
     else{
       if(any( whichClusters!="none")) warning("given whichClusters value does not match any clusters, none will be plotted")
@@ -554,14 +567,14 @@ setMethod(
     if(!is.null(groupFeatures)){
       #convert groupFeatures to indices on new set of data.
       groupFeatures<-lapply(groupFeatures,function(x){match(x,whRows)})
-      blankData<-makeBlankData(heatData,groupFeatures,nBlankLines=nBlankLines)
+      blankData<-makeBlankData(data=heatData,groupsOfFeatures=groupFeatures,nBlankFeatures=nBlankLines)
       #replace heatData with one with blanks -- won't cluster them now...
       heatData<-data.matrix(blankData$dataWBlanks)
       labRow<-blankData$rowNamesWBlanks
       clusterFeatures<-FALSE
 
       if(!is.null(names(groupFeatures))){
-        annRow<-list("Gene Group"=factor(blankData$groupNamesWBlanks,levels=names(groupFeatures)))
+        annRow<-list("Gene Group"=factor(blankData$featureGroupNamesWBlanks,levels=names(groupFeatures)))
         #show color-coding of gene groupings:
         if("annRow" %in% names(userList)){
           stop("Cannot provide 'annRow' if grouping features")
@@ -580,7 +593,6 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-
     do.call("plotHeatmap",c(list(data=heatData,
                                  clusterSamplesData=clusterSamplesData,
                                  clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
@@ -773,9 +785,10 @@ setMethod(
       if(is.null(clusterLegend) & alignColData & (is.null(whColDataCont) || length(whColDataCont)<ncol(annCol))){
             #align the clusters and give them colors
             alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-            defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="clusterIds")
+            defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="numIds")
       }
       #preserve those in given clusterLegend that don't match colData (could go with features/rows)
+			
       if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
         whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend$colorList))]
         clusterLegend<-c(defaultColorLegend$colorList,clusterLegend[whKeep])
@@ -798,6 +811,7 @@ setMethod(
       #-----
       # Deal with extra levels, only a single level, etc. 
       # These are all problems with NMF. Need to check on development version.
+			# Also, doesn't deal with if in rowData...
       #-----
       prunedList<-lapply(whInAnnColors,function(ii){
         nam<-names(annColors)[[ii]] #the name of variable
