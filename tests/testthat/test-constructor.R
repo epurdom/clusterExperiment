@@ -230,7 +230,8 @@ test_that("rename/color works as promised",{
 })
 
 test_that("subsetting works as promised",{
-
+	#test zero-length subsetting
+	expect_output(show(cc[,logical(length=0L)]))
 	
   ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
 	newName<-letters[1:nClusters(cc)["Cluster1"]]

@@ -35,12 +35,12 @@
   ############
   #Check clusterMatrix
   ############
-  
+  zeroRow<-NROW(object@clusterMatrix)==0 #could happen in subsetting
   if(!all(is.na((object@clusterMatrix))) &
      !(NROW(object@clusterMatrix) == NCOL(object))) {
     return("If present, `clusterMatrix` must have as many row as cells.")
   }
-  if(!is.numeric(object@clusterMatrix)) {
+  if(!zeroRow & !is.numeric(object@clusterMatrix)) {
     return("`clusterMatrix` must be a numeric matrix.")
   }
   
@@ -57,8 +57,10 @@
     uniqVals<-unique(x[whCl])
     return(all(sort(unname(uniqVals))==seq_along(uniqVals)))
   }
-  testConsecIntegers<-apply(object@clusterMatrix,2,testConsecIntFun)
-  if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")
+	if(!zeroRow){
+	  testConsecIntegers<-apply(object@clusterMatrix,2,testConsecIntFun)
+	  if(!all(testConsecIntegers)) return("the cluster ids in clusterMatrix must be stored internally as consecutive integer values")		
+	}
   
   return(TRUE)
 }

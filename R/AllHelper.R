@@ -43,7 +43,7 @@ setMethod(
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
 		
 		#pull names out so can match it to the clusterLegend. 
-    subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
 		
 		#danger if not unique names
 		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
@@ -55,13 +55,21 @@ setMethod(
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
 		#shouldn't need give colors, but function needs argument
-    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
-		newMat<-out$numClusters
-    colnames(newMat)<-nms
-    newClLegend<-out$colorList
-    #fix order of samples so same
-    newOrder<-rank(x@orderSamples[j])
-    #
+    if(nrow(subMat)>0){
+			out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+			newMat<-out$numClusters
+	    colnames(newMat)<-nms
+	    newClLegend<-out$colorList
+	    #fix order of samples so same
+	    newOrder<-rank(x@orderSamples[j])
+	    #
+    	
+    }
+		else{
+			newClLegend<-list()
+			newOrder<-NA_real_
+			newMat<-subMat
+		}
     out<- ClusterExperiment(
       object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
       clusters = newMat,
