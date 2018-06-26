@@ -247,7 +247,8 @@ setGeneric(
     standardGeneric("transformData")
   }
 )
-
+setGeneric("colDataClusters",function(object,...){standardGeneric("colDataClusters")})
+setGeneric("addToColData",function(object,...){standardGeneric("addToColData")})
 setGeneric("clusterMatrix", function(x,whichClusters) { standardGeneric("clusterMatrix")})
 setGeneric("clusterMatrixNamed", function(x,...) { standardGeneric("clusterMatrixNamed")})
 setGeneric("clusterMatrixColors", function(x,...) { standardGeneric("clusterMatrixColors")})

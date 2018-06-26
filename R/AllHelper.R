@@ -595,4 +595,43 @@ setReplaceMethod(
     
   }
 )
-
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @inheritParams plotClustersTable
+#' @aliases addToColData
+#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}
+#' @return \code{addToColData} returns a \code{ClusterExperiment} object
+#' with the clusterings in clusterMatrix slot added to the \code{colData} slot
+setMethod(
+	f="addToColData",
+	signature="ClusterExperiment",
+	definition=function(object,...){
+		colData(object)<-colDataClusters(object,...)
+		return(object)
+	})
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases colDataClusters
+#' @return \code{colDataClusters} returns a \code{DataFrame} object
+#' that has the clusterings in clusterMatrix slot added to the 
+#' \code{DataFrame} in the \code{colData} slot
+setMethod(
+	f="colDataClusters",
+	signature="ClusterExperiment",
+	definition=function(object,whichClusters="primary",useNames=TRUE,makeFactor=TRUE,...){
+		if(useNames){
+			cm<-clusterMatrixNamed(object,whichClusters=whichClusters)
+			if(!makeFactor) cm<-DataFrame(data.frame(cm,stringsAsFactors=FALSE),check.names=FALSE)
+			else cm<-DataFrame(cm,check.names=FALSE)
+		}
+		else{
+			cm<-clusterMatrix(object,whichClusters=whichClusters)
+			if(makeFactor){
+				cnames<-colnames(cm)
+				cm<-do.call("DataFrame",c(lapply(1:ncol(cm),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+				colnames(cm)<-cnames		
+			}
+			else cm<-DataFrame(cm,check.names=FALSE)
+		}
+		return(cbind(colData(object),cm))
+	})
