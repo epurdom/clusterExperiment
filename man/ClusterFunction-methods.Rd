@@ -4,6 +4,7 @@
 \name{ClusterFunction-methods}
 \alias{ClusterFunction-methods}
 \alias{requiredArgs,ClusterFunction-method}
+\alias{requiredArgs,list-method}
 \alias{requiredArgs,character-method}
 \alias{requiredArgs}
 \alias{requiredArgs,character-method}
@@ -12,8 +13,10 @@
 \alias{algorithmType}
 \alias{algorithmType,character-method}
 \alias{algorithmType,factor-method}
+\alias{algorithmType,list-method}
 \alias{inputType,ClusterFunction-method}
 \alias{inputType}
+\alias{inputType,list-method}
 \alias{inputType,character-method}
 \alias{inputType,factor-method}
 \title{Helper methods for the ClusterFunction class}
@@ -21,6 +24,8 @@
 \S4method{requiredArgs}{character}(object)
 
 \S4method{requiredArgs}{ClusterFunction}(object, genericOnly = FALSE)
+
+\S4method{requiredArgs}{list}(object, ...)
 
 \S4method{requiredArgs}{character}(object)
 
@@ -34,15 +39,21 @@
 
 \S4method{algorithmType}{factor}(object)
 
+\S4method{algorithmType}{list}(object, ...)
+
 \S4method{inputType}{ClusterFunction}(object)
+
+\S4method{inputType}{list}(object, ...)
 
 \S4method{inputType}{character}(object)
 
 \S4method{inputType}{factor}(object)
 }
 \arguments{
-\item{object}{input to the method, usually either a \code{ClusterFunction}
-class or a character describing a built-in \code{ClusterFunction} object.}
+\item{object}{input to the method, either a \code{ClusterFunction}
+class or a character describing a built-in \code{ClusterFunction} object. 
+Can also be a \code{list} of \code{ClusterFunction} objects, in which case 
+the list must have names for each function.}
 
 \item{genericOnly}{logical If TRUE, return only the generic required
 arguments (i.e. those required by the algorithm type) and not the arguments

@@ -3,8 +3,10 @@
 #' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterFunction-methods
 #' @aliases ClusterFunction-methods
-#' @param object input to the method, usually either a \code{ClusterFunction}
-#'   class or a character describing a built-in \code{ClusterFunction} object.
+#' @param object input to the method, either a \code{ClusterFunction}
+#'   class or a character describing a built-in \code{ClusterFunction} object. 
+#'   Can also be a \code{list} of \code{ClusterFunction} objects, in which case 
+#'   the list must have names for each function.
 #' @details Note that when subsetting the data, the dendrogram information and 
 #'   the co-clustering matrix are lost.
 #' @return \code{requiredArgs}  returns a list of the required args of a
@@ -40,6 +42,17 @@ setMethod(
       if(algType=="K") return(unique(sort(.requiredKArgs)))	  	
     }
   }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "requiredArgs",
+  signature = c("list"),
+  definition = function(object,...) {
+		.checkFunctionList(object)
+  	return(sapply(object,requiredArgs))
+	}
+	
 )
 #' @rdname ClusterFunction-methods
 #' @aliases requiredArgs
@@ -104,7 +117,23 @@ setMethod(
 	  algorithmType(as.character(object))
   }
 )
-
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "algorithmType",
+  signature = c("list"),
+  definition = function(object,...) {
+		.checkFunctionList(object)
+  	return(sapply(object,algorithmType))
+	}
+	
+)
+.checkFunctionList<-function(object){
+	if(is.null(names(object))){
+		stop("if you give a list of ClusterFunction objects, the list must have names")
+	}
+	if(!all(sapply(object,class)=="ClusterFunction")) stop("if not giving the names of built in functions, must be list of objects of class 'ClusterFunction'")
+}
 
 #' @rdname ClusterFunction-methods
 #' @aliases inputType
@@ -117,6 +146,17 @@ setMethod(
   definition = function(object) {
     object@inputType
   }
+)
+#' @rdname ClusterFunction-methods
+#' @export
+setMethod(
+  f = "inputType",
+  signature = c("list"),
+  definition = function(object,...) {
+		.checkFunctionList(object)
+  	return(sapply(object,inputType))
+	}
+	
 )
 #' @rdname ClusterFunction-methods
 #' @export

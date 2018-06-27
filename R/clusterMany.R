@@ -378,15 +378,16 @@ setMethod(
       ###############
       if(is.null(paramMatrix)){
 				if(is.list(clusterFunction)){
-					if(is.null(names(clusterFunction))){
-						stop("if you give a list of ClusterFunction objects, must have names")
-					}
-					if(!all(sapply(clusterFunction,class)=="ClusterFunction")) stop("if 'clusterFunction' is not name of built in functions, must be list of objects of class 'ClusterFunction'")
+					.checkFunctionList(clusterFunction)
 					clusterFunctionList<-clusterFunction
 					clusterFunctionNames<-names(clusterFunction)
 				}
 				else{
 					clusterFunctionList<-getBuiltInFunction(clusterFunction)
+					if(length(clusterFunction)==1 & class(clusterFunctionList)=="ClusterFunction"){
+						clusterFunctionList<-list(clusterFunctionList)
+						names(clusterFunctionList)<-clusterFunction
+					}
 					clusterFunctionNames<-clusterFunction
 				}
         if(doNone) reduceMethod<-c(reduceMethod,"none")
@@ -403,8 +404,8 @@ setMethod(
         #code sets to single value and then will do unique
         #also deals with just in case the user gave duplicated values of something by mistake.
         ###########
-				cf<-function(param){clusterFunctionList[[param[,"clusterFunction"]]]}
-        paramAlgTypes<-algorithmType(cf(param))
+				cf<-function(param){clusterFunctionList[param[,"clusterFunction"]]}
+				paramAlgTypes<-algorithmType(cf(param))
         if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
         #---
         #type K fixes
