@@ -43,7 +43,7 @@ setMethod(
     #need to subset cluster matrix and convert to consecutive integer valued clusters:
 		
 		#pull names out so can match it to the clusterLegend. 
-    subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
 		
 		#danger if not unique names
 		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
@@ -55,13 +55,21 @@ setMethod(
     nms<-colnames(subMat)
     ##Fix clusterLegend slot, in case now lost a level and to match new integer values
 		#shouldn't need give colors, but function needs argument
-    out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
-		newMat<-out$numClusters
-    colnames(newMat)<-nms
-    newClLegend<-out$colorList
-    #fix order of samples so same
-    newOrder<-rank(x@orderSamples[j])
-    #
+    if(nrow(subMat)>0){
+			out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+			newMat<-out$numClusters
+	    colnames(newMat)<-nms
+	    newClLegend<-out$colorList
+	    #fix order of samples so same
+	    newOrder<-rank(x@orderSamples[j])
+	    #
+    	
+    }
+		else{
+			newClLegend<-list()
+			newOrder<-NA_real_
+			newMat<-subMat
+		}
     out<- ClusterExperiment(
       object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
       clusters = newMat,
@@ -595,4 +603,43 @@ setReplaceMethod(
     
   }
 )
-
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @inheritParams plotClustersTable
+#' @aliases addToColData
+#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}
+#' @return \code{addToColData} returns a \code{ClusterExperiment} object
+#' with the clusterings in clusterMatrix slot added to the \code{colData} slot
+setMethod(
+	f="addToColData",
+	signature="ClusterExperiment",
+	definition=function(object,...){
+		colData(object)<-colDataClusters(object,...)
+		return(object)
+	})
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases colDataClusters
+#' @return \code{colDataClusters} returns a \code{DataFrame} object
+#' that has the clusterings in clusterMatrix slot added to the 
+#' \code{DataFrame} in the \code{colData} slot
+setMethod(
+	f="colDataClusters",
+	signature="ClusterExperiment",
+	definition=function(object,whichClusters="primary",useNames=TRUE,makeFactor=TRUE,...){
+		if(useNames){
+			cm<-clusterMatrixNamed(object,whichClusters=whichClusters)
+			if(!makeFactor) cm<-DataFrame(data.frame(cm,stringsAsFactors=FALSE),check.names=FALSE)
+			else cm<-DataFrame(cm,check.names=FALSE)
+		}
+		else{
+			cm<-clusterMatrix(object,whichClusters=whichClusters)
+			if(makeFactor){
+				cnames<-colnames(cm)
+				cm<-do.call("DataFrame",c(lapply(1:ncol(cm),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+				colnames(cm)<-cnames		
+			}
+			else cm<-DataFrame(cm,check.names=FALSE)
+		}
+		return(cbind(colData(object),cm))
+	})

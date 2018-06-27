@@ -26,6 +26,7 @@ Changes:
 	- `plotClustersTable` for plotting a heatmap showing the results of `tableClusters`
 	- `subsetByCluster` for subsetting CE object to only those samples in a particular cluster(s) of a clustering.
 	- `plotFeatureScatter` for a scatter plot of 2+ features (genes) colored by cluster
+	- `addToColData` and `colDataClusters`  adding clustering information to colData of object. `addToColData` returns object with `colData` augmented, while `colDataClusters` just returns the `DataFrame` with clusterings added.
 * Added arguments:
 	- `whichAssay` to all functions to allow the user to select the assay on which the operations will be performed.
 	- `stopOnErrors` to `RSEC`

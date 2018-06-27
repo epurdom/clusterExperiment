@@ -331,21 +331,30 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    	
-    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
-    if(is.null(clusterLegend)){
-    	clusterLegend<-tmp$colorList
-    } 
-    else{
-      #need to check matches the clusters, which .makeColors doesn't do.
-      clusterLegend<-unname(clusterLegend)
-      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
-      if(!is.logical(ch)) stop(ch)
- 			clusterLegend<-tmp$colorList      
-    }
-    clustersNum<-tmp$numClusters
-    colnames(clustersNum)<-colnames(clusters)
+    if(nrow(clusters)>0){
+	    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
+	    if(is.null(clusterLegend)){
+	    	clusterLegend<-tmp$colorList
+	    } 
+	    else{
+	      #need to check matches the clusters, which .makeColors doesn't do.
+	      clusterLegend<-unname(clusterLegend)
+	      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
+	      if(!is.logical(ch)) stop(ch)
+	 			clusterLegend<-tmp$colorList      
+	    }
+	    clustersNum<-tmp$numClusters
+	    colnames(clustersNum)<-colnames(clusters)
 		
+    }
+		else{
+			clustersNum<-clusters
+			clusterLegend<-lapply(seq_len(ncol(clusters)),function(ii){
+				out<-matrix(nrow=0,ncol=3)
+				colnames(out)<-c("clusterIds","color","name")
+				return(out)
+			})
+		}
     #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                object,
