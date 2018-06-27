@@ -9,7 +9,7 @@ load_all()
 load("L5_sumExp.rda")
 outpath<-"resultsDirectory"
 if(!file.exists(outpath)) dir.create(outpath)
-ncores<-2
+ncores<-5
 args<-commandArgs(TRUE)
 if(length(args)==0) stop("Usage should be 'RScript clusterManyTest.R <tagString>' where <tagString> will be name on saved file of output.")
 tag<-args[1]
