@@ -426,7 +426,7 @@ ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
 
 In this call to `clusterMany` we made the follow choices about what to vary: 
 
-* set `reduceMethod=c("PCA", "var")` meaning run the clustering algorithm trying two different methods for dimensionality reduction: the top principal componetns and filtering to the top most variable genes
+* set `reduceMethod=c("PCA", "var")` meaning run the clustering algorithm trying two different methods for dimensionality reduction: the top principal components and filtering to the top most variable genes
 * For PCA reduction, choose 5,15, and 50 principal components for the reduced data set (set `nReducedDims=c(5,15,50)`)
 * For most variable genes reduction, we choose 100, 500, and 1000 most variable genes (set `nFilterDims=c(100,500,1000)`)
 * For the number of clusters, vary from $k=5,\ldots,10$ (set `ks=5:10`)
@@ -1442,7 +1442,9 @@ SNN <- ClusterFunction(SNN_wrap, inputType = "X", algorithmType = "K",
 
 Now that we have our object `SNN`, we can treat our custom method as a base clustering routine to be used in `clusterMany`, similarly to how we used `kmeans` and `pam` earlier. However, unlike before, you should pass the actual object `SNN`, and not a quoted version (i.e. not `"SNN"`).
 
-In this example, we use `clusterSingle` to implement a subsample clustering based on SNN. We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
+In this example, we use `clusterSingle` to implement a subsample clustering based on SNN. `clusterSingle` is useful if you just want to create a single clustering. 
+
+We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
 
 ```{r custom_clusterSingle}
 ceCustom <- clusterSingle(
@@ -1460,17 +1462,30 @@ ceCustom <- clusterSingle(
 ceCustom
 ```
 
-<!-- Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. -->
+Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. To mix and match built-in functions, you need to get the actual `ClusterFunction` objects that match their names, using the `getBuiltInFunction` function. 
 
-```{r custom_clusterMany, include=FALSE, eval=FALSE}
+```{r custom_getBuiltIn}
+clFuns<-getBuiltInFunction(c("pam","kmeans"))
+```
+
+Then we will add our function to the list of functions. Note that it is important we give a name to every element of the list, including our new function! 
+
+```{r custom_addSNN}
 ## currently does not work
-clFuns<-getBuiltInFunction(c("pam","kmeans","spectral","hierarchicalK"))
 clFuns<-c(clFuns, "SNN"=SNN)
+```
 
+Now we can give this list of functions to `clusterMany`
+
+```{r run_custom}
 ceCustom <- clusterMany(ce, dimReduce="PCA",nPCADims=50,
                         clusterFunction=clFuns,
                         ks=4:15, findBestK=FALSE)
+
 ```
+
+Note that if I call `getBuiltInFunction` for only one cluster, it returns the actual `ClusterFunction` object, not a list of length 1. To combine it with other functions you need to make it into a list.
+
 
 ### Dealing with large numbers of clusterings
 

@@ -106,7 +106,6 @@ setMethod(
 #' because \code{tableClusters} calls the R function \code{table}, which makes this 
 #' conversion
 #' @inheritParams plotHeatmap
-#' conversion.
 #' @seealso \code{\link[base]{table}}
 #' @export
 setMethod( 

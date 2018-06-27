@@ -72,6 +72,10 @@
 \alias{orderSamples<-}
 \alias{clusterTypes<-,ClusterExperiment,character-method}
 \alias{clusterTypes<-}
+\alias{addToColData,ClusterExperiment-method}
+\alias{addToColData}
+\alias{colDataClusters,ClusterExperiment-method}
+\alias{colDataClusters}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
 \S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
@@ -148,6 +152,11 @@
 \S4method{orderSamples}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{clusterTypes}{ClusterExperiment,character}(object) <- value
+
+\S4method{addToColData}{ClusterExperiment}(object, ...)
+
+\S4method{colDataClusters}{ClusterExperiment}(object,
+  whichClusters = "primary", useNames = TRUE, makeFactor = TRUE, ...)
 }
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
@@ -178,6 +187,11 @@ clusterings is returned.}
 
 \item{matchTo}{for subsetting, whether to match to the cluster name
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
+
+\item{useNames}{for \code{tableClusters}, whether the output should be tabled
+with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
+
+\item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}}
 }
 \value{
 \code{transformation} prints the function used to transform the data
@@ -238,6 +252,13 @@ of the clusters used to create dendrogram
 \code{recolorClusters} changes the colors assigned to clusters within a clustering
 
 \code{orderSamples} returns/sets the orderSamples slot.
+
+\code{addToColData} returns a \code{ClusterExperiment} object
+with the clusterings in clusterMatrix slot added to the \code{colData} slot
+
+\code{colDataClusters} returns a \code{DataFrame} object
+that has the clusterings in clusterMatrix slot added to the 
+\code{DataFrame} in the \code{colData} slot
 }
 \description{
 This is a collection of helper methods for the ClusterExperiment class.

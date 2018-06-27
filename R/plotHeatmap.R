@@ -1,6 +1,7 @@
-#' Heatmap for showing clustering results and more
+#' @name plotHeatmap
+#' @title Heatmap for showing clustering results and more
 #'
-#' Make heatmap with color scale from one matrix and hiearchical clustering of
+#' @description Make heatmap with color scale from one matrix and hiearchical clustering of
 #' samples/features from another. Also built in functionality for showing the
 #' clusterings with the heatmap. Builds on \code{\link[NMF]{aheatmap}} function
 #' of \code{NMF} package.

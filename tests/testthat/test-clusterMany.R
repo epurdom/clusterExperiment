@@ -638,3 +638,14 @@ test_that("`clusterMany` consistent results (with transformation)", {
     
   
 })
+test_that("`clusterMany` works with ClusterFunction objects",{
+		expect_silent(clustAll1<-clusterMany(sceSimDataDimRed,reduceMethod="PCA",
+			   ks=c(3,4),clusterFunction=listBuiltInFunctions()[1:2],
+		       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE,random.seed=1250))  	
+	  
+	expect_silent(clustAll2<-clusterMany(sceSimDataDimRed,reduceMethod="PCA",
+	 ks=c(3,4),clusterFunction=getBuiltInFunction(listBuiltInFunctions()[1:2]),
+		       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE,random.seed=1250))  	
+	  
+		expect_equal(clustAll2,clustAll1)			 
+})

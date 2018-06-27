@@ -113,18 +113,3 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 #####################
 hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
 hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
-
-# ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
-# hdfSCE<-sceSimDataDimRed
-# if(file.exists("./sce.h5")) unlink("./sce.h5")
-# assay(hdfSCE) <- HDF5Array::writeHDF5Array(assay(hdfSCE), "./sce.h5", "counts")
-# #note this creates class of "DelayedMatrix", not class of "HDF5Matrix" -- is that new?
-#
-#
-#
-# #no pca attached
-# hdfObj<-sceSimData
-# ### Note: can only do writeHDF5Array command once! Otherwise hit error that already created. so have to delete file -- not nice...
-# if(file.exists("./hdfonly.h5")) unlink("./hdfonly.h5")
-# assay(hdfObj) <- HDF5Array::writeHDF5Array(assay(hdfObj), "./hdfonly.h5", "counts")
-
