@@ -377,21 +377,34 @@ setMethod(
       #Start creating the combinations
       ###############
       if(is.null(paramMatrix)){
+				if(is.list(clusterFunction)){
+					if(is.null(names(clusterFunction))){
+						stop("if you give a list of ClusterFunction objects, must have names")
+					}
+					if(!all(sapply(clusterFunction,class)=="ClusterFunction")) stop("if 'clusterFunction' is not name of built in functions, must be list of objects of class 'ClusterFunction'")
+					clusterFunctionList<-clusterFunction
+					clusterFunctionNames<-names(clusterFunction)
+				}
+				else{
+					clusterFunctionList<-getBuiltInFunction(clusterFunction)
+					clusterFunctionNames<-clusterFunction
+				}
         if(doNone) reduceMethod<-c(reduceMethod,"none")
         param <- expand.grid(reduceMethod=reduceMethod,
                              nReducedDims=nReducedDims, nFilterDims=nFilterDims,k=ks, alpha=alphas, findBestK=findBestK,
                              beta=betas, minSize=minSizes,
                              sequential=sequential, distFunction=distFunction,
                              removeSil=removeSil, subsample=subsample,
-                             clusterFunction=clusterFunction,silCutoff=silCutoff)
-
+                             clusterFunction=clusterFunctionNames,silCutoff=silCutoff)
+					
         ###########
         #Check param matrix:
         #don't vary them across ones that don't matter (i.e. 0-1 versus K);
         #code sets to single value and then will do unique
         #also deals with just in case the user gave duplicated values of something by mistake.
         ###########
-        paramAlgTypes<-algorithmType(param[,"clusterFunction"])
+				cf<-function(param){clusterFunctionList[[param[,"clusterFunction"]]]}
+        paramAlgTypes<-algorithmType(cf(param))
         if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
         #---
         #type K fixes
@@ -529,10 +542,9 @@ setMethod(
         }
 
         #if type K and not findBestK, need to give the k value.
-        whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(param[,"clusterFunction"])=="K" )
+        whInvalid <- which(is.na(param[,"k"]) & !param[,"findBestK"] & algorithmType(cf(param))=="K" )
         if(length(whInvalid)>0){
-          clFun<-param[,"clusterFunction"]
-          if(any(algorithmType(clFun)=="K")) stop("One of clusterFunctions chosen requires choice of k")
+          if(any(algorithmType(cf(param))=="K")) stop("One of clusterFunctions chosen requires choice of k")
           else param<-param[-whInvalid,]
 
         }
@@ -594,7 +606,8 @@ setMethod(
         sequential <- as.logical(gsub(" ","",par["sequential"]))
         subsample <- as.logical(gsub(" ","",par["subsample"]))
         findBestK <- as.logical(gsub(" ","",par["findBestK"]))
-        clusterFunction <- as.character(par[["clusterFunction"]])
+        clusterFunctionName <- as.character(par[["clusterFunction"]])
+				clusterFunction<-clusterFunctionList[[clusterFunctionName]]
         reduceMethod<-as.character(par[["reduceMethod"]])
         distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
         if(!is.na(par[["k"]])){
