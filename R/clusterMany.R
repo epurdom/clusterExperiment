@@ -21,9 +21,9 @@
 #'   for \code{sequential=TRUE}. Determines the similarity between two clusters
 #'   required in order to deem the cluster stable. Takes on values in [0,1]. See
 #'   documentation of \code{\link{seqCluster}}.
-#' @param clusterFunction function used for the clustering. Note that unlike in
-#'   \code{\link{clusterSingle}}, this must be a character vector of pre-defined
-#'   clustering techniques, and can not be a user-defined function. Current
+#' @param clusterFunction function used for the clustering. This must be either 
+#'   1) a character vector of built-in clustering techniques, or 2) a
+#'   \emph{named} list of \code{\link{ClusterFunction}} objects. Current
 #'   functions can be found by typing \code{listBuiltInFunctions()} into the
 #'   command-line.
 #' @param minSizes the minimimum size required for a cluster (in the

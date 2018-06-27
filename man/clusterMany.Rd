@@ -67,9 +67,9 @@ method for signature \code{list}.}
 \item{ks}{the range of k values (see details for the meaning of \code{k} for
 different choices of other parameters).}
 
-\item{clusterFunction}{function used for the clustering. Note that unlike in
-\code{\link{clusterSingle}}, this must be a character vector of pre-defined
-clustering techniques, and can not be a user-defined function. Current
+\item{clusterFunction}{function used for the clustering. This must be either 
+1) a character vector of built-in clustering techniques, or 2) a
+\emph{named} list of \code{\link{ClusterFunction}} objects. Current
 functions can be found by typing \code{listBuiltInFunctions()} into the
 command-line.}
 

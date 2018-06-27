@@ -36,6 +36,7 @@ Changes:
 	- `add` and `location` to `plotClusterLegend`
 * `makeBlankData` will now allow for making blank columns to separate groups of samples.
 * `plotDendrogram` now allows for plotting of `colData` (previously `sampleData`) like `plotHeatmap` or `plotClusters`
+* `clusterMany` now allows user-defined `ClusterFunction` objects to argument `clusterFunction`.
 * Removed restriction in `plotClustersWorkflow` that only `clusterType="clusterMany"` allowed.
 * Allow `getClusterManyParams` to search old `clusterMany` runs as well.
 * Added `table` method to `plotHeatmap` (for plotting heatmap of results of `table` function)
