@@ -264,7 +264,7 @@ setMethod(
   
   
   #make list of indices and put in order of silhouette width (of positive)
-  clList<-tapply(1:length(cl),cl,function(x){x},simplify=FALSE)
+  clList<-tapply(seq_along(cl),cl,function(x){x},simplify=FALSE)
   if(doPostProcess){
     if(orderBy=="best"){
       clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)

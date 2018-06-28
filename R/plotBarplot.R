@@ -33,7 +33,7 @@
 #'   have different interpretations.
 #' @details If \code{whichClusters = "workflow"}, then the most recent two 
 #'   clusters of the workflow will be chosen where recent is based on the 
-#'   following order (most recent first): final, mergeClusters, combineMany, 
+#'   following order (most recent first): final, mergeClusters, makeConsensus, 
 #'   clusterMany.
 #' @details \code{xNames}, \code{legNames} and \code{colPalette} should all be
 #'   named vectors, with the names referring to the clusters they should match
@@ -173,7 +173,7 @@ setMethod(
     ###Check colors given:
     #-----------
     if(is.null(colPalette)){
-      colPalette<-bigPalette[1:nX]
+      colPalette<-bigPalette[seq_len(nX)]
       names(colPalette)<-xnames
     }
     if(is.null(names(colPalette)) & length(colPalette)>1) stop("must give names to colPalette") 

@@ -9,10 +9,8 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
-    wh<-.TypeIntoIndices(object,whClusters=whichCluster)
-    if(length(wh)==0) stop("invalid choice of 'whichCluster'")
-    if(length(wh)>1) stop("only a single clustering can be shown'whichCluster'")
-    return(plotReducedDims(object,whichCluster=wh,...))
+    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    return(plotReducedDims(object,whichCluster=whCl,...))
     
   })
 
@@ -43,7 +41,7 @@ setMethod(
 #' @param xlab Label for x axis
 #' @param ylab Label for y axis
 #' @param unassignedColor If not NULL, should be character value giving the
-#'   color for unassigned (-2) samples (overrides \code{clusterLegend}) default.
+#'   color for unassigned (-1) samples (overrides \code{clusterLegend}) default.
 #' @param missingColor If not NULL, should be character value giving the color
 #'   for missing (-2) samples (overrides \code{clusterLegend}) default.
 #' @param plotUnassigned logical as to whether unassigned (either -1 or -2
@@ -51,12 +49,20 @@ setMethod(
 #' @param pch the point type, passed to \code{plot.default}
 #' @param legendTitle character value giving title for the legend. If NULL, uses
 #'   the clusterLabels value for clustering.
+#' @param nColLegend The number of columns in legend. If missing, picks number 
+#'   of columns internally. 
 #' @param ... arguments passed to \code{\link{plot.default}}
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
 #'   "white", will be coerced to "lightgrey" regardless of user input to
 #'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
 #'   the samples with -1/-2 will not be plotted, nor will the category show up in the
 #'   legend.
+#' @details If the requested \code{reducedDim} method has not been created yet,
+#'   the function will call \code{\link{makeReducedDims}} on the FIRST assay of
+#'   \code{x}. The results of this method will be saved as part of the object
+#'   and returned INVISIBLY (meaning if you don't save the output of the
+#'   plotting command, the results will vanish). To pick another assay, you
+#'   should call `makeReducedDims` directly and specify the assay.
 #' @seealso \code{\link{plot.default}}, \code{\link{makeReducedDims}}, \code{\link{listBuiltInReducedDims}()}
 #' @rdname plotReducedDims
 #' @return A plot is created. Nothing is returned.
@@ -74,10 +80,10 @@ setMethod(
   f = "plotReducedDims",
   signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
   definition = function(object, whichCluster,
-                        reducedDim="PCA",whichDims=c(1:2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",
+                        reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-    if(length(whichCluster)!=1) stop("whichCluster must identify a single clustering.")
+whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){
@@ -127,7 +133,10 @@ setMethod(
       if(max(whichDims)>ncol(reducedDim(object,type=reducedDim))) redoDim<-TRUE
     }
     
-    if(redoDim) object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims))
+    if(redoDim){
+     object<-makeReducedDims(object,reducedDims=reducedDim,maxDims=max(whichDims),whichAssay=1)
+		 warning(paste("'makeReducedDims' is being called because requested method",reducedDim,"has not been created yet for this object. 'makeReducedDims' will be run on the FIRST assay; for a different assay call 'makeReducedDims' directly."))	
+    }
     if(reducedDim %in% reducedDimNames(object)){
       
       dat<-reducedDim(object,type=reducedDim)[,whichDims]
@@ -160,7 +169,12 @@ setMethod(
           if(length(wh2)>0) clColor<-clColor[-wh2]
         }
         if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
-        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle)
+				if(missing(nColLegend)){
+					nPerColLegend<-6
+					nColLegend<-length(clColor) %/% nPerColLegend					
+					if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
+				}
+				        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle,ncol=nColLegend)
       }
       
     }

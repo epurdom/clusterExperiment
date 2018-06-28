@@ -166,7 +166,7 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
   betaNum<-match.arg(betaNum,c("all","last","first"))
   #This makes all combinations of 1:top.can, seq.num times (could be simplified if seq.num=2):
   #a ncombinations x seq.num matrix -- each row gives a combination of clusters to compare stability
-  index.m <- as.matrix(expand.grid(lapply(1:seq.num, function(x) 1:top.can)))
+  index.m <- as.matrix(expand.grid(lapply(seq_len(seq.num), function(x) seq_len(top.can))))
   whReturn<-switch(kReturn,"last"=seq.num,"first"=1) #way to index which one gets returned.
   ################
   ################
@@ -176,8 +176,8 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
     if(input %in% c("X")) cat(paste("Number of points:", N, "\tDimension:", dim(x)[1], "\n"))
     else cat(paste("Number of points:", N,"\n"))
   }
-  if(input %in% c("X"))  colnames(x) <- as.character(1:N)
-  if(input %in% c("diss")) colnames(diss)<-rownames(diss)<-as.character(1:N)
+  if(input %in% c("X"))  colnames(x) <- as.character(seq_len(N))
+  if(input %in% c("diss")) colnames(diss)<-rownames(diss)<-as.character(seq_len(N))
   
   #iterative setup
   remain <- N #keep track of how many samples not yet clustered (stop when less than remain.n)
@@ -217,10 +217,10 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
       k <- k.start
       currentStart<-k.start #will add this to kstart if successful in finding cluster
       #find clusters for K,K+1
-      for (i in 1:seq.num) {
+      for (i in seq_len(seq.num)) {
         newk<-k + i - 1
         res<-updateClustering(newk)
-        if(length(res)>0) res <- res[1:min(top.can,length(res))]
+        if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
         candidates[[i]]<-res
       }
     }
@@ -230,7 +230,7 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
       if(verbose) cat(paste("k =", newk, "\n"))
       #add new k (because always list o)
       res<-updateClustering(newk)
-      if(length(res)>0) res <- res[1:min(top.can,length(res))]
+      if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
       candidates[[seq.num]] <- res
     }
     ##################
@@ -238,16 +238,16 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
     #find which rows of index.m define cluster combinations that don't exist
     ##################
     nClusterPerK<-sapply(candidates,length) #number of clusters found per k sequence
-    whInvalid<-unique(unlist(lapply(1:ncol(index.m),function(i){which(index.m[,i] > nClusterPerK[i])})))
+    whInvalid<-unique(unlist(lapply(seq_len(ncol(index.m)),function(i){which(index.m[,i] > nClusterPerK[i])})))
     if(length(whInvalid)==nrow(index.m)){
       #all invalid -- probably means that for some k there were no candidates found. So should stop.
-      if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
+      if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
       whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+i-1,"and previous clusters not similar enough.")
       break
     }
     if(length(whInvalid)>0){
       if(verbose) cat("Did not find", top.can,"clusters: ")
-      if(verbose) cat(paste("found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+1:seq.num-1,collapse=","),", respectively\n"))
+      if(verbose) cat(paste("found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively\n"))
       
       tempIndex<-index.m[-whInvalid,,drop=FALSE]
     }
@@ -260,7 +260,7 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
     #	y is a combination (row of index.m) giving clusters to compare stability from k, k+1
     calc.beta <- function(y) {
       #written generally enough to deal with seq.num>2; could be a lot simpler with seq.num=2.
-      temp <- lapply(1:seq.num, function(z) candidates[[z]][[y[z]]]) #each
+      temp <- lapply(seq_len(seq.num), function(z) candidates[[z]][[y[z]]]) #each
       i.temp <- temp[[1]]
       if(betaNum %in% c("all","first")) u.temp <- temp[[1]] ###eap: changed here
       if(betaNum == "last") u.temp<-temp[[seq.num]]

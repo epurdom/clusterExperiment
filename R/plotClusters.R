@@ -9,24 +9,18 @@
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 #'   matrix, the function will plot the clusterings in order of this matrix, and
 #'   their order influences the plot greatly.
-#' @param whichClusters If numeric, a predefined order for the clusterings in 
-#'   the plot. If x is a \code{\link{ClusterExperiment}} object, 
-#'   \code{whichClusters} can be a character value identifying the 
-#'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either
-#'   'all' or 'workflow' to indicate choosing all clusters or choosing all
-#'   \code{\link{workflowClusters}}.
+#' @inheritParams ClusterExperiment-methods
 #' @param orderSamples A predefined order in which the samples will be plotted.
 #'   Otherwise the order will be found internally by aligning the clusters
 #'   (assuming \code{input="clusters"})
-#' @param sampleData If \code{clusters} is a matrix, \code{sampleData} gives a 
-#'   matrix of additional cluster/sampleData on the samples to be plotted with 
-#'   the clusterings given in clusters. Values in \code{sampleData} will be 
-#'   added to the end (bottom) of the plot. NAs in the \code{sampleData} matrix
+#' @param colData If \code{clusters} is a matrix, \code{colData} gives a 
+#'   matrix of additional cluster/sample data on the samples to be plotted with 
+#'   the clusterings given in clusters. Values in \code{colData} will be 
+#'   added to the end (bottom) of the plot. NAs in the \code{colData} matrix
 #'   will trigger an error. If \code{clusters} is a \code{ClusterExperiment}
-#'   object, the input in \code{sampleData} refers to columns of the the
+#'   object, the input in \code{colData} refers to columns of the the
 #'   \code{colData} slot of the \code{ClusterExperiment} object to be plotted
-#'   with the clusters. In this case, \code{sampleData} can be TRUE (i.e. all
+#'   with the clusters. In this case, \code{colData} can be TRUE (i.e. all
 #'   columns will be plotted), or an index or a character vector that references
 #'   a column or column name, respectively, of the \code{colData} slot of the
 #'   \code{ClusterExperiment} object. If there are NAs in the \code{colData}
@@ -62,7 +56,7 @@
 #'   option allows the user to manually adjust the colors and replot, for
 #'   example).
 #' @param clusterLabels names to go with the columns (clusterings) in matrix 
-#'   \code{colorMat}. If \code{sampleData} argument is not \code{NULL}, the 
+#'   \code{colorMat}. If \code{colData} argument is not \code{NULL}, the 
 #'   \code{clusterLabels} argument must include names for the sample data too. 
 #'   If the user gives only names for the clusterings, the code will try to 
 #'   anticipate that and use the column names of the sample data, but this is
@@ -83,7 +77,7 @@
 #'   \code{ClusterExperiment} version. As noted above, however, some arguments
 #'   have different interpretations.
 #' @details If \code{whichClusters = "workflow"}, then the workflow clusterings
-#'   will be plotted in the following order: final, mergeClusters, combineMany,
+#'   will be plotted in the following order: final, mergeClusters, makeConsensus,
 #'   clusterMany.
 #' @return If \code{clusters} is a \code{\link{ClusterExperiment}} Object, then
 #'   \code{plotClusters} returns an updated \code{ClusterExperiment} object,
@@ -228,14 +222,19 @@ setMethod(
   f = "plotClusters",
   signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
   definition = function(object, whichClusters,existingColors=c("ignore","all","firstOnly"),
-                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,sampleData=NULL,clusterLabels=NULL,...)
+                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,colData=NULL,clusterLabels=NULL,...)
   {
     existingColors<-match.arg(existingColors)
-    sampleData<-.pullSampleData(object,sampleData,fixNA="unassigned")
+    args<-list(...)    
+		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData")
+		if(!is.null(checkIgnore)){
+			args<-checkIgnore$passedArgs
+			colData<-checkIgnore$val
+		}
+    colData<-.pullColData(object,colData,fixNA="unassigned")
     if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
     if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
     if(useExisting){ #using existing colors in some way:
-      args<-list(...)
       plotArg<-TRUE #the default
       if("plot" %in% names(args) ){
         whPlot<-which(names(args)=="plot")
@@ -270,7 +269,7 @@ setMethod(
       #------------
       #align the samples, but don't plot them.
       #------------
-      outval<-do.call(plotClusters, c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE], input="clusters", plot=FALSE, sampleData=sampleData,colPalette=colPaletteArg),args))
+      outval<-do.call(plotClusters, c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE], input="clusters", plot=FALSE, colData=colData,colPalette=colPaletteArg),args))
       #------------
       #make new color matrix with existing Colors
       #------------
@@ -291,7 +290,7 @@ setMethod(
         #match them and make them the existing color
         unusedColors<-colPalGood[!colPalGood %in% c(as.vector(newColorMat),firstRow)]
         ###Note: Need to update color legend in out val because used if resetColors
-        ###Also, dimensions of outval matrices may be bigger than that of whichClusters because sampleData was added...
+        ###Also, dimensions of outval matrices may be bigger than that of whichClusters because colData was added...
         for(val in valsToChange){
           wh<-which(alignCl==val)
           newCol<-unique(firstRow[wh])
@@ -306,7 +305,7 @@ setMethod(
         }
         outval$colors<-newColorMat
         ###make new clusterLegend from color matrix
-        temp<-lapply(1:ncol(outval$alignedClusterIds),function(ii){
+        temp<-lapply(seq_len(ncol(outval$alignedClusterIds)),function(ii){
           oldMat<-outval$clusterLegend[[ii]]
           alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
           m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
@@ -328,15 +327,15 @@ setMethod(
       #------------
       #now plot them
       #------------
-      if(plotArg) do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", clusterLabels=clusterLabels,sampleData=sampleData), args))
+      if(plotArg) do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", clusterLabels=clusterLabels,colData=colData), args))
       
     }
     else{
-      outval<-plotClusters(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",sampleData=sampleData,clusterLabels=clusterLabels,...)
+			outval<-do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
     }
     if(resetColors | resetNames){
       ## recall, everything from outval is in the order of whichClusters!
-      ## also includes values from sampleData, which are always at the bottom, so don't affect anything.
+      ## also includes values from colData, which are always at the bottom, so don't affect anything.
       oldClMat<-clusterMatrix(object)[,whichClusters]
       newClMat<-outval$alignedClusterIds
       #make both colors switch to aligned values (but keep name the same!)
@@ -369,7 +368,7 @@ setMethod(
         }
         return(oldColMat)
       }
-      newClLegend<-lapply(1:NCOL(oldClMat),convertAlignedColorLegend)
+      newClLegend<-lapply(seq_len(NCOL(oldClMat)),convertAlignedColorLegend)
       names(newClLegend)<-colnames(oldClMat)
       clusterLegend(object)[whichClusters]<-newClLegend
       ch<-.checkClusterLegend(object)
@@ -396,7 +395,7 @@ setMethod(
   f = "plotClusters",
   signature = signature(object = "matrix",whichClusters="missing"),
   definition = function(object, whichClusters,
-              orderSamples=NULL,sampleData=NULL,reuseColors=FALSE,matchToTop=FALSE,
+              orderSamples=NULL,colData=NULL,reuseColors=FALSE,matchToTop=FALSE,
               plot=TRUE,unassignedColor="white",missingColor="grey",
               minRequireColor=0.3,startNewColors=FALSE,colPalette=massivePalette,
               input=c("clusters","colors"),clusterLabels=colnames(object),
@@ -406,26 +405,27 @@ setMethod(
   if(!is.matrix(object)) stop("object must be a matrix")
 	  
 	  
-  if(!is.null(orderSamples) && !all(orderSamples %in% 1:nrow(object))) stop("invalid values for orderSamples")
+  if(!is.null(orderSamples) && !all(orderSamples %in% seq_len(nrow(object))))
+	  stop("invalid values for orderSamples")
   index<-orderSamples #match to old arguments
   input<-match.arg(input)
 
   #------------
-  ###Add any additional sampleData to the bottom
+  ###Add any additional colData to the bottom
   #------------
-	if(!is.null(sampleData) & input=="clusters"){
-	  if(!is.matrix(sampleData) && !is.data.frame(sampleData)){
-      if(length(sampleData)!=nrow(object)){
-        stop("if sampleData is a single vector, it must be the same length as nrow(object)")
-        if(is.list(sampleData)) stop("sampleData cannot be a list, must be vector or matrix")
+	if(!is.null(colData) & input=="clusters"){
+	  if(!is.matrix(colData) && !is.data.frame(colData)){
+      if(length(colData)!=nrow(object)){
+        stop("if colData is a single vector, it must be the same length as nrow(object)")
+        if(is.list(colData)) stop("colData cannot be a list, must be vector or matrix")
       }
 	  }
 	  else{
-	    if(nrow(sampleData)!=nrow(object)) stop("sampleData must have same number of observations as clusterings")
+	    if(nrow(colData)!=nrow(object)) stop("colData must have same number of observations as clusterings")
 
 	  }
 	  
-    clusters<-cbind(object,sampleData)
+    clusters<-cbind(object,colData)
 	}
 	else clusters<-object
     
@@ -443,8 +443,8 @@ setMethod(
 			clNames<-rep("",ncol(clusters))
 		}
 		else{
-	    	if(length(clNames==ncol(clusters)-ncol(sampleData))){
-	    		clNames<-c(clNames,colnames(sampleData))
+	    	if(length(clNames==ncol(clusters)-ncol(colData))){
+	    		clNames<-c(clNames,colnames(colData))
 			}
 			else stop("number of cluster labels given in clusterLabels must be equal to the number of clusterings (or sample data columns plus clusterings)")
 			
@@ -474,7 +474,7 @@ setMethod(
 			#take out -1
 
 			#2. replace colors of -1/-2 in clusterLegend (used to update clusterLegend if resetColors=TRUE)
-			newColorLeg<-lapply(1:nrow(clusters),function(i){
+			newColorLeg<-lapply(seq_len(nrow(clusters)),function(i){
 				leg<-out$clusterLegend[[i]]
 				if(any(wh<-leg[,"clusterIds"]== -1))
 				leg[wh,"color"]<-unassignedColor
@@ -484,7 +484,7 @@ setMethod(
 			})
 			names(newColorLeg)<-names(out$clusterLegend)
 			#3. Update colors in colors matrix
-			xColors<-do.call("cbind",lapply(1:nrow(clusters),function(i){
+			xColors<-do.call("cbind",lapply(seq_len(nrow(clusters)),function(i){
 				out$colors[clusters[i,]=="-1",i]<-unassignedColor
 				out$colors[clusters[i,]=="-2",i]<-missingColor
 				return(out$colors[,i])
@@ -521,7 +521,7 @@ setMethod(
 	######
 	pastColorVector<-NULL
 	colorM = rbind() #matrix of colors. gives colors for cluster assignments that give the 'right' color throughout the different rows
-	for(i in 1:nrow(clusters)){
+	for(i in seq_len(nrow(clusters))){
 	  # Below calls the function:
 		#.setClusterColors <- function(past_ct,ct,colorU,colorList,reuseColors,minRequireColor=0.5){
 		# About this function:
@@ -569,7 +569,7 @@ setMethod(
 	###Order the samples
 	###########
 	if(is.null(index)){
-		tmp<-lapply(1:nrow(alignCl),function(i){unlist(alignCl[i,])})
+		tmp<-lapply(seq_len(nrow(alignCl)),function(i){unlist(alignCl[i,])})
 		index<-do.call("order",tmp)
 	}
 	
@@ -579,7 +579,7 @@ setMethod(
 	###########
     # Make color legend
 	###########
-	clusterLegend<-lapply(1:nrow(clusters),function(ii){
+	clusterLegend<-lapply(seq_len(nrow(clusters)),function(ii){
 		mat<-cbind("clusterIds"=unlist(clusters[ii,]),"alignedClusterIds"=unlist(alignCl[ii,]),"color"=unlist(colorM[ii,]))
 		mat<-cbind(mat,"name"=mat[,"alignedClusterIds"])
 		rownames(mat)<-NULL
@@ -607,7 +607,7 @@ setMethod(
 	if(is.null(past_colors) | is.null(past_ct)){
 		#map values of ct to 1:(# unique values)
 		ncl<-length(unique(ct))
-		v<-1:ncl
+		v<-seq_len(ncl)
 		names(v)<-stringr::str_sort(unique(ct),locale="en")
 		clNum<-v[match(ct,names(v))]
 		newColors = colorU[clNum]
@@ -625,7 +625,7 @@ setMethod(
 		if(!startNewColors){
 			whShared<-which(colorU %in% past_colors)
 			m<-max(whShared)
-			colorU<-c(colorU[m:length(colorU)],colorU[1:m]) #puts the used by previous rows colors at the end
+			colorU<-c(colorU[m:length(colorU)],colorU[seq_len(m)]) #puts the used by previous rows colors at the end
 		}
 		colorU<-colorU[!colorU %in% past_colors]
 		colorU<-unique(colorU) #make sure unique colors, at least per cluster
@@ -740,7 +740,7 @@ setMethod(
 	}
 	if(!add) plot(NULL,xlim=range(c(xleft,xright)),ylim=ylim,axes=FALSE,ylab=ylab,xlab=xlab,bty="n",...)
 
-	for(i in 1:nrow(m)){
+	for(i in seq_len(nrow(m))){
     rect(  xleft=xleft, xright=xright,  ybottom=rep(ybottom[i],ncol(m)) , ytop=rep(ytop[i],ncol(m)), col=m[i,],border=NA,xpd=NA)
   }
   #hatch lines to indicate samples

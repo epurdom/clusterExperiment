@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#' @param whichClusters which clusters to use
+#' @inheritParams ClusterExperiment-methods
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'
@@ -44,7 +44,7 @@ setMethod(
       outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
     if(output%in% c("matrixNames","matrixColors")){
-      outval<-do.call("cbind",lapply(1:length(whichClusters),function(ii){
+      outval<-do.call("cbind",lapply(seq_along(whichClusters),function(ii){
         cl<-clusterMatrix(object)[,whichClusters,drop=FALSE][,ii]
         colMat<-clusterLegend(object)[whichClusters][[ii]]
         m<-match(cl,colMat[,"clusterIds"])
@@ -68,6 +68,20 @@ setMethod(
     
   }
 )
+
+.convertToClusterLegend<-function(acol){
+	if(!is.list(acol)){ #single vector
+		acol<-list(acol)
+	}
+	out<-lapply(acol,function(x){
+		if(!is.null(names(x))) nms<-names(x)
+		else nms<-as.character(seq_along(x))
+		cols<-unname(x)
+		return(cbind("color"=cols,"name"=nms))
+	})
+	names(out)<-names(acol)
+	return(out)
+}
 
 .convertToAheatmap<-function(clusterLegend, names=FALSE){
   outval<-lapply(clusterLegend,function(x){
@@ -116,19 +130,19 @@ setMethod(
 #' showPalette()
 #' showPalette(massivePalette,cex=0.6)
 showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
-  oldMar<-par("mar")
+  oldPar<-par(no.readonly = TRUE)
   wh<-which
   if(is.null(wh)){
-    wh<-1:length(colPalette)
+    wh<-seq_along(colPalette)
   }
   else{ colPalette<-colPalette[wh]}
   n<-ceiling(sqrt(length(colPalette)))
   nblank<-n^2-length(colPalette)
   xwide<-n
   yup<-n
-  x1<-rep(c(1:xwide)-.5,yup)
-  x2<-rep(c(1:xwide)+.5,yup)
-  xtext<-rep(c(1:xwide),yup)
+  x1<-rep(c(seq_len(xwide))-.5,yup)
+  x2<-rep(c(seq_len(xwide))+.5,yup)
+  xtext<-rep(c(seq_len(xwide)),yup)
   ycolor1<-rep(seq(1,yup*2,by=2)-.5,each=xwide)
   ycolor2<-rep(seq(1,yup*2,by=2)+.5,each=xwide)
   ytext<-rep(seq(2,yup*2,by=2)+.5,each=xwide)
@@ -140,13 +154,14 @@ showPalette<-function(colPalette=bigPalette,which=NULL,cex=1){
   if(length(colPalette)>100){
 	  half<-ceiling(length(colPalette)/2)
 	 adj.text<-cbind(rep(.5,half*2),rep(c(0,1),times=half))
-	 adj.text<-adj.text[1:length(colPalette),]
+	 adj.text<-adj.text[seq_along(colPalette),]
   }
   else adj.text<-matrix(c(0.5,0),nrow=length(colPalette),ncol=2,byrow=TRUE)
-  for(i in 1:length(colPalette)){
+  for(i in seq_along(colPalette)){
       text(xtext[i],ytext[i]-1,colPalette[i],cex=cex,adj=adj.text[i,])
       if(length(colPalette)<=100) text(xtext[i],ytext[i]-2,wh[i],cex=cex,adj=c(0.5,1))
   }
+	par(oldPar)
 }
 
 #' @rdname plottingFunctions
@@ -377,8 +392,8 @@ showHeatmapPalettes<-function(){
 		if(length(x)<maxLength) x<-c(x,rep("white",maxLength-length(x)))
 			return(x)})
 	ll<-list()
-	sapply(1:length(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
-	sapply(1:(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
+	sapply(seq_along(palettesAllAdj),function(ii){ll[[2*ii-1]]<<-palettesAllAdj[[ii]]})
+	sapply(seq_len(length(palettesAllAdj)-1),function(ii){ll[[2*ii]]<<-rep("white",length=maxLength)})
 	names(ll)[seq(1,length(ll),by=2)]<-names(palettesAll)
 	names(ll)[seq(2,length(ll),by=2)]<-rep("",length(palettesAll)-1)
 	mat<-do.call("cbind",ll)
@@ -413,16 +428,17 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 #'  that correspond to the clusterIds in the ClusterExperiment object. If this
 #'  argument is missing, will use the names in the "name" column of the clusterLegend
 #'  slot of the object.
+#' @param add logical. Whether legend should be added to the existing plot.
+#' @param location character passed to \code{x} argument of legend indicating 
+#'  where to place legend.
 #' @param ... arguments passed to legend
 #' @rdname plottingFunctions
 #' @aliases plotClusterLegend
 setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
-  definition = function(object,whichCluster="primary",clusterNames,title,...){
-    whichCluster<-.TypeIntoIndices(object,whClusters=whichCluster)
-    if(length(whichCluster)==0) stop("given whichCluster value does not match any clusters")
-    if(length(whichCluster)>1) stop("given whichCluster indicates more than 1 clustering")
+  definition = function(object,whichCluster="primary",clusterNames,title,add=FALSE,location=if(add)"topright" else "center",...){
+    whichCluster<-.convertSingleWhichCluster(object,whichCluster,list(...))
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
       if(is.null(names(clusterNames))) stop("clusterNames must be named vector")
@@ -451,9 +467,14 @@ setMethod(
       isNeg<-as.numeric(legMat[,"clusterIds"])<0
       ord<-c(which(!isNeg),which(isNeg))
     }
-    else ord<-1:nrow(legMat)
-    plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-    legend("center",legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+    else ord<-seq_len(nrow(legMat))
+    if(!add){
+			plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+		}
+		else{
+			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+		}
     
     
   })

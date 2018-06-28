@@ -34,7 +34,7 @@
 #'
 #' #Do all pairwise, only return significant, try different adjustments:
 #' pairsPerC <- getBestFeatures(cl, contrastType="Pairs", number=5,
-#' p.value=0.05, isCount=FALSE)
+#' p.value=0.05, DEMethod="limma")
 #' plotContrastHeatmap(cl,pairsPerC)
 setMethod(
   f = "plotContrastHeatmap",
@@ -42,7 +42,7 @@ setMethod(
   definition = function(object,signifTable,whichCluster=NULL,contrastColors=NULL,...) {
     if(!all(c("IndexInOriginal","Contrast") %in% colnames(signifTable ))) stop("signifTable must have columns 'IndexInOriginal' and 'Contrast'")
     if(!is.numeric(signifTable$IndexInOriginal)) stop("Column 'IndexInOriginal' Must consist of numeric values")
-    if(!all(signifTable$IndexInOriginal %in% 1:nrow(object))) stop("Column 'IndexInOriginal' must consist of indices that match the row indices of 'object'")
+    if(!all(signifTable$IndexInOriginal %in% seq_len(nrow(object)))) stop("Column 'IndexInOriginal' must consist of indices that match the row indices of 'object'")
     #divide by contrast, sort by FC (if exists) and return index
     geneByContrast<-by(signifTable,signifTable$Contrast,function(x){
       if("logFC" %in% names(x)){
@@ -95,9 +95,7 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-      if(is.character(whichCluster)) whichCluster <- .TypeIntoIndices(object, whClusters=whichCluster)
-      if(length(whichCluster)>1) stop("Must indicate single clustering in 'whichCluster'")
-      if(length(whichCluster)==0 || whichCluster<1 || whichCluster>nClusterings(object)) stop("Did not indicate valid cluster in whichCluster argument")
+	    whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives

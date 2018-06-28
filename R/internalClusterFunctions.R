@@ -8,7 +8,7 @@
     nfound<-length(clusterList)
     if(nfound>0){
         #make cluster ids in order of when found
-        for (i in 1:length(clusterList)) clust.id[clusterList[[i]]] <- i 
+        for (i in seq_along(clusterList)) clust.id[clusterList[[i]]] <- i 
     }
     return(clust.id)
 }
@@ -66,7 +66,7 @@
 
 
 .clusterVectorToList<-function(vec){
-    clList<-tapply(1:length(vec),vec,function(x){x},simplify=FALSE)
+    clList<-tapply(seq_along(vec),vec,function(x){x},simplify=FALSE)
 	whNotAssign<-which(sapply(clList,function(x){all(vec[x]== -1)}))
 	if(length(whNotAssign)>1) stop("Internal coding error in removing unclustered samples")
     if(length(whNotAssign)>0) clList<-clList[-whNotAssign]	
@@ -74,8 +74,8 @@
 .clusterListToVector<-function(ll,N){
 	if(length(ll)==0) return(rep(-1,N))
 	else{
-		names(ll)<-as.character(1:length(ll))
-		clId<-lapply(1:length(ll),function(ii){rep(ii,length=length(ll[[ii]]))})
+		names(ll)<-as.character(seq_along(ll))
+		clId<-lapply(seq_along(ll),function(ii){rep(ii,length=length(ll[[ii]]))})
 		clVal<-unlist(clId)
 		clInd<-unlist(ll)
 		clusterVec<-rep(-1,length=N)

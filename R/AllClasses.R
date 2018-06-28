@@ -1,6 +1,7 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedMatrix
+
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
@@ -30,7 +31,7 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #' in the Slots section.
 #'
 #' @description There are several methods implemented for this class. The most
-#' important methods (e.g., \code{\link{clusterMany}}, \code{\link{combineMany}},
+#' important methods (e.g., \code{\link{clusterMany}}, \code{\link{makeConsensus}},
 #' ...) have their own help page. Simple helper methods are described in the
 #' Methods section. For a comprehensive list of methods specific to this class
 #' see the Reference Manual.
@@ -48,16 +49,6 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #' If created from \code{\link{clusterSingle}}, clusterInfo will include the
 #' parameter used for the call, and the call itself. If \code{sequential = TRUE}
 #' it will also include the following components.
-#' @slot merge_index index of the current merged cluster
-#' @slot merge_cutoff value for the cutoff used to determine whether to merge
-#'   clusters
-#' @slot merge_dendrocluster_index index of the cluster merged with the current
-#'   merge
-#' @slot merge_nodeMerge data.frame of information about nodes merged in the
-#'   current merge
-#' @slot merge_nodeProp data.frame of information of proportion estimated
-#'   non-null at each node of dendrogram
-#' @slot merge_method character indicating method used for merging
 #' \itemize{
 #' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
 #' found, a matrix of information regarding the algorithm behavior for each
@@ -66,6 +57,19 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
 #' found, a character string explaining what triggered the algorithm to stop.}
 #' }
+#' @slot merge_index index of the current merged cluster
+#' @slot merge_cutoff value for the cutoff used to determine whether to merge
+#'   clusters
+#' @slot merge_dendrocluster_index index of the cluster merged with the current
+#'   merge
+#' @slot merge_nodeMerge data.frame of information about nodes merged in the
+#'   current merge. See \code{\link{mergeClusters}}
+#' @slot merge_nodeProp data.frame of information of proportion estimated
+#'   non-null at each node of dendrogram. See \code{\link{mergeClusters}}
+#' @slot merge_method character indicating method used for merging. See 
+#'   \code{\link{mergeClusters}}
+#' @slot merge_demethod character indicating the DE method used for merging. See 
+#'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
 #' @slot dendro_samples dendrogram. A dendrogram containing the cluster
@@ -118,6 +122,7 @@ setClass(
 	merge_index="numeric",
 	merge_dendrocluster_index="numeric",
 	merge_method="character",
+	merge_demethod="character",
 	merge_cutoff="numeric",
 	merge_nodeProp="data.frameOrNULL",
 	merge_nodeMerge="data.frameOrNULL"
@@ -228,7 +233,7 @@ setMethod(
   })
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
-#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `combineMany` are
+#'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
 #'  reserved for the clustering coming from the package workflow and should not
 #'  be used when creating a new object with the constructor.
 #'@param clusterInfo a list with information on the clustering (see Slots).
@@ -248,12 +253,22 @@ setMethod(
 #'@param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
 #'@param merge_dendrocluster_index integer. Sets the
 #'  \code{merge_dendrocluster_index} slot (see Slots)
+#'@param merge_demethod character, Sets the
+#'  \code{merge_demethod} slot (see Slots)
 #'@param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see
 #'  Slots)
 #'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
 #'  Slots)
 #'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
-#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see Slots)
+#'@param clusterLegend list, Sets the \code{clusterLegend} slot (see details).
+
+#' @details The \code{clusterLegend} argument to \code{ClusterExperiment} 
+#'  must be a valid clusterLegend format and match the values in \code{clusters}, 
+#' in that the "clusterIds" column must matches the value in the clustering matrix
+#'  \code{clusters}. If \code{names(clusterLegend)==NULL}, it is assumed that the 
+#'  entries of \code{clusterLegend} are in the same order as the columns of 
+#'  \code{clusters}. Generally, this is not a good way for users to set the
+#' clusterLegend slot.
 #' @details The \code{ClusterExperiment} constructor function gives
 #'   clusterLabels based on the column names of the input
 #'   matrix/SingleCellExperiment. If missing, will assign labels
@@ -278,12 +293,13 @@ setMethod(
                         dendro_outbranch=NA,
                         coClustering=NULL,
                         merge_index=NA_real_,
-						merge_cutoff=NA_real_,
+                        merge_cutoff=NA_real_,
                         merge_dendrocluster_index=NA_real_,
                         merge_nodeProp=NULL,
                         merge_nodeMerge=NULL,
                         merge_method=NA_character_,
-						clusterLegend=NULL,
+												merge_demethod=NA_character_,
+                        clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
     if(NCOL(object) != nrow(clusters)) {
@@ -301,9 +317,9 @@ setMethod(
            `clusters`")
     }
     #fix up names of clusters and match
-
+    
     if(is.null(colnames(clusters))){
-      colnames(clusters)<-paste("cluster",1:NCOL(clusters),sep="")
+      colnames(clusters)<-paste("cluster",seq_len(NCOL(clusters)),sep="")
     }
     if(any(duplicated(colnames(clusters)))){#probably not possible
       colnames(clusters)<-make.names(colnames(clusters),unique=TRUE)
@@ -315,24 +331,30 @@ setMethod(
       clusterInfo <- rep(list(NULL), length=NCOL(clusters))
     }
     #make clusters consecutive integer valued:
-    tmp<-.makeColors(clusters, colors=massivePalette)
-    if(is.null(clusterLegend)) clusterLegend<-tmp$colorList
-	else{
-		clusterLegend<-unname(clusterLegend)
-		ch<-.checkIndClusterLegend(clusters,clusterLegend)
-		if(!is.logical(ch)) stop(ch)
-		#need to grab colors/names in given clusterLegend
-		autoLegend<-tmp$colorList
-		clusterLegend<-mapply(clusterLegend,autoLegend,FUN=function(orig,auto){
-			m<-match(orig[,"clusterIds"],auto[,"name"])
-			if(any(is.na(m))) stop("coding error -- do not have all of original clusters in new clusterLegend") #shouldn't happen!
-			orig[,"clusterIds"]<-auto[m,"clusterIds"]
-			return(orig)
-
-		},SIMPLIFY=FALSE)
-	}
-    clustersNum<-tmp$numClusters
-    colnames(clustersNum)<-colnames(clusters)
+    if(nrow(clusters)>0){
+	    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
+	    if(is.null(clusterLegend)){
+	    	clusterLegend<-tmp$colorList
+	    } 
+	    else{
+	      #need to check matches the clusters, which .makeColors doesn't do.
+	      clusterLegend<-unname(clusterLegend)
+	      ch<-.checkClustersWithClusterLegend(clusters,clusterLegend)
+	      if(!is.logical(ch)) stop(ch)
+	 			clusterLegend<-tmp$colorList      
+	    }
+	    clustersNum<-tmp$numClusters
+	    colnames(clustersNum)<-colnames(clusters)
+		
+    }
+		else{
+			clustersNum<-clusters
+			clusterLegend<-lapply(seq_len(ncol(clusters)),function(ii){
+				out<-matrix(nrow=0,ncol=3)
+				colnames(out)<-c("clusterIds","color","name")
+				return(out)
+			})
+		}
     #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                object,
@@ -342,19 +364,20 @@ setMethod(
                clusterTypes = unname(clusterTypes),
                clusterInfo=unname(clusterInfo),
                clusterLegend=unname(clusterLegend),
-               orderSamples=1:ncol(object),
+               orderSamples=seq_len(ncol(object)),
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
                dendro_outbranch=dendro_outbranch,
                merge_index=merge_index,
-			   merge_cutoff=merge_cutoff,
+               merge_cutoff=merge_cutoff,
                merge_dendrocluster_index=merge_dendrocluster_index,
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,
                merge_method=merge_method,
+							 merge_demethod=merge_demethod,
                coClustering=coClustering
-
+               
     )
     if(checkTransformAndAssay){
       chass<-.checkAssays(out)

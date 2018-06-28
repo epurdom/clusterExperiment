@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.1.4
+Version: 2.1.5
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -12,9 +12,10 @@ Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 3.4.2),
+    R (>= 3.5.0),
     SingleCellExperiment,
-	SummarizedExperiment
+	SummarizedExperiment,
+	BiocGenerics
 Imports:
     methods,
     NMF,
@@ -31,20 +32,25 @@ Imports:
     graphics,
     parallel,
     RSpectra,
-	kernlab,
-	stringr,
-	S4Vectors,
-	grDevices,
-	Rcpp,
-	HDF5Array (>= 1.7.10),
-	DelayedArray (>= 0.5.31)
+	  kernlab,
+	  stringr,
+	  S4Vectors,
+	  grDevices,
+	  Rcpp,
+	  HDF5Array (>= 1.7.10),
+	  DelayedArray (>= 0.5.31),
+		edgeR,
+		scales,
+		zinbwave
 Suggests:
-    BiocStyle,
-    knitr,
-    testthat,
+  BiocStyle,
+  knitr,
+  testthat,
 	scRNAseq,
-    MAST,
-	Rtsne
+  MAST,
+	Rtsne,
+	scran,
+	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
@@ -59,30 +65,34 @@ Collate:
     'AllHelperFilter.R'
     'JiashinJiCode.R'
     'RcppExports.R'
-    'addClusters.R'
+    'addClusterings.R'
+    'assignUnassigned.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
     'builtInClusterFunctions.R'
     'clusterContrasts.R'
-    'clusterLabels.R'
     'clusterMany.R'
     'clusterSingle.R'
-    'combineMany.R'
     'dataCreation.R'
+    'deprecateFunctions.R'
     'getFeatures.R'
     'getParams.R'
+    'getReducedData.R'
     'mainClustering.R'
     'makeBlankData.R'
+    'makeConsensus.R'
     'makeDendrogram.R'
     'makeFilterStats.R'
     'makeReducedDims.R'
     'mergeClusters.R'
     'plotBarplot.R'
     'plotClusters.R'
+    'plotClustersTable.R'
     'plotClustersWorkflow.R'
     'plotContrastHeatmap.R'
     'plotDendrogram.R'
     'plotFeatureBoxplot.R'
+    'plotFeatureScatter.R'
     'plotHeatmap.R'
     'plotReduceDim.R'
     'plottingHelpers.R'
@@ -90,6 +100,8 @@ Collate:
     'seqCluster.R'
     'subsampleClustering.R'
     'subsampleLoop.R'
+    'subset.R'
     'transformFunction.R'
+    'updateObject.R'
     'workflowClusters.R'
 LinkingTo: Rcpp

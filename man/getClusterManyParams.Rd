@@ -7,15 +7,28 @@
 \title{Get parameter values of clusterMany clusters}
 \usage{
 \S4method{getClusterManyParams}{ClusterExperiment}(x,
-  whichClusters = "clusterMany", simplify = TRUE)
+  whichClusters = "clusterMany", searchAll = FALSE, simplify = TRUE)
 }
 \arguments{
 \item{x}{a ClusterExperiment object that contains clusterings from running
 \code{\link{clusterMany}}.}
 
-\item{whichClusters}{The indices (or clusterLabels) of those clusters whose
-labels will be parsed to determine the parameters; should be subset of the
-clusterMany results.}
+\item{whichClusters}{argument that can be either numeric or character value
+indicating the clusters to be used. If numeric, gives the indices of the
+\code{clusterMatrix} to return; this can also be used to defined an
+ordering for the clusterings (as relevant). \code{whichClusters} can be a
+character value identifying the \code{clusterTypes} to be used, or if not
+matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+indicate choosing all clusterings or choosing all 
+\code{\link{workflowClusters}} clusterings or choosing the 'primary'
+clustering, respectively. If missing, the entire matrix of all clusterings
+is returned.}
+
+\item{searchAll}{logical, indicating whether all clusterings with 
+\code{clusterMany} label should be allowed (i.e. including those from
+ previous ones with labels like \code{clusterMany.1}), or only limited 
+ to those in most recent workflow (default).}
 
 \item{simplify}{logical. Whether to simplify the output so as to remove 
 features that do not change across the clusterings.}

@@ -14,7 +14,7 @@
     #gives a n x k matrix of inner-products between them
     distMat<-as.matrix(dist(rbind(t(x),centers)))
   }
-  distMat<-distMat[1:ncol(x),(ncol(x)+1):ncol(distMat)]
+  distMat<-distMat[seq_len(ncol(x)),(ncol(x)+1):ncol(distMat)]
   apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
@@ -133,7 +133,7 @@
 {
   whichHierDist<-match.arg(whichHierDist)
   evalClusterMethod<-match.arg(evalClusterMethod)
-  if(is.null(rownames(diss))) rownames(diss)<-colnames(diss)<-as.character(1:nrow(diss))
+  if(is.null(rownames(diss))) rownames(diss)<-colnames(diss)<-as.character(seq_len(nrow(diss)))
   passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
   S<-round(1-diss,10)
   d<-switch(whichHierDist,"dist"=dist(S),"as.dist"=as.dist(diss))
@@ -213,9 +213,9 @@
   }
   if(is.null(dim(S)) || dim(S)[1]!=dim(S)[2] || any(t(S)!=S)) stop("S must be a symmetric matrix")
   N<-nrow(S)
-  colnames(S) <- 1:N
-  rownames(S) <- 1:N
-  i = 1
+  colnames(S) <- seq_len(N)
+  rownames(S) <- seq_len(N)
+  i <- 1
   S.temp <- S
   res <- list()
   while (!is.null(dim(S.temp)) && !is.null(dim(S.temp)) && nrow(S.temp) > 0 & any(S.temp[lower.tri(S.temp)]>1-alpha) & any(S.temp[lower.tri(S.temp)]==1)) {

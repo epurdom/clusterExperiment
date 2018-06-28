@@ -8,10 +8,10 @@
 #'@param main passed to the \code{plot.phylo} function to set main title.
 #'@param sub passed to the \code{plot.phylo} function to set subtitle.
 #'@param plotType one of 'name', 'colorblock' or 'id'. If 'Name' then dendrogram
-#'  will be plotted, and name of cluster or sample (depending on type of value
-#'  for \code{leafType}) will be plotted next to the leaf of the dendrogram. If
-#'  'colorblock', rectangular blocks, corresponding to the color of the cluster
-#'  will be plotted, along with cluster name legend. If 'id' the internal
+#'  will be plotted, and name of cluster or sample (depending on type of value 
+#'  for \code{leafType}) will be plotted next to the leaf of the dendrogram. If 
+#'  'colorblock', rectangular blocks, corresponding to the color of the cluster 
+#'  will be plotted, along with cluster name legend. If 'id' the internal 
 #'  clusterIds value will be plotted (only appropriate if 
 #'  \code{leafType="clusters"}).
 #'@param ... arguments passed to the \code{\link{plot.phylo}} function of 
@@ -21,28 +21,40 @@
 #'  \code{whichClusters} can be a character value identifying the 
 #'  \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then 
 #'  \code{clusterLabels}; alternatively \code{whichClusters} can be either 'all'
-#'  or 'workflow' or 'primaryCluster' to indicate choosing all clusters or
+#'  or 'workflow' or 'primaryCluster' to indicate choosing all clusters or 
 #'  choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates 
 #'  using the clustering that created the dendrogram.
 #'@param removeOutbranch logical, only applicable if there are missing samples 
-#'  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram for
-#'  the samples was made by putting missing samples in an outbranch. In which
-#'  case, if this parameter is TRUE, the outbranch will not be plotted, and if
+#'  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram for 
+#'  the samples was made by putting missing samples in an outbranch. In which 
+#'  case, if this parameter is TRUE, the outbranch will not be plotted, and if 
 #'  FALSE it will be plotted.
 #'@param legend character, only applicable if \code{plotType="colorblock"}. 
 #'  Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is 
 #'  used to draw the color values of the clusters/samples next to the 
 #'  dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 #'  available for 'ape' package >= 4.1-0.6).
-#'@param nodeColors named vector of colors to be plotted on a node in the
-#'  dendrogram. Names should match the name of the node (calls
+#'@param nodeColors named vector of colors to be plotted on a node in the 
+#'  dendrogram. Names should match the name of the node (calls 
 #'  \code{\link[ape]{nodelabels}}).
 #'@param clusterLabelAngle angle at which label of cluster will be drawn. Only 
 #'  applicable if \code{plotType="colorblock"}.
-#'@param mergeInfo What kind of information about merge to plot on dendrogram.
-#'  If not equal to "none", will replicate the kind of plot that
-#'  \code{\link{mergeClusters}} creates, and the input to \code{mergeInfo}
+#'@param mergeInfo What kind of information about merge to plot on dendrogram. 
+#'  If not equal to "none", will replicate the kind of plot that 
+#'  \code{\link{mergeClusters}} creates, and the input to \code{mergeInfo} 
 #'  corresponds to that of \code{plotInfo} in \code{mergeClusters}.
+#' @param colData index (by integer or name) the sample data stored as a 
+#'   \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
+#'   ("character" or "factor" variables) will be plotted; indexing of continous 
+#'   variables will be ignored. Whether that data is continuous or not will be 
+#'   determined by the properties of \code{colData} (no user input is needed).
+#'   This argument is only relevant if \code{plotType=="colorblock"} and
+#'   \code{leafType=="samples"}
+#' @param clusterLegend Assignment of colors to the clusters or sample data (as
+#'   designated by \code{colData} argument) plotted with the dendrogram . If
+#'   \code{NULL} or a particular variable/cluster are not assigned a color, 
+#'   colors will be assigned internally for sample data and pull from the
+#'   \code{clusterLegend} slot of the x for the clusters.
 #' @return A dendrogram is plotted. Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
@@ -71,7 +83,7 @@
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
 #' cl <- makeDendrogram(cl) 
-#' cl <- mergeClusters(cl,mergeMethod="adjP",cutoff=0.1,plot=FALSE) 
+#' cl <- mergeClusters(cl,mergeMethod="adjP",DEMethod="limma",cutoff=0.1,plot=FALSE) 
 #' plotDendrogram(cl) 
 #' plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 #' 
@@ -80,7 +92,7 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,...)
+  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,colData=NULL,clusterLegend=NULL,...)
   {
     if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
     leafType<-match.arg(leafType)
@@ -106,15 +118,57 @@ setMethod(
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
     dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
     
+    #---
+    #make color matrix
+    #---
     cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
-    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(1:ncol(x))
-    if(length(whCl)==1){
+		
+		if(leafType=="samples" & plotType=="colorblock"){
+	    sData<-.pullColData(x,colData) #returns data.frame
+	    #identify which numeric and remove
+	    if(!is.null(sData)){
+				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
+				if(length(whCont)>0){
+					warning("argument 'colData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
+					if(length(whCont)< ncol(sData)) sData<-sData[,-whCont,drop=FALSE]
+					else sData<-NULL
+				}
+	    	
+	    }
+		}
+		else{
+			if(!is.null(colData)) 
+				warning("argument colData only used if leafType='samples' and plotType='colorblock'. Ignoring input to colData.")
+			sData<-NULL
+		}
+		if(!is.null(sData)){
+		  sClusterLegend<-.makeColors(sData,colors=massivePalette,distinctColors=TRUE,matchClusterLegend = clusterLegend,matchTo="name")
+			sNames<-colnames(sData)
+			sData<-sClusterLegend$numClusters
+      colnames(sData)<-sNames
+			cl<-cbind(cl,sData)
+			
+		}
+    if(!is.null(clusterLegend) || !is.null(sData)){
+      #preserve those in given clusterLegend that don't match colData (could go with features/rows)
+      if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
+        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(sClusterLegend$colorList  ))]
+        clusterLegend<-c(sClusterLegend$colorList,clusterLegend[whKeep])
+      }
+      else clusterLegend<-sClusterLegend$colorList
+    }
+		
+    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))
+    if(length(whCl)==1 & is.null(sData)){
       leg<-clusterLegend(x)[[whCl]]
       if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
     }
     else{
       leg<-clusterLegend(x)[whCl]
       if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+			if(!is.null(sData)){
+				leg<-c(leg,clusterLegend)
+			}
     }
     label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
     #   mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL, 
@@ -283,7 +337,7 @@ setMethod(
       #make default colors, works for vector or matrix cl
       #----
       clusterIds<-sort(unique(as.vector(cl)))
-      clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[1:length(clusterIds)])
+      clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[seq_along(clusterIds)])
     }
     else{
       if(is.matrix(cl) && ncol(cl)>1){
@@ -599,7 +653,7 @@ setMethod(
     }
     yy <- numeric(Ntip + Nnode)
     TIPS <- x$edge[x$edge[, 2] <= Ntip, 2]
-    yy[TIPS] <- 1:Ntip
+    yy[TIPS] <- seq_len(Ntip)
   }
   z <- ape:::reorder.phylo(x, order = "postorder") ##
   if (phyloORclado) {
@@ -701,7 +755,7 @@ setMethod(
   if (is.null(x.lim)) {
     if (phyloORclado) {
       if (horizontal) {
-        xx.tips <- xx[1:Ntip]
+        xx.tips <- xx[seq_len(Ntip)]
         if (show.tip.label) {
           pin1 <- par("pin")[1]
           tmp <- getLimit(xx.tips, x$tip.label, pin1, 
@@ -752,7 +806,7 @@ setMethod(
         y.lim <- c(1, Ntip)
       else {
         pin2 <- par("pin")[2]
-        yy.tips <- yy[1:Ntip]
+        yy.tips <- yy[seq_len(Ntip)]
         if (show.tip.label) {
           tmp <- getLimit(yy.tips, x$tip.label, pin2, 
                           cex)

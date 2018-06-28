@@ -31,9 +31,6 @@ NULL
 #'   for explanation.
 #' @param ncores integer giving the number of cores. If ncores>1, mclapply will
 #'   be called.
-#' @param largeDataset logical indicating whether a more memory-efficient version
-#'   should be used because the dataset is large. This is a beta option, and is
-#'   in the process of being tested before it becomes the default.
 #' @param ... arguments passed to mclapply (if ncores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
@@ -59,11 +56,6 @@ NULL
 #'   subsamples are taken) which can cause errors if you then pass the resulting
 #'   D=1-S matrix to \code{\link{mainClustering}}. For this reason the default is
 #'   "All".
-#' @details Our subsampling algorithm is implemented in C++ and is fast and
-#'   simple but may be memory inefficient if \code{samp.p} is low.
-#'   \code{largeDataset = TRUE} should be more efficient in such situations,
-#'   possibly at the cost of speed. Note that this feature is experimental and
-#'   should be used only by the developers.
 #' @return A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
 #'   [i,j] entries equal to the percentage of subsamples where the ith and jth
 #'   sample were clustered into the same cluster. The percentage is only out of
@@ -112,9 +104,9 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,largeDataset=FALSE,... )
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,... )
   {
-
+		largeDataset<-FALSE
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
@@ -142,7 +134,7 @@ setMethod(
     #-----
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     subSize <- round(samp.p * N)
-    idx<-replicate(resamp.num,sample(1:N,size=subSize))
+    idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
     #each column a set of indices for the subsample.
 
     #-----
@@ -226,8 +218,8 @@ setMethod(
         # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
         # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
         # What does this do with NAs? Removes them -- not included.
-        clusterIds<-unlist(tapply(1:N,classX,function(x){x},simplify=FALSE),use.names=FALSE)
-        clusterLengths<-tapply(1:N,classX,length)
+        clusterIds<-unlist(tapply(seq_len(N),classX,function(x){x},simplify=FALSE),use.names=FALSE)
+        clusterLengths<-tapply(seq_len(N),classX,length)
         return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
       }
     }
@@ -238,7 +230,7 @@ setMethod(
 
     }
     else{
-      DList<-parallel::mclapply(1:ncol(idx), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+      DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
 
       if(!largeDataset) {
         DList <- simplify2array(DList)

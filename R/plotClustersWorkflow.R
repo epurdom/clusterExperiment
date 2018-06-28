@@ -45,7 +45,7 @@
 #'     clusterings from a call to \code{\link{clusterMany}}. This plot separates
 #'     out the \code{\link{clusterMany}} results from a designated clustering of
 #'     interest, as indicated by the \code{whichClusters} argument
-#'     (by default clusterings from a call to \code{\link{combineMany}} or 
+#'     (by default clusterings from a call to \code{\link{makeConsensus}} or 
 #'     \code{\link{mergeClusters}}). In addition the highlighted clusters are
 #'     made bigger so that they can be easily seen.
 #' @seealso \code{\link{plotClusters}}, \code{\link{clusterMany}}
@@ -57,28 +57,32 @@
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
 #' removeSil=c(TRUE,FALSE))
-#' cl <- combineMany(cl, proportion=0.7)
+#' cl <- makeConsensus(cl, proportion=0.7)
 #' plotClustersWorkflow(cl)
 #' @export
 setMethod(
   f = "plotClustersWorkflow",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters=c("mergeClusters","combineMany"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=c("ignore","all","highlightOnly"),
+  definition = function(object, whichClusters=c("mergeClusters","makeConsensus"), whichClusterMany=NULL, nBlankLines=ceiling(nClusterings(object)*.05), existingColors=c("ignore","all","highlightOnly"),
                         nSizeResult=ceiling(nClusterings(object)*.02), clusterLabels=TRUE, clusterManyLabels=TRUE, sortBy=c("highlighted","clusterMany"), highlightOnTop=TRUE,...)
   {
     sortBy<-match.arg(sortBy)
     existingColors<-match.arg(existingColors)
     allClusterMany<-which(clusterTypes(object)=="clusterMany")
-    if("sampleData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'sampleData' argument. You must use plotClusters for this option.")
+    if("colData" %in% names(list(...))) stop("this function does not (yet) allow the designation of 'colData' argument. You must use plotClusters for this option.")
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }
-    if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
-    if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
+    # if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
+    # if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
     #convert to indices
     if(is.character(whichClusters)){
       whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
       if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
+    }
+    if(is.character(whichClusterMany)){
+      whichClusterMany<- .TypeIntoIndices(object,whClusters=whichClusterMany)
+      if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusterMany argument")
     }
     
     #result labels (yaxis):
@@ -151,12 +155,15 @@ setMethod(
     repResults<-do.call("cbind",repResults)
     ##Add blanks
     if(highlightOnTop){
-      bd<-makeBlankData(t(cbind(resM,cmM)), list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(resM,cmM)),
+						groupsOfFeatures=list("Results"=seq_along(whichClusters),"ClusterMany"=(length(whichClusters)+1):(length(whichClusters)+length(whichClusterMany))),
+						nBlankFeatures=nBlankLines
+						)
       whNotRes<-(length(whichClusters)+1):nrow(bd$dataWBlanks) #includes blanks
       whCM<-whNotRes[-c(seq_len(nBlankLines))] #no blanks
     } 	
     else{
-      bd<-makeBlankData(t(cbind(cmM,resM)), list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankLines=nBlankLines)
+      bd<-makeBlankData(data=t(cbind(cmM,resM)), groupsOfFeatures= list("ClusterMany"=seq_along(whichClusterMany), "Results"=(length(whichClusterMany)+1):(length(whichClusterMany)+length(whichClusters))),nBlankFeatures=nBlankLines)
       whNotRes<-  seq_len(length(whichClusterMany)+nBlankLines) #includes blanks
       whCM<-  seq_along(whichClusterMany) #no blanks
     }  

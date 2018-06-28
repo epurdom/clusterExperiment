@@ -81,18 +81,38 @@ NULL
 #' assays(se) <- list(normalized_counts=fq)
 #' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(ClusterExperiment)
+#' library(clusterExperiment)
 #' ncores<-1
-#' system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,reduceMethod="PCA",nReducedDims=10,
-#'	ncores=ncores,random.seed=176201, clusterFunction="hierarchical01",
-#'  combineMinSize=3))
-#' packageVersion("clusterExperiment")
+#' system.time(
+#'   rsecFluidigm<-RSEC(se, 
+#'                      isCount = TRUE, 
+#'                      k0s = 4:15, 
+#'                      alphas=c(0.1, 0.2, 0.3), 
+#'                      betas = 0.9,
+#'                      reduceMethod="PCA", 
+#'                      nReducedDims=10,
+#'                      minSizes=1, 
+#'                      clusterFunction="hierarchical01",
+#'                      consensusMinSize=3,
+#'                      consensusProportion=0.7,
+#'                      dendroReduce= "mad",
+#'                      dendroNDims=1000,
+#'                      mergeMethod="adjP",
+#'                      mergeCutoff=0.03,
+#'                      ncores=ncores, 
+#'                      random.seed=176201)
+#' )
+#' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
+#' x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
+#' y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
+#' if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
+#' if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 NULL
 
 # ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
-# # Note: Merging will be done on ' combineMany ', with clustering index 1
+# # Note: Merging will be done on ' makeConsensus ', with clustering index 1
 # # Note: If `isCount=TRUE` the data will be transformed with voom() rather than
 # # with the transformation function in the slot `transformation`.
 # # This makes sense only for counts.

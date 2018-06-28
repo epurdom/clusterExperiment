@@ -79,11 +79,11 @@ test_that("`clusterMany` works with SingleCellExperiment", {
 test_that("`clusterMany` works with reduceMethod a reducedDims",{
   #check picking all dims in single reduceMethod same as apply directly to matrix 
   expect_silent(clustNothing <- clusterMany(t(reducedDims(sceSimDataDimRed)[["PCA"]]), 
-  	ks=c(3,4),clusterFunction="pam", reduceMethod="none",
-    subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+                                            ks=c(3,4),clusterFunction="pam", reduceMethod="none",
+                                            subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	ks=c(3,4),clusterFunction="pam", reduceMethod="PCA",
-	subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+                                             ks=c(3,4),clusterFunction="pam", reduceMethod="PCA",
+                                             subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
   expect_equal(NCOL(clusterMatrix(clustNothing)),2)
   expect_equal(NCOL(clusterMatrix(clustNothing3)),2)
@@ -93,8 +93,8 @@ test_that("`clusterMany` works with reduceMethod a reducedDims",{
   #check picking certain dims in single reduceMethod same as apply directly to matrix 
   #and that get right reducedDim returned
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nReducedDims=c(5:6),reduceMethod="PCA",
-  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+                                            ks=c(3,4),nReducedDims=c(5:6),reduceMethod="PCA",
+                                            clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(NCOL(clusterMatrix(clustNothing)),4)
   expect_equal(abs(reducedDim(clustNothing,"PCA")), abs(reducedDim(sceSimDataDimRed,"PCA")[,1:6]))
   
@@ -124,18 +124,17 @@ test_that("`clusterMany` works with reduceMethod a reducedDims",{
   expect_silent(clustNothing <- clusterMany(simData, ks=c(3,4),clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, ks=c(3,4),clusterFunction="pam", reduceMethod="none",subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
-
+  
   #checks that nReducedDims ignored if reduceMethod="none"
   expect_silent(clustNothing <- clusterMany(simData, 
-	  ks=c(3,4),nReducedDims=c(5:6),reduceMethod="none",
-  	  clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+                                            ks=c(3,4),nReducedDims=c(5:6),reduceMethod="none",
+                                            clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_silent(clustNothing3 <- clusterMany(sceSimDataDimRed, 
-	  ks=c(3,4),nReducedDims=c(5:6),reduceMethod="none",
-      clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
+                                             ks=c(3,4),nReducedDims=c(5:6),reduceMethod="none",
+                                             clusterFunction="pam", subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE))
   expect_equal(clusterMatrix(clustNothing), clusterMatrix(clustNothing3))
-
-
-
+ 
+  
 })
 test_that("`clusterMany` works with reduceMethod a filtering",{
   expect_message(clustNothing4 <- clusterMany(sceSimDataDimRed, 
@@ -388,7 +387,7 @@ test_that("`getClusterManyParams` works", {
 		reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	  	subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
 	    isCount=FALSE)
-	cc<-combineMany(cc,proportion=1,whichClusters = "clusterMany")
+	cc<-makeConsensus(cc,proportion=1,whichClusters = "clusterMany")
 	expect_silent(paramAll<-getClusterManyParams(cc))
 	expect_equal(colnames(paramAll),c("clusteringIndex", "reduceMethod", "nReducedDims", "nFilterDims", "k"))
 	expect_true(is.data.frame(paramAll))
@@ -638,4 +637,15 @@ test_that("`clusterMany` consistent results (with transformation)", {
 	expect_equal(round(transformData(cm2)[1,],2), expectTrans1) 
     
   
+})
+test_that("`clusterMany` works with ClusterFunction objects",{
+		expect_silent(clustAll1<-clusterMany(sceSimDataDimRed,reduceMethod="PCA",
+			   ks=c(3,4),clusterFunction=listBuiltInFunctions()[1:2],
+		       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE,random.seed=1250))  	
+	  
+	expect_silent(clustAll2<-clusterMany(sceSimDataDimRed,reduceMethod="PCA",
+	 ks=c(3,4),clusterFunction=getBuiltInFunction(listBuiltInFunctions()[1:2]),
+		       subsample=FALSE, sequential=FALSE, isCount=FALSE,verbose=FALSE,random.seed=1250))  	
+	  
+		expect_equal(clustAll2,clustAll1)			 
 })

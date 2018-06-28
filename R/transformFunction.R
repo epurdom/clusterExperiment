@@ -18,8 +18,8 @@
 #' @param ... Values passed on the the 'matrix' method.
 #' @return A DataFrame defined by \code{assay(x)} suitably transformed
 #' @details The data matrix defined by \code{assay(x)} is transformed based on
-#'   the transformation function either defined in x (in the case of a 
-#' \code{ClusterExperiment} object) or by user given values for other classes. 
+#'   the transformation function either defined in x (in the case of a
+#' \code{ClusterExperiment} object) or by user given values for other classes.
 #'
 #'
 #' @examples
@@ -28,7 +28,7 @@
 #' labels <- gl(5, 2)
 #' cc <- ClusterExperiment(mat, as.numeric(labels), transformation =
 #' function(x){x^2}) #define transformation as x^2
-#' z<-transformData(cc) 
+#' z<-transformData(cc)
 #' @export
 setMethod(
   f = "transformData",
@@ -44,14 +44,16 @@ setMethod(
   }
 )
 #' @export
+#' @param whichAssay numeric or character specifying which assay to use. See
+#'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @rdname transformData
 setMethod(
   f = "transformData",
   signature = "ClusterExperiment",
-  definition = function(object,...) {
-  	if(any(c("transFun","isCount") %in% names(list(...)))) 
-  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
-	  return(transformData(assay(object),transFun=transformation(object)))
+  definition = function(object, whichAssay=1, ...) {
+  	if(any(c("transFun","isCount") %in% names(list(...))))
+  		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
+	  return(transformData(assay(object, whichAssay),transFun=transformation(object)))
   }
 )
 #' @export
@@ -59,8 +61,8 @@ setMethod(
 setMethod(
   f = "transformData",
   signature = "SingleCellExperiment",
-  definition = function(object,...) {
-	  return(transformData(assay(object),...))
+  definition = function(object, whichAssay=1, ...) {
+	  return(transformData(assay(object, whichAssay),...))
   }
 )
 #' @export
@@ -86,4 +88,4 @@ setMethod(
 
 
 
-	
+
