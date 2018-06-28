@@ -72,6 +72,7 @@ newMat<-read.table(file.path(outpath,matFile),sep=",",header=TRUE)
 compResult<-all.equal(compMat,newMat)
 printResult<-if(isTRUE(compResult)) "Yes" else "No"
 cat("Are all entries exactly the same?\n",printResult,"\n",file=outfile,append=TRUE)
+#If not the same, check if they are permutation
 if(!isTRUE(compResult)){
 	cat("Are all cluster results the same up to permutation in ids?\n",file=outfile,append=TRUE)
 if(!all(dim(compMat)==dim(newMat))){
@@ -111,7 +112,7 @@ if(!all(dim(compMat)==dim(newMat))){
 			if(all.equal(matchedClusterings,data.matrix(compMat))){
 				cat("Yes.\n",file=outfile,append=TRUE)
 			}else{
-				cat("No (identification of individual cells are not the same)\n",file=outfile,append=TRUE)
+				cat("No (identification of individual cells to clusters are not the same, though overall tabulations are the same)\n",file=outfile,append=TRUE)
 			}
 		}
 	}
