@@ -63,6 +63,14 @@ clusters tabulated.}
 \item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
 to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
 
+\item{plotType}{type of plot. If "heatmap", then a heatmap will be created of
+the values of the contingency table of the two clusters (calculated as
+determined by the argument "margin") using \code{\link{plotHeatmap}}. If
+"bubble", then a plot will be created using \code{bubblePlot}, which will
+create circles for each cell of the contingencey table whose size
+corresponds to the number of samples shared and the color based on the
+value of the proportion (as chosen by the argument \code{margin}).}
+
 \item{sizeTable}{table of sizes}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
@@ -74,15 +82,24 @@ with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
 \item{gridColor}{color for grid lines}
 
-\item{maxCex}{largest value of cex for any point (others will scale proportionally smaller).}
+\item{maxCex}{largest value of cex for any point (others will scale
+proportionally smaller).}
 
-\item{cexFactor}{factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.}
+\item{cexFactor}{factor to multiple by to get values of circles. If missing,
+finds value automatically, namely by using the maxCex value default.
+Overrides value of maxCex.}
 
-\item{ylab}{label for y-axis. If missing, uses the name for rows in sizeTable}
+\item{ylab}{label for y-axis. If missing, uses the name for rows in
+sizeTable. If set to \code{NULL} no y-axis label will be plotted.}
 
-\item{xlab}{label for x-axis. If missing, uses the name for columns in sizeTable}
+\item{xlab}{label for x-axis. If missing, uses the name for columns in 
+sizeTable. If set to \code{NULL} no y-axis label will be plotted.}
 
 \item{legend}{whether to draw legend along top}
+
+\item{las}{the value for the las value in the call to \code{\link{axis}} in
+labeling the clusters in the bubble plot. Determines whether parallel or
+perpindicular labels to the axis (see \code{\link{par}}).}
 
 \item{colorScale}{the color scale for the values of the proportion table}
 }
@@ -95,7 +112,14 @@ Note that the cluster labels in \code{plotClustersTable} and
 because \code{tableClusters} calls the R function \code{table}, which makes this 
 conversion
 
-\code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$.
+\code{bubblePlot} is mainly used internally by
+  \code{plotClustersTable} but is made public for users who want more control
+  and to allow documentation of the arguments. \code{bubblePlot} plots a
+  circle for each intersection of two clusters, where the color of the circle
+  is based on the value in \code{propTable} and the size of the circle is
+  based on the value in \code{sizeTable}. The size is determined by setting
+  the \code{cex} value of the point as
+  $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$.
 }
 \examples{
 #clustering using pam: try using different dimensions of pca and different k

@@ -48,7 +48,7 @@ setMethod(
 setMethod(
   f = "requiredArgs",
   signature = c("list"),
-  definition = function(object,...) {
+  definition = function(object) {
 		.checkFunctionList(object)
   	return(sapply(object,requiredArgs))
 	}
@@ -122,7 +122,7 @@ setMethod(
 setMethod(
   f = "algorithmType",
   signature = c("list"),
-  definition = function(object,...) {
+  definition = function(object) {
 		.checkFunctionList(object)
   	return(sapply(object,algorithmType))
 	}
@@ -152,7 +152,7 @@ setMethod(
 setMethod(
   f = "inputType",
   signature = c("list"),
-  definition = function(object,...) {
+  definition = function(object) {
 		.checkFunctionList(object)
   	return(sapply(object,inputType))
 	}

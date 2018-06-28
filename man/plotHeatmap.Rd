@@ -3,6 +3,7 @@
 \docType{methods}
 \name{plotHeatmap}
 \alias{plotHeatmap}
+\alias{plotHeatmap,SingleCellExperiment-methods}
 \alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,table-method}
 \alias{plotHeatmap,ClusterExperiment-method}
@@ -49,7 +50,7 @@
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,
 \code{\link{ClusterExperiment}},
-\code{\link[SingleCellExperiment]{SingleCellExperiment}}or
+\code{\link[SingleCellExperiment]{SingleCellExperiment}} or
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
 interpretation of parameters depends on the type of the input to
 \code{data}.}
@@ -194,10 +195,10 @@ for quantile.}
 }
 }
 \description{
-Make heatmap with color scale from one matrix and hiearchical clustering of
-samples/features from another. Also built in functionality for showing the
-clusterings with the heatmap. Builds on \code{\link[NMF]{aheatmap}} function
-of \code{NMF} package.
+Make heatmap with color scale from one matrix and hiearchical
+  clustering of samples/features from another. Also built in functionality
+  for showing the clusterings with the heatmap. Builds on
+  \code{\link[NMF]{aheatmap}} function of \code{NMF} package.
 }
 \details{
 The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw

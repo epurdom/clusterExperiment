@@ -161,8 +161,8 @@
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
 
-\item{..., i, j, drop}{Forwarded to the
-\code{\link{SingleCellExperiment}} method.}
+\item{...}{For subsetting forwarded to the \code{\link{SingleCellExperiment}}
+method. For \code{addToColData}, arguments passed to \code{colDataClusters}}
 
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
@@ -191,7 +191,10 @@ clusterings is returned.}
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
-\item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}}
+\item{makeFactor}{logical for \code{colDataClusters}. If TRUE the clustering
+will be added to the \code{colData} slot as a factor. If FALSE, the
+clustering will be added to the \code{colData} slot as a character vector
+if \code{useNames=TRUE} and as a numeric vector if \code{useNames=FALSE}.}
 }
 \value{
 \code{transformation} prints the function used to transform the data

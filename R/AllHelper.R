@@ -6,8 +6,8 @@
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @export
-#' @param ...,i,j,drop Forwarded to the
-#'   \code{\link{SingleCellExperiment}} method.
+#' @param ... For subsetting forwarded to the \code{\link{SingleCellExperiment}}
+#'   method. For \code{addToColData}, arguments passed to \code{colDataClusters}
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -607,7 +607,6 @@ setReplaceMethod(
 #' @export
 #' @inheritParams plotClustersTable
 #' @aliases addToColData
-#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}
 #' @return \code{addToColData} returns a \code{ClusterExperiment} object
 #' with the clusterings in clusterMatrix slot added to the \code{colData} slot
 setMethod(
@@ -619,6 +618,10 @@ setMethod(
 	})
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @param makeFactor logical for \code{colDataClusters}. If TRUE the clustering
+#'   will be added to the \code{colData} slot as a factor. If FALSE, the
+#'   clustering will be added to the \code{colData} slot as a character vector
+#'   if \code{useNames=TRUE} and as a numeric vector if \code{useNames=FALSE}.
 #' @aliases colDataClusters
 #' @return \code{colDataClusters} returns a \code{DataFrame} object
 #' that has the clusterings in clusterMatrix slot added to the 

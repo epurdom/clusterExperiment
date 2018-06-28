@@ -1,13 +1,24 @@
-# New to Version 2.2
+# New to Version 2.2.0
 
-**Important** If you have objects created with 2.0.0, you should run `updateObject` to update the class definition because there have been changes to the class definition since 2.0.0:
+## Change to `ClusterExperiment` Object
+
+**Important** If you have objects created with a version < 2.1.4 (i.e. including 2.0.0), you should run `updateObject` to update the class definition because there have been small changes to the class definition since that version:
 
 ```
 ceObj<-updateObject(ceObj)
 ```
 
+*Warning* This will, however, loose information saved about the last `mergeClusters` call that you have made. You may want to save that information and manually update the slots. If you do so, make sure you call `validObject` to make sure that you have done so correctly (in particular, you will have to have a value for the slot `merge_demethod`, see `?ClusterExperiment`). For example,
 
-There have also been a number of changes and enhancements to the package. These are the most important
+```
+ceObjNew<-updateObject(ceObj)
+ceObjNew@merge_index<-ceObj@merge_index
+<etc>
+```
+
+## Other important changes
+
+There have also been a number of changes and enhancements to the package. These are the most important (a complete list is detailed in the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file of the package -- all releases since May 1, 2018)
 
 * We have changed the function `combineMany` to `makeConsensus`. This has resulted in changes to the names of the arguments of `RSEC`
 	- `combineProportion` -> `consensusProportion` in `RSEC`
@@ -25,7 +36,6 @@ There have also been a number of changes and enhancements to the package. These 
 * The argument `whichAssay` is added to most functions to allow the user to select the assay on which the operations will be performed.
 
 
-These changes are fully detailed in the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file of the package (all releases since May 1). 
 
 
 

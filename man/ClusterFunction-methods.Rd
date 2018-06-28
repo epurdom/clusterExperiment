@@ -25,7 +25,7 @@
 
 \S4method{requiredArgs}{ClusterFunction}(object, genericOnly = FALSE)
 
-\S4method{requiredArgs}{list}(object, ...)
+\S4method{requiredArgs}{list}(object)
 
 \S4method{requiredArgs}{character}(object)
 
@@ -39,11 +39,11 @@
 
 \S4method{algorithmType}{factor}(object)
 
-\S4method{algorithmType}{list}(object, ...)
+\S4method{algorithmType}{list}(object)
 
 \S4method{inputType}{ClusterFunction}(object)
 
-\S4method{inputType}{list}(object, ...)
+\S4method{inputType}{list}(object)
 
 \S4method{inputType}{character}(object)
 
