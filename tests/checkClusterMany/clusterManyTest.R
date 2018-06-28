@@ -72,7 +72,8 @@ newMat<-read.table(file.path(outpath,matFile),sep=",",header=TRUE)
 compResult<-all.equal(compMat,newMat)
 printResult<-if(isTRUE(compResult)) "Yes" else "No"
 cat("Are all entries exactly the same?\n",printResult,"\n",file=outfile,append=TRUE)
-cat("Are all cluster results the same up to permutation in ids)?\n",file=outfile,append=TRUE)
+if(!isTRUE(compResult)){
+	cat("Are all cluster results the same up to permutation in ids?\n",file=outfile,append=TRUE)
 if(!all(dim(compMat)==dim(newMat))){
 	cat("No. (New results do not have the same dimensions as old)\n",file=outfile,append=TRUE)
 }else{
@@ -114,6 +115,7 @@ if(!all(dim(compMat)==dim(newMat))){
 			}
 		}
 	}
+}
 }
 cat("-------------------\n",file=outfile,append=TRUE)
 cat("Complete Session Info:\n",file=outfile,append=TRUE)
