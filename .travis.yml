@@ -47,8 +47,8 @@ notifications:
 
 
 ## Code coverage
-r_packages:
-  - covr
+#r_packages:
+#  - covr
 
 ## BiocCheck
 bioc_packages:
