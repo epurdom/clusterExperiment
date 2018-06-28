@@ -13,9 +13,6 @@
 #'   \code{clusterMany} label should be allowed (i.e. including those from
 #'    previous ones with labels like \code{clusterMany.1}), or only limited 
 #'    to those in most recent workflow (default).
-#' @param whichClusters The indices (or clusterLabels) of those clusters whose
-#'   labels will be parsed to determine the parameters; should be subset of the
-#'   clusterMany results.
 #' @param simplify logical. Whether to simplify the output so as to remove 
 #'   features that do not change across the clusterings.
 #' @details The method simply parses the \code{clusterLabels} of the indicated
@@ -35,6 +32,7 @@
 #'   clustering. The column 'clusteringIndex' identifies the index of the
 #'   clustering in the full set of clusterings of the given ClusterExperiment
 #'   object.
+#' @inheritParams ClusterExperiment-methods
 #' @examples
 #' data(simData)
 #'

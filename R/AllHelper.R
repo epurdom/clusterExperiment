@@ -1,93 +1,13 @@
-#' Helper methods for the ClusterExperiment class
-#'
-#' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
-#' @details Note that when subsetting the data, the dendrogram information and
-#' the co-clustering matrix are lost.
-#' @export
-#' @param ...,i,j,drop Forwarded to the
-#'   \code{\link{SingleCellExperiment}} method.
+#' @title Helper methods for the ClusterExperiment class
+#'
+#' @description This is a collection of helper methods for the ClusterExperiment class.
+#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "character"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    j<-match(j, colnames(x))
-    callGeneric()
-    
-  }
-)
 #' @rdname ClusterExperiment-methods
-#' @export
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "logical"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    j<-which(j)
-    callGeneric()
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @export
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "numeric"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
-    ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
-    #Following Martin Morgan advice, do "new" rather than @<- to create changed object
-    #need to subset cluster matrix and convert to consecutive integer valued clusters:
-		
-		#pull names out so can match it to the clusterLegend. 
-		subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
-		
-		#danger if not unique names
-		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
-		if(any(whNotUniqueNames)){
-			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
-			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
-			subMat[,whNotUniqueNames]<-subMatInt
-		}
-    nms<-colnames(subMat)
-    ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-		#shouldn't need give colors, but function needs argument
-    if(nrow(subMat)>0){
-			out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
-			newMat<-out$numClusters
-	    colnames(newMat)<-nms
-	    newClLegend<-out$colorList
-	    #fix order of samples so same
-	    newOrder<-rank(x@orderSamples[j])
-	    #
-    	
-    }
-		else{
-			newClLegend<-list()
-			newOrder<-NA_real_
-			newMat<-subMat
-		}
-    out<- ClusterExperiment(
-      object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
-      clusters = newMat,
-      transformation=x@transformation,
-      primaryIndex = x@primaryIndex,
-      clusterTypes = x@clusterTypes,
-      clusterInfo=x@clusterInfo,
-      orderSamples=newOrder,
-      clusterLegend=newClLegend,
-      checkTransformAndAssay=FALSE
-    )
-    #	clusterLegend(out)<-newClLegend
-    return(out)
-  }
-)
-
-## show
-#' @rdname ClusterExperiment-methods
+#' @aliases show show,ClusterExperiment-method
 #' @export
 setMethod(
   f = "show",
@@ -113,9 +33,6 @@ setMethod(
     cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
-
-
-
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{transformation} prints the function used to transform the data
@@ -232,15 +149,17 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @param whichClusters argument that can be either numeric or
-#'   character value. If numeric, gives the indices of the \code{clusterMatrix}
-#'   to return; this can also be used to defined an ordering for the
-#'   clusterings. \code{whichClusters} can be a character value identifying the 
-#'   \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-#'   \code{clusterLabels}; alternatively \code{whichClusters} can be either 
-#'   'all' or 'workflow' to indicate choosing all clusters or choosing all 
-#'   \code{\link{workflowClusters}}. If missing, the entire matrix of all
-#'   clusterings is returned.
+#' @param whichClusters argument that can be either numeric or character value
+#'   indicating the clusters to be used. If numeric, gives the indices of the
+#'   \code{clusterMatrix} to return; this can also be used to defined an
+#'   ordering for the clusterings (as relevant). \code{whichClusters} can be a
+#'   character value identifying the \code{clusterTypes} to be used, or if not
+#'   matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+#'   \code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+#'   indicate choosing all clusterings or choosing all 
+#'   \code{\link{workflowClusters}} clusterings or choosing the 'primary'
+#'   clustering, respectively. If missing, the entire matrix of all clusterings
+#'   is returned.
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
@@ -607,7 +526,6 @@ setReplaceMethod(
 #' @export
 #' @inheritParams plotClustersTable
 #' @aliases addToColData
-#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}
 #' @return \code{addToColData} returns a \code{ClusterExperiment} object
 #' with the clusterings in clusterMatrix slot added to the \code{colData} slot
 setMethod(
@@ -619,10 +537,15 @@ setMethod(
 	})
 #' @rdname ClusterExperiment-methods
 #' @export
+#' @param makeFactor logical for \code{colDataClusters}. If TRUE the clustering
+#'   will be added to the \code{colData} slot as a factor. If FALSE, the
+#'   clustering will be added to the \code{colData} slot as a character vector
+#'   if \code{useNames=TRUE} and as a numeric vector if \code{useNames=FALSE}.
 #' @aliases colDataClusters
 #' @return \code{colDataClusters} returns a \code{DataFrame} object
 #' that has the clusterings in clusterMatrix slot added to the 
 #' \code{DataFrame} in the \code{colData} slot
+#' @importFrom S4Vectors DataFrame
 setMethod(
 	f="colDataClusters",
 	signature="ClusterExperiment",

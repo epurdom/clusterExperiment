@@ -32,7 +32,7 @@
 #' 
 #' #note how samples are REMOVED:
 #' removeUnassigned(smallCE)
-#' @inheritParams addClusterings 
+#' @inheritParams addClusterings
 #' @inheritParams reduceFunctions
 #' @export
 setMethod(

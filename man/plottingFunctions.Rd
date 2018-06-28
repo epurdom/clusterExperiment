@@ -76,7 +76,17 @@ data is then fed to heatmap.)}
 
 \item{output}{character value, indicating desired type of conversion.}
 
-\item{whichClusters}{which clusters to use}
+\item{whichClusters}{argument that can be either numeric or character value
+indicating the clusters to be used. If numeric, gives the indices of the
+\code{clusterMatrix} to return; this can also be used to defined an
+ordering for the clusterings (as relevant). \code{whichClusters} can be a
+character value identifying the \code{clusterTypes} to be used, or if not
+matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+indicate choosing all clusterings or choosing all 
+\code{\link{workflowClusters}} clusterings or choosing the 'primary'
+clustering, respectively. If missing, the entire matrix of all clusterings
+is returned.}
 
 \item{colPalette}{a vector of character colors. By default, the palette 
 \code{bigPalette} is used}

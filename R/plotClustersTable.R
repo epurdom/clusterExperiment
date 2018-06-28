@@ -17,8 +17,9 @@
 #'   of the union of the clusters (a Jaccard similarity between the clusters),
 #'   in which case each entry is a proportion but no combination of the entries 
 #'   sum to 1.
-#' @param whichClusters which clusters to tabulate. For \code{plotClustersTable}
-#'   should be 2 clusters, for \code{tableClusters} can indicate arbitrary
+#' @inheritParams ClusterExperiment-methods
+#' @details For \code{plotClustersTable} \code{whichClusters}
+#'   should define 2 clusters, for \code{tableClusters} can indicate arbitrary
 #'   number.
 #' @rdname plotClustersTable
 #' @seealso \code{\link[base]{prop.table}}
@@ -98,6 +99,13 @@ setMethod(
 #'  to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.
 #' @param clusterLegend list in \code{clusterLegend} format that gives colors for the
 #'  clusters tabulated.
+#' @param plotType type of plot. If "heatmap", then a heatmap will be created of
+#'   the values of the contingency table of the two clusters (calculated as
+#'   determined by the argument "margin") using \code{\link{plotHeatmap}}. If
+#'   "bubble", then a plot will be created using \code{bubblePlot}, which will
+#'   create circles for each cell of the contingencey table whose size
+#'   corresponds to the number of samples shared and the color based on the
+#'   value of the proportion (as chosen by the argument \code{margin}).
 #' @param ... arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
 #'  depending on choice of \code{plotType}
 #' @seealso \code{\link{plotHeatmap}}
@@ -111,7 +119,8 @@ setMethod(
 setMethod( 
   f = "plotClustersTable",
   signature = signature(object = "table"),
-  definition = function(object,clusterLegend=NULL,cluster=FALSE,plotType=c("heatmap","bubble"), sizeTable=object, ...){
+  definition = function(object,clusterLegend=NULL,cluster=FALSE,
+                        plotType=c("heatmap","bubble"), sizeTable=object, ...){
 		plotType<-match.arg(plotType)
 		tableAll<-object
 		varNames<-make.names(names(dimnames(tableAll)))
@@ -206,18 +215,35 @@ setMethod(
 #' @param propTable table of proportions
 #' @param sizeTable table of sizes
 #' @param gridColor color for grid lines
-#' @param cexFactor factor to multiple by to get values of circles. If missing, finds value automatically, namely by using the maxCex value default. Overrides value of maxCex.
-#' @param maxCex largest value of cex for any point (others will scale proportionally smaller). 
-#' @param ylab label for y-axis. If missing, uses the name for rows in sizeTable
-#' @param xlab label for x-axis. If missing, uses the name for columns in sizeTable
+#' @param cexFactor factor to multiple by to get values of circles. If missing,
+#'   finds value automatically, namely by using the maxCex value default.
+#'   Overrides value of maxCex.
+#' @param maxCex largest value of cex for any point (others will scale
+#'   proportionally smaller).
+#' @param ylab label for y-axis. If missing, uses the name for rows in
+#'   sizeTable. If set to \code{NULL} no y-axis label will be plotted.
+#' @param xlab label for x-axis. If missing, uses the name for columns in 
+#'   sizeTable. If set to \code{NULL} no y-axis label will be plotted.
+#' @param las the value for the las value in the call to \code{\link{axis}} in
+#'   labeling the clusters in the bubble plot. Determines whether parallel or
+#'   perpindicular labels to the axis (see \code{\link{par}}).
 #' @param legend whether to draw legend along top
 #' @param colorScale the color scale for the values of the proportion table
-#' @details \code{bubblePlot} is mainly used internally by \code{plotClustersTable} but is made public for users who want more control and to allow documentation of the arguments. \code{bubblePlot} plots a circle for each intersection of two clusters, where the color of the circle is based on the value in \code{propTable} and the size of the circle is based on the value in \code{sizeTable}. The size is determined by setting the \code{cex} value of the point as $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$. 
+#' @details \code{bubblePlot} is mainly used internally by
+#'   \code{plotClustersTable} but is made public for users who want more control
+#'   and to allow documentation of the arguments. \code{bubblePlot} plots a
+#'   circle for each intersection of two clusters, where the color of the circle
+#'   is based on the value in \code{propTable} and the size of the circle is
+#'   based on the value in \code{sizeTable}. The size is determined by setting
+#'   the \code{cex} value of the point as
+#'   $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$.
+#' @importFrom grDevices rgb
 setMethod( 
   f = "bubblePlot",
   signature = signature(propTable = "table",sizeTable="table"),
-	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),maxCex=8,cexFactor,
-		ylab,xlab,legend=TRUE,las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
+	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),
+	maxCex=8,cexFactor, ylab,xlab,legend=TRUE,
+	las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
 	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
 		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
 	 nc.row <- nrow(propTable)

@@ -31,13 +31,17 @@
 \item{object}{A matrix of with each column corresponding to a clustering and
 each row a sample or a \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{If numeric, a predefined order for the clusterings in 
-the plot. If x is a \code{\link{ClusterExperiment}} object, 
-\code{whichClusters} can be a character value identifying the 
-\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then
-\code{clusterLabels}; alternatively \code{whichClusters} can be either
-'all' or 'workflow' to indicate choosing all clusters or choosing all
-\code{\link{workflowClusters}}.}
+\item{whichClusters}{argument that can be either numeric or character value
+indicating the clusters to be used. If numeric, gives the indices of the
+\code{clusterMatrix} to return; this can also be used to defined an
+ordering for the clusterings (as relevant). \code{whichClusters} can be a
+character value identifying the \code{clusterTypes} to be used, or if not
+matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+indicate choosing all clusterings or choosing all 
+\code{\link{workflowClusters}} clusterings or choosing the 'primary'
+clustering, respectively. If missing, the entire matrix of all clusterings
+is returned.}
 
 \item{...}{for \code{plotBarplot} arguments passed either to the method of
 \code{plotBarplot} for matrices or ultimately to \code{\link{barplot}}.}

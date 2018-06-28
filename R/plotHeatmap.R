@@ -1,11 +1,9 @@
 #' @name plotHeatmap
 #' @title Heatmap for showing clustering results and more
-#'
-#' @description Make heatmap with color scale from one matrix and hiearchical clustering of
-#' samples/features from another. Also built in functionality for showing the
-#' clusterings with the heatmap. Builds on \code{\link[NMF]{aheatmap}} function
-#' of \code{NMF} package.
-#'
+#' @description Make heatmap with color scale from one matrix and hiearchical
+#'   clustering of samples/features from another. Also built in functionality
+#'   for showing the clusterings with the heatmap. Builds on
+#'   \code{\link[NMF]{aheatmap}} function of \code{NMF} package.
 #' @docType methods
 #' @param colData If input to \code{data} is either a
 #'   \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
@@ -20,7 +18,7 @@
 #'   and gets color `unassignedColor' and ``-2`` gets the color 'missingColor'.
 #' @param data data to use to determine the heatmap. Can be a matrix,
 #'   \code{\link{ClusterExperiment}},
-#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}}or
+#'   \code{\link[SingleCellExperiment]{SingleCellExperiment}} or
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} object. The
 #'   interpretation of parameters depends on the type of the input to
 #'   \code{data}.
@@ -40,8 +38,7 @@
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
-#' @param whichClusters character string, or vector of characters or integers,
-#'   indicating what clusters should be visualized with the heatmap.
+#' @inheritParams ClusterExperiment-methods
 #' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
 #'   will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters
@@ -222,7 +219,6 @@
 #' @author Elizabeth Purdom
 #' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
 #' @export
-#'
 #' @examples
 #' data(simData)
 #'
@@ -274,7 +270,7 @@
 #' }
 #'
 #' @rdname plotHeatmap
-#' @aliases plotHeatmap
+#' @aliases plotHeatmap,SingleCellExperiment-method
 #' @importFrom stats hclust dist
 #' @importFrom NMF aheatmap
 setMethod(

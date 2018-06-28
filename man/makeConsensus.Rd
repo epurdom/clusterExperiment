@@ -23,8 +23,17 @@
 \arguments{
 \item{x}{a matrix or \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{a numeric or character vector that specifies which 
-clusters to compare (missing if x is a matrix)}
+\item{whichClusters}{argument that can be either numeric or character value
+indicating the clusters to be used. If numeric, gives the indices of the
+\code{clusterMatrix} to return; this can also be used to defined an
+ordering for the clusterings (as relevant). \code{whichClusters} can be a
+character value identifying the \code{clusterTypes} to be used, or if not
+matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+indicate choosing all clusterings or choosing all 
+\code{\link{workflowClusters}} clusterings or choosing the 'primary'
+clustering, respectively. If missing, the entire matrix of all clusterings
+is returned.}
 
 \item{proportion}{The proportion of times that two sets of samples should be 
 together in order to be grouped into a cluster (if <1, passed to
