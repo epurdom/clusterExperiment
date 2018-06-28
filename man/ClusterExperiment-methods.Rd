@@ -176,8 +176,7 @@ clusterings is returned.}
 \item{matchTo}{for subsetting, whether to match to the cluster name
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 
-\item{...}{For subsetting forwarded to the \code{\link{SingleCellExperiment}}
-method.}
+\item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}.}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
@@ -186,8 +185,6 @@ with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 will be added to the \code{colData} slot as a factor. If FALSE, the
 clustering will be added to the \code{colData} slot as a character vector
 if \code{useNames=TRUE} and as a numeric vector if \code{useNames=FALSE}.}
-
-\item{For}{\code{addToColData}, arguments passed to \code{colDataClusters}}
 }
 \value{
 \code{transformation} prints the function used to transform the data

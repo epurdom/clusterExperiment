@@ -24,6 +24,8 @@ the unassigned samples}
 \item{clusterLabel}{if missing, the current cluster label of the cluster will
 be appended with the string "_AllAssigned".}
 
+\item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
+
 \item{whichAssay}{which assay to use to calculate the median per cluster and
 take dimensionality reduction (if requested)}
 

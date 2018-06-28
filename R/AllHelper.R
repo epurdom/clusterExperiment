@@ -2,9 +2,7 @@
 #' @title Helper methods for the ClusterExperiment class
 #'
 #' @description This is a collection of helper methods for the ClusterExperiment class.
-#' @param ... For subsetting forwarded to the \code{\link{SingleCellExperiment}}
-#'   method. 
-#' @param For \code{addToColData}, arguments passed to \code{colDataClusters}
+#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.

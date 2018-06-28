@@ -66,6 +66,7 @@ Collate:
     'AllHelperFilter.R'
     'JiashinJiCode.R'
     'RcppExports.R'
+    'addClusterings.R'
     'assignUnassigned.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
