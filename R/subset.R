@@ -1,24 +1,19 @@
 #' @title Functions to subset ClusterExperiment Objects
-#' @name These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings
+#' @description These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings
 #' @name subset
 #' @param x a ClusterExperiment object.
-#' @param y additional clusters to add to x. Can be a ClusterExperiment object
-#'   or a matrix/vector of clusters.
-#' @param clusterLabels label(s) for the clusters being added. If \code{y} a
-#'   matrix, the column names of that matrix will be used by default, if
-#'   \code{clusterLabels} is not given.
-#' @param clusterLegend a list giving the cluster legend for the clusters added.
-#' @inheritParams ClusterExperiment-class
-#' @details addClusterings adds y to x, and is thus not symmetric in the two
-#'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
-#'   information, \code{coClustering}, and \code{orderSamples} are all kept from
-#'   the x object, even if y is a ClusterExperiment.
-#'
+#' @inheritParams ClusterExperiment-class 
+#' @inheritParams ClusterExperiment-methods
 #' @return A \code{\link{ClusterExperiment}} object.
-#'
-
-
-#' @rdname subset
+#' @aliases removeClusterings,ClusterExperiment,character-method
+#' @details \code{removeClusterings} removes the clusters given by
+#'  \code{whichClusters}. If the
+#'  \code{primaryCluster} is one of the clusters removed, the
+#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
+#'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
+#' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
+#'  unless all clusters are removed, in which case it returns a
+#'  \code{\link{SingleCellExperiment}} object.
 #' @export
 setMethod(
   f = "removeClusterings",
@@ -29,16 +24,6 @@ setMethod(
   }
 )
 
-#' @inheritParams ClusterExperiment-methods
-#'
-#'@details \code{removeClusterings} removes the clusters given by
-#'  \code{whichClusters}. If the
-#'  \code{primaryCluster} is one of the clusters removed, the
-#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
-#'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
-#' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
-#'  unless all clusters are removed, in which case it returns a
-#'  \code{\link{SingleCellExperiment}} object.
 #' @rdname subset
 #' @export
 setMethod(
@@ -131,6 +116,7 @@ setMethod(
 #' @param whichCluster Clustering from which to remove clusters for
 #'  \code{removeCluster}. Note that it is a singular cluster.
 #' @rdname subset
+#' @inheritParams addClusterings
 #' @aliases removeClusters
 #' @export
 setMethod(
@@ -187,7 +173,7 @@ setMethod(
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @aliases [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
-#' @param i,j ind A vector of logical or integer subscripts, indicating the rows and columns to be subsetted for \code{i} and \code{j}, respectively.
+#' @param i,j A vector of logical or integer subscripts, indicating the rows and columns to be subsetted for \code{i} and \code{j}, respectively.
 #' @param drop A logical scalar that is ignored.
 #' @rdname subset
 #' @export

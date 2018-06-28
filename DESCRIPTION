@@ -18,7 +18,6 @@ Depends:
 	BiocGenerics
 Imports:
     methods,
-		Biobase,
     NMF,
     RColorBrewer,
     ape (>= 5.0),

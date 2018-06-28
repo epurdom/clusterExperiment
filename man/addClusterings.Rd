@@ -18,6 +18,22 @@
   ...)
 }
 \arguments{
+\item{x}{a ClusterExperiment object}
+
+\item{y}{additional clusters to add to x. Can be a ClusterExperiment object
+or a matrix/vector of clusters.}
+
+\item{clusterTypes}{a string describing the nature of the clustering. The
+values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
+reserved for the clustering coming from the package workflow and should not
+be used when creating a new object with the constructor.}
+
+\item{clusterLabels}{label(s) for the clusters being added. If \code{y} a
+matrix, the column names of that matrix will be used by default, if
+\code{clusterLabels} is not given.}
+
+\item{clusterLegend}{a list giving the cluster legend for the clusters added.}
+
 \item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
 
 \item{...}{For \code{addClusterings}, passed to signature 
@@ -29,6 +45,12 @@ A \code{ClusterExperiment} object.
 }
 \description{
 Function for adding new clusterings in form of vector (single cluster) or matrix (multiple clusterings) to an existing ClusterExperiment object
+}
+\details{
+addClusterings adds y to x, and is thus not symmetric in the two
+  arguments. In particular, the \code{primaryCluster}, all of the dendrogram
+  information, \code{coClustering}, and \code{orderSamples} are all kept from
+  the x object, even if y is a ClusterExperiment.
 }
 \examples{
 data(simData)
