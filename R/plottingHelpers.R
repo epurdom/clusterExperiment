@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#' @param whichClusters which clusters to use
+#' @inheritParams ClusterExperiment-methods
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'

@@ -71,7 +71,6 @@ Collate:
     'internalFunctions.R'
     'builtInClusterFunctions.R'
     'clusterContrasts.R'
-    'clusterLabels.R'
     'clusterMany.R'
     'clusterSingle.R'
     'dataCreation.R'

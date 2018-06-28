@@ -38,8 +38,7 @@
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
-#' @param whichClusters character string, or vector of characters or integers,
-#'   indicating what clusters should be visualized with the heatmap.
+#' @inheritParams ClusterExperiment-methods
 #' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
 #'   will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters

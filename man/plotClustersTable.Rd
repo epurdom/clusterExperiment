@@ -34,9 +34,17 @@
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
-\item{whichClusters}{which clusters to tabulate. For \code{plotClustersTable}
-should be 2 clusters, for \code{tableClusters} can indicate arbitrary
-number.}
+\item{whichClusters}{argument that can be either numeric or character value
+indicating the clusters to be used. If numeric, gives the indices of the
+\code{clusterMatrix} to return; this can also be used to defined an
+ordering for the clusterings (as relevant). \code{whichClusters} can be a
+character value identifying the \code{clusterTypes} to be used, or if not
+matching \code{clusterTypes} then \code{clusterLabels}; alternatively
+\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
+indicate choosing all clusterings or choosing all 
+\code{\link{workflowClusters}} clusterings or choosing the 'primary'
+clustering, respectively. If missing, the entire matrix of all clusterings
+is returned.}
 
 \item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters
 in the plotting. This means they will also be ignored in the calculations
@@ -107,6 +115,10 @@ perpindicular labels to the axis (see \code{\link{par}}).}
 Plot heatmap of cross-tabulations of two clusterings
 }
 \details{
+For \code{plotClustersTable} \code{whichClusters}
+  should define 2 clusters, for \code{tableClusters} can indicate arbitrary
+  number.
+
 Note that the cluster labels in \code{plotClustersTable} and 
 \code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
 because \code{tableClusters} calls the R function \code{table}, which makes this 

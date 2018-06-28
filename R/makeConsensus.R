@@ -6,8 +6,7 @@
 #'@aliases makeConsensus
 #'  
 #'@param x a matrix or \code{\link{ClusterExperiment}} object.
-#'@param whichClusters a numeric or character vector that specifies which 
-#'  clusters to compare (missing if x is a matrix)
+#' @inheritParams ClusterExperiment-methods
 #'@param clusterFunction the clustering to use (passed to 
 #'  \code{\link{mainClustering}}); currently must be of type '01'.
 #'@param minSize minimum size required for a set of samples to be considered in 

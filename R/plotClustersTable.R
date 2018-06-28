@@ -17,8 +17,9 @@
 #'   of the union of the clusters (a Jaccard similarity between the clusters),
 #'   in which case each entry is a proportion but no combination of the entries 
 #'   sum to 1.
-#' @param whichClusters which clusters to tabulate. For \code{plotClustersTable}
-#'   should be 2 clusters, for \code{tableClusters} can indicate arbitrary
+#' @inheritParams ClusterExperiment-methods
+#' @details For \code{plotClustersTable} \code{whichClusters}
+#'   should define 2 clusters, for \code{tableClusters} can indicate arbitrary
 #'   number.
 #' @rdname plotClustersTable
 #' @seealso \code{\link[base]{prop.table}}
