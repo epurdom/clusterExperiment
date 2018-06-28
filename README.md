@@ -12,15 +12,19 @@ Functions for running and comparing many different clusterings of single-cell se
 
 ## Publications
 
-The paper acompanying this package can be found at:
+* The paper acompanying this package can be found at:
 
-Davide Risso, Liam Purvis, Russell Fletcher, Diya Das, John Ngai, Sandrine Dudoit, and Elizabeth Purdom (March 2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" bioRxiv, (https://www.biorxiv.org/content/early/2018/03/12/280545)[https://www.biorxiv.org/content/early/2018/03/12/280545].
+	Davide Risso, Liam Purvis, Russell Fletcher, Diya Das, John Ngai, Sandrine Dudoit, and Elizabeth Purdom (March 2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" bioRxiv, (https://www.biorxiv.org/content/early/2018/03/12/280545)[https://www.biorxiv.org/content/early/2018/03/12/280545].
 
-There is a github repository ((epurdom/RSECPaper)[https://github.com/epurdom/RSECPaper] for this paper that gives the code for reproducing the analysis in that manuscript.
+	There is a github repository ((epurdom/RSECPaper)[https://github.com/epurdom/RSECPaper] for this paper that gives the code for reproducing the analysis in that manuscript.
 
-A compiled version of the vignette (i.e. tutorial) of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+* A (F1000 workflow)[https://f1000research.com/articles/6-1158/v1] demonstrating the use of RSEC for clustering as part of trajectory estimation with the package `slingshot` and normalization with `zinbwave`
 
-The compiled version of the version of `clusterExperiment` available with the latest release of Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+	Perraudeau F, Risso D, Street K, Purdom E, and Dudoit S (2017) "Bioconductor workflow for single-cell RNA sequencing: Normalization, dimensionality reduction, clustering, and lineage inference" F1000Research 6:1158. 
+
+* A compiled version of the vignette (i.e. tutorial) of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+
+* The compiled version of the version of `clusterExperiment` available with the latest release of Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
 
 ## Installation instructions
 
@@ -33,11 +37,11 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("clusterExperiment")
 ```
 
-To install the most recent version on the development branch of bioconductor, follow the above instructions, with the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
+To install the most recent version of the package available on the development branch of bioconductor, follow the above instructions, after downloading the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
 
 ### Installation of Github Version:
 
-We generally try to keep the bioconductor *devel* version up-to-date with the *master* branch of this git repository. But since this can require installing R development version, it can be convenient to be able to get just the most recent version from github. 
+We generally try to keep the bioconductor *devel* version up-to-date with the *master* branch of this git repository. But since this can require installing R and/or bioconductor development version, it can be convenient to be able to get just the most recent version from github. 
 
 You can install the github version via
 
@@ -69,7 +73,7 @@ Below are status checks for the package. Note that occassionally errors do not a
 | Travis CI develop   | [![Build Status](https://travis-ci.org/epurdom/clusterExperiment.svg?branch=develop)](https://travis-ci.org/epurdom/clusterExperiment) |
 | Appveyor master | [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/epurdom/clusterExperiment?branch=master&svg=true)](https://ci.appveyor.com/project/epurdom/clusterExperiment) |
 | Appveyor develop | [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/epurdom/clusterExperiment?branch=develop&svg=true)](https://ci.appveyor.com/project/epurdom/clusterExperiment) |
-| Test coverage |  [![Coverage Status](https://coveralls.io/repos/github/epurdom/clusterExperiment/badge.svg?branch=develop)](https://coveralls.io/github/epurdom/clusterExperiment?branch=develop) |
+<!-- | Test coverage |  [![Coverage Status](https://coveralls.io/repos/github/epurdom/clusterExperiment/badge.svg?branch=develop)](https://coveralls.io/github/epurdom/clusterExperiment?branch=develop) | -->
 
 ## Issues and bug reports
 
