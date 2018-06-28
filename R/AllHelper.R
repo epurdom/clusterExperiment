@@ -1,93 +1,15 @@
-#' Helper methods for the ClusterExperiment class
-#'
-#' This is a collection of helper methods for the ClusterExperiment class.
 #' @name ClusterExperiment-methods
-#' @aliases ClusterExperiment-methods [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
-#' @details Note that when subsetting the data, the dendrogram information and
-#' the co-clustering matrix are lost.
-#' @export
+#' @title Helper methods for the ClusterExperiment class
+#'
+#' @description This is a collection of helper methods for the ClusterExperiment class.
 #' @param ... For subsetting forwarded to the \code{\link{SingleCellExperiment}}
-#'   method. For \code{addToColData}, arguments passed to \code{colDataClusters}
+#'   method. 
+#' @param For \code{addToColData}, arguments passed to \code{colDataClusters}
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "character"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    j<-match(j, colnames(x))
-    callGeneric()
-    
-  }
-)
 #' @rdname ClusterExperiment-methods
-#' @export
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "logical"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    j<-which(j)
-    callGeneric()
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @export
-setMethod(
-  f = "[",
-  signature = c("ClusterExperiment", "ANY", "numeric"),
-  definition = function(x, i, j, ..., drop=TRUE) {
-    # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
-    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
-    ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
-    #Following Martin Morgan advice, do "new" rather than @<- to create changed object
-    #need to subset cluster matrix and convert to consecutive integer valued clusters:
-		
-		#pull names out so can match it to the clusterLegend. 
-		subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
-		
-		#danger if not unique names
-		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
-		if(any(whNotUniqueNames)){
-			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
-			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
-			subMat[,whNotUniqueNames]<-subMatInt
-		}
-    nms<-colnames(subMat)
-    ##Fix clusterLegend slot, in case now lost a level and to match new integer values
-		#shouldn't need give colors, but function needs argument
-    if(nrow(subMat)>0){
-			out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
-			newMat<-out$numClusters
-	    colnames(newMat)<-nms
-	    newClLegend<-out$colorList
-	    #fix order of samples so same
-	    newOrder<-rank(x@orderSamples[j])
-	    #
-    	
-    }
-		else{
-			newClLegend<-list()
-			newOrder<-NA_real_
-			newMat<-subMat
-		}
-    out<- ClusterExperiment(
-      object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
-      clusters = newMat,
-      transformation=x@transformation,
-      primaryIndex = x@primaryIndex,
-      clusterTypes = x@clusterTypes,
-      clusterInfo=x@clusterInfo,
-      orderSamples=newOrder,
-      clusterLegend=newClLegend,
-      checkTransformAndAssay=FALSE
-    )
-    #	clusterLegend(out)<-newClLegend
-    return(out)
-  }
-)
-
-## show
-#' @rdname ClusterExperiment-methods
+#' @aliases show show,ClusterExperiment-method
 #' @export
 setMethod(
   f = "show",
@@ -113,9 +35,6 @@ setMethod(
     cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
-
-
-
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{transformation} prints the function used to transform the data
@@ -626,6 +545,7 @@ setMethod(
 #' @return \code{colDataClusters} returns a \code{DataFrame} object
 #' that has the clusterings in clusterMatrix slot added to the 
 #' \code{DataFrame} in the \code{colData} slot
+#' @importFrom S4Vectors DataFrame
 setMethod(
 	f="colDataClusters",
 	signature="ClusterExperiment",

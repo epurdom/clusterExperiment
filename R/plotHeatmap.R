@@ -271,7 +271,7 @@
 #' }
 #'
 #' @rdname plotHeatmap
-#' @aliases plotHeatmap,SingleCellExperiment-methods
+#' @aliases plotHeatmap,SingleCellExperiment-method
 #' @importFrom stats hclust dist
 #' @importFrom NMF aheatmap
 setMethod(

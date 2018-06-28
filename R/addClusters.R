@@ -1,8 +1,7 @@
-#' Functions to add/remove clusters to ClusterExperiment
+#' Functions to subset ClusterExperiment Objects
 #'
-#' These functions are used to add or remove clusters to a
-#' \code{\link{ClusterExperiment}} object.
-#' @name addClusterings
+#' These functions are used to subset ClusterExperiment clusters, either by removing (or adding) samples, genes, or clusterings
+#' @name subset
 #' @param x a ClusterExperiment object.
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
@@ -10,15 +9,15 @@
 #'   matrix, the column names of that matrix will be used by default, if
 #'   \code{clusterLabels} is not given.
 #' @param clusterLegend a list giving the cluster legend for the clusters added.
-#' @inheritParams ClusterExperiment
+#' @inheritParams ClusterExperiment-class
 #' @details addClusterings adds y to x, and is thus not symmetric in the two
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
 #'   information, \code{coClustering}, and \code{orderSamples} are all kept from
 #'   the x object, even if y is a ClusterExperiment.
 #'
-#' @return A \code{\link{ClusterExperiment}} object with the added clusters.
+#' @return A \code{\link{ClusterExperiment}} object.
 #'
-#' @rdname addClusterings
+#' @rdname subset
 #' @aliases addClusterings removeClusterings addClusterings,ClusterExperiment,matrix-method
 #' @export
 #' @examples
@@ -49,7 +48,7 @@ setMethod(
   }
 )
 
-#' @rdname addClusterings
+#' @rdname subset
 #' @export
 setMethod(
   f = "addClusterings",
@@ -77,7 +76,7 @@ setMethod(
   }
 )
 
-#' @rdname addClusterings
+#' @rdname subset
 #' @export
 #' @param ... Passed to signature \code{ClusterExperiment,matrix}.
 #' @param makePrimary whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)
@@ -95,7 +94,7 @@ setMethod(
 )
 
 
-#' @rdname addClusterings
+#' @rdname subset
 #' @export
 setMethod(
   f = "removeClusterings",
@@ -116,7 +115,7 @@ setMethod(
 #' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
 #'  unless all clusters are removed, in which case it returns a
 #'  \code{\link{SingleCellExperiment}} object.
-#' @rdname addClusterings
+#' @rdname subset
 #' @export
 setMethod(
   f = "removeClusterings",
@@ -207,7 +206,7 @@ setMethod(
 #' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
 #' @param whichCluster Clustering from which to remove clusters for
 #'  \code{removeCluster}. Note that it is a singular cluster.
-#' @rdname addClusterings
+#' @rdname subset
 #' @aliases removeClusters
 #' @export
 setMethod(
@@ -250,7 +249,7 @@ setMethod(
 
   }
 )
-#' @rdname addClusterings
+#' @rdname subset
 #' @export
 setMethod(
   f = "removeClusters",
@@ -258,5 +257,85 @@ setMethod(
   definition = function(x, whichCluster,...) {
     whichCluster<-.TypeIntoIndices(x,whichCluster)
     removeClusters(x,whichCluster,...)
+  }
+)
+
+#' @details Note that when subsetting the data, the dendrogram information and
+#' the co-clustering matrix are lost.
+#' @aliases [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
+#' @rdname subset
+#' @export
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "character"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-match(j, colnames(x))
+    callGeneric()
+    
+  }
+)
+#' @rdname subset
+#' @export
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "logical"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    j<-which(j)
+    callGeneric()
+  }
+)
+#' @rdname subset
+#' @export
+setMethod(
+  f = "[",
+  signature = c("ClusterExperiment", "ANY", "numeric"),
+  definition = function(x, i, j, ..., drop=TRUE) {
+    # #out <- callNextMethod() #doesn't work once I added the logical and character choices.
+    # out<-selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j) #have to explicitly give the inherintence... not great.
+    ###Note: Could fix subsetting, so that if subset on genes, but same set of samples, doesn't do any of this...
+    #Following Martin Morgan advice, do "new" rather than @<- to create changed object
+    #need to subset cluster matrix and convert to consecutive integer valued clusters:
+		
+		#pull names out so can match it to the clusterLegend. 
+		subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+		
+		#danger if not unique names
+		whNotUniqueNames<-vapply(clusterLegend(x),FUN=function(mat){length(unique(mat[,"name"]))!=nrow(mat)},FUN.VALUE=TRUE)
+		if(any(whNotUniqueNames)){
+			warning("Some clusterings do not have unique names; information in clusterLegend will not be transferred to subset.")
+			subMatInt<-x@clusterMatrix[j, whNotUniqueNames,drop=FALSE]
+			subMat[,whNotUniqueNames]<-subMatInt
+		}
+    nms<-colnames(subMat)
+    ##Fix clusterLegend slot, in case now lost a level and to match new integer values
+		#shouldn't need give colors, but function needs argument
+    if(nrow(subMat)>0){
+			out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+			newMat<-out$numClusters
+	    colnames(newMat)<-nms
+	    newClLegend<-out$colorList
+	    #fix order of samples so same
+	    newOrder<-rank(x@orderSamples[j])
+	    #
+    	
+    }
+		else{
+			newClLegend<-list()
+			newOrder<-NA_real_
+			newMat<-subMat
+		}
+    out<- ClusterExperiment(
+      object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
+      clusters = newMat,
+      transformation=x@transformation,
+      primaryIndex = x@primaryIndex,
+      clusterTypes = x@clusterTypes,
+      clusterInfo=x@clusterInfo,
+      orderSamples=newOrder,
+      clusterLegend=newClLegend,
+      checkTransformAndAssay=FALSE
+    )
+    #	clusterLegend(out)<-newClLegend
+    return(out)
   }
 )
