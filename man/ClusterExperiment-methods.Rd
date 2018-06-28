@@ -3,10 +3,7 @@
 \docType{methods}
 \name{ClusterExperiment-methods}
 \alias{ClusterExperiment-methods}
-\alias{[,ClusterExperiment,ANY,ANY,ANY-method}
-\alias{[,ClusterExperiment,ANY,character,ANY-method}
-\alias{[,ClusterExperiment,ANY,logical,ANY-method}
-\alias{[,ClusterExperiment,ANY,numeric,ANY-method}
+\alias{show}
 \alias{show,ClusterExperiment-method}
 \alias{transformation,ClusterExperiment-method}
 \alias{transformation}
@@ -78,12 +75,6 @@
 \alias{colDataClusters}
 \title{Helper methods for the ClusterExperiment class}
 \usage{
-\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
-
-\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
-
-\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
-
 \S4method{show}{ClusterExperiment}(object)
 
 \S4method{transformation}{ClusterExperiment}(x)
@@ -161,9 +152,6 @@
 \arguments{
 \item{x, object}{a ClusterExperiment object.}
 
-\item{...}{For subsetting forwarded to the \code{\link{SingleCellExperiment}}
-method. For \code{addToColData}, arguments passed to \code{colDataClusters}}
-
 \item{value}{The value to be substituted in the corresponding slot. See the
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
@@ -188,6 +176,9 @@ clusterings is returned.}
 \item{matchTo}{for subsetting, whether to match to the cluster name
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 
+\item{...}{For subsetting forwarded to the \code{\link{SingleCellExperiment}}
+method.}
+
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
@@ -195,6 +186,8 @@ with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 will be added to the \code{colData} slot as a factor. If FALSE, the
 clustering will be added to the \code{colData} slot as a character vector
 if \code{useNames=TRUE} and as a numeric vector if \code{useNames=FALSE}.}
+
+\item{For}{\code{addToColData}, arguments passed to \code{colDataClusters}}
 }
 \value{
 \code{transformation} prints the function used to transform the data
@@ -267,9 +260,6 @@ that has the clusterings in clusterMatrix slot added to the
 This is a collection of helper methods for the ClusterExperiment class.
 }
 \details{
-Note that when subsetting the data, the dendrogram information and
-the co-clustering matrix are lost.
-
 Note that redefining the transformation function via
   \code{transformation(x)<-} will check the validity of the transformation on
   the data assay. If the assay is large, this may be time consuming. Consider

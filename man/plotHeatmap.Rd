@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotHeatmap}
 \alias{plotHeatmap}
-\alias{plotHeatmap,SingleCellExperiment-methods}
+\alias{plotHeatmap,SingleCellExperiment-method}
 \alias{plotHeatmap,SummarizedExperiment-method}
 \alias{plotHeatmap,table-method}
 \alias{plotHeatmap,ClusterExperiment-method}

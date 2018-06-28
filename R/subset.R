@@ -78,7 +78,9 @@ setMethod(
 
 #' @rdname subset
 #' @export
-#' @param ... Passed to signature \code{ClusterExperiment,matrix}.
+#' @param ... For \code{addClusterings}, passed to signature 
+#' \code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to 
+#' \code{SingleCellExperiment} subsetting function.
 #' @param makePrimary whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)
 setMethod(
   f = "addClusterings",
@@ -263,6 +265,8 @@ setMethod(
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
 #' @aliases [,ClusterExperiment,ANY,ANY,ANY-method [,ClusterExperiment,ANY,character,ANY-method
+#' @param i,j ind A vector of logical or integer subscripts, indicating the rows and columns to be subsetted for \code{i} and \code{j}, respectively.
+#' @param \item{drop}{A logical scalar that is ignored.}
 #' @rdname subset
 #' @export
 setMethod(
