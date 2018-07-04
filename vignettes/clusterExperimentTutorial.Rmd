@@ -1471,7 +1471,6 @@ clFuns<-getBuiltInFunction(c("pam","kmeans"))
 Then we will add our function to the list of functions. Note that it is important we give a name to every element of the list, including our new function! 
 
 ```{r custom_addSNN}
-## currently does not work
 clFuns<-c(clFuns, "SNN"=SNN)
 ```
 
