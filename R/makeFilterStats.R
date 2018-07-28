@@ -6,7 +6,7 @@
 #' @aliases reduceFunctions makeFilterStats
 #'   makeFilterStats,SummarizedExperiment-method
 #' @param filterStats character vector of statistics to calculate. Must be one
-#'   of the character values given by \code{listBuildInFilterStats()}.
+#'   of the character values given by \code{listBuiltInFilterStats()}.
 #' @param filterNames if given, defines the names that will be assigned to the 
 #'  filtering statistics in the \code{rowData} of the object. If missing, will be 
 #'  just the value of \code{filterStats} argument
