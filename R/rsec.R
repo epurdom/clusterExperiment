@@ -20,8 +20,10 @@
 #'   \code{\link{mergeClusters}}
 #' @param mergeDEMethod passed to \code{DEMethod} argument in
 #'   \code{\link{mergeClusters}}. By default, unless otherwise chosen by the
-#'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
-#'   \code{mergeDEMethod="limma"}.
+#'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="limma-voom"}, 
+#' otherwise \code{mergeDEMethod="limma"}. These choices are for speed
+#'  considerations and the user may want to try \code{mergeDEMethod="edgeR"} 
+#' on smaller datasets of counts.
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
@@ -64,7 +66,7 @@ setMethod(
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
 		passedArgs<-list(...)
 		if("isCount" %in% names(passedArgs) & !"mergeDEMethod" %in% names(passedArgs)){
-			if(passedArgs$isCount) passedArgs$mergeDEMethod<-"edgeR"
+			if(passedArgs$isCount) passedArgs$mergeDEMethod<-"limma-voom"
 			else passedArgs$mergeDEMethod<-"limma"
 		}
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
@@ -123,7 +125,7 @@ setMethod(
     mergeMethod="adjP",
     mergeCutoff,
     mergeLogFCcutoff,
-		mergeDEMethod=if(isCount) "edgeR" else "limma",
+		mergeDEMethod=if(isCount) "limma-voom" else "limma",
     verbose=FALSE,
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
