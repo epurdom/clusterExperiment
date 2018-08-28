@@ -607,18 +607,23 @@ test_that("Different options of mainClustering",{
 })
 
 test_that("Different options of subsampling",{
-	expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+	expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
     expect_false(is.null(coClustering(clustSubsample)))
+    expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_true(is.null(coClustering(clustSubsample)))
     
-    expect_warning(clustSubsampleSCE <- clusterSingle(sce,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
-    expect_false(is.null(coClustering(clustSubsampleSCE)))
-
-    expect_warning(clustSubsampleCE <- clusterSingle(cc,  subsample=TRUE, sequential=FALSE, replaceCoClustering=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
-    expect_false(is.null(coClustering(clustSubsampleCE)))
-    clustSubsampleCE@coClustering<-coClustering(clustSubsampleCE)+.01
+    expect_warning(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_false(is.null(coClustering(test)))
+    expect_warning(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_true(is.null(coClustering(test)))
     
-    expect_warning(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, replaceCoClustering=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_warning(test <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_false(is.null(coClustering(test)))
+    expect_warning(test <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_true(is.null(coClustering(test)))
+    
+    expect_warning(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, saveSubsamplingMatrix=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
     expect_equal(coClustering(test),coClustering(clustSubsampleCE))
 
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
