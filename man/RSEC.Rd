@@ -30,7 +30,7 @@
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
   betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
   dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
-  mergeLogFCcutoff, mergeDEMethod = if (isCount) "edgeR" else "limma",
+  mergeLogFCcutoff, mergeDEMethod = if (isCount) "limma-voom" else "limma",
   verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, whichAssay = 1, ncores = 1, random.seed = NULL,
   stopOnErrors = FALSE, run = TRUE)
@@ -135,9 +135,11 @@ are left unassigned.}
 \code{\link{mergeClusters}}}
 
 \item{mergeDEMethod}{passed to \code{DEMethod} argument in
-\code{\link{mergeClusters}}. By default, unless otherwise chosen by the
-user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
-\code{mergeDEMethod="limma"}.}
+  \code{\link{mergeClusters}}. By default, unless otherwise chosen by the
+  user, if \code{isCount=TRUE}, then \code{mergeDEMethod="limma-voom"}, 
+otherwise \code{mergeDEMethod="limma"}. These choices are for speed
+ considerations and the user may want to try \code{mergeDEMethod="edgeR"} 
+on smaller datasets of counts.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 

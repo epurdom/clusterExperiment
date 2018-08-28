@@ -103,8 +103,9 @@ clusters.}
 results}
 
 \item{DEMethod}{character vector describing how the differential expression 
-analysis should be performed (replaces previous argument \code{isCount}. 
-See details.}
+ analysis should be performed that will be used in the estimation of the
+percentage DE per node. See \link{getBestFeatures} for current options. 
+ See details.}
 
 \item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is 
 "adjP", in which case the calculation of the proportion of individual tests
@@ -235,7 +236,7 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
-\strong{Estimation of Proportion non-null} "Storey" refers to the
+\strong{Estimation of proportion non-null} "Storey" refers to the
   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
   (2004). "JC" refers to the method of Ji and Cai (2007), and implementation
   of "JC" method is copied from code available on Jiashin Ji's website,
@@ -246,10 +247,6 @@ Takes an input of hierarchical clusterings of clusters and
   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
   refers to the proportion of genes that are found significant based on a FDR
   adjusted p-values (method "BH") and a cutoff of 0.05.
-
-\strong{DEMethod} If  \code{DEMethod=="limma"}, and \code{x} is a \code{ClusterExperiment} object, then transformData(x) will be
-  given as the input to \code{getBestFeatures}. Otherwise, the original data stored in 
- the assay will be passed to \code{getBestFeatures} (and the remaining methods assume the data will be counts.)
 
 \strong{Control of Plotting} If \code{mergeMethod} is not equal to
   'none' then the plotting will indicate where the clusters will be merged by
