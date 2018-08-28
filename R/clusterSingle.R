@@ -211,7 +211,7 @@ setMethod(
     retval<-addClusterings(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
-	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
+	if(replaceCoClustering | is.null(x@coClustering)) retval@coClustering<-outval@coClustering
 	#make sure save the calculated information
 	retval<-.addBackSEInfo(newObj=retval,oldObj=outval)
 	return(retval)

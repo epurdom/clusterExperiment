@@ -613,6 +613,14 @@ test_that("Different options of subsampling",{
     
     expect_warning(clustSubsampleSCE <- clusterSingle(sce,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
     expect_false(is.null(coClustering(clustSubsampleSCE)))
+
+    expect_warning(clustSubsampleCE <- clusterSingle(cc,  subsample=TRUE, sequential=FALSE, replaceCoClustering=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_false(is.null(coClustering(clustSubsampleCE)))
+    clustSubsampleCE@coClustering<-coClustering(clustSubsampleCE)+.01
+    
+    expect_warning(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, replaceCoClustering=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_equal(coClustering(test),coClustering(clustSubsampleCE))
+
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
     set.seed(3325)
     biggerMat<-matrix(data=rnorm(20*100), ncol=100)
