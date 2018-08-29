@@ -179,7 +179,7 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichClusters="missing"),
   definition = function(object, whichClusters,...)
   {
-    tableClusters(object,whichClusters="primaryCluster")
+    tableClusters(object,whichClusters="primaryCluster",...)
     
   })
 
@@ -196,7 +196,7 @@ setMethod(
 		tableMethod<-match.arg(tableMethod)
     if(useNames) numCluster<-clusterMatrixNamed(object,whichClusters=whichClusters)
     else numCluster<-clusterMatrix(object)[,whichClusters]
-			tabAll<-table(data.frame(numCluster))
+		tabAll<-table(data.frame(numCluster))
     if(tableMethod=="intersect" | length(whichClusters)==1) return(tabAll)
 		else return(.makeUnion(tabAll))
 })
