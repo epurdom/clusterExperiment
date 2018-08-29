@@ -4,7 +4,7 @@
 #' @importFrom phylobase edgeLength rootNode descendants nodeLabels
 #' @importFrom dendextend as.phylo.dendrogram
 #' @importFrom ape as.phylo
-.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
+.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
   type<-match.arg(type,c("hclust","dendro"))
   if(type=="hclust"){
     #first into phylo from ape package
@@ -15,6 +15,7 @@
     tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
     if(inherits(tempPhylo, "try-error")) stop(paste("the dendrogram object cannot be converted to a phylo class with the methods of 'dendextend' package. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
   }
+  if(returnOnlyPhylo) return(tempPhylo) #don't do the rest of fixing up...
   phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
   if(inherits(phylo4Obj, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
   
@@ -103,10 +104,36 @@
 }
 
 
-.addIndToClusterDendro<-function(clusterDendro,cl){
-  phylo4Obj <- .makePhylobaseTree(dendro, "dendro",isSamples=FALSE)
+#Note, in long term, want to be able to subset the CE object without tossing the dendrogram! How does this work if you completely lose a cluster in a subset?
 
-  phyloObj <- as(phylo4Obj, "phylo")
+###Potential problems:
+## What if only 1 sample in a cluster? Need to make it take the place of the cluster node...
+.makeSampleDendro<-function(ceObj,unassignedSamples=c("ignore","outgroup", "cluster")){
+	unassignedSamples<-match.arg(unassignedSamples)
+  cl<-ceObj@clusterMatrix[,ceObj@dendro_index]
+  whPos<-which(cl>0)
+  clPos<-cl[whPos]
+    
+  #Note, perhaps should make a "phylo" only option in .makePhylobase so don't do this twice.
+  #Would loose internal node names. Need check if that matters.
+  phyloObj <- .makePhylobaseTree(x=ceObj@dendro_clusters, "dendro",isSamples=FALSE,returnOnlyPhylo = TRUE)
 
+  #make edge matrix per cluster
+	nClusterGr1<-
+  tipEdges<-cbind(clPos,1:length(clPos))
+  internalEdges<- phyloObj$edge+length(clPos)
+  mClToTip<-match(as.character(clPos),phyloObj$tip.label) #gives for each cluster, tip number in cluster tree
+	if(any(is.na(mClToTip))) stop("coding error -- some of tip labels in phylo object do not match cluster names")
+  tipEdges[,1]<-mClToTip+length(clPos)
+  newPhylo<-list()
+  newPhylo$edge<-rbind(internalEdges,tipEdges)
+  if(!is.null(colnames(ceObj))) newPhylo$tip.label<-colnames(ceObj)[whPos]
+  else{
+      newPhylo$tip.label<-paste("Sample",1:NCOL(ceObj))[whPos]
+    }
+  newPhylo$Nnode<-phyloObj$Nnode+length(phyloObj$tip.label)
+  class(newPhylo)<-"phylo"
+  return(newPhylo)
 
 }
+
