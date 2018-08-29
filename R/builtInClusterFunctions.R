@@ -1,4 +1,4 @@
-#' @include internalFunctions.R internalClusterFunctions.R
+#' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R
 
 ################
 ##Internal wrapper functions for kmeans and pam
