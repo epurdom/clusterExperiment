@@ -33,8 +33,9 @@ Functions for running and comparing many different clusterings of single-cell se
 We recommend installation of the package via bioconductor.
 
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite("clusterExperiment")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("clusterExperiment")
 ```
 
 To install the most recent version of the package available on the development branch of bioconductor, follow the above instructions, after downloading the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
