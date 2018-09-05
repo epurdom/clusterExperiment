@@ -174,28 +174,8 @@ setMethod(
     #############
     # Samples dendrogram
     #############
-    if(calculateSample){
-			
-			outlierHclust<-NULL
-			if(length(whKeep) != nSamples && unassigned != "remove"){
-				outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
-	      
-				if(unassigned=="outgroup" | length(whKeep)==0){
-	        if(ncol(outlierDat)>5 | length(whKeep)==0) outlierHclust <- as.dendrogram(stats::hclust(as.dist(outlierDat)), ...)
-	    
-	      }      
-	      else if(unassigned=="cluster"){
-					#need to cluster to existing clusters based on this dist matrix -- may need to update predict function
-					#but then once get new cluster assignments, then should just update clNum that give to .makeSampleDendro
-					unassignedSamples<-"remove"
-	      }
-	    }
-			if(length(whKeep)==0) fullD<-outlierHclust
-			else fullD<-.makeSampleDendro(clusterD, clNum, unassignedSamples=unassignedSamples,sampleEdgeLength=0, sampleNames=colnames(x), outbranchLength,outbranchHclust=outlierHclust)
-			
-    }
-		else fullD<-NULL
-    #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+      		fullD<-.getUnassignedTree(x,clNum=clNum,clusterD=clusterD,type="mat",whKeep=whKeep,nSamples=nSamples,unassigned=unassigned,calculateSample=calculateSample)
+    
     return(list(samples=fullD,clusters=clusterD))
   })
 
@@ -234,34 +214,37 @@ setMethod(
     nPerCluster <- table(clFactor)
     clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
     
-    
-    #############
-    # Samples dendrogram
-    #############
-    if(calculateSample){
-			
-			outlierHclust<-NULL
-			if(length(whKeep) != nSamples && unassigned != "remove"){
-			  outlierDat <- x[,-whKeep,drop=FALSE]
-	      if(unassigned=="outgroup"| length(whKeep)==0){
-	        #run hclust on unassigned
-					if(ncol(outlierDat)>5 | length(whKeep)==0) outlierHclust <- stats::hclust(dist(outlierDat)^2)
-	      }      
-	      if(unassigned=="cluster"){
-					#cluster to existing clusters based on this dist matrix -- may need to update predict function
-					#but then once get new cluster assignments, then should just update clNum that give to .makeSampleDendro
-					unassignedSamples<-"remove"
-	      }
-	    }
-			if(length(whKeep)==0) fullD<-outlierHclust
-			else fullD<-.makeSampleDendro(clusterD, clNum, unassignedSamples=unassignedSamples,sampleEdgeLength=0, sampleNames=colnames(x), outbranchLength,outbranchHclust=outlierHclust)
-			
-    }
-		else fullD<-NULL
+    nSamples<-length(clNum)
+		fullD<-.getUnassignedTree(x,clNum=clNum,clusterD=clusterD,type="mat",whKeep=whKeep,nSamples=nSamples,unassigned=unassigned,calculateSample=calculateSample)
     return(list(samples=fullD,clusters=clusterD))
   })
 
 
-
-
+	#wrapper so don't repeat code for class matrix and class dist
+.getUnassignedTree<-function(x,clNum,clusterD,type=c("dist","mat"),whKeep,nSamples,unassigned,calculateSample){
+	type<-match.arg(type)
+  if(calculateSample){
+		outlierHclust<-NULL
+		if(length(whKeep) != nSamples && unassigned != "remove"){
+		  outlierDat <- if(type=="mat") x[,-whKeep,drop=FALSE] else as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
+				
+      if(unassigned=="outgroup"| length(whKeep)==0){
+        #run hclust on unassigned
+				if(ncol(outlierDat)>5 | length(whKeep)==0){
+					outlierHclust <- if(type=="mat") stats::hclust(dist(t(outlierDat))^2) else  stats::hclust(as.dist(outlierDat))
+				}
+      }      
+      if(unassigned=="cluster"){
+				stop("option unassigned='cluster' not yet operational")
+				#cluster to existing clusters based on this dist matrix -- may need to update predict function for distances???
+				#but then once get new cluster assignments, then should just update clNum that give to .makeSampleDendro
+				unassigned<-"remove"
+      }
+    }
+		if(length(whKeep)==0) fullD<-outlierHclust
+		else fullD<-.makeSampleDendro(clusterD, clNum, unassignedSamples=unassigned,sampleEdgeLength=0, sampleNames=colnames(x),outbranchHclust=outlierHclust)
+  }
+	else fullD<-NULL
+	return(fullD)
+}
 

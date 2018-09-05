@@ -9,7 +9,7 @@
   if(type=="hclust"){
     #first into phylo from ape package
     tempPhylo<-try(ape::as.phylo(x),FALSE)
-    if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package.")
+    if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package. Reported error from ape package:",tempPhylo)
   }
   if(type=="dendro"){
     tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
@@ -107,10 +107,10 @@
 ## Large things it makes:
 # 2 vectors roughly size of n
 # phylo tree: n(n-1)/2 x 2 matrix (edge matrix), n length vector of characters (tip labels), n(n-1)/2 length vector (edge lengths)
-.makeSampleDendro<-function(clusterDendro, cl, unassignedSamples=c("remove","outgroup"),sampleEdgeLength=0, sampleNames=NULL, outbranchLength,outlierHclust=NULL){
+.makeSampleDendro<-function(clusterDendro, cl, unassignedSamples=c("remove","outgroup"),sampleEdgeLength=0, sampleNames=NULL, outbranchLength=1,outbranchHclust=NULL){
 	unassignedSamples<-match.arg(unassignedSamples)
-	#right now outlierHclust is expected to be a hclust object.
-	#need check that outlierHclust is right number of observations!
+	#right now outbranchHclust is expected to be a hclust object.
+	#need check that outbranchHclust is right number of observations!
 	#if no outbranchHist given, assume only a few observations (e.g. 1!) and do arbitrary order from single node, like a cluster.
 	
 	
@@ -179,20 +179,18 @@
 	m1<-match(internalEdges[,1],oldValues)
 	m2<-match(internalEdges[,2],oldValues)
 	internalEdges<-cbind(newValues[m1],newValues[m2])
-	#now fix up the edge matrix too; speed wise, is it faster to do it before? More complicated to code...
+	
+	#now fix up the edge matrix too; speed wise, is it faster to do it before? More complicated to code it before...
 	newPhylo$edge[,1]<-newValues[match(newPhylo$edge[,1],oldValues)]
-
 	internalEdges<-internalEdges+length(cl[whPos])
 	newPhylo$edge[,1]<-newPhylo$edge[,1]+length(cl[whPos])
-	
 	newPhylo$edge<-rbind(internalEdges,newPhylo$edge)
 	
   if(!is.null(sampleNames)) newPhylo$tip.label<-sampleNames[whPos]
   else{
-      newPhylo$tip.label<-paste("Sample",1:length(cl))[whPos]
+      newPhylo$tip.label<-paste("Sample",whPos)
     }
   newPhylo$Nnode<-phyloObj$Nnode+length(phyloObj$tip.label)-nCluster1
-
 	if("edge.length" %in% names(phyloObj)){
 		oldEdgeLength<-phyloObj$edge.length
 		if( any(tab==1) ) oldEdgeLength<-oldEdgeLength[phyloObj$edge[,2]!=mClToTip1]
@@ -203,58 +201,99 @@
 		}
 		newPhylo$edge.length<-c(oldEdgeLength,newPhylo$edge.length)
 	}
-	
-	
-	if(unassignedSamples=="outgroup"){
-		#make a tree out of the unassigned samples with hclust:
-		
-		
-		
-	}
-		
-		
-	
-	
   class(newPhylo)<-"phylo"
+	
+	
+	#-----
+	#Only if want unassigned as outgroup and there exist -1/-2 samples:
+	#-----
+	rm(whPos) #might be long...
+	whNeg<-which(cl<0) #technically should be able to do with whPos, but a pain
+	if(unassignedSamples=="outgroup" & length(whNeg)>0){
+		tipNames<- if(!is.null(sampleNames)) sampleNames[whNeg] else paste("OutSample",whNeg)
+		if(length(whNeg)>1){
+			if(!is.null(outbranchHclust)){ #use hclust tree as tree to paste
+				#convert to phylo object
+				if(class(outbranchHclust)!="hclust") stop("coding error - outbranchHclust not of class hclust")
+				outTree<- .makePhylobaseTree(x=outbranchHclust, "hclust",isSamples=FALSE,returnOnlyPhylo = TRUE) #isSamples doesn't matter if only returningPhylo
+				if(length(outTree$tip.label)!=length(whNeg)) stop("coding error - given hclust doesn't have correct number of tips.")
+			}
+			else{ #construct tree with just root and tips:
+				outTree<-list()
+				nOut<-length(whNeg)
+				outTree$edge<-cbind(rep(nOut+1,length=nOut),1:nOut)
+				outTree$tip.label<-tipNames
+				outTree$edge.length<-rep(0,length=nOut)
+				outTree$Nnode<-1
+				class(outTree)<-"phylo"
+			
+			}
+			newPhylo<-.mergePhylo(tree1=newPhylo,tree2=outTree,mergeEdgeLength=outbranchLength)
+		}
+		else{
+			newPhylo<-.mergePhylo(tree1=newPhylo, tree2=tipNames, mergeEdgeLength=outbranchLength)
+		}
+	}
   return(newPhylo)
 
 }
 
-#only for merging actual treeds
 .mergePhylo<-function(tree1,tree2,mergeEdgeLength){
 	n1<-length(tree1$tip.label)
-	n2<-length(tree2$tip.label)
 	m1<-tree1$Nnode
-	m2<-tree2$Nnode
-	
+	isTree<-is.list(tree2) & class(tree2)=="phylo"
+	if(isTree){
+		if(is.null(tree1$edge.length) || is.null(tree1$edge.length) ) stop("must have edge length on both trees")
+		n2<-length(tree2$tip.label)
+		m2<-tree2$Nnode
+	}else{
+		if(is.null(tree1$edge.length)) stop("must have edge length to merge to tree")
+		if(!is.vector(tree2) || length(tree2)!=1) stop("coding error -- trying to merge add more than 1 tip to tree")
+			
+			n2<-1
+	}
 	newPhylo<-list()
-	#1) Tree 2 tips: add n1
-	whtip2<-tree2$edge[,2]<=n2
-	tree2$edge[whtip2,2]<-tree2$edge[whtip2,2]+n1
-	#2) Tree 2 inner nodes: add n1+m1+1
-	tree2$edge[-whtip2,2]<-tree2$edge[-whtip2,2]+n1+m1+1
-	tree2$edge[,1]<-tree2$edge[,1]+n1+m1+1
-	
-	#3) Tree 1 inner nodes: add n1
-	whinner1<-tree1$edge[,2]>=n1
-	tree1$edge[whinner1,2]<-tree1$edge[whinner1,2]+n1
-	tree1$edge[,1]<-tree1$edge[,1]+n1
-	
-	#4) Add root edge (n2+n1+1) to (n1+n2+2) and (n2+m1+n2+2) to bottom of edge matrix:
-	newPhylo$edge<-rbind(tree1$edge,tree2$edge)
-	newPhylo$edge<-rbind(newPhylo$edge, rbind(c(n2+n1+1,n1+n2+2),c(n2+n1+1,n2+m1+n2+2)))
+	#3) Tree 1 inner nodes: add n2+1
+	whinner1<-which(tree1$edge[,2] > n1)
+	if(length(whinner1)>0) tree1$edge[whinner1,2]<-tree1$edge[whinner1,2]+n2+1
+	tree1$edge[,1]<-tree1$edge[,1]+n2+1
 
-	#5) tip.label: c(tree1$tip.label,tree2$tip.label)
-	newPhylo$tip.label<-c(tree1$tip.label,tree2$tip.label)
+	if(isTree){
+		#1) Tree 2 tips: add n1
+		whtip2<-which(tree2$edge[,2]<=n2)
+		tree2$edge[whtip2,2]<-tree2$edge[whtip2,2]+n1
 	
-	#6) edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
-	#should there be check that there is edge length?
-	if(is.null(tree1$edge.length) || is.null(tree1$edge.length) ) stop("must have edge length")
-	newPhylo$edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+		#2) Tree 2 inner nodes: add n1+m1+1
+		if(nrow(tree2$edge)!=length(whtip2)) tree2$edge[-whtip2,2]<-tree2$edge[-whtip2,2]+n1+m1+1
+		tree2$edge[,1]<-tree2$edge[,1]+n1+m1+1
+	
+		#4) Add root edge (n2+n1+1) to (n1+n2+2) and (n2+m1+n2+2) to bottom of edge matrix:
+		newPhylo$edge<-rbind(tree1$edge,tree2$edge)
+		newPhylo$edge<-rbind(newPhylo$edge, rbind(c(n2+n1+1,n1+n2+2),c(n2+n1+1,n1+m1+n2+2)))
+		#5) tip.label: c(tree1$tip.label,tree2$tip.label)
+		newPhylo$tip.label<-c(tree1$tip.label,tree2$tip.label)
+		#6) edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+		#should there be check that there is edge length?
+		
+		newPhylo$edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+		newPhylo$Nnode<-m1+m2+1
+	}
+	else{
+		#4) Add root edge (n2+n1+1) to tree 1 (n1+n2+2) and root to tip to bottom of edge matrix:
+		newPhylo$edge<-tree1$edge
+		newPhylo$edge<-rbind(newPhylo$edge, rbind(c(n2+n1+1,n1+n2+2),c(n2+n1+1,n1+n2)))
+		
+		#5) tip.label: c(tree1$tip.label,tree2$tip.label)
+		newPhylo$tip.label<-c(tree1$tip.label,tree2)
+		
+		#6) 
+		newPhylo$edge.length<-c(tree1$edge.length,rep(mergeEdgeLength,2))
+		newPhylo$Nnode<-m1+1
+		
+		
+	}
+  class(newPhylo)<-"phylo" 
 	return(newPhylo)
 	
 }
 
-.mergeTip2Phylo<-function(tree1, tipName, mergeEdgeLength){
-
-}
