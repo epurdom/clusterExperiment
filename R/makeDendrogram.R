@@ -76,6 +76,7 @@ setMethod(
                         whichAssay=1,...)
   {
 		passedArgs<-list(...)
+					
 		checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar")
 		if(!is.null(checkIgnore)){
 			passedArgs<-checkIgnore$passedArgs
@@ -101,7 +102,7 @@ setMethod(
       
       outlist <- do.call("makeDendrogram",c(list(
 				x=dat, 
-				cluster=cl,
+				cluster=cl,calculateSample=TRUE,
 				unassignedSamples=unassignedSamples),
 				passedArgs))
     }
@@ -110,18 +111,22 @@ setMethod(
       if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
      outlist<-do.call("makeDendrogram",c(list(
 			  x=as.dist(1-x@coClustering),
-				cluster=cl,
+				cluster=cl,calculateSample=TRUE,
 				unassignedSamples=unassignedSamples),
 				passedArgs)) 
     }
-    x@dendro_samples <- outlist$samples
+		
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
 
-    x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
-    ch<-.checkDendrogram(x)
+		
+	    x@dendro_samples <- outlist$samples
+	    x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
+			
+		
+		ch<-.checkDendrogram(x)
     if(!is.logical(ch)) stop(ch)
-    return(x)
+			return(x)
   })
 
 
@@ -133,7 +138,7 @@ setMethod(
   signature = "dist",
   definition = function(x, cluster,
                         unassignedSamples=c("outgroup", "cluster", "remove"),
-                        ...) {
+                        calculateSample=TRUE,...) {
     unassigned <- match.arg(unassignedSamples)
     cl <- cluster
     nSamples<-attributes(x)$Size
@@ -169,48 +174,27 @@ setMethod(
     #############
     # Samples dendrogram
     #############
-    
-    #make fake dist with just medoids as value per sample (only for whKeep samples):
-    fakeData <- do.call("rbind",lapply(levels(clFactor), function(z){
-      ind <- which(clFactor == z) #indices of those in this cluster
-      med <- medoids[z,] #vector of mediod with other clusters
-      medExp<-rep(med,times=nPerCluster)
-      mat <- matrix(medExp, nrow=length(ind), ncol=sum(nPerCluster) ,byrow=TRUE)
-      rownames(mat) <- rownames(as.matrix(x)[whKeep,])[ind]
-      colnames(mat) <- colnames(as.matrix(x)[,whKeep])
-      return(mat)
-    }))
-    if(length(whKeep) != nSamples && unassigned != "remove"){
-      #need to add the unassigned samples into fakeData
-      outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
-      if(unassigned=="outgroup"){
-        #hard to use merge and then get the indices to go back to the same ones
-        #cheat and add large amount to the unassigned so that they don't cluster to
-        maxAss <- max(c(max(fakeData),max(outlierDat)))
-        offDiag<-matrix(maxAss+10^6,nrow=nrow(fakeData),ncol=ncol(outlierDat))
-        fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
-      }
-      
-      if(unassigned=="cluster"){
-        #add remaining distances to fake data and let them cluster
-        offDiag <- as.matrix(x)[whKeep,-whKeep,drop=FALSE]
-        #put in order of fake data, then outliers
-        offDiag<-offDiag[row.names(fakeData),,drop=FALSE]
-        
-        fakeData <- rbind(cbind(fakeData, offDiag),cbind(t(offDiag),outlierDat))
-      }
+    if(calculateSample){
+			
+			outlierHclust<-NULL
+			if(length(whKeep) != nSamples && unassigned != "remove"){
+				outlierDat <- as.matrix(x)[-whKeep,-whKeep,drop=FALSE]
+	      
+				if(unassigned=="outgroup" | length(whKeep)==0){
+	        if(ncol(outlierDat)>5 | length(whKeep)==0) outlierHclust <- as.dendrogram(stats::hclust(as.dist(outlierDat)), ...)
+	    
+	      }      
+	      else if(unassigned=="cluster"){
+					#need to cluster to existing clusters based on this dist matrix -- may need to update predict function
+					#but then once get new cluster assignments, then should just update clNum that give to .makeSampleDendro
+					unassignedSamples<-"remove"
+	      }
+	    }
+			if(length(whKeep)==0) fullD<-outlierHclust
+			else fullD<-.makeSampleDendro(clusterD, clNum, unassignedSamples=unassignedSamples,sampleEdgeLength=0, sampleNames=colnames(x), outbranchLength,outbranchHclust=outlierHclust)
+			
     }
-    #make sure fakeData in same order as original data so order.dendrogram will work
-    sampleNames<-attributes(x)$Labels
-    m<-na.omit(match(sampleNames,rownames(fakeData)))
-    fakeData<-fakeData[m,m]
-    fullD <- as.dendrogram(stats::hclust(as.dist(fakeData)), ...)
-    if(length(whKeep) != nSamples && unassigned == "outgroup"){
-      #need to get rid of super long outgroup arm
-      armLength <- max(attributes(fullD[[1]])$height,
-                       attributes(fullD[[2]])$height)
-      attributes(fullD)$height <- armLength + .1 * armLength
-    }
+		else fullD<-NULL
     #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
     return(list(samples=fullD,clusters=clusterD))
   })
@@ -225,7 +209,7 @@ setMethod(
   signature = "matrixOrHDF5",
   definition = function(x, cluster,
                         unassignedSamples=c("outgroup", "cluster", "remove"),
-                        ...) {
+                        calculateSample=TRUE,...) {
     unassigned <- match.arg(unassignedSamples)
     cl <- cluster
     if(ncol(x) != length(cl)) {
@@ -254,139 +238,30 @@ setMethod(
     #############
     # Samples dendrogram
     #############
-    
-    #make fake data with just medoids as value per sample:
-    dat <- t(x) #make like was in old code
-    fakeData <- do.call("rbind", lapply(levels(clFactor), function(z){
-      ind <- which(clFactor == z) #indices of those in this cluster
-      med <- medoids[z,]
-      mat <- matrix(rep(med, length(ind)), nrow=length(ind), byrow=TRUE)
-      rownames(mat) <- rownames(dat[whKeep,])[ind]
-      return(mat)
-    }))
-    fakeData <- fakeData[rownames(dat[whKeep,]),] #why do I need this??
-    if(length(whKeep) != nrow(dat) && unassigned != "remove"){
-      if(unassigned=="outgroup"){
-        #hard to use merge and then get the indices to go back to the same ones
-        #cheat and add large amount to the unassigned so that they don't cluster to
-        
-        outlierDat <- dat[-whKeep,,drop=FALSE]
-        maxAss <- max(dat[whKeep,,drop=FALSE])
-        outlierDat <- outlierDat + maxAss + 10e6
-        ############
-        ###This a workaround which will hopefully be dealt with in future hdf5:
-        ############
-        if(inherits(fakeData,"DelayedMatrix")|| inherits(outlierDat,"DelayedMatrix")) fakeData<-rbind(DelayedArray::DelayedArray(fakeData), DelayedArray(outlierDat))
-        else fakeData <- rbind(fakeData, outlierDat)
-        fakeData <- fakeData[rownames(dat),,drop=FALSE]
-        # fullD<-as.dendrogram(stats::hclust(dist(fakeData)))
-        # unassD<-as.dendrogram(stats::hclust(dist(dat[-whKeep,])))
-        # return(merge(fullD,unassD))
-        
-      }
-      
-      if(unassigned=="cluster"){
-        #add remaining to fake data and let them cluster
-        fakeData <- rbind(fakeData,dat[-whKeep,,drop=FALSE])
-        fakeData <- fakeData[rownames(dat),,drop=FALSE]
-        #return(as.dendrogram(stats::hclust(dist(fakeData))))
-      }
+    if(calculateSample){
+			
+			outlierHclust<-NULL
+			if(length(whKeep) != nSamples && unassigned != "remove"){
+			  outlierDat <- x[,-whKeep,drop=FALSE]
+	      if(unassigned=="outgroup"| length(whKeep)==0){
+	        #run hclust on unassigned
+					if(ncol(outlierDat)>5 | length(whKeep)==0) outlierHclust <- stats::hclust(dist(outlierDat)^2)
+	      }      
+	      if(unassigned=="cluster"){
+					#cluster to existing clusters based on this dist matrix -- may need to update predict function
+					#but then once get new cluster assignments, then should just update clNum that give to .makeSampleDendro
+					unassignedSamples<-"remove"
+	      }
+	    }
+			if(length(whKeep)==0) fullD<-outlierHclust
+			else fullD<-.makeSampleDendro(clusterD, clNum, unassignedSamples=unassignedSamples,sampleEdgeLength=0, sampleNames=colnames(x), outbranchLength,outbranchHclust=outlierHclust)
+			
     }
-    #make sure fakeData in same order as original data so order.dendrogram will work
-    fakeData<-fakeData[na.omit(match(rownames(dat),rownames(fakeData))),]
-    fullD <- as.dendrogram(stats::hclust(dist(fakeData)^2), ...)
-    if(length(whKeep) != nrow(dat) && unassigned == "outgroup"){
-      #need to get rid of super long outgroup arm
-      armLength <- max(attributes(fullD[[1]])$height,
-                       attributes(fullD[[2]])$height)
-      attributes(fullD)$height <- armLength + .1 * armLength
-    }
-    #   orderFullD<-dendextend::rotate(fullD,order=colnames(x)[orderSamples[,"index"]])
+		else fullD<-NULL
     return(list(samples=fullD,clusters=clusterD))
   })
 
 
-    ####Past Attempt for samples dendro: make separate hclust and paste together.
-    #     #For each cluster, run hclust and convert to phylobase tree
-    #     dendPerCl<-by(t(x[,whRm]),clFactor,function(z){.makePhylobaseTree(as.dendrogram(stats::hclust(dist(z)^2)),type="dendro")})
-    #     clusterDPhybase<-.makePhylobaseTree(clusterD,type="dendro")
-    #     clusterEdge<-phylobase::edges(clusterDPhybase)
-    #     #phylobase::rootNode(dendPerCl[[1]]) #gives root node, which needs to be merged into tip of main clusterDend
-    #
-    #     currMax<-max(clusterEdge)
-    #     edgeList<-list()
-    #     nn<-phylobase::getNode(clusterDPhybase)
-    #     nodeMat<-data.frame("NodeId"=nn,"NodeName"=names(nn),"newNodeId"=nn,"tree"="ClusterTree")
-    #     nodeMatCluster<-nodeMat #so have copy not changed in for loop
-    #
-    #     ###For loop changes node numbers so have proper edge list:
-    #     for(kk in 1:length(dendPerCl)){
-    #         temp<-phylobase::edges(dendPerCl[[kk]])
-    #         tempNew<-temp+currMax+1
-    #         nn<-phylobase::getNode(dendPerCl[[kk]])
-    #         tempNode<-data.frame("NodeId"=nn,"NodeName"=names(nn),"newNodeId"=nn+currMax+1,"tree"=paste("TipTree",kk,sep=""))
-    #
-    #         #root node:
-    #         rootNode<-phylobase::rootNode(dendPerCl[[kk]])
-    #
-    #         #remove existing root:
-    #         whRootEdge<-which(temp[,"ancestor"]==0)
-    #         whRootNodeId<-tempNew[whRootEdge,"descendant"] #new node id. Needs to be replaced with that of cluster
-    #         tempNew<-tempNew[-whRootEdge,]
-    #
-    #         #match to node in clusterDPhybase, and add edge
-    #         wh<-which(nodeMatCluster[,"NodeName"]==levels(clFactor)[kk])
-    #         clNodeIdBigD<-nodeMatCluster[wh,"NodeId"] #will replace existing root node with this one
-    #         tempNew<-apply(tempNew,2,function(x){x[which(x==whRootNodeId)]<-clNodeIdBigD; return(x)})
-    #         tempNode$newNodeId[which(tempNode$newNodeId==whRootNodeId)]<-clNodeIdBigD
-    #
-    #         #update
-    #         currMax<-max(tempNew)
-    #         edgeList[[kk]]<-tempNew
-    #         nodeMat<-rbind(nodeMat,tempNode)
-    #     }
-    #     whTips<-setdiff(grep("TipTree",nodeMat$tree),grep("Node",nodeMat$NodeName))
-    # #make tree for phylo (can't get phylobase to accept my tree and crashes...)
-    #     nodeMat$finalNodeId<-NA
-    #     nodeMat$finalNodeId[whTips]<-1:length(whTips)
-    #     notTips<-c(1:nrow(nodeMat))[-whTips]
-    #     nodeMat$finalNodeId[-whTips]<-seq(from=length(whTips)+2,length=length(notTips),by=1) #internal nodes, not root
-    #     combineEdge<-rbind(clusterEdge,do.call("rbind",edgeList))
-    #     combineEdgeFinal<-apply(combineEdge,2,function(x){
-    #         m<-match(x,nodeMat[,"newNodeId"])
-    #         return(nodeMat[m,"finalNodeId"])
-    #     })
-    #     #combineEdgeFinal[combineEdgeFinal[,1]==0,1]<-0
-    #     combineEdgeFinal[combineEdge[,1]==0,1]<-length(whTips)+1
-    #     phyloObj<-list(edge=combineEdgeFinal,tip.label=as.character(1:))
-    #
-    #     #phylo4(combineEdgeFinal)
-
-
-###Past attempt to just reordering, didn't work...
-#     orderCluster<-order.dendrogram(clusterD)
-#     #For each cluster, run hclust and get order
-#     indByCl<-tapply(whRm,clFactor,function(ind){ind})
-#     orderPerCl<-lapply(indByCl,function(ind){
-#         d<-as.dendrogram(stats::hclust(dist(t(x[,ind]))^2))
-#         o<-order.dendrogram(d)
-#         return(cbind(orderWithinCluster=o,index=ind))
-#     })
-#     names(orderPerCl)<-levels(clFactor)
-#     orderPerCl<-orderPerCl[orderCluster]
-#     ## -1 group
-#     if(length(whRm)!=ncol(x)){
-#         ind<-(1:ncol(x))[-whRm]
-#         order1<-cbind(orderWithinCluster=order.dendrogram(as.dendrogram(stats::hclust(dist(t(x[,-whRm])^2)))),index=ind)
-#         orderPerCl<-c(orderPerCl,list(order1))
-#     }
-#     currMax<-0
-#     for(kk in 1:length(orderPerCl)){
-#         orderPerCl[[kk]]<-cbind( orderPerCl[[kk]],"externalOrder"=orderPerCl[[kk]][,"orderWithinCluster"]+currMax,group=kk)
-#         currMax<-max(orderPerCl[[kk]])
-#     }
-#     orderSamples<-do.call("rbind",orderPerCl)
-#     orderSamples<-orderSamples[order(orderSamples[,"externalOrder"]),]
 
 
 

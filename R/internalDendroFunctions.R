@@ -104,20 +104,20 @@
 
 #Note, in long term, want to be able to subset the CE object without tossing the dendrogram! How does this work if you completely lose a cluster in a subset?
 
-###Potential problems:
-## What if only 1 sample in a cluster? Need to make it take the place of the cluster node...
 ## Large things it makes:
 # 2 vectors roughly size of n
 # phylo tree: n(n-1)/2 x 2 matrix (edge matrix), n length vector of characters (tip labels), n(n-1)/2 length vector (edge lengths)
-.makeSampleDendro<-function(ceObj,unassignedSamples=c("ignore","outgroup", "cluster"),sampleEdgeLength=0){
+.makeSampleDendro<-function(clusterDendro, cl, unassignedSamples=c("remove","outgroup"),sampleEdgeLength=0, sampleNames=NULL, outbranchLength,outlierHclust=NULL){
 	unassignedSamples<-match.arg(unassignedSamples)
-  cl<-ceObj@clusterMatrix[,ceObj@dendro_index] #makes 1 copy length of n
+	#right now outlierHclust is expected to be a hclust object.
+	#need check that outlierHclust is right number of observations!
+	#if no outbranchHist given, assume only a few observations (e.g. 1!) and do arbitrary order from single node, like a cluster.
+	
+	
   whPos<-which(cl>0) #this is copy close to length of n
-    
-	if(unassignedSamples!="ignore") stop("right now not handling unassigned Samples in tree")
-  #Note, perhaps should make a "phylo" only option in .makePhylobase so don't do this twice.
-  #Would loose internal node names. Need check if that matters.
-  phyloObj <- .makePhylobaseTree(x=ceObj@dendro_clusters, "dendro",isSamples=FALSE,returnOnlyPhylo = TRUE)
+	if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
+  #loses internal node names. Don't think that matters.
+  phyloObj <- .makePhylobaseTree(x=clusterDendro, "dendro",isSamples=FALSE,returnOnlyPhylo = TRUE)
 
 	#########
   #make new edge matrix
@@ -156,9 +156,9 @@
 	if(nrow(newPhylo$edge)!=length(cl[whPos])) stop("coding error -- did not assign all assigned samples to tip of tree")
 	if(length(newPhylo$edge[,2])!=length(unique(newPhylo$edge[,2]))) stop("coding error -- did not give unique ids to tips of tree")	
 	
-		#-------
-		#make tips have values larger than root
-		#-------
+	#-------
+	#make tips have values larger than root
+	#-------
 	internalEdges<-phyloObj$edge
 	nOrigTips<-length(phyloObj$tip.label)
 	maxOrig<-nOrigTips+phyloObj$Nnode
@@ -171,10 +171,9 @@
 
 	if(any(tab==1)){
 		#have to remove those edges that went to clusters of size 1, because won't be internal edges.
-		internalEdges<-internalEdges[ phyloObj$edge[,2]!=mClToTip1, ,drop=FALSE]
-		#also need to renumber everything, because the tip lost will leave gap... Need to keep the same order. 
-		
-	 }
+		internalEdges<-internalEdges[ phyloObj$edge[,2]!=mClToTip1, ,drop=FALSE]		
+	}
+	#also need to renumber everything, because the tip lost will leave gap... Need to keep the same order. 
 	oldValues<-sort( unique( as.numeric( internalEdges )))
 	newValues<-1:length(oldValues)
 	m1<-match(internalEdges[,1],oldValues)
@@ -188,24 +187,74 @@
 	
 	newPhylo$edge<-rbind(internalEdges,newPhylo$edge)
 	
-  if(!is.null(colnames(ceObj))) newPhylo$tip.label<-colnames(ceObj)[whPos]
+  if(!is.null(sampleNames)) newPhylo$tip.label<-sampleNames[whPos]
   else{
-      newPhylo$tip.label<-paste("Sample",1:NCOL(ceObj))[whPos]
+      newPhylo$tip.label<-paste("Sample",1:length(cl))[whPos]
     }
   newPhylo$Nnode<-phyloObj$Nnode+length(phyloObj$tip.label)-nCluster1
 
 	if("edge.length" %in% names(phyloObj)){
 		oldEdgeLength<-phyloObj$edge.length
 		if( any(tab==1) ) oldEdgeLength<-oldEdgeLength[phyloObj$edge[,2]!=mClToTip1]
-		newPhylo$edge.length<-rep(0,length=length(newPhylo$tip.label))
+		newPhylo$edge.length<-rep(sampleEdgeLength,length=length(newPhylo$tip.label))
 		if(any(tab==1)){ #need get back length to single-sample cluster
 			oldEdgeLength1<-phyloObj$edge.length[phyloObj$edge[,2]==mClToTip1]
 			newPhylo$edge.length[(length(newPhylo$edge.length)-nCluster1+1):length(newPhylo$edge.length)]<-oldEdgeLength1
 		}
 		newPhylo$edge.length<-c(oldEdgeLength,newPhylo$edge.length)
 	}
+	
+	
+	if(unassignedSamples=="outgroup"){
+		#make a tree out of the unassigned samples with hclust:
+		
+		
+		
+	}
+		
+		
+	
+	
   class(newPhylo)<-"phylo"
   return(newPhylo)
 
 }
 
+#only for merging actual treeds
+.mergePhylo<-function(tree1,tree2,mergeEdgeLength){
+	n1<-length(tree1$tip.label)
+	n2<-length(tree2$tip.label)
+	m1<-tree1$Nnode
+	m2<-tree2$Nnode
+	
+	newPhylo<-list()
+	#1) Tree 2 tips: add n1
+	whtip2<-tree2$edge[,2]<=n2
+	tree2$edge[whtip2,2]<-tree2$edge[whtip2,2]+n1
+	#2) Tree 2 inner nodes: add n1+m1+1
+	tree2$edge[-whtip2,2]<-tree2$edge[-whtip2,2]+n1+m1+1
+	tree2$edge[,1]<-tree2$edge[,1]+n1+m1+1
+	
+	#3) Tree 1 inner nodes: add n1
+	whinner1<-tree1$edge[,2]>=n1
+	tree1$edge[whinner1,2]<-tree1$edge[whinner1,2]+n1
+	tree1$edge[,1]<-tree1$edge[,1]+n1
+	
+	#4) Add root edge (n2+n1+1) to (n1+n2+2) and (n2+m1+n2+2) to bottom of edge matrix:
+	newPhylo$edge<-rbind(tree1$edge,tree2$edge)
+	newPhylo$edge<-rbind(newPhylo$edge, rbind(c(n2+n1+1,n1+n2+2),c(n2+n1+1,n2+m1+n2+2)))
+
+	#5) tip.label: c(tree1$tip.label,tree2$tip.label)
+	newPhylo$tip.label<-c(tree1$tip.label,tree2$tip.label)
+	
+	#6) edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+	#should there be check that there is edge length?
+	if(is.null(tree1$edge.length) || is.null(tree1$edge.length) ) stop("must have edge length")
+	newPhylo$edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+	return(newPhylo)
+	
+}
+
+.mergeTip2Phylo<-function(tree1, tipName, mergeEdgeLength){
+
+}
