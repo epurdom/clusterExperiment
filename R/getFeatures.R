@@ -547,27 +547,4 @@ setMethod(
 
 }
 
-#' #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
-#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
-#' .force.ultrametric<-function(tree){
-#' 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-#' 
-#' 	allTips<-phylobase::tipLabels(tree)
-#' 	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
-#' 	maxD<-max(depthToTips)
-#' 	addValue<-maxD-depthToTips
-#' 	allLen<-phylobase::edgeLength(tree)
-#'   edgeMat<-phylobase::edges(tree)
-#'   tipIds<-as.numeric(names(allTips))
-#'   m<-match(tipIds,edgeMat[,2])
-#'   edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
-#' 
-#'   #check didn't do something stupid:
-#'   checkTipEdges<-phylobase::edgeId(tree,type="tip")
-#'   if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
-#' 
-#'   #replace with new edges:
-#' 	allLen[edgeIds]<-allLen[edgeIds]+addValue
-#' 	phylobase::edgeLength(tree)<-allLen
-#' 	tree
-#' }
+
