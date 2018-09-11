@@ -146,107 +146,42 @@
 				}
 			}
 	    if(unassignedSamples=="cluster"){
-				stop("option outNames='cluster' not yet operational")
-				#TO DO: cluster to existing clusters based on this dist matrix -- may need to update predict function for distances???
-				#but then once get new cluster assignments, then should just update clNum that in what makes the main tree code and done.
+				if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
+				#code from assignUnassigned
+		    clFactor <- factor(cl[-whNeg])
+				medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))
+		    rownames(medoids) <- levels(clFactor)
+				classif<-.genericClassify(x=x[,whNeg],centers=medoids) 
+				cl[whNeg]<-classif
+				whPos<-which(cl>0)
+				whNeg<-which(cl<0)
+				if(length(whPos)!=length(cl)) stop("coding error -- predicting unassigned missed some")
 				unassignedSamples<-"remove"
 	    }			
     }      
-
 
 		###################
 		## II. Make tree with main samples:
 		###################
 		if(length(whPos)>0){
 			#---------
-		  #make new edge matrix
+		  #make list of phylo trees for each cluster:
 			#---------
-		  tab<-table(cl[whPos])
-		  newPhylo<-list()
-	
-		  if(any(tab==1)){
-				cluster1<-names(tab)[tab==1]
-				nCluster1<-length(cluster1)
-			  mClToTip1<-match(cluster1,phyloObj$tip.label) #find their tip number in matrix
-				tipEdges1<-phyloObj$edge[phyloObj$edge[,2]==mClToTip1, ,drop=FALSE] #get the edge matrix for them
-				mToPositiveCl<-match(tipEdges1[,2],cl[whPos])
-				tipEdges1[,2]<-mToPositiveCl #change their tip number to their index in positive cluster vector
-		
-			}
-			else{
-				nCluster1<-0
-				tipEdges1<-matrix(0,nrow=0,ncol=2)
-			}
-			if(any(tab>1)){
-				clusterGr1<-names(tab)[tab>1]
-				mGr1<-which(as.character(cl[whPos]) %in% clusterGr1)
-			  newPhylo$edge<-cbind(cl[whPos][mGr1],mGr1)
-		
-			  mClToTip<-match(as.character(newPhylo$edge[,1]),phyloObj$tip.label) #gives for each cluster, tip number in old cluster tree
-				if(any(is.na(mClToTip))) stop("coding error -- some of tip labels in phylo object do not match cluster names")
-			  newPhylo$edge[,1]<-mClToTip
-				newPhylo$edge<-rbind(newPhylo$edge,tipEdges1)		
-			}
-			#---------
-			##Some tests -- might drop them for speed later
-			#---------
-			if(any(newPhylo$edge[,2]>length(cl[whPos]))) stop("coding error -- gave tip values greater than number of assigned samples")
-			if(nrow(newPhylo$edge)!=length(cl[whPos])) stop("coding error -- did not assign all assigned samples to tip of tree")
-			if(length(newPhylo$edge[,2])!=length(unique(newPhylo$edge[,2]))) stop("coding error -- did not give unique ids to tips of tree")	
-	
-			#-------
-			#make tips have values larger than root
-			#-------
-			internalEdges<-phyloObj$edge
-			nOrigTips<-length(phyloObj$tip.label)
-			maxOrig<-nOrigTips+phyloObj$Nnode
-			whTipInternal<-internalEdges[,2]<=nOrigTips
-			internalEdges[whTipInternal,2]<-internalEdges[whTipInternal,2]+maxOrig
-			#fix up the newPhylo ones to have same number (again, for speed if fix to begin with?)
-			whTipNew<-newPhylo$edge[,1]<=nOrigTips
-			newPhylo$edge[whTipNew,1]<-newPhylo$edge[whTipNew,1]+maxOrig
-
-
-			if(any(tab==1)){
-				#have to remove those edges that went to clusters of size 1, because won't be internal edges.
-				internalEdges<-internalEdges[ phyloObj$edge[,2]!=mClToTip1, ,drop=FALSE]		
-			}
-			#also need to renumber everything, because the tip lost will leave gap... Need to keep the same order. 
-			oldValues<-sort( unique( as.numeric( internalEdges )))
-			newValues<-1:length(oldValues)
-			m1<-match(internalEdges[,1],oldValues)
-			m2<-match(internalEdges[,2],oldValues)
-			internalEdges<-cbind(newValues[m1],newValues[m2])
-	
-			#now fix up the edge matrix too; speed wise, is it faster to do it before? More complicated to code it before...
-			newPhylo$edge[,1]<-newValues[match(newPhylo$edge[,1],oldValues)]
-			internalEdges<-internalEdges+length(cl[whPos])
-			newPhylo$edge[,1]<-newPhylo$edge[,1]+length(cl[whPos])
-			newPhylo$edge<-rbind(internalEdges,newPhylo$edge)
-	
-		  if(!is.null(sampleNames)) newPhylo$tip.label<-sampleNames[whPos]
-		  else{
-		      newPhylo$tip.label<-paste("Sample",whPos)
-		    }
-		  newPhylo$Nnode<-phyloObj$Nnode+length(phyloObj$tip.label)-nCluster1
-			if("edge.length" %in% names(phyloObj)){
-				oldEdgeLength<-phyloObj$edge.length
-				if( any(tab==1) ) oldEdgeLength<-oldEdgeLength[phyloObj$edge[,2]!=mClToTip1]
-				newPhylo$edge.length<-rep(sampleEdgeLength,length=length(newPhylo$tip.label))
-				if(any(tab==1)){ #need get back length to single-sample cluster
-					oldEdgeLength1<-phyloObj$edge.length[phyloObj$edge[,2]==mClToTip1]
-					newPhylo$edge.length[(length(newPhylo$edge.length)-nCluster1+1):length(newPhylo$edge.length)]<-oldEdgeLength1
-				}
-				newPhylo$edge.length<-c(oldEdgeLength,newPhylo$edge.length)
-			}
-		  class(newPhylo)<-"phylo"
+			fakePhyloList<-tapply(sampleNames[whPos],as.factor(cl[whPos]),.makeFakeBinary,simplify=FALSE)
+			
+			#need to reorder so in order of the tips of phyloObj
+			m<-match(phyloObj$tip.label,names(fakePhyloList))
+			if(any(is.na(m))) stop("coding error -- names in dendrogram of clusters don't match cluster ids")
+			fakePhyloList<-fakePhyloList[m]
+			newPhylo<-.addTreesToTips(mainTree=phyloObj,tipTrees=fakePhyloList)
 		}
-		else return(outTree) #need to return dendrogram, but get back to that...
+		else newPhylo<-outTree #need to return dendrogram, but get back to that...
+			
 
 		###################
 		## III. Add outlier samples if unassignedSamples=="outgroup"
 		###################
-		if(unassignedSamples == "outgroup" & length(whNeg)>0){
+		if(unassignedSamples == "outgroup" & length(whNeg)>0 & length(whPos)>0){
 			if(length(whNeg)>1){
 				newPhylo<-.mergePhylo(tree1=newPhylo,tree2=outTree,mergeEdgeLength=outbranchLength)
 			}
@@ -260,21 +195,53 @@
 		###################
 		
 		# ##Return as dendrogram (for now....)
-		# newPhylo<-try(as(newPhylo,"phylo4"),FALSE)
-		# if(inherits(newPhylo, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",newPhylo))
-		# newPhylo<-as(.force.ultrametric(newPhylo),"phylo")
+		newPhylo<-try(as(newPhylo,"phylo4"),FALSE)
+		if(inherits(newPhylo, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",newPhylo))
+		newPhylo<-suppressWarnings(as(.force.ultrametric(newPhylo),"phylo"))
 		# #need to convert back to phylo?
-		# return(as.dendrogram(ape::as.hclust.phylo(newPhylo))) #as.dendrogram.phylo from dendextend, not exported...
-	
+		return(as.dendrogram((newPhylo))) #as.dendrogram.phylo from dendextend, not exported...
+
 		#return(newPhylo)
-		
-		return(newPhylo)
 	}
 	else return(NULL)
 }
 
+
+
 #' @import dendextend 
 # (Couldn't importFrom because the as.dendrogram.hclust was not exported)
+
+.makeFakeBinary<-function(tipNames,edgeLength=0){
+	newPhylo<-list()
+	n<-length(tipNames)
+	if(n>1){
+		if(n>2){
+			newPhylo$edge<-cbind(seq(from=n+1,to=n+(n-1)-1,by=1),seq(from=n+2,to=n+(n-1),by=1))
+			newPhylo$edge<-rbind(newPhylo$edge,cbind(n+1:(n-1),1:(n-1)))
+			newPhylo$edge<-rbind(newPhylo$edge,c(n+n-1,n))
+		}
+		else if(n==2){
+			newPhylo$edge<-rbind(c(3,1),c(3,2))		
+		}
+		newPhylo$tip.label<-tipNames
+		newPhylo$Nnode<-(n-1)
+		newPhylo$edge.length<-rep(edgeLength,length=nrow(newPhylo$edge))
+		
+	}
+	else{
+		if(n==1){
+			newPhylo<-list()
+			newPhylo$edge<-matrix(NA,nrow=0,ncol=2)
+			newPhylo$tip.label<-tipNames
+			newPhylo$edge.length<-0
+			newPhylo$Nnode<-0
+		}
+		
+		else stop("coding error -- zero or less length tipNames")
+	}
+	class(newPhylo)<-"phylo"
+	return(newPhylo)
+}
 
 .mergePhylo<-function(tree1,tree2,mergeEdgeLength){
 	n1<-length(tree1$tip.label)
@@ -328,7 +295,7 @@
 		newPhylo$edge.length<-c(tree1$edge.length,rep(mergeEdgeLength,2))
 		newPhylo$Nnode<-m1+1
 	}
-  class(newPhylo)<-"phylo" 
+  class(newPhylo)<-"phylo"
 	return(newPhylo)
 	
 }
@@ -361,6 +328,7 @@
 
 #tipTrees should be list of trees in same order as tips in mainTree
 #assumes rooted tree
+#single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length<-NULL
 .addTreesToTips<-function(mainTree,tipTrees){
 	N<-length(mainTree$tip.label)
 	M<-mainTree$Nnode
@@ -368,46 +336,64 @@
 	if(length(tipTrees)!=N) stop("coding error -- length of list of trees must match number of tips in main Tree")
 	
 	#check valid phylo objects
-	if(!all(sapply(tipTrees,class)=="phylo")) stop("coding error -- each of the new trees must be of class phylo")
-	check<-sapply(tipTrees,.testPhyloObject,verbose=FALSE)
-	check<-.testPhyloObject(mainTree)
+	isPhylo<-sapply(tipTrees,class)=="phylo"
+	if(!all(isPhylo)) stop("coding error -- each of the new trees must be of class phylo")
+	# check<-sapply(tipTrees,.testPhyloObject,verbose=FALSE)
+	# check<-.testPhyloObject(mainTree)
+	
+	isSingle<-sapply(tipTrees,function(x){nrow(x$edge)==0})
 	
 	nVec<-sapply(tipTrees,function(x){length(x$tip.label)})
 	mVec<-sapply(tipTrees,function(x){x$Nnode})
-
+  cumSingle<-c(0,cumsum(as.numeric(isSingle))) #counts how many clusters/tips on main tree were singleton before i
+	cumN<-c(0,cumsum(nVec))
+	cumM<-c(0,cumsum(pmax(mVec-1,0))) #cumulative number of non-root internal
+	#don't need the last entry.
+	cumSingle<-head(cumSingle,-1) 
+	cumN<-head(cumN,-1) 
+	cumM<-head(cumM,-1) 
 	##############
 	#change mainTree edge matrix
 	##############
 	whRoot<-which(mainTree$edge==N+1)
 	whInternal<-which(mainTree$edge>N)
-	whTips<-which(mainTree$edge<=N)
 	#1) inner add sum(nVec)-N (including root)
 	#note root becomes sum(nVec)+1, and last internal edge should be sum(nVec)+M
 	mainTree$edge[whInternal]<-mainTree$edge[whInternal]-N+sum(nVec)
-	#2) tips add sum(nVec)+M so now internal edges
-	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M
+	#2) tips add sum(nVec)+M so now internal edges  -- except those that will be continue being tip because singleton added!
+	whSingle<-which(mainTree$edge%in% which(isSingle))
+	whTips<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle))
+	# main tree tips that are not single get consecutive numbers
+	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[!isSingle]
+	if(length(whSingle)>0) mainTree$edge[whSingle]<-cumN[isSingle]+1
 	
 	##############
 	#change treeList edgeMatrix
 	##############
-	cumN<-c(0,cumsum(nVec))
-	cumM<-c(0,cumsum(mVec))
 	tipTrees<-lapply(1:length(tipTrees),function(ii){
 		n<-nVec[[ii]]
 		x<-tipTrees[[ii]]
-		whInternal<-which(x$edge>n+1)
-		whRoot<-which(x$edge==n+1)
-		whTips<-which(x$edge<=n)
-		x$edge[whRoot]<-ii+sum(nVec)+M
-		x$edge[whInternal]<-x$edge[whInternal]-(n+1)+ii+sum(nVec)+M+(cumM[ii]-1)
-		x$edge[whTips]<-x$edge[whTips]+ cumN[ii]
+		if(nrow(x$edge)>0){
+			whInternal<-which(x$edge>n+1)
+			whRoot<-which(x$edge==n+1)
+			whTips<-which(x$edge<=n)
+			x$edge[whRoot]<-ii+sum(nVec)+M-cumSingle[ii]
+			# give new numbers to internal:
+			# 1) subtract n[i]-1 to non-root internal nodes go from 1:(m[i]-1)
+			# 2) + no. new tips (sum(nVec))
+			# 3) + no. internal of main tree (M) 
+			# 4) + total no. tips of main that become internal (i.e. not singletons) (sum(as.numeric(!isSingle)))
+			# 5) + no. non-root internal of the ii-1 trees already added (cumM[ii])
+			x$edge[whInternal]<-x$edge[whInternal]-(n+1)+ sum(nVec) + M  + sum(as.numeric(!isSingle)) + cumM[ii]
+			x$edge[whTips]<-x$edge[whTips]+ cumN[ii]
+		}
 		return(x)
 	})
 	
 	newPhylo<-list()
-	newPhylo$edge<-do.call("rbind",c(lapply(tipTrees,.subset2,"edge"),list(mainTree$edge)))
+	newPhylo$edge<-do.call("rbind",c(lapply(tipTrees[!isSingle],.subset2,"edge"),list(mainTree$edge)))
 	newPhylo$tip.label<-do.call("c",lapply(tipTrees,.subset2,"tip.label"))
-	newPhylo$edgeLength<-do.call("c",c(lapply(tipTrees,.subset2,"edge.length"),list(mainTree$edge.length)))
+	newPhylo$edge.length<-do.call("c",c(lapply(tipTrees[!isSingle],.subset2,"edge.length"),list(mainTree$edge.length)))
 	newPhylo$Nnode<-mainTree$Nnode+sum(sapply(tipTrees,.subset2,"Nnode"))
 	class(newPhylo)<-"phylo"
 	return(newPhylo)	
@@ -457,3 +443,88 @@
 	}
 	
 }
+
+
+
+# #---------
+# 		  #old code that made non-binary tree by hand.
+# #---------
+# 		  tab<-table(cl[whPos])
+# 		  newPhylo<-list()
+#
+# 		  if(any(tab==1)){
+# 	cluster1<-names(tab)[tab==1]
+# 	nCluster1<-length(cluster1)
+#   mClToTip1<-match(cluster1,phyloObj$tip.label) #find their tip number in matrix
+# 	tipEdges1<-phyloObj$edge[phyloObj$edge[,2]==mClToTip1, ,drop=FALSE] #get the edge matrix for them
+# 	mToPositiveCl<-match(tipEdges1[,2],cl[whPos])
+# 	tipEdges1[,2]<-mToPositiveCl #change their tip number to their index in positive cluster vector
+#
+# }
+# else{
+# 	nCluster1<-0
+# 	tipEdges1<-matrix(0,nrow=0,ncol=2)
+# }
+# if(any(tab>1)){
+# 	clusterGr1<-names(tab)[tab>1]
+# 	mGr1<-which(as.character(cl[whPos]) %in% clusterGr1)
+#   newPhylo$edge<-cbind(cl[whPos][mGr1],mGr1)
+#
+#   mClToTip<-match(as.character(newPhylo$edge[,1]),phyloObj$tip.label) #gives for each cluster, tip number in old cluster tree
+# 	if(any(is.na(mClToTip))) stop("coding error -- some of tip labels in phylo object do not match cluster names")
+#   newPhylo$edge[,1]<-mClToTip
+# 	newPhylo$edge<-rbind(newPhylo$edge,tipEdges1)
+# }
+# #---------
+# ##Some tests -- might drop them for speed later
+# #---------
+# if(any(newPhylo$edge[,2]>length(cl[whPos]))) stop("coding error -- gave tip values greater than number of assigned samples")
+# if(nrow(newPhylo$edge)!=length(cl[whPos])) stop("coding error -- did not assign all assigned samples to tip of tree")
+# if(length(newPhylo$edge[,2])!=length(unique(newPhylo$edge[,2]))) stop("coding error -- did not give unique ids to tips of tree")
+#
+# #-------
+# #make tips have values larger than root
+# #-------
+# internalEdges<-phyloObj$edge
+# nOrigTips<-length(phyloObj$tip.label)
+# maxOrig<-nOrigTips+phyloObj$Nnode
+# whTipInternal<-internalEdges[,2]<=nOrigTips
+# internalEdges[whTipInternal,2]<-internalEdges[whTipInternal,2]+maxOrig
+# #fix up the newPhylo ones to have same number (again, for speed if fix to begin with?)
+# whTipNew<-newPhylo$edge[,1]<=nOrigTips
+# newPhylo$edge[whTipNew,1]<-newPhylo$edge[whTipNew,1]+maxOrig
+#
+#
+# if(any(tab==1)){
+# 	#have to remove those edges that went to clusters of size 1, because won't be internal edges.
+# 	internalEdges<-internalEdges[ phyloObj$edge[,2]!=mClToTip1, ,drop=FALSE]
+# }
+# #also need to renumber everything, because the tip lost will leave gap... Need to keep the same order.
+# oldValues<-sort( unique( as.numeric( internalEdges )))
+# newValues<-1:length(oldValues)
+# m1<-match(internalEdges[,1],oldValues)
+# m2<-match(internalEdges[,2],oldValues)
+# internalEdges<-cbind(newValues[m1],newValues[m2])
+#
+# #now fix up the edge matrix too; speed wise, is it faster to do it before? More complicated to code it before...
+# newPhylo$edge[,1]<-newValues[match(newPhylo$edge[,1],oldValues)]
+# internalEdges<-internalEdges+length(cl[whPos])
+# newPhylo$edge[,1]<-newPhylo$edge[,1]+length(cl[whPos])
+# newPhylo$edge<-rbind(internalEdges,newPhylo$edge)
+#
+# 		  if(!is.null(sampleNames)) newPhylo$tip.label<-sampleNames[whPos]
+# 		  else{
+# 		      newPhylo$tip.label<-paste("Sample",whPos)
+# 		    }
+# 		  newPhylo$Nnode<-phyloObj$Nnode+length(phyloObj$tip.label)-nCluster1
+# if("edge.length" %in% names(phyloObj)){
+# 	oldEdgeLength<-phyloObj$edge.length
+# 	if( any(tab==1) ) oldEdgeLength<-oldEdgeLength[phyloObj$edge[,2]!=mClToTip1]
+# 	newPhylo$edge.length<-rep(sampleEdgeLength,length=length(newPhylo$tip.label))
+# 	if(any(tab==1)){ #need get back length to single-sample cluster
+# 		oldEdgeLength1<-phyloObj$edge.length[phyloObj$edge[,2]==mClToTip1]
+# 		newPhylo$edge.length[(length(newPhylo$edge.length)-nCluster1+1):length(newPhylo$edge.length)]<-oldEdgeLength1
+# 	}
+# 	newPhylo$edge.length<-c(oldEdgeLength,newPhylo$edge.length)
+# }
+# 		  class(newPhylo)<-"phylo"
