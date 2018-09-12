@@ -102,116 +102,10 @@
 }
 
 
-#Note, in long term, want to be able to subset the CE object without tossing the dendrogram! How does this work if you completely lose a cluster in a subset?
-
-## Large things it makes:
-# 2 vectors roughly size of n
-# phylo tree: n(n-1)/2 x 2 matrix (edge matrix), n length vector of characters (tip labels), n(n-1)/2 length vector (edge lengths)
-.makeSampleDendro<-function(x,clusterDendro, cl,type=c("dist","mat"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=1,calculateSample=TRUE){
-	unassignedSamples<-match.arg(unassignedSamples)
-	type<-match.arg(type)
-	sampleNames<-if(type=="mat") colnames(x) else attributes(x)$Labels
-  if(calculateSample){
-	  whPos<-which(cl>0) #this is copy close to length of n
-		if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
-	  #loses internal node names. Don't think that matters.
-	  phyloObj <- .makePhylobaseTree(x=clusterDendro, "dendro",isSamples=FALSE,returnOnlyPhylo = TRUE)
-		nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
-
-		###########################
-		## I. Make outlier tree if needed
-		###########################
-		outbranchHclust<-NULL
-		whNeg<-which(cl<0) #technically should be able to do with whPos, but a pain
-		outNames<- if(!is.null(sampleNames)) sampleNames[whNeg] else paste("OutSample",whNeg)
-		if(length(whNeg)>0){
-      if(unassignedSamples=="outgroup" | length(whPos)==0){
-				#--------
-				# 1. Make outlier tree 
-				#--------
-				if(nSamples > 5 | length(whPos)==0){
-				  outlierDat <- if(type=="mat") x[,-whPos,drop=FALSE] else as.matrix(x)[-whPos,-whPos,drop=FALSE]
-					outbranchHclust <- if(type=="mat") stats::hclust(dist(t(outlierDat))^2) else  stats::hclust(as.dist(outlierDat))
-					outTree<- .makePhylobaseTree(x=outbranchHclust, "hclust",isSamples=FALSE,returnOnlyPhylo = TRUE) #isSamples doesn't matter if only returningPhylo
-					if(length(outTree$tip.label)!=length(whNeg)) stop("coding error - given hclust doesn't have correct number of tips.")
-				}
-				else{ #construct tree with just root and tips:
-					outTree<-list()
-					nOut<-length(whNeg)
-					outTree$edge<-cbind(rep(nOut+1,length=nOut),1:nOut)
-					outTree$tip.label<-outNames
-					outTree$edge.length<-rep(0,length=nOut)
-					outTree$Nnode<-1
-					class(outTree)<-"phylo"
-				}
-			}
-	    if(unassignedSamples=="cluster"){
-				if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
-				#code from assignUnassigned
-		    clFactor <- factor(cl[-whNeg])
-				medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))
-		    rownames(medoids) <- levels(clFactor)
-				classif<-.genericClassify(x=x[,whNeg],centers=medoids) 
-				cl[whNeg]<-classif
-				whPos<-which(cl>0)
-				whNeg<-which(cl<0)
-				if(length(whPos)!=length(cl)) stop("coding error -- predicting unassigned missed some")
-				unassignedSamples<-"remove"
-	    }			
-    }      
-
-		###################
-		## II. Make tree with main samples:
-		###################
-		if(length(whPos)>0){
-			#---------
-		  #make list of phylo trees for each cluster:
-			#---------
-			fakePhyloList<-tapply(sampleNames[whPos],as.factor(cl[whPos]),.makeFakeBinary,simplify=FALSE)
-			
-			#need to reorder so in order of the tips of phyloObj
-			m<-match(phyloObj$tip.label,names(fakePhyloList))
-			if(any(is.na(m))) stop("coding error -- names in dendrogram of clusters don't match cluster ids")
-			fakePhyloList<-fakePhyloList[m]
-			newPhylo<-.addTreesToTips(mainTree=phyloObj,tipTrees=fakePhyloList)
-		}
-		else newPhylo<-outTree #need to return dendrogram, but get back to that...
-			
-
-		###################
-		## III. Add outlier samples if unassignedSamples=="outgroup"
-		###################
-		if(unassignedSamples == "outgroup" & length(whNeg)>0 & length(whPos)>0){
-			if(length(whNeg)>1){
-				newPhylo<-.mergePhylo(tree1=newPhylo,tree2=outTree,mergeEdgeLength=outbranchLength)
-			}
-			else{
-				newPhylo<-.mergePhylo(tree1=newPhylo, tree2=outNames, mergeEdgeLength=outbranchLength)
-			}
-		}
-		
-		###################
-		## IV. Convert to dendrogram format -- requires binary!
-		###################
-		
-		# ##Return as dendrogram (for now....)
-		newPhylo<-try(as(newPhylo,"phylo4"),FALSE)
-		if(inherits(newPhylo, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",newPhylo))
-		newPhylo<-suppressWarnings(as(.force.ultrametric(newPhylo),"phylo"))
-		# #need to convert back to phylo?
-		return(as.dendrogram((newPhylo))) #as.dendrogram.phylo from dendextend, not exported...
-
-		#return(newPhylo)
-	}
-	else return(NULL)
-}
 
 
-
-#' @import dendextend 
-# (Couldn't importFrom because the as.dendrogram.hclust was not exported)
-
-.makeFakeBinary<-function(tipNames,edgeLength=0){
+###Note, cluster nodes DEFINED as those whose descendants are of length>0. So root of these fake binary trees needs to be > 0
+.makeFakeBinary<-function(tipNames,rootEdgeLength=1,edgeLength=0){
 	newPhylo<-list()
 	n<-length(tipNames)
 	if(n>1){
@@ -226,7 +120,8 @@
 		newPhylo$tip.label<-tipNames
 		newPhylo$Nnode<-(n-1)
 		newPhylo$edge.length<-rep(edgeLength,length=nrow(newPhylo$edge))
-		
+		whEdge<-which(newPhylo$edge==n+1,arr.ind = TRUE)
+		newPhylo$edge.length[whEdge[,"row"]]<-rootEdgeLength
 	}
 	else{
 		if(n==1){
