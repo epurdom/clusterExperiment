@@ -4,23 +4,38 @@
 #' @importFrom phylobase edgeLength rootNode descendants nodeLabels
 #' @importFrom dendextend as.phylo.dendrogram
 #' @importFrom ape as.phylo
-.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
-  type<-match.arg(type,c("hclust","dendro"))
+.makePhylobaseTree<-function(x,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
+  type<-class(x)#match.arg(type,c("hclust","dendro"))
   if(type=="hclust"){
     #first into phylo from ape package
     tempPhylo<-try(ape::as.phylo(x),FALSE)
     if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package. Reported error from ape package:",tempPhylo)
   }
-  if(type=="dendro"){
+  if(type=="dendrogram"){
     tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
     if(inherits(tempPhylo, "try-error")) stop(paste("the dendrogram object cannot be converted to a phylo class with the methods of 'dendextend' package. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
   }
-  if(returnOnlyPhylo) return(tempPhylo) #don't do the rest of fixing up...
+  if(type=="phylo") tempPhylo<-x
+
+	  #put this in because some zero edges are becoming very small negative values...
+  if(any(tempPhylo$edge.length<0)){
+	  if(all(tempPhylo$edge.length> -1e-5)) tempPhylo$edge.length[tempPhylo$edge.length<0]<-0
+	  else stop("coding error -- given object results in negative edge lengths")
+  }
+  if(returnOnlyPhylo ) return(tempPhylo) #don't do the rest of fixing up...
+
   phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
   if(inherits(phylo4Obj, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
   
   if(isSamples){
-    #NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
+	  ###Adds (in uniform way) the node names:
+	  ### "Root"
+	  ### "NodeX" where X is a number *to those NOT in outgroup*
+	  ### "MissingNodeX" where X is a number *to those IN outgroup*
+#	  browser()
+    #NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster should have edge length zero)
+	#Moreover, they are distinguished from the -1/-2 outgroup by the fact that the tips of the -1/-2 DO HAVE non-zero edges to them. 
+	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
     nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ which(phylobase::edgeLength(phylo4Obj)>0) ] #doesn't include root
     trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
     if(outbranch){#remove root from labeling if -1 outbranch
@@ -120,15 +135,17 @@
 		newPhylo$tip.label<-tipNames
 		newPhylo$Nnode<-(n-1)
 		newPhylo$edge.length<-rep(edgeLength,length=nrow(newPhylo$edge))
-		whEdge<-which(newPhylo$edge==n+1,arr.ind = TRUE)
-		newPhylo$edge.length[whEdge[,"row"]]<-rootEdgeLength
+		whRoot<-which(newPhylo$edge==n+1,arr.ind = TRUE)
+		if(nrow(whRoot)>2) stop("coding error -- found more than two descendants of root")
+		if(any(whRoot[,"col"]==2)) stop("coding error -- found root as a descendant")
+		newPhylo$edge.length[whRoot[,"row"]]<-rootEdgeLength
 	}
 	else{
 		if(n==1){
 			newPhylo<-list()
 			newPhylo$edge<-matrix(NA,nrow=0,ncol=2)
 			newPhylo$tip.label<-tipNames
-			newPhylo$edge.length<-0
+			newPhylo$edge.length<-rootEdgeLength
 			newPhylo$Nnode<-0
 		}
 		
@@ -138,19 +155,37 @@
 	return(newPhylo)
 }
 
-.mergePhylo<-function(tree1,tree2,mergeEdgeLength){
+.mergePhylo<-function(tree1,tree2,mergeEdgeLength,balanceLength=TRUE){
+	#if balanceLength==TRUE, want to rebalance so that the two trees have same node height -- without adding to 0-length edges!
 	n1<-length(tree1$tip.label)
 	m1<-tree1$Nnode
-	isTree<-is.list(tree2) & class(tree2)=="phylo"
+	isTree<-is.list(tree2) & class(tree2)=="phylo" #whether tree2 merging is singleton or actual tree (different protocal from .addTipsToTrees...)
+	mergeEdgeLength1<-mergeEdgeLength2<-mergeEdgeLength
+	depth1<-max(node.depth.edgelength(tree1))	
 	if(isTree){
 		if(is.null(tree1$edge.length) || is.null(tree1$edge.length) ) stop("must have edge length on both trees")
 		n2<-length(tree2$tip.label)
 		m2<-tree2$Nnode
+		if(balanceLength==TRUE){
+			depth2<-max(node.depth.edgelength(tree2))	
+			finalDepth<-max(depth1,depth2)
+			
+			if(depth1==0){
+				depth1<-1
+				mergeEdgeLength1<-finalDepth+mergeEdgeLength
+			}
+			if(depth2==0){
+				depth2<-1
+				mergeEdgeLength2<-finalDepth+mergeEdgeLength	
+			}
+			tree1$edge.length<-tree1$edge.length/depth1*finalDepth
+			tree2$edge.length<-tree2$edge.length/depth2*finalDepth
+		}
 	}else{
 		if(is.null(tree1$edge.length)) stop("must have edge length to merge to tree")
 		if(!is.vector(tree2) || length(tree2)!=1) stop("coding error -- trying to merge add more than 1 tip to tree")
-			
-			n2<-1
+		n2<-1
+		mergeEdgeLength2<-depth1+mergeEdgeLength
 	}
 	newPhylo<-list()
 	#3) Tree 1 inner nodes: add n2+1
@@ -175,7 +210,7 @@
 		#6) edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
 		#should there be check that there is edge length?
 		
-		newPhylo$edge.length<-c(tree1$edge.length,tree2$edge.length,rep(mergeEdgeLength,2))
+		newPhylo$edge.length<-c(tree1$edge.length,tree2$edge.length,c(mergeEdgeLength1,mergeEdgeLength2))
 		newPhylo$Nnode<-m1+m2+1
 	}
 	else{
@@ -187,7 +222,7 @@
 		newPhylo$tip.label<-c(tree1$tip.label,tree2)
 		
 		#6) 
-		newPhylo$edge.length<-c(tree1$edge.length,rep(mergeEdgeLength,2))
+		newPhylo$edge.length<-c(tree1$edge.length,c(mergeEdgeLength1,mergeEdgeLength2))
 		newPhylo$Nnode<-m1+1
 	}
   class(newPhylo)<-"phylo"
@@ -196,34 +231,10 @@
 }
 
 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
-#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
-.force.ultrametric<-function(tree){
-	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-
-	allTips<-phylobase::tipLabels(tree)
-	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
-	maxD<-max(depthToTips)
-	addValue<-maxD-depthToTips
-	allLen<-phylobase::edgeLength(tree)
-  edgeMat<-phylobase::edges(tree)
-  tipIds<-as.numeric(names(allTips))
-  m<-match(tipIds,edgeMat[,2])
-  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
-
-  #check didn't do something stupid:
-  checkTipEdges<-phylobase::edgeId(tree,type="tip")
-  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
-
-  #replace with new edges:
-	allLen[edgeIds]<-allLen[edgeIds]+addValue
-	phylobase::edgeLength(tree)<-allLen
-	return(tree) #returns phylo4 tree
-}
 
 #tipTrees should be list of trees in same order as tips in mainTree
 #assumes rooted tree
-#single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length<-NULL
+#single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length=value to be added to length of cluster node
 .addTreesToTips<-function(mainTree,tipTrees){
 	N<-length(mainTree$tip.label)
 	M<-mainTree$Nnode
@@ -236,17 +247,18 @@
 	# check<-sapply(tipTrees,.testPhyloObject,verbose=FALSE)
 	# check<-.testPhyloObject(mainTree)
 	
-	isSingle<-sapply(tipTrees,function(x){nrow(x$edge)==0})
 	
 	nVec<-sapply(tipTrees,function(x){length(x$tip.label)})
 	mVec<-sapply(tipTrees,function(x){x$Nnode})
-  cumSingle<-c(0,cumsum(as.numeric(isSingle))) #counts how many clusters/tips on main tree were singleton before i
+	isSingle<-sapply(tipTrees,function(x){nrow(x$edge)==0})
 	cumN<-c(0,cumsum(nVec))
-	cumM<-c(0,cumsum(pmax(mVec-1,0))) #cumulative number of non-root internal
+	cumM<-c(0,cumsum(pmax(mVec-1,0))) #cumulative number of NON-ROOT internal
+	cumSingle<-c(0,cumsum(as.numeric(isSingle))) #counts how many clusters/tips on main tree were singleton before i
 	#don't need the last entry.
-	cumSingle<-head(cumSingle,-1) 
 	cumN<-head(cumN,-1) 
 	cumM<-head(cumM,-1) 
+	cumSingle<-head(cumSingle,-1) 
+	
 	##############
 	#change mainTree edge matrix
 	##############
@@ -256,12 +268,18 @@
 	#note root becomes sum(nVec)+1, and last internal edge should be sum(nVec)+M
 	mainTree$edge[whInternal]<-mainTree$edge[whInternal]-N+sum(nVec)
 	#2) tips add sum(nVec)+M so now internal edges  -- except those that will be continue being tip because singleton added!
-	whSingle<-which(mainTree$edge%in% which(isSingle))
 	whTips<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle))
 	# main tree tips that are not single get consecutive numbers
 	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[!isSingle]
-	if(length(whSingle)>0) mainTree$edge[whSingle]<-cumN[isSingle]+1
+	whSingle<-match(which(isSingle),mainTree$edge[,2])
+	if(sum(isSingle)>0){
+		mainTree$edge[whSingle,2]<-cumN[isSingle]+1
 	
+	#Note that singletons, unlike others, short value of rootEdgeLength to their edge length, comparatively, when made with fakeBinaryTrees function. (and rootEdgeLength was added to deal with identification of cluster problem)
+	#Need to add to those
+		addValues<-sapply(tipTrees[isSingle],.subset2,"edge.length")
+		mainTree$edge.length[whSingle]<-mainTree$edge.length[whSingle]+addValues
+	}
 	##############
 	#change treeList edgeMatrix
 	##############
@@ -339,6 +357,30 @@
 	
 }
 
+#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
+#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
+.force.ultrametric<-function(tree){
+	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
+
+	allTips<-phylobase::tipLabels(tree)
+	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
+	maxD<-max(depthToTips)
+	addValue<-maxD-depthToTips
+	allLen<-phylobase::edgeLength(tree)
+  edgeMat<-phylobase::edges(tree)
+  tipIds<-as.numeric(names(allTips))
+  m<-match(tipIds,edgeMat[,2])
+  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
+
+  #check didn't do something stupid:
+  checkTipEdges<-phylobase::edgeId(tree,type="tip")
+  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
+
+  #replace with new edges:
+	allLen[edgeIds]<-allLen[edgeIds]+addValue
+	phylobase::edgeLength(tree)<-allLen
+	return(tree) #returns phylo4 tree
+}
 
 
 # #---------

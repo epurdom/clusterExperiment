@@ -471,7 +471,7 @@ setMethod(
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
   clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
-  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
+  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters)
   newPhylo4<-phylo4Obj
   if(names(rootNode(phylo4Obj)) %in% clusterNode){
     stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")

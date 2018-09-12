@@ -306,7 +306,7 @@ setMethod(
     ############
     ### #go up tree and merge clusters
     ############
-    phylo4Obj <- .makePhylobaseTree(dendro, "dendro")
+    phylo4Obj <- .makePhylobaseTree(dendro)
     if(mergeMethod != "none"){
 			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
       nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff

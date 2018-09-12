@@ -141,7 +141,7 @@
   
   ##Could this be just done by cut with hierarchical cophenic value? Should make it an option to do that. Probably a lot faster...
   method<-evalClusterMethod
-  phylo4Obj<-.makePhylobaseTree(hDmat,"hclust")
+  phylo4Obj<-.makePhylobaseTree(hDmat)
   allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
   #each internal node (including root) calculate whether passes value of alpha or not
   nodesToCheck<-phylobase::rootNode(phylo4Obj)
