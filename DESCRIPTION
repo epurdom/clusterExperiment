@@ -42,7 +42,7 @@ Imports:
 		edgeR,
 		scales,
 		zinbwave
-CommentSuggests:
+Suggests:
   BiocStyle,
   knitr,
   testthat,
