@@ -154,7 +154,7 @@
 	class(newPhylo)<-"phylo"
 	return(newPhylo)
 }
-
+#' @importFrom ape node.depth.edgelength
 .mergePhylo<-function(tree1,tree2,mergeEdgeLength,balanceLength=TRUE){
 	#if balanceLength==TRUE, want to rebalance so that the two trees have same node height -- without adding to 0-length edges!
 	n1<-length(tree1$tip.label)
