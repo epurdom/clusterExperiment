@@ -16,7 +16,7 @@ Depends:
     SingleCellExperiment,
 	SummarizedExperiment,
 	BiocGenerics
-CommentImports:
+Imports:
 	methods,
 	NMF,
 	RColorBrewer,
@@ -42,7 +42,7 @@ CommentImports:
 	edgeR,
 	scales,
 	zinbwave
-CommentSuggests:
+Suggests:
 	BiocStyle,
 	knitr,
 	testthat,
