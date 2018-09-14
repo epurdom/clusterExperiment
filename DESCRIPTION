@@ -16,7 +16,7 @@ Depends:
     SingleCellExperiment,
 	SummarizedExperiment,
 	BiocGenerics
-CommentImports:
+Imports:
     methods,
     NMF,
     RColorBrewer,
@@ -31,7 +31,7 @@ CommentImports:
     matrixStats,
     graphics,
     parallel,
-   RSpectra,
+    RSpectra,
 	  kernlab,
 	  stringr,
 	  S4Vectors,
@@ -42,7 +42,7 @@ CommentImports:
 		edgeR,
 		scales,
 		zinbwave
-CommentSuggests:
+Suggests:
   BiocStyle,
   knitr,
   testthat,
