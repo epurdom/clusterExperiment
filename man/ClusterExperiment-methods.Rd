@@ -24,9 +24,7 @@
 \alias{clusterMatrix,ClusterExperiment,missing-method}
 \alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,numeric-method}
-\alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,character-method}
-\alias{clusterMatrix}
 \alias{primaryCluster,ClusterExperiment-method}
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
@@ -89,7 +87,8 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrixNamed}{ClusterExperiment}(x, whichClusters = "all")
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x,
+  whichClusters = "all")
 
 \S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
 
@@ -112,7 +111,8 @@
 \S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
   whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
-\S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
+
+  \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
