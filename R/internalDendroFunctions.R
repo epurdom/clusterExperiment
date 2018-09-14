@@ -154,6 +154,7 @@
 	class(newPhylo)<-"phylo"
 	return(newPhylo)
 }
+
 #' @importFrom ape node.depth.edgelength
 .mergePhylo<-function(tree1,tree2,mergeEdgeLength,balanceLength=TRUE){
 	#if balanceLength==TRUE, want to rebalance so that the two trees have same node height -- without adding to 0-length edges!
@@ -161,13 +162,13 @@
 	m1<-tree1$Nnode
 	isTree<-is.list(tree2) & class(tree2)=="phylo" #whether tree2 merging is singleton or actual tree (different protocal from .addTipsToTrees...)
 	mergeEdgeLength1<-mergeEdgeLength2<-mergeEdgeLength
-	depth1<-max(node.depth.edgelength(tree1))	
+	depth1<-max(ape::node.depth.edgelength(tree1))	
 	if(isTree){
 		if(is.null(tree1$edge.length) || is.null(tree1$edge.length) ) stop("must have edge length on both trees")
 		n2<-length(tree2$tip.label)
 		m2<-tree2$Nnode
 		if(balanceLength==TRUE){
-			depth2<-max(node.depth.edgelength(tree2))	
+			depth2<-max(ape::node.depth.edgelength(tree2))	
 			finalDepth<-max(depth1,depth2)
 			
 			if(depth1==0){
@@ -358,8 +359,8 @@
 }
 
 #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
-#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 .force.ultrametric<-function(tree){
+	##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
 
 	allTips<-phylobase::tipLabels(tree)
