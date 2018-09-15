@@ -7,9 +7,10 @@
 \alias{getBestFeatures,ClusterExperiment-method}
 \title{Function for finding best features associated with clusters}
 \usage{
-\S4method{getBestFeatures}{matrixOrHDF5}(x, cluster, contrastType = c("F",
-  "Dendro", "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  weights = NULL, contrastAdj = c("All", "PerContrast", "AfterF"),
+\S4method{getBestFeatures}{matrixOrHDF5}(x, cluster,
+  contrastType = c("F", "Dendro", "Pairs", "OneAgainstAll"),
+  dendro = NULL, pairMat = NULL, weights = NULL,
+  contrastAdj = c("All", "PerContrast", "AfterF"),
   DEMethod = c("edgeR", "limma", "limma-voom"), dgeArgs = NULL, ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",

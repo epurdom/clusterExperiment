@@ -7,8 +7,8 @@
 \alias{plotFeatureScatter,ClusterExperiment,numeric-method}
 \title{Plot scatter plot of feature values colored by cluster}
 \usage{
-\S4method{plotFeatureScatter}{ClusterExperiment,character}(object, features,
-  ...)
+\S4method{plotFeatureScatter}{ClusterExperiment,character}(object,
+  features, ...)
 
 \S4method{plotFeatureScatter}{ClusterExperiment,numeric}(object, features,
   whichCluster, plotUnassigned = TRUE, unassignedColor = "grey",

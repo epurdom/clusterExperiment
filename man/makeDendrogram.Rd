@@ -10,11 +10,12 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", reduceMethod = "mad",
-  nDims = defaultNDims(x, reduceMethod), filterIgnoresUnassigned = TRUE,
-  unassignedSamples = c("outgroup", "cluster"), whichAssay = 1, ...)
+  nDims = defaultNDims(x, reduceMethod),
+  filterIgnoresUnassigned = TRUE, unassignedSamples = c("outgroup",
+  "cluster"), whichAssay = 1, ...)
 
-\S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
-  "cluster", "remove"), ...)
+\S4method{makeDendrogram}{dist}(x, cluster,
+  unassignedSamples = c("outgroup", "cluster", "remove"), ...)
 
 \S4method{makeDendrogram}{matrixOrHDF5}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"), ...)

@@ -14,20 +14,25 @@
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
 \title{Functions to subset ClusterExperiment Objects}
 \usage{
-\S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters, ...)
+\S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters,
+  ...)
 
 \S4method{removeClusterings}{ClusterExperiment,numeric}(x, whichClusters)
 
 \S4method{removeClusters}{ClusterExperiment,numeric}(x, whichCluster,
   clustersToRemove, makePrimary = FALSE, clusterLabels = NULL)
 
-\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster, ...)
+\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster,
+  ...)
 
-\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ...,
+  drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ...,
+  drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ...,
+  drop = TRUE)
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}

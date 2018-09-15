@@ -36,6 +36,7 @@
 #'   \code{TRUE} option is only provided for debugging purposes.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all
 #'   of the clusterings from the steps of RSEC
+#' @details Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
 #' @inheritParams clusterMany
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method
@@ -64,13 +65,15 @@ setMethod(
   f = "RSEC",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
-		passedArgs<-list(...)
-		if("isCount" %in% names(passedArgs) & !"mergeDEMethod" %in% names(passedArgs)){
-			if(passedArgs$isCount) passedArgs$mergeDEMethod<-"limma-voom"
-			else passedArgs$mergeDEMethod<-"limma"
-		}
+	passedArgs<-list(...)
+	if(!"mergeDEMethod" %in% names(passedArgs) & is.na(x@merge_method) & "isCount" %in% names(passedArgs)){
+		if(passedArgs$isCount) passedArgs$mergeDEMethod<-"limma-voom"
+		else passedArgs$mergeDEMethod<-"limma"
+		# wh<-which(names(passedArgs)=="isCount")
+# 		passedArgs<-passedArgs[-wh]
+	}
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
-	  	if(any(c("transFun","isCount") %in% names(list(...))))
+	  	if(any(c("transFun","isCount") %in% names(passedArgs)))
 	  		warning("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' has no effect other than to set a default for 'mergeDEMethod' (if not set by user).")
       newObj <- do.call("RSEC",c(list(x=as(x,"SingleCellExperiment"),  transFun=transformation(x)),passedArgs))
       ##Check if pipeline already ran previously and if so increase
@@ -239,7 +242,18 @@ setMethod(
 				if("mergeDEMethod" %in% names(passedArgs)){
 					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
 					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
-
+					# Browse[2]> args1
+					# $whichAssay
+					# [1] 1
+					#
+					# $mergeMethod
+					# [1] "JC"
+					#
+					# $cutoff
+					# [1] 0.05
+					#
+					# $DEMethod
+					# if (isCount) "limma-voom" else "limma"
 				}
 				else{
 					mergeTry<-"mergeDEMethod argument is missing with no default"

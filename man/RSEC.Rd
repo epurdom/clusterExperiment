@@ -9,9 +9,7 @@
 \alias{RSEC,SingleCellExperiment-method}
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
-\alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrixOrHDF5-method}
-\alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
@@ -23,17 +21,18 @@
 
 \S4method{RSEC}{matrixOrHDF5}(x, ...)
 
-\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
-  reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
-  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
-  "reducedDims"), k0s = 4:15, subsample = TRUE, sequential = TRUE,
+\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE,
+  transFun = NULL, reduceMethod = "PCA",
+  nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
+  nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
+  k0s = 4:15, subsample = TRUE, sequential = TRUE,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
-  dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
-  mergeLogFCcutoff, mergeDEMethod = if (isCount) "limma-voom" else "limma",
-  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
-  seqArgs = NULL, whichAssay = 1, ncores = 1, random.seed = NULL,
-  stopOnErrors = FALSE, run = TRUE)
+  betas = 0.9, minSizes = 1, consensusProportion = 0.7,
+  consensusMinSize, dendroReduce, dendroNDims, mergeMethod = "adjP",
+  mergeCutoff, mergeLogFCcutoff, mergeDEMethod = if (isCount)
+  "limma-voom" else "limma", verbose = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
+  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -186,4 +185,7 @@ Implementation of the RSEC algorithm (Resampling-based
   Sequential Ensemble Clustering) for single cell sequencing data. This is a
   wrapper function around the existing ClusterExperiment workflow that
   results in the output of RSEC.
+}
+\details{
+Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
 }
