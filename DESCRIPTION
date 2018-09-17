@@ -25,7 +25,6 @@ Imports:
 	cluster,
 	stats,
 	limma,
-	dendextend,
 	howmany,
 	locfdr,
 	matrixStats,
