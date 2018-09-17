@@ -232,7 +232,8 @@ setMethod(
 		  phyloObj <- .makePhylobaseTree(x=clusterDendro,isSamples=FALSE,returnOnlyPhylo = TRUE)
 		  if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
 		nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
-
+		
+		
 		###########################
 		## I. Make outlier tree if needed
 		###########################
@@ -252,6 +253,8 @@ setMethod(
 			}
 			else{ #construct tree with just root and tips:
 				outTree<-.makeFakeBinary(tipNames=outNames,rootEdgeLength=1,edgeLength=.1)
+				#have to make it ultrametric -- since arbitrary doesn't matter.
+				outTree<-.force.ultrametric(outTree)
 					}
 		  }
 		    if(unassignedSamples=="cluster"){
@@ -308,7 +311,6 @@ setMethod(
 # 			if(inherits(newPhylo, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",newPhylo))
 			#newPhylo<-suppressWarnings(as(.force.ultrametric(newPhylo),"phylo"))
 			# #need to convert back to phylo?
-
 			newPhylo<-try(as.dendrogram((newPhylo)),FALSE)
 			if(inherits(newPhylo, "try-error")) stop("coding error -- could not convert back to dendrogram. Reported error from as.dendrogram:",newPhylo)
 			return(as.dendrogram((newPhylo))) #as.dendrogram.phylo from dendextend, not exported...

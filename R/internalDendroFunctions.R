@@ -119,7 +119,8 @@
 
 
 
-###Note, cluster nodes DEFINED as those whose descendants are of length>0. So root of these fake binary trees needs to be > 0
+###Note, cluster nodes DEFINED as those whose descendants are of length>0. So edge from root of these fake binary trees needs to be > 0, and rest =0 
+### But also use this to make fake binary when n<5 samples and need it to stay ultrametric. Here, the edgeLength>0 will make it not ultrametric! Sigh. I fix that issue after returned (i.e. not here)
 .makeFakeBinary<-function(tipNames,rootEdgeLength=1,edgeLength=0){
 	newPhylo<-list()
 	n<-length(tipNames)
@@ -370,26 +371,41 @@
 #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
 .force.ultrametric<-function(tree){
 	##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
-	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
+	#calculates, per tip, the amount missing and adds it to the tips.
+	if(inherits(tree,"phylo")){
+		depth<-ape::node.depth.edgelength(tree) #in order of all nodes
+		ntips<-length(tree$tip.label)
+		maxD<-max(depth[1:ntips])
+		addValue<-maxD-depth[1:ntips]
+		whTips<-match(1:ntips,tree$edge[,2])
+		tree$edge.length[whTips]<-tree$edge.length[whTips]+addValue
+		return(tree)
+	}
+	else if(!inherits(tree,"phylo4")){
+		stop("tree must be of class phylo4")
+	} else{
+		allTips<-phylobase::tipLabels(tree)
+		depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
+		maxD<-max(depthToTips)
+		addValue<-maxD-depthToTips
+		allLen<-phylobase::edgeLength(tree)
+	  edgeMat<-phylobase::edges(tree)
+  
+	  #add 'addValue' to the tips so ultrametric
+	  tipIds<-as.numeric(names(allTips))
+	  m<-match(tipIds,edgeMat[,2])
+	  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
 
-	allTips<-phylobase::tipLabels(tree)
-	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
-	maxD<-max(depthToTips)
-	addValue<-maxD-depthToTips
-	allLen<-phylobase::edgeLength(tree)
-  edgeMat<-phylobase::edges(tree)
-  tipIds<-as.numeric(names(allTips))
-  m<-match(tipIds,edgeMat[,2])
-  edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
+	  #check didn't do something stupid:
+	  checkTipEdges<-phylobase::edgeId(tree,type="tip")
+	  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
 
-  #check didn't do something stupid:
-  checkTipEdges<-phylobase::edgeId(tree,type="tip")
-  if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
+	  #replace with new edges:
+		allLen[edgeIds]<-allLen[edgeIds]+addValue
+		phylobase::edgeLength(tree)<-allLen
+		return(tree) #returns phylo4 tree
+	}
 
-  #replace with new edges:
-	allLen[edgeIds]<-allLen[edgeIds]+addValue
-	phylobase::edgeLength(tree)<-allLen
-	return(tree) #returns phylo4 tree
 }
 
 

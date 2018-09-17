@@ -523,7 +523,7 @@ setMethod(
         }
         else if(clusterSamplesData=="dendrogramValue"){
           if(is.null(data@dendro_samples)){
-            clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
+			  clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
             if(inherits(clusterSamplesData, "try-error")){
               warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
               clusterSamplesData<-"primaryCluster"
