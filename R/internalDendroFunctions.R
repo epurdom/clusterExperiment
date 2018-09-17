@@ -1,10 +1,9 @@
 ####
 #Convert dendrogram class slots to class used by phylobase (phylo4) so can navigate easily. Does so by first converting to class of ape (phylo)
-#Note the "as" function in phylobase to convert phylo to phylo4 is a S4 "as", need to figure out the import statement better.
-
 #' @importFrom phylobase edgeLength rootNode descendants nodeLabels
 #' @importFrom ape as.phylo
 #' @importFrom stats as.hclust
+#' @importClassesFrom phylobase phylo4 
 .makePhylobaseTree<-function(x,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
   type<-class(x)
   if(type=="dendrogram"){
