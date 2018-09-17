@@ -151,10 +151,17 @@
 		
 		else stop("coding error -- zero or less length tipNames")
 	}
+	newPhylo$edge<-.makeIntegerMatrix(newPhylo$edge)
+	
 	class(newPhylo)<-"phylo"
 	return(newPhylo)
 }
 
+
+.makeIntegerMatrix<-function(mat){
+	#make the entries integer valued.
+	matrix(as.integer(mat),ncol=ncol(mat),byrow=FALSE)
+}
 #' @importFrom ape node.depth.edgelength
 .mergePhylo<-function(tree1,tree2,mergeEdgeLength,balanceLength=TRUE){
 	#if balanceLength==TRUE, want to rebalance so that the two trees have same node height -- without adding to 0-length edges!
@@ -226,7 +233,8 @@
 		newPhylo$edge.length<-c(tree1$edge.length,c(mergeEdgeLength1,mergeEdgeLength2))
 		newPhylo$Nnode<-m1+1
 	}
-  class(newPhylo)<-"phylo"
+	newPhylo$edge<-.makeIntegerMatrix(newPhylo$edge)
+	class(newPhylo)<-"phylo"
 	return(newPhylo)
 	
 }
@@ -309,6 +317,7 @@
 	newPhylo$tip.label<-do.call("c",lapply(tipTrees,.subset2,"tip.label"))
 	newPhylo$edge.length<-do.call("c",c(lapply(tipTrees[!isSingle],.subset2,"edge.length"),list(mainTree$edge.length)))
 	newPhylo$Nnode<-mainTree$Nnode+sum(sapply(tipTrees,.subset2,"Nnode"))
+	newPhylo$edge<-.makeIntegerMatrix(newPhylo$edge)
 	class(newPhylo)<-"phylo"
 	return(newPhylo)	
 }
