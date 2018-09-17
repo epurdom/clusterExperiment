@@ -100,7 +100,6 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #' @import SingleCellExperiment
 #' @import SummarizedExperiment
 #' @import methods
-#' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(

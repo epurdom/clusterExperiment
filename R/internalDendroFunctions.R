@@ -1,19 +1,21 @@
 ####
 #Convert dendrogram class slots to class used by phylobase (phylo4) so can navigate easily. Does so by first converting to class of ape (phylo)
+#Note the "as" function in phylobase to convert phylo to phylo4 is a S4 "as", need to figure out the import statement better.
 
 #' @importFrom phylobase edgeLength rootNode descendants nodeLabels
-#' @importFrom dendextend as.phylo.dendrogram
 #' @importFrom ape as.phylo
+#' @importFrom stats as.hclust
 .makePhylobaseTree<-function(x,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
-  type<-class(x)#match.arg(type,c("hclust","dendro"))
+  type<-class(x)
+  if(type=="dendrogram"){
+	  x<-try(stats::as.hclust(x))
+	  if(inherits(x, "try-error")) stop("the dendrogram object cannot be converted to a hclust object class with the methods of the 'stats' package. Reported error from stats package:",x)
+  }
+  type<-class(x)
   if(type=="hclust"){
     #first into phylo from ape package
     tempPhylo<-try(ape::as.phylo(x),FALSE)
     if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package. Reported error from ape package:",tempPhylo)
-  }
-  if(type=="dendrogram"){
-    tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
-    if(inherits(tempPhylo, "try-error")) stop(paste("the dendrogram object cannot be converted to a phylo class with the methods of 'dendextend' package. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
   }
   if(type=="phylo") tempPhylo<-x
 
@@ -25,7 +27,7 @@
   if(returnOnlyPhylo ) return(tempPhylo) #don't do the rest of fixing up...
 
   phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-  if(inherits(phylo4Obj, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",tempPhylo))
+  if(inherits(phylo4Obj, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from phylobase package:",tempPhylo))
   
   if(isSamples){
 	  ###Adds (in uniform way) the node names:

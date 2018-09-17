@@ -219,8 +219,6 @@ setMethod(
     return(list(samples=fullD,clusters=clusterD))
   })
 
-#' @import dendextend 
-# (Couldn't importFrom because the as.dendrogram.hclust was not exported)
 .makeSampleDendro<-function(x,clusterDendro, cl,type=c("mat","dist"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=0,calculateSample=TRUE){
 		unassignedSamples<-match.arg(unassignedSamples)
 		type<-match.arg(type)
@@ -307,14 +305,9 @@ setMethod(
 			###################
 		
 			# ##Return as dendrogram (for now....)
-			# newPhylo<-try(as(newPhylo,"phylo4"),FALSE)
-# 			if(inherits(newPhylo, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from dendextend package:",newPhylo))
-			#newPhylo<-suppressWarnings(as(.force.ultrametric(newPhylo),"phylo"))
-			# #need to convert back to phylo?
-			newPhylo<-try(as.dendrogram((newPhylo)),FALSE)
-			if(inherits(newPhylo, "try-error")) stop("coding error -- could not convert back to dendrogram. Reported error from as.dendrogram:",newPhylo)
-			return(as.dendrogram((newPhylo))) #as.dendrogram.phylo from dendextend, not exported...
-
+			newPhylo<-try(stats::as.dendrogram(ape::as.hclust.phylo(newPhylo)),FALSE)
+			if(inherits(newPhylo, "try-error")) stop("coding error -- could not convert back to dendrogram. Reported error:",newPhylo)
+			return(newPhylo) 
 			#return(newPhylo)
 		}
 		else return(NULL)

@@ -531,19 +531,6 @@ setMethod(
     stop("coding error -- names of new tips of tree do not match cluster ids")
   }
   return(newPhylo4)
-  #newPhylo4<-.force.ultrametric(newPhylo4)
-  #convert back to dendrogram class and return
-  ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
-  ## as.dendrogram(ape::as.hclust.phylo(object))
-  ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
-  ##Have to restep through and manually fix it
-  #previously had to do, but no longer using:
-  #@importFrom ape as.hclust.phylo
-  #@import dendextend (Couldn't import from because the as.dendrogram.hclust was not exported)
-  # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
-  # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
-  # return(as.dendrogram(xxhclust))
-  #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
 
 }
 
