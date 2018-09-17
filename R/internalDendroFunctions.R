@@ -33,13 +33,12 @@
 	  ### "Root"
 	  ### "NodeX" where X is a number *to those NOT in outgroup*
 	  ### "MissingNodeX" where X is a number *to those IN outgroup*
-#	  browser()
-    #NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster should have edge length zero)
+    #NOTE: clusterNodes are determined by those with non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster must have edge length zero)
 	#Moreover, they are distinguished from the -1/-2 outgroup by the fact that the tips of the -1/-2 DO HAVE non-zero edges to them. 
 	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
     nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ which(phylobase::edgeLength(phylo4Obj)>0) ] #doesn't include root
     trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
-    if(outbranch){#remove root from labeling if -1 outbranch
+    if(outbranch){#remove root from labeling schema if there exists -1 outbranch
       #######
       #remove root
       #######
@@ -94,9 +93,8 @@
   return(phylo4Obj)
 }
 
-# clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
-# sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
 
+#' @importFrom phylobase tipLabels subset 
 .safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
   if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
     ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
@@ -116,8 +114,6 @@
   }
   return(phylo4)
 }
-
-
 
 
 ###Note, cluster nodes DEFINED as those whose descendants are of length>0. So edge from root of these fake binary trees needs to be > 0, and rest =0 

@@ -118,15 +118,11 @@ setMethod(
 		
     x@dendro_clusters <- outlist$clusters
     x@dendro_index<-whCl
-
-		
-	    x@dendro_samples <- outlist$samples
-	    x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
-			
-		
-		ch<-.checkDendrogram(x)
+	x@dendro_samples <- outlist$samples
+	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
+	ch<-.checkDendrogram(x)
     if(!is.logical(ch)) stop(ch)
-			return(x)
+	return(x)
   })
 
 
@@ -252,7 +248,7 @@ setMethod(
 			else{ #construct tree with just root and tips:
 				outTree<-.makeFakeBinary(tipNames=outNames,rootEdgeLength=1,edgeLength=.1)
 				#have to make it ultrametric -- since arbitrary doesn't matter.
-				outTree<-.force.ultrametric(outTree)
+				if(length(outNames)>1) outTree<-.force.ultrametric(outTree)
 					}
 		  }
 		    if(unassignedSamples=="cluster"){

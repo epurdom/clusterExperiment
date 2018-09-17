@@ -94,7 +94,7 @@
     }
   }
   else{
-    # if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #now optional to have samples
+    if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
   }
   return(TRUE)
 }
