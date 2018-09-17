@@ -156,8 +156,9 @@ test_that("`getBestFeatures` works with weights", {
 	#-------
 	##Test get right answers with weights (have to remove unassigned)
 	#-------
-	cleanSim<-removeUnassigned(ceSimW,whichCluster="primary")
-	pairsContrasts<-clusterContrasts(cleanSim,contrastType="Pairs")
+	expect_silent(cleanSim<-removeUnassigned(ceSimW,whichCluster="primary"))
+	expect_true(all(primaryCluster(cleanSim)>0))
+	expect_silent(pairsContrasts<-clusterContrasts(cleanSim,contrastType="Pairs"))
   designContr <- model.matrix(~ 0 + factor(primaryCluster(cleanSim)))
   fitContr<- edgeR::DGEList(assay(cleanSim,1))
   fitContr$weights <- assay(cleanSim,"weights")

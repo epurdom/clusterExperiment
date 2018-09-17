@@ -98,6 +98,6 @@ setMethod(
   definition = function(object,whichCluster="primary") {
     whCl<-.convertSingleWhichCluster(object,whichCluster)
 		cl<-clusterMatrix(object)[,whCl]
-		return(object[,cl>= 0])
+		return(object[,which(cl>= 0)])
   }
 )
