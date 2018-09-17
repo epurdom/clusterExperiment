@@ -66,7 +66,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
 	passedArgs<-list(...)
-	if(!"mergeDEMethod" %in% names(passedArgs) & is.na(x@merge_method) & "isCount" %in% names(passedArgs)){
+	if(!"mergeDEMethod" %in% names(passedArgs) & is.na(x@merge_demethod) & "isCount" %in% names(passedArgs)){
 		if(passedArgs$isCount) passedArgs$mergeDEMethod<-"limma-voom"
 		else passedArgs$mergeDEMethod<-"limma"
 		# wh<-which(names(passedArgs)=="isCount")
@@ -128,7 +128,7 @@ setMethod(
     mergeMethod="adjP",
     mergeCutoff,
     mergeLogFCcutoff,
-		mergeDEMethod=if(isCount) "limma-voom" else "limma",
+	mergeDEMethod=if(isCount) "limma-voom" else "limma",
     verbose=FALSE,
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
@@ -191,8 +191,17 @@ setMethod(
   b <- body(method)
   if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
     local <- eval(b[[2]][[3]])
-    if(is.function(local))
-      return(formals(local))
+    if(is.function(local)){
+		forms<-formals(b[[2]][[3]])
+    	whConditional<-which(sapply(forms,function(x){class(x)=="if"}))
+		if(length(whConditional)>0){
+			#note, converts it to a list (rather than pairlist) class, but doesn't matter for me.
+			forms[whConditional]<-sapply(forms[whConditional],function(x){
+				eval(x,envir=forms)
+			})
+		}
+		return(forms)
+    }
     warning("Expected a .local assignment to be a function. Corrupted method?")
   }
   genFormals
@@ -242,18 +251,6 @@ setMethod(
 				if("mergeDEMethod" %in% names(passedArgs)){
 					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
 					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
-					# Browse[2]> args1
-					# $whichAssay
-					# [1] 1
-					#
-					# $mergeMethod
-					# [1] "JC"
-					#
-					# $cutoff
-					# [1] 0.05
-					#
-					# $DEMethod
-					# if (isCount) "limma-voom" else "limma"
 				}
 				else{
 					mergeTry<-"mergeDEMethod argument is missing with no default"
