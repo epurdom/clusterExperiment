@@ -854,7 +854,7 @@ setMethod(
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
     if(plot){
-      out<-NMF::aheatmap(heatData,
+	   out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
