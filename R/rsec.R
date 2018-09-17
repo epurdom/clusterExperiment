@@ -87,6 +87,7 @@ setMethod(
 		  reducedDims(retval)<-reducedDims(newObj)
     }
     else{
+		if(!is.na(x@merge_demethod)) passedArgs$mergeDEMethod<-x@merge_demethod
       retval<-do.call(".postClusterMany",c(list(ce=x),passedArgs))
     }
 
