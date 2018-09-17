@@ -186,3 +186,6 @@ Implementation of the RSEC algorithm (Resampling-based
   wrapper function around the existing ClusterExperiment workflow that
   results in the output of RSEC.
 }
+\details{
+Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
+}

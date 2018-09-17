@@ -40,6 +40,7 @@ system.time(
                      dendroReduce= "mad",
                      dendroNDims=1000,
                      mergeMethod="adjP",
+	                    mergeDEMethod="limma",
                      mergeCutoff=0.03,
                      ncores=ncores, 
                      random.seed=176201)
