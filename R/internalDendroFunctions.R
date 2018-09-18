@@ -36,8 +36,9 @@
     #NOTE: clusterNodes are determined by those with descendants with zero edge lengths, but non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster must have edge length zero to root)
 	#Moreover, they are distinguished from the -1/-2 outgroup by the fact that the tips of the -1/-2 DO HAVE non-zero edges to them. 
 	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
-	
-    nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ sapply(phylobase::edgeLength(phylo4Obj),function(x){!isTRUE(all.equal(x,0))}) ] #doesn't include root
+
+	whNonZeroEdges<-which(sapply(phylobase::edgeLength(phylo4Obj),function(x){!isTRUE(all.equal(x,0)) & !is.na(x)}))
+    nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ whNonZeroEdges ] #doesn't include root
     
 	
 	#all nodes where edge going into node is >0 -- excludes the root
