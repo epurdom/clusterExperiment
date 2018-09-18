@@ -38,12 +38,19 @@
 	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
 	
     nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ which(phylobase::edgeLength(phylo4Obj)>0) ] #doesn't include root
-    trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
-    if(outbranch){#remove root from labeling schema if there exists -1 outbranch
+    
+	
+	#all nodes where edge going into node is >0 -- excludes the root
+	#this also picks up the outbranch between -1,-2 and all the internal nodes/tips there
+	trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,2)))) 
+	#add root to trueInternal
+    rootNode<-phylobase::rootNode(phylo4Obj)
+    trueInternal<-c(rootNode,trueInternal)
+	
+    if(outbranch){ 
       #######
-      #remove root
+      #remove root from labeling schema if there exists -1 outbranch
       #######
-      rootNode<-phylobase::rootNode(phylo4Obj)
       trueInternal<-trueInternal[!trueInternal%in%rootNode]
       
       #######
@@ -119,7 +126,7 @@
 
 ###Note, cluster nodes DEFINED as those whose descendants are of length>0. So edge from root of these fake binary trees needs to be > 0, and rest =0 
 ### But also use this to make fake binary when n<5 samples and need it to stay ultrametric. Here, the edgeLength>0 will make it not ultrametric! Sigh. I fix that issue after returned (i.e. not here)
-.makeFakeBinary<-function(tipNames,rootEdgeLength=1,edgeLength=0){
+.makeFakeBinary<-function(tipNames,rootEdgeLength=0,edgeLength=0){
 	newPhylo<-list()
 	n<-length(tipNames)
 	if(n>1){
