@@ -610,7 +610,7 @@ setMethod(
   if (phyloORclado) {
     phyOrder <- attr(x, "order")
     if (is.null(phyOrder) || phyOrder != "cladewise") {
-      x <- ape:::reorder.phylo(x)
+      x <- ape::reorder.phylo(x)
       if (!identical(x$edge, xe)) {
         ereorder <- match(x$edge[, 2], xe[, 2])
         if (length(edge.color) > 1) {
@@ -631,7 +631,7 @@ setMethod(
     TIPS <- x$edge[x$edge[, 2] <= Ntip, 2]
     yy[TIPS] <- seq_len(Ntip)
   }
-  z <- ape:::reorder.phylo(x, order = "postorder") ##
+  z <- ape::reorder.phylo(x, order = "postorder") ##
   if (phyloORclado) {
     if (is.null(node.pos)) 
       node.pos <- if (type == "cladogram" && !use.edge.length) 

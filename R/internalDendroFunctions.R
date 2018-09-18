@@ -33,9 +33,10 @@
 	  ### "Root"
 	  ### "NodeX" where X is a number *to those NOT in outgroup*
 	  ### "MissingNodeX" where X is a number *to those IN outgroup*
-    #NOTE: clusterNodes are determined by those with non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster must have edge length zero)
+    #NOTE: clusterNodes are determined by those with descendants with zero edge lengths, but non-zero edge-length between them and their decendents (i.e. fake hierarchy of the cluster must have edge length zero to root)
 	#Moreover, they are distinguished from the -1/-2 outgroup by the fact that the tips of the -1/-2 DO HAVE non-zero edges to them. 
 	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
+	
     nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ which(phylobase::edgeLength(phylo4Obj)>0) ] #doesn't include root
     trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
     if(outbranch){#remove root from labeling schema if there exists -1 outbranch
