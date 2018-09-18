@@ -37,7 +37,7 @@
 	#Moreover, they are distinguished from the -1/-2 outgroup by the fact that the tips of the -1/-2 DO HAVE non-zero edges to them. 
 	#WHAT IF HAVE CLUSTER WITH ONE SAMPLE???? (just doesn't happen in practice, but often in our tests...)
 	
-    nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ which(phylobase::edgeLength(phylo4Obj)>0) ] #doesn't include root
+    nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ sapply(phylobase::edgeLength(phylo4Obj),function(x){!isTRUE(all.equal(x,0))}) ] #doesn't include root
     
 	
 	#all nodes where edge going into node is >0 -- excludes the root
