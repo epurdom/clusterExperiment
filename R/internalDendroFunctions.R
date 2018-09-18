@@ -1,33 +1,59 @@
+
+#' @importFrom ape as.hclust.phylo
+#' @importFrom stats as.dendrogram
+.convertToDendrogram<-function(x){
+	if(class(x)=="phylo4") x<-as(x,"phylo")
+	if(class(x)=="phylo"){
+		x<-try(ape::as.hclust.phylo(x),FALSE)
+		if(inherits(x, "try-error")) stop("coding error -- could not convert to hclust object. Reported error:",x)
+	}
+	if(class(x)=="hclust"){
+		x<-try(stats::as.dendrogram(x),FALSE)
+		if(inherits(x, "try-error")) stop("coding error -- could not convert from hclust to dendrogram object. Reported error:",x)
+		return(x)
+	}
+	else{ stop("input x is not of hclust, phylo4 or phylo class")}
+}
+
+
+#' @importFrom stats as.hclust
+#' @importFrom ape as.phylo.hclust
+#' @importClassesFrom phylobase phylo4 
+.convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo")){
+	returnClass<-match.arg(returnClass)
+	if(class(x)=="dendrogram"){
+		x<-try(stats::as.hclust(x),FALSE)
+		if(inherits(x, "try-error")) stop("coding error -- could not convert from dendrogram to hclust object. Reported error:",x)
+	}
+	if(class(x)=="hclust"){
+		x<-try(ape::as.phylo.hclust(x),FALSE)
+		if(inherits(x, "try-error")) stop("coding error -- could not convert from hclust to phylo object. Reported error:",x)
+	}
+	if(class(x)=="phylo"){
+		if(returnClass=="phylo") return(x)
+		else{
+			x<-try(as(x,"phylo4"),FALSE)
+			if(inherits(x, "try-error")) stop("coding error -- could not convert from phylo to phylo4 object. Reported error:",x)
+			return(x)
+		}
+	}
+	if(class(x)=="phylo4"){
+		if(returnClass=="phylo4") return(x)
+		else{
+			x<-try(as(x,"phylo"),FALSE)
+			if(inherits(x, "try-error")) stop("coding error -- could not convert from phylo4 to phylo object. Reported error:",x)
+			return(x)
+		}
+	}
+	else{ stop("input x is not of hclust, dendrogram, phylo or phylo4 class")}
+	
+}
+
 ####
 #Convert dendrogram class slots to class used by phylobase (phylo4) so can navigate easily. Does so by first converting to class of ape (phylo)
 #' @importFrom phylobase edgeLength rootNode descendants nodeLabels
-#' @importFrom ape as.phylo
-#' @importFrom stats as.hclust
-#' @importClassesFrom phylobase phylo4 
 .makePhylobaseTree<-function(x,isSamples=FALSE,outbranch=FALSE, returnOnlyPhylo=FALSE){
-  type<-class(x)
-  if(type=="dendrogram"){
-	  x<-try(stats::as.hclust(x))
-	  if(inherits(x, "try-error")) stop("the dendrogram object cannot be converted to a hclust object class with the methods of the 'stats' package. Reported error from stats package:",x)
-  }
-  type<-class(x)
-  if(type=="hclust"){
-    #first into phylo from ape package
-    tempPhylo<-try(ape::as.phylo(x),FALSE)
-    if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package. Reported error from ape package:",tempPhylo)
-  }
-  if(type=="phylo") tempPhylo<-x
-
-	  #put this in because some zero edges are becoming very small negative values...
-  if(any(tempPhylo$edge.length<0)){
-	  if(all(tempPhylo$edge.length> -1e-5)) tempPhylo$edge.length[tempPhylo$edge.length<0]<-0
-	  else stop("coding error -- given object results in negative edge lengths")
-  }
-  if(returnOnlyPhylo ) return(tempPhylo) #don't do the rest of fixing up...
-
-  phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-  if(inherits(phylo4Obj, "try-error")) stop(paste("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample. Reported error from phylobase package:",tempPhylo))
-  
+  phylo4Obj<-.convertToPhyClasses(x,"phylo4")
   if(isSamples){
 	  ###Adds (in uniform way) the node names:
 	  ### "Root"

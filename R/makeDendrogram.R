@@ -166,7 +166,7 @@ setMethod(
     rownames(medoids) <- levels(clFactor)
     colnames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
-    clusterD<-as.dendrogram(stats::hclust(as.dist(medoids),members=nPerCluster,...))
+    	clusterD<-.convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4"))
     #############
     # Samples dendrogram
     #############
@@ -207,7 +207,7 @@ setMethod(
     medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
     rownames(medoids) <- levels(clFactor)
     nPerCluster <- table(clFactor)
-    clusterD<-as.dendrogram(stats::hclust(dist(medoids)^2,members=nPerCluster,...))
+	clusterD<-.convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
     
     nSamples<-length(clNum)
 		fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=clNum,type=c("mat"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
@@ -223,7 +223,7 @@ setMethod(
 		  whPos<-which(cl>0) #this is copy close to length of n
 			if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
 		  #loses internal node names. Don't think that matters.
-		  phyloObj <- .makePhylobaseTree(x=clusterDendro,isSamples=FALSE,returnOnlyPhylo = TRUE)
+		  phyloObj <- .convertToPhyClasses(clusterDendro,"phylo")
 		  if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
 		nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
 		
@@ -242,7 +242,7 @@ setMethod(
 			if(length(whNeg) > 5 | length(whPos)==0){ 
 			  outlierDat <- if(type=="mat") x[,whNeg,drop=FALSE] else as.matrix(x)[whNeg,whNeg,drop=FALSE]
 				outbranchHclust <- if(type=="mat") stats::hclust(dist(t(outlierDat))^2) else  stats::hclust(as.dist(outlierDat))
-				outTree<- .makePhylobaseTree(x=outbranchHclust, isSamples=FALSE,returnOnlyPhylo = TRUE) #isSamples doesn't matter if only returningPhylo
+				outTree<- .convertToPhyClasses(x=outbranchHclust,"phylo") 
 				if(length(outTree$tip.label)!=length(whNeg)) stop("coding error - given hclust doesn't have correct number of tips.")
 			}
 			else{ #construct tree with just root and tips:
@@ -297,14 +297,10 @@ setMethod(
 			}
 		
 			###################
-			## IV. Convert to dendrogram format -- requires binary and ultrametric!
+			## IV. Convert to return format
 			###################
-		
-			# ##Return as dendrogram (for now....)
-			newPhylo<-try(stats::as.dendrogram(ape::as.hclust.phylo(newPhylo)),FALSE)
-			if(inherits(newPhylo, "try-error")) stop("coding error -- could not convert back to dendrogram. Reported error:",newPhylo)
+			newPhylo<-.convertToPhyClasses(newPhylo,"phylo4")
 			return(newPhylo) 
-			#return(newPhylo)
 		}
 		else return(NULL)
 	}

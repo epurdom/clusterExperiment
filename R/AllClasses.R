@@ -2,9 +2,9 @@
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedMatrix
 
-setOldClass("dendrogram")
+#setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
-setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
+setClassUnion("phylo4OrNULL",members=c("phylo4", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
@@ -72,10 +72,10 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
-#' @slot dendro_samples dendrogram. A dendrogram containing the cluster
+#' @slot dendro_samples \code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
 #' relationship (leaves are samples; see \code{\link{makeDendrogram}} for
 #' details).
-#' @slot dendro_clusters dendrogram. A dendrogram containing the cluster
+#' @slot dendro_clusters \code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
 #' relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 #' details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
@@ -111,8 +111,8 @@ setClass(
     primaryIndex = "numeric",
     clusterInfo = "list",
     clusterTypes = "character",
-    dendro_samples = "dendrogramOrNULL",
-    dendro_clusters = "dendrogramOrNULL",
+    dendro_samples = "phylo4OrNULL",
+    dendro_clusters = "phylo4OrNULL",
     dendro_index = "numeric",
 	dendro_outbranch = "logical",
     coClustering = "matrixOrHDF5OrNULL",
@@ -239,8 +239,8 @@ setMethod(
 #'@param primaryIndex integer. Sets the `primaryIndex` slot (see Slots).
 #'@param orderSamples a vector of integers. Sets the `orderSamples` slot (see
 #'  Slots).
-#'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
-#'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
+#'@param dendro_samples phylo4 object. Sets the `dendro_samples` slot (see Slots).
+#'@param dendro_clusters phylo4 object. Sets the `dendro_clusters` slot (see
 #'  Slots).
 #'@param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
 #'@param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see

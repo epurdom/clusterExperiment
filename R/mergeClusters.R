@@ -306,7 +306,7 @@ setMethod(
     ############
     ### #go up tree and merge clusters
     ############
-    phylo4Obj <- .makePhylobaseTree(dendro)
+    phylo4Obj <- .convertToPhyClasses(dendro,"phylo4")
     if(mergeMethod != "none"){
 			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
       nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
@@ -650,8 +650,6 @@ setMethod(
     if(!is.logical(ch)) stop(ch)
     if(plot){
       dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
-      # leg<-clusterLegend(retval)[[retval@dendro_index]]
-      #     cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
       if(leafType=="samples" & mergeMethod!="none" & plotType=="colorblock"){
         whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
         leg<-clusterLegend(retval)[whClusters]

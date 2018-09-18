@@ -530,7 +530,7 @@ setMethod(
             }
           }
           else{
-            clusterSamplesData<-data@dendro_samples
+            clusterSamplesData<-.convertToDendrogram(data@dendro_samples)
           }
         }
         if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){

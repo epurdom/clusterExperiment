@@ -104,7 +104,7 @@ setMethod(
       if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
       ####
       #Convert to object used by phylobase so can navigate easily -- might should make generic function...
-      if(!inherits(dendro,"phylo4")) phylo4Obj<-.makePhylobaseTree(dendro)
+      if(!inherits(dendro,"phylo4")) phylo4Obj<-.convertToPhyClasses(dendro,"phylo4")
       else phylo4Obj<-dendro
       clChar<-as.character(cl)
       allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]

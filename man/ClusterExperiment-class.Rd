@@ -66,11 +66,11 @@ be used when creating a new object with the constructor.}
 \item{orderSamples}{a vector of integers. Sets the `orderSamples` slot (see
 Slots).}
 
-\item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
+\item{dendro_samples}{phylo4 object. Sets the `dendro_samples` slot (see Slots).}
 
 \item{dendro_index}{numeric. Sets the \code{dendro_index} slot (see Slots).}
 
-\item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
+\item{dendro_clusters}{phylo4 object. Sets the `dendro_clusters` slot (see
 Slots).}
 
 \item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see
@@ -198,11 +198,11 @@ non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 \item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}
 
-\item{\code{dendro_samples}}{dendrogram. A dendrogram containing the cluster
+\item{\code{dendro_samples}}{\code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
 relationship (leaves are samples; see \code{\link{makeDendrogram}} for
 details).}
 
-\item{\code{dendro_clusters}}{dendrogram. A dendrogram containing the cluster
+\item{\code{dendro_clusters}}{\code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
 relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
 details).}
 

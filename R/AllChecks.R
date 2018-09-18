@@ -72,30 +72,33 @@
   }
   return(TRUE)
 }
+
+#' @importFrom phylobase nTips
 .checkDendrogram<-function(object){
   ############
   ##Check dendrogram
   ############
-  if(!is.null(object@dendro_samples)){
-    if(nobs(object@dendro_samples) != NCOL(object)) {
-      return("dendro_samples must have the same number of leaves as the number of samples")
-    }
-    if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
-  }
-  else{
-    # if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #now optional to have samples
-    if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
-  }
   if(!is.null(object@dendro_clusters)){
     if(is.na(dendroClusterIndex(object))) return("if dendrogram slots are filled, must have corresponding dendro_index defined.")
     dcluster<-clusterMatrix(object)[,dendroClusterIndex(object)]
-    if(nobs(object@dendro_clusters) != max(dcluster)) {
+    if(phylobase::nTips(object@dendro_clusters) != max(dcluster)) {
       return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
     }
   }
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
   }
+  if(!is.null(object@dendro_samples)){
+    if(phylobase::nTips(object@dendro_samples) != NCOL(object)) {
+      return("dendro_samples must have the same number of leaves as the number of samples")
+    }
+    if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
+  }
+  else{
+    #if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
+    if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
+  }
+  
   return(TRUE)
 }
 
