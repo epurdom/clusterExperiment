@@ -8,7 +8,7 @@
 ceObj<-updateObject(ceObj)
 ```
 
-*Warning* This will, however, loose information saved about the last `mergeClusters` call that you have made. You may want to save that information and manually update the slots. If you do so, make sure you call `validObject` to make sure that you have done so correctly (in particular, you will have to have a value for the slot `merge_demethod`, see `?ClusterExperiment`). For example,
+*Warning* This will, however, loose information saved about the last `mergeClusters` call that you have made if your object is from version < 2.1.4. You may want to save that information and manually update the slots. If you do so, make sure you call `validObject` to make sure that you have done so correctly (in particular, you will have to have a value for the slot `merge_demethod`, see `?ClusterExperiment`). For example,
 
 ```
 ceObjNew<-updateObject(ceObj)

@@ -1,7 +1,8 @@
-Changes in version 2.1.5-9001 ( Release date: )
+Changes in version 2.1.5-9002 ( Release date: )
 ==============
 
 Changes:
+* Changed `makeDendrogram` so that the samples dendrogram is made faster. Previously by the (time-consuming) process of running `hclust` with "fake data" where each sample was mediod of cluster. Now the sample dendrogram is created by manually pasting a (arbitrary) binary tree of the samples with zero-length edges onto the cluster's hierarchical tree.
 * cluster names like `m1`, `m2` given by `mergeClusters` or `c1`, `c2` by `makeConsensus` will now be `m01`, `m02`, etc. This will help in the sorting correctly by cluster names. If needed (i.e. there are more than 100 clusters) the numbers will be augmented to `m001`, more than 1000 to `m0001`.
 * The argument `replaceCoClustering` in `clusterSingle` has been changed to `saveSubsamplingMatrix` and the default behavior of when the subsampling matrix is changed has been modified. See `clusterSingle`.
 
