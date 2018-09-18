@@ -234,7 +234,7 @@ test_that("plotDendrogram works with cluster missing", {
   expect_silent(plotDendrogram(dend,leafType="clusters",plotType="colorblock"))
   expect_silent(plotDendrogram(dend,leafType="clusters",plotType="name"))
   
-  ## make all -2
+  ## make all the <0 ones -2 value
   dend2<-dend
   dmat<-clusterMatrix(dend2)
   dmat[1,1]<- -2

@@ -238,6 +238,7 @@ setMethod(
       if(any(rootChild %in% tips)){
         #which ever rootChild is in tips must be single missing sample 
         #because can't make dendrogram with only 1 cluster so couldn't run plot or mergeClusters. 
+		#Note only true because outbranch=TRUE
         clusterNode<-rootChild[!rootChild %in% tips]
         #stop("Internal coding error: need to fix .plotDendro to deal with when single missing sample")
       }
@@ -255,6 +256,7 @@ setMethod(
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
   }
+  #convert back to phylo object...
   phyloObj <- as(phylo4Obj, "phylo")
   plotArgs<-list(...)
   dataPct<-0.5
@@ -337,7 +339,7 @@ setMethod(
       #make default colors, works for vector or matrix cl
       #----
       clusterIds<-sort(unique(as.vector(cl)))
-      clusterLegendMat<-cbind("clusterIds"=clusterIds,"name"=clusterIds,"color"=bigPalette[seq_along(clusterIds)])
+      clusterLegendMat <- cbind("clusterIds"=clusterIds, "name"=clusterIds, "color"=bigPalette[seq_along(clusterIds)])
     }
     else{
       if(is.matrix(cl) && ncol(cl)>1){
@@ -455,8 +457,11 @@ setMethod(
       
     }
     if(leafType=="samples"){
-      if(is.matrix(cl) && ncol(cl)>1){
-        clNames<-row.names(cl)
+      clNames<-if(is.matrix(cl)) row.names(cl) else names(cl)
+	  mToTree <- match(phyloObj$tip.label, clNames)
+	  if (any(is.na(mToTree))) stop("names of cl do not match dendrogram labels")
+	  
+	  if(is.matrix(cl) && ncol(cl)>1){
         if(plotType=="colorblock"){
           colorMat<-apply(cl,2,function(x){
             m<-match(x,clusterLegendMat[,"clusterIds"])
@@ -464,24 +469,24 @@ setMethod(
           })
           if(any(dim(colorMat)!=dim(cl))) stop("Internal coding error: dimensions of colorMat don't match input")
           dimnames(colorMat)<-dimnames(cl)
-          #m<-match(cl[,1],clusterLegendMat[,"clusterIds"])
           cols<-clusterLegendMat[,"color"]
           names(cols)<-clusterLegendMat[,"name"]
-          
+		  #match samples to order of the tree:
+          colorMat<-colorMat[mToTree,]
         }
         tip.color<-"black"
       }
       else{
         if(is.matrix(cl)) cl<-cl[,1]
-        clNames<-names(cl)
         m<-match(cl,clusterLegendMat[,"clusterIds"])
         tip.color<-clusterLegendMat[m,"color"]		
         if(plotType=="colorblock"){
-          colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
-          rownames(colorMat)<-names(cl)
-          cols<-tip.color
-          names(cols)<-clusterLegendMat[m,"name"]
+		  colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
+          rownames(colorMat)<-clNames
+          cols<-clusterLegendMat[,"color"]
+          names(cols)<-clusterLegendMat[,"name"]
         }	
+		else tip.color<-tip.color[mToTree]		
       }
       if(plotType=="colorblock"){
         ntips<-length(phyloObj$tip.label)
@@ -491,9 +496,6 @@ setMethod(
         edge.width<-rep(0,nrow(phyloObj$edge))
         edge.width[whEdgePlot]<-1
       }
-      m<-match(phyloObj$tip.label,clNames)
-      if(any(is.na(m))) stop("names of cl do not match dendrogram labels")
-      
     }
   }
   else tip.color<-"black"

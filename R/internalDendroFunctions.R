@@ -41,12 +41,15 @@
     nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[ whNonZeroEdges ] #doesn't include root
     
 	
-	#all nodes where edge going into node is >0 -- excludes the root
+	#all nodes where edge going *into* node is >0 -- excludes the root
 	#this also picks up the outbranch between -1,-2 and all the internal nodes/tips there
 	trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,2)))) 
 	#add root to trueInternal
     rootNode<-phylobase::rootNode(phylo4Obj)
     trueInternal<-c(rootNode,trueInternal)
+	
+	#make sure no tips included (single sample clusters)
+	trueInternal<-trueInternal[!trueInternal%in%phylobase::nodeId(phylo4Obj,"tip")]
 	
     if(outbranch){ 
       #######
@@ -88,13 +91,12 @@
       else outbranchIsInternal<-FALSE
       
     }
-    #trueInternal<-allInternal[!allInternal%in%clusterNodes]
     
-    phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",seq_along(trueInternal),sep="")
+    phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)] <- paste("Node", seq_along(trueInternal), sep="")
     #add new label for root 
     if(outbranch){
-      phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
-      if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",seq_along(outbranchNodeDesc),sep="")
+      phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)] <- "Root"
+      if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[ as.character(outbranchNodeDesc) ] <- paste("MissingNode", seq_along(outbranchNodeDesc),sep="")
     }
   }
   else phylobase::nodeLabels(phylo4Obj)<-paste("Node",seq_len(phylobase::nNodes(phylo4Obj)),sep="")
