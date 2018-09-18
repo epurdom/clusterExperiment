@@ -83,7 +83,7 @@
     if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
   }
   else{
-    # if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #now optional to have samples
+    if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #now optional to have samples
     if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
   }
   if(!is.null(object@dendro_clusters)){
