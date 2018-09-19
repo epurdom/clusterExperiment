@@ -664,7 +664,8 @@ setMethod(
     ###Create the clustering dendrogram (samples):
     ##########
     if(clusterSamples){
-      if(inherits(clusterSamplesData, "dendrogram")){
+      if(inherits(clusterSamplesData, "dendrogram")| inherits(clusterSamplesData, "phylo") |inherits(clusterSamplesData, "phylo4")){
+		  clusterSamplesData<-.convertToDendrogram(clusterSamplesData)
         if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
         dendroSamples<-clusterSamplesData
       }
@@ -701,7 +702,8 @@ setMethod(
     }
     else{
       if(clusterFeatures){
-        if(inherits(clusterFeaturesData, "dendrogram")){
+        if(inherits(clusterFeaturesData, "dendrogram")| inherits(clusterFeaturesData, "phylo") |inherits(clusterFeaturesData, "phylo4")){
+	  	  clusterFeaturesData<-.convertToDendrogram(clusterFeaturesData)
           if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
           dendroFeatures<-clusterFeaturesData
         }

@@ -2,6 +2,7 @@
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
 .convertToDendrogram<-function(x){
+	if(class(x)=="dendrogram") return(x)
 	if(class(x)=="phylo4"){
 		x<-.convertToPhyClasses(x,"phylo")
 	} 
