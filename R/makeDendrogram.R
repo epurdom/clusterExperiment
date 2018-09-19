@@ -68,79 +68,87 @@
 #' @name makeDendrogram
 #' @rdname makeDendrogram
 setMethod(
-  f = "makeDendrogram",
-  signature = "ClusterExperiment",
-  definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
-                        nDims=defaultNDims(x,reduceMethod),filterIgnoresUnassigned=TRUE,
-                        unassignedSamples=c("outgroup", "cluster"),
-                        whichAssay=1,...)
-  {
-		passedArgs<-list(...)
-					
-		checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar")
-		if(!is.null(checkIgnore)){
-			passedArgs<-checkIgnore$passedArgs
-			filterIgnoresUnassigned<-checkIgnore$val
-		}
-    unassignedSamples<-match.arg(unassignedSamples)
-    whCl<-.convertSingleWhichCluster(x,whichCluster,passedArgs)
-    cl<-clusterMatrix(x)[,whCl]
-    ##erase merge information
-    if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
-
-    ########
-    ##Transform the data
-    ########
-    if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
-    if(reduceMethod!="coCluster"){
-      #need to change name of reduceMethod to make it match the
-      #clustering information if that option chosen.
-      datList<-getReducedData(object=x,whichCluster=whCl,reduceMethod=reduceMethod,
-                              nDims=nDims,filterIgnoresUnassigned=TRUE,  whichAssay=whichAssay,returnValue="list")
-      x<-datList$objectUpdate
-      dat<-datList$dat
-      
-      outlist <- do.call("makeDendrogram",c(list(
-				x=dat, 
-				cluster=cl,calculateSample=TRUE,
-				unassignedSamples=unassignedSamples),
-				passedArgs))
-    }
-    else{
-      if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run makeConsensus before running 'makeDendrogram' or choose another option for 'reduceMethod'")
-      if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
-     outlist<-do.call("makeDendrogram",c(list(
-			  x=as.dist(1-x@coClustering),
-				cluster=cl,calculateSample=TRUE,
-				unassignedSamples=unassignedSamples),
-				passedArgs)) 
-    }
+    f = "makeDendrogram",
+    signature = "ClusterExperiment",
+    definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
+                          nDims=defaultNDims(x,reduceMethod),filterIgnoresUnassigned=TRUE,
+                          unassignedSamples=c("outgroup", "cluster"),
+                          whichAssay=1,...)
+    {
+        passedArgs<-list(...)
+        
+        checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar")
+        if(!is.null(checkIgnore)){
+            passedArgs<-checkIgnore$passedArgs
+            filterIgnoresUnassigned<-checkIgnore$val
+        }
+        unassignedSamples<-match.arg(unassignedSamples)
+        whCl<-.convertSingleWhichCluster(x,whichCluster,passedArgs)
+        cl<-clusterMatrix(x)[,whCl]
+        ##erase merge information
+        if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
+        
+        ########
+        ##Transform the data
+        ########
+        if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
+        if(reduceMethod!="coCluster"){
+            #need to change name of reduceMethod to make it match the
+            #clustering information if that option chosen.
+            datList<-getReducedData(object=x,whichCluster=whCl,reduceMethod=reduceMethod,
+                                    nDims=nDims,filterIgnoresUnassigned=TRUE,  whichAssay=whichAssay,returnValue="list")
+            x<-datList$objectUpdate
+            dat<-datList$dat
+            
+            outlist <- do.call("makeDendrogram",c(list(
+                x=dat, 
+                cluster=cl,calculateSample=TRUE,
+                unassignedSamples=unassignedSamples),
+                passedArgs))
+        }
+        else{
+            if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run makeConsensus before running 'makeDendrogram' or choose another option for 'reduceMethod'")
+            if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
+            outlist<-do.call("makeDendrogram",c(list(
+                x=as.dist(1-x@coClustering),
+                cluster=cl,calculateSample=TRUE,
+                unassignedSamples=unassignedSamples),
+                passedArgs)) 
+        }
+        
+        #Add clusterNames as Ids to cluster dendrogram.
+		m<-match(tipLabels(outlist$clusters), clusterLegend(x)[[whCl]][,"clusterIds"])
+		tipLabels(outlist$clusters)<-clusterLegend(x)[[whCl]][m,"name"]
+        x@dendro_clusters <- outlist$clusters
 		
-    x@dendro_clusters <- outlist$clusters
-    x@dendro_index<-whCl
-	x@dendro_samples <- outlist$samples
-	x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
-	ch<-.checkDendrogram(x)
-    if(!is.logical(ch)) stop(ch)
-	return(x)
-  })
+		
+        x@dendro_index<-whCl
+        x@dendro_samples <- outlist$samples
+        x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
+        ch<-.checkDendrogram(x)
+        if(!is.logical(ch)) stop(ch)
+        return(x)
+    })
 
 
 
 #' @rdname makeDendrogram
 #' @export
 setMethod(
-  f = "makeDendrogram",
-  signature = "dist",
-  definition = function(x, cluster,
-                        unassignedSamples=c("outgroup", "cluster", "remove"),
-                        calculateSample=TRUE,...) {
-    unassigned <- match.arg(unassignedSamples)
-    clusterD<-.makeClusterDendro(x,cluster,type="dist")  
-    fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
-    return(list(samples=fullD,clusters=clusterD))
-  })
-  
+    f = "makeDendrogram",
+    signature = "dist",
+    definition = function(x, cluster,
+                          unassignedSamples=c("outgroup", "cluster", "remove"),
+                          calculateSample=TRUE,...) {
+        unassigned <- match.arg(unassignedSamples)
+        if(is.null(attributes(x)$Labels)) {
+            attributes(x)$Labels <- as.character(seq_len(nSamples))
+        }
+        clusterD<-.makeClusterDendro(x,cluster,type="dist",...)  
+        fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+        return(list(samples=fullD,clusters=clusterD))
+    })
+
 #' @rdname makeDendrogram
 #' @importFrom DelayedArray DelayedArray
 #' @export
@@ -150,33 +158,29 @@ setMethod(
     definition = function(x, cluster,
                           unassignedSamples=c("outgroup", "cluster", "remove"),
                           calculateSample=TRUE,...) {
-      unassigned <- match.arg(unassignedSamples)
-	  clusterD<-.makeClusterDendro(x,cluster,type="mat")
-      fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("mat"), unassignedSamples=unassigned, sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
-		
-      return(list(samples=fullD,clusters=clusterD))
-})
+        unassigned <- match.arg(unassignedSamples)
+        if(is.null(colnames(x))) {
+            colnames(x) <- as.character(seq_len(ncol(x)))
+        }
+        clusterD<-.makeClusterDendro(x,cluster,type="mat",...)
+        fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("mat"), unassignedSamples=unassigned, sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+        
+        return(list(samples=fullD,clusters=clusterD))
+    })
 
-.makeClusterDendro<-function(x, cl,type=c("mat","dist")){
-	type<-match.arg(type)
+.makeClusterDendro<-function(x, cl,type=c("mat","dist"),...){
+    type<-match.arg(type)
     if(type=="dist"){
-		nSamples<-  attributes(x)$Size
-	    if(nSamples != length(cl)) {
-	      stop("cluster must be the same length as the number of samples")
-	    }
-	    if(is.null(attributes(x)$Labels)) {
-	      attributes(x)$Labels <- as.character(seq_len(nSamples))
-	    }
-	}
-	if(type=="mat"){
-	    if(ncol(x) != length(cl)) {
-	      stop("cluster must be the same length as the number of samples")
-	    }
-	    if(is.null(colnames(x))) {
-	      colnames(x) <- as.character(seq_len(ncol(x)))
-	    }
-		
-	}
+        nSamples<-  attributes(x)$Size
+        if(nSamples != length(cl)) {
+            stop("cluster must be the same length as the number of samples")
+        }
+    }
+    if(type=="mat"){
+        if(ncol(x) != length(cl)) {
+            stop("cluster must be the same length as the number of samples")
+        }
+     }
     
     clNum<-.convertToNum(cl)
     
@@ -191,115 +195,142 @@ setMethod(
     #each pair of clusters, need to get median of the distance values
     #do a double by, just returning the values as a vector, and then take the median
     if(type=="dist"){
-		medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
-      	  	out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
-			names(out)<-levels(clFactor)
-			return(out)
-		}))
-		diag(medoids)<-0 #incase the median of within is not zero...
-		rownames(medoids) <- levels(clFactor)
-		colnames(medoids) <- levels(clFactor)
-	}
-	if(type=="mat"){
-	    medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
-	    rownames(medoids) <- levels(clFactor)
-	}
+        medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
+            out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
+            names(out)<-levels(clFactor)
+            return(out)
+        }))
+        diag(medoids)<-0 #incase the median of within is not zero...
+        rownames(medoids) <- levels(clFactor)
+        colnames(medoids) <- levels(clFactor)
+    }
+    if(type=="mat"){
+        medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
+        rownames(medoids) <- levels(clFactor)
+    }
     nPerCluster <- table(clFactor)
-    	clusterD<-if(type=="dist").convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4")) else .convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
-
-	return(clusterD)
+    clusterD<-if(type=="dist").convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4")) else .convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
+    
+    ####### create proper phylo4d object
+    # By
+    # 	default, data row names are used to link data to nodes in the tree, with any number-like names (e.g.,
+    # 	“10”) matched against node ID numbers, and any non-number-like names (e.g., “n10”) matched
+    # 	against node labels.  Alternative matching rules can be specified by passing additional arguments
+    # 	(listed  in  the  Details  section);  these  include  positional  matching,  matching  exclusively  on  node
+    # 	labels, and matching based on a column of data rather than on row names.
+    #clusterD<-ccSE@dendro_clusters
+   
+   #create data for phylo4d object
+   clusterNodes<-getNode(clusterD)    data.cl<-data.frame(NodeId=as.numeric(unname(clusterNodes)),ClusterId=as.numeric(names(clusterNodes)))
+	data.cl$Position<-factor(rep("cluster hierarchy node",nrow(data.cl)),levels=
+	c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root"))
+	row.names(data.cl)<-as.character(unname(clusterNodes))
+    data.cl$Position[getNode(clusterD,type="tip")]<-"cluster hierarchy tip"
+	
+	#give default node labels:
+	nodeLabels(clusterD)<-paste("Node",1:length(nodeLabels(clusterD)),sep="")
+	
+    
+	# -- Position: one of either "cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root"). This column should be internal and validity check that numbers correspond to clustering from @dendro_index. Needs to be a check on "ClusterExperiment", not the "clusterPhylo4d"
+    # -- ClusterIdDendro (only for cluster): cluster Id in @dendro_index that corresponds to node (NA otherwise)
+    # -- ClusterIdMerge  (only for cluster): cluster Id in @merge_index that corresponds to node (NA otherwise)
+    # -- MatchToClusterHier (only for sample tree): for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
+    # -- SampleIndex (only for sample tree): index to the columns in the assay
+    
+    
+    return(clusterD)
 }
 
 
 
 .makeSampleDendro<-function(x,clusterDendro, cl,type=c("mat","dist"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=0,calculateSample=TRUE){
-		unassignedSamples<-match.arg(unassignedSamples)
-		type<-match.arg(type)
-		sampleNames<-if(type=="mat") colnames(x) else attributes(x)$Labels
-	  if(calculateSample){
-		  whPos<-which(cl>0) #this is copy close to length of n
-			if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
-		  #loses internal node names. Don't think that matters.
-		  phyloObj <- .convertToPhyClasses(clusterDendro,"phylo")
-		  if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
-		nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
-		
-		
-		###########################
-		## I. Make outlier tree if needed
-		###########################
-		outbranchHclust<-NULL
-		whNeg<-which(cl<0) #technically should be able to do with whPos, but a pain
-		outNames<- if(!is.null(sampleNames)) sampleNames[whNeg] else paste("OutSample",whNeg)
-		if(length(whNeg)>0){
-	      if(unassignedSamples=="outgroup" | length(whPos)==0){
-			#--------
-			# 1. Make outlier tree 
-			#--------
-			if(length(whNeg) > 5 | length(whPos)==0){ 
-			  outlierDat <- if(type=="mat") x[,whNeg,drop=FALSE] else as.matrix(x)[whNeg,whNeg,drop=FALSE]
-				outbranchHclust <- if(type=="mat") stats::hclust(dist(t(outlierDat))^2) else  stats::hclust(as.dist(outlierDat))
-				outTree<- .convertToPhyClasses(x=outbranchHclust,"phylo") 
-				if(length(outTree$tip.label)!=length(whNeg)) stop("coding error - given hclust doesn't have correct number of tips.")
-			}
-			else{ #construct tree with just root and tips:
-				outTree<-.makeFakeBinary(tipNames=outNames,rootEdgeLength=1,edgeLength=.1)
-				#have to make it ultrametric -- since arbitrary doesn't matter.
-				if(length(outNames)>1) outTree<-.force.ultrametric(outTree)
-					}
-		  }
-		    if(unassignedSamples=="cluster"){
-					if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
-					#code from assignUnassigned
-			    clFactor <- factor(cl[-whNeg])
-					medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))
-			    rownames(medoids) <- levels(clFactor)
-					classif<-.genericClassify(x=x[,whNeg],centers=medoids) 
-					cl[whNeg]<-classif
-					whPos<-which(cl>0)
-					whNeg<-which(cl<0)
-					if(length(whPos)!=length(cl)) stop("coding error -- predicting unassigned missed some")
-					unassignedSamples<-"remove"
-		    }			
-	    }      
-
-			###################
-			## II. Make tree with main samples:
-			###################
-			if(length(whPos)>0){
-				#---------
-			  #make list of phylo trees for each cluster:
-				#---------
-				fakePhyloList<-tapply(sampleNames[whPos],as.factor(cl[whPos]),.makeFakeBinary,simplify=FALSE)
-			
-				#need to reorder so in order of the tips of phyloObj
-				m<-match(phyloObj$tip.label,names(fakePhyloList))
-				if(any(is.na(m))) stop("coding error -- names in dendrogram of clusters don't match cluster ids")
-				fakePhyloList<-fakePhyloList[m]
-				newPhylo<-.addTreesToTips(mainTree=phyloObj,tipTrees=fakePhyloList)
-			}
-			else newPhylo<-outTree 
-			
-
-			###################
-			## III. Add outlier samples if unassignedSamples=="outgroup"
-			###################
-			if(unassignedSamples == "outgroup" & length(whNeg)>0 & length(whPos)>0){
-				if(length(whNeg)>1){
-					newPhylo<-.mergePhylo(tree1=newPhylo,tree2=outTree,mergeEdgeLength=outbranchLength)
-				}
-				else{
-					newPhylo<-.mergePhylo(tree1=newPhylo, tree2=outNames, mergeEdgeLength=outbranchLength)
-				}
-			}
-		
-			###################
-			## IV. Convert to return format
-			###################
-			newPhylo<-.convertToPhyClasses(newPhylo,"phylo4")
-			return(newPhylo) 
-		}
-		else return(NULL)
-	}
+    unassignedSamples<-match.arg(unassignedSamples)
+    type<-match.arg(type)
+    sampleNames<-if(type=="mat") colnames(x) else attributes(x)$Labels
+    if(calculateSample){
+        whPos<-which(cl>0) #this is copy close to length of n
+        if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
+        #loses internal node names. Don't think that matters.
+        phyloObj <- .convertToPhyClasses(clusterDendro,"phylo")
+        if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
+        nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
+        
+        
+        ###########################
+        ## I. Make outlier tree if needed
+        ###########################
+        outbranchHclust<-NULL
+        whNeg<-which(cl<0) #technically should be able to do with whPos, but a pain
+        if(length(whNeg)>0){
+	        outNames<- if(!is.null(sampleNames)) sampleNames[whNeg] else paste("OutSample",whNeg)
+        	if(unassignedSamples=="outgroup" | length(whPos)==0){
+                #--------
+                # 1. Make outlier tree 
+                #--------
+                if(length(whNeg) > 5 | length(whPos)==0){ 
+                    outlierDat <- if(type=="mat") x[,whNeg,drop=FALSE] else as.matrix(x)[whNeg,whNeg,drop=FALSE]
+                    outbranchHclust <- if(type=="mat") stats::hclust(dist(t(outlierDat))^2) else  stats::hclust(as.dist(outlierDat))
+                    outTree<- .convertToPhyClasses(x=outbranchHclust,"phylo") 
+                    if(length(outTree$tip.label)!=length(whNeg)) stop("coding error - given hclust doesn't have correct number of tips.")
+                }
+                else{ #construct tree with just root and tips:
+                    outTree<-.makeFakeBinary(tipNames=outNames,rootEdgeLength=1,edgeLength=.1)
+                    #have to make it ultrametric -- since arbitrary doesn't matter.
+                    if(length(outNames)>1) outTree<-.force.ultrametric(outTree)
+                }
+            }
+            if(unassignedSamples=="cluster"){
+                if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
+                #code from assignUnassigned
+                clFactor <- factor(cl[-whNeg])
+                medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))
+                rownames(medoids) <- levels(clFactor)
+                classif<-.genericClassify(x=x[,whNeg],centers=medoids) 
+                cl[whNeg]<-classif
+                whPos<-which(cl>0)
+                whNeg<-which(cl<0)
+                if(length(whPos)!=length(cl)) stop("coding error -- predicting unassigned missed some")
+                unassignedSamples<-"remove"
+            }			
+        }      
+        
+        ###################
+        ## II. Make tree with main samples:
+        ###################
+        if(length(whPos)>0){
+            #---------
+            #make list of phylo trees for each cluster:
+            #---------
+            fakePhyloList <- tapply(sampleNames[whPos], as.factor(cl[whPos]), .makeFakeBinary, simplify=FALSE)
+            
+            #need to reorder so in order of the tips of phyloObj
+            m<-match(phyloObj$tip.label,names(fakePhyloList))
+            if(any(is.na(m))) stop("coding error -- names in dendrogram of clusters don't match cluster ids")
+            fakePhyloList<-fakePhyloList[m]
+            newPhylo<-.addTreesToTips(mainTree=phyloObj,tipTrees=fakePhyloList)
+        }
+        else newPhylo<-outTree 
+        
+        
+        ###################
+        ## III. Add outlier samples if unassignedSamples=="outgroup"
+        ###################
+        if(unassignedSamples == "outgroup" & length(whNeg)>0 & length(whPos)>0){
+            if(length(whNeg)>1){
+                newPhylo<-.mergePhylo(tree1=newPhylo,tree2=outTree,mergeEdgeLength=outbranchLength)
+            }
+            else{
+                newPhylo<-.mergePhylo(tree1=newPhylo, tree2=outNames, mergeEdgeLength=outbranchLength)
+            }
+        }
+        
+        ###################
+        ## IV. Convert to return format
+        ###################
+        newPhylo<-.convertToPhyClasses(newPhylo,"phylo4")
+        return(newPhylo) 
+    }
+    else return(NULL)
+}
 
 

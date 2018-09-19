@@ -15,7 +15,7 @@ test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
     expect_error(makeDendrogram(cc, unassigned="remove"))
 
     #test matrix version
-    expect_equal(nobs(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
+    expect_equal(nTips(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
                  length(primaryCluster(cc))-2)
 
     #test proper error if only single cluster:

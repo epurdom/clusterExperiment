@@ -205,7 +205,7 @@ setMethod(
     if(!is.null(dendro)){
       #check valid
       ncluster <- length(table(cl[cl>0]))
-      if(nobs(dendro) != ncluster) {
+      if(nTips(dendro) != ncluster) {
         stop("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).")
       }
     }
@@ -307,6 +307,7 @@ setMethod(
     ### #go up tree and merge clusters
     ############
     phylo4Obj <- .convertToPhyClasses(dendro,"phylo4")
+	
     if(mergeMethod != "none"){
 			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
       nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff

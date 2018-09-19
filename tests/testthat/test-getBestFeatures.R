@@ -3,16 +3,17 @@ context("getBestFeatures")
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", {
-   x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Pairs")
-  x2<-clusterContrasts(ccSE,contrastType="Pairs")
+  expect_silent(x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Pairs"))
+  expect_silent(x2<-clusterContrasts(ccSE,contrastType="Pairs"))
   expect_equal(x1,x2)
-  x1<- clusterContrasts(primaryCluster(ccSE),contrastType="OneAgainstAll")
-  x2<-clusterContrasts(ccSE,contrastType="OneAgainstAll")
+  expect_silent(x1<- clusterContrasts(primaryCluster(ccSE),contrastType="OneAgainstAll"))
+  expect_silent(x2<-clusterContrasts(ccSE,contrastType="OneAgainstAll"))
   expect_equal(x1,x2)
   expect_error(clusterContrasts(primaryCluster(ccSE),contrastType="Dendro"),"must provide dendrogram if contrastType='Dendro'")
-  ccSE<-makeDendrogram(ccSE)
-  x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Dendro",dendro=ccSE@dendro_clusters)
-  x2<-clusterContrasts(ccSE,contrastType="Dendro")
+  expect_silent(ccSE<-makeDendrogram(ccSE))
+  expect_silent(x1<- clusterContrasts(primaryCluster(ccSE),contrastType="Dendro",dendro=ccSE@dendro_clusters))
+  expect_false(any(is.na(x1$contrastNames)))
+  expect_silent(x2<-clusterContrasts(ccSE,contrastType="Dendro"))
   expect_equal(x1,x2)
 })
 
@@ -88,15 +89,17 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
   expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
                "must provide dendro")
   
-  dendro <- makeDendrogram(simData, primaryCluster(ceSimData))
+  expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
   expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
                                dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
-  dendro <- makeDendrogram(simData, primaryCluster(ceSimData))
-  dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
-                           dendro = dendro$clusters,DEMethod="limma")
+  expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
+  expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
+                           dendro = dendro$clusters,DEMethod="limma"))
+						   
+  length(grep("Node",dend1$ContrastName))
   ceTemp<-ceSimData
-  ceTemp <- makeDendrogram(ceTemp)
-  dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma")
+  expect_silent(ceTemp <- makeDendrogram(ceTemp))
+  expect_silent(dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma"))
   expect_equal(dend1, dendC1)
   
   #check whole mergeDendrogram thing at least runs!
