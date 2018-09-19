@@ -136,14 +136,47 @@ setMethod(
                         unassignedSamples=c("outgroup", "cluster", "remove"),
                         calculateSample=TRUE,...) {
     unassigned <- match.arg(unassignedSamples)
-    cl <- cluster
-    nSamples<-attributes(x)$Size
-    if(nSamples != length(cl)) {
-      stop("cluster must be the same length as the number of samples")
-    }
-    if(is.null(attributes(x)$Labels)) {
-      attributes(x)$Labels <- as.character(seq_len(nSamples))
-    }
+    clusterD<-.makeClusterDendro(x,cluster,type="dist")  
+    fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+    return(list(samples=fullD,clusters=clusterD))
+  })
+  
+#' @rdname makeDendrogram
+#' @importFrom DelayedArray DelayedArray
+#' @export
+setMethod(
+    f = "makeDendrogram",
+    signature = "matrixOrHDF5",
+    definition = function(x, cluster,
+                          unassignedSamples=c("outgroup", "cluster", "remove"),
+                          calculateSample=TRUE,...) {
+      unassigned <- match.arg(unassignedSamples)
+	  clusterD<-.makeClusterDendro(x,cluster,type="mat")
+      fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("mat"), unassignedSamples=unassigned, sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+		
+      return(list(samples=fullD,clusters=clusterD))
+})
+
+.makeClusterDendro<-function(x, cl,type=c("mat","dist")){
+	type<-match.arg(type)
+    if(type=="dist"){
+		nSamples<-  attributes(x)$Size
+	    if(nSamples != length(cl)) {
+	      stop("cluster must be the same length as the number of samples")
+	    }
+	    if(is.null(attributes(x)$Labels)) {
+	      attributes(x)$Labels <- as.character(seq_len(nSamples))
+	    }
+	}
+	if(type=="mat"){
+	    if(ncol(x) != length(cl)) {
+	      stop("cluster must be the same length as the number of samples")
+	    }
+	    if(is.null(colnames(x))) {
+	      colnames(x) <- as.character(seq_len(ncol(x)))
+	    }
+		
+	}
     
     clNum<-.convertToNum(cl)
     
@@ -157,63 +190,27 @@ setMethod(
     
     #each pair of clusters, need to get median of the distance values
     #do a double by, just returning the values as a vector, and then take the median
-    medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
-      out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
-      names(out)<-levels(clFactor)
-      return(out)
-    }))
-    diag(medoids)<-0 #incase the median of within is not zero...
-    rownames(medoids) <- levels(clFactor)
-    colnames(medoids) <- levels(clFactor)
+    if(type=="dist"){
+		medoids<-do.call("rbind", by(as.matrix(x)[whKeep,whKeep], clFactor, function(z){
+      	  	out<-as.vector(by(t(z),clFactor,function(y){median(as.vector(unlist(y)))}))
+			names(out)<-levels(clFactor)
+			return(out)
+		}))
+		diag(medoids)<-0 #incase the median of within is not zero...
+		rownames(medoids) <- levels(clFactor)
+		colnames(medoids) <- levels(clFactor)
+	}
+	if(type=="mat"){
+	    medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
+	    rownames(medoids) <- levels(clFactor)
+	}
     nPerCluster <- table(clFactor)
-    	clusterD<-.convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4"))
-    #############
-    # Samples dendrogram
-    #############
-    fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=clNum,type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
-    return(list(samples=fullD,clusters=clusterD))
-  })
+    	clusterD<-if(type=="dist").convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4")) else .convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
+
+	return(clusterD)
+}
 
 
-
-#' @rdname makeDendrogram
-#' @importFrom DelayedArray DelayedArray
-#' @export
-setMethod(
-  f = "makeDendrogram",
-  signature = "matrixOrHDF5",
-  definition = function(x, cluster,
-                        unassignedSamples=c("outgroup", "cluster", "remove"),
-                        calculateSample=TRUE,...) {
-    unassigned <- match.arg(unassignedSamples)
-    cl <- cluster
-    if(ncol(x) != length(cl)) {
-      stop("cluster must be the same length as the number of samples")
-    }
-    if(is.null(colnames(x))) {
-      colnames(x) <- as.character(seq_len(ncol(x)))
-    }
-    
-    clNum<-.convertToNum(cl)
-    
-    #############
-    # Cluster dendrogram
-    #############
-    whKeep <- which(clNum >= 0) #remove -1, -2
-    if(length(whKeep) == 0) stop("all samples have clusterIds<0")
-    if(length(unique(cl[whKeep]))==1) stop("Only 1 cluster given. Can not make a dendrogram.")
-    clFactor <- factor(cl[whKeep])
-    
-    medoids <- do.call("rbind", by(t(x[,whKeep]), clFactor, function(z){apply(z, 2, median)}))
-    rownames(medoids) <- levels(clFactor)
-    nPerCluster <- table(clFactor)
-	clusterD<-.convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
-    
-    nSamples<-length(clNum)
-		fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=clNum,type=c("mat"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
-		
-    return(list(samples=fullD,clusters=clusterD))
-  })
 
 .makeSampleDendro<-function(x,clusterDendro, cl,type=c("mat","dist"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=0,calculateSample=TRUE){
 		unassignedSamples<-match.arg(unassignedSamples)
