@@ -2,7 +2,9 @@
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
 .convertToDendrogram<-function(x){
-	if(class(x)=="phylo4") x<-as(x,"phylo")
+	if(class(x)=="phylo4"){
+		x<-.convertToPhyClasses(x,"phylo")
+	} 
 	if(class(x)=="phylo"){
 		x<-try(ape::as.hclust.phylo(x),FALSE)
 		if(inherits(x, "try-error")) stop("coding error -- could not convert to hclust object. Reported error:",x)
@@ -40,7 +42,9 @@
 	if(class(x)=="phylo4"){
 		if(returnClass=="phylo4") return(x)
 		else{
-			x<-try(as(x,"phylo"),FALSE)
+			#phylobase warnings that trees with unknown edge order may be unsafe. This is probably because of this problem they ran into: http://lists.r-forge.r-project.org/pipermail/phylobase-devl/2009-January/000353.html
+			#but the problem has probably been fixed by now in ape!
+			x<-try(suppressWarnings(as(x,"phylo")),FALSE)
 			if(inherits(x, "try-error")) stop("coding error -- could not convert from phylo4 to phylo object. Reported error:",x)
 			return(x)
 		}

@@ -1,6 +1,7 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
-#' @importClassesFrom DelayedArray DelayedMatrix
+#' @importClassesFrom DelayedArray DelayedArray
+#' @importClassesFrom phylobase phylo4 phylo4d
 
 #setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))

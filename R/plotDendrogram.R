@@ -257,7 +257,7 @@ setMethod(
     outbranch<-FALSE
   }
   #convert back to phylo object...
-  phyloObj <- as(phylo4Obj, "phylo")
+  phyloObj <- .convertToPhyClasses(phylo4Obj, "phylo")
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16
