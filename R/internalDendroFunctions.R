@@ -50,8 +50,19 @@
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
-.convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo"),convertCluster=FALSE){
+.convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertCluster=FALSE){
 	returnClass<-match.arg(returnClass)
+	if(inherits(x,"phylo4d") ){
+		if(convertCluster && returnClass %in% c("phylo","phylo4")){
+			#make internal node and cluster ids the node and tip labels (i.e. erase existing)
+			phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
+	  
+			phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
+			
+		}
+		if(returnClass %in% c("phylo4","phylo4d")) return(x)
+	}
+	if(!inherits(x,"phylo4d") & returnClass=="phylo4d") stop("coding error -- can't convert other classes to phylo4d at this time and still retain all correct information")
 	if(inherits(x,"dendrogram")){
 		x<-try(stats::as.hclust(x),FALSE)
 		if(inherits(x, "try-error")) stop("coding error -- could not convert from dendrogram to hclust object. Reported error:",x)
@@ -60,12 +71,7 @@
 		x<-try(ape::as.phylo.hclust(x),FALSE)
 		if(inherits(x, "try-error")) stop("coding error -- could not convert from hclust to phylo object. Reported error:",x)
 	}
-	if(inherits(x,"phylo4d") & convertCluster){
-		#make internal node and cluster ids the node and tip labels (i.e. erase previous)
-		phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
-	  
-		phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
-	}
+
 	if(inherits(x,"phylo")){
 		if(returnClass=="phylo") return(x)
 		else{
