@@ -312,23 +312,24 @@ setMethod(
   f = "getBestFeatures",
   signature = signature(x = "ClusterExperiment"),
   definition = 
-    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
+    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), whichCluster="primary",
              whichAssay=1,DEMethod, weights=if("weights" %in% assayNames(x)) "weights" else NULL,...)
       {
+    whCl<-.convertSingleWhichCluster(x,whichCluster,list(...))
       contrastType <- match.arg(contrastType)
-    cl<-primaryCluster(x)
+    cl<-clusterMatrix(x)[,whCl]
     if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
     if(contrastType=="Dendro") {
       if(is.null(x@dendro_clusters)) {
         stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
       } else {
-        if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
+        if(whCl!= dendroClusterIndex(x)){
           #check if merge from cluster that made dendro
-          if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+          if(whCl==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
             dendro<-.makeMergeDendrogram(x)
             if(is.null(dendro)) stop("Could not make merge dendrogram")
           }
-          else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+          else stop("Cluster given in 'whichCluster' does not match either the cluster on which the dendrogram was made or the merge cluster from this dendrogram. Either replace the existing dendrogram with one based on using your preferred clustering (via 'makeDendrogram'), or set 'whichCluster' to be equal to index of 'dendo_index' or 'merge_index' slot")
         }
         else dendro <- x@dendro_clusters
       }
@@ -338,9 +339,9 @@ setMethod(
     else dat<-assay(x,whichAssay)
     
     if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
-    		getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
+    		getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
     }
-    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
+    else getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
     
   }
 )
@@ -463,19 +464,31 @@ setMethod(
 
 #' @importFrom phylobase descendants nodeLabels subset tipLabels
 .makeMergeDendrogram<-function(object){
+	#this function returns a dendrogram where the tips are the merged clusters, rather than the clusters of the original dendrogram.
   if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
   if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
-  #test mergeClusters actually subset of the cluster says merged
+  
+  #-----
+  #test mergeClusters actually subset of the cluster says merged -- 
+  # -- should go back to this with new phylo4d object
+  #-----
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
   clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
-  phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4") #shouldn't do anything because already in that class...
+  phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4",convertCluster=TRUE)
   newPhylo4<-phylo4Obj
   if(names(rootNode(phylo4Obj)) %in% clusterNode){
     stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
   }
+  
+  #-----
+  # remove tips
+  # Note that subset function only removes specified tips (i.e. give tips to exclude)
+  # Doesn't allow you to give nodes you want to keep...
+  #-----
+  #After have updated merge, should come back to this...
   for(node in clusterNode){
     #first remove tips of children nodes so all children of node in question are tips
     

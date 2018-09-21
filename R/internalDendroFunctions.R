@@ -176,6 +176,67 @@
 }
 
 
+.pruneToNodes<-function(phylo4,nodesKeep){
+	#nodesKeep should be numberic index of nodes
+	# > slotNames(ccSE@dendro_clusters)
+	# [1] "data"        "metadata"    "edge"        "edge.length" "label"       "edge.label"  "order"
+	# [8] "annote"
+	allNodes<-phylobase::getNode(phylo4,type="all")
+	if(!all(nodesKeep %in% allNodes)) 
+		stop("nodes specified are not valid")
+	nodesKeep<-unique(unlist(phylobase::ancestors(phylo4,nodesKeep,"ALL"),use.names=FALSE)) #ALL means include self
+	names(nodesKeep)<-names(allNodes)[nodesKeep]
+	whEdgesKeep<-which(phylobase::edges(phylo4)[,2] %in% nodesKeep) 
+	
+	newEdge<-phylobase::edges(phylo4)[whEdgesKeep,]
+	
+	#need to get rid of singleton nodes -- i.e. nodes with only 1 descendant
+	#this won't happen I think in my merge tree example, so make it error...
+	singletonNode<-if(length(which(table(newEdge[-which(newEdge[,1]==0),1])==1))>0) stop("coding error -- removing these nodes creates internal nodes that are singletons. Should be only choice of nodes that 'prunes' back the tree, not actually subsetting.")
+	
+	
+	#problem: have to renumber everything... technically documentation doesn't say that, but actually do
+	newTips<-newEdge[which(!newEdge[,2] %in% newEdge[,1]),2]
+	newNodes<-nodesKeep
+	root<-newEdge[newEdge[,1] ==0,2]
+	
+	browser()
+	#tips: 1:node
+	#tips should be in edge matrix once:
+	whEdgeTips<-match(newTips,newEdge)
+	newEdge[whEdgeTips]<-order(newTips)
+	whNodeTips<-match(newTips,newNodes)
+	newNodes[whNodeTips]<-order(newTips)
+	#internal nodes: subtract root number + nTips
+	newEdge[-whEdgeTips]<-newEdge[-whEdgeTips]-root+length(newTips)+1
+	newEdge[newEdge<0]<-0
+	newNodes[-whNodeTips]<-newNodes[-whNodeTips]-root+length(newTips)+1
+	#now need to make sure in right order with new edges:
+	newdata<-phylo4@data[nodesKeep,]
+	
+	row.names(newdata)<-as.character(newNodes)
+	
+	tipLabels<-names(newNodes)[whNodeTips]
+	tipLabels<-tipLabels[order(newNodes[whNodeTips])]
+	nodeLabels<-names(newNodes)[-whNodeTips]
+	nodeLabels<-nodeLabels[order(newNodes[-whNodeTips])]
+
+	##edge length slots: edge, edge.length, edge.label
+	##node length slots: data (rows), label
+	##Don't change: order, metadata, annote
+	return(phylo4d(x=newEdge, 
+		edge.length = phylo4@edge.length[whEdgesKeep], 
+		tip.label = tipLabels,
+		node.label = nodeLabels, 
+		edge.label = phylo4@edge.label[whEdgesKeep], 
+		order = phylo4@order,
+		annote = phylo4@annote,
+		all.data=newdata,
+		metadata=phylo4@metadata)
+	)	
+	
+}
+
 #' @importFrom phylobase tipLabels subset 
 .safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
   if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){

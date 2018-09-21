@@ -18,15 +18,7 @@ test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", 
 })
 
 
-test_that("`getBestFeatures` works with HDF5 assay slot",{
-    expect_silent(cl1 <- clusterSingle(hdfObj, 
-            subsample=FALSE, sequential=FALSE,
-			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
-			isCount=FALSE))
-    expect_silent(getBestFeatures(cl1,DEMethod="limma"))
-								
-	
-})
+
 test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
   ## add some unclustered
@@ -93,8 +85,7 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
   expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
                                dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
   expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
-  expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
-                           dendro = dendro$clusters,DEMethod="limma"))
+  expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro = dendro$clusters,DEMethod="limma"))
 						   
   length(grep("Node",dend1$ContrastName))
   ceTemp<-ceSimData
@@ -113,11 +104,19 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
   resCE<-getBestFeatures(clustMerged, contrastType="Dendro",DEMethod="limma")
 
 })
-
+test_that("`getBestFeatures` works with HDF5 assay slot",{
+    expect_silent(cl1 <- clusterSingle(hdfObj, 
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+    expect_silent(getBestFeatures(cl1,DEMethod="limma"))
+								
+	
+})
 test_that("`plotContrastHeatmap` works", {
-	ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]])
-    topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma")
-	  plotContrastHeatmap(ceSimData,signifTable=topC2)
+	expect_silent(ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]]))
+    expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2))
 
 	  topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma")
 	  plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll)

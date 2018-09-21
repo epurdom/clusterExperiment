@@ -139,8 +139,13 @@ setMethod(
                           calculateSample=TRUE,...) {
         unassigned <- match.arg(unassignedSamples)
         if(is.null(attributes(x)$Labels)) {
-            attributes(x)$Labels <- as.character(seq_len(nSamples))
+            attributes(x)$Labels <- paste("Sample",as.character(seq_len(nSamples)))
         }
+		if(!all(is.na(suppressWarnings(as.numeric(attributes(x)$Labels ))))){
+			warning("Cannot use the attributes(x)$Labels because they are numbers. Making sample names")
+			sampleNames<-paste("Sample",as.character(seq_len(nSamples)))
+		}
+		
         clusterD<-.makeClusterDendro(x,cluster,type="dist",...)  
         fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
         return(list(samples=fullD,clusters=clusterD))
@@ -155,10 +160,15 @@ setMethod(
     definition = function(x, cluster,
                           unassignedSamples=c("outgroup", "cluster", "remove"),
                           calculateSample=TRUE,...) {
+		
         unassigned <- match.arg(unassignedSamples)
         if(is.null(colnames(x))) {
-            colnames(x) <- as.character(seq_len(ncol(x)))
+            colnames(x) <- paste("Sample",as.character(seq_len(ncol(x))))
         }
+		if(!all(is.na(suppressWarnings(as.numeric(colnames(x) ))))){
+			warning("Cannot use the colnames(x) because they are numbers. Making sample names")
+			sampleNames<-paste("Sample",as.character(seq_len(ncol(x))))
+		}
         clusterD<-.makeClusterDendro(x,cluster,type="mat",...)
         fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("mat"), unassignedSamples=unassigned, sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
         
@@ -239,6 +249,7 @@ setMethod(
     unassignedSamples<-match.arg(unassignedSamples)
     type<-match.arg(type)
     sampleNames<-if(type=="mat") colnames(x) else attributes(x)$Labels
+	
     if(calculateSample){
         whPos<-which(cl>0) #this is copy close to length of n
         if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
