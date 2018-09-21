@@ -5,6 +5,27 @@
   # -- NodeId (only for sample tree): for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
   # -- SampleIndex (only for sample tree): index to the columns in the assay
 
+#' @importFrom phylobase tdata
+.matchToClusterDendroData<-function(inputValue,clusterDendro,matchValue="NodeId",columnValue){
+	df<-phylobase::tdata(clusterDendro,type="all")
+	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue must be character valued")
+	if(!columnValue=="matchIndex" && (!columnValue %in% names(df) || !matchValue %in% names(df))) stop("coding error -- invalid value of columnValue or matchValue")
+	m<-match(inputValue, df[,matchValue])
+	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in clusterDendro)")
+	if(columnValue=="matchIndex") return(m)
+	else return(df[m,columnValue])
+}
+
+.convertDendoLabelsToClusterName<-function(dendro,clusterLegendMat){
+	#Assumes are names as numbers and that only ones that have numbers (i.e. that other nodes will be NodeX, etc.)
+    #Add clusterNames as Ids to cluster and sample dendrogram.
+	m<-match(phylobase::labels(dendro), clusterLegendMat[,"clusterIds"])
+	
+	phylobase::labels(dendro)[!is.na(m)]<-clusterLegendMat[m[!is.na(m)],"name"]
+    return(dendro)
+	
+	
+}
 
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram

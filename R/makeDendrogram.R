@@ -117,19 +117,15 @@ setMethod(
                 passedArgs)) 
         }
         
-        #Add clusterNames as Ids to cluster dendrogram.
-		m<-match(phylobase::tipLabels(outlist$clusters), clusterLegend(x)[[whCl]][,"clusterIds"])
-		phylobase::tipLabels(outlist$clusters)<-clusterLegend(x)[[whCl]][m,"name"]
-        x@dendro_clusters <- outlist$clusters
-		
-		
+        #Add clusterNames as Ids to cluster and sample dendrogram.
+		x@dendro_clusters <- .convertDendoLabelsToClusterName(outlist$clusters, clusterLegendMat=clusterLegend(x)[[whCl]])
+		x@dendro_samples <- .convertDendoLabelsToClusterName(outlist$samples , clusterLegendMat=clusterLegend(x)[[whCl]])
         x@dendro_index<-whCl
-        x@dendro_samples <- outlist$samples
-        x@dendro_outbranch<- any(cl<0) & unassignedSamples=="outgroup"
+        x@dendro_outbranch<- "outbranch root" %in% phylobase::tdata(x@dendro_samples)$Position
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
         return(x)
-    })
+})
 
 
 
@@ -324,70 +320,80 @@ setMethod(
         ###################
         newPhylo<-.convertToPhyClasses(newPhylo,"phylo4")
 				
-		    #create data for phylo4d object
-				nodeLabs<-phylobase::getNode(newPhylo,type="all") 
-		    mClusterHier<-rep(NA,length(nodeLabs))
-				position<-rep(NA,length(nodeLabs))
-				whInternal<-grep("InternalNodeId",names(nodeLabs))
-				mInternal<-match(names(nodeLabs)[whInternal],phylobase::tdata(clusterDendro,"all")$NodeId)
-				mClusterHier[whInternal]<-as.character(phylobase::tdata(clusterDendro,"all")$NodeId[mInternal])
-				position[whInternal]<-as.character(phylobase::tdata(clusterDendro,"all")$Position)[mInternal]
+		#create data for phylo4d object
+		nodeLabs<-phylobase::getNode(newPhylo,type="all") 
+		mClusterHier<-rep(NA,length(nodeLabs))
+		position<-rep(NA,length(nodeLabs))
+		whInternal<-grep("InternalNodeId",names(nodeLabs))
+		mClusterHier[whInternal]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whInternal], clusterDendro=clusterDendro, columnValue="NodeId"))
+		position[whInternal]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whInternal], clusterDendro=clusterDendro, columnValue="Position"))
 
-				whCluster<-grep("ClusterId",names(nodeLabs))
-				mCluster<-match(names(nodeLabs)[whCluster],phylobase::tdata(clusterDendro,"all")$ClusterIdDendro)
-				mClusterHier[whCluster]<-as.character(phylobase::tdata(clusterDendro,"all")$NodeId[mCluster])
-				position[whCluster]<-as.character(phylobase::tdata(clusterDendro,"all")$Position)[mCluster]
+		whCluster<-grep("ClusterId",names(nodeLabs))
+		mClusterHier[whCluster]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whCluster], clusterDendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="NodeId"))
+		position[whCluster]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whCluster], clusterDendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="Position"))
 
 				#rather than keep track of position as make trees (which require making it a phylo4d class much more frequently), figure it out from here.
 				
-				rootNode<-phylobase::rootNode(newPhylo)
-	     rootChildren <- phylobase::descendants(newPhylo,node=rootNode,type="children")
+		rootNode<-phylobase::rootNode(newPhylo)
+		rootChildren <- phylobase::descendants(newPhylo,node=rootNode,type="children")
 			 
-			 whNAChild<-which(is.na(names(rootChildren)))
-			 if(length(whNAChild)==0){
-				 #all are part of cluster hierarchy
-				 #all NA nodes -> "tip hierarchy"
-				 #all tips -> "assigned tip"
-				 position[is.na(names(nodeLabs))]<-"tip hierarchy"
-				 position[phylobase::getNode(newPhylo,"tip")]<-"assigned tip"
-				 #check if there is a singleton sample for outlier:
-				 whSingletonOutlier<-which(is.na(mClusterHier[rootChildren]))
-				 if(length(whSingletonOutlier)>0){
-				 	position[rootChildren[whSingletonOutlier]]<-"unassigned tip"
-				 }
-				 
+		 whNAChild<-which(is.na(names(rootChildren)))
+		 if(length(whNAChild)==0){
+			 #all are part of cluster hierarchy
+			 #all NA nodes -> "tip hierarchy"
+			 #all tips -> "assigned tip"
+			 position[is.na(names(nodeLabs))]<-"tip hierarchy"
+			 position[phylobase::getNode(newPhylo,"tip")]<-"assigned tip"
+			 #check if there is a singleton sample for outlier:
+			 whSingletonOutlier<-which(is.na(mClusterHier[rootChildren]))
+			 if(length(whSingletonOutlier)>0){
+			 	position[rootChildren[whSingletonOutlier]]<-"unassigned tip"
 			 }
-			 else if(length(whNAChild)==1){
-				 #all nodes descending from child of NA -> "outbranch hierarchy node"
-				 #all tips descending from child of NA -> "unassigned tip"
-				 #all tips descending from non-NA -> "assigned tip"
-				 #all NA nodes descending from non-NA -> "tip hierarchy"
-				 #root -> "outbranch root"
-				 position[rootNode]<-"outbranch root"
-				 naNode<-rootChildren[which(is.na(names(rootChildren)))]
-				 position[phylobase::descendants(newPhylo,node=naNode,type="ALL")] <- "outbranch hierarchy node" #includes tips, but will overwrite this in next line...
-				 position[phylobase::descendants(newPhylo,node=naNode,type="tip")] <- "unassigned tip"
-				 nonNANode<-rootChildren[which(!is.na(names(rootChildren)))]
-				  whDescendantNonNA <- phylobase::descendants(newPhylo,node=nonNANode,type="all")
-					whDescendantNonNA<-whDescendantNonNA[is.na(names(whDescendantNonNA))]
-					position[whDescendantNonNA]<-"tip hierarchy"
-				  whTipsDescendantNonNA <- phylobase::descendants(newPhylo,node=nonNANode,type="tip")
-					position[whTipsDescendantNonNA]<-"assigned tip"
-					
-			 }
-			 else stop("coding error -- neither child of root is part of cluster hierarchy")
-				 if(any(is.na(position))) stop("coding error -- not all nodes assigned a position value")
-			position<-factor(position,levels=.positionLevels)
-			
-			
-			 m<-match(mClusterHier, phylobase::tdata(clusterDendro,type="all")$NodeId)
-				data.cl <- data.frame(NodeId=mClusterHier,ClusterIdDendro=phylobase::tdata(clusterDendro,type="all")$ClusterIdDendro[m],ClusterIdMerge=phylobase::tdata(clusterDendro,type="all")$ClusterIdMerge[m],Position=position,stringsAsFactors=FALSE)
-		 	
-		 	row.names(data.cl)<-as.character(nodeLabs)
+	 
+		 }
+		 else if(length(whNAChild)==1){
+			 #all nodes descending from child of NA -> "outbranch hierarchy node"
+			 #all tips descending from child of NA -> "unassigned tip"
+			 #all tips descending from non-NA -> "assigned tip"
+			 #all NA nodes descending from non-NA -> "tip hierarchy"
+			 #root -> "outbranch root"
+			 position[rootNode]<-"outbranch root"
+			 naNode<-rootChildren[which(is.na(names(rootChildren)))]
+			 position[phylobase::descendants(newPhylo,node=naNode,type="ALL")] <- "outbranch hierarchy node" #includes tips, but will overwrite this in next line...
+			 position[phylobase::descendants(newPhylo,node=naNode,type="tip")] <- "unassigned tip"
+			 nonNANode<-rootChildren[which(!is.na(names(rootChildren)))]
+			  whDescendantNonNA <- phylobase::descendants(newPhylo,node=nonNANode,type="all")
+				whDescendantNonNA<-whDescendantNonNA[is.na(names(whDescendantNonNA))]
+				position[whDescendantNonNA]<-"tip hierarchy"
+			  whTipsDescendantNonNA <- phylobase::descendants(newPhylo,node=nonNANode,type="tip")
+				position[whTipsDescendantNonNA]<-"assigned tip"
+		
+		 }
+		else stop("coding error -- neither child of root is part of cluster hierarchy")
+		if(any(is.na(position))) stop("coding error -- not all nodes assigned a position value")
+		position<-factor(position,levels=.positionLevels)
 
-			#Need to fix back up the nodeLabels so match that of clusterDendro (in conversion made them the internal names)			
+		mSamples<-match(names(nodeLabs),sampleNames)
+		#this will miss singleton clusters (which will have name ClusterIdX instead of sample name)
+		whMissed<-intersect(which(is.na(mSamples)),grep("assigned tip",position))
+		if(length(whMissed)>0){
+			clusters<-.matchToClusterDendroData(inputValue=mClusterHier[whMissed],clusterDendro,columnValue="ClusterIdDendro",matchValue="NodeId")
+			if(any(is.na(clusters))) stop("coding error -- didn't find singleton cluster")
+			whSamplesSingle<-match(gsub("ClusterId","",clusters),as.character(cl))
+			mSamples[whMissed]<-whSamplesSingle
+		}
+		if(any(is.na(mSamples[position %in% c("unassigned tip","assigned tip")]))) stop("coding error -- finding sample index failed")
+		data.cl <- data.frame(NodeId=mClusterHier, Position=position, SampleIndex=mSamples, stringsAsFactors=FALSE)	
 			
-		  return(phylobase::phylo4d(x=newPhylo, all.data = data.cl))
+		#m<-match(mClusterHier, phylobase::tdata(clusterDendro,type="all")$NodeId)
+		#ClusterIdDendro=phylobase::tdata(clusterDendro,type="all")$ClusterIdDendro[m],ClusterIdMerge=phylobase::tdata(clusterDendro,type="all")$ClusterIdMerge[m],
+		row.names(data.cl)<-as.character(nodeLabs)
+
+		#Need to fix back up the nodeLabels so match that of clusterDendro (in conversion made them the internal names)			
+		whMatchCluster<-which(!is.na(data.cl$NodeId))
+		mToCluster<-.matchToClusterDendroData(inputValue=data.cl$NodeId[whMatchCluster],clusterDendro,columnValue="matchIndex",matchValue="NodeId")
+		phylobase::labels(newPhylo,type="all")[whMatchCluster]<-phylobase::labels(clusterDendro,type="all")[mToCluster]
+		return(phylobase::phylo4d(x=newPhylo, all.data = data.cl))
 
     }
     else return(NULL)
