@@ -220,8 +220,8 @@ setMethod(
     clusterD<-if(type=="dist").convertToPhyClasses(stats::hclust(as.dist(medoids),members=nPerCluster,...),returnClass=c("phylo4")) else .convertToPhyClasses(stats::hclust(dist(medoids)^2,members=nPerCluster,...),returnClass=c("phylo4"))
        
    #create data for phylo4d object
-   clusterNodes<-phylobase::getNode(clusterD) 
-	    data.cl <- data.frame(NodeId = paste("InternalNodeId",as.numeric(unname(clusterNodes)),sep=""), ClusterIdDendro = paste("ClusterId",names(clusterNodes),sep=""), ClusterIdMerge= rep(NA,length(clusterNodes)))
+   clusterNodes<-phylobase::getNode(clusterD,type="all") 
+   data.cl <- data.frame(NodeId = paste("InternalNodeId",as.numeric(unname(clusterNodes)),sep=""), ClusterIdDendro = paste("ClusterId",names(clusterNodes),sep=""), ClusterIdMerge= rep(NA,length(clusterNodes)))
 	data.cl$Position<-factor(rep("cluster hierarchy node",nrow(data.cl)), levels=.positionLevels)
 	row.names(data.cl)<-as.character(unname(clusterNodes))
     data.cl$Position[phylobase::getNode(clusterD,type="tip")]<-"cluster hierarchy tip"
@@ -354,7 +354,7 @@ setMethod(
 			 #all NA nodes -> "tip hierarchy"
 			 #all tips -> "assigned tip"
 			 position[is.na(names(nodeLabs))]<-"tip hierarchy"
-			 position[phylobase::getNode(newPhylo,"tip")]<-"assigned tip"
+			 position[phylobase::getNode(newPhylo,type="tip")]<-"assigned tip"
 			 #check if there is a singleton sample for outlier:
 			 whSingletonOutlier<-which(is.na(mClusterHier[rootChildren]))
 			 if(length(whSingletonOutlier)>0){

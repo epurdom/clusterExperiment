@@ -205,7 +205,8 @@ setMethod(
     if(!is.null(dendro)){
       #check valid
       ncluster <- length(table(cl[cl>0]))
-      if(nTips(dendro) != ncluster) {
+      dendro <- .convertToPhyClasses(dendro,"phylo4d")
+      if(phylobase::nTips(dendro) != ncluster) {
         stop("Not a valid input dendrogram (not equal to the number of non -1 clusters in cl).")
       }
     }
@@ -262,15 +263,6 @@ setMethod(
     ### calculate the estimated proportions
     ############
     if(needCalculate){
-
-			#			denote<-sprintf("Significance tests will use %s method",DEMethod)
-			# if(DEMethod=="edgeR"){
-			# 	if(!is.null(weights)) denote<-paste(denote, ", along with weights correction.")
-			# 	else denote<-paste0(denote,".")
-			# }
-			# else denote<-paste0(denote,".")
-			# .mynote(denote)
-
       #get per-gene test-statistics for the contrasts corresponding to each node (and return all)
       sigTable <- getBestFeatures(x, cl,
                                   contrastType=c("Dendro"), dendro=dendro,
@@ -299,38 +291,40 @@ setMethod(
     }
     else{
       .mynote(paste("Using existing results of per-node significance -- no new tests on individual features will be made."))
-
       sigByNode<-by(nodePropTable,nodePropTable$Node,function(x){x})
     }
     newcl <- cl
     ############
     ### #go up tree and merge clusters
     ############
-    phylo4Obj <- .convertToPhyClasses(dendro,"phylo4")
-	
-    if(mergeMethod != "none"){
-			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
-      nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
+ 	if(mergeMethod != "none"){
+	  valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
+	  
+	  nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
 
       #find nodes where *all* descendants are below cutoff
-      allTipNames <- phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj, type=c("tip"))]
-      whToMerge <- sapply(nodesBelowCutoff,function(node){
-        desc <- phylobase::descendants(phylo4Obj, node, type = c("all"))
+	  #Note, now nodes in sigByNode are "InternalNodeIdX". Need to fix code to get those values from tdata of dendro.
+      allTipNames <- phylobase::labels(dendro)[phylobase::getNode(dendro, type=c("tip"))]
+	  
+	  data.cl<-phylobase::tdata(dendro,type="all")
+	  nodeIndexBelowCutoff<-match(nodesBelowCutoff,as.character(data.cl$NodeId))
+      whToMerge <- sapply(nodeIndexBelowCutoff,function(node){
+        desc <- phylobase::descendants(dendro, node, type = c("all"))
         return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
       })
       if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
-        nodesToMerge <- nodesBelowCutoff[whToMerge]
+        nodesToMerge <- nodeIndexBelowCutoff[whToMerge]
 
         #now find top ones
         whAnc <- sapply(nodesToMerge, function(node){
-          anc <- phylobase::ancestors(phylo4Obj, node, type="all")
+          anc <- phylobase::ancestors(dendro, node, type="all")
           return(!any(names(anc) %in% nodesToMerge))
         })
         nodesAtTop <- nodesToMerge[whAnc]
 
         #make new clusters
         temp <- lapply(nodesAtTop, function(node){
-          tips <- phylobase::descendants(phylo4Obj, node, type="tips")
+          tips <- phylobase::descendants(dendro, node, type="tips")
           if(any(!names(tips) %in% as.character(cl))) {
             stop("coding error-- tips don't match values of cl")
           }
@@ -412,7 +406,7 @@ setMethod(
       logicalMerge <- annotTable$Node %in% nodesToMerge
       #gives the names of original cluster ids
       corrspCluster <- sapply(annotTable$Node, function(node) {
-        tips <- phylobase::descendants(phylo4Obj, node, type = c("tips")) #names of tips
+        tips <- phylobase::descendants(dendro, node, type = c("tips")) #names of tips
         if (any(!names(tips) %in% as.character(cl))) {
           stop("coding error-- tips don't match values of cl")
         }
@@ -427,10 +421,10 @@ setMethod(
         correctNode<-sapply(uniqueCorr,function(x){
           nodes<-annotTable$Node[which(corrspCluster==x)]
           if(length(nodes)>1){
-            ntips<-sapply(nodes,function(node){length(phylobase::descendants(phylo4Obj, node, type = c("tips")))})
+            ntips<-sapply(nodes,function(node){length(phylobase::descendants(dendro, node, type = c("tips")))})
             maxnode<-nodes[which.max(ntips)]
             #check true assumption, no weird cases
-            maxdesc<-phylobase::descendants(phylo4Obj, maxnode, type = c("all"))
+            maxdesc<-phylobase::descendants(dendro, maxnode, type = c("all"))
             if(!all(nodes[-which.max(ntips)] %in% names(maxdesc))) stop("coding error -- largest samples wasn't parent node")
             return(maxnode)
           }
