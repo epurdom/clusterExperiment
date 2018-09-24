@@ -87,7 +87,7 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
   expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
   expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro = dendro$clusters,DEMethod="limma"))
 						   
-  length(grep("Node",dend1$ContrastName))
+  length(grep("NodeId",dend1$ContrastName))
   ceTemp<-ceSimData
   expect_silent(ceTemp <- makeDendrogram(ceTemp))
   expect_silent(dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma"))

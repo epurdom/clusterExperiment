@@ -8,14 +8,22 @@
 #' @importFrom phylobase tdata
 .matchToClusterDendroData<-function(inputValue,clusterDendro,matchValue="NodeId",columnValue){
 	df<-phylobase::tdata(clusterDendro,type="all")
-	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue must be character valued")
-	if(!columnValue=="matchIndex" && (!columnValue %in% names(df) || !matchValue %in% names(df))) stop("coding error -- invalid value of columnValue or matchValue")
-	m<-match(inputValue, df[,matchValue])
+	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue and matchValue must be character valued")
+	if(!columnValue=="matchIndex" && !columnValue %in% names(df)) stop("coding error -- invalid value of columnValue ")
+	if(!matchValue=="NodeIndex" && !matchValue %in% names(df)) stop("coding error -- invalid value of matchValue")
+	if(!matchValue=="NodeIndex") m<-match(inputValue, df[,matchValue]) else m<-inputValue
 	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in clusterDendro)")
 	if(columnValue=="matchIndex") return(m)
 	else return(df[m,columnValue])
 }
 
+#' @importFrom phylobase tdata
+.getClusterIds<-function(tipIndex,clusterDendro,columnValue=c("ClusterIdDendro","ClusterIdMerge")){
+	columnValue<-match.arg(columnValue)
+  tipNames <- .matchToClusterDendroData(tipIndex,clusterDendro,matchValue="NodeIndex",columnValue=columnValue)
+  tipNames<-gsub("ClusterId","",as.character(tipNames))
+  return(tipNames)
+}
 .convertDendoLabelsToClusterName<-function(dendro,clusterLegendMat){
 	#Assumes are names as numbers and that only ones that have numbers (i.e. that other nodes will be NodeX, etc.)
     #Add clusterNames as Ids to cluster and sample dendrogram.

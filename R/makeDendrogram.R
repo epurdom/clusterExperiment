@@ -221,11 +221,13 @@ setMethod(
        
    #create data for phylo4d object
    clusterNodes<-phylobase::getNode(clusterD,type="all") 
-   data.cl <- data.frame(NodeId = paste("InternalNodeId",as.numeric(unname(clusterNodes)),sep=""), ClusterIdDendro = paste("ClusterId",names(clusterNodes),sep=""), ClusterIdMerge= rep(NA,length(clusterNodes)))
+   clusterIdDendro<-paste("ClusterId",names(clusterNodes),sep="")
+   clusterIdDendro[is.na(names(clusterNodes))]<-NA
+   data.cl <- data.frame(NodeId = paste("InternalNodeId",as.numeric(unname(clusterNodes)),sep=""), ClusterIdDendro = clusterIdDendro, ClusterIdMerge= rep(NA,length(clusterNodes)),stringsAsFactors=FALSE)
 	data.cl$Position<-factor(rep("cluster hierarchy node",nrow(data.cl)), levels=.positionLevels)
 	row.names(data.cl)<-as.character(unname(clusterNodes))
     data.cl$Position[phylobase::getNode(clusterD,type="tip")]<-"cluster hierarchy tip"
-	  data.cl$ClusterIdDendro[is.na(names(clusterNodes))]<-NA
+	  
 	#give default node labels:
 	phylobase::nodeLabels(clusterD)<-paste("Node",1:length(phylobase::nodeLabels(clusterD)),sep="")
 	

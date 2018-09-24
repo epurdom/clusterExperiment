@@ -475,7 +475,7 @@ setMethod(
   # -- should go back to this with new phylo4d object
   #-----
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
-  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
+  clusterNode<-object@merge_nodeMerge[whClusterNode,"NodeId"]
   clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
   phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4",convertCluster=TRUE)
   newPhylo4<-phylo4Obj

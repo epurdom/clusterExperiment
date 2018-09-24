@@ -100,7 +100,7 @@ setMethod(
     
     possibleMergeValues<-c("none", "all","mergeMethod",.availMergeMethods)
     if(!is.null(x@merge_nodeProp)){
-      otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)%in%c("Node","Contrast")]
+      otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)%in%c("NodeId","Contrast")]
       possibleMergeValues<-unique(c(possibleMergeValues,otherVals))
       
     }
@@ -270,7 +270,7 @@ setMethod(
   ### Note: could probably have used nodelabels function and avoided some of this
   ###############
   if(!is.null(mergeOutput)){
-    annotNames<-c("Node","Contrast","isMerged", "mergeClusterId")
+    annotNames<-c("NodeId","Contrast","isMerged", "mergeClusterId")
     methods<-colnames(mergeOutput)[!colnames(mergeOutput)%in%annotNames] #possible for which have proportion saved
   }
   if(!is.null(mergePlotType) && !is.null(mergeOutput) && mergePlotType %in% c("all",methods,"mergeMethod")){

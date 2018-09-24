@@ -85,9 +85,9 @@ setMethod(
       }
       
       #fix so order is order of nodes 
-      nodeGrep<-grep("Node",names(geneByContrast))
+      nodeGrep<-grep("NodeId",names(geneByContrast))
       if(length(nodeGrep)==length(geneByContrast)){
-        nsplit<-strsplit(names(geneByContrast),"Node")
+        nsplit<-strsplit(names(geneByContrast),"NodeId")
         norder<-order(as.numeric(sapply(nsplit,.subset2,2)))
         geneByContrast<-geneByContrast[norder]
       }

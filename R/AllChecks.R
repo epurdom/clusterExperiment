@@ -128,12 +128,12 @@
     #deal with possible FC
     baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
     if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
-    allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','Node')
+    allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
     
     if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
-      return(paste("merge_nodeMerge must have 4 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
+      return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
     }
-    if(!is.character(object@merge_nodeMerge[,"Node"])) return("'Node' column of merge_nodeMerge must be character")
+    if(!is.character(object@merge_nodeMerge[,"NodeId"])) return("'NodeId' column of merge_nodeMerge must be character")
     if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
     if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be logical")
     if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
@@ -155,16 +155,16 @@
     if(length(object@merge_demethod)!=1 || !object@merge_demethod %in% .demethods)
       return(paste("merge_demethod must be one of:",paste(.demethods,collapse=",")))
 		
-    requireColumns<-c("Node","Contrast",.availMergeMethods)
+    requireColumns<-c("NodeId","Contrast",.availMergeMethods)
     #need to allow for log fold change columns of adjP
     allCnames<-colnames(object@merge_nodeProp)
     whFC<-grep("adjP_",allCnames)
-    whNode<-which(allCnames %in% c("Node","Contrast"))
+    whNode<-which(allCnames %in% c("NodeId","Contrast"))
     namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
     if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
       return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
     
-    if(!is.character(object@merge_nodeProp[,"Node"])) return("'Node' column of merge_nodeProp must be character")
+    if(!is.character(object@merge_nodeProp[,"NodeId"])) return("'Node' column of merge_nodeProp must be character")
     if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
     for(method in allCnames[-whNode]){
       if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))

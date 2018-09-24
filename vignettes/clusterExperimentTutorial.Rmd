@@ -1164,7 +1164,7 @@ plotDendrogram(ce,whichClusters=c("makeConsensus","mergeClusters"),show.node.lab
 We can also make the nodes colors (useful for linking up with colors from `plotContrastHeatmap` if using hierarchical contrasts, see below). Here we give own argument `nodeColors` (not that from `plot.phylo`) to make it easier; the argument takes a vector of colors, where the names of the vectors match the node names. Notice, we can plot the merge information with node colors.
 
 ```{r plotDendro_NodeColors}
-nodeNames<-paste("Node",1:6,sep="")
+nodeNames<-paste("NodeId",1:6,sep="")
 nodeColors<-massivePalette[1:length(nodeNames)]
 names(nodeColors)<-nodeNames
 par(mar=plotDMar)
