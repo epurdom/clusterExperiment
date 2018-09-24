@@ -109,7 +109,7 @@ setMethod(
       ####
       #Convert to object used by phylobase
 	  #Note dendrogram here is the cluster dendrogram
-      phylo4Obj<-.convertToPhyClasses(dendro,"phylo4",convertCluster=TRUE)
+      phylo4Obj<-.convertToPhyClasses(dendro,"phylo4",convertNode=TRUE,convertTips=TRUE)
       clChar<-as.character(cl)
 	  tipLabels(phylo4Obj)<-gsub("ClusterId","",tipLabels(phylo4Obj))
       allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]

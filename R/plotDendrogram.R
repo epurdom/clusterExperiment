@@ -158,7 +158,8 @@ setMethod(
       else clusterLegend<-sClusterLegend$colorList
     }
 		
-    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else as.character(seq_len(ncol(x)))
+    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else
+		.makeSampleNames(seq_len(ncol(x)))
     if(length(whCl)==1 & is.null(sData)){
       leg<-clusterLegend(x)[[whCl]]
       if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
@@ -195,7 +196,7 @@ setMethod(
       warning("There is no information about merging -- will ignore input to 'mergeInfo'")
     }
     
-    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,outbranch=x@dendro_outbranch,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
+    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
     
     if(!is.null(nodeColors)){
       if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
@@ -216,48 +217,33 @@ setMethod(
 
 ########
 # Internal plotting function used by both mergeClusters and plotDendrogram
-#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes subset
+#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes subset tdata
 #' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
-.plotDendro<-function(dendro,leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,plotType=c("name","colorblock"),outbranch=FALSE,removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
+.plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
   plotType<-match.arg(plotType)
-  phylo4Obj <- .makePhylobaseTree(dendro, isSamples=(leafType=="samples"),outbranch=outbranch)
-  
+  outbranch<- "outbranch root" %in% phylobase::tdata(dendro)$Position
   #---
   #remove the outbranch from the dendrogram and from cl
   #(note this is using phylo4 obj)
   #---
   if(outbranch & removeOutbranch & leafType=="samples"){
-    rootNode<-phylobase::rootNode(phylo4Obj)
-    rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-    tips<-phylobase::getNode(phylo4Obj,type="tip")
-    whMissingNode<-grep("MissingNode",names(rootChild))
-    if(length(whMissingNode)==0){
-      #check not a single -1 sample from root:
-      if(any(rootChild %in% tips)){
-        #which ever rootChild is in tips must be single missing sample 
-        #because can't make dendrogram with only 1 cluster so couldn't run plot or mergeClusters. 
-		#Note only true because outbranch=TRUE
-        clusterNode<-rootChild[!rootChild %in% tips]
-        #stop("Internal coding error: need to fix .plotDendro to deal with when single missing sample")
-      }
-      else stop("Internal coding error: no outbranch nodes")	
-    } 
-    else clusterNode<-rootChild[-whMissingNode]
-    if(length(clusterNode)!=1) stop("Internal coding error: removing missing node does not leave exactly 1 descendent of root")
-    clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
-    if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
-    namesClusterTips<-names(clusterTips)
-    #
-    
-    if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
-    phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)
+	  ##Find node that is cluster child of root	  
+    rootNode<-phylobase::rootNode(dendro)
+    rootChild<-phylobase::descendants(dendro,node=rootNode,type="children")
+	position<-.matchToDendroData(inputValue=rootChild,dendro=dendro,matchValue="NodeIndex",columnValue="Position")
+	if(!any(position=="cluster hierarchy node")) stop("coding error -- child of root with outbranch isn't cluster hierarchy node")
+	if(all(position=="cluster hierarchy node")) stop("coding error -- both child of root are 'cluster hierarchy node', but also have root is 'outbranchroot'")	
+	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
+	#need to check that this keeps tdata intact...
+	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
+	.checkDendroSamplesFormat(dendro)
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
   }
-  #convert back to phylo object...
-  phyloObj <- .convertToPhyClasses(phylo4Obj, "phylo")
+  #convert to phylo object...
+  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip= leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16
@@ -457,7 +443,7 @@ setMethod(
       
     }
     if(leafType=="samples"){
-      clNames<-if(is.matrix(cl)) row.names(cl) else names(cl)
+	  clNames<-if(is.matrix(cl)) row.names(cl) else names(cl)
 	  mToTree <- match(phyloObj$tip.label, clNames)
 	  if (any(is.na(mToTree))) stop("names of cl do not match dendrogram labels")
 	  

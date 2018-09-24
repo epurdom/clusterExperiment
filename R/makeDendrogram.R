@@ -121,6 +121,7 @@ setMethod(
 		x@dendro_clusters <- .convertDendoLabelsToClusterName(outlist$clusters, clusterLegendMat=clusterLegend(x)[[whCl]])
 		x@dendro_samples <- .convertDendoLabelsToClusterName(outlist$samples , clusterLegendMat=clusterLegend(x)[[whCl]])
         x@dendro_index<-whCl
+		#Don't really need this any more...
         x@dendro_outbranch<- "outbranch root" %in% phylobase::tdata(x@dendro_samples)$Position
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
@@ -139,15 +140,15 @@ setMethod(
                           calculateSample=TRUE,...) {
         unassigned <- match.arg(unassignedSamples)
         if(is.null(attributes(x)$Labels)) {
-            attributes(x)$Labels <- paste("Sample",as.character(seq_len(nSamples)))
+            attributes(x)$Labels <- .makeSampleNames(seq_len(nSamples))
         }
 		if(!all(is.na(suppressWarnings(as.numeric(attributes(x)$Labels ))))){
 			warning("Cannot use the attributes(x)$Labels because they are numbers. Making sample names")
-			sampleNames<-paste("Sample",as.character(seq_len(nSamples)))
+			sampleNames<-.makeSampleNames(seq_len(nSamples))
 		}
 		
         clusterD<-.makeClusterDendro(x,cluster,type="dist",...)  
-        fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+        fullD<-.makeSampleDendro(x,dendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
         return(list(samples=fullD,clusters=clusterD))
     })
 
@@ -163,11 +164,11 @@ setMethod(
 		
         unassigned <- match.arg(unassignedSamples)
         if(is.null(colnames(x))) {
-            colnames(x) <- paste("Sample",as.character(seq_len(ncol(x))))
+            colnames(x) <- .makeSampleNames(seq_len(ncol(x)))
         }
 		if(!all(is.na(suppressWarnings(as.numeric(colnames(x) ))))){
 			warning("Cannot use the colnames(x) because they are numbers. Making sample names")
-			sampleNames<-paste("Sample",as.character(seq_len(ncol(x))))
+			sampleNames<-.makeSampleNames(seq_len(ncol(x)))
 		}
         clusterD<-.makeClusterDendro(x,cluster,type="mat",...)
         fullD<- .makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("mat"), unassignedSamples=unassigned, sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
@@ -256,7 +257,7 @@ setMethod(
         whPos<-which(cl>0) #this is copy close to length of n
         if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
 					#converts internal node id and cluster id to the node, tip labels respectively.
-        phyloObj <- .convertToPhyClasses(clusterDendro,"phylo",convertCluster=TRUE)
+        phyloObj <- .convertToPhyClasses(clusterDendro,"phylo",convertNode=TRUE,convertTip=TRUE)
         if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
         nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
         
@@ -338,12 +339,12 @@ setMethod(
 		mClusterHier<-rep(NA,length(nodeLabs))
 		position<-rep(NA,length(nodeLabs))
 		whInternal<-grep("InternalNodeId",names(nodeLabs))
-		mClusterHier[whInternal]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whInternal], clusterDendro=clusterDendro, columnValue="NodeId"))
-		position[whInternal]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whInternal], clusterDendro=clusterDendro, columnValue="Position"))
+		mClusterHier[whInternal]<-as.character(.matchToDendroData(inputValue=names(nodeLabs)[whInternal], dendro=clusterDendro, columnValue="NodeId"))
+		position[whInternal]<-as.character(.matchToDendroData(inputValue=names(nodeLabs)[whInternal], dendro=clusterDendro, columnValue="Position"))
 
 		whCluster<-grep("ClusterId",names(nodeLabs))
-		mClusterHier[whCluster]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whCluster], clusterDendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="NodeId"))
-		position[whCluster]<-as.character(.matchToClusterDendroData(inputValue=names(nodeLabs)[whCluster], clusterDendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="Position"))
+		mClusterHier[whCluster]<-as.character(.matchToDendroData(inputValue=names(nodeLabs)[whCluster], dendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="NodeId"))
+		position[whCluster]<-as.character(.matchToDendroData(inputValue=names(nodeLabs)[whCluster], dendro=clusterDendro, matchValue="ClusterIdDendro",columnValue="Position"))
 
 				#rather than keep track of position as make trees (which require making it a phylo4d class much more frequently), figure it out from here.
 				
@@ -390,7 +391,7 @@ setMethod(
 		#this will miss singleton clusters (which will have name ClusterIdX instead of sample name)
 		whMissed<-intersect(which(is.na(mSamples)),grep("assigned tip",position))
 		if(length(whMissed)>0){
-			clusters<-.matchToClusterDendroData(inputValue=mClusterHier[whMissed],clusterDendro,columnValue="ClusterIdDendro",matchValue="NodeId")
+			clusters<-.matchToDendroData(inputValue=mClusterHier[whMissed],clusterDendro,columnValue="ClusterIdDendro",matchValue="NodeId")
 			if(any(is.na(clusters))) stop("coding error -- didn't find singleton cluster")
 			whSamplesSingle<-match(gsub("ClusterId","",clusters),as.character(cl))
 			mSamples[whMissed]<-whSamplesSingle
@@ -404,7 +405,7 @@ setMethod(
 
 		#Need to fix back up the nodeLabels so match that of clusterDendro (in conversion made them the internal names)			
 		whMatchCluster<-which(!is.na(data.cl$NodeId))
-		mToCluster<-.matchToClusterDendroData(inputValue=data.cl$NodeId[whMatchCluster],clusterDendro,columnValue="matchIndex",matchValue="NodeId")
+		mToCluster<-.matchToDendroData(inputValue=data.cl$NodeId[whMatchCluster],clusterDendro,columnValue="matchIndex",matchValue="NodeId")
 		phylobase::labels(newPhylo,type="all")[whMatchCluster]<-phylobase::labels(clusterDendro,type="all")[mToCluster]
 		return(phylobase::phylo4d(x=newPhylo, all.data = data.cl))
 

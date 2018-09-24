@@ -73,6 +73,25 @@
   return(TRUE)
 }
 
+#these functions are checks where don't need the corresponding object information
+#' @importFrom phylobase tdata
+.checkDendroClusterFormat<-function(dendro){
+	data.cl<-phylobase::tdata(dendro)
+	if(!all(names(data.cl)%in% .clusterDendroColumns)){
+		return("dendro_clusters must have data with column names:",paste(.clusterDendroColumns,sep=","))
+	}
+	else return(TRUE)
+}
+#' @importFrom phylobase tdata
+.checkDendroSamplesFormat<-function(dendro){
+	data.cl<-phylobase::tdata(dendro)
+	all(names(data.cl)%in% .clusterSampleColumns)
+	if(!all(names(data.cl)%in% .clusterSampleColumns)){
+		return("dendro_samples must have data with column names:",paste(.clusterDendroColumns,sep=","))
+	}
+	else return(TRUE)
+	
+}
 #' @importFrom phylobase nTips
 .checkDendrogram<-function(object){
   ############
@@ -84,6 +103,8 @@
     if(phylobase::nTips(object@dendro_clusters) != max(dcluster)) {
       return("dendro_clusters must have the same number of leaves as the number of (non-negative) clusters")
     }
+	ch<-.checkDendroClusterFormat(object@dendro_clusters)
+	if(!is.logical(ch)) return(ch)
   }
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
@@ -93,6 +114,9 @@
       return("dendro_samples must have the same number of leaves as the number of samples")
     }
     if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
+	ch<-.checkDendroSamplesFormat(object@dendro_samples)
+	if(!is.logical(ch)) return(ch)
+
   }
   else{
     #if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples

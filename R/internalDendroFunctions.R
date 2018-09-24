@@ -1,3 +1,8 @@
+.makeSampleNames<-function(x){paste("Sample",as.character(x))}
+
+.clusterDendroColumns<-c("Position","ClusterIdDendro","ClusterIdMerge","NodeId")
+.clusterSampleColumns<-c("Position","NodeId","SampleIndex")
+
 .positionLevels<-c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root")
 # -- Position: one of either "cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root"). This column should be internal and validity check that numbers correspond to clustering from @dendro_index. Needs to be a check on "ClusterExperiment", not the "clusterPhylo4d"
   # -- ClusterIdDendro (only for cluster): cluster Id in @dendro_index that corresponds to node (NA otherwise)
@@ -6,13 +11,13 @@
   # -- SampleIndex (only for sample tree): index to the columns in the assay
 
 #' @importFrom phylobase tdata
-.matchToClusterDendroData<-function(inputValue,clusterDendro,matchValue="NodeId",columnValue){
-	df<-phylobase::tdata(clusterDendro,type="all")
+.matchToDendroData<-function(inputValue,dendro,matchValue="NodeId",columnValue){
+	df<-phylobase::tdata(dendro,type="all")
 	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue and matchValue must be character valued")
 	if(!columnValue=="matchIndex" && !columnValue %in% names(df)) stop("coding error -- invalid value of columnValue ")
 	if(!matchValue=="NodeIndex" && !matchValue %in% names(df)) stop("coding error -- invalid value of matchValue")
 	if(!matchValue=="NodeIndex") m<-match(inputValue, df[,matchValue]) else m<-inputValue
-	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in clusterDendro)")
+	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in dendro)")
 	if(columnValue=="matchIndex") return(m)
 	else return(df[m,columnValue])
 }
@@ -20,7 +25,7 @@
 #' @importFrom phylobase tdata
 .getClusterIds<-function(tipIndex,clusterDendro,columnValue=c("ClusterIdDendro","ClusterIdMerge")){
 	columnValue<-match.arg(columnValue)
-  tipNames <- .matchToClusterDendroData(tipIndex,clusterDendro,matchValue="NodeIndex",columnValue=columnValue)
+  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchValue="NodeIndex",columnValue=columnValue)
   tipNames<-gsub("ClusterId","",as.character(tipNames))
   return(tipNames)
 }
@@ -58,14 +63,15 @@
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
-.convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertCluster=FALSE){
+###Note convertCluster should ONLY be for the cluster dendro!
+.convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){
-		if(convertCluster && returnClass %in% c("phylo","phylo4")){
+		if(returnClass %in% c("phylo","phylo4")){
 			#make internal node and cluster ids the node and tip labels (i.e. erase existing)
-			phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
+			if(convertNodes) phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
 	  
-			phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
+			if(convertTips) phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
 			
 		}
 		if(returnClass %in% c("phylo4","phylo4d")) return(x)

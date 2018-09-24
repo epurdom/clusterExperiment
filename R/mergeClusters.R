@@ -306,7 +306,7 @@ setMethod(
             #given by nodesIndexToMerge (index of node in the tree)
             #--------------
             allTipNames <- phylobase::labels(dendro)[phylobase::getNode(dendro, type=c("tip"))]
-            nodeIndexBelowCutoff <- .matchToClusterDendroData(inputValue=nodesBelowCutoff, clusterDendro=dendro, matchValue="NodeId",columnValue="matchIndex")
+            nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchValue="NodeId",columnValue="matchIndex")
             
             whToMerge <- sapply(nodeIndexBelowCutoff,function(node){
                 desc <- phylobase::descendants(dendro, node, type = c("all"))
@@ -366,7 +366,7 @@ setMethod(
             annotTable <- data.frame("NodeId"=names(sigByNode),
                                      "Contrast" = as.character(sigTable$Contrast[ match(names(sigByNode), sigTable$ContrastName) ]),
                                      stringsAsFactors =FALSE)
-            annotTable$NodeIndex <- .matchToClusterDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
+            annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
             if (!is.null(nodePropTableGiven)) {
                 #------------
                 #add results from nodePropTableGiven (original table) to nodePropTableGiven
@@ -463,7 +463,7 @@ setMethod(
                                   stringsAsFactors=FALSE)
         #Add new merge clusters to dendro
         data.cl<-phylobase::tdata(dendro)
-        m<-.matchToClusterDendroData(inputValue=nodeMergeTable$NodeId, clusterDendro=dendro, matchValue="NodeId", columnValue="matchIndex")
+        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchValue="NodeId", columnValue="matchIndex")
         clusterIdMerge<-rep(NA,length=nrow(data.cl))
         clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
         clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
@@ -505,7 +505,7 @@ setMethod(
             }
             combTable<-.nodeMergeInfo(nodeProp=out$nodeProp,nodeMerge=out$nodeMerge)
             
-            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",outbranch=any(cl<0),...)
+            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",...)
             else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
             
         }
@@ -684,14 +684,14 @@ setMethod(
                 whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
                 leg<-clusterLegend(retval)[whClusters]
                 cl<-clusterMatrix(retval,whichClusters=whClusters)
-                rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(seq_len(ncol(retval)))
+                rownames(cl)<-if(!is.null(colnames(retval))) colnames(retval) else .makeSampleNames(seq_len(ncol(retval)))
                 
             }
             else{
                 leg<-clusterLegend(retval)[[retval@dendro_index]]
                 cl<-switch(leafType,"samples"=clusterMatrix(retval)[,retval@dendro_index],"clusters"=NULL)
                 if(leafType=="samples"){
-                    names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else as.character(seq_len(ncol(retval)))
+                    names(cl)<-if(!is.null(colnames(retval))) colnames(retval) else .makeSampleNames(seq_len(length(cl)))
                 }
                 
             }
@@ -707,7 +707,8 @@ setMethod(
             # rownames(cl)<-colnames(retval)
             # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
             if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-            do.call(".plotDendro",c(list(dendro=dend,leafType=leafType,mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge),mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,clusterLegendMat=leg,plotType=label,outbranch=outbranch,removeOutbranch=outbranch),plotArgs))
+           
+			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, cl=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
         }
         
         invisible(retval)
