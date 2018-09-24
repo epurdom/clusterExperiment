@@ -155,6 +155,36 @@ test_that("saving merge info works",{
   expect_equal(clustMerged4@merge_index,1)
   expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,1,3,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
+  # > clustMerged4@merge_nodeMerge
+ #         Node               Contrast isMerged mergeClusterId
+ #  Node1 Node1  X3-(X1+X5+X6+X2+X4)/5    FALSE             NA
+ #  Node2 Node2 (X1+X5)/2-(X6+X2+X4)/3    FALSE             NA
+ #  Node3 Node3                  X1-X5     TRUE              1
+ #  Node4 Node4           X6-(X2+X4)/2     TRUE              3
+ #  Node5 Node5                  X2-X4     TRUE             NA
+ # > clustMerged4@merge_nodeProp
+ #        Node               Contrast Storey PC adjP locfdr MB JC
+ # Node1 Node1  X3-(X1+X5+X6+X2+X4)/5    1.0 NA 0.55     NA NA NA
+ # Node2 Node2 (X1+X5)/2-(X6+X2+X4)/3    1.0 NA 0.75     NA NA NA
+ # Node3 Node3                  X1-X5    0.0 NA 0.10     NA NA NA
+ # Node4 Node4           X6-(X2+X4)/2    0.1 NA 0.15     NA NA NA
+ # Node5 Node5                  X2-X4    0.4 NA 0.00     NA NA NA
+
+ # > clustMerged4@merge_nodeMerge
+ #                            NodeId               Contrast isMerged mergeClusterId
+ # InternalNodeId7   InternalNodeId7  X3-(X1+X5+X6+X2+X4)/5    FALSE             NA
+ # InternalNodeId8   InternalNodeId8 (X1+X5)/2-(X6+X2+X4)/3    FALSE             NA
+ # InternalNodeId9   InternalNodeId9                  X1-X5     TRUE              1
+ # InternalNodeId10 InternalNodeId10           X6-(X2+X4)/2    FALSE             NA
+ # InternalNodeId11 InternalNodeId11                  X2-X4     TRUE              2
+ # > clustMerged4@merge_nodeProp
+ #                            NodeId               Contrast Storey PC adjP locfdr MB JC
+ # InternalNodeId7   InternalNodeId7  X3-(X1+X5+X6+X2+X4)/5    1.0 NA 0.55     NA NA NA
+ # InternalNodeId8   InternalNodeId8 (X1+X5)/2-(X6+X2+X4)/3    1.0 NA 0.75     NA NA NA
+ # InternalNodeId9   InternalNodeId9                  X1-X5    0.0 NA 0.10     NA NA NA
+ # InternalNodeId10 InternalNodeId10           X6-(X2+X4)/2    0.1 NA 0.15     NA NA NA
+ # InternalNodeId11 InternalNodeId11                  X2-X4    0.4 NA 0.00     NA NA NA
+
 
   #check really gets clusterIds and not names
   expect_silent(clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6])

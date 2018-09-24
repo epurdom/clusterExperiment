@@ -298,19 +298,18 @@ setMethod(
         ### #go up tree and merge clusters
         ############
         if(mergeMethod != "none"){
-            valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
-            
+			valsPerNode <- sapply(sigByNode, function(x) {signif(x[[mergeMethod]], 4)})
             nodesBelowCutoff <- names(valsPerNode)[which(valsPerNode<cutoff)] #names of nodes below cutoff
             #--------------
             #find nodes where *all* descendants are below cutoff and merge only those
             #given by nodesIndexToMerge (index of node in the tree)
             #--------------
-            allTipNames <- phylobase::labels(dendro)[phylobase::getNode(dendro, type=c("tip"))]
+			## First find out which nodes have all descendants who should be merged:
             nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchValue="NodeId",columnValue="matchIndex")
-            
+            tipNodes<-phylobase::getNode(dendro, type=c("tip"))
             whToMerge <- sapply(nodeIndexBelowCutoff,function(node){
                 desc <- phylobase::descendants(dendro, node, type = c("all"))
-                return(all(names(desc) %in% nodesBelowCutoff | names(desc) %in% allTipNames))
+                return(all(desc %in% nodeIndexBelowCutoff | desc %in% tipNodes))
             })
             if(length(whToMerge)>0 && length(which(whToMerge)) > 0){
                 ## whToMerge indicates which nodes have ALL nodes below them that need merging
@@ -329,7 +328,6 @@ setMethod(
                 #now have "unique" nodes
                 #So per node find all tips that need merging and give them number
                 #temp is unimportant; the lapply assigns the value globally into newcl
-                
                 temp <- lapply(nodesIndexAtTop, function(node){
                     tips <- phylobase::descendants(dendro, node, type="tips")
                     #check cluster names match...
@@ -414,7 +412,8 @@ setMethod(
         ############
         if (mergeMethod != "none" &&
             length(whToMerge) > 0 && length(which(whToMerge)) > 0) {
-            logicalMerge <- annotTable$NodeIndex %in% nodesIndexToMerge
+			
+			logicalMerge <- annotTable$NodeIndex %in% nodesIndexToMerge
             
             #gives the names of original cluster ids
             corrspCluster <- sapply(annotTable$NodeIndex, function(node) {
