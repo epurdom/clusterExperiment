@@ -221,11 +221,11 @@ setMethod(
 #' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
-.plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,cl=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
+.plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,clObj=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
   plotType<-match.arg(plotType)
   outbranch<- "outbranch root" %in% phylobase::tdata(dendro)$Position
   #---
-  #remove the outbranch from the dendrogram and from cl
+  #remove the outbranch from the dendrogram
   #(note this is using phylo4 obj)
   #---
   if(outbranch & removeOutbranch & leafType=="samples"){
@@ -247,7 +247,7 @@ setMethod(
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16
-  if(plotType=="colorblock" && is.null(cl) && leafType=="samples") stop("Internal coding error: must provide a clustering if plotType='colorblock'")
+  if(plotType=="colorblock" && is.null(clObj) && leafType=="samples") stop("Internal coding error: must provide a clustering if plotType='colorblock'")
   origPhylo<-phyloObj #so can return
   
   ###############
@@ -266,7 +266,7 @@ setMethod(
     #match to order of tree
     whToMerge<-which(mergeOutput$isMerged)
     nodesToMerge<-as.character(mergeOutput$Node[whToMerge])
-    m <- match( as.character(mergeOutput$Node),phyloObj$node)
+    m <- match( as.character(mergeOutput$Node),phyloObj$node.label)
     if(any(is.na(m))) stop("some nodes in merge node info not in the given dendrogram")
     edgeLty <- rep(1, nrow(phyloObj$edge))
     if(mergeMethod != "none" && length(whToMerge) > 0){
@@ -315,38 +315,38 @@ setMethod(
   ###############
   ### Deal with clusterLegend object: 
   ### - Make default if not provided and 
-  ### - If # of clusterings>1 make clusterLegend and cl matrix appropriate
+  ### - If # of clusterings>1 make clusterLegend and clObj matrix appropriate
   ###############
   
   if(plotType=="colorblock"){
     clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
     if(is.null(clusterLegendMat)){ 
       #----
-      #make default colors, works for vector or matrix cl
+      #make default colors, works for vector or matrix clObj
       #----
-      clusterIds<-sort(unique(as.vector(cl)))
+      clusterIds<-sort(unique(as.vector(clObj)))
       clusterLegendMat <- cbind("clusterIds"=clusterIds, "name"=clusterIds, "color"=bigPalette[seq_along(clusterIds)])
     }
     else{
-      if(is.matrix(cl) && ncol(cl)>1){
+      if(is.matrix(clObj) && ncol(clObj)>1){
         #if not provide list of cluster legends, do only 1st clustering provided (temporary while fixing so works for matrix)
-        if(!is.list(clusterLegendMat) ) cl<-cl[,1,drop=FALSE]
+        if(!is.list(clusterLegendMat) ) clObj<-clObj[,1,drop=FALSE]
         else{
           #----
-          #create one big cl/clusterLegendMat object that will allow for coloring that is okay.
+          #create one big clObj/clusterLegendMat object that will allow for coloring that is okay.
           #----
-          nclusters<-ncol(cl)
+          nclusters<-ncol(clObj)
           if(length(clusterLegendMat)!=nclusters) stop("Internal coding error -- wrong length of colors for clustering")
           newClusterLegendMat<-clusterLegendMat[[1]]
-          newCl<-cl[,1]
+          newCl<-clObj[,1]
           
           #make it general in case some day want more than just 2 clusterings
           for(ii in 2:nclusters){
             currMat<-clusterLegendMat[[ii]]
-            currCl<-cl[,ii]
+            currCl<-clObj[,ii]
             
             #note that because subset to those samples that are not -1/-2 on
-            # cl[,1], may have entire clusters in other columns of cl that disappear but still in color matrix with no entry in cl
+            # clObj[,1], may have entire clusters in other columns of clObj that disappear but still in color matrix with no entry in clObj
             #reduce down the currMat to accomodate that
             whExist<-which(as.numeric(currMat[,"clusterIds"]) %in% currCl)
             currMat<-currMat[whExist, ,drop=FALSE]
@@ -408,9 +408,9 @@ setMethod(
             
           }
           clusterLegendMat<-newClusterLegendMat
-          colnames(newCl)<-colnames(cl)
-          rownames(newCl)<-rownames(cl)
-          cl<-newCl
+          colnames(newCl)<-colnames(clObj)
+          rownames(newCl)<-rownames(clObj)
+          clObj<-newCl
           clusterLegend<-FALSE
           
         }
@@ -443,28 +443,28 @@ setMethod(
       
     }
     if(leafType=="samples"){
-	  clNames<-if(is.matrix(cl)) row.names(cl) else names(cl)
-	  mToTree <- match(phyloObj$tip.label, clNames)
-	  if (any(is.na(mToTree))) stop("names of cl do not match dendrogram labels")
-	  
-	  if(is.matrix(cl) && ncol(cl)>1){
+		#Note, clObj hasn't been subsetted so just need to get sampleIndex saved in tree.
+		## Assumes that phylobase::getNode(dend@dendro_samples,type="tip") is in same order as phyloObj$tip.label
+	  mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dend@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	   
+	  if(is.matrix(clObj) && ncol(clObj)>1){
         if(plotType=="colorblock"){
-          colorMat<-apply(cl,2,function(x){
+          colorMat<-apply(clObj,2,function(x){
             m<-match(x,clusterLegendMat[,"clusterIds"])
             clusterLegendMat[m,"name"]
           })
-          if(any(dim(colorMat)!=dim(cl))) stop("Internal coding error: dimensions of colorMat don't match input")
-          dimnames(colorMat)<-dimnames(cl)
+          if(any(dim(colorMat)!=dim(clObj))) stop("Internal coding error: dimensions of colorMat don't match input")
+          dimnames(colorMat)<-dimnames(clObj)
           cols<-clusterLegendMat[,"color"]
           names(cols)<-clusterLegendMat[,"name"]
 		  #match samples to order of the tree:
-          colorMat<-colorMat[mToTree,]
+          colorMat<-colorMat[mTipsToSamples,]
         }
         tip.color<-"black"
       }
       else{
-        if(is.matrix(cl)) cl<-cl[,1]
-        m<-match(cl,clusterLegendMat[,"clusterIds"])
+        if(is.matrix(clObj)) clObj<-clObj[,1]
+        m<-match(clObj,clusterLegendMat[,"clusterIds"])
         tip.color<-clusterLegendMat[m,"color"]		
         if(plotType=="colorblock"){
 		  colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
@@ -472,12 +472,13 @@ setMethod(
           cols<-clusterLegendMat[,"color"]
           names(cols)<-clusterLegendMat[,"name"]
         }	
-		else tip.color<-tip.color[mToTree]		
+		else tip.color<-tip.color[mTipsToSamples]		
       }
       if(plotType=="colorblock"){
-        ntips<-length(phyloObj$tip.label)
-        whClusterNode<-which(!is.na(phyloObj$node.label) & phyloObj$node.label!="")+ ntips
-        #only edges going to/from these nodes
+        #make only edges going to/from nodes in cluster hierarchy have edge.width>0
+		ntips<-length(phyloObj$tip.label)
+        positionValue<-.matchToDendroData(inputValue=phyloObj$node.label, dendro=dendro, matchValue="NodeId", columnValue="Position")
+		whClusterNode<-which(positionValue%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
         whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
         edge.width<-rep(0,nrow(phyloObj$edge))
         edge.width[whEdgePlot]<-1
@@ -510,16 +511,17 @@ setMethod(
     colnames(colorMat)<-NULL		    
     colInput<-function(n){cols}
     width<-treeWidth*dataPct/nclusters
+	browser()
     ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
     
-    if(nclusters>1 & !is.null(colnames(cl))){
+    if(nclusters>1 & !is.null(colnames(clObj))){
       xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)
       xloc<-xloc+width/2
       ypos<-par("usr")[4]-0.025*diff(par("usr")[3:4])	
       adj<-c(0,0)		
       if("cex" %in% names(list(...))) labcex<-list(...)[["cex"]]
       else labcex<-1	
-      text(x=xloc,y=ypos,labels=colnames(cl),srt=clusterLabelAngle,xpd=NA,adj=adj,cex=labcex)
+      text(x=xloc,y=ypos,labels=colnames(clObj),srt=clusterLabelAngle,xpd=NA,adj=adj,cex=labcex)
       
     }
     

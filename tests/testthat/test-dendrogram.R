@@ -131,7 +131,7 @@ test_that("`makeDendrogram` works with whichCluster", {
     
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"only single cluster in clustering -- cannot run getBestFeatures")
 	expect_silent(primaryClusterIndex(bigCE)<-3)
-	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"Primary cluster does not match the cluster on which the dendrogram was made")
+	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"does not match either the cluster on which the dendrogram was made or the merge cluster from this dendrogram")
 })
 
 test_that("plotDendrogram works with colData", {
