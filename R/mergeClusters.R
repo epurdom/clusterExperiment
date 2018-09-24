@@ -357,6 +357,7 @@ setMethod(
             #------------
             nodePropTable <- nodePropTableGiven[, -whNotProp]
             annotTable <- nodePropTableGiven[, whNotProp]
+			annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
         }
         else{
             #------------
@@ -453,7 +454,8 @@ setMethod(
         #########
         # Create information to return
         #########
-        annotTable<-annotTable[,-grep("NodeIndex",names(annotTable))]
+		
+		if("NodeIndex" %in% names(annotTable)) annotTable<-annotTable[,-grep("NodeIndex",names(annotTable))]
         nodeMergeTable<-data.frame(annotTable,
                                    "isMerged"=logicalMerge,
                                    "mergeClusterId"=corrspCluster,
