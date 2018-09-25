@@ -240,7 +240,7 @@ setMethod(
 	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
 	
 	#remove from clObj and update mTipsToSamples
-    clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
+    clusterTips<-phylobase::descendants(dendro,node=clusterNode,type="tip")
     if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
 	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="matchIndex", columnValue="SampleIndex")
     if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
@@ -250,7 +250,7 @@ setMethod(
 	.checkDendroSamplesFormat(dendro)
 
 	#need to update mTipsToSamples
-	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
 	mToSubset<-match(1:length(clusterTips),whKeep) #gives where 1-n map to in new order of clObj
 	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
@@ -262,7 +262,7 @@ setMethod(
 
   }
   else{
-	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
 	
   }
   #convert to phylo object...
