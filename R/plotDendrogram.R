@@ -240,21 +240,23 @@ setMethod(
 	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
 	
 	#remove from clObj and update mTipsToSamples
+	nSamples<-nTips(dendro) #save so have after changed dendro
     clusterTips<-phylobase::descendants(dendro,node=clusterNode,type="tip")
     if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
-	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="NodeIndex", columnValue="SampleIndex")
     if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
-
-	#need to check that this keeps tdata intact...
+	
+	#TO DO: need to check that this keeps tdata intact...
 	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
 	.checkDendroSamplesFormat(dendro)
 
 	#need to update mTipsToSamples
-	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="NodeIndex", columnValue="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
-	mToSubset<-match(1:length(clusterTips),whKeep) #gives where 1-n map to in new order of clObj
+	mToSubset<-match(1:nSamples,whKeep) #gives where 1-n map to in new order of clObj
 	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
 	if(any(is.na(mTipsToSamples))) stop("coding error -- didn't update mTipsToSamples correctly")
+ 
  
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
@@ -262,11 +264,17 @@ setMethod(
 
   }
   else{
-	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="NodeIndex", columnValue="SampleIndex")
 	
   }
   #convert to phylo object...
-  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip= leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
+  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=FALSE) 
+  if(leafType=="samples"){
+	  phyloObj$tip.label<-if(is.matrix(clObj)) row.names(clObj)[mTipsToSamples] else names(clObj)[mTipsToSamples]
+	  if(any(is.na(phyloObj$tip.label))) stop("coding error -- conversion to sample names failed")
+		
+  }
+  #leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16
@@ -532,8 +540,7 @@ setMethod(
     colnames(colorMat)<-NULL		    
     colInput<-function(n){cols}
     width<-treeWidth*dataPct/nclusters
-	browser()
-    ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
+	ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
     
     if(nclusters>1 & !is.null(colnames(clObj))){
       xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)

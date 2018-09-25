@@ -10,8 +10,10 @@
   # -- NodeId (only for sample tree): for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
   # -- SampleIndex (only for sample tree): index to the columns in the assay
 
+
 #' @importFrom phylobase tdata
 .matchToDendroData<-function(inputValue,dendro,matchValue="NodeId",columnValue){
+	#Note that matchValue="NodeIndex" means inputs give rows of the df. columnValue="matchIndex" means to return the index that matches (i.e. nodeIndex too)
 	df<-phylobase::tdata(dendro,type="all")
 	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue and matchValue must be character valued")
 	if(!columnValue=="matchIndex" && !columnValue %in% names(df)) stop("coding error -- invalid value of columnValue ")
@@ -29,16 +31,7 @@
   tipNames<-gsub("ClusterId","",as.character(tipNames))
   return(tipNames)
 }
-.convertDendoLabelsToClusterName<-function(dendro,clusterLegendMat){
-	#Assumes are names as numbers and that only ones that have numbers (i.e. that other nodes will be NodeX, etc.)
-    #Add clusterNames as Ids to cluster and sample dendrogram.
-	m<-match(phylobase::labels(dendro), clusterLegendMat[,"clusterIds"])
-	
-	phylobase::labels(dendro)[!is.na(m)]<-clusterLegendMat[m[!is.na(m)],"name"]
-    return(dendro)
-	
-	
-}
+
 
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
@@ -71,8 +64,13 @@
 			#make internal node and cluster ids the node and tip labels (i.e. erase existing)
 			if(convertNodes) phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
 	  
-			if(convertTips) phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
-			
+			if(convertTips){
+				if("ClusterIdDendro" %in% names(phylobase::tdata(x,type="all")))
+					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
+				else if("SampleIndex" %in% names(phylobase::tdata(x,type="all")))
+					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$SampleIndex)
+				else stop("coding error -- tree should have either 'ClusterIdDendro' or 'SampleIndex' as names in tdata(x)")
+			} 			
 		}
 		if(returnClass %in% c("phylo4","phylo4d")) return(x)
 	}

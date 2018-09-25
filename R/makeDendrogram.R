@@ -127,7 +127,16 @@ setMethod(
         if(!is.logical(ch)) stop(ch)
         return(x)
 })
-
+.convertDendoLabelsToClusterName<-function(dendro,clusterLegendMat){
+	#Assumes are names as numbers and that only ones that have numbers (i.e. that other nodes will be NodeX, etc.)
+    #Add clusterNames as Ids to cluster and sample dendrogram.
+	m<-match(phylobase::labels(dendro), clusterLegendMat[,"clusterIds"])
+	
+	phylobase::labels(dendro)[!is.na(m)]<-clusterLegendMat[m[!is.na(m)],"name"]
+    return(dendro)
+	
+	
+}
 
 
 #' @rdname makeDendrogram
