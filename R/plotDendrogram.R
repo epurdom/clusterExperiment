@@ -224,10 +224,12 @@ setMethod(
 .plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,clObj=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
   plotType<-match.arg(plotType)
   outbranch<- "outbranch root" %in% phylobase::tdata(dendro)$Position
+  ## Assumes that phylobase::getNode(dend@dendro_samples,type="tip") is in same order as phyloObj$tip.label
+    
   #---
-  #remove the outbranch from the dendrogram
+  #remove the outbranch from the dendrogram and update clObj and mTipsToSamples
   #(note this is using phylo4 obj)
-  #---
+  #---	
   if(outbranch & removeOutbranch & leafType=="samples"){
 	  ##Find node that is cluster child of root	  
     rootNode<-phylobase::rootNode(dendro)
@@ -236,11 +238,32 @@ setMethod(
 	if(!any(position=="cluster hierarchy node")) stop("coding error -- child of root with outbranch isn't cluster hierarchy node")
 	if(all(position=="cluster hierarchy node")) stop("coding error -- both child of root are 'cluster hierarchy node', but also have root is 'outbranchroot'")	
 	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
+	
+	#remove from clObj and update mTipsToSamples
+    clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
+    if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
+	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="matchIndex", columnValue="SampleIndex")
+    if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
+
 	#need to check that this keeps tdata intact...
 	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
 	.checkDendroSamplesFormat(dendro)
+
+	#need to update mTipsToSamples
+	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
+	mToSubset<-match(1:length(clusterTips),whKeep) #gives where 1-n map to in new order of clObj
+	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
+	if(any(is.na(mTipsToSamples))) stop("coding error -- didn't update mTipsToSamples correctly")
+ 
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
+	
+
+  }
+  else{
+	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	
   }
   #convert to phylo object...
   phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip= leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
@@ -443,9 +466,7 @@ setMethod(
       
     }
     if(leafType=="samples"){
-		#Note, clObj hasn't been subsetted so just need to get sampleIndex saved in tree.
-		## Assumes that phylobase::getNode(dend@dendro_samples,type="tip") is in same order as phyloObj$tip.label
-	  mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dend@dendro_samples,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+		
 	   
 	  if(is.matrix(clObj) && ncol(clObj)>1){
         if(plotType=="colorblock"){
