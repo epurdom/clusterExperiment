@@ -196,7 +196,7 @@ setMethod(
       warning("There is no information about merging -- will ignore input to 'mergeInfo'")
     }
     
-    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
+    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,clObj=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
     
     if(!is.null(nodeColors)){
       if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
@@ -268,10 +268,13 @@ setMethod(
 	
   }
   #convert to phylo object...
-  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=FALSE) 
+  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=(leafType!="samples")) 
+  
   if(leafType=="samples"){
-	  phyloObj$tip.label<-if(is.matrix(clObj)) row.names(clObj)[mTipsToSamples] else names(clObj)[mTipsToSamples]
+	  clNames<-if(is.matrix(clObj)) row.names(clObj) else names(clObj)
+	  phyloObj$tip.label<-clNames[mTipsToSamples]
 	  if(any(is.na(phyloObj$tip.label))) stop("coding error -- conversion to sample names failed")
+	
 		
   }
   #leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
@@ -475,7 +478,7 @@ setMethod(
     }
     if(leafType=="samples"){
 		
-	   
+	  
 	  if(is.matrix(clObj) && ncol(clObj)>1){
         if(plotType=="colorblock"){
           colorMat<-apply(clObj,2,function(x){
@@ -506,8 +509,9 @@ setMethod(
       if(plotType=="colorblock"){
         #make only edges going to/from nodes in cluster hierarchy have edge.width>0
 		ntips<-length(phyloObj$tip.label)
-        positionValue<-.matchToDendroData(inputValue=phyloObj$node.label, dendro=dendro, matchValue="NodeId", columnValue="Position")
-		whClusterNode<-which(positionValue%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
+		#Note that some of origPhylo$node.label have NA for value; won't get unique value for these; but these aren't part of cluster hierarchy anyway (infact could probably just pick those that are NA and use them, but this is safer(?))
+        positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchValue="NodeId", columnValue="Position")
+		whClusterNode<-which(as.character(positionValue)%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
         whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
         edge.width<-rep(0,nrow(phyloObj$edge))
         edge.width[whEdgePlot]<-1

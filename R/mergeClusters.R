@@ -506,8 +506,8 @@ setMethod(
             }
             combTable<-.nodeMergeInfo(nodeProp=out$nodeProp,nodeMerge=out$nodeMerge)
             
-            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",...)
-            else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
+            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,clObj=cl,plotType="name",...)
+            else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,clObj=clMat,plotType="name",...)
             
         }
         invisible(out)
@@ -709,7 +709,7 @@ setMethod(
             # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
             if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
            
-			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, cl=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
+			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, clObj=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
         }
         
         invisible(retval)
