@@ -99,9 +99,9 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
                        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
 											 isCount=FALSE)
 											 )
-  clustWithDendro <- makeDendrogram(cl1)
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE, DEMethod="limma")
-  resCE<-getBestFeatures(clustMerged, contrastType="Dendro",DEMethod="limma")
+  expect_silent(clustWithDendro <- makeDendrogram(cl1))
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE, DEMethod="limma"),"Merging will be done on")
+  expect_silent(getBestFeatures(clustMerged, contrastType="Dendro",DEMethod="limma"))
 
 })
 test_that("`getBestFeatures` works with HDF5 assay slot",{

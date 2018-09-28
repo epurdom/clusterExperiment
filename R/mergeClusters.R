@@ -462,14 +462,6 @@ setMethod(
         nodePropTable<-data.frame(annotTable,
                                   nodePropTable,
                                   stringsAsFactors=FALSE)
-        #Add new merge clusters to dendro
-        data.cl<-phylobase::tdata(dendro)
-        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchValue="NodeId", columnValue="matchIndex")
-        clusterIdMerge<-rep(NA,length=nrow(data.cl))
-        clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
-        clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
-        data.cl$ClusterIdMerge<-clusterIdMerge
-        phylobase::tdata(dendro)<-data.cl
         
         if(mergeMethod=="none"){
             newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
@@ -483,10 +475,29 @@ setMethod(
             tableMergedClusters<- unname(sort(as.character(na.omit(nodeMergeTable$mergeClusterId))))
             actualMergedClusters<-sort(unname(clustersThatMerge))
             if(!identical(tableMergedClusters,actualMergedClusters)) stop("coding error -- wrong identification of merged clusters")
-            
-        }
-        
-        
+				
+			#---------
+	        #Add new merge cluster ids to dendro
+			#---------
+			data.cl<-phylobase::tdata(dendro)
+	        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchValue="NodeId", columnValue="matchIndex")
+	        clusterIdMerge<-rep(NA,length=nrow(data.cl))
+	        clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
+	        clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
+	        data.cl$ClusterIdMerge<-clusterIdMerge
+			
+			##create diagonal of oldClToNew of those not merged
+			dendroNotMerged<-which(apply(oldClToNew[,nmerge==1],1,function(x){sum(x>0)==1}))
+			mergeNotMerged<-apply(oldClToNew[dendroNotMerged,],1,function(x){which(x>0)})
+			diagMerge<-oldClToNew[dendroNotMerged,mergeNotMerged]
+			#rm -1 if exist
+			whMiss<-which(rownames(diagMerge)%in%c("-1","-2"))
+			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss]
+   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchValue="ClusterIdDendro", columnValue="matchIndex")
+			data.cl$ClusterIdMerge[nodeIdNotMerged]<-paste("ClusterId",colnames(diagMerge),sep="")
+	        phylobase::tdata(dendro)<-data.cl
+		
+        }       
         out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff, logFCcutoff=logFCcutoff,
                   nodeProp=nodePropTable, nodeMerge=nodeMergeTable,updatedClusterDendro=dendro,mergeMethod=mergeMethod)
         

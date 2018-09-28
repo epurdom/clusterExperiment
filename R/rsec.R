@@ -249,19 +249,19 @@ setMethod(
         if("mergeLogFCCutoff" %in% names(passedArgs)){
           args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)
         }
-				if("mergeDEMethod" %in% names(passedArgs)){
-					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
-					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
-				}
-				else{
-					mergeTry<-"mergeDEMethod argument is missing with no default"
-					class(mergeTry)<-"try-error"
-				}
+		if("mergeDEMethod" %in% names(passedArgs)){
+			args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
+			mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
+		}
+		else{
+			mergeTry<-"mergeDEMethod argument is missing with no default"
+			class(mergeTry)<-"try-error"
+		}
         if(!inherits(mergeTry,"try-error")){
           ce<-mergeTry
         }
         else{
-        	if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
+			if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
 					else stop(mergeTry)
         }
       }

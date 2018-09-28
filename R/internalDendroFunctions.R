@@ -65,8 +65,14 @@
 			if(convertNodes) phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
 	  
 			if(convertTips){
-				if("ClusterIdDendro" %in% names(phylobase::tdata(x,type="all")))
+				if("ClusterIdDendro" %in% names(phylobase::tdata(x,type="all"))){
 					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
+					if(any(is.na(phylobase::tipLabels(x)))){
+						#this should mean its the cluster dendrogram limited to the merge ids.
+						phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdMerge)
+					}	
+					if(any(is.na(phylobase::tipLabels(x)))) stop("coding error -- even after accounting for merge id, still have NA values")
+				}
 				else if("SampleIndex" %in% names(phylobase::tdata(x,type="all")))
 					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$SampleIndex)
 				else stop("coding error -- tree should have either 'ClusterIdDendro' or 'SampleIndex' as names in tdata(x)")
@@ -106,11 +112,14 @@
 	
 }
 
-.pruneToNodes<-function(phylo4,nodesKeep){
-	#nodesKeep should be numberic index of nodes
-	# > slotNames(ccSE@dendro_clusters)
-	# [1] "data"        "metadata"    "edge"        "edge.length" "label"       "edge.label"  "order"
-	# [8] "annote"
+#' @importFrom phylobase descendants getNode ancestores edges
+.pruneToNodes<-function(phylo4,nodesPruned){
+	##nodesPruned should be *the node numerical index* of those nodes that need "pruning" -- i.e. drop their children; other nodes kept the same.
+	tipsPruned<-unlist(phylobase::descendants(phylo4,node=nodesPruned,type="tip"),use.names=FALSE)
+	tipsKept<-phylobase::getNode(phylo4,type="tip")
+	tipsKept<-tipsKept[!tipsKept %in% tipsPruned]
+	nodesKeep<-c(nodesPruned,tipsKept)
+	
 	allNodes<-phylobase::getNode(phylo4,type="all")
 	if(!all(nodesKeep %in% allNodes)) 
 		stop("nodes specified are not valid")
@@ -130,7 +139,6 @@
 	newNodes<-nodesKeep
 	root<-newEdge[newEdge[,1] ==0,2]
 	
-	browser()
 	#tips: 1:node
 	#tips should be in edge matrix once:
 	whEdgeTips<-match(newTips,newEdge)
