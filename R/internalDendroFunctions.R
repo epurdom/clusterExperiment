@@ -7,7 +7,7 @@
 # -- Position: one of either "cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root"). This column should be internal and validity check that numbers correspond to clustering from @dendro_index. Needs to be a check on "ClusterExperiment", not the "clusterPhylo4d"
   # -- ClusterIdDendro (only for cluster): cluster Id in @dendro_index that corresponds to node (NA otherwise)
   # -- ClusterIdMerge  (only for cluster): cluster Id in @merge_index that corresponds to node (NA otherwise)
-  # -- NodeId (only for sample tree): for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
+  # -- NodeId: for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
   # -- SampleIndex (only for sample tree): index to the columns in the assay
 
 

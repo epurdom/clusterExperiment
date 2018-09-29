@@ -80,16 +80,24 @@
 	if(!all(names(data.cl)%in% .clusterDendroColumns)){
 		return("dendro_clusters must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
-	else return(TRUE)
+	if(any(is.na(data.cl$Position))) 
+		return("dendro_clusters cannot have NA values in Position variable")
+	if(any(is.na(data.cl$NodeId))) 
+		return("dendro_clusters cannot have NA values in Node Id variable")
+	return(TRUE)
 }
 #' @importFrom phylobase tdata
 .checkDendroSamplesFormat<-function(dendro){
-	data.cl<-phylobase::tdata(dendro)
+	data.cl<-phylobase::tdata(dendro,type="all")
 	all(names(data.cl)%in% .clusterSampleColumns)
 	if(!all(names(data.cl)%in% .clusterSampleColumns)){
 		return("dendro_samples must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
-	else return(TRUE)
+	if(any(is.na(data.cl$Position))) return("dendro_samples cannot have NA values in Position variable")
+	data.cl<-phylobase::tdata(dendro,type="tip")
+	if(any(is.na(data.cl$SampleIndex))) 
+		return("dendro_samples cannot have NA values in SampleIndex variable")
+	return(TRUE)
 	
 }
 #' @importFrom phylobase nTips
@@ -105,6 +113,11 @@
     }
 	ch<-.checkDendroClusterFormat(object@dendro_clusters)
 	if(!is.logical(ch)) return(ch)
+		
+	#further checks that require full CE object:
+	data.cl<-phylobase::tdata(object@dendro_clusters,type="all")
+	if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdDendro)) %in% as.character(object@clusterMatrix[,object@dendro_index]))) return("ClusterIdDendro information in dendrogram slot must match the corresponding cluster ids in clustering defined by dendro_index slot")
+	if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdMerge)) %in% as.character(object@clusterMatrix[,object@merge_index]))) return("ClusterIdMerge information in dendrogram slot must match the corresponding cluster ids in clustering defined by merge_index slot")
   }
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
@@ -119,7 +132,7 @@
 
   }
   else{
-    #if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
+    if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
     if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
   }
   
