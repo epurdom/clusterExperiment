@@ -106,6 +106,18 @@ setMethod(
 "merge_nodeProp", "merge_nodeMerge")
 	snames<-snames[snames %in% myslots]
 
+	## Fix class of the dendrograms:
+	if("dendro_samples" %in% snames){
+		if(class(object@dendro_samples)=="dendrogram"){
+			
+			
+		}
+		if(class(object@dendro_clusters)=="dendrogram"){
+			
+			
+		}
+	}
+
 	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
 	if(!inherits(object,"try-error")){
 		return(object)
