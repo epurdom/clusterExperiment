@@ -3,20 +3,23 @@ context("Dendrogram")
 # load_all()
 
 
-test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
+test_that("`makeDendrogram` works with matrix",{
     #test matrix version
     expect_silent(makeDendrogram(mat, primaryCluster(cc)))
     expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="cluster"))
     expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="remove"))
 
+ 
+    #test matrix version
+    expect_equal(phylobase::nTips(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
+                 length(primaryCluster(cc))-2)
+})
+			 
+test_that("`makeDendrogram` works with ClusterExperiment objects", {
     #test CE version
     expect_silent(makeDendrogram(cc))
     expect_silent(makeDendrogram(cc, unassigned="cluster"))
     expect_error(makeDendrogram(cc, unassigned="remove"))
-
-    #test matrix version
-    expect_equal(nTips(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
-                 length(primaryCluster(cc))-2)
 
     #test proper error if only single cluster:
     fakeCluster<-rep(1,nSamples(cc))

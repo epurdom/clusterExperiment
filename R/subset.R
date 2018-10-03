@@ -43,12 +43,13 @@ setMethod(
     newClusterColors<-clusterLegend(x)[-whichClusters]
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
-    if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
+    if(primaryClusterIndex(x) %in% whichClusters) 
+		pIndex<-1
     else 
-			pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+		pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
 		
-		#fix dendro info
-	  dend_samples <- x@dendro_samples
+	#fix dendro info
+	dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
     dend_ind<-dendroClusterIndex(x)
     dend_out<-x@dendro_outbranch
@@ -61,18 +62,12 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
-		#fix merge info:
-		#erase merge info if either dendro or merge index deleted.
-	  if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
-      merge_index=NA_real_
-      merge_cutoff=NA_real_
-      merge_dendrocluster_index=NA_real_
-      merge_nodeProp=NULL
-      merge_nodeMerge=NULL
-      merge_method=NA_character_
-			merge_demethod=NA_character_
-	  }
-		else{
+	#fix merge info:
+	#erase merge info if either dendro or merge index deleted.
+	if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
+      x<-.eraseMerge(x)
+	}
+	else{
       merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
       merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
       merge_cutoff=x@merge_cutoff
@@ -80,31 +75,31 @@ setMethod(
       merge_nodeMerge=x@merge_nodeMerge
       merge_method=x@merge_method
       merge_demethod=x@merge_demethod
-				}
+	}
 
-    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
-                              clusters=newClLabels,
-                              transformation=transformation(x),
-                              clusterTypes=newClusterType,
-                              clusterInfo<-newClusterInfo,
-                              primaryIndex=pIndex,
-                              dendro_samples=dend_samples,
-                              dendro_clusters=dend_cl,
-                              dendro_index=dend_ind,
-                              dendro_outbranch=dend_out,
-															merge_index=merge_index,
-															merge_dendrocluster_index=merge_dendrocluster_index,
-												      merge_cutoff=merge_cutoff,
-												      merge_nodeProp=merge_nodeProp,
-												      merge_nodeMerge=merge_nodeMerge,
-												      merge_method=merge_method,
-												      merge_demethod=merge_demethod,                              
-															coClustering=coMat,
-                              orderSamples=orderSamples,
-                              clusterLegend=newClusterColors,
-                              checkTransformAndAssay=FALSE
+    retval<-ClusterExperiment(
+		as(x,"SingleCellExperiment"),
+		clusters=newClLabels,
+		transformation=transformation(x),
+		clusterTypes=newClusterType,
+		clusterInfo<-newClusterInfo,
+		primaryIndex=pIndex,
+		dendro_samples=dend_samples,
+		dendro_clusters=dend_cl,
+		dendro_index=dend_ind,
+		dendro_outbranch=dend_out,
+		merge_index=merge_index,
+		merge_dendrocluster_index=merge_dendrocluster_index,
+		merge_cutoff=merge_cutoff,
+		merge_nodeProp=merge_nodeProp,
+		merge_nodeMerge=merge_nodeMerge,
+		merge_method=merge_method,
+		merge_demethod=merge_demethod,                              
+		coClustering=coMat,
+		orderSamples=orderSamples,
+		clusterLegend=newClusterColors,
+		checkTransformAndAssay=FALSE
     )
-    #    clusterLegend(retval)<-newClusterColors
     return(retval)
   }
 )

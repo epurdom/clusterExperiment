@@ -104,7 +104,13 @@
 #'
 #' \item{\code{ContrastName}}{ The name of the contrast that the results
 #' corresponds to. For dendrogram searches, this will be the node of the tree of
-#' the dendrogram.}
+#' the dendrogram. If \code{x} is a \code{ClusterExperiment} object, this name 
+#' will make use of the user defined names of the cluster or node in \code{x}.}
+#' 
+#' \item{\code{InternalName}}{ Only present if \code{x} is a \code{ClusterExperiment} object. 
+#' In this case this column will give the name of the contrast using the internal ids of the
+#' clusters and nodes, not the user-defined names. This provides stability in matching the 
+#' contrast if the user has changed the names since running \code{getBestFeatures}}
 #' 
 #' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
 #' 
@@ -289,7 +295,13 @@ definition = function(x, cluster,
 			fit=fitContr,fitF=fitF,DEMethod=DEMethod,
 			contrastAdj=contrastAdj, ...)
   }
+  if(contrastType=="Pairs"){
+	  tops <- data.frame(ContrastName=tops$Contrast,tops)
+  	  
+  }
   tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+  
+  
   
   
   if(returnType=="Index") {
@@ -339,10 +351,45 @@ setMethod(
     else dat<-assay(x,whichAssay)
     
     if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
-    		getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
+    		tops<-getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
     }
-    else getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
-    
+    else tops<-getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
+
+
+    #### Fix up names
+	#### Add column $InternalName -- 
+	if(contrastType!="F"){
+		wh<-which(colnames(tops)%in%c("IndexInOriginal", "ContrastName"))
+		tops<-data.frame(tops[,wh],InternalName=tops$ContrastName,tops[,-wh])
+		legMat<-clusterLegend(x)[[whCl]]
+		#### Each contrastType needs different parsing
+	    if(contrastType=="Pairs"){
+	  	  #ContrastName in form of 'Cl01-Cl02' ...
+	  	  parseName<-gsub("Cl","",tops$InternalName)
+	  	  parseName<-strsplit(parseName,"-")
+		  #note, incase there is padding in name, but not in clusterIds
+	  	  firstCl<-as.character(as.numeric(sapply(parseName,.subset2,1)))
+	  	  secondCl<-as.character(as.numeric(sapply(parseName,.subset2,2)))
+	  	  m1<-match(firstCl,as.numeric(legMat[,"clusterIds"]))
+	  	  m2<-match(secondCl,as.numeric(legMat[,"clusterIds"]))
+		  if(any(is.na(m1))||any(is.na(m2))) stop("coding error -- cannot match parse cluster id from contrastName (no match to clusterLegend)")
+	  	  tops$ContrastName<-paste(legMat[m1,"name"],legMat[m2,"name"],sep="-")
+	    }
+	    if(contrastType=="OneAgainstAll"){
+		  #ContrastName in form of Cl01
+  	  	  parseName<-as.character(as.numeric(gsub("Cl","",tops$InternalName)))
+	  	  m1<-match(parseName,as.numeric(legMat[,"clusterIds"]))
+	  	  tops$ContrastName<-legMat[m1,"name"]
+	    }
+	    if(contrastType=="Dendro"){
+		  #ContrastName in form of InternalNodeId5
+		  m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchValue="NodeId", columnValue="matchIndex")
+		  tops$ContrastName<-phylobase::labels(dendro)[m]
+		  
+			
+	    }
+	}
+	return(tops)
   }
 )
 

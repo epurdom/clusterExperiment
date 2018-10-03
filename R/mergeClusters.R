@@ -818,7 +818,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     x<-.eraseMerge(x)
-		return(x)
+	return(x)
   }
 )
 .eraseMerge<-function(x){
@@ -828,7 +828,11 @@ setMethod(
   x@merge_cutoff<-NA_real_
   x@merge_nodeProp<-NULL
   x@merge_nodeMerge<-NULL
+  cldend<-x@dendro_clusters
+  phylobase::tdata(cldend)$ClusterIdMerge<-NA
   ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  ch<-.checkDendrogram(x)      
   if(!is.logical(ch)) stop(ch)
   else return(x)
 }

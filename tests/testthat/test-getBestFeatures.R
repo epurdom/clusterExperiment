@@ -19,7 +19,7 @@ test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", 
 
 
 
-test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
+test_that("`getBestFeatures` works with matrix objects", {
 
   ## add some unclustered
   expect_silent(top1 <- getBestFeatures(simData, 
@@ -28,13 +28,6 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
   idx <- top1$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top1$AveExpr)
 
-  ## check defaults
-  expect_silent(topC0 <- getBestFeatures(ceSimData, DEMethod="limma"))
-  expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F",  DEMethod="limma"))
-
-  expect_equal(topC1, topC0)
-
-  expect_equal(topC1, top1)
 
   expect_silent(top2 <- getBestFeatures(simData, 
 	  primaryCluster(ceSimData), contrastType="Pairs",
@@ -76,6 +69,37 @@ test_that("`getBestFeatures` works with matrix and ClusterExperiment objects", {
 
 }
 )
+
+test_that("`getBestFeatures` works with ClusterExperiment objects", {
+    ## check F
+    expect_silent(top1 <- getBestFeatures(simData, 
+  	  primaryCluster(ceSimData), contrastType="F", DEMethod="limma")
+    expect_silent(topC0 <- getBestFeatures(ceSimData, DEMethod="limma"))
+    expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F",  DEMethod="limma"))
+    expect_equal(topC1, topC0)
+    expect_equal(topC1, top1)
+	
+	##check return format of contrasts
+	# > clusterLegend(ceSimData)[[primaryClusterIndex(ceSimData)]]
+# 	     clusterIds color     name
+# 	[1,] "-1"       "white"   "-1"
+# 	[2,] "-2"       "grey"    "-2"
+# 	[3,] "1"        "#E31A1C" "a"
+# 	[4,] "2"        "#1F78B4" "b"
+# 	[5,] "3"        "#33A02C" "c"
+# 	[6,] "4"        "#FF7F00" "d"
+    expect_silent(topPairs <- getBestFeatures(ceSimData, DEMethod="limma",contrastType="Pairs"))
+    expect_true(topPairs$ContrastName[1]=="a-b")
+    expect_true(topPairs$InternalName[1]=="Cl01-Cl02")
+
+    expect_silent(topOne <- getBestFeatures(ceSimData, DEMethod="limma",contrastType="OneAgainstAll"))
+    expect_true(topOne$ContrastName[1]=="a")
+    expect_true(topOne$InternalName[1]=="Cl01")
+	
+	expect_silent(ceDend <- makeDendrogram(ceSimData))
+	expect_silent(topDend<-getBestFeatures(ceDend, DEMethod="limma",contrastType="Dendro"))
+	##Need to add correct expection after work out labels.
+})
 test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeatures`",{
   ## test dendrogram
   expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
@@ -118,11 +142,14 @@ test_that("`plotContrastHeatmap` works", {
     expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
 	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2))
 
-	  topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma")
-	  plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll)
+	expect_silent(topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma"))
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll))
 	  
     dendro <- makeDendrogram(ceSimData, whichCluster=primaryClusterIndex(ceSimData))
-    topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma")
+	# > 	phylobase::nodeLabels(dendro@dendro_clusters)
+# 	      5       6       7
+# 	"Node1" "Node2" "Node3"
+	topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma")
 	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
 	
     top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",

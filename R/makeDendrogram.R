@@ -67,7 +67,7 @@
 #'
 #' @name makeDendrogram
 #' @rdname makeDendrogram
-#' @importFrom phylobase tipLabels<- tipLabels
+#' @importFrom phylobase tipLabels
 setMethod(
     f = "makeDendrogram",
     signature = "ClusterExperiment",
