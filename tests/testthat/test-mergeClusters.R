@@ -1,21 +1,28 @@
 context("mergeClusters")
 
 
-test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
+test_that("`mergeClusters` works with matrix",{
   expect_silent(cl1 <- clusterSingle(smSimData, 
                        subsample=FALSE, sequential=FALSE,
                        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
 											 isCount=FALSE))
-  leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
-  leg[,"name"]<-letters[1:6]
-  clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
-  expect_silent(clustWithDendro <- makeDendrogram(cl1))
   #matrix version
   expect_silent(mergedList <- mergeClusters(x=transformData(cl1), DEMethod="limma",
                               cl=primaryCluster(cl1),
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotInfo="mergeMethod"))
   
+}
+
+test_that("`mergeClusters` works with ClusterExperiment objects", { 
+    expect_silent(cl1 <- clusterSingle(smSimData, 
+                         subsample=FALSE, sequential=FALSE,
+                         mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
+  											 isCount=FALSE))
+    leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+    leg[,"name"]<-letters[1:6]
+    clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
+    expect_silent(clustWithDendro <- makeDendrogram(cl1))
 	#check plotting types:
   expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
 	 mergeMethod="none",plotInfo="all"),"Note: Merging will be done on")

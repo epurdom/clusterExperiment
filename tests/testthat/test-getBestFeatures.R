@@ -73,7 +73,7 @@ test_that("`getBestFeatures` works with matrix objects", {
 test_that("`getBestFeatures` works with ClusterExperiment objects", {
     ## check F
     expect_silent(top1 <- getBestFeatures(simData, 
-  	  primaryCluster(ceSimData), contrastType="F", DEMethod="limma")
+  	  primaryCluster(ceSimData), contrastType="F", DEMethod="limma"))
     expect_silent(topC0 <- getBestFeatures(ceSimData, DEMethod="limma"))
     expect_silent(topC1 <- getBestFeatures(ceSimData, contrastType="F",  DEMethod="limma"))
     expect_equal(topC1, topC0)
