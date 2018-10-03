@@ -48,6 +48,19 @@ setMethod(
     else 
 		pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
 		
+	
+	#fix merge info:
+	#erase merge info if either dendro or merge index deleted.
+	if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
+      x<-.eraseMerge(x)
+	  merge_index<-x@merge_index
+	  merge_dendrocluster_index<-x@merge_dendrocluster_index
+	}
+	else{
+      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      
+	}
 	#fix dendro info
 	dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
@@ -62,21 +75,6 @@ setMethod(
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
-	#fix merge info:
-	#erase merge info if either dendro or merge index deleted.
-	if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
-      x<-.eraseMerge(x)
-	}
-	else{
-      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-      merge_cutoff=x@merge_cutoff
-      merge_nodeProp=x@merge_nodeProp
-      merge_nodeMerge=x@merge_nodeMerge
-      merge_method=x@merge_method
-      merge_demethod=x@merge_demethod
-	}
-
     retval<-ClusterExperiment(
 		as(x,"SingleCellExperiment"),
 		clusters=newClLabels,
@@ -90,11 +88,11 @@ setMethod(
 		dendro_outbranch=dend_out,
 		merge_index=merge_index,
 		merge_dendrocluster_index=merge_dendrocluster_index,
-		merge_cutoff=merge_cutoff,
-		merge_nodeProp=merge_nodeProp,
-		merge_nodeMerge=merge_nodeMerge,
-		merge_method=merge_method,
-		merge_demethod=merge_demethod,                              
+		merge_cutoff=x@merge_cutoff,
+		merge_nodeProp=x@merge_nodeProp,
+		merge_nodeMerge=x@merge_nodeMerge,
+		merge_method=x@merge_method,
+		merge_demethod=x@merge_demethod,                              
 		coClustering=coMat,
 		orderSamples=orderSamples,
 		clusterLegend=newClusterColors,
