@@ -493,8 +493,11 @@ setMethod(
 			#rm -1 if exist
 			whMiss<-which(rownames(diagMerge)%in%c("-1","-2"))
 			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss]
-   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchValue="ClusterIdDendro", columnValue="matchIndex")
-			data.cl$ClusterIdMerge[nodeIdNotMerged]<-paste("ClusterId",colnames(diagMerge),sep="")
+			if(nrow(diagMerge)>0){
+				#Otherwise, all non-missing clusters were merged...
+	   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchValue="ClusterIdDendro", columnValue="matchIndex")
+				data.cl$ClusterIdMerge[nodeIdNotMerged]<-paste("ClusterId",colnames(diagMerge),sep="")	
+			}
 	        phylobase::tdata(dendro)<-data.cl
 		
         }       

@@ -122,15 +122,19 @@ test_that("`makeDendrogram` works with whichCluster", {
     expect_message(bigCE<-makeConsensus(bigCE,proportion=0.3),"no clusters specified to combine, using results from clusterMany")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     expect_silent(makeDendrogram(bigCE,whichCluster="makeConsensus") )
     
     
     #--- check mergeClusters updates dendrogram correctly
     expect_message(bigCE<-mergeClusters(bigCE,mergeMethod="adjP",cutoff=0.2, DEMethod="limma"),"Merging will be done on ")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
-    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    #Note, x1 doesn't give any merged clusters in dendrogram because before mergeClusters step...  so going to remove that element from bigCE
+	tdf<-phylobase::tdata(bigCE@dendro_clusters)
+	tdf$ClusterIdMerge<-NA
+	phylobase::tdata(bigCE@dendro_clusters)<-tdf
+	expect_equal(bigCE@dendro_clusters,x1@dendro_clusters)  
+    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"only single cluster in clustering -- cannot run getBestFeatures")
 	expect_silent(primaryClusterIndex(bigCE)<-3)
