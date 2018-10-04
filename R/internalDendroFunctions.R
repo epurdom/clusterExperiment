@@ -61,7 +61,11 @@
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){
 		if(returnClass %in% c("phylo","phylo4")){
-			#make internal node and cluster ids the node and tip labels (i.e. erase existing)
+			#------
+			#Before convert,
+			#make internal node and cluster ids 
+			#the node and tip labels (i.e. erase existing)
+			#------
 			if(convertNodes) phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
 	  
 			if(convertTips){

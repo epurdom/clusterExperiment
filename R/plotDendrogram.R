@@ -267,17 +267,14 @@ setMethod(
 	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="NodeIndex", columnValue="SampleIndex")
 	
   }
-  #convert to phylo object...
+  #convert to phylo object...note that uses the internal node ids, tip labels, not anything from nodeLabels. 
   phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=(leafType!="samples")) 
   
   if(leafType=="samples"){
 	  clNames<-if(is.matrix(clObj)) row.names(clObj) else names(clObj)
 	  phyloObj$tip.label<-clNames[mTipsToSamples]
 	  if(any(is.na(phyloObj$tip.label))) stop("coding error -- conversion to sample names failed")
-	
-		
   }
-  #leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16

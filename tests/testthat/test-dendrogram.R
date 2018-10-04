@@ -19,7 +19,7 @@ test_that("`makeDendrogram` works with ClusterExperiment objects", {
     #test CE version
     expect_silent(makeDendrogram(cc))
     expect_silent(makeDendrogram(cc, unassigned="cluster"))
-    expect_error(makeDendrogram(cc, unassigned="remove"))
+    expect_error(makeDendrogram(cc, unassigned="remove"),"should be one of") #not valid option
 
     #test proper error if only single cluster:
     fakeCluster<-rep(1,nSamples(cc))

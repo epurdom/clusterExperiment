@@ -118,10 +118,9 @@ setMethod(
         }
         
         #Add clusterNames as Ids to cluster and sample dendrogram.
-		x@dendro_clusters <- .setDefaultNodeTipLabels(outlist$clusters, clusterLegendMat=clusterLegend(x)[[whCl]])
-		
-		#make sample dendrogram have no internal labels here?
-		x@dendro_samples <- .convertDendoLabelsToClusterName(outlist$samples , clusterLegendMat=clusterLegend(x)[[whCl]])
+		x@dendro_clusters <- outlist$clusters
+		phylobase::tipLabels(x@dendro_clusters)<-NA #erase any labels of the tips, internal nodes already have the defaults.
+		x@dendro_samples <- outlist$samples #labels should have been erased already
         x@dendro_index<-whCl
 		#Don't really need this any more...
         x@dendro_outbranch<- "outbranch root" %in% phylobase::tdata(x@dendro_samples)$Position
@@ -129,14 +128,7 @@ setMethod(
         if(!is.logical(ch)) stop(ch)
         return(x)
 })
-.setDefaultNodeTipLabels<-function(dendro,clusterLegendMat){
-	m<-match(phylobase::labels(dendro), clusterLegendMat[,"clusterIds"])
-	
-	phylobase::labels(dendro)[!is.na(m)]<-clusterLegendMat[m[!is.na(m)],"name"]
-    return(dendro)
-	
-	
-}
+
 
 
 #' @rdname makeDendrogram
@@ -414,16 +406,15 @@ setMethod(
 			mSamples[whMissed]<-whSamplesSingle
 		}
 		if(any(is.na(mSamples[position %in% c("unassigned tip","assigned tip")]))) stop("coding error -- finding sample index failed")
-		data.cl <- data.frame(NodeId=mClusterHier, Position=position, SampleIndex=mSamples, stringsAsFactors=FALSE)	
-			
-		#m<-match(mClusterHier, phylobase::tdata(clusterDendro,type="all")$NodeId)
-		#ClusterIdDendro=phylobase::tdata(clusterDendro,type="all")$ClusterIdDendro[m],ClusterIdMerge=phylobase::tdata(clusterDendro,type="all")$ClusterIdMerge[m],
+		data.cl <- data.frame(NodeId=mClusterHier, Position=position, SampleIndex=mSamples, stringsAsFactors=FALSE)				
 		row.names(data.cl)<-as.character(nodeLabs)
 
-		#Need to fix back up the nodeLabels so match that of clusterDendro (in conversion made them the internal names)			
-		whMatchCluster<-which(!is.na(data.cl$NodeId))
-		mToCluster<-.matchToDendroData(inputValue=data.cl$NodeId[whMatchCluster],clusterDendro,columnValue="matchIndex",matchValue="NodeId")
-		phylobase::labels(newPhylo,type="all")[whMatchCluster]<-phylobase::labels(clusterDendro,type="all")[mToCluster]
+		# #Need to fix back up the nodeLabels so match that of clusterDendro (in conversion made them the internal names)
+		# whMatchCluster<-which(!is.na(data.cl$NodeId))
+		# mToCluster<-.matchToDendroData(inputValue=data.cl$NodeId[whMatchCluster],clusterDendro,columnValue="matchIndex",matchValue="NodeId")
+		# phylobase::labels(newPhylo,type="all")[whMatchCluster]<-phylobase::labels(clusterDendro,type="all")[mToCluster]
+		
+		phylobase::labels(newPhylo,type="all")<-NA
 		return(phylobase::phylo4d(x=newPhylo, all.data = data.cl))
 
     }
