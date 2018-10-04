@@ -120,6 +120,7 @@ setMethod(
 			
 			
 			#make node labels match cluster names and sample names
+			
 		}
 	}
 
