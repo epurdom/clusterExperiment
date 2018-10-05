@@ -111,7 +111,7 @@ setMethod(
 		if(class(object@dendro_clusters)=="dendrogram"){
 			newPhylo<-.makePhylobaseTree(object@dendro_clusters,isSamples=FALSE)
 			#Add necessary information: Position, NodeId, ClusterIdDendro, ClusterIdMerge
-			
+			#browser()
 			#make tip labels match cluster names
 		}
 		if(class(object@dendro_samples)=="dendrogram"){

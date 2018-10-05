@@ -75,22 +75,22 @@
 
 #these functions are checks where don't need the corresponding object information
 #' @importFrom phylobase tdata
-.checkDendroClusterFormat<-function(dendro){
+.checkDendroClusterFormat<-function(dendro,checkLabels=TRUE){
 	data.cl<-phylobase::tdata(dendro)
 	if(!all(.clusterDendroColumns %in% names(data.cl) )){
 		return("dendro_clusters must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
 	tp<-phylobase::tipLabels(dendro)
-	if(any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp))))
+	if(checkLabels && any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp))))
 		return("dendro_clusters cannot have labels for the tips; user-defined labels for the tips (i.e. clusters) should be stored in the clusterLegend")
 	if(any(is.na(data.cl$Position))) 
 		return("dendro_clusters cannot have NA values in Position variable")
-	if(any(is.na(data.cl$NodeId))) 
+	if( any(is.na(data.cl$NodeId))) 
 		return("dendro_clusters cannot have NA values in Node Id variable")
 	return(TRUE)
 }
 #' @importFrom phylobase tdata
-.checkDendroSamplesFormat<-function(dendro){
+.checkDendroSamplesFormat<-function(dendro,checkLabels=TRUE){
 	data.cl<-phylobase::tdata(dendro,type="all")
 	all(names(data.cl)%in% .clusterSampleColumns)
 	if(!all(.clusterSampleColumns %in% names(data.cl) )){
@@ -98,11 +98,12 @@
 	}
 	if(any(is.na(data.cl$Position))) 
 		return("dendro_samples cannot have NA values in Position variable")
-	if(any(!is.na(phylobase::nodeLabels(dendro)))) 
+	if(checkLabels && any(!is.na(phylobase::nodeLabels(dendro)))) 
 		return("dendro_samples cannot have labels for the nodes; the labels for the nodes should be in the cluster dendrogram")
-	tp<-phylobase::tipLabels(dendro)
-	if(any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp))))
-		return("dendro_samples cannot have labels for the tips; the labels for the tips should be the colnames of the object")
+	if(checkLabels){
+		tp<-phylobase::tipLabels(dendro)
+		if(any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp)))) return("dendro_samples cannot have labels for the tips; the labels for the tips should be the colnames of the object")
+	} 
 	data.cl<-phylobase::tdata(dendro,type="tip")
 	if(any(is.na(data.cl$SampleIndex))) 
 		return("dendro_samples cannot have NA values for tips in SampleIndex variable")

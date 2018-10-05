@@ -164,12 +164,13 @@ test_that("plotDendrogram works with outgroup", {
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
   expect_silent(plotDendrogram(dend))
+  phylobase::nodeLabels(dend@dendro_clusters)<-paste("A",1:length(phylobase::nodeLabels(dend@dendro_clusters)))
   expect_silent(plotDendrogram(dend,show.node.label=TRUE))
-  expect_silent(plotDendrogram(dend,leafType="samples",plotType="name"))
-  expect_silent(plotDendrogram(dend, leafType="samples",plotType="name",removeOutbranch=FALSE))
-  expect_silent(plotDendrogram(dend,leafType="samples",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="name"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="name"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE, leafType="samples",plotType="name",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
   
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -213,19 +214,15 @@ test_that("plotDendrogram works with outgroup", {
   expect_error(makeDendrogram(dend5,reduceMethod="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
-
-    
 })
 
 test_that("plotDendrogram works with whichClusters", {
-    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   expect_silent(dend <- makeDendrogram(ccSE))
   expect_message(dend<-mergeClusters(dend,DEMethod="limma"))
-  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))
-  
-  
+  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))  
 })
 
 

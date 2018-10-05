@@ -84,7 +84,11 @@
 			 m<-match(labs,legMat[,"clusterIds"])	
 			 phylobase::tipLabels(internalCluster)<-legMat[m,"name"]
 		 }
-		 phylobase::tipLabels(internalSamples)<-colnames(object)[as.numeric(phylobase::tipLabels(internalSamples))]
+		 
+		 nms<-if(!is.null(colnames(object))) colnames(object) else .makeSampleNames(seq_len(ncol(object)))
+		 phylobase::tipLabels(internalSamples) <- nms[as.numeric(phylobase::tipLabels(internalSamples))]
+
+			 
 	 }
 	 #Make sample node names match
 	 type<-switch(singletonCluster,"sample"="internal","cluster"="all")

@@ -694,7 +694,8 @@ setMethod(
         ch<-.checkMerge(retval)
         if(!is.logical(ch)) stop(ch)
         if(plot){
-            dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
+			convertedDends<-.setNodeLabels(retval,labelType="name",useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample"))
+			dend<- switch(leafType,"samples"=convertedDends$dendro_samples,"clusters"=convertedDends$dendro_clusters)
             if(leafType=="samples" & mergeMethod!="none" & plotType=="colorblock"){
                 whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
                 leg<-clusterLegend(retval)[whClusters]
@@ -722,7 +723,7 @@ setMethod(
             # rownames(cl)<-colnames(retval)
             # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
             if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-           
+            
 			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, clObj=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
         }
         
