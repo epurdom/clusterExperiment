@@ -12,7 +12,7 @@ test_that("`mergeClusters` works with matrix",{
                               dendro=clustWithDendro@dendro_clusters,
                               mergeMethod="adjP", plotInfo="mergeMethod"))
   
-}
+})
 
 test_that("`mergeClusters` works with ClusterExperiment objects", { 
     expect_silent(cl1 <- clusterSingle(smSimData, 
