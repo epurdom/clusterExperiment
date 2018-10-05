@@ -145,7 +145,7 @@ test_that("plotDendrogram works with colData", {
   leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
   leg[,"name"]<-letters[1:nrow(leg)]
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
-	dend <- makeDendrogram(ccSE)
+	expect_silent(dend <- makeDendrogram(ccSE))
 	expect_silent(plotDendrogram(dend,colData="A"))
 	expect_warning(plotDendrogram(dend,colData=c("A","B","C")),"implies using columns of colData that are continuous")
 	

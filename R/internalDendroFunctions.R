@@ -33,6 +33,71 @@
 }
 
 
+#' @description phylo4d objects for cluster and sample dendrograms with pretty (and matched!) node and tip labels.
+#' @param object a ClusterExperiment object
+#' @param labelType. If 'id' returns the NodeId value for all the internal nodes that match the cluster dendrogram (cluster and sample dendrograms) and the cluster id for the tips (cluster dendrogram) or sample index for the tips (sample dendrogram). If "name", then the cluster ids and sample indices are converted into the cluster names (in the clusterMat) and the sample names (in colnames)
+#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged)
+#' @return Returns list of the two dendrograms with nodes that have been updated. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't"
+#' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
+
+.setNodeLabels<-function(object,labelType=c("name","id"),useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample","cluster"),...){
+	labelType<-match.arg(labelType)
+	singletonCluster<-match.arg(singletonCluster)
+	 if(!inherits(object,"ClusterExperiment")) stop("coding error -- function should be used for ClusterExperiment objects")
+	 if(is.na(object@merge_index)|| all(is.na(phylobase::tdata(object@dendro_clusters)$ClusterIdMerge))) useMergeClusters<-FALSE
+	 if(is.null(object@dendro_clusters)) return(NULL)
+	 #internal option returns same as the .convertPhyClasses with both =TRUE
+	 internalCluster<-.convertToPhyClasses(object@dendro_clusters, returnClass=c("phylo4d"), convertNodes=TRUE, convertTips=TRUE)
+	 internalSamples<-.convertToPhyClasses(object@dendro_samples, returnClass=c("phylo4d"), convertNodes=TRUE, convertTips=TRUE)
+	 
+	 
+	 if(useMergeClusters){
+		 #erase all the dendro cluster Ids, which are only on the tips
+		 whConvert<-which(!is.na(phylobase::tdata(internalCluster,type="tip")$ClusterIdDendro))
+		 phylobase::tipLabels(internalCluster)[whConvert]<-NA 
+		 #now add merge cluster ids.
+		 whConvert<-which(!is.na(phylobase::tdata(internalCluster,type="all")$ClusterIdMerge))
+		 phylobase::labels(internalCluster)[whConvert] <- phylobase::tdata(internalCluster,type="all")$ClusterIdMerge[whConvert]
+		 
+	 }
+	 if(!overrideExistingNode){
+		 #located here so merge labels won't be displayed if user changed that node name manually.
+		 existingNodeLabels<-phylobase::nodeLabels(object@dendro_clusters)
+		 whKeep<-which(!is.na(existingNodeLabels) & existingNodeLabels!=phylobase::tdata(internalCluster,type="internal")$NodeId)
+		 phylobase::nodeLabels(internalCluster)[whKeep]<-existingNodeLabels[whKeep]
+	 }
+	 	 
+	 
+	 if(labelType=="name"){
+		 ###Convert to the name versions
+		 if(useMergeClusters){
+			 legMat<-clusterLegend(object)[[object@merge_index]]
+			 labs<-phylobase::labels(internalCluster)[whConvert]
+			 labs<-as.character(as.numeric(gsub("ClusterId","",labs)))
+			 m<-match(labs,legMat[,"clusterIds"])	
+			 phylobase::labels(internalCluster)[whConvert]<-legMat[m,"name"]
+		 }
+		 else{
+			 legMat<-clusterLegend(object)[[object@dendro_index]]
+		 	 labs<-phylobase::tipLabels(internalCluster)
+			 labs<-as.character(as.numeric(gsub("ClusterId","",labs)))
+			 m<-match(labs,legMat[,"clusterIds"])	
+			 phylobase::tipLabels(internalCluster)<-legMat[m,"name"]
+		 }
+		 phylobase::tipLabels(internalSamples)<-colnames(object)[as.numeric(phylobase::tipLabels(internalSamples))]
+	 }
+	 #Make sample node names match
+	 type<-switch(singletonCluster,"sample"="internal","cluster"="all")
+	 vals<-phylobase::tdata(internalSamples,type=type)$NodeId
+	 wh<-which(!is.na(vals))
+	 mToSample <- .matchToDendroData(inputValue=vals[wh], dendro=internalCluster, matchValue="NodeId", columnValue="matchIndex")
+	 phylobase::labels(internalSamples,type=type)[wh]<- phylobase::labels(internalCluster)[mToSample]
+	 
+	 
+	 return(list(dendro_clusters=internalCluster,dendro_samples=internalSamples))
+}
+
+
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
 .convertToDendrogram<-function(x){
@@ -53,14 +118,17 @@
 }
 
 
+
+
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
-###Note convertCluster should ONLY be for the cluster dendro!
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
+	#convertNodes=TRUE -> change the (internal) nodes labels to be Node Id
+	#convertTips=TRUE -> change the tip labels to be 1) if 'ClusterIdDendro' is in tdata: Dendro cluster id (if no NAs) or merge cluster id (if dendros are NA in tips) 2) if 'SampleIndex' in names of tdata, tip labels are the SampleIndex value
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){
-		if(returnClass %in% c("phylo","phylo4")){
+		if(returnClass %in% c("phylo","phylo4","phylo4d")){
 			#------
 			#Before convert,
 			#make internal node and cluster ids 
