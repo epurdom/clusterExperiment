@@ -161,6 +161,8 @@ metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
+#check still valid object, in case updated class definitions
+validObject(rsecFluidigm)
 # a simple check to make sure have same clusterings as expected
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
