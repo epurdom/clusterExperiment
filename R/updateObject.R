@@ -109,17 +109,58 @@ setMethod(
 	## Fix class of the dendrograms:
 	if("dendro_samples" %in% snames){
 		if(class(object@dendro_clusters)=="dendrogram"){
-			newPhylo<-.makePhylobaseTree(object@dendro_clusters,isSamples=FALSE)
+			newPhyloCluster<-.makePhylobaseTree(object@dendro_clusters,isSamples=FALSE)
+			#-----
 			#Add necessary information: Position, NodeId, ClusterIdDendro, ClusterIdMerge
-			browser()
+			#-----
+			nTotal<-length(phylobase::getNode(newPhyloCluster,type="all"))
+			clIds<-phylobase::tipLabels(newPhyloCluster)
+			clIdsDendro<-rep(NA,length= nTotal)
+			clIdsDendro[phylobase::getNode(newPhyloCluster,type="tip")]<-paste("ClusterIdDendro",clIds,sep="")
+			clIdsMerge<-rep(NA,length= nTotal)
+			mergeCorr<-getMergeCorrespond(object,by="original")
+			clIdsMerge[phylobase::getNode(newPhyloCluster,type="tip")]<-paste("ClusterIdMerge",mergeCorr[clIds],sep="")
+			maxInternal<-max(as.numeric(gsub("Node","",phylobase::nodeLabels(newPhyloCluster))))
+			tipIds<-paste("NodeId",seq(from=maxInternal+1,length=nTips(newPhyloCluster)),sep="")
+			phylobase::tipLabels(newPhyloCluster)<-tipIds
+			phylobase::nodeLabels(newPhyloCluster)<-gsub("Node","NodeId",phylobase::nodeLabels(newPhyloCluster))
+			labs<-phylobase::labels(newPhyloCluster,type="all")
+			pos<-factor(rep(NA,length= nTotal),levels=.positionLevels)
+			pos[phylobase::getNode(newPhyloCluster,type="tip")]<-"cluster hierarchy tip"
+			pos[phylobase::getNode(newPhyloCluster,type="internal")]<-"cluster hierarchy node"
+			data.cl<-data.frame(NodeId=labs, ClusterIdDendro=clIdsDendro, ClusterIdMerge=clIdsMerge,              Position=pos,stringsAsFactors=FALSE)
+			#get rid of node labels of tips
+			phylobase::tipLabels(newPhyloCluster)<-NA
+			newPhyloCluster<-phylobase::phylo4d(x=newPhyloCluster, all.data = data.cl)
+			ch<-.checkDendroClusterFormat(newPhyloCluster,checkLabels=TRUE)
+			if(!is.logical(ch)) stop("Error in converting to new format for dendro_clusters slot:",ch)
 			#make tip labels match cluster names
 		}
 		if(class(object@dendro_samples)=="dendrogram"){
-			newPhylo<-.makePhylobaseTree(object@dendro_samples,isSamples=TRUE,outbranch=object@dendro_outbranch)
+			dataNode<-phylobase::tdata(newPhyloCluster,type="internal")
+			data.cl<-phylobase::tdata(newPhyloCluster,type="all")
+			newPhyloSample<-.makePhylobaseTree(object@dendro_samples,isSamples=TRUE,outbranch=object@dendro_outbranch)
+			
+			#-------
 			#Add necessary information: Position, NodeId, SampleIndex
+			#-------
+			origLabs<-phylobase::labels(newPhyloSample,type="all")
+			nTotal<-length(origLabs)
+			## NodeId
+			mNode<-match(origLabs,gsub("Id","",dataNode$NodeId))
+			newNodeLabs<-rep(NA,length=length(mNode))
+			newNodeLabs[!is.na(mNode)]<-as.character(dataNode$NodeId)[mNode[!is.na(mNode)]]
+			#Now need to figure out match to cluster id...
 			
+			## Postion
+			# .positionLevels<-c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root")
+			#
+			pos<-factor(rep(NA,length= nTotal),levels=.positionLevels)
+			pos[grep("Missing",origLabs)]<-"outbranch hierarchy node"
+			pos[grep("Root",origLabs)]<-"outbranch root"
+			pos[!is.na(match(newNodeLabs,data.cl$NodeId))]<-"cluster hierarchy tip"
+			pos[!is.na(mNode)]<-"cluster hierarchy node"
 			
-			#make node labels match cluster names and sample names
 			
 		}
 	}
@@ -132,6 +173,38 @@ setMethod(
 }
 )
 
+
+#---
+#remove the outbranch from the dendrogram and from cl
+#(note this is using phylo4 obj)
+#---
+.removeOutbranch<-function(phylo4Obj){
+  rootNode<-phylobase::rootNode(phylo4Obj)
+  rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
+  tips<-phylobase::getNode(phylo4Obj,type="tip")
+  whMissingNode<-grep("MissingNode",names(rootChild))
+  if(length(whMissingNode)==0){
+    #check not a single -1 sample from root:
+    if(any(rootChild %in% tips)){
+      #which ever rootChild is in tips must be single missing sample 
+      #because can't make dendrogram with only 1 cluster so couldn't run plot or mergeClusters. 
+	#Note only true because outbranch=TRUE
+      clusterNode<-rootChild[!rootChild %in% tips]
+      #stop("Internal coding error: need to fix .plotDendro to deal with when single missing sample")
+    }
+    else stop("Internal coding error: no outbranch nodes")	
+  } 
+  else clusterNode<-rootChild[-whMissingNode]
+  if(length(clusterNode)!=1) stop("Internal coding error: removing missing node does not leave exactly 1 descendent of root")
+  clusterTips<-phylobase::descendants(phylo4Obj,node=clusterNode,type="tip")
+  if(length(clusterTips)==0) stop("Internal coding error: no none missing samples in tree")
+  namesClusterTips<-names(clusterTips)
+  #
+  
+  if(is.matrix(cl)) cl<-cl[namesClusterTips,] else cl<-cl[namesClusterTips]
+  phylo4Obj<-phylobase::subset(phylo4Obj, node.subtree=clusterNode)
+  return(phylo4Obj)
+}
 
 
 
