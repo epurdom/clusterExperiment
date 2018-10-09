@@ -487,12 +487,12 @@ setMethod(
 	        data.cl$ClusterIdMerge<-clusterIdMerge
 			
 			##create diagonal of oldClToNew of those not merged
-			dendroNotMerged<-which(apply(oldClToNew[,nmerge==1],1,function(x){sum(x>0)==1}))
-			mergeNotMerged<-apply(oldClToNew[dendroNotMerged,],1,function(x){which(x>0)})
-			diagMerge<-oldClToNew[dendroNotMerged,mergeNotMerged]
+			dendroNotMerged<-which(apply(oldClToNew[,nmerge==1,drop=FALSE],1,function(x){sum(x>0)==1}))
+			mergeNotMerged<-apply(oldClToNew[dendroNotMerged, ,drop=FALSE],1,function(x){which(x>0)})
+			diagMerge<-oldClToNew[dendroNotMerged,mergeNotMerged,drop=FALSE]
 			#rm -1 if exist
 			whMiss<-which(rownames(diagMerge)%in%c("-1","-2"))
-			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss]
+			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss,drop=FALSE]
 			if(nrow(diagMerge)>0){
 				#Otherwise, all non-missing clusters were merged...
 	   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchValue="ClusterIdDendro", columnValue="matchIndex")
