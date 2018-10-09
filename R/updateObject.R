@@ -145,12 +145,44 @@ setMethod(
 			#Add necessary information: Position, NodeId, SampleIndex
 			#-------
 			origLabs<-phylobase::labels(newPhyloSample,type="all")
+			tipNodes<-phylobase::getNode(newPhyloSample,type="tip")
 			nTotal<-length(origLabs)
+			## SampleIndex
+			#Note: Previous naming convention of samples was to give names if not null, and if null, give values "1","2", etc. corresponding to index.
+			sampIndex<-rep(NA,length=nTotal)
+			if(!is.null(colnames(object))){
+				mSample<-match(origLabs,colnames(object))
+				if(any(is.na(mSample[tipNodes]))) stop("error in converting tip labels in the dendro_samples slot: the tip labels do not all match colnames of object")
+				sampIndex<-mSample
+			}
+			else{
+				tipLabs<-as.numeric(phylobase::tipLabels(newPhyloSample))
+				if(any(is.na(tipLabs))) stop("error in converting tip labels in the dendro_samples slot: the object has no colnames and tip labels are not numeric index")
+				sampIndex[tipNodes]<-tipLabs
+			}
+			
 			## NodeId
 			mNode<-match(origLabs,gsub("Id","",dataNode$NodeId))
 			newNodeLabs<-rep(NA,length=length(mNode))
 			newNodeLabs[!is.na(mNode)]<-as.character(dataNode$NodeId)[mNode[!is.na(mNode)]]
-			#Now need to figure out match to cluster id...
+			#Now need to match nodes that correspond to cluster id... they don't have any reasonable naming scheme...
+			whNodes<-phylobase::getNode(newPhyloSample,type="internal")
+			origNodes<-phylobase::nodeLabels(newPhyloSample)
+			clusterNodes<-origNodes[!is.na(origNodes) & is.na(mNode[whNodes]) ]
+			clusterNodes<-clusterNodes[-grep("Missing",clusterNodes)]
+			clusterNodes<-clusterNodes[-grep("Root",clusterNodes)]
+			#find descendants of each node
+			clMat<-clusterLegend(object)[[object@dendro_index]]
+			desc<-sapply(clusterNodes,function(x){
+				dd<-phylobase::descendants(phy=newPhyloSample,node=x,type="tips")
+				
+				if(any(is.na(sampIndex[dd]))) stop("coding error -- NA in samples")
+				clusterVal<-unique(clusterMatrix(object)[sampIndex[dd],object@dendro_index])
+				#if(length(clusterVal)!=1) stop("invalid dendro_samples slot -- multiple clusters in descendant of one cluster node")
+				return(paste("ClusterId",clusterVal,sep=""))
+			})
+			
+			
 			
 			## Postion
 			# .positionLevels<-c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root")
@@ -160,6 +192,7 @@ setMethod(
 			pos[grep("Root",origLabs)]<-"outbranch root"
 			pos[!is.na(match(newNodeLabs,data.cl$NodeId))]<-"cluster hierarchy tip"
 			pos[!is.na(mNode)]<-"cluster hierarchy node"
+			
 			
 			
 		}
