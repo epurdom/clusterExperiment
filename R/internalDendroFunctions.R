@@ -5,6 +5,9 @@
 
 .positionLevels<-c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root")
 
+.hasOutBranch<-function(object){
+	"outbranch root" %in% phylobase::tdata(object@dendro_samples)$Position
+}
 
 #' @importFrom phylobase tdata
 .matchToDendroData<-function(inputValue,dendro,matchValue="NodeId",columnValue){

@@ -123,7 +123,7 @@ setMethod(
 		x@dendro_samples <- outlist$samples #labels should have been erased already
         x@dendro_index<-whCl
 		#Don't really need this any more...
-        x@dendro_outbranch<- "outbranch root" %in% phylobase::tdata(x@dendro_samples)$Position
+        x@dendro_outbranch<- .hasOutBranch(x)
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
         return(x)

@@ -588,7 +588,7 @@ setMethod(
             cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
             .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
         }
-        if(!x@dendro_outbranch){
+        if(!.hasOutBranch(x)){
             if(any(cl<0) & leafType=="samples"){
                 warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
                 leafType<-"clusters"
@@ -715,7 +715,7 @@ setMethod(
             if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]
             label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
             outbranch<-FALSE
-            if(leafType=="samples" & any(cl<0)) outbranch<-retval@dendro_outbranch
+            if(leafType=="samples" & any(cl<0)) outbranch<-.hasOutBranch(retval)
             #if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
             
             # outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
