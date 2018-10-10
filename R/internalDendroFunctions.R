@@ -183,7 +183,7 @@
 	
 }
 
-#' @importFrom phylobase descendants getNode ancestores edges
+#' @importFrom phylobase descendants getNode ancestors edges
 .pruneToNodes<-function(phylo4,nodesPruned){
 	##nodesPruned should be *the node numerical index* of those nodes that need "pruning" -- i.e. drop their children; other nodes kept the same.
 	tipsPruned<-unlist(phylobase::descendants(phylo4,node=nodesPruned,type="tip"),use.names=FALSE)

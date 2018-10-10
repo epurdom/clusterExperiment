@@ -53,6 +53,9 @@ If \emph{any} of the dendrogram-related slots are missing, ALL of
   values. Similarly, if \emph{any} of the merge-related slots are missing, 
   ALL of the merge-related slots will be cleared to the default values.
 
+Cluster and Sample dendrograms of the class \code{dendrogram} will
+be updated to the \code{\link[phylobase]{phylo4d}} class now used in
+
 The function currently only works for object of 
   \code{ClusterExperiment}, not the older name \code{clusterExperiment}.
 }

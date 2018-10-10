@@ -185,7 +185,7 @@ accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
 	accessed along with the nodeProp info with the \code{nodeMergeInfo}
 	function.
 	}
-  \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
+  \item{\code{updatedClusterDendro}}{ The dendrogram on which the merging
   was based (based on the original clustering).}
   \item{\code{cutoff}}{ The cutoff value for merging.} }
 
