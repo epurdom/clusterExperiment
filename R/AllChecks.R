@@ -176,7 +176,6 @@
     baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
     if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
     allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
-    
     if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
       return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
     }
@@ -188,12 +187,13 @@
       wh<-which(object@merge_nodeMerge[,"isMerged"])
       if(all(is.na(object@merge_nodeMerge[wh,"mergeClusterId"]))) return("mergeClusterId entries of merge_nodeMerge cannot be all NA if there isMerged column that is TRUE")
     }    
-    id<-    object@merge_nodeMerge[,"mergeClusterId"]
+    id<-object@merge_nodeMerge[,"mergeClusterId"]
     merg<-object@merge_nodeMerge[,"isMerged"]
     if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
     if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
     cl<-clusterMatrix(object)[,object@merge_index]
     if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
+	
   }
   if(!is.null(object@merge_nodeProp)){
     if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
@@ -216,6 +216,15 @@
     for(method in allCnames[-whNode]){
       if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
     }
+	
+  }
+  #Check that dendro node ids match those in merge tables.
+  if(!is.na(object@merge_dendrocluster_index) && !is.na(object@dendro_index) && object@merge_dendrocluster_index==object@dendro_index){
+	dendroNodes<-phylobase::tdata(object@dendro_clusters,type="internal")[,"NodeId"]
+	nodes<-object@merge_nodeMerge[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeMerge")
+	nodes<-object@merge_nodeProp[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeProp")		
   }
   return(TRUE)
 }

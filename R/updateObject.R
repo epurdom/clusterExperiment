@@ -20,6 +20,9 @@
 #'   the dendrogram \emph{and} merge related slots will be cleared to default 
 #'   values. Similarly, if \emph{any} of the merge-related slots are missing, 
 #'   ALL of the merge-related slots will be cleared to the default values.
+#' @details Cluster and Sample dendrograms of the class \code{dendrogram} will
+#' be updated to the \code{\link[phylobase]{phylo4d}} class now used in 
+# \code{ClusterExperiment} objects; the merge information on these nodes will be updated to have the correct format (i.e. match to the internal node id names in the new dendrogram). The previous identification of nodes that was previously created internally by plotDendrogram and the merging (labels in the form of 'Node1','Node2'), will be kept as \code{\link[phylobase]{nodeLabels}} in the new dendrogram class.
 #' @details The function currently only works for object of 
 #'   \code{ClusterExperiment}, not the older name \code{clusterExperiment}.
 #' @return A valid \code{ClusterExperiment} object based on the current 
@@ -33,20 +36,20 @@ setMethod(
   f = "updateObject",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, checkTransformAndAssay=FALSE,...,verbose=FALSE){
-		#create snames, which is the slots the object actually has
-		#and will eventually be narrowed down to only those slots will pass to `ClusterExperiment`
-		#list names of all current required slots
-		ceSlots<-slotNames(object)
-		testSnames<-sapply(ceSlots,.hasSlot,object=object)
-		snames<-ceSlots[testSnames]
+	#create snames, which is the slots the object actually has
+	#and will eventually be narrowed down to only those slots will pass to `ClusterExperiment`
+	#list names of all current required slots
+	ceSlots<-slotNames(object)
+	testSnames<-sapply(ceSlots,.hasSlot,object=object)
+	snames<-ceSlots[testSnames]
 
-		#--------
-		#check has at least the required slots of SummarizedExperiment class
-		#--------
-		if(!all(slotNames("SummarizedExperiment") %in% snames)){
-			missSE<-which(!slotNames("SummarizedExperiment") %in% snames)
-			stop("given object does not have the basic slots of SummarizedExperiment, cannot be updated (missing:",paste(slotNames("SummarizedExperiment")[missSE],collapse=","),"). To construct a ClusterExperiment object from its original components, use the function 'ClusterExperiment'")
-		}
+	#--------
+	#check has at least the required slots of SummarizedExperiment class
+	#--------
+	if(!all(slotNames("SummarizedExperiment") %in% snames)){
+		missSE<-which(!slotNames("SummarizedExperiment") %in% snames)
+		stop("given object does not have the basic slots of SummarizedExperiment, cannot be updated (missing:",paste(slotNames("SummarizedExperiment")[missSE],collapse=","),"). To construct a ClusterExperiment object from its original components, use the function 'ClusterExperiment'")
+	}
 
 	#--------
 	#check has minimal required slots of a clusterExperiment object of any version
@@ -107,6 +110,8 @@ setMethod(
 	snames<-snames[snames %in% myslots]
 
 	## Fix class of the dendrograms:
+	success<-TRUE
+	successMerge<-TRUE
 	if("dendro_samples" %in% snames){
 		if(class(object@dendro_clusters)=="dendrogram"){
 			newPhyloCluster<-.makePhylobaseTree(object@dendro_clusters,type="dendro",isSamples=FALSE)
@@ -123,19 +128,38 @@ setMethod(
 			maxInternal<-max(as.numeric(gsub("Node","",phylobase::nodeLabels(newPhyloCluster))))
 			tipIds<-paste("NodeId",seq(from=maxInternal+1,length=nTips(newPhyloCluster)),sep="")
 			phylobase::tipLabels(newPhyloCluster)<-tipIds
-			phylobase::nodeLabels(newPhyloCluster)<-gsub("Node","NodeId",phylobase::nodeLabels(newPhyloCluster))
 			labs<-phylobase::labels(newPhyloCluster,type="all")
+			labs<-gsub("Node","NodeId",labs)
 			pos<-factor(rep(NA,length= nTotal),levels=.positionLevels)
 			pos[phylobase::getNode(newPhyloCluster,type="tip")]<-"cluster hierarchy tip"
 			pos[phylobase::getNode(newPhyloCluster,type="internal")]<-"cluster hierarchy node"
 			data.cl<-data.frame(NodeId=labs, ClusterIdDendro=clIdsDendro, ClusterIdMerge=clIdsMerge,              Position=pos,stringsAsFactors=FALSE)
-			#get rid of node labels of tips
+			#get rid of node labels of tips (keep internal node labels)
 			phylobase::tipLabels(newPhyloCluster)<-NA
 			newPhyloCluster<-phylobase::phylo4d(x=newPhyloCluster, all.data = data.cl)
 			ch<-.checkDendroClusterFormat(newPhyloCluster,checkLabels=TRUE)
-			if(!is.logical(ch)) stop("Error in converting to new format for dendro_clusters slot:",ch)
+			if(!is.logical(ch)) success<-success<-paste("Error in converting to new format for dendro_clusters slot:",ch)
 			#make tip labels match cluster names
 			object@dendro_clusters<-newPhyloCluster
+			
+			###Need to match up the merge information with NodeIds:
+			if(!is.na(object@merge_nodeMerge) && !"NodeId" %in% colnames(object@merge_nodeMerge) && "Node" %in% colnames(object@merge_nodeMerge)){
+				nodes<-object@merge_nodeMerge[,"Node"]
+				m<-match(nodes,phylobase::nodeLabels(object@dendro_clusters))
+				if(any(is.na(m))) successMerge<-"Error in converting merge_nodeMerge information -- doesn't match node labels of dendro_clusters"
+				nodeId<-phylobase::tdata(object@dendro_clusters,type="internal")[m,"NodeId"]
+				object@merge_nodeMerge[,"Node"]<-nodeId
+				colnames(object@merge_nodeMerge)[grep("Node",object@merge_nodeMerge)]<-"NodeId"
+			}
+			if(!is.na(object@merge_nodeProp)&& !"NodeId" %in% colnames(object@merge_nodeProp) && "Node" %in% colnames(object@merge_nodeProp)){
+				nodes<-object@merge_nodeProp[,"Node"]
+				m<-match(nodes,phylobase::nodeLabels(object@dendro_clusters))
+				if(any(is.na(m))) successMerge<-"Error in converting merge_nodeProp information -- doesn't match node labels of dendro_clusters"
+				nodeId<-phylobase::tdata(object@dendro_clusters,type="internal")[m,"NodeId"]
+				object@merge_nodeProp[,"Node"]<-nodeId
+				colnames(object@merge_nodeProp)[grep("Node",object@merge_nodeProp)]<-"NodeId"
+				
+			}
 		}
 		if(class(object@dendro_samples)=="dendrogram"){
 			dataNode<-phylobase::tdata(newPhyloCluster,type="internal")
@@ -153,12 +177,12 @@ setMethod(
 			sampIndex<-rep(NA,length=nTotal)
 			if(!is.null(colnames(object))){
 				mSample<-match(origLabs,colnames(object))
-				if(any(is.na(mSample[tipNodes]))) stop("error in converting tip labels in the dendro_samples slot: the tip labels do not all match colnames of object")
+				if(any(is.na(mSample[tipNodes]))) success<-"error in converting tip labels in the dendro_samples slot: the tip labels do not all match colnames of object"
 				sampIndex<-mSample
 			}
 			else{
 				tipLabs<-as.numeric(phylobase::tipLabels(newPhyloSample))
-				if(any(is.na(tipLabs))) stop("error in converting tip labels in the dendro_samples slot: the object has no colnames and tip labels are not numeric index")
+				if(any(is.na(tipLabs))) success<-"error in converting tip labels in the dendro_samples slot: the object has no colnames and tip labels are not numeric index"
 				sampIndex[tipNodes]<-tipLabs
 			}
 			
@@ -171,7 +195,7 @@ setMethod(
 			clusterNodes<-clusterNodes[which(!is.na(newNodeLabs))]
 			getClusterDescendants<-function(node){
 				dd<-phylobase::descendants(phy=newPhyloSample,node=node,type="tip")
-				if(any(is.na(sampIndex[dd]))) stop("coding error -- NA in samples")
+				if(any(is.na(sampIndex[dd]))) success<<-"Not all descendants have sample ids; unable to identify clusters to cluster ids in sample dendrogram"
 				else{
 					cl<-clusterMatrix(object)[sampIndex[dd],object@dendro_index]
 					tab<-table(clusterMatrix(object)[,object@dendro_index])
@@ -204,7 +228,7 @@ setMethod(
 				})
 			)
 			#check got all of them
-			if(any(is.na(match(na.omit(data.cl$ClusterIdDendro),paste("ClusterId",clusterLink[,"Cluster"],sep=""))))) stop("error in updating -- not all clusters found in cluster dendro find match to node in samples dendro")
+			if(any(is.na(match(na.omit(data.cl$ClusterIdDendro),paste("ClusterId",clusterLink[,"Cluster"],sep=""))))) success<-"error in updating sample dendrogram -- not all clusters found in cluster dendro find match to node in samples dendro"
 			nodeIdMatch<-match(paste("ClusterId",clusterLink[,"Cluster"],sep=""),data.cl$ClusterIdDendro)
 			newNodeLabs[clusterLink[,"Node"]]<-data.cl$NodeId[nodeIdMatch]
 			## Postion
@@ -225,10 +249,19 @@ setMethod(
 			phylobase::labels(newPhyloSample)<-NA
 			newPhyloSample<-phylobase::phylo4d(x=newPhyloSample, all.data = sample.data)
 			ch<-.checkDendroSamplesFormat(newPhyloSample,checkLabels=TRUE)
-			if(!is.logical(ch)) stop("Error in converting to new format for dendro_samples slot:",ch)
+			if(!is.logical(ch)) success<-paste("Error in converting to new format for dendro_samples slot:",ch)
 			object@dendro_samples<-newPhyloSample
+			
 		}
-		
+		if(!is.logical(success)){
+			warning("Could not successfully convert dendrogram to class 'phylo4d'. Updated object will remove all dendro AND merge related slots. Error:",success)
+			snames<-snames[-which(snames %in% dendroSlots)]
+			snames<-snames[-which(snames %in% mergeSlots)]
+		}
+		else if(!is.logical(successMerge)){
+			warning("Could not successfully convert merge information to match the nodes in updated dendrogram object. Updated object will remove ALL merge related slots. Error:",successMerge)
+			snames<-snames[-which(snames %in% mergeSlots)]
+		}
 	}
 
 	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
