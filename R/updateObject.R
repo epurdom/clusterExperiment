@@ -78,7 +78,7 @@ setMethod(
 	#--------
 
 	dendroSlots<-c("dendro_samples", "dendro_clusters",
-  "dendro_index", "dendro_outbranch")
+  "dendro_index")
 
 	mergeSlots<-c("merge_index",
 "merge_dendrocluster_index",
@@ -102,7 +102,7 @@ setMethod(
 	myslots<- c("transformation",
   	"primaryIndex", "clusterInfo",
   "clusterTypes", "dendro_samples", "dendro_clusters",
-  "dendro_index", "dendro_outbranch", "coClustering",
+  "dendro_index", "coClustering",
   "clusterLegend", "orderSamples", "merge_index",
 "merge_dendrocluster_index",
 "merge_method", "merge_demethod", "merge_cutoff",
@@ -162,6 +162,7 @@ setMethod(
 			}
 		}
 		if(class(object@dendro_samples)=="dendrogram"){
+			#requires old slot name @dendro_outbranch too.
 			dataNode<-phylobase::tdata(newPhyloCluster,type="internal")
 			data.cl<-phylobase::tdata(newPhyloCluster,type="all")
 			newPhyloSample<-.makePhylobaseTree(object@dendro_samples,type="dendro",isSamples=TRUE,outbranch=object@dendro_outbranch)

@@ -65,12 +65,10 @@ setMethod(
 	dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
     dend_ind<-dendroClusterIndex(x)
-    dend_out<-x@dendro_outbranch
     if(dendroClusterIndex(x) %in% whichClusters){
       dend_cl<-NULL
       dend_samples<-NULL
       dend_ind<-NA_real_
-      dend_out<-NA
     }
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
@@ -85,7 +83,6 @@ setMethod(
 		dendro_samples=dend_samples,
 		dendro_clusters=dend_cl,
 		dendro_index=dend_ind,
-		dendro_outbranch=dend_out,
 		merge_index=merge_index,
 		merge_dendrocluster_index=merge_dendrocluster_index,
 		merge_cutoff=x@merge_cutoff,

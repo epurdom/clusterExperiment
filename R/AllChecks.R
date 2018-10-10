@@ -136,14 +136,12 @@
     if(phylobase::nTips(object@dendro_samples) != NCOL(object)) {
       return("dendro_samples must have the same number of leaves as the number of samples")
     }
-    if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
 	ch<-.checkDendroSamplesFormat(object@dendro_samples)
 	if(!is.logical(ch)) return(ch)
 
   }
   else{
     if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
-    if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
   }
   
   return(TRUE)

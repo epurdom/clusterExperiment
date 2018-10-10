@@ -122,8 +122,6 @@ setMethod(
 		phylobase::tipLabels(x@dendro_clusters)<-NA #erase any labels of the tips, internal nodes already have the defaults.
 		x@dendro_samples <- outlist$samples #labels should have been erased already
         x@dendro_index<-whCl
-		#Don't really need this any more...
-        x@dendro_outbranch<- .hasOutBranch(x)
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
         return(x)

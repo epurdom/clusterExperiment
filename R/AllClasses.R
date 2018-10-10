@@ -81,8 +81,6 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #' details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot dendro_outbranch logical. Whether the dendro_samples dendrogram put
-#' missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
@@ -115,7 +113,6 @@ setClass(
     dendro_samples = "phylo4OrNULL",
     dendro_clusters = "phylo4OrNULL",
     dendro_index = "numeric",
-	dendro_outbranch = "logical",
     coClustering = "matrixOrHDF5OrNULL",
     clusterLegend="list",
     orderSamples="numeric",
@@ -244,8 +241,6 @@ setMethod(
 #'@param dendro_clusters phylo4 object. Sets the `dendro_clusters` slot (see
 #'  Slots).
 #'@param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
-#'@param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see
-#'  Slots).
 #'@param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
 #'@param checkTransformAndAssay logical. Whether to check the content of the
 #'  assay and given transformation function for whether they are valid.
@@ -290,7 +285,6 @@ setMethod(
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,
-                        dendro_outbranch=NA,
                         coClustering=NULL,
                         merge_index=NA_real_,
                         merge_cutoff=NA_real_,
@@ -368,7 +362,6 @@ setMethod(
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
-               dendro_outbranch=dendro_outbranch,
                merge_index=merge_index,
                merge_cutoff=merge_cutoff,
                merge_dendrocluster_index=merge_dendrocluster_index,
