@@ -350,7 +350,7 @@ rsecFluidigm<-RSEC(rsecFluidigm,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.03
+ mergeCutoff=0.01
  )
 par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
