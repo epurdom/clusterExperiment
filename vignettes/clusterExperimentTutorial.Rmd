@@ -145,7 +145,8 @@ system.time(rsecFluidigm<-RSEC(se,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.03,
+ mergeDEMethod="limma",
+ mergeCutoff=0.01,
  ncores=1,
  random.seed=176201))
 ```
@@ -169,7 +170,7 @@ if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperime
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
 ```
 ### The output 
 
