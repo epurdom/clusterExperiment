@@ -1487,7 +1487,7 @@ ceCustom <- clusterMany(ce, dimReduce="PCA",nPCADims=50,
 
 ```
 
-Note that if I call `getBuiltInFunction` for only one cluster, it returns the actual `ClusterFunction` object, not a list of length 1. To combine it with other functions you need to make it into a list.
+Note that if I call `getBuiltInFunction` for only one cluster function, it returns the actual `ClusterFunction` object, not a list of length 1. To combine it with other functions you need to make it into a list.
 
 
 ### Dealing with large numbers of clusterings

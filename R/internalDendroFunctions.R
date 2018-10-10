@@ -233,7 +233,7 @@
 	##edge length slots: edge, edge.length, edge.label
 	##node length slots: data (rows), label
 	##Don't change: order, metadata, annote
-	return(phylo4d(x=newEdge, 
+	return(phylobase::phylo4d(x=newEdge, 
 		edge.length = phylo4@edge.length[whEdgesKeep], 
 		tip.label = tipLabels,
 		node.label = nodeLabels, 
