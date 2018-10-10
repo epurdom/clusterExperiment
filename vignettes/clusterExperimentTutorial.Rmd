@@ -161,8 +161,10 @@ metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
+#temporarily, used while testing vignette during development.
+rsecFluidigm<-updateObject(rsecFluidigm)
 #check still valid object, in case updated class definitions
-validObject(rsecFluidigm)
+if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
 # a simple check to make sure have same clusterings as expected
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
