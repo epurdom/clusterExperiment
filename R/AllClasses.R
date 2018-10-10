@@ -1,17 +1,17 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
-#' @importClassesFrom DelayedArray DelayedArray
+#' @importClassesFrom DelayedArray DelayedMatrix
 #' @importClassesFrom phylobase phylo4 phylo4d
 
 #setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
-setClassUnion("phylo4OrNULL",members=c("phylo4", "NULL"))
+setClassUnion("phylo4OrNULL",members=c("phylo4d", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
-setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray"))
-setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray","HDF5Matrix"))
+setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix","NULL"))
 
 #############################################################
 #############################################################
