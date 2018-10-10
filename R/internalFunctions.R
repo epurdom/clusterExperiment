@@ -14,7 +14,7 @@
   if(length(whPos)>0){
 		pad<-if(length(unique(cl[whPos]))<100) 2 else if(length(unique(cl[whPos]))<1000) 3 else 4
 				#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
-		clPretty<-paste("m",stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
+		clPretty<-paste("prefix",stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
   	ceLegend[whPos,"name"]<-paste(prefix,clPretty,sep="")
   } 
   clusterLegend(ceObj)[[whCluster]]<-ceLegend

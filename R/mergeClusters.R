@@ -832,9 +832,11 @@ setMethod(
   x@merge_cutoff<-NA_real_
   x@merge_nodeProp<-NULL
   x@merge_nodeMerge<-NULL
-  cldend<-x@dendro_clusters
-  phylobase::tdata(cldend)$ClusterIdMerge<-NA
-  x@dendro_clusters<-cldend
+  if(!is.null(x@dendro_clusters)){
+	  cldend<-x@dendro_clusters
+	  phylobase::tdata(cldend)$ClusterIdMerge<-NA
+	  x@dendro_clusters<-cldend  	
+  }
   ch<-.checkMerge(x)      
   if(!is.logical(ch)) stop(ch)
   ch<-.checkDendrogram(x)      
