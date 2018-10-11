@@ -220,8 +220,6 @@ setMethod(
 
 ########
 # Internal plotting function used by both mergeClusters and plotDendrogram
-#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes subset tdata
-#' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
 .plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,clObj=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
@@ -240,7 +238,7 @@ setMethod(
 	  ##Find node that is cluster child of root	  
     rootNode<-phylobase::rootNode(dendro)
     rootChild<-phylobase::descendants(dendro,node=rootNode,type="children")
-	position<-.matchToDendroData(inputValue=rootChild,dendro=dendro,matchValue="NodeIndex",columnValue="Position")
+	position<-.matchToDendroData(inputValue=rootChild,dendro=dendro,matchColumn="NodeIndex",returnColumn="Position")
 	if(!any(position=="cluster hierarchy node")) stop("coding error -- child of root with outbranch isn't cluster hierarchy node")
 	if(all(position=="cluster hierarchy node")) stop("coding error -- both child of root are 'cluster hierarchy node', but also have root is 'outbranchroot'")	
 	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
@@ -249,7 +247,7 @@ setMethod(
 	nSamples<-nTips(dendro) #save so have after changed dendro
     clusterTips<-phylobase::descendants(dendro,node=clusterNode,type="tip")
     if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
-	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="NodeIndex", columnValue="SampleIndex")
+	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
     if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
 	
 	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
@@ -257,7 +255,7 @@ setMethod(
 	if(!is.logical(ch)) stop(ch)
 
 	#need to update mTipsToSamples
-	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="NodeIndex", columnValue="SampleIndex")
+	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
 	mToSubset<-match(1:nSamples,whKeep) #gives where 1-n map to in new order of clObj
 	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
@@ -266,7 +264,7 @@ setMethod(
     outbranch<-FALSE
   }
   else{
-	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="NodeIndex", columnValue="SampleIndex")
+	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	
   }
   
@@ -515,7 +513,7 @@ setMethod(
         #make only edges going to/from nodes in cluster hierarchy have edge.width>0
 		ntips<-length(phyloObj$tip.label)
 		#Note that some of origPhylo$node.label have NA for value; won't get unique value for these; but these aren't part of cluster hierarchy anyway (infact could probably just pick those that are NA and use them, but this is safer(?))
-        positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchValue="NodeId", columnValue="Position")
+        positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchColumn="NodeId", returnColumn="Position")
 		whClusterNode<-which(as.character(positionValue)%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
         whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
         edge.width<-rep(0,nrow(phyloObj$edge))

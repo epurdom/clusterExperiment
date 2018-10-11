@@ -74,7 +74,6 @@
 }
 
 #these functions are checks where don't need the corresponding object information
-#' @importFrom phylobase tdata
 .checkDendroClusterFormat<-function(dendro,checkLabels=TRUE){
 	data.cl<-phylobase::tdata(dendro)
 	if(!all(.clusterDendroColumns %in% names(data.cl) )){
@@ -89,7 +88,6 @@
 		return("dendro_clusters cannot have NA values in Node Id variable")
 	return(TRUE)
 }
-#' @importFrom phylobase tdata
 .checkDendroSamplesFormat<-function(dendro,checkLabels=TRUE){
 	data.cl<-phylobase::tdata(dendro,type="all")
 	all(names(data.cl)%in% .clusterSampleColumns)
@@ -110,7 +108,6 @@
 	return(TRUE)
 	
 }
-#' @importFrom phylobase nTips
 .checkDendrogram<-function(object){
   ############
   ##Check dendrogram

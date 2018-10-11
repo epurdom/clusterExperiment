@@ -61,6 +61,7 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperClusterFunction.R'
+    'AllHelperDendro.R'
     'AllHelperFilter.R'
     'JiashinJiCode.R'
     'RcppExports.R'

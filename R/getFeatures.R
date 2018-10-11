@@ -383,7 +383,7 @@ setMethod(
 	    }
 	    if(contrastType=="Dendro"){
 		  #ContrastName in form of InternalNodeId5
-		  m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchValue="NodeId", columnValue="matchIndex")
+		  m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
 		  tops$ContrastName<-phylobase::labels(dendro)[m]
 		  
 			
@@ -521,13 +521,13 @@ setMethod(
   #-----
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
   clusterNode<-object@merge_nodeMerge[whClusterNode,"NodeId"]
-  nodePruneIndex <- .matchToDendroData(inputValue=clusterNode,dendro=object@dendro_clusters,matchValue="NodeId",columnValue="matchIndex")
+  nodePruneIndex <- .matchToDendroData(inputValue=clusterNode,dendro=object@dendro_clusters,matchColumn="NodeId",returnColumn="NodeIndex")
   mergePhylo<-.pruneToNodes(phylo4=object@dendro_clusters,nodesPruned=nodePruneIndex)
   ##################
   #Now need to change tip labels to be that of the merge cluster ids
   ##################  
   tipIndex<-phylobase::getNode(mergePhylo,type="tip")
-  clusterIds <- .matchToDendroData(inputValue=tipIndex, dendro=mergePhylo, matchValue="NodeIndex", columnValue="ClusterIdMerge")
+  clusterIds <- .matchToDendroData(inputValue=tipIndex, dendro=mergePhylo, matchColumn="NodeIndex", returnColumn="ClusterIdMerge")
   phylobase::labels(mergePhylo,type="tip")<-gsub("ClusterId","",clusterIds)
   return(mergePhylo)
 

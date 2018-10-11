@@ -305,7 +305,7 @@ setMethod(
             #given by nodesIndexToMerge (index of node in the tree)
             #--------------
 			## First find out which nodes have all descendants who should be merged:
-            nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchValue="NodeId",columnValue="matchIndex")
+            nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchColumn="NodeId",returnColumn="NodeIndex")
             tipNodes<-phylobase::getNode(dendro, type=c("tip"))
             whToMerge <- sapply(nodeIndexBelowCutoff,function(node){
                 desc <- phylobase::descendants(dendro, node, type = c("all"))
@@ -331,7 +331,7 @@ setMethod(
                 temp <- lapply(nodesIndexAtTop, function(node){
                     tips <- phylobase::descendants(dendro, node, type="tips")
                     #check cluster names match...
-                    tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,columnValue="ClusterIdDendro")
+                    tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,returnValue="ClusterIdDendro")
                     if(any(!tips %in% as.character(cl))) {
                         stop("coding error-- tips don't match values of cl")
                     }
@@ -355,7 +355,7 @@ setMethod(
             #------------
             nodePropTable <- nodePropTableGiven[, -whNotProp]
             annotTable <- nodePropTableGiven[, whNotProp]
-			annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
+			annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
         }
         else{
             #------------
@@ -365,7 +365,7 @@ setMethod(
             annotTable <- data.frame("NodeId"=names(sigByNode),
                                      "Contrast" = as.character(sigTable$Contrast[ match(names(sigByNode), sigTable$ContrastName) ]),
                                      stringsAsFactors =FALSE)
-            annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
+            annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
             if (!is.null(nodePropTableGiven)) {
                 #------------
                 #add results from nodePropTableGiven (original table) to nodePropTableGiven
@@ -418,7 +418,7 @@ setMethod(
             #gives the names of original cluster ids
             corrspCluster <- sapply(annotTable$NodeIndex, function(node) {
                 tips <- phylobase::descendants(dendro, node, type = c("tips")) #names of tips
-                tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,columnValue="ClusterIdDendro")
+                tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,returnValue="ClusterIdDendro")
                 if (any(!tips %in% as.character(cl))) {
                     stop("coding error-- tips don't match values of cl")
                 }
@@ -480,7 +480,7 @@ setMethod(
 	        #Add new merge cluster ids to dendro
 			#---------
 			data.cl<-phylobase::tdata(dendro)
-	        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchValue="NodeId", columnValue="matchIndex")
+	        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchColumn="NodeId", returnColumn="NodeIndex")
 	        clusterIdMerge<-rep(NA,length=nrow(data.cl))
 	        clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
 	        clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
@@ -495,7 +495,7 @@ setMethod(
 			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss,drop=FALSE]
 			if(nrow(diagMerge)>0){
 				#Otherwise, all non-missing clusters were merged...
-	   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchValue="ClusterIdDendro", columnValue="matchIndex")
+	   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchColumn="ClusterIdDendro", returnColumn="NodeIndex")
 				data.cl$ClusterIdMerge[nodeIdNotMerged]<-paste("ClusterId",colnames(diagMerge),sep="")	
 			}
 	        phylobase::tdata(dendro)<-data.cl

@@ -310,7 +310,6 @@ setMethod(
 
 ####
 #Convert dendrogram class slots to class used by phylobase (phylo4) so can navigate easily. Does so by first converting to class of ape (phylo)
-#' @importFrom phylobase edgeLength rootNode descendants nodeLabels
 #' @importFrom ape as.phylo
 #' @importFrom stats as.hclust
 #' @importClassesFrom phylobase phylo4 

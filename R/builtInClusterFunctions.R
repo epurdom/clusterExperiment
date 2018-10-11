@@ -128,7 +128,6 @@
 ##---------
 
 #' @importFrom stats hclust 
-#' @importFrom phylobase rootNode getNode descendants
 .hier01Cluster<-function(diss,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
 {
   whichHierDist<-match.arg(whichHierDist)

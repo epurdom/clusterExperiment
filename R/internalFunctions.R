@@ -9,13 +9,13 @@
 #' @importFrom stringr str_pad
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
-	cl<-ceLegend[,"clusterIds"]
+  cl<-ceLegend[,"clusterIds"]
   whPos<-which(as.numeric(cl) >0)
   if(length(whPos)>0){
-		pad<-if(length(unique(cl[whPos]))<100) 2 else if(length(unique(cl[whPos]))<1000) 3 else 4
-				#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
-		clPretty<-paste(prefix,stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
-  	ceLegend[whPos,"name"]<-paste(prefix,clPretty,sep="")
+	#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
+	largestLength<-length(unique(cl[whPos]))
+	pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
+  	ceLegend[whPos,"name"]<-paste(prefix,stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
   } 
   clusterLegend(ceObj)[[whCluster]]<-ceLegend
   return(ceObj)

@@ -324,7 +324,6 @@ setMethod(
     return(x@coClustering)
   }
 )
-
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases coClustering<-
@@ -337,6 +336,9 @@ setReplaceMethod(
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
+
+
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterTypes} returns/sets the clusterTypes slot.

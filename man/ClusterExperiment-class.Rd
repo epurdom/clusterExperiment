@@ -196,11 +196,11 @@ non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 clusterMatrix.}
 
 \item{\code{dendro_samples}}{\code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
-relationship (leaves are samples; see \code{\link{makeDendrogram}} for
+relationship (leaves are samples; see \code{\link{clusterDendrogram}} for
 details).}
 
 \item{\code{dendro_clusters}}{\code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
-relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
+relationship (leaves are clusters; see see \code{\link{sampleDendrogram}} for
 details).}
 
 \item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to

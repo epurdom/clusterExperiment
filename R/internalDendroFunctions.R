@@ -9,23 +9,21 @@
 	"outbranch root" %in% phylobase::tdata(object@dendro_samples)$Position
 }
 
-#' @importFrom phylobase tdata
-.matchToDendroData<-function(inputValue,dendro,matchValue="NodeId",columnValue){
-	#Note that matchValue="NodeIndex" means inputs give rows of the df. columnValue="matchIndex" means to return the index that matches (i.e. nodeIndex too)
+.matchToDendroData<-function(inputValue,dendro,matchColumn="NodeId",returnColumn){
+	#Note that matchColumn="NodeIndex" means inputs give rows of the df. returnColumn="NodeIndex" means to return the index that matches (i.e. nodeIndex too)
 	df<-phylobase::tdata(dendro,type="all")
-	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue and matchValue must be character valued")
-	if(!columnValue=="matchIndex" && !columnValue %in% names(df)) stop("coding error -- invalid value of columnValue ")
-	if(!matchValue=="NodeIndex" && !matchValue %in% names(df)) stop("coding error -- invalid value of matchValue")
-	if(!matchValue=="NodeIndex") m<-match(inputValue, df[,matchValue]) else m<-inputValue
+	if(!is.character(returnColumn) || !is.character(matchColumn)) stop("coding error -- returnColumn and matchColumn must be character valued")
+	if(!returnColumn=="NodeIndex" && !returnColumn %in% names(df)) stop("coding error -- invalid value of returnColumn ")
+	if(!matchColumn=="NodeIndex" && !matchColumn %in% names(df)) stop("coding error -- invalid value of matchColumn")
+	if(!matchColumn=="NodeIndex") m<-match(inputValue, df[,matchColumn]) else m<-inputValue
 	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in dendro)")
-	if(columnValue=="matchIndex") return(m)
-	else return(df[m,columnValue])
+	if(returnColumn=="NodeIndex") return(m)
+	else return(df[m,returnColumn])
 }
 
-#' @importFrom phylobase tdata
-.getClusterIds<-function(tipIndex,clusterDendro,columnValue=c("ClusterIdDendro","ClusterIdMerge")){
-	columnValue<-match.arg(columnValue)
-  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchValue="NodeIndex",columnValue=columnValue)
+.getClusterIds<-function(tipIndex,clusterDendro,returnValue=c("ClusterIdDendro","ClusterIdMerge")){
+	returnValue<-match.arg(returnValue)
+  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchColumn="NodeIndex",returnColumn=returnColumn)
   tipNames<-gsub("ClusterId","",as.character(tipNames))
   return(tipNames)
 }
@@ -92,7 +90,7 @@
 	 type<-switch(singletonCluster,"sample"="internal","cluster"="all")
 	 vals<-phylobase::tdata(internalSamples,type=type)$NodeId
 	 wh<-which(!is.na(vals))
-	 mToSample <- .matchToDendroData(inputValue=vals[wh], dendro=internalCluster, matchValue="NodeId", columnValue="matchIndex")
+	 mToSample <- .matchToDendroData(inputValue=vals[wh], dendro=internalCluster, matchColumn="NodeId", returnColumn="NodeIndex")
 	 phylobase::labels(internalSamples,type=type)[wh]<- phylobase::labels(internalCluster)[mToSample]
 	 
 	 
@@ -186,7 +184,6 @@
 	
 }
 
-#' @importFrom phylobase descendants getNode ancestors edges
 .pruneToNodes<-function(phylo4,nodesPruned){
 	##nodesPruned should be *the node numerical index* of those nodes that need "pruning" -- i.e. drop their children; other nodes kept the same.
 	tipsPruned<-unlist(phylobase::descendants(phylo4,node=nodesPruned,type="tip"),use.names=FALSE)
@@ -260,7 +257,6 @@
 	
 }
 
-#' @importFrom phylobase tipLabels subset 
 .safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
   if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
     ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
@@ -571,7 +567,6 @@
 	
 }
 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
 .force.ultrametric<-function(tree){
 	##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 	#calculates, per tip, the amount missing and adds it to the tips.
