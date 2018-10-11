@@ -9,6 +9,12 @@
 	"outbranch root" %in% phylobase::tdata(object@dendro_samples)$Position
 }
 
+#' @param inputValue a vector of values to match to dendro data
+#' @param dendro a phylo4d object
+#' @param matchColumn a character value giving the name of a column in the \code{tdata} of the dendro to match to. If "NodeIndex", means that will match to the row number (i.e. inputValue is a integer giving the row index); in this case it is the same as doing tdata(dendro)[inputValue,returnColumn]
+#' @param returnColumn a character value giving the name of a column to return -- i.e. after matching to the matchColumn, return the corresponding values in the returnColumn. If returnColumn="NodeIndex", then just the index of the match is returned.
+#' @param returnColumn
+#' @noRd
 .matchToDendroData<-function(inputValue,dendro,matchColumn="NodeId",returnColumn){
 	#Note that matchColumn="NodeIndex" means inputs give rows of the df. returnColumn="NodeIndex" means to return the index that matches (i.e. nodeIndex too)
 	df<-phylobase::tdata(dendro,type="all")
@@ -35,7 +41,7 @@
 #' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged)
 #' @return Returns list of the two dendrograms with nodes that have been updated. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't"
 #' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
-
+#' @noRd
 .setNodeLabels<-function(object,labelType=c("name","id"),useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample","cluster"),...){
 	labelType<-match.arg(labelType)
 	singletonCluster<-match.arg(singletonCluster)
@@ -119,13 +125,12 @@
 
 
 
-
+#' @param convertNodes logical. If true, the returned dendrogram will have the node labels change to be NodeId
+#' @param convertTips logical. If true, the returned dendrogram will have the tip labels changed. If 'ClusterIdDendro' is in tdata (i.e. its a cluster dendrogram) then they are converted to Dendro cluster id (if no NAs) or if there are NAs, then merge cluster id (if dendros are NA in tips). If 'SampleIndex' is column name in tdata (i.e. is a samples dendrogram), then returns tip labels that are the SampleIndex value
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
-	#convertNodes=TRUE -> change the (internal) nodes labels to be Node Id
-	#convertTips=TRUE -> change the tip labels to be 1) if 'ClusterIdDendro' is in tdata: Dendro cluster id (if no NAs) or merge cluster id (if dendros are NA in tips) 2) if 'SampleIndex' in names of tdata, tip labels are the SampleIndex value
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){
 		if(returnClass %in% c("phylo","phylo4","phylo4d")){
