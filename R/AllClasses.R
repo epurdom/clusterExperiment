@@ -1,6 +1,6 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
-#' @importClassesFrom DelayedArray DelayedMatrix
+#' @importClassesFrom DelayedArray DelayedArray DelayedArray1 DelayedMatrix
 
 setOldClass("dendrogram")
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))

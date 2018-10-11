@@ -43,7 +43,7 @@ notifications:
 #r_github_packages:
 #  - Bioconductor/S4Vectors
 #  - Bioconductor/HDF5Array
-#  - Bioconductor/DelayedArray
+  - Bioconductor/DelayedArray
 
 
 ## Code coverage
