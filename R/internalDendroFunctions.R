@@ -207,26 +207,37 @@
 	#this won't happen I think in my merge tree example, so make it error...
 	singletonNode<-if(length(which(table(newEdge[-which(newEdge[,1]==0),1])==1))>0) stop("coding error -- removing these nodes creates internal nodes that are singletons. Should be only choice of nodes that 'prunes' back the tree, not actually subsetting.")
 	
-	
-	#problem: have to renumber everything... technically documentation doesn't say that, but actually do
+	#----------
+	#have to renumber everything so consecutive... technically documentation doesn't say that, but actually do (error otherwise)
+	#----------
+	#get the current numbers of tips, internal nodes, and root
+	#this is so know how to match the names, etc. back to them
 	newTips<-newEdge[which(!newEdge[,2] %in% newEdge[,1]),2]
 	newNodes<-nodesKeep
 	root<-newEdge[newEdge[,1] ==0,2]
-	
-	#tips: 1:node
+	whRoot<-which(newEdge[,1] ==0)
+
+	#tips: make them 1:(#tips)
 	#tips should be in edge matrix once:
-	whEdgeTips<-match(newTips,newEdge)
-	newEdge[whEdgeTips]<-order(newTips)
-	whNodeTips<-match(newTips,newNodes)
-	newNodes[whNodeTips]<-order(newTips)
-	#internal nodes: subtract root number + nTips
-	newEdge[-whEdgeTips]<-newEdge[-whEdgeTips]-root+length(newTips)+1
-	newEdge[newEdge<0]<-0
-	newNodes[-whNodeTips]<-newNodes[-whNodeTips]-root+length(newTips)+1
-	#now need to make sure in right order with new edges:
-	newdata<-phylo4@data[nodesKeep,]
+	whEdgeTips<-match(newTips,newEdge) #find edges that contain tips
+	consecutiveTips<-match(newTips,sort(newTips)) #give them consecutive numbers in same order as previous
+	newEdge[whEdgeTips]<-consecutiveTips
+	whNodeTips<-match(newTips,newNodes) #this is for reordering
+	newNodes[whNodeTips]<-consecutiveTips
 	
+	#internal nodes: make them consecutive but in same order as previously, then add root number + nTips
+	consecutiveNodes<-match(newNodes[-whNodeTips],sort(newNodes[-whNodeTips])) #doesn't include the 0 edge to root, so root is #1
+	mNodesToEdge<-match(newEdge[-whEdgeTips],newNodes[-whNodeTips]) #get one NA from 0
+	if(sum(is.na(mNodesToEdge))!=1) stop("coding error -- should have one na because of root")
+	newEdge[-whEdgeTips]<-consecutiveNodes[mNodesToEdge]+length(newTips)
+	newNodes[-whNodeTips]<-consecutiveNodes+length(newTips)	
+	newEdge[whRoot,1]<-0
+	if(any(sort(newNodes)!=1:length(newNodes))) stop("coding error -- did not result in consecutive node numbers")
+		
+	#now need to make sure everything in right order with new edges:
+	newdata<-phylo4@data[nodesKeep,]
 	row.names(newdata)<-as.character(newNodes)
+	newdata<-newdata[order(newNodes),]
 	
 	tipLabels<-names(newNodes)[whNodeTips]
 	tipLabels<-tipLabels[order(newNodes[whNodeTips])]
