@@ -32,7 +32,7 @@
 
 .getClusterIds<-function(tipIndex,clusterDendro,returnValue=c("ClusterIdDendro","ClusterIdMerge")){
 	returnValue<-match.arg(returnValue)
-  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchColumn="NodeIndex",returnColumn=returnColumn)
+  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchColumn="NodeIndex",returnColumn=returnValue)
   tipNames<-gsub("ClusterId","",as.character(tipNames))
   return(tipNames)
 }

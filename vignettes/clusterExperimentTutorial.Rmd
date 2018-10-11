@@ -1702,7 +1702,7 @@ Note that if we look at the clusterType of the "makeConsensus,final" cluster, it
 
 ### More about how the dendrogram is saved {#dendrostructure}
 
-The resulting dendrograms (one for just the cluster hierarchy and one that expands the cluster hierarchy to include the samples) are saved in the object. They are saved as a `phylo4d` class (from the package `phylobase`, which uses the basic format of the S3 class `phylo` in the `ape` package, but is a S4 class with some useful helpers). 
+The resulting dendrograms (one for just the cluster hierarchy and one that expands the cluster hierarchy to include the samples) are saved in the object. They are each saved as a `phylo4d` class from the package `phylobase` (which uses the basic format of the S3 class `phylo` in the `ape` package, but is a S4 class with some useful helpers). 
 
 They can be accessed with the functions `clusterDendrogram` and `sampleDendrogram`. 
 
@@ -1711,19 +1711,19 @@ clusterDendrogram(ce)
 head(sampleDendrogram(ce))
 ```
 
-This shows the internal node ids, as well as which ones match to which dendrogram clusters (and if applicable which merged clusters). Generally, these will not need to be directly manipulated by the user. But if desired, the user can manipulate these objects using the functions in `phylobase`
+Just like the clusters, the nodes have permanent non-changing names (stored in the `NodeId` column). The dendrograms also store information on how to match the dendrogram to the clusters (and if applicable the merged clusters). To see more about the information saved in these dendrograms, see `?clusterDendrogram`. 
 
-```{r printClusterDendrogram}
+Generally, these dendrograms will not need to be directly manipulated by the user. But if desired, the user can explore these objects using the functions in `phylobase`.
+
+```{r showPhylobase}
 library(phylobase)
 nodeLabels(clusterDendrogram(ce))
 descendants(clusterDendrogram(ce),node="NodeId3")
 ```
 
-To see more about the required format of these dendrograms, see `?clusterDendrogram`. 
+The main reason to really ever work with these dendrograms directly is  to link it back with the (merging results)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. In particular, one feature of the cluster dendrogram can be set by the user is the labels for the internal nodes of the cluster hierarchy. Because of this there is a function `nodeLabels` that can be called *directly on the `ClusterExperiment` object* to see and update these values. Unlike our previous code, where we extracted the dendrogram and then used the functions in `phylobase` to look at it, these functions will update the actual dendrograms inside the object.
 
-The main reason to really work with these dendrograms directly is  to link it back with the merging results (see below)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. 
-
-In particular, one feature of the cluster dendrogram can be set by the user and be useful later on,  is the labels for the nodes. Just like the clusters, the nodes have permanent non-changing names (stored in the `NodeId` column). However, the internal node labels *of the cluster dendrogram* can be given user-defined names by accessed and chanced by calling the function `nodeLabels` *directly on the `ClusterExperiment` object*. We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick, is that it is required that the new replacement vector have names that match the internal node id (the `NodeId` column). 
+We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the new replacement vector of names have names that match the internal node ids (the `NodeId` column). 
 
 ```{r changeNodeLabels}
 newNodeLabels<-LETTERS[1:6]
@@ -1731,7 +1731,6 @@ names(newNodeLabels)<-nodeLabels(ce)
 nodeLabels(ce)<-newNodeLabels
 ```
 
-<!-- Add here info about changing the node labels -->
 
 
 ## Merging clusters with little differential expression {#mergeClusters}
