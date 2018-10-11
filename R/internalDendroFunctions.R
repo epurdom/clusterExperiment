@@ -9,6 +9,9 @@
 	"outbranch root" %in% phylobase::tdata(object@dendro_samples)$Position
 }
 
+#' @name InternalDendrogram
+#' @title Internal dendrogram functions
+#' @description internal functions used by the package to manipulate dendrograms
 #' @param inputValue a vector of values to match to dendro data
 #' @param dendro a phylo4d object
 #' @param matchColumn a character value giving the name of a column in the \code{tdata} of the dendro to match to. If "NodeIndex", means that will match to the row number (i.e. inputValue is a integer giving the row index); in this case it is the same as doing tdata(dendro)[inputValue,returnColumn]
@@ -130,6 +133,7 @@
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
+#' @noRd
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){

@@ -21,6 +21,9 @@
 
 \S4method{sampleDendrogram}{ClusterExperiment}(x)
 }
+\arguments{
+\item{x}{a ClusterExperiment object}
+}
 \value{
 \code{clusterDendrogram} returns the dendrogram describing 
 the clustering hierarchy.
@@ -48,6 +51,7 @@ uses the basic format of the S3 class \code{\link[package=ape]{phylo}} in the \c
 the edges, \code{phylobase} makes it a S4 class with some useful helpers)
 
 Additional requirements are made of the dendrograms to be a valid \code{ClusterExperiment} class. The cluster hierarchy must have data stored with it that has column names \code{NodeId},\code{Position},\code{ClusterIdDendro},\code{ClusterIdMerge}. The sample hierarchy must have data stored with it with column names \code{SampleIndex},\code{NodeId}, \code{Position}. These columns allow for the linking of the two dendrograms, as well as linking the dendrograms to the clustering and must not be changed by the user.
+
 Furthermore there are a restriction as to setting the node labels of the dendrograms. The sample dendrogram is not allowed to have any labels. The cluster dendrogram can only have labels on the \emph{internal} nodes. Labels on the internal nodes of the cluster dendrogram can be set by the user (the function \code{nodeLabels<-} is defined to work on a \code{ClusterExperiment} object to make this easy); but the tips of the cluster dendrogram cannot have labels. The reason for these restrictions is so as to not duplicate storage of the names: tips of the cluster dendrogram are clusters by definition (so their names are stored in the \code{clusterLegend} slot), the internal nodes of the sample dendrogram are the same as the cluster dendrogram (so can be pulled from there), and the tips of the sample dendrogram are the individual samples (so the names are pulled from colnames of the object).
 
 For setting the node labels of the cluster dendrogram via 
