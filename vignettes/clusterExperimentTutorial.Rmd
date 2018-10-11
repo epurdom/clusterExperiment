@@ -1723,12 +1723,12 @@ To see more about the required format of these dendrograms, see `?clusterDendrog
 
 The main reason to really work with these dendrograms directly is  to link it back with the merging results (see below)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. 
 
-In particular, one feature of the cluster dendrogram can be set by the user and be useful later on,  is the labels for the nodes. Just like the clusters, the nodes have permanent non-changing names (stored in the `NodeId` column). However, the internal node labels *of the cluster dendrogram* can be set by the user by calling the function `nodeLabels<-` *directly on the `ClusterExperiment` object*. We'll demonstrate this by giving them the letters A-Z. The main trick, is that it is required that the new replacement vector have names that match the internal node id (the `NodeId` column). 
+In particular, one feature of the cluster dendrogram can be set by the user and be useful later on,  is the labels for the nodes. Just like the clusters, the nodes have permanent non-changing names (stored in the `NodeId` column). However, the internal node labels *of the cluster dendrogram* can be given user-defined names by accessed and chanced by calling the function `nodeLabels` *directly on the `ClusterExperiment` object*. We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick, is that it is required that the new replacement vector have names that match the internal node id (the `NodeId` column). 
 
 ```{r changeNodeLabels}
 newNodeLabels<-LETTERS[1:6]
-names(newNodeLabels)<-
-nodeLabels(ce)<-
+names(newNodeLabels)<-nodeLabels(ce)
+nodeLabels(ce)<-newNodeLabels
 ```
 
 <!-- Add here info about changing the node labels -->
