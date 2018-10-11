@@ -248,18 +248,24 @@ setMethod(
     clusterTips<-phylobase::descendants(dendro,node=clusterNode,type="tip")
     if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
 	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
-    if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
-	
+#	all(tipLabels(dendro)==row.names(clObj)[tdata(dendro,type="tip")$SampleIndex])
+
+	####Subset dendro
 	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
 	ch<-.checkDendroSamplesFormat(dendro,checkLabels=FALSE)
 	if(!is.logical(ch)) stop(ch)
 
-	#need to update mTipsToSamples
-	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
+	#need to create mTipsToSamples -- match of tips to samples ("SampleIndex" is index to full data)
+	mTipsToSamplesOld <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
-	mToSubset<-match(1:nSamples,whKeep) #gives where 1-n map to in new order of clObj
-	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
+	mToSubset<-match(1:nSamples,whKeep) #gives where each of old sample indices (1:n) map to in new order of future clObj (with NA for those that not in new clObj)
+	mTipsToSamples<-mToSubset[mTipsToSamplesOld] #use that to map mTipsToSamplesNew to new order
 	if(any(is.na(mTipsToSamples))) stop("coding error -- didn't update mTipsToSamples correctly")
+		#these check against names, but doesn't always have names, etc.
+	# if(!all(tipLabels(dendro)==row.names(clObj)[mTipsToSamplesOld])) stop("coding error -- names no longer match")
+	# if(!all(sort(tipLabels(dendro))==sort(names(clObj[whKeep,])))) stop("coding error -- don't have the same set of tips after pruning outbranch")
+	# if(!all(tipLabels(dendro)==row.names(clObj[whKeep,,drop=FALSE])[mTipsToSamples])) stop("coding error -- names no longer match")
+    if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]		
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
   }
@@ -274,10 +280,8 @@ setMethod(
   phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=(leafType!="samples")) 
   if(leafType=="samples"){
 	  #not clear need this now that convert dendro it before send to .plotDendro
+	  #these are in the order of dendro tips. To 
 	  clNames<-phylobase::tipLabels(dendro)
-	  # clNames<-if(is.matrix(clObj)) row.names(clObj) else names(clObj)
-	  # phyloObj$tip.label<-clNames[mTipsToSamples]
-	  # if(any(is.na(phyloObj$tip.label))) stop("coding error -- conversion to sample names failed")
   }
   plotArgs<-list(...)
   dataPct<-0.5
@@ -358,6 +362,7 @@ setMethod(
   ###############
   
   if(plotType=="colorblock"){
+	  
     clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
     if(is.null(clusterLegendMat)){ 
       #----
@@ -503,6 +508,7 @@ setMethod(
         tip.color<-clusterLegendMat[m,"color"]		
         if(plotType=="colorblock"){
 		  colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
+		  colorMat<-colorMat[mTipsToSamples,,drop=FALSE]
           rownames(colorMat)<-clNames
           cols<-clusterLegendMat[,"color"]
           names(cols)<-clusterLegendMat[,"name"]
