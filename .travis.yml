@@ -40,10 +40,10 @@ notifications:
     on_failure: change
 
 ## Use patched devtools
-#r_github_packages:
+r_github_packages:
+  - Bioconductor/DelayedArray
 #  - Bioconductor/S4Vectors
 #  - Bioconductor/HDF5Array
-  - Bioconductor/DelayedArray
 
 
 ## Code coverage
