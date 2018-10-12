@@ -14,8 +14,7 @@
 
 \S4method{transformData}{ClusterExperiment}(object, whichAssay = 1, ...)
 
-\S4method{transformData}{SingleCellExperiment}(object, whichAssay = 1,
-  ...)
+\S4method{transformData}{SingleCellExperiment}(object, whichAssay = 1, ...)
 
 \S4method{transformData}{SummarizedExperiment}(object, ...)
 }

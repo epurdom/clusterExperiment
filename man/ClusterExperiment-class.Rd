@@ -4,6 +4,7 @@
 \name{ClusterExperiment-class}
 \alias{ClusterExperiment-class}
 \alias{ClusterExperiment}
+\alias{ClusterExperiment}
 \alias{ClusterExperiment,matrixOrHDF5,ANY-method}
 \alias{ClusterExperiment,SummarizedExperiment,ANY-method}
 \alias{ClusterExperiment,SingleCellExperiment,numeric-method}
@@ -16,28 +17,26 @@ ClusterExperiment(object, clusters, ...)
 
 \S4method{ClusterExperiment}{matrixOrHDF5,ANY}(object, clusters, ...)
 
-\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters,
+\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters, ...)
+
+\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(object, clusters,
   ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(object,
-  clusters, ...)
-
-\S4method{ClusterExperiment}{SingleCellExperiment,character}(object,
-  clusters, ...)
-
-\S4method{ClusterExperiment}{SingleCellExperiment,factor}(object, clusters,
+\S4method{ClusterExperiment}{SingleCellExperiment,character}(object, clusters,
   ...)
+
+\S4method{ClusterExperiment}{SingleCellExperiment,factor}(object, clusters, ...)
 
 \S4method{ClusterExperiment}{SingleCellExperiment,matrix}(object, clusters,
   transformation = function(x) {     x }, primaryIndex = 1,
   clusterTypes = "User", clusterInfo = NULL,
   orderSamples = 1:ncol(object), dendro_samples = NULL,
-  dendro_index = NA_real_, dendro_clusters = NULL,
-  coClustering = NULL, merge_index = NA_real_,
-  merge_cutoff = NA_real_, merge_dendrocluster_index = NA_real_,
-  merge_nodeProp = NULL, merge_nodeMerge = NULL,
-  merge_method = NA_character_, merge_demethod = NA_character_,
-  clusterLegend = NULL, checkTransformAndAssay = TRUE)
+  dendro_index = NA_real_, dendro_clusters = NULL, coClustering = NULL,
+  merge_index = NA_real_, merge_cutoff = NA_real_,
+  merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
+  merge_nodeMerge = NULL, merge_method = NA_character_,
+  merge_demethod = NA_character_, clusterLegend = NULL,
+  checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{object}{a matrix or \code{SummarizedExperiment} or

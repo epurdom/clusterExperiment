@@ -23,12 +23,12 @@
 \S4method{plotHeatmap}{table}(data, ...)
 
 \S4method{plotHeatmap}{ClusterExperiment}(data,
-  clusterSamplesData = c("dendrogramValue", "hclust",
-  "orderSamplesValue", "primaryCluster"), clusterFeaturesData = "var",
-  nFeatures = NA, visualizeData = c("transformed", "centeredAndScaled",
-  "original"), whichClusters = c("primary", "workflow", "all", "none"),
-  colData = NULL, clusterFeatures = TRUE, nBlankLines = 2,
-  colorScale, whichAssay = 1, ...)
+  clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
+  "primaryCluster"), clusterFeaturesData = "var", nFeatures = NA,
+  visualizeData = c("transformed", "centeredAndScaled", "original"),
+  whichClusters = c("primary", "workflow", "all", "none"), colData = NULL,
+  clusterFeatures = TRUE, nBlankLines = 2, colorScale, whichAssay = 1,
+  ...)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
@@ -36,18 +36,16 @@
 
 \S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL,
   clusterSamplesData = NULL, clusterFeaturesData = NULL,
-  whColDataCont = NULL, clusterSamples = TRUE,
-  showSampleNames = FALSE, clusterFeatures = TRUE,
-  showFeatureNames = FALSE, colorScale = seqPal5,
-  clusterLegend = NULL, alignColData = FALSE,
-  unassignedColor = "white", missingColor = "grey", breaks = NA,
-  symmetricBreaks = FALSE, capBreaksLegend = FALSE,
-  isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE,
-  ...)
+  whColDataCont = NULL, clusterSamples = TRUE, showSampleNames = FALSE,
+  clusterFeatures = TRUE, showFeatureNames = FALSE, colorScale = seqPal5,
+  clusterLegend = NULL, alignColData = FALSE, unassignedColor = "white",
+  missingColor = "grey", breaks = NA, symmetricBreaks = FALSE,
+  capBreaksLegend = FALSE, isSymmetric = FALSE,
+  overRideClusterLimit = FALSE, plot = TRUE, ...)
 
 \S4method{plotCoClustering}{ClusterExperiment}(data,
-  invert = ifelse(!is.null(data@coClustering) &&
-  all(diag(data@coClustering) == 0), TRUE, FALSE), ...)
+  invert = ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)
+  == 0), TRUE, FALSE), ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,
@@ -76,13 +74,14 @@ Not all arguments can be passed to \code{aheatmap} effectively, see
 details.}
 
 \item{clusterSamplesData}{If \code{data} is a matrix,
-\code{clusterSamplesData} is either a matrix that will be used by
-\code{hclust} to define the hiearchical clustering of samples (e.g.
-normalized data) or a pre-existing dendrogram that clusters the samples. If
-\code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
-should be either character or integers or logical which indicates how (and
-whether) the samples should be clustered (or gives indices of the order for
-the samples). See details.}
+ \code{clusterSamplesData} is either a matrix that will be used by
+ \code{hclust} to define the hiearchical clustering of samples (e.g.
+ normalized data) or a pre-existing dendrogram (of class
+\code{\link[stats]{dendrogram}}) that clusters the samples. If
+ \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
+ should be either character or integers or logical which indicates how (and
+ whether) the samples should be clustered (or gives indices of the order for
+ the samples). See details.}
 
 \item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix that
 will be used in \code{hclust} to define the hiearchical clustering of
@@ -391,7 +390,7 @@ Upper Limit")
 
 }
 \seealso{
-\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
+\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}}, \code{\link[stats]{dendrogram}}
 }
 \author{
 Elizabeth Purdom

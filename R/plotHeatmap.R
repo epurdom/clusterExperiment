@@ -34,7 +34,7 @@
 #'   \code{clusterSamplesData} is either a matrix that will be used by
 #'   \code{hclust} to define the hiearchical clustering of samples (e.g.
 #'   normalized data) or a pre-existing dendrogram (of class
-#'  \code{\link[stats]{dendrogram}) that clusters the samples. If
+#'  \code{\link[stats]{dendrogram}}) that clusters the samples. If
 #'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for

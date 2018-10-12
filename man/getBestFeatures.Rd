@@ -7,16 +7,15 @@
 \alias{getBestFeatures,ClusterExperiment-method}
 \title{Function for finding best features associated with clusters}
 \usage{
-\S4method{getBestFeatures}{matrixOrHDF5}(x, cluster,
-  contrastType = c("F", "Dendro", "Pairs", "OneAgainstAll"),
-  dendro = NULL, pairMat = NULL, weights = NULL,
-  contrastAdj = c("All", "PerContrast", "AfterF"),
+\S4method{getBestFeatures}{matrixOrHDF5}(x, cluster, contrastType = c("F",
+  "Dendro", "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
+  weights = NULL, contrastAdj = c("All", "PerContrast", "AfterF"),
   DEMethod = c("edgeR", "limma", "limma-voom"), dgeArgs = NULL, ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
   "Dendro", "Pairs", "OneAgainstAll"), whichCluster = "primary",
-  whichAssay = 1, DEMethod, weights = if ("weights" \%in\%
-  assayNames(x)) "weights" else NULL, ...)
+  whichAssay = 1, DEMethod, weights = if ("weights" \%in\% assayNames(x))
+  "weights" else NULL, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a 
@@ -68,6 +67,8 @@ methods of DE. This includes normalization factors/total count values etc.}
 \code{\link[limma]{limma}} package). If \code{x} is a 
 \code{ClusterExperiment} object, these arguments can also be those to pass 
 to the matrix version.}
+
+\item{whichCluster}{which clustering to use in performing the tests.}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}

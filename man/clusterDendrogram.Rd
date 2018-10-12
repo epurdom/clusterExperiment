@@ -3,15 +3,21 @@
 \docType{methods}
 \name{clusterDendrogram}
 \alias{clusterDendrogram}
+\alias{sampleDendrogram,ClusterExperiment-method}
+\alias{sampleDendrogram}
 \alias{nodeLabels<-,ClusterExperiment-method}
 \alias{nodeLabels<-}
 \alias{nodeLabels,ClusterExperiment-method}
 \alias{nodeLabels}
-\alias{sampleDendrogram,ClusterExperiment-method}
-\alias{sampleDendrogram}
+\alias{nodeLabels,ClusterExperiment-method}
+\alias{nodeLabels}
+\alias{convertToDendrogram,ClusterExperiment-method}
+\alias{convertToDendrogram}
 \title{Accessing and manipulating the dendrograms}
 \usage{
 \S4method{clusterDendrogram}{ClusterExperiment}(x)
+
+\S4method{sampleDendrogram}{ClusterExperiment}(x)
 
 \S4method{nodeLabels}{ClusterExperiment}(x, ...) <- value
 
@@ -19,14 +25,20 @@
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 
-\S4method{sampleDendrogram}{ClusterExperiment}(x)
+\S4method{convertToDendrogram}{ClusterExperiment}(x)
 }
 \arguments{
 \item{x}{a ClusterExperiment object}
+
+\item{...}{additional options passed to \code{nodeLabels<-} (ignored)}
+
+\item{value}{replacement value for \code{nodeLabels}. See details.}
 }
 \value{
 \code{clusterDendrogram} returns the dendrogram describing 
 the clustering hierarchy.
+
+\code{sampleDendrogram} returns the dendrogram that expands the cluster hierarchy to the samples.
 
 \code{nodeLabels<-} sets the node labels of the \emph{cluster}
 dendrogram
@@ -36,6 +48,8 @@ dendrogram
 
 \code{nodeLabels} returns the node labels of the \emph{cluster}
 dendrogram
+
+\code{convertToDendrogram} returns the sample dendrogram converted to a \code{\link[stats]{dendrogram}} class.
 }
 \description{
 These functions are for accessing and manipulating the dendrograms 
@@ -60,4 +74,6 @@ internal ids of the cluster dendrogram (the \code{NodeId} column).
 }
 \seealso{
 \code{\link{makeDendrogram}}, \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
+
+\code{\link[stats]{dendrogram}}
 }

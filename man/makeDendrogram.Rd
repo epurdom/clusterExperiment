@@ -10,13 +10,11 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", reduceMethod = "mad",
-  nDims = defaultNDims(x, reduceMethod),
-  filterIgnoresUnassigned = TRUE, unassignedSamples = c("outgroup",
-  "cluster"), whichAssay = 1, ...)
+  nDims = defaultNDims(x, reduceMethod), filterIgnoresUnassigned = TRUE,
+  unassignedSamples = c("outgroup", "cluster"), whichAssay = 1, ...)
 
-\S4method{makeDendrogram}{dist}(x, cluster,
-  unassignedSamples = c("outgroup", "cluster", "remove"),
-  calculateSample = TRUE, ...)
+\S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
+  "cluster", "remove"), calculateSample = TRUE, ...)
 
 \S4method{makeDendrogram}{matrixOrHDF5}(x, cluster,
   unassignedSamples = c("outgroup", "cluster", "remove"),
@@ -62,6 +60,9 @@ signature \code{matrix}. For plotDendrogram, passed to
 \item{cluster}{A numeric vector with cluster assignments. If x is a
 ClusterExperiment object, cluster is automatically the primaryCluster(x).
 ``-1'' indicates the sample was not assigned to a cluster.}
+
+\item{calculateSample}{only relevant for \code{matrix} or \code{dist}
+version of function. Indicates whether to calculate the sample dendrogram.}
 }
 \value{
 If x is a matrix, a list with two dendrograms, one in which the
