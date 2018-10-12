@@ -3,14 +3,22 @@
 \docType{methods}
 \name{clusterDendrogram}
 \alias{clusterDendrogram}
+\alias{clusterDendrogram,ClusterExperiment-method}
 \alias{sampleDendrogram,ClusterExperiment-method}
 \alias{sampleDendrogram}
+\alias{nInternalNodes,ClusterExperiment-method}
+\alias{nInternalNodes}
+\alias{nTips,ClusterExperiment-method}
+\alias{nTips}
+\alias{nNodes,ClusterExperiment-method}
+\alias{nNodes}
 \alias{nodeLabels<-,ClusterExperiment-method}
 \alias{nodeLabels<-}
-\alias{nodeLabels,ClusterExperiment-method}
+\alias{checkDendrogram,ClusterExperiment,phylo4d,phylo4d-method}
 \alias{nodeLabels}
 \alias{nodeLabels,ClusterExperiment-method}
-\alias{nodeLabels}
+\alias{nodeIds,ClusterExperiment-method}
+\alias{nodeIds}
 \alias{convertToDendrogram,ClusterExperiment-method}
 \alias{convertToDendrogram}
 \title{Accessing and manipulating the dendrograms}
@@ -19,9 +27,20 @@
 
 \S4method{sampleDendrogram}{ClusterExperiment}(x)
 
+\S4method{nInternalNodes}{ClusterExperiment}(x)
+
+\S4method{nTips}{ClusterExperiment}(x)
+
+\S4method{nNodes}{ClusterExperiment}(x)
+
 \S4method{nodeLabels}{ClusterExperiment}(x, ...) <- value
 
+\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x,
+  dendroCluster, dendroSample, whichCluster = "dendro")
+
 \S4method{nodeLabels}{ClusterExperiment}(x)
+
+\S4method{nodeIds}{ClusterExperiment}(x)
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 
@@ -33,6 +52,12 @@
 \item{...}{additional options passed to \code{nodeLabels<-} (ignored)}
 
 \item{value}{replacement value for \code{nodeLabels}. See details.}
+
+\item{dendroCluster}{a \code{phylo4d} to be check as for being cluster hierarchy}
+
+\item{dendroSample}{a \code{phylo4d} to be check as for being cluster hierarchy}
+
+\item{whichCluster}{which cluster are the dendrograms clustering.}
 }
 \value{
 \code{clusterDendrogram} returns the dendrogram describing 
@@ -40,11 +65,21 @@ the clustering hierarchy.
 
 \code{sampleDendrogram} returns the dendrogram that expands the cluster hierarchy to the samples.
 
+\code{nInternalNodes} returns the number of \emph{internal} nodes of the cluster hierarchy.
+
+\code{nTips} returns the number of tips of the cluster hierarchy (same as number of non-negative clusters in the dendrogram clustering)
+
+\code{nNodes} returns the number of total nodes of the cluster hierarchy
+
 \code{nodeLabels<-} sets the node labels of the \emph{cluster}
 dendrogram
 
+\code{checkClusterDendrogram} checks if a \code{phylo4d} objects are valid for the cluster and sample dendrogram slots of the given \code{ClusterExperiment} object. Returns \code{TRUE} if there are no problems. Otherwise creates error.
+
 \code{nodeLabels} returns the node labels of the \emph{cluster}
 dendrogram
+
+\code{nodeIds} returns the internal (permanent) node ids of the \emph{cluster} dendrogram
 
 \code{nodeLabels} returns the node labels of the \emph{cluster}
 dendrogram
@@ -62,16 +97,55 @@ Two dendrograms are stored in a \code{ClusterExperiment} object. One is a dendro
 The dendrograms stored in a \code{ClusterExperiment} object
 are required to be a \code{\link[phylobase]{phylo4d-class}} from the package \code{phylobase} (which 
 uses the basic format of the S3 class \code{\link[ape]{phylo}} in the \code{ape} package to store 
-the edges, \code{phylobase} makes it a S4 class with some useful helpers)
+the edges; \code{phylobase} makes it a S4 class with some useful helpers). This class allows storage of a data.frame of information corresponding to information on each node (see \code{\link[phylobase]{tdata}}).
 
-Additional requirements are made of the dendrograms to be a valid \code{ClusterExperiment} class. The cluster hierarchy must have data stored with it that has column names \code{NodeId},\code{Position},\code{ClusterIdDendro},\code{ClusterIdMerge}. The sample hierarchy must have data stored with it with column names \code{SampleIndex},\code{NodeId}, \code{Position}. These columns allow for the linking of the two dendrograms, as well as linking the dendrograms to the clustering and must not be changed by the user.
+Additional requirements are made of these dendrograms to be a valid for the slots of the \code{ClusterExperiment} class, described below, regarding the data that must be stored with it and the labels which can be assigned. Possible dendrograms can be checked for validity with the function \code{checkDendrogram}. The reason for the restrictions on the labels is so as to not duplicate storage of the names, see below descriptions for where to save user-defined names.
 
-Furthermore there are a restriction as to setting the node labels of the dendrograms. The sample dendrogram is not allowed to have any labels. The cluster dendrogram can only have labels on the \emph{internal} nodes. Labels on the internal nodes of the cluster dendrogram can be set by the user (the function \code{nodeLabels<-} is defined to work on a \code{ClusterExperiment} object to make this easy); but the tips of the cluster dendrogram cannot have labels. The reason for these restrictions is so as to not duplicate storage of the names: tips of the cluster dendrogram are clusters by definition (so their names are stored in the \code{clusterLegend} slot), the internal nodes of the sample dendrogram are the same as the cluster dendrogram (so can be pulled from there), and the tips of the sample dendrogram are the individual samples (so the names are pulled from colnames of the object).
+\itemize{
+\item{Labels}{The cluster dendrogram can only have labels on the \emph{internal} nodes. Labels on the internal nodes of the cluster dendrogram can be set by the user (the function \code{nodeLabels<-} is defined to work on a \code{ClusterExperiment} object to make this easy). The tips of the cluster dendrogram, corresponding to the clusters, cannot have labels; users can set the labels (e.g. for plotting, etc) in the \code{\link{clusterLegend}} slot using the function \code{\link{renameClusters}}.}
+\item{Data}{ 
+The cluster hierarchy must have data stored with it that has the following columns (additional ones are allowed): 
+ \itemize{
+  \item{NodeId}{The permanent node id for the node. Must be of the format "NodeIdX" where "X" is a integer.}
+  \item{Position}{The type of node, in terms of its position. The internal nodes should have the values "cluster hierarchy node" while the tips should have "cluster hierarchy tip".}
+  \item{ClusterIdDendro}{Only for tips of dendrogram, should have the id that corresponds to its cluster in the clustering of the @dendro_index. Of the form "ClusterIdX", where "X" is the internal cluster id (see \code{\link{clusterLegend}}). Internal nodes should have NA values.}
+  \item{ClusterIdMerge}{The id that corresponds to the cluster in the clustering of the @merge_index, if it exists. Of the form "ClusterIdX", where "X" is the internal cluster id (see \code{\link{clusterLegend}}}
+ }
+}
+}
+
+\itemize{
+\item{Labels}{The sample dendrogram is not allowed to have ANY labels. The names for those nodes that correspond to the cluster hierarchy will be pulled from the names in the cluster hierarchy for plotting, etc. and should be set there (see above). Sample names for the tips of the tree will be pulled from \code{colnames} of the object and should be set there. }
+\item{Data}{ 
+The cluster hierarchy must have data stored with it that has the following columns (additional ones are allowed): 
+ \itemize{
+  \item{NodeId}{For those nodes that correspond to a node in the cluster hierarchy, should have its permanent node id in this column. Other nodes should be NA.}
+  \item{Position}{The type of node, in terms of its position. The internal nodes should have the values "cluster hierarchy node" while the tips should have "cluster hierarchy tip".}
+  \item{SampleIndex}{Only for tips of dendrogram, the index of the sample at that tip to the samples in the object.}
+ }
+} 
+}
 
 For setting the node labels of the cluster dendrogram via 
 \code{nodeLabels<-}, the replacement value has to have names that match the 
 internal ids of the cluster dendrogram (the \code{NodeId} column).
 }
+\section{The Stored Dendrograms}{
+NA
+}
+
+\section{Cluster Hierarchy}{
+NA
+}
+
+\section{Sample Hierarchy}{
+NA
+}
+
+\section{Helper Functions}{
+NA
+}
+
 \seealso{
 \code{\link{makeDendrogram}}, \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
 

@@ -148,7 +148,7 @@ setMethod(
 		}
 		
         clusterD<-.makeClusterDendro(x,cluster,type="dist",...)  
-        fullD<-.makeSampleDendro(x,dendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
+        fullD<-.makeSampleDendro(x,clusterDendro=clusterD, cl=.convertToNum(cluster), type=c("dist"), unassignedSamples=unassigned,sampleEdgeLength=0,  outbranchLength=1,calculateSample=calculateSample)
         return(list(samples=fullD,clusters=clusterD))
     })
 
@@ -263,7 +263,7 @@ setMethod(
         whPos<-which(cl>0) #this is copy close to length of n
         if(!is.null(sampleNames) && length(sampleNames)!=length(cl)) stop("sampleNames must be same length as cluster vector")
 					#converts internal node id and cluster id to the node, tip labels respectively.
-        phyloObj <- .convertToPhyClasses(clusterDendro,"phylo",convertNode=TRUE,convertTip=TRUE)
+        phyloObj <- .convertToPhyClasses(clusterDendro,"phylo",convertNodes=TRUE,convertTips=TRUE)
         if(!is.ultrametric(phyloObj)) stop("coding error -- the cluster dendrogram is not ultrametric")
         nSamples<-switch(type,"mat"=ncol(x),"dist"=attributes(x)$Size)
         

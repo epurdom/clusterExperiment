@@ -278,7 +278,7 @@ setMethod(
   #-------
   #convert to phylo object...
   #-------
-  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=(leafType!="samples")) 
+  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNodes=TRUE,convertTips=(leafType!="samples")) 
   if(leafType=="samples"){
 	  #not clear need this now that convert dendro it before send to .plotDendro
 	  #these are in the order of dendro tips. To 

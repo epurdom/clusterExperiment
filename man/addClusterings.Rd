@@ -14,8 +14,8 @@
 
 \S4method{addClusterings}{ClusterExperiment,ClusterExperiment}(x, y)
 
-\S4method{addClusterings}{ClusterExperiment,vector}(x, y, makePrimary = FALSE,
-  ...)
+\S4method{addClusterings}{ClusterExperiment,vector}(x, y,
+  makePrimary = FALSE, ...)
 }
 \arguments{
 \item{x}{a ClusterExperiment object}

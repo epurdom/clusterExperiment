@@ -117,7 +117,9 @@ setGeneric("recolorClusters", function(object,value,...) { standardGeneric("reco
 setGeneric("sampleDendrogram", function(x) { standardGeneric("sampleDendrogram")})
 setGeneric("clusterDendrogram", function(x) { standardGeneric("clusterDendrogram")})
 setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogram")})
-setGeneric("internalNodeLabels",function(x){standardGeneric("internalNodeLabels")})
+setGeneric("nodeIds",function(x){standardGeneric("nodeIds")})
+setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
+setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
 
 
 setGeneric(

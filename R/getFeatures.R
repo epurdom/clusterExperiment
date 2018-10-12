@@ -534,7 +534,7 @@ setMethod(
 }
   # old .makeMergeDendrogram code:
   #
-  # phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4",convertNode=TRUE,convertTip=TRUE)
+  # phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4",convertNodes=TRUE,convertTips=TRUE)
   # newPhylo4<-phylo4Obj
   # if(names(rootNode(phylo4Obj)) %in% clusterNode){
   #   stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
