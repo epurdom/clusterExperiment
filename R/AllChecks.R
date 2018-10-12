@@ -74,25 +74,40 @@
 }
 
 #these functions are checks where don't need the corresponding object information
-#' @importFrom phylobase tdata
-.checkDendroClusterFormat<-function(dendro){
+.checkDendroClusterFormat<-function(dendro,checkLabels=TRUE){
 	data.cl<-phylobase::tdata(dendro)
-	if(!all(names(data.cl)%in% .clusterDendroColumns)){
+	if(!all(.clusterDendroColumns %in% names(data.cl) )){
 		return("dendro_clusters must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
-	else return(TRUE)
+	tp<-phylobase::tipLabels(dendro)
+	if(checkLabels && any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp))))
+		return("dendro_clusters cannot have labels for the tips; user-defined labels for the tips (i.e. clusters) should be stored in the clusterLegend")
+	if(any(is.na(data.cl$Position))) 
+		return("dendro_clusters cannot have NA values in Position variable")
+	if( any(is.na(data.cl$NodeId))) 
+		return("dendro_clusters cannot have NA values in Node Id variable")
+	return(TRUE)
 }
-#' @importFrom phylobase tdata
-.checkDendroSamplesFormat<-function(dendro){
-	data.cl<-phylobase::tdata(dendro)
+.checkDendroSamplesFormat<-function(dendro,checkLabels=TRUE){
+	data.cl<-phylobase::tdata(dendro,type="all")
 	all(names(data.cl)%in% .clusterSampleColumns)
-	if(!all(names(data.cl)%in% .clusterSampleColumns)){
+	if(!all(.clusterSampleColumns %in% names(data.cl) )){
 		return("dendro_samples must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
-	else return(TRUE)
+	if(any(is.na(data.cl$Position))) 
+		return("dendro_samples cannot have NA values in Position variable")
+	if(checkLabels && any(!is.na(phylobase::nodeLabels(dendro)))) 
+		return("dendro_samples cannot have labels for the nodes; the labels for the nodes should be in the cluster dendrogram")
+	if(checkLabels){
+		tp<-phylobase::tipLabels(dendro)
+		if(any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp)))) return("dendro_samples cannot have labels for the tips; the labels for the tips should be the colnames of the object")
+	} 
+	data.cl<-phylobase::tdata(dendro,type="tip")
+	if(any(is.na(data.cl$SampleIndex))) 
+		return("dendro_samples cannot have NA values for tips in SampleIndex variable")
+	return(TRUE)
 	
 }
-#' @importFrom phylobase nTips
 .checkDendrogram<-function(object){
   ############
   ##Check dendrogram
@@ -105,6 +120,11 @@
     }
 	ch<-.checkDendroClusterFormat(object@dendro_clusters)
 	if(!is.logical(ch)) return(ch)
+		
+	#further checks that require full CE object:
+	data.cl<-phylobase::tdata(object@dendro_clusters,type="all")
+	if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdDendro)) %in% as.character(object@clusterMatrix[,object@dendro_index]))) return("ClusterIdDendro information in dendrogram slot must match the corresponding cluster ids in clustering defined by dendro_index slot")
+	if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdMerge)) %in% as.character(object@clusterMatrix[,object@merge_index]))) return("ClusterIdMerge information in dendrogram slot must match the corresponding cluster ids in clustering defined by merge_index slot")
   }
   else{
     if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
@@ -113,14 +133,12 @@
     if(phylobase::nTips(object@dendro_samples) != NCOL(object)) {
       return("dendro_samples must have the same number of leaves as the number of samples")
     }
-    if(is.na(object@dendro_outbranch)) return("if dendro_samples is defined, must also define dendro_outbranch")
 	ch<-.checkDendroSamplesFormat(object@dendro_samples)
 	if(!is.logical(ch)) return(ch)
 
   }
   else{
-    #if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
-    if(!is.na(object@dendro_outbranch)) return("dendro_samples should not be null if dendro_outbranch is not NA")
+    if(!is.null(object@dendro_clusters)) return("dendro_samples should not be null if dendro_clusters is non-null") #if commented out, makes it optional to have samples
   }
   
   return(TRUE)
@@ -153,7 +171,6 @@
     baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
     if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
     allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
-    
     if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
       return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
     }
@@ -165,12 +182,13 @@
       wh<-which(object@merge_nodeMerge[,"isMerged"])
       if(all(is.na(object@merge_nodeMerge[wh,"mergeClusterId"]))) return("mergeClusterId entries of merge_nodeMerge cannot be all NA if there isMerged column that is TRUE")
     }    
-    id<-    object@merge_nodeMerge[,"mergeClusterId"]
+    id<-object@merge_nodeMerge[,"mergeClusterId"]
     merg<-object@merge_nodeMerge[,"isMerged"]
     if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
     if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
     cl<-clusterMatrix(object)[,object@merge_index]
     if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
+	
   }
   if(!is.null(object@merge_nodeProp)){
     if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
@@ -193,6 +211,15 @@
     for(method in allCnames[-whNode]){
       if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
     }
+	
+  }
+  #Check that dendro node ids match those in merge tables.
+  if(!is.na(object@merge_dendrocluster_index) && !is.na(object@dendro_index) && object@merge_dendrocluster_index==object@dendro_index){
+	dendroNodes<-phylobase::tdata(object@dendro_clusters,type="internal")[,"NodeId"]
+	nodes<-object@merge_nodeMerge[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeMerge")
+	nodes<-object@merge_nodeProp[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeProp")		
   }
   return(TRUE)
 }

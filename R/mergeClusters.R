@@ -305,7 +305,7 @@ setMethod(
             #given by nodesIndexToMerge (index of node in the tree)
             #--------------
 			## First find out which nodes have all descendants who should be merged:
-            nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchValue="NodeId",columnValue="matchIndex")
+            nodeIndexBelowCutoff <- .matchToDendroData(inputValue=nodesBelowCutoff, dendro=dendro, matchColumn="NodeId",returnColumn="NodeIndex")
             tipNodes<-phylobase::getNode(dendro, type=c("tip"))
             whToMerge <- sapply(nodeIndexBelowCutoff,function(node){
                 desc <- phylobase::descendants(dendro, node, type = c("all"))
@@ -331,7 +331,7 @@ setMethod(
                 temp <- lapply(nodesIndexAtTop, function(node){
                     tips <- phylobase::descendants(dendro, node, type="tips")
                     #check cluster names match...
-                    tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,columnValue="ClusterIdDendro")
+                    tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,returnValue="ClusterIdDendro")
                     if(any(!tips %in% as.character(cl))) {
                         stop("coding error-- tips don't match values of cl")
                     }
@@ -355,7 +355,7 @@ setMethod(
             #------------
             nodePropTable <- nodePropTableGiven[, -whNotProp]
             annotTable <- nodePropTableGiven[, whNotProp]
-			annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
+			annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
         }
         else{
             #------------
@@ -365,7 +365,7 @@ setMethod(
             annotTable <- data.frame("NodeId"=names(sigByNode),
                                      "Contrast" = as.character(sigTable$Contrast[ match(names(sigByNode), sigTable$ContrastName) ]),
                                      stringsAsFactors =FALSE)
-            annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchValue="NodeId", columnValue="matchIndex")
+            annotTable$NodeIndex <- .matchToDendroData(annotTable$NodeId, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
             if (!is.null(nodePropTableGiven)) {
                 #------------
                 #add results from nodePropTableGiven (original table) to nodePropTableGiven
@@ -418,7 +418,7 @@ setMethod(
             #gives the names of original cluster ids
             corrspCluster <- sapply(annotTable$NodeIndex, function(node) {
                 tips <- phylobase::descendants(dendro, node, type = c("tips")) #names of tips
-                tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,columnValue="ClusterIdDendro")
+                tips<-.getClusterIds(tipIndex=tips,clusterDendro=dendro,returnValue="ClusterIdDendro")
                 if (any(!tips %in% as.character(cl))) {
                     stop("coding error-- tips don't match values of cl")
                 }
@@ -462,14 +462,6 @@ setMethod(
         nodePropTable<-data.frame(annotTable,
                                   nodePropTable,
                                   stringsAsFactors=FALSE)
-        #Add new merge clusters to dendro
-        data.cl<-phylobase::tdata(dendro)
-        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchValue="NodeId", columnValue="matchIndex")
-        clusterIdMerge<-rep(NA,length=nrow(data.cl))
-        clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
-        clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
-        data.cl$ClusterIdMerge<-clusterIdMerge
-        phylobase::tdata(dendro)<-data.cl
         
         if(mergeMethod=="none"){
             newcl<-NULL #was just the original and nothing changed, so don't return something that makes it look like theres a new clustering
@@ -483,10 +475,32 @@ setMethod(
             tableMergedClusters<- unname(sort(as.character(na.omit(nodeMergeTable$mergeClusterId))))
             actualMergedClusters<-sort(unname(clustersThatMerge))
             if(!identical(tableMergedClusters,actualMergedClusters)) stop("coding error -- wrong identification of merged clusters")
-            
-        }
-        
-        
+				
+			#---------
+	        #Add new merge cluster ids to dendro
+			#---------
+			data.cl<-phylobase::tdata(dendro)
+	        m<-.matchToDendroData(inputValue=nodeMergeTable$NodeId, dendro=dendro, matchColumn="NodeId", returnColumn="NodeIndex")
+	        clusterIdMerge<-rep(NA,length=nrow(data.cl))
+	        clusterIdMerge[m]<-paste("ClusterId",nodeMergeTable$mergeClusterId,sep="")
+	        clusterIdMerge[m][is.na(nodeMergeTable$mergeClusterId)]<-NA
+	        data.cl$ClusterIdMerge<-clusterIdMerge
+			
+			##create diagonal of oldClToNew of those not merged
+			dendroNotMerged<-which(apply(oldClToNew[,nmerge==1,drop=FALSE],1,function(x){sum(x>0)==1}))
+			mergeNotMerged<-apply(oldClToNew[dendroNotMerged, ,drop=FALSE],1,function(x){which(x>0)})
+			diagMerge<-oldClToNew[dendroNotMerged,mergeNotMerged,drop=FALSE]
+			#rm -1 if exist
+			whMiss<-which(rownames(diagMerge)%in%c("-1","-2"))
+			if(length(whMiss)>0) diagMerge<-diagMerge[-whMiss,-whMiss,drop=FALSE]
+			if(nrow(diagMerge)>0){
+				#Otherwise, all non-missing clusters were merged...
+	   		 	nodeIdNotMerged <- .matchToDendroData( inputValue=paste("ClusterId",rownames(diagMerge),sep=""), dendro=dendro, matchColumn="ClusterIdDendro", returnColumn="NodeIndex")
+				data.cl$ClusterIdMerge[nodeIdNotMerged]<-paste("ClusterId",colnames(diagMerge),sep="")	
+			}
+	        phylobase::tdata(dendro)<-data.cl
+		
+        }       
         out<-list(clustering=newcl, oldClToNew=oldClToNew, cutoff=cutoff, logFCcutoff=logFCcutoff,
                   nodeProp=nodePropTable, nodeMerge=nodeMergeTable,updatedClusterDendro=dendro,mergeMethod=mergeMethod)
         
@@ -506,8 +520,8 @@ setMethod(
             }
             combTable<-.nodeMergeInfo(nodeProp=out$nodeProp,nodeMerge=out$nodeMerge)
             
-            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=cl,plotType="name",...)
-            else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,cl=clMat,plotType="name",...)
+            if(!is.null(dendroSamples)) .plotDendro(dendroSamples,leafType="samples",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,clObj=cl,plotType="name",...)
+            else .plotDendro(dendro,leafType="clusters",mergeOutput=combTable,mergePlotType=plotInfo,mergeMethod=mergeMethod,clObj=clMat,plotType="name",...)
             
         }
         invisible(out)
@@ -574,7 +588,7 @@ setMethod(
             cl<-clusterMatrix(x)[,dendroClusterIndex(x)]
             .mynote(paste("Merging will be done on '",clusterLabels(x)[dendroClusterIndex(x)],"', with clustering index",dendroClusterIndex(x)))
         }
-        if(!x@dendro_outbranch){
+        if(!.hasOutBranch(x)){
             if(any(cl<0) & leafType=="samples"){
                 warning("You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing (-1,-2) set to an outgroup (see makeDendrogram)")
                 leafType<-"clusters"
@@ -680,7 +694,8 @@ setMethod(
         ch<-.checkMerge(retval)
         if(!is.logical(ch)) stop(ch)
         if(plot){
-            dend<- switch(leafType, "samples"=retval@dendro_samples, "clusters"=retval@dendro_clusters)
+			convertedDends<-.setNodeLabels(retval,labelType="name",useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample"))
+			dend<- switch(leafType,"samples"=convertedDends$dendro_samples,"clusters"=convertedDends$dendro_clusters)
             if(leafType=="samples" & mergeMethod!="none" & plotType=="colorblock"){
                 whClusters<-c(retval@dendro_index,primaryClusterIndex(retval))
                 leg<-clusterLegend(retval)[whClusters]
@@ -700,7 +715,7 @@ setMethod(
             if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]
             label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
             outbranch<-FALSE
-            if(leafType=="samples" & any(cl<0)) outbranch<-retval@dendro_outbranch
+            if(leafType=="samples" & any(cl<0)) outbranch<-.hasOutBranch(retval)
             #if(leafType=="samples" & any(cl<0)) outbranch<-TRUE
             
             # outbranch<-any(clusterMatrix(retval)[,retval@dendro_index]<0)
@@ -708,8 +723,8 @@ setMethod(
             # rownames(cl)<-colnames(retval)
             # dend<-ifelse(leafType=="samples", retval@dendro_samples,retval@dendro_clusters)
             if(!"legend" %in% names(plotArgs)) plotArgs$legend<-"none"
-           
-			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, cl=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
+            
+			 do.call(".plotDendro", c(list(dendro=dend, leafType=leafType, mergeOutput=.nodeMergeInfo(outlist$nodeProp,outlist$nodeMerge), mergePlotType=plotInfo, mergeMethod=mergeMethod, clObj=cl, clusterLegendMat=leg, plotType=label,  removeOutbranch=outbranch), plotArgs))
         }
         
         invisible(retval)
@@ -807,7 +822,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x) {
     x<-.eraseMerge(x)
-		return(x)
+	return(x)
   }
 )
 .eraseMerge<-function(x){
@@ -817,7 +832,14 @@ setMethod(
   x@merge_cutoff<-NA_real_
   x@merge_nodeProp<-NULL
   x@merge_nodeMerge<-NULL
+  if(!is.null(x@dendro_clusters)){
+	  cldend<-x@dendro_clusters
+	  phylobase::tdata(cldend)$ClusterIdMerge<-NA
+	  x@dendro_clusters<-cldend  	
+  }
   ch<-.checkMerge(x)      
+  if(!is.logical(ch)) stop(ch)
+  ch<-.checkDendrogram(x)      
   if(!is.logical(ch)) stop(ch)
   else return(x)
 }

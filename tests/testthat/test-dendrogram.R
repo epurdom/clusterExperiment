@@ -3,20 +3,23 @@ context("Dendrogram")
 # load_all()
 
 
-test_that("`makeDendrogram` works with matrix, ClusterExperiment objects", {
+test_that("`makeDendrogram` works with matrix",{
     #test matrix version
     expect_silent(makeDendrogram(mat, primaryCluster(cc)))
     expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="cluster"))
     expect_silent(makeDendrogram(mat, primaryCluster(cc), unassigned="remove"))
 
+ 
+    #test matrix version
+    expect_equal(phylobase::nTips(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
+                 length(primaryCluster(cc))-2)
+})
+			 
+test_that("`makeDendrogram` works with ClusterExperiment objects", {
     #test CE version
     expect_silent(makeDendrogram(cc))
     expect_silent(makeDendrogram(cc, unassigned="cluster"))
-    expect_error(makeDendrogram(cc, unassigned="remove"))
-
-    #test matrix version
-    expect_equal(nTips(makeDendrogram(mat, primaryCluster(cc), unassigned="remove")$samples),
-                 length(primaryCluster(cc))-2)
+    expect_error(makeDendrogram(cc, unassigned="remove"),"should be one of") #not valid option
 
     #test proper error if only single cluster:
     fakeCluster<-rep(1,nSamples(cc))
@@ -119,15 +122,19 @@ test_that("`makeDendrogram` works with whichCluster", {
     expect_message(bigCE<-makeConsensus(bigCE,proportion=0.3),"no clusters specified to combine, using results from clusterMany")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     expect_silent(makeDendrogram(bigCE,whichCluster="makeConsensus") )
     
     
     #--- check mergeClusters updates dendrogram correctly
     expect_message(bigCE<-mergeClusters(bigCE,mergeMethod="adjP",cutoff=0.2, DEMethod="limma"),"Merging will be done on ")
     expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],clusterLabels(x1)[x1@dendro_index])
-    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
+    #Note, x1 doesn't give any merged clusters in dendrogram because before mergeClusters step...  so going to remove that element from bigCE
+	tdf<-phylobase::tdata(bigCE@dendro_clusters)
+	tdf$ClusterIdMerge<-NA
+	phylobase::tdata(bigCE@dendro_clusters)<-tdf
+	expect_equal(bigCE@dendro_clusters,x1@dendro_clusters)  
+    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
     
     expect_error(getBestFeatures(bigCE,contrastType="Dendro"),"only single cluster in clustering -- cannot run getBestFeatures")
 	expect_silent(primaryClusterIndex(bigCE)<-3)
@@ -138,7 +145,7 @@ test_that("plotDendrogram works with colData", {
   leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
   leg[,"name"]<-letters[1:nrow(leg)]
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
-	dend <- makeDendrogram(ccSE)
+	expect_silent(dend <- makeDendrogram(ccSE))
 	expect_silent(plotDendrogram(dend,colData="A"))
 	expect_warning(plotDendrogram(dend,colData=c("A","B","C")),"implies using columns of colData that are continuous")
 	
@@ -157,12 +164,13 @@ test_that("plotDendrogram works with outgroup", {
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
   expect_silent(plotDendrogram(dend))
+  phylobase::nodeLabels(dend@dendro_clusters)<-paste("A",1:length(phylobase::nodeLabels(dend@dendro_clusters)))
   expect_silent(plotDendrogram(dend,show.node.label=TRUE))
-  expect_silent(plotDendrogram(dend,leafType="samples",plotType="name"))
-  expect_silent(plotDendrogram(dend, leafType="samples",plotType="name",removeOutbranch=FALSE))
-  expect_silent(plotDendrogram(dend,leafType="samples",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,leafType="clusters",plotType="name"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="name"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE, leafType="samples",plotType="name",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
   
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -206,19 +214,15 @@ test_that("plotDendrogram works with outgroup", {
   expect_error(makeDendrogram(dend5,reduceMethod="none"),"Only 1 cluster given. Can not make a dendrogram.")
   expect_error(plotDendrogram(dend5,leafType="clusters",plotType="colorblock"),"No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
 
-
-    
 })
 
 test_that("plotDendrogram works with whichClusters", {
-    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   expect_silent(dend <- makeDendrogram(ccSE))
   expect_message(dend<-mergeClusters(dend,DEMethod="limma"))
-  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))
-  
-  
+  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))  
 })
 
 

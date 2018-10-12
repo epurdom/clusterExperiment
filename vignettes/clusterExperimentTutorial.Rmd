@@ -145,7 +145,8 @@ system.time(rsecFluidigm<-RSEC(se,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.03,
+ mergeDEMethod="limma",
+ mergeCutoff=0.01,
  ncores=1,
  random.seed=176201))
 ```
@@ -161,11 +162,15 @@ metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
+#temporarily, used while testing vignette during development.
+rsecFluidigm<-updateObject(rsecFluidigm)
+#check still valid object, in case updated class definitions
+if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
 # a simple check to make sure have same clusterings as expected
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
 ```
 ### The output 
 
@@ -261,13 +266,19 @@ plotBarplot(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"))
 
 Since "makeConsensus" is a partition of "mergeClusters", there is perfect subsetting within the clusters of "mergeClusters".
 
-A related plot is to plot a heatmap of the contingency table between two clusterings provided by `plotClustersTable`. This function plots a heatmap of the results of `tableClusters`, optionally converting them to proportions using `prop.table` function based on the parameter `margin`. Here, we'll set `margin=1`, meaning we will show each row (corresponding to a cluster of the  `mergeCluster` clustering), as a proportion -- i.e. how the samples in that row's cluster are distributed across the clusters of the other clustering, `makeConsensus`
+A related plot is to plot a heatmap of the contingency table between two clusterings provided by `plotClustersTable`. This function plots a heatmap of the results of `tableClusters`, optionally converting them to proportions using `prop.table` function based on the parameter `margin`. Here, we'll set `margin=1`, meaning we will show each row (corresponding to a cluster of the  `mergeCluster` clustering), as a proportion -- i.e. the grey scale of the heatmap gives (in percentages) how the samples in that row's cluster are distributed across the clusters of the other clustering, `makeConsensus`
 
 ```{r plotClustersTable}
 plotClustersTable(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"), margin=1)
 ```
 
 Again, since `makeConsensus` clusters are all completely contained in `mergeClusters`, this plot has less information than if we were comparing competing clusterings (e.g. different results from `mergingClusters`, see below). For example, there is nothing on  the off-diagonal. But we can still see about how the smaller `makeConsensus` make up the `mergeClusters`.
+
+Another version of this plot is given by choosing `plotType="bubble"`, where now the size of the dot at each pair of clusters corresponds to the *absolute* size of the overlap, and the color scale is again the percentage overlap. 
+
+```{r plotClustersTableBubble}
+plotClustersTable(rsecFluidigm,whichClusters=c("mergeClusters" ,"makeConsensus"), margin=1,plotType="bubble")
+```
 
 #### Co-Clustering
 We can also visualize the proportion of times samples were together in the individual clusterings (i.e. before the consensus clustering):
@@ -345,7 +356,7 @@ rsecFluidigm<-RSEC(rsecFluidigm,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.03
+ mergeCutoff=0.01
  )
 par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
@@ -1483,7 +1494,7 @@ ceCustom <- clusterMany(ce, dimReduce="PCA",nPCADims=50,
 
 ```
 
-Note that if I call `getBuiltInFunction` for only one cluster, it returns the actual `ClusterFunction` object, not a list of length 1. To combine it with other functions you need to make it into a list.
+Note that if I call `getBuiltInFunction` for only one cluster function, it returns the actual `ClusterFunction` object, not a list of length 1. To combine it with other functions you need to make it into a list.
 
 
 ### Dealing with large numbers of clusterings
@@ -1600,13 +1611,11 @@ plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 ```
 
 
-## Creating a Hierarchy of Clusters and Merging clusters {#hierarchy}
+## Creating a Hierarchy of Clusters  {#makeDendrogram}
 
 As mentioned above, we find that merging clusters together based on the extent of differential expression between the features to be a useful method for combining many small clusters.
 
 We provide a method for doing this that consists of two steps. Making a hierarchy between the clusterings and then estimating the amount of differential expression at each branch of the hierarchy.
-
-### makeDendrogram and plotDendrogram {#makeDendrogram}
 
 `makeDendrogram` creates a hierarchical clustering of the clusters as determined by the primaryCluster of the `ClusterExperiment` object. In addition to being used for merging clusters, the dendrograms created by `makeDendrogram` are also useful for ordering the clusters in `plotHeatmap` as has been shown above.
 
@@ -1652,24 +1661,79 @@ plotDendrogram(ce,whichClusters=whCM,leafType="sample",plotType="colorblock")
 
 Unlike `plotClusters`, however, there is no aligning of samples to make samples with the same cluster group together. 
 
-#### Designating among many clustering results to use for downstream analysis
 
-Note that if we look at the clusterType of the "makeConsensus,final" cluster, it is not of type "makeConsensus", but "makeConsensus.x". This is because we've run additional `makeConsensus` steps on this data, and the clustering "makeConsensus,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label) 
 
-```{r clusterTypeOfCombineMany}
-clusterTypes(ce)[which(clusterLabels(ce)=="makeConsensus,final")]
+
+### Making a past run the current one. {#setToCurrentExample}
+
+Note that because we've run additional `makeConsensus` steps on this data, the clustering we originally designated as "final" is not our primary cluster. Instead our most recent call to `makeConsensus` is the primary cluster:
+
+```{r showCurrentPrimaryCluster}
+primaryClusterLabel(ce)
+show(ce)
 ```
 
-We can choose reset this past call to `makeConsensus` to be the current 'makeConsensus' output (which will also set this clustering to be the primaryCluster). 
+We know the results are still saved. If we search for the label we gave it, we can find it (given by `clusterLabel`). And if we look at its value in `clusterTypes`  it doesn't even have its `clusterTypes` as `makeConsensus`, but instead has a ".x" value appended to it (see )
+
+```{r clusterTypeOfCombineMany}
+whFinal<-which(clusterLabels(ce)=="makeConsensus,final")
+head(clusterMatrix(ce,whichCluster=whFinal))
+clusterTypes(ce)[whFinal]
+```
+
+But rather than continually refinding the cluster, we can choose to reset this past call to `makeConsensus` to be the current 'makeConsensus' output (which will also set this clustering to be the primaryCluster). 
 
 ```{r getBackCombineMany}
 ce<-setToCurrent(ce,whichCluster="makeConsensus,final")
 show(ce)
 ```
 
-We don't need to recall `makeDendrogram`, since we already used this clustering to make the dendrogram by our explicit call of the argument `whichCluster`. 
+We don't need to recall `makeDendrogram`, since in our call to `makeDendrogram` we explicitly set the argument `whichCluster` to make the dendrogram from this clustering. 
 
-### Merging clusters with little differential expression {#mergeClusters}
+
+
+
+<!-- #### Designating among many clustering results to use for downstream analysis
+
+Note that if we look at the clusterType of the "makeConsensus,final" cluster, it is not of type "makeConsensus", but "makeConsensus.x". This is because we've run additional `makeConsensus` steps on this data, and the clustering "makeConsensus,final" is not the most current one. So to distinguish old iterations from the most recent run, the ".x" is added to the "clusterType" where "x" indicates what iteration it was (it would have added ".x" to the clusterLabel as well as if we had assigned it our own label)  -->
+
+
+
+
+### More about how the dendrogram is saved {#dendrostructure}
+
+The resulting dendrograms (one for just the cluster hierarchy and one that expands the cluster hierarchy to include the samples) are saved in the object. They are each saved as a `phylo4d` class from the package `phylobase` (which uses the basic format of the S3 class `phylo` in the `ape` package, but is a S4 class with some useful helpers). 
+
+They can be accessed with the functions `clusterDendrogram` and `sampleDendrogram`. 
+
+```{r printClusterDendrogram}
+clusterDendrogram(ce)
+head(sampleDendrogram(ce))
+```
+
+Just like the clusters, the nodes have permanent non-changing names (stored in the `NodeId` column). The dendrograms also store information on how to match the dendrogram to the clusters (and if applicable the merged clusters). To see more about the information saved in these dendrograms, see `?clusterDendrogram`. 
+
+Generally, these dendrograms will not need to be directly manipulated by the user. But if desired, the user can explore these objects using the functions in `phylobase`.
+
+```{r showPhylobase}
+library(phylobase)
+nodeLabels(clusterDendrogram(ce))
+descendants(clusterDendrogram(ce),node="NodeId3")
+```
+
+The main reason to really ever work with these dendrograms directly is  to link it back with the (merging results)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. In particular, one feature of the cluster dendrogram can be set by the user is the labels for the internal nodes of the cluster hierarchy. Because of this there is a function `nodeLabels` that can be called *directly on the `ClusterExperiment` object* to see and update these values. Unlike our previous code, where we extracted the dendrogram and then used the functions in `phylobase` to look at it, these functions will update the actual dendrograms inside the object.
+
+We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the new replacement vector of names have names that match the internal node ids (the `NodeId` column). 
+
+```{r changeNodeLabels}
+newNodeLabels<-LETTERS[1:6]
+names(newNodeLabels)<-nodeLabels(ce)
+nodeLabels(ce)<-newNodeLabels
+```
+
+
+
+## Merging clusters with little differential expression {#mergeClusters}
 
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 
@@ -1698,7 +1762,7 @@ mergeCutoff(ce)
 nodeMergeInfo(ce)
 ```
 
-Notice that `nodeMergeInfo` gives for each node the proportion estimated to be differentially expressed at each node (as displayed in the plot that we requested), as well as whether that node was merged together in the `mergeClusters` call (the `isMerged` column). Because we set `calculateAll=FALSE` only the methods needed for our command were calculated (`adjP`). The others have `NA` values.  The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `isMerged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. 
+Notice that `nodeMergeInfo` gives for each node the proportion estimated to be differentially expressed at each node (as displayed in the plot that we requested), as well as whether that node was merged together in the `mergeClusters` call (the `isMerged` column). Because we set `calculateAll=FALSE` only the methods needed for our command were calculated (`adjP`). The others have `NA` values.  The column `mergeClusterId` tells us which nodes in the tree are now equivalent to a cluster; this is different than the `isMerged` column, since some nodes can be merged but if their parent nodes were also merged, then that node will not be equivalent to a cluster in the "mergeClusters" clustering. (See [Dendrogram Contrats](#dendrostructure) above for more information about the nodes of the dendrograms).
 
 `mergeClusters` can also be run without merging the cluster, and simply drawing a plot showing the dendrogram along with the estimates of the percentage of non-null features to aid in deciding a cutoff and method. By setting `plotInfo="all"`, all of the estimates of the different methods are displayed simultaneously, while before we only showed the values for the specific `mergeMethod` we requested.
 
@@ -1706,7 +1770,7 @@ Notice that `nodeMergeInfo` gives for each node the proportion estimated to be d
 ce<-mergeClusters(ce,mergeMethod="none",plotInfo="all")
 ```
 
-Notice that now if we call `nodeMergeInfo`, all of the methods now have estimates. 
+Notice that now if we call `nodeMergeInfo`, all of the methods now have estimates (except for some methods that didn't run successfully for this data). 
 
 ```{r showMergeAll}
 nodeMergeInfo(ce)
@@ -1743,6 +1807,8 @@ par(mar=c(1.1,1.1,6.1,2.1))
 plotDendrogram(ce,whichClusters=c("mergeClusters,v3","mergeClusters,v2"),mergeInfo="mergeMethod")
 ```
 
+
+
 #### Requiring a certain log-fold change
 
 With a large number of cells, it can be overly easy to get significant results, even if the size of the differences is small. Another reasonable constraint is to require the difference between the contrasts to be at least of a certain fold-change for the gene to be counted as different. We allow this option for the merge method `adjP`. Namely, the proportion significant calculated at each node requires both an adjusted p-value less than 0.05 but also that the estimated $log_2$ fold-change have an absolute value greater than an amount specified by the argument `logFCCutoff`.
@@ -1768,13 +1834,13 @@ What happens if some parts of the clustering workflow are re-run? For example, i
 
 The workflow commands check for existing clusters of the workflow (based on the `clusterTypes` of the clusterings). If there exist clusterings from previous runs *and* such clusterings came from calls that are "downstream" of the requested clustering, then the method will  change their clusterTypes value by adding a ".i", where $i$ is a numerical index keeping track of replicate calls.
 
-For example, suppose we rerun 'makeConsensus', say with a different parameter choice of the proportion similarity to require. Then `makeConsensus` searches the existing clusterings in the input object. Any existing `makeConsensus` results will have their `clusterTypes` changed from `makeConsensus` to `makeConsensus.x`, where $x$ is the largest such number needed to be greater than any existing `makeConsensus.x` (after all, you might do this many times!). Their labels will also be updated if they just have the default label, but if the user has given different labels to the clusters those will be preserved. 
+For example, if we rerun 'makeConsensus', say with a different parameter choice of the proportion similarity to require, then `makeConsensus` searches the existing clusterings in the input object. We've already seen that any existing `makeConsensus` results will have their `clusterTypes` changed from `makeConsensus` to `makeConsensus.x`, where $x$ is the largest such number needed to be greater than any existing `makeConsensus.x` (after all, you might do this many times!). Their labels will also be updated if they just have the default label, but if the user has given different labels to the clusters those will be preserved. 
 
-Moreover, since `mergeClusters` is downstream of `makeConsensus` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x`. However, `clusterMany` is upstream of `makeConsensus` (i.e. you expect there to be existing `clusterMany` before you run `makeConsensus`) so nothing will happen to `clusterMany`. 
+Moreover, this rerunning of `makeConsensus` will also effect everything in the analysis that was downstream of it and depended on that call. So since `mergeClusters` is downstream of `makeConsensus` in the workflow, currently existing `mergeClusters` will also get bumped to `mergeClusters.x` along with `makeConsensus`. However, `clusterMany` is *upstream* of `makeConsensus` (i.e. you expect there to be existing `clusterMany` before you run `makeConsensus`) so nothing will happen to `clusterMany`. 
 
 This is handled internally, and may never be apparent to the user unless they choose `whichClusters="all"` in a plotting command. Indeed this is one reason to always pick `whichClusters="workflow"`, so that these saved previous versions are not displayed. 
 
-However, if the user wants to "go back" to previous versions and make them the current iteration, we have seen that the `setToCurrent` command will do this. `setToCurrent` follows the same process as described above, only with an existing cluster set to the current part of the pipeline. 
+However, if the user wants to "go back" to previous versions and make them the current iteration, we have seen that the `setToCurrent` command will do this (see example in the section on [makeDendrogram](#setToCurrentExample)). `setToCurrent` follows the same process as described above, only with an existing cluster set to the current part of the pipeline. 
 
 Note that there is nothing that governs or protects the `clusterTypes` values to be of a certain kind. This means that if the user decides to name a clusterTypes of a clustering one of these protected names, that is allowed. However, it could clearly create some havoc if done poorly.
 
@@ -1869,7 +1935,7 @@ The basic implementation of these functions fits a linear model per feature and 
 
 Note that `getBestFeatures` will remove all samples unassigned to a cluster (i.e. `-1` or `-2`), so that these samples will not in anyway influence the DE analysis (see [#unassigned] for more information about unassigned samples). 
 
-## Types of Significance Tests
+## Types of Significance Tests (Contrasts)
 
 There are several choices of what is the most appropriate test to determine whether a feature is differentially expressed across the clusterings. All of these methods first fit a linear model where the clusters categories of the clustering is the explanatory factor in the model (samples with -1 or -2 are ignored). The methods differ only in what significance tests they then perform, which is controlled by the argument `type`. By default,  `getBestFeatures` finds significant genes based on a F-test between the clusters (`type="F"`). This is a very standard test to compare clusters, which is why it is the default, however it may not be the one that gives the best or most specific results. Indeed, in our "Quick Start", we did not use the $F$ test, but rather all pair-wise comparisons between the clusters. 
 
@@ -1906,7 +1972,8 @@ We can plot the contrasts with a heatmap for these results. Here we notice that 
 plotContrastHeatmap(rsecFluidigm,signifTable=best1vsAll,nBlankLines=10, whichCluster="primary")
 ```
 
-### Dendrogram
+### Dendrogram {#Dendrocontrasts}
+
 The option `type="Dendro"` is more complex; it assumes that there is a hierarchy of the clusters (created by `makeDendrogram` and stored in the `ClusterExperiment` object).  Then for each *node* of the dendrogram, `getBestFeatures` defines a contrast or comparison of the mean expression between the daughter nodes. 
 
 ```{r getBestFeatures_dendro}
@@ -1914,7 +1981,7 @@ bestDendro<-getBestFeatures(rsecFluidigm,contrastType="Dendro",DEMethod="edgeR",
 head(bestDendro)
 ```
 
-Again, there is both a "ContrastName" and "Contrast" column. The "Contrast" column identifies which clusters ids were on each side of the node (and hence commpared) and "ContrastName" is the name of the node, determined internally during `makeDendrogram`.
+Again, there is both a "ContrastName" and "Contrast" column, as well as a "InternalName" column. The "Contrast" column identifies which clusters ids were on each side of the node (and hence commpared). "InternalName" is the *internal* name of the node, determined internally during `makeDendrogram`, while "ContrastName" is the name of the node, which might have been set by the user (for information about node names, and how to set the node names see on the (internal structure of the dendrogram](#dendrostructure))
 
 ```{r dendroContrastLevels}
 levels((bestDendro)$Contrast)
@@ -1927,7 +1994,6 @@ plotContrastHeatmap(rsecFluidigm,signifTable=bestDendro,nBlankLines=10)
 ```
 
 We can plot the dendrogram to help make sense of which contrasts go with which nodes and choose to show the node names with `show.node.label=TRUE` (plotDendrogram calls `plot.phylo` from the `ape` package and can take as imput those arguments like `show.node.label`).
-
 
 ```{r dendroWithNodeNames}
 plotDendrogram(rsecFluidigm,show.node.label=TRUE,whichClusters=c("makeConsensus","mergeClusters"),leaf="samples",plotType="colorblock")

@@ -856,7 +856,7 @@ setMethod(
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
     if(plot){
-	   out<-NMF::aheatmap(heatData,
+	  out<-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
@@ -927,6 +927,9 @@ setMethod(
   definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
     if(is.null(data@coClustering)) stop("coClustering slot is empty")
     if(invert) data@coClustering<-1-data@coClustering
+	
+	#remove merge info in dendrogram so will make valid CE object
+	data<-eraseMergeInfo(data)
     fakeCE<-ClusterExperiment(data@coClustering,
                               clusterMatrix(data),
                               transformation=function(x){x},
@@ -936,7 +939,6 @@ setMethod(
                               dendro_samples=data@dendro_samples,
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
-                              dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex,
                               clusterLegend=clusterLegend(data),
                               checkTransformAndAssay=FALSE

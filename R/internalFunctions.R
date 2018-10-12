@@ -9,13 +9,13 @@
 #' @importFrom stringr str_pad
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
-	cl<-ceLegend[,"clusterIds"]
+  cl<-ceLegend[,"clusterIds"]
   whPos<-which(as.numeric(cl) >0)
   if(length(whPos)>0){
-		pad<-if(length(unique(cl[whPos]))<100) 2 else if(length(unique(cl[whPos]))<1000) 3 else 4
-				#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
-		clPretty<-paste("m",stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
-  	ceLegend[whPos,"name"]<-paste(prefix,clPretty,sep="")
+	#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
+	largestLength<-length(unique(cl[whPos]))
+	pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
+  	ceLegend[whPos,"name"]<-paste(prefix,stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
   } 
   clusterLegend(ceObj)[[whCluster]]<-ceLegend
   return(ceObj)
@@ -29,7 +29,6 @@
   if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
     retval@dendro_samples<-oldObj@dendro_samples
     retval@dendro_clusters<-oldObj@dendro_clusters
-    retval@dendro_outbranch<-oldObj@dendro_outbranch
     retval@dendro_index<-oldObj@dendro_index+nClusterings(newObj) #update index to where dendrogram from
   }
   if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
@@ -61,7 +60,6 @@
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
-                            dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
                             merge_index=newObj@merge_index,

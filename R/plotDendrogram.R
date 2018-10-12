@@ -116,7 +116,10 @@ setMethod(
     if(leafType=="clusters" & length(whCl)>1) stop("If leafType equal to 'clusters' 'whichClusters' must be of length 1 (i.e. single cluster).")
     if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
     if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
-    dend<- switch(leafType,"samples"=x@dendro_samples,"clusters"=x@dendro_clusters)
+
+	#This grabs the labels and moves them to node and tip labels
+	convertedDends<-.setNodeLabels(x,labelType="name",useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample"))
+	dend<- switch(leafType,"samples"=convertedDends$dendro_samples,"clusters"=convertedDends$dendro_clusters)
     
     #---
     #make color matrix
@@ -196,7 +199,7 @@ setMethod(
       warning("There is no information about merging -- will ignore input to 'mergeInfo'")
     }
     
-    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,cl=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
+    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,clObj=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
     
     if(!is.null(nodeColors)){
       if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
@@ -217,14 +220,15 @@ setMethod(
 
 ########
 # Internal plotting function used by both mergeClusters and plotDendrogram
-#' @importFrom phylobase labels descendants ancestors getNode edgeLength rootNode nodeLabels nNodes subset tdata
-#' @importClassesFrom phylobase phylo4 
 #' @importFrom graphics plot
 #' @importFrom ape plot.phylo phydataplot
 .plotDendro<-function(dendro, leafType="clusters",mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL,clusterLegendMat=NULL,clObj=NULL,plotType=c("name","colorblock"),removeOutbranch=FALSE,legend="below",clusterLabelAngle=45,...){
   plotType<-match.arg(plotType)
   outbranch<- "outbranch root" %in% phylobase::tdata(dendro)$Position
-  ## Assumes that phylobase::getNode(dend@dendro_samples,type="tip") is in same order as phyloObj$tip.label
+  
+  ############
+  ## Everything in this code assumes that phylobase::getNode(dend@dendro_samples,type="tip") is in same order as phyloObj$tip.label
+  ############
     
   #---
   #remove the outbranch from the dendrogram and update clObj and mTipsToSamples
@@ -234,50 +238,62 @@ setMethod(
 	  ##Find node that is cluster child of root	  
     rootNode<-phylobase::rootNode(dendro)
     rootChild<-phylobase::descendants(dendro,node=rootNode,type="children")
-	position<-.matchToDendroData(inputValue=rootChild,dendro=dendro,matchValue="NodeIndex",columnValue="Position")
+	position<-.matchToDendroData(inputValue=rootChild,dendro=dendro,matchColumn="NodeIndex",returnColumn="Position")
 	if(!any(position=="cluster hierarchy node")) stop("coding error -- child of root with outbranch isn't cluster hierarchy node")
 	if(all(position=="cluster hierarchy node")) stop("coding error -- both child of root are 'cluster hierarchy node', but also have root is 'outbranchroot'")	
 	clusterNode<-rootChild[which(position=="cluster hierarchy node")]
 	
 	#remove from clObj and update mTipsToSamples
+	nSamples<-nTips(dendro) #save so have after changed dendro
     clusterTips<-phylobase::descendants(dendro,node=clusterNode,type="tip")
     if(length(clusterTips)==0) stop("Internal coding error: no unassigned samples in tree")
-	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchValue="matchIndex", columnValue="SampleIndex")
-    if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]
+	whKeep<-.matchToDendroData(inputValue=clusterTips, dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
+#	all(tipLabels(dendro)==row.names(clObj)[tdata(dendro,type="tip")$SampleIndex])
 
-	#need to check that this keeps tdata intact...
+	####Subset dendro
 	dendro<-phylobase::subset(dendro, node.subtree=clusterNode)
-	.checkDendroSamplesFormat(dendro)
+	ch<-.checkDendroSamplesFormat(dendro,checkLabels=FALSE)
+	if(!is.logical(ch)) stop(ch)
 
-	#need to update mTipsToSamples
-	mTipsToSamplesNew <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	#need to create mTipsToSamples -- match of tips to samples ("SampleIndex" is index to full data)
+	mTipsToSamplesOld <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
-	mToSubset<-match(1:length(clusterTips),whKeep) #gives where 1-n map to in new order of clObj
-	mTipsToSamples<-mToSubset[mTipsToSamplesNew] #use that to map mTipsToSamplesNew to new order
+	mToSubset<-match(1:nSamples,whKeep) #gives where each of old sample indices (1:n) map to in new order of future clObj (with NA for those that not in new clObj)
+	mTipsToSamples<-mToSubset[mTipsToSamplesOld] #use that to map mTipsToSamplesNew to new order
 	if(any(is.na(mTipsToSamples))) stop("coding error -- didn't update mTipsToSamples correctly")
- 
+		#these check against names, but doesn't always have names, etc.
+	# if(!all(tipLabels(dendro)==row.names(clObj)[mTipsToSamplesOld])) stop("coding error -- names no longer match")
+	# if(!all(sort(tipLabels(dendro))==sort(names(clObj[whKeep,])))) stop("coding error -- don't have the same set of tips after pruning outbranch")
+	# if(!all(tipLabels(dendro)==row.names(clObj[whKeep,,drop=FALSE])[mTipsToSamples])) stop("coding error -- names no longer match")
+    if(is.matrix(clObj)) clObj<-clObj[whKeep,,drop=FALSE] else clObj<-clObj[whKeep]		
     #set outbranch=FALSE because now doesn't exist in tree...
     outbranch<-FALSE
-	
-
   }
   else{
-	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchValue="matchIndex", columnValue="SampleIndex")
+	  if(leafType=="samples") mTipsToSamples <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	
   }
+  
+  #-------
   #convert to phylo object...
-  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip= leafType=="clusters") #gives internal nodes but keeps the sample ids at tip names.
+  #-------
+  phyloObj <- .convertToPhyClasses(dendro, "phylo",convertNode=TRUE,convertTip=(leafType!="samples")) 
+  if(leafType=="samples"){
+	  #not clear need this now that convert dendro it before send to .plotDendro
+	  #these are in the order of dendro tips. To 
+	  clNames<-phylobase::tipLabels(dendro)
+  }
   plotArgs<-list(...)
   dataPct<-0.5
   offsetDivide<-16
   if(plotType=="colorblock" && is.null(clObj) && leafType=="samples") stop("Internal coding error: must provide a clustering if plotType='colorblock'")
-  origPhylo<-phyloObj #so can return
+  origPhylo<-phyloObj #so can return and get any information that gets overwritten in phyloObj
   
-  ###############
+  #---------------
   ### For plotting of dendrogram for the merging
   ### Add information about the merging as node labels and change edge type
   ### Note: could probably have used nodelabels function and avoided some of this
-  ###############
+  #---------------
   if(!is.null(mergeOutput)){
     annotNames<-c("NodeId","Contrast","isMerged", "mergeClusterId")
     methods<-colnames(mergeOutput)[!colnames(mergeOutput)%in%annotNames] #possible for which have proportion saved
@@ -335,6 +351,10 @@ setMethod(
     if(!"show.node.label" %in% names(plotArgs)) plotArgs$show.node.label<-TRUE
     if(!"edge.lty" %in% names(plotArgs)) plotArgs$edge.lty<-edgeLty
   }
+  else{
+	  phyloObj$node.label<-phylobase::nodeLabels(dendro) #use the user-given/assigned node labels
+	
+  }
   ###############
   ### Deal with clusterLegend object: 
   ### - Make default if not provided and 
@@ -342,6 +362,7 @@ setMethod(
   ###############
   
   if(plotType=="colorblock"){
+	  
     clusterLegend<-TRUE #doesn't do anything right now because phydataplot doesn't have option of no legend...
     if(is.null(clusterLegendMat)){ 
       #----
@@ -450,11 +471,11 @@ setMethod(
   if(!is.null(clusterLegendMat)){
     if(leafType=="clusters"){
       #get rid of matching string 
+	  #don't need this now that convert before send to .plotDendro
       m<-match(gsub("ClusterId","",phyloObj$tip.label),clusterLegendMat[,"clusterIds"])
       if(any(is.na(m))) stop("clusterIds in clusterLegend do not match dendrogram labels")
-      phyloObj$tip.label<-clusterLegendMat[m,"name"]
       tip.color<-clusterLegendMat[m,"color"]
-      if(plotType=="colorblock"){
+	  if(plotType=="colorblock"){
         clusterLegendMat<-clusterLegendMat[!clusterLegendMat[,"clusterIds"]%in%c(-1,-2),]
         colorMat<-matrix(clusterLegendMat[,"name"],ncol=1)
         row.names(colorMat)<-clusterLegendMat[,"name"]
@@ -466,9 +487,7 @@ setMethod(
       
     }
     if(leafType=="samples"){
-		
-	   
-	  if(is.matrix(clObj) && ncol(clObj)>1){
+  	  if(is.matrix(clObj) && ncol(clObj)>1){
         if(plotType=="colorblock"){
           colorMat<-apply(clObj,2,function(x){
             m<-match(x,clusterLegendMat[,"clusterIds"])
@@ -489,6 +508,7 @@ setMethod(
         tip.color<-clusterLegendMat[m,"color"]		
         if(plotType=="colorblock"){
 		  colorMat<-matrix(clusterLegendMat[m,"name"],ncol=1)
+		  colorMat<-colorMat[mTipsToSamples,,drop=FALSE]
           rownames(colorMat)<-clNames
           cols<-clusterLegendMat[,"color"]
           names(cols)<-clusterLegendMat[,"name"]
@@ -498,8 +518,9 @@ setMethod(
       if(plotType=="colorblock"){
         #make only edges going to/from nodes in cluster hierarchy have edge.width>0
 		ntips<-length(phyloObj$tip.label)
-        positionValue<-.matchToDendroData(inputValue=phyloObj$node.label, dendro=dendro, matchValue="NodeId", columnValue="Position")
-		whClusterNode<-which(positionValue%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
+		#Note that some of origPhylo$node.label have NA for value; won't get unique value for these; but these aren't part of cluster hierarchy anyway (infact could probably just pick those that are NA and use them, but this is safer(?))
+        positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchColumn="NodeId", returnColumn="Position")
+		whClusterNode<-which(as.character(positionValue)%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
         whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
         edge.width<-rep(0,nrow(phyloObj$edge))
         edge.width[whEdgePlot]<-1
@@ -507,7 +528,10 @@ setMethod(
     }
   }
   else tip.color<-"black"
-  
+	 
+  #Couldn't do this before, because needed cluster id to safely match to clusterLegendMat. 
+  if(leafType=="clusters") phyloObj$tip.label<-phylobase::tipLabels(dendro)
+
   
   #---------------
   #this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
@@ -532,8 +556,7 @@ setMethod(
     colnames(colorMat)<-NULL		    
     colInput<-function(n){cols}
     width<-treeWidth*dataPct/nclusters
-	browser()
-    ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
+	ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
     
     if(nclusters>1 & !is.null(colnames(clObj))){
       xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)

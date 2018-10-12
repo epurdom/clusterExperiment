@@ -9,7 +9,7 @@
 #'   and 'IndexInOriginal' giving the grouping and original index of the
 #'   features in the \code{assay(object)}
 #' @param whichCluster if not NULL, indicates cluster used in making the 
-#'   significance table. Used to match to names in \code{clusterLegend(object)} 
+#'   significance table. Used to match to colors in \code{clusterLegend(object)} 
 #'   (relevant for one-vs-all contrast so that color aligns).
 #' @param contrastColors vector of colors to be given to contrasts. Should match
 #'   the name of the contrasts in the 'Contrast' column of \code{signifTable} or
@@ -21,6 +21,9 @@
 #'   names will be used to describe the contrast in the legend.
 #' @details Within each contrast, the genes are sorted by log fold-change if the
 #'   column "logFC" is in the \code{signifTable} data.frame
+#' @details Note that if \code{whichCluster} is NOT given (the default) then there is 
+#' no automatic match of colors with contrasts based on the information in 
+#' \code{object}.
 #' @return A heatmap is created. The output of \code{plotHeatmap} is returned.
 #' @seealso \code{\link{plotHeatmap}}, \code{\link{makeBlankData}},
 #'   \code{\link{getBestFeatures}}
@@ -60,7 +63,7 @@ setMethod(
             contrastColors<-NULL
             
           }
-          else contrastMatch<-FALSE		
+          else contrastMatch<-FALSE	#FALSE because don't have to fix the names to match ContrastName, since already do...	
         }
         else{
           warning("names of contrastColors do not match 'Contrast' values; will be ignored.")
@@ -70,42 +73,38 @@ setMethod(
       else contrastMatch<-TRUE
     }
     if(is.null(contrastColors)) contrastMatch<-FALSE
-    
-    if("ContrastName" %in% colnames(signifTable)){
+	if("ContrastName" %in% colnames(signifTable)){
       #give names to be contrast names
-      gpnames<-unique(signifTable[,c("Contrast","ContrastName")])
+	  internalNames<-names(geneByContrast) #incase need the Contrast name later in code
+      gpnames<-unique(signifTable[,c("Contrast","ContrastName","InternalName")])
       if(nrow(gpnames)==length(geneByContrast)){
         m<-match(names(geneByContrast),gpnames[,"Contrast"])
         names(geneByContrast)<-gpnames[m,"ContrastName"]
-        #give colors the new names so will match
+		internalNames<-gpnames[m,"InternalName"]
+		#give colors the new names so will match
         if(!is.null(contrastColors) & contrastMatch){
           m<-match(names(contrastColors),gpnames[,"Contrast"])
           names(contrastColors)<-gpnames[m,"ContrastName"]
         }
       }
       
-      #fix so order is order of nodes 
-      nodeGrep<-grep("NodeId",names(geneByContrast))
-      if(length(nodeGrep)==length(geneByContrast)){
-        nsplit<-strsplit(names(geneByContrast),"NodeId")
-        norder<-order(as.numeric(sapply(nsplit,.subset2,2)))
-        geneByContrast<-geneByContrast[norder]
-      }
+      #fix so order is order of contrast names
+	  order<-order(names(geneByContrast))
+	  geneByContrast<-geneByContrast[order]
+
     }
     
     
     if(!is.null(whichCluster)){
-	    whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
+	  ##Assign colors to the contrasts (only does anything if contrast is oneAgainstAll)
+	  whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives
-      pad<-if(length(unique(cl[cl>0]))<100) 2 else 3  
-      mCl<-paste("Cl",stringr::str_pad(clMat[,"clusterIds"],width=pad,pad="0"),sep="") #mimic getBestFeatures
-      for(ii in 1:length(mCl)){
-        names(geneByContrast)<-gsub(mCl[[ii]],clMat[ii,"name"],names(geneByContrast))
-      }
       ###If the contrast is one against all, should have name of cluster so give color
-      if(is.null(contrastColors) & identical(sort(names(geneByContrast)),unname(sort(clMat[,"name"])))){
+	  ###Note that need to use InternalId, in case the names are not unique?
+	  internalNames<-gsub("Cl","",internalNames)
+      if(is.null(contrastColors) & identical(sort(as.numeric(internalNames)),unname(sort(as.numeric(clMat[,"clusterIds"]))))){
         contrastColors<-clMat[,"color"]
         names(contrastColors)<-names(geneByContrast)
       }

@@ -4,41 +4,108 @@
 .clusterSampleColumns<-c("Position","NodeId","SampleIndex")
 
 .positionLevels<-c("cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root")
-# -- Position: one of either "cluster hierarchy node","cluster hierarchy tip","tip hierarchy","assigned tip","outbranch hierarchy node","unassigned tip","outbranch root"). This column should be internal and validity check that numbers correspond to clustering from @dendro_index. Needs to be a check on "ClusterExperiment", not the "clusterPhylo4d"
-  # -- ClusterIdDendro (only for cluster): cluster Id in @dendro_index that corresponds to node (NA otherwise)
-  # -- ClusterIdMerge  (only for cluster): cluster Id in @merge_index that corresponds to node (NA otherwise)
-  # -- NodeId (only for sample tree): for those that are part of the cluster hierarchy, the (permanent) node id from cluster hierarchy -- ie not the name but the number so can always link them. Use this to create checks that the node names are the same, grab the default names, etc. 
-  # -- SampleIndex (only for sample tree): index to the columns in the assay
 
-#' @importFrom phylobase tdata
-.matchToDendroData<-function(inputValue,dendro,matchValue="NodeId",columnValue){
-	df<-phylobase::tdata(dendro,type="all")
-	if(!is.character(columnValue) || !is.character(matchValue)) stop("coding error -- columnValue and matchValue must be character valued")
-	if(!columnValue=="matchIndex" && !columnValue %in% names(df)) stop("coding error -- invalid value of columnValue ")
-	if(!matchValue=="NodeIndex" && !matchValue %in% names(df)) stop("coding error -- invalid value of matchValue")
-	if(!matchValue=="NodeIndex") m<-match(inputValue, df[,matchValue]) else m<-inputValue
-	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in dendro)")
-	if(columnValue=="matchIndex") return(m)
-	else return(df[m,columnValue])
+.hasOutBranch<-function(object){
+	"outbranch root" %in% phylobase::tdata(object@dendro_samples)$Position
 }
 
-#' @importFrom phylobase tdata
-.getClusterIds<-function(tipIndex,clusterDendro,columnValue=c("ClusterIdDendro","ClusterIdMerge")){
-	columnValue<-match.arg(columnValue)
-  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchValue="NodeIndex",columnValue=columnValue)
+#' @name InternalDendrogram
+#' @title Internal dendrogram functions
+#' @description internal functions used by the package to manipulate dendrograms
+#' @param inputValue a vector of values to match to dendro data
+#' @param dendro a phylo4d object
+#' @param matchColumn a character value giving the name of a column in the \code{tdata} of the dendro to match to. If "NodeIndex", means that will match to the row number (i.e. inputValue is a integer giving the row index); in this case it is the same as doing tdata(dendro)[inputValue,returnColumn]
+#' @param returnColumn a character value giving the name of a column to return -- i.e. after matching to the matchColumn, return the corresponding values in the returnColumn. If returnColumn="NodeIndex", then just the index of the match is returned.
+#' @param returnColumn
+#' @noRd
+.matchToDendroData<-function(inputValue,dendro,matchColumn="NodeId",returnColumn){
+	#Note that matchColumn="NodeIndex" means inputs give rows of the df. returnColumn="NodeIndex" means to return the index that matches (i.e. nodeIndex too)
+	df<-phylobase::tdata(dendro,type="all")
+	if(!is.character(returnColumn) || !is.character(matchColumn)) stop("coding error -- returnColumn and matchColumn must be character valued")
+	if(!returnColumn=="NodeIndex" && !returnColumn %in% names(df)) stop("coding error -- invalid value of returnColumn ")
+	if(!matchColumn=="NodeIndex" && !matchColumn %in% names(df)) stop("coding error -- invalid value of matchColumn")
+	if(!matchColumn=="NodeIndex") m<-match(inputValue, df[,matchColumn]) else m<-inputValue
+	if(any(is.na(m))) stop("coding error -- invalid value in inputValue (not in dendro)")
+	if(returnColumn=="NodeIndex") return(m)
+	else return(df[m,returnColumn])
+}
+
+.getClusterIds<-function(tipIndex,clusterDendro,returnValue=c("ClusterIdDendro","ClusterIdMerge")){
+	returnValue<-match.arg(returnValue)
+  tipNames <- .matchToDendroData(tipIndex,clusterDendro,matchColumn="NodeIndex",returnColumn=returnValue)
   tipNames<-gsub("ClusterId","",as.character(tipNames))
   return(tipNames)
 }
-.convertDendoLabelsToClusterName<-function(dendro,clusterLegendMat){
-	#Assumes are names as numbers and that only ones that have numbers (i.e. that other nodes will be NodeX, etc.)
-    #Add clusterNames as Ids to cluster and sample dendrogram.
-	m<-match(phylobase::labels(dendro), clusterLegendMat[,"clusterIds"])
-	
-	phylobase::labels(dendro)[!is.na(m)]<-clusterLegendMat[m[!is.na(m)],"name"]
-    return(dendro)
-	
-	
+
+
+#' @description phylo4d objects for cluster and sample dendrograms with pretty (and matched!) node and tip labels.
+#' @param object a ClusterExperiment object
+#' @param labelType. If 'id' returns the NodeId value for all the internal nodes that match the cluster dendrogram (cluster and sample dendrograms) and the cluster id for the tips (cluster dendrogram) or sample index for the tips (sample dendrogram). If "name", then the cluster ids and sample indices are converted into the cluster names (in the clusterMat) and the sample names (in colnames)
+#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged)
+#' @return Returns list of the two dendrograms with nodes that have been updated. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't"
+#' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
+#' @noRd
+.setNodeLabels<-function(object,labelType=c("name","id"),useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample","cluster"),...){
+	labelType<-match.arg(labelType)
+	singletonCluster<-match.arg(singletonCluster)
+	 if(!inherits(object,"ClusterExperiment")) stop("coding error -- function should be used for ClusterExperiment objects")
+	 if(is.na(object@merge_index)|| all(is.na(phylobase::tdata(object@dendro_clusters)$ClusterIdMerge))) useMergeClusters<-FALSE
+	 if(is.null(object@dendro_clusters)) return(NULL)
+	 #internal option returns same as the .convertPhyClasses with both =TRUE
+	 internalCluster<-.convertToPhyClasses(object@dendro_clusters, returnClass=c("phylo4d"), convertNodes=TRUE, convertTips=TRUE)
+	 internalSamples<-.convertToPhyClasses(object@dendro_samples, returnClass=c("phylo4d"), convertNodes=TRUE, convertTips=TRUE)
+	 
+	 
+	 if(useMergeClusters){
+		 #erase all the dendro cluster Ids, which are only on the tips
+		 whConvert<-which(!is.na(phylobase::tdata(internalCluster,type="tip")$ClusterIdDendro))
+		 phylobase::tipLabels(internalCluster)[whConvert]<-NA 
+		 #now add merge cluster ids.
+		 whConvert<-which(!is.na(phylobase::tdata(internalCluster,type="all")$ClusterIdMerge))
+		 phylobase::labels(internalCluster)[whConvert] <- phylobase::tdata(internalCluster,type="all")$ClusterIdMerge[whConvert]
+		 
+	 }
+	 if(!overrideExistingNode){
+		 #located here so merge labels won't be displayed if user changed that node name manually.
+		 existingNodeLabels<-phylobase::nodeLabels(object@dendro_clusters)
+		 whKeep<-which(!is.na(existingNodeLabels) & existingNodeLabels!=phylobase::tdata(internalCluster,type="internal")$NodeId)
+		 phylobase::nodeLabels(internalCluster)[whKeep]<-existingNodeLabels[whKeep]
+	 }
+	 	 
+	 
+	 if(labelType=="name"){
+		 ###Convert to the name versions
+		 if(useMergeClusters){
+			 legMat<-clusterLegend(object)[[object@merge_index]]
+			 labs<-phylobase::labels(internalCluster)[whConvert]
+			 labs<-as.character(as.numeric(gsub("ClusterId","",labs)))
+			 m<-match(labs,legMat[,"clusterIds"])	
+			 phylobase::labels(internalCluster)[whConvert]<-legMat[m,"name"]
+		 }
+		 else{
+			 legMat<-clusterLegend(object)[[object@dendro_index]]
+		 	 labs<-phylobase::tipLabels(internalCluster)
+			 labs<-as.character(as.numeric(gsub("ClusterId","",labs)))
+			 m<-match(labs,legMat[,"clusterIds"])	
+			 phylobase::tipLabels(internalCluster)<-legMat[m,"name"]
+		 }
+		 
+		 nms<-if(!is.null(colnames(object))) colnames(object) else .makeSampleNames(seq_len(ncol(object)))
+		 phylobase::tipLabels(internalSamples) <- nms[as.numeric(phylobase::tipLabels(internalSamples))]
+
+			 
+	 }
+	 #Make sample node names match
+	 type<-switch(singletonCluster,"sample"="internal","cluster"="all")
+	 vals<-phylobase::tdata(internalSamples,type=type)$NodeId
+	 wh<-which(!is.na(vals))
+	 mToSample <- .matchToDendroData(inputValue=vals[wh], dendro=internalCluster, matchColumn="NodeId", returnColumn="NodeIndex")
+	 phylobase::labels(internalSamples,type=type)[wh]<- phylobase::labels(internalCluster)[mToSample]
+	 
+	 
+	 return(list(dendro_clusters=internalCluster,dendro_samples=internalSamples))
 }
+
 
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
@@ -60,19 +127,37 @@
 }
 
 
+
+#' @param convertNodes logical. If true, the returned dendrogram will have the node labels change to be NodeId
+#' @param convertTips logical. If true, the returned dendrogram will have the tip labels changed. If 'ClusterIdDendro' is in tdata (i.e. its a cluster dendrogram) then they are converted to Dendro cluster id (if no NAs) or if there are NAs, then merge cluster id (if dendros are NA in tips). If 'SampleIndex' is column name in tdata (i.e. is a samples dendrogram), then returns tip labels that are the SampleIndex value
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
 #' @importClassesFrom phylobase phylo4 
-###Note convertCluster should ONLY be for the cluster dendro!
+#' @noRd
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)
 	if(inherits(x,"phylo4d") ){
-		if(returnClass %in% c("phylo","phylo4")){
-			#make internal node and cluster ids the node and tip labels (i.e. erase existing)
+		if(returnClass %in% c("phylo","phylo4","phylo4d")){
+			#------
+			#Before convert,
+			#make internal node and cluster ids 
+			#the node and tip labels (i.e. erase existing)
+			#------
 			if(convertNodes) phylobase::nodeLabels(x)<-as.character(phylobase::tdata(x,type="internal")$NodeId)
 	  
-			if(convertTips) phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
-			
+			if(convertTips){
+				if("ClusterIdDendro" %in% names(phylobase::tdata(x,type="all"))){
+					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdDendro)
+					if(any(is.na(phylobase::tipLabels(x)))){
+						#this should mean its the cluster dendrogram limited to the merge ids.
+						phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$ClusterIdMerge)
+					}	
+					if(any(is.na(phylobase::tipLabels(x)))) stop("coding error -- even after accounting for merge id, still have NA values")
+				}
+				else if("SampleIndex" %in% names(phylobase::tdata(x,type="all")))
+					phylobase::tipLabels(x)<-as.character(phylobase::tdata(x,type="tip")$SampleIndex)
+				else stop("coding error -- tree should have either 'ClusterIdDendro' or 'SampleIndex' as names in tdata(x)")
+			} 			
 		}
 		if(returnClass %in% c("phylo4","phylo4d")) return(x)
 	}
@@ -108,11 +193,13 @@
 	
 }
 
-.pruneToNodes<-function(phylo4,nodesKeep){
-	#nodesKeep should be numberic index of nodes
-	# > slotNames(ccSE@dendro_clusters)
-	# [1] "data"        "metadata"    "edge"        "edge.length" "label"       "edge.label"  "order"
-	# [8] "annote"
+.pruneToNodes<-function(phylo4,nodesPruned){
+	##nodesPruned should be *the node numerical index* of those nodes that need "pruning" -- i.e. drop their children; other nodes kept the same.
+	tipsPruned<-unlist(phylobase::descendants(phylo4,node=nodesPruned,type="tip"),use.names=FALSE)
+	tipsKept<-phylobase::getNode(phylo4,type="tip")
+	tipsKept<-tipsKept[!tipsKept %in% tipsPruned]
+	nodesKeep<-c(nodesPruned,tipsKept)
+	
 	allNodes<-phylobase::getNode(phylo4,type="all")
 	if(!all(nodesKeep %in% allNodes)) 
 		stop("nodes specified are not valid")
@@ -126,27 +213,37 @@
 	#this won't happen I think in my merge tree example, so make it error...
 	singletonNode<-if(length(which(table(newEdge[-which(newEdge[,1]==0),1])==1))>0) stop("coding error -- removing these nodes creates internal nodes that are singletons. Should be only choice of nodes that 'prunes' back the tree, not actually subsetting.")
 	
-	
-	#problem: have to renumber everything... technically documentation doesn't say that, but actually do
+	#----------
+	#have to renumber everything so consecutive... technically documentation doesn't say that, but actually do (error otherwise)
+	#----------
+	#get the current numbers of tips, internal nodes, and root
+	#this is so know how to match the names, etc. back to them
 	newTips<-newEdge[which(!newEdge[,2] %in% newEdge[,1]),2]
 	newNodes<-nodesKeep
 	root<-newEdge[newEdge[,1] ==0,2]
-	
-	browser()
-	#tips: 1:node
+	whRoot<-which(newEdge[,1] ==0)
+
+	#tips: make them 1:(#tips)
 	#tips should be in edge matrix once:
-	whEdgeTips<-match(newTips,newEdge)
-	newEdge[whEdgeTips]<-order(newTips)
-	whNodeTips<-match(newTips,newNodes)
-	newNodes[whNodeTips]<-order(newTips)
-	#internal nodes: subtract root number + nTips
-	newEdge[-whEdgeTips]<-newEdge[-whEdgeTips]-root+length(newTips)+1
-	newEdge[newEdge<0]<-0
-	newNodes[-whNodeTips]<-newNodes[-whNodeTips]-root+length(newTips)+1
-	#now need to make sure in right order with new edges:
-	newdata<-phylo4@data[nodesKeep,]
+	whEdgeTips<-match(newTips,newEdge) #find edges that contain tips
+	consecutiveTips<-match(newTips,sort(newTips)) #give them consecutive numbers in same order as previous
+	newEdge[whEdgeTips]<-consecutiveTips
+	whNodeTips<-match(newTips,newNodes) #this is for reordering
+	newNodes[whNodeTips]<-consecutiveTips
 	
+	#internal nodes: make them consecutive but in same order as previously, then add root number + nTips
+	consecutiveNodes<-match(newNodes[-whNodeTips],sort(newNodes[-whNodeTips])) #doesn't include the 0 edge to root, so root is #1
+	mNodesToEdge<-match(newEdge[-whEdgeTips],newNodes[-whNodeTips]) #get one NA from 0
+	if(sum(is.na(mNodesToEdge))!=1) stop("coding error -- should have one na because of root")
+	newEdge[-whEdgeTips]<-consecutiveNodes[mNodesToEdge]+length(newTips)
+	newNodes[-whNodeTips]<-consecutiveNodes+length(newTips)	
+	newEdge[whRoot,1]<-0
+	if(any(sort(newNodes)!=1:length(newNodes))) stop("coding error -- did not result in consecutive node numbers")
+		
+	#now need to make sure everything in right order with new edges:
+	newdata<-phylo4@data[nodesKeep,]
 	row.names(newdata)<-as.character(newNodes)
+	newdata<-newdata[order(newNodes),]
 	
 	tipLabels<-names(newNodes)[whNodeTips]
 	tipLabels<-tipLabels[order(newNodes[whNodeTips])]
@@ -156,7 +253,7 @@
 	##edge length slots: edge, edge.length, edge.label
 	##node length slots: data (rows), label
 	##Don't change: order, metadata, annote
-	return(phylo4d(x=newEdge, 
+	return(phylobase::phylo4d(x=newEdge, 
 		edge.length = phylo4@edge.length[whEdgesKeep], 
 		tip.label = tipLabels,
 		node.label = nodeLabels, 
@@ -169,7 +266,6 @@
 	
 }
 
-#' @importFrom phylobase tipLabels subset 
 .safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
   if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
     ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
@@ -480,7 +576,6 @@
 	
 }
 
-#' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
 .force.ultrametric<-function(tree){
 	##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
 	#calculates, per tip, the amount missing and adds it to the tips.
@@ -519,6 +614,7 @@
 	}
 
 }
+
 
 
 # #---------
