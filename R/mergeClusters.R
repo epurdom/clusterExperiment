@@ -102,7 +102,21 @@
 #'   the dotted edges are still drawn. If you just want plot of the dendrogram,
 #'   with no merging performed nor demonstrated on the plot, see
 #'   \code{\link{plotDendrogram}}.
-#' @details \strong{Saving and Reusing of results} By default, the function saves the results in the \code{ClusterExperiment} object and will not recalculate them if not needed. Note that by default \code{calculateAll=TRUE}, which means that regardless of the value of \code{mergeMethod}, all the methods will be calculated so that those results will be stored and if you change the mergeMethod, no additional calculations are needed. Since the computationally intensive step is the running the DE method on the genes, this is a big savings (all of the methods then calculate the proportion from those results). However, note that if \code{calculateAll=TRUE} and ANY of the methods returned NA for any value, the calculation will be redone. Thus if, for example, the \code{locfdr} function does not run successfully and returns NA, the function will always recalculate each time, even if you don't specifically want the results of \code{locfdr}. In this case, it makes sense to turn \code{calculateAll=FALSE}.
+#' @details \strong{Saving and Reusing of results} By default, the function
+#'   saves the results in the \code{ClusterExperiment} object and will not
+#'   recalculate them if not needed. Note that by default
+#'   \code{calculateAll=TRUE}, which means that regardless of the value of
+#'   \code{mergeMethod}, all the methods will be calculated so that those
+#'   results will be stored and if you change the mergeMethod, no additional
+#'   calculations are needed. Since the computationally intensive step is the
+#'   running the DE method on the genes, this is a big savings (all of the
+#'   methods then calculate the proportion from those results). However, note
+#'   that if \code{calculateAll=TRUE} and ANY of the methods returned NA for any
+#'   value, the calculation will be redone. Thus if, for example, the
+#'   \code{locfdr} function does not run successfully and returns NA, the
+#'   function will always recalculate each time, even if you don't specifically
+#'   want the results of \code{locfdr}. In this case, it makes sense to turn
+#'   \code{calculateAll=FALSE}.
 #' @details If the dendrogram was made with option
 #'   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with
 #'   other samples), then you cannot choose the option
@@ -121,16 +135,14 @@
 #'\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
 #'accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
 #'		}
-#'		\item{\code{nodeMerge}}{ 
-#'		A table of indicating for each node whether merged or not and the cluster id
-#'		in the new clustering that corresponds to the node. Note that a node can be
-#'		merged and not correspond to a node in the new clustering, if its ancestor
-#'		node is also merged. But there must be some node that corresponds to a new
-#'		cluster id if merging has been done. This table is saved in the
-#'		\code{merge_nodeMerge} slot of a \code{ClusterExperiment} object and can be
-#'		accessed along with the nodeProp info with the \code{nodeMergeInfo}
-#'		function.
-#'		}
+#'		\item{\code{nodeMerge}}{ A table of indicating for each node whether merged
+#'		or not and the cluster id in the new clustering that corresponds to the
+#'		node. Note that a node can be merged and not correspond to a node in the new
+#'		clustering, if its ancestor node is also merged. But there must be some node
+#'		that corresponds to a new cluster id if merging has been done. This table is
+#'		saved in the \code{merge_nodeMerge} slot of a \code{ClusterExperiment}
+#'		object and can be accessed along with the nodeProp info with the
+#'		\code{nodeMergeInfo} function. }
 #'   \item{\code{updatedClusterDendro}}{ The dendrogram on which the merging
 #'   was based (based on the original clustering).}
 #'   \item{\code{cutoff}}{ The cutoff value for merging.} }

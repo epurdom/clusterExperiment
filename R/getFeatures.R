@@ -108,14 +108,17 @@
 #' the dendrogram. If \code{x} is a \code{ClusterExperiment} object, this name 
 #' will make use of the user defined names of the cluster or node in \code{x}.}
 #' 
-#' \item{\code{InternalName}}{ Only present if \code{x} is a \code{ClusterExperiment} object. 
-#' In this case this column will give the name of the contrast using the internal ids of the
-#' clusters and nodes, not the user-defined names. This provides stability in matching the 
-#' contrast if the user has changed the names since running \code{getBestFeatures}}
+#' \item{\code{InternalName}}{ Only present if \code{x} is a
+#' \code{ClusterExperiment} object. In this case this column will give the name
+#' of the contrast using the internal ids of the clusters and nodes, not the
+#' user-defined names. This provides stability in matching the contrast if the
+#' user has changed the names since running \code{getBestFeatures}}
 #' 
-#' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
+#' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in
+#' \code{topTags})}
 #' 
-#' \item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or \code{FWER} in \code{topTags})}
+#' \item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or
+#' \code{FWER} in \code{topTags})}
 #' }
 #'
 #' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and

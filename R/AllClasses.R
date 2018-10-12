@@ -73,12 +73,12 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","NULL"))
 #'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
-#' @slot dendro_samples \code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
-#' relationship (leaves are samples; see \code{\link{clusterDendrogram}} for
-#' details).
-#' @slot dendro_clusters \code{\link[phylobase]{phylo4}} object. A dendrogram containing the cluster
-#' relationship (leaves are clusters; see see \code{\link{sampleDendrogram}} for
-#' details).
+#' @slot dendro_samples \code{\link[phylobase]{phylo4}} object. A dendrogram
+#'   containing the cluster relationship (leaves are samples; see
+#'   \code{\link{clusterDendrogram}} for details).
+#' @slot dendro_clusters \code{\link[phylobase]{phylo4}} object. A dendrogram
+#'   containing the cluster relationship (leaves are clusters; see see
+#'   \code{\link{sampleDendrogram}} for details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
 #' @slot coClustering matrix. A matrix with the cluster co-occurrence

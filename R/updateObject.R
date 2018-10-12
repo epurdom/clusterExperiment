@@ -21,8 +21,13 @@
 #'   values. Similarly, if \emph{any} of the merge-related slots are missing, 
 #'   ALL of the merge-related slots will be cleared to the default values.
 #' @details Cluster and Sample dendrograms of the class \code{dendrogram} will
-#' be updated to the \code{\link[phylobase]{phylo4d}} class now used in 
-# \code{ClusterExperiment} objects; the merge information on these nodes will be updated to have the correct format (i.e. match to the internal node id names in the new dendrogram). The previous identification of nodes that was previously created internally by plotDendrogram and the merging (labels in the form of 'Node1','Node2'), will be kept as \code{\link[phylobase]{nodeLabels}} in the new dendrogram class.
+#'   be updated to the \code{\link[phylobase]{phylo4d}} class now used in
+#'   \code{ClusterExperiment} objects; the merge information on these nodes will
+#'   be updated to have the correct format (i.e. match to the internal node id
+#'   names in the new dendrogram). The previous identification of nodes that was
+#'   previously created internally by plotDendrogram and the merging (labels in
+#'   the form of 'Node1','Node2'), will be kept as
+#'   \code{\link[phylobase]{nodeLabels}} in the new dendrogram class.
 #' @details The function currently only works for object of 
 #'   \code{ClusterExperiment}, not the older name \code{clusterExperiment}.
 #' @return A valid \code{ClusterExperiment} object based on the current 
