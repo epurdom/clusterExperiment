@@ -524,11 +524,11 @@ setMethod(
         }
         else if(clusterSamplesData=="dendrogramValue"){
 					if(is.null(data@dendro_samples)){
-			      data<-try(makeDendrogram(data),silent = TRUE) 
-          }
-          if(inherits(clusterSamplesData, "try-error")){
-            warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
-            clusterSamplesData<-"primaryCluster"
+			      clusterSamplesData <- try( convertToDendrogram(makeDendrogram(data)) ,silent = TRUE) 
+	          if(inherits(clusterSamplesData, "try-error")){
+	            warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
+	            clusterSamplesData<-"primaryCluster"
+	          }
           }
           else{
 						#make sure get the sample ids as labels of the tips:
