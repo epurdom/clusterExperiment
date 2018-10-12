@@ -13,13 +13,13 @@
 language: r
 cache: packages
 # Temporarily enable when caching Bioconductor packages
-# script: true
+script: true
 
 
 # R versions to be tested on
 r:
-  - bioc-release
-#  - bioc-devel
+#  - bioc-release
+  - bioc-devel
 
 # External dependencies
 addons:
@@ -43,7 +43,7 @@ notifications:
 #r_github_packages:
 #  - Bioconductor/S4Vectors
 #  - Bioconductor/HDF5Array
-#  - Bioconductor/DelayedArray
+  - Bioconductor/DelayedArray
 
 
 ## Code coverage
