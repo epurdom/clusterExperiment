@@ -158,19 +158,35 @@ test_that("plotDendrogram works with colData", {
 	
 })
 
+test_that("plotDendrogram works with nodeColors and labels", {
+  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+  leg[,"name"]<-letters[1:nrow(leg)]
+  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+  dend <- makeDendrogram(ccSE)
+  expect_silent(plotDendrogram(dend))
+  expect_silent(nl<-paste("A", 1:nNodes(dend)))
+  expect_error(nodeLabels(dend) <- nl )
+  expect_silent(names(nl)<-nodeLabels(dend))
+  expect_silent(nodeLabels(dend) <- nl )
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="name"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE, leafType="samples",plotType="name",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend, show.node.label=TRUE,leafType="samples", plotType="colorblock"))
+  expect_silent(plotDendrogram(dend, show.node.label=TRUE, leafType="clusters",plotType="colorblock"))
+  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
+	
+  nc<-palette()[1:nNodes(dend)]
+  expect_silent(names(nc)<-internalNodeLabels(dend))
+  expect_silent(plotDendrogram(dend,nodeColors=nc,leafType="clusters",plotType="name"))
+  
+})
+
 test_that("plotDendrogram works with outgroup", {
     leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
     leg[,"name"]<-letters[1:nrow(leg)]
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
   expect_silent(plotDendrogram(dend))
-  phylobase::nodeLabels(dend@dendro_clusters)<-paste("A",1:length(phylobase::nodeLabels(dend@dendro_clusters)))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="name"))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE, leafType="samples",plotType="name",removeOutbranch=FALSE))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="samples",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
   
   ## make all -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -180,7 +196,7 @@ test_that("plotDendrogram works with outgroup", {
   dend2 <- makeDendrogram(dend2)
   expect_silent(plotDendrogram(dend2,leafType="clusters",plotType="colorblock"))
   expect_silent(plotDendrogram(dend2,leafType="samples",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend2,leafType="samples",plotType="colorblock",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend2, leafType="samples", plotType="colorblock",removeOutbranch=FALSE))
 
   ## make only single sample -2
   cl<-clusterMatrix(ccSE)[,1]
@@ -190,7 +206,7 @@ test_that("plotDendrogram works with outgroup", {
   expect_silent(dend3 <- makeDendrogram(dend3))
   expect_silent(plotDendrogram(dend3,leafType="clusters",plotType="colorblock"))
   expect_silent(plotDendrogram(dend3,leafType="samples",plotType="colorblock"))
-  expect_silent(plotDendrogram(dend3,leafType="samples",plotType="colorblock",removeOutbranch=FALSE))
+  expect_silent(plotDendrogram(dend3, leafType="samples", plotType="colorblock", removeOutbranch=FALSE))
 
   # This test breaks something. Needs to be figured out. 
   # ## make all -1 but two samples
@@ -222,14 +238,14 @@ test_that("plotDendrogram works with whichClusters", {
     clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   expect_silent(dend <- makeDendrogram(ccSE))
   expect_message(dend<-mergeClusters(dend,DEMethod="limma"))
-  expect_silent(plotDendrogram(dend,whichClusters="all",leafType="samples",plotType="colorblock"))  
+  expect_silent(plotDendrogram(dend, whichClusters="all", leafType="samples", plotType="colorblock"))  
 })
 
 
 test_that("plotDendrogram works with cluster missing", {
-    expect_silent(leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]])
-    leg[,"name"]<-letters[1:nrow(leg)]
-    expect_silent(clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg)
+  expect_silent(leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]])
+  leg[,"name"]<-letters[1:nrow(leg)]
+  expect_silent(clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg)
   expect_silent(dend <- makeDendrogram(ccSE,unassignedSamples = c("cluster")))
   expect_silent(plotDendrogram(dend))
   expect_silent(plotDendrogram(dend,show.node.label=TRUE))

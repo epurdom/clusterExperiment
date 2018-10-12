@@ -35,8 +35,9 @@
 #'  dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
 #'  available for 'ape' package >= 4.1-0.6).
 #'@param nodeColors named vector of colors to be plotted on a node in the 
-#'  dendrogram. Names should match the name of the node (calls 
-#'  \code{\link[ape]{nodelabels}}).
+#'  dendrogram (calls \code{\link[ape]{nodelabels}}). Names should match the 
+#'  \emph{internal} name of the node (the "NodeId" value, see 
+#'  \code{\link{clusterDendrogram}}).
 #'@param clusterLabelAngle angle at which label of cluster will be drawn. Only 
 #'  applicable if \code{plotType="colorblock"}.
 #'@param mergeInfo What kind of information about merge to plot on dendrogram. 
@@ -561,7 +562,7 @@ setMethod(
     #if colorblock
     if(length(grep("show.tip",names(plotArgs)))==0) plotArgs$show.tip.label<-FALSE
 	sn<-grep("show.node",names(plotArgs))
-	if(length(sn)>0 & plotArgs[[sn]] & !doMerge){
+	if(length(sn)>0 && plotArgs[[sn]] && !doMerge){
 		offsetPct<-1/8	
 		dataPct<-0.6
 		# > .pctCalculation(.6,1/6)
@@ -582,7 +583,7 @@ setMethod(
 	ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*offsetPct, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
     
     if(nclusters>1 & !is.null(colnames(clObj))){
-      xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)
+      xloc<-treeWidth+treeWidth*offsetPct+seq(from=0,by=width,length=nclusters)
       xloc<-xloc+width/2
       ypos<-par("usr")[4]-0.025*diff(par("usr")[3:4])	
       adj<-c(0,0)		

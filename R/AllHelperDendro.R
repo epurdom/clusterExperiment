@@ -37,6 +37,31 @@ setMethod(
   }
 )
 
+
+#' @importMethodsFrom phylobase nNodes nTips
+#' @rdname clusterDendrogram
+#' @return \code{nNodes} returns the number of \emph{internal} nodes of the cluster hierarchy. Note that this is different than \code{nNodes} in \code{phylobase} that returns all nodes.
+#' @export
+#' @aliases nNodes
+setMethod(
+  f = "nNodes",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(length(phylobase::nodeLabels(x@dendro_clusters)))
+  }
+)
+
+#' @rdname clusterDendrogram
+#' @return \code{nTips} returns the number of tips of the cluster hierarchy (same as number of non-negative clusters in the dendrogram clustering)
+#' @export
+#' @aliases nTips
+setMethod(
+  f = "nTips",
+  signature = "ClusterExperiment",
+  definition = function(x) {
+    return(phylobase::nTips(x@dendro_clusters))
+  }
+)
 #' @rdname clusterDendrogram
 #' @return \code{nodeLabels<-} sets the node labels of the \emph{cluster}
 #' dendrogram
@@ -76,6 +101,20 @@ setMethod(
 	phylobase::nodeLabels(x@dendro_clusters)
   }
 )
+
+#' @rdname clusterDendrogram
+#' @return \code{internalNodeLabels} returns the internal (permanent) node labels of the \emph{cluster} dendrogram
+#' dendrogram
+#' @export
+#' @aliases internalNodeLabels
+setMethod(
+  f = "internalNodeLabels",
+  signature = signature(x="ClusterExperiment"),
+  definition = function(x) {
+	  phylobase::tdata(x@dendro_clusters,type="internal")[,"NodeId"]
+  }
+)
+
 
 #' @rdname clusterDendrogram
 #' @return \code{nodeLabels} returns the node labels of the \emph{cluster}
