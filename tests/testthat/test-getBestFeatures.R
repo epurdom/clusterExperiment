@@ -44,6 +44,8 @@ test_that("`getBestFeatures`  matrix and CE return same", {
                         DEMethod="limma"))
   idx <- top3$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top3$AveExpr)
+  neqcolsCE<-sapply(c("ContrastName"   , "InternalName"),grep,colnames(topC3))
+  neqcolsMat<-sapply(c("ContrastName" ),grep,colnames(top3))
   expect_silent(topC3 <- getBestFeatures(ceSimData, 
 	  contrastType="OneAgainstAll", 
       DEMethod="limma"))
