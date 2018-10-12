@@ -41,8 +41,8 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - Bioconductor/DelayedArray
   - Bioconductor/S4Vectors
+  - Bioconductor/DelayedArray
 #  - Bioconductor/HDF5Array
 
 
