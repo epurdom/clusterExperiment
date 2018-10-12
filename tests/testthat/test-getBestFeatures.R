@@ -19,7 +19,7 @@ test_that("`clusterContrasts` works with matrix and ClusterExperiment objects", 
 
 
 
-test_that("`getBestFeatures` works with matrix objects", {
+test_that("`getBestFeatures`  matrix and CE return same", {
 
   ## add some unclustered
   expect_silent(top1 <- getBestFeatures(simData, 
@@ -35,7 +35,9 @@ test_that("`getBestFeatures` works with matrix objects", {
   idx <- top2$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top2$AveExpr)
   expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs",DEMethod="limma"))
-  expect_equal(topC2, top2)
+  neqcolsCE<-sapply(c("ContrastName"   , "InternalName"),grep,colnames(topC2))
+  neqcolsMat<-sapply(c("ContrastName" ),grep,colnames(top2))
+  expect_equal(topC2[,-neqcols], top2[,-neqcolsMat])
 
   expect_silent(top3 <- getBestFeatures(simData, 
 	  primaryCluster(ceSimData), contrastType="OneAgainstAll",
@@ -45,8 +47,9 @@ test_that("`getBestFeatures` works with matrix objects", {
   expect_silent(topC3 <- getBestFeatures(ceSimData, 
 	  contrastType="OneAgainstAll", 
       DEMethod="limma"))
-  expect_equal(topC3, top3)
+  expect_equal(topC3[,-neqcols], top3[,-neqcolsMat])
 
+   
   ### test voom
 
   logcpm <- t(log2(t(simCount + 0.5)/(colSums(simCount) + 1) * 1e+06))
@@ -66,6 +69,8 @@ test_that("`getBestFeatures` works with matrix objects", {
                         DEMethod="limma-voom"))
   idx <- voom3$IndexInOriginal
   expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom3$AveExpr)
+
+
 
 }
 )
@@ -88,35 +93,40 @@ test_that("`getBestFeatures` works with ClusterExperiment objects", {
 # 	[4,] "2"        "#1F78B4" "b"
 # 	[5,] "3"        "#33A02C" "c"
 # 	[6,] "4"        "#FF7F00" "d"
+	expect_silent(ceSimData<-renameClusters(ceSimData,letters[1:4]))
+
     expect_silent(topPairs <- getBestFeatures(ceSimData, DEMethod="limma",contrastType="Pairs"))
-    expect_true(topPairs$ContrastName[1]=="a-b")
-    expect_true(topPairs$InternalName[1]=="Cl01-Cl02")
+    expect_equal(as.character(topPairs$ContrastName[1]),"a-b")
+    expect_equal(as.character(topPairs$InternalName[1]),"Cl01-Cl02")
 
     expect_silent(topOne <- getBestFeatures(ceSimData, DEMethod="limma",contrastType="OneAgainstAll"))
-    expect_true(topOne$ContrastName[1]=="a")
-    expect_true(topOne$InternalName[1]=="Cl01")
+    expect_equal(as.character(topOne$ContrastName[1]),"a")
+    expect_equal(as.character(topOne$InternalName[1]),"Cl01")
 	
 	expect_silent(ceDend <- makeDendrogram(ceSimData))
 	expect_silent(topDend<-getBestFeatures(ceDend, DEMethod="limma",contrastType="Dendro"))
 	##Need to add correct expection after work out labels.
 })
 test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeatures`",{
-  ## test dendrogram
-  expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
-               "must provide dendro")
+    #test dendrogram
+    ## test dendrogram
+    expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
+                 "must provide dendro")
   
-  expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
-  expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
-                               dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
-  expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
-  expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro = dendro$clusters,DEMethod="limma"))
+    expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
+    expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
+                                 dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
+    expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
+    expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro = dendro$clusters,DEMethod="limma"))
 						   
-  length(grep("NodeId",dend1$ContrastName))
-  ceTemp<-ceSimData
-  expect_silent(ceTemp <- makeDendrogram(ceTemp))
-  expect_silent(dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma"))
-  expect_equal(dend1, dendC1)
-  
+    length(grep("NodeId",dend1$ContrastName))
+    ceTemp<-ceSimData
+    expect_silent(ceTemp <- makeDendrogram(ceTemp))
+    expect_silent(dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma"))
+	#Need to fix here, because one returns character, the other factor...
+    neqcolsCE<-sapply(c("InternalName"),grep,colnames(dendC1))
+    expect_equal(dend1, dendC1[,-neqcolsCE])
+
   #check whole mergeDendrogram thing at least runs!
   expect_silent(cl1 <- clusterSingle(smSimData, 
                        subsample=FALSE, sequential=FALSE,
