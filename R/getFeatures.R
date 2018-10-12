@@ -363,31 +363,30 @@ setMethod(
 		tops<-data.frame(tops[,wh],InternalName=tops$ContrastName,tops[,-wh])
 		legMat<-clusterLegend(x)[[whCl]]
 		#### Each contrastType needs different parsing
-	    if(contrastType=="Pairs"){
-	  	  #ContrastName in form of 'Cl01-Cl02' ...
-	  	  parseName<-gsub("Cl","",tops$InternalName)
-	  	  parseName<-strsplit(parseName,"-")
-		  #note, incase there is padding in name, but not in clusterIds
-	  	  firstCl<-as.character(as.numeric(sapply(parseName,.subset2,1)))
-	  	  secondCl<-as.character(as.numeric(sapply(parseName,.subset2,2)))
-	  	  m1<-match(firstCl,as.numeric(legMat[,"clusterIds"]))
-	  	  m2<-match(secondCl,as.numeric(legMat[,"clusterIds"]))
-		  if(any(is.na(m1))||any(is.na(m2))) stop("coding error -- cannot match parse cluster id from contrastName (no match to clusterLegend)")
-	  	  tops$ContrastName<-paste(legMat[m1,"name"],legMat[m2,"name"],sep="-")
-	    }
-	    if(contrastType=="OneAgainstAll"){
-		  #ContrastName in form of Cl01
-  	  	  parseName<-as.character(as.numeric(gsub("Cl","",tops$InternalName)))
-	  	  m1<-match(parseName,as.numeric(legMat[,"clusterIds"]))
-	  	  tops$ContrastName<-legMat[m1,"name"]
-	    }
-	    if(contrastType=="Dendro"){
-		  #ContrastName in form of InternalNodeId5
-		  m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
-		  tops$ContrastName<-phylobase::labels(dendro)[m]
-		  
-			
-	    }
+    if(contrastType=="Pairs"){
+  	  #ContrastName in form of 'Cl01-Cl02' ...
+  	  parseName<-gsub("Cl","",tops$InternalName)
+  	  parseName<-strsplit(parseName,"-")
+	    #note, incase there is padding in name, but not in clusterIds
+  	  firstCl<-as.character(as.numeric(sapply(parseName,.subset2,1)))
+  	  secondCl<-as.character(as.numeric(sapply(parseName,.subset2,2)))
+  	  m1<-match(firstCl,as.numeric(legMat[,"clusterIds"]))
+  	  m2<-match(secondCl,as.numeric(legMat[,"clusterIds"]))
+	    if(any(is.na(m1))||any(is.na(m2))) stop("coding error -- cannot match parse cluster id from contrastName (no match to clusterLegend)")
+  	  tops$ContrastName<-paste(legMat[m1,"name"],legMat[m2,"name"],sep="-")
+    }
+    if(contrastType=="OneAgainstAll"){
+	    #ContrastName in form of Cl01
+	  	parseName<-as.character(as.numeric(gsub("Cl","",tops$InternalName)))
+  	  m1<-match(parseName,as.numeric(legMat[,"clusterIds"]))
+  	  tops$ContrastName<-legMat[m1,"name"]
+    }
+    if(contrastType=="Dendro"){
+	    #ContrastName in form of InternalNodeId5
+	    m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
+	    tops$ContrastName<-phylobase::labels(dendro)[m]
+    }
+		tops$ContrastName<-factor(tops$ContrastName) #make it consistent with the others and the results of matrix version
 	}
 	return(tops)
   }

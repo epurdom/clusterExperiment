@@ -37,19 +37,19 @@ test_that("`getBestFeatures`  matrix and CE return same", {
   expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs",DEMethod="limma"))
   neqcolsCE<-sapply(c("ContrastName"   , "InternalName"),grep,colnames(topC2))
   neqcolsMat<-sapply(c("ContrastName" ),grep,colnames(top2))
-  expect_equal(topC2[,-neqcols], top2[,-neqcolsMat])
+  expect_equal(topC2[,-neqcolsCE], top2[,-neqcolsMat])
 
   expect_silent(top3 <- getBestFeatures(simData, 
 	  primaryCluster(ceSimData), contrastType="OneAgainstAll",
                         DEMethod="limma"))
   idx <- top3$IndexInOriginal
   expect_equal(rowMeans(simData[idx,primaryCluster(ceSimData)>0]), top3$AveExpr)
-  neqcolsCE<-sapply(c("ContrastName"   , "InternalName"),grep,colnames(topC3))
-  neqcolsMat<-sapply(c("ContrastName" ),grep,colnames(top3))
   expect_silent(topC3 <- getBestFeatures(ceSimData, 
 	  contrastType="OneAgainstAll", 
       DEMethod="limma"))
-  expect_equal(topC3[,-neqcols], top3[,-neqcolsMat])
+		  neqcolsCE<-sapply(c("ContrastName"   , "InternalName"),grep,colnames(topC3))
+		  neqcolsMat<-sapply(c("ContrastName" ),grep,colnames(top3))
+  expect_equal(topC3[,-neqcolsCE], top3[,-neqcolsMat])
 
    
   ### test voom
