@@ -164,7 +164,7 @@ test_that("plotDendrogram works with nodeColors and labels", {
   clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
   dend <- makeDendrogram(ccSE)
   expect_silent(plotDendrogram(dend))
-  expect_silent(nl<-paste("A", 1:nNodes(dend)))
+  expect_silent(nl<-paste("A", 1:nInternalNodes(dend)))
   expect_error(nodeLabels(dend) <- nl )
   expect_silent(names(nl)<-nodeLabels(dend))
   expect_silent(nodeLabels(dend) <- nl )
@@ -175,7 +175,7 @@ test_that("plotDendrogram works with nodeColors and labels", {
   expect_silent(plotDendrogram(dend, show.node.label=TRUE, leafType="clusters",plotType="colorblock"))
   expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
 	
-  nc<-palette()[1:nNodes(dend)]
+  nc<-palette()[1:nInternalNodes(dend)]
   expect_silent(names(nc)<-internalNodeLabels(dend))
   expect_silent(plotDendrogram(dend,nodeColors=nc,leafType="clusters",plotType="name"))
   

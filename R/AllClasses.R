@@ -1,6 +1,6 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
-#' @importClassesFrom DelayedArray DelayedArray DelayedArray1 DelayedMatrix
+#' @importClassesFrom DelayedArray DelayedArray DelayedMatrix
 #' @importClassesFrom phylobase phylo4 phylo4d
 #' @import phylobase
 
