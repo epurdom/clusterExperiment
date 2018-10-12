@@ -16,6 +16,8 @@
 #'   diminsionality reduction/filtering. The option "coCluster" will use the
 #'   co-Clustering matrix stored in the 'coClustering' slot of the
 #'   \code{ClusterExperiment} object
+#' @param calculateSample only relevant for \code{matrix} or \code{dist}
+#'  version of function. Indicates whether to calculate the sample dendrogram.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
 #' @param whichCluster an integer index or character string that identifies

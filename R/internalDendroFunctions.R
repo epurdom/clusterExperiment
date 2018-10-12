@@ -42,7 +42,7 @@
 #' @param object a ClusterExperiment object
 #' @param labelType. If 'id' returns the NodeId value for all the internal nodes that match the cluster dendrogram (cluster and sample dendrograms) and the cluster id for the tips (cluster dendrogram) or sample index for the tips (sample dendrogram). If "name", then the cluster ids and sample indices are converted into the cluster names (in the clusterMat) and the sample names (in colnames)
 #' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged)
-#' @return Returns list of the two dendrograms with nodes that have been updated. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't"
+#' @return Returns list of the two dendrograms with nodes that have been updated with names 'dendro_clusters' and 'dendro_samples'. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't". 	 
 #' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
 #' @noRd
 .setNodeLabels<-function(object,labelType=c("name","id"),useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample","cluster"),...){
@@ -107,24 +107,7 @@
 }
 
 
-#' @importFrom ape as.hclust.phylo
-#' @importFrom stats as.dendrogram
-.convertToDendrogram<-function(x){
-	if(inherits(x,"dendrogram") )return(x)
-	if(inherits(x,"phylo4")){
-		x<-.convertToPhyClasses(x,"phylo")
-	} 
-	if(inherits(x,"phylo")){
-		x<-try(ape::as.hclust.phylo(x),FALSE)
-		if(inherits(x, "try-error")) stop("coding error -- could not convert to hclust object. Reported error:",x)
-	}
-	if(inherits(x,"hclust")){
-		x<-try(stats::as.dendrogram(x),FALSE)
-		if(inherits(x, "try-error")) stop("coding error -- could not convert from hclust to dendrogram object. Reported error:",x)
-		return(x)
-	}
-	else{ stop("input x is not of hclust, phylo4 or phylo class")}
-}
+
 
 
 

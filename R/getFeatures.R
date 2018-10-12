@@ -10,6 +10,7 @@
 #'   \code{\link{ClusterExperiment}}.
 #' @param cluster A numeric vector with cluster assignments. ``-1'' indicates 
 #'   the sample was not assigned to a cluster.
+#' @param whichCluster which clustering to use in performing the tests.
 #' @param contrastType What type of test to do. `F' gives the omnibus 
 #'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of 
 #'   the samples in each side,  `Pairs' does pair-wise contrasts based on the 

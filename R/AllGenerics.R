@@ -116,7 +116,7 @@ setGeneric("renameClusters", function(object,value,...) { standardGeneric("renam
 setGeneric("recolorClusters", function(object,value,...) { standardGeneric("recolorClusters")})
 setGeneric("sampleDendrogram", function(x) { standardGeneric("sampleDendrogram")})
 setGeneric("clusterDendrogram", function(x) { standardGeneric("clusterDendrogram")})
-
+setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogram")})
 setGeneric(
     name = "orderSamples",
     def = function(x) {

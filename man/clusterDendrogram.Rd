@@ -46,8 +46,8 @@ these dendrograms here.
 Two dendrograms are stored in a \code{ClusterExperiment} object. One is a dendrogram that describes the hierarchy between the clusters (\code{@dendro_clusters}), and the other is a dendrogram that extends that hierarchy to include the clusters (\code{@dendro_samples}). The clustering that is used to make these hierarchies is saved in as well (\code{@dendro_index})
 
 The dendrograms stored in a \code{ClusterExperiment} object
-are required to be a \code{\link[package=phylobase]{phylo4d-class}} from the package \code{phylobase} (which 
-uses the basic format of the S3 class \code{\link[package=ape]{phylo}} in the \code{ape} package to store 
+are required to be a \code{\link[phylobase]{phylo4d-class}} from the package \code{phylobase} (which 
+uses the basic format of the S3 class \code{\link[ape]{phylo}} in the \code{ape} package to store 
 the edges, \code{phylobase} makes it a S4 class with some useful helpers)
 
 Additional requirements are made of the dendrograms to be a valid \code{ClusterExperiment} class. The cluster hierarchy must have data stored with it that has column names \code{NodeId},\code{Position},\code{ClusterIdDendro},\code{ClusterIdMerge}. The sample hierarchy must have data stored with it with column names \code{SampleIndex},\code{NodeId}, \code{Position}. These columns allow for the linking of the two dendrograms, as well as linking the dendrograms to the clustering and must not be changed by the user.
@@ -59,5 +59,5 @@ For setting the node labels of the cluster dendrogram via
 internal ids of the cluster dendrogram (the \code{NodeId} column).
 }
 \seealso{
-\code{\link{makeDendrogram}}, \code{\link[package=phylobase]{phylo4d-class}}, \code{\link[package=ape]{phylo}}
+\code{\link{makeDendrogram}}, \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
 }

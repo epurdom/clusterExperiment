@@ -33,7 +33,8 @@
 #' @param clusterSamplesData If \code{data} is a matrix,
 #'   \code{clusterSamplesData} is either a matrix that will be used by
 #'   \code{hclust} to define the hiearchical clustering of samples (e.g.
-#'   normalized data) or a pre-existing dendrogram that clusters the samples. If
+#'   normalized data) or a pre-existing dendrogram (of class
+#'  \code{\link[stats]{dendrogram}) that clusters the samples. If
 #'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for
@@ -217,7 +218,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}}, \code{\link[stats]{dendrogram}}
 #' @export
 #' @examples
 #' data(simData)
@@ -522,15 +523,20 @@ setMethod(
           clusterSamples<-FALSE
         }
         else if(clusterSamplesData=="dendrogramValue"){
-          if(is.null(data@dendro_samples)){
-			  clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
-            if(inherits(clusterSamplesData, "try-error")){
-              warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
-              clusterSamplesData<-"primaryCluster"
-            }
+					if(is.null(data@dendro_samples)){
+			      clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE) 
+          }
+          if(inherits(clusterSamplesData, "try-error")){
+            warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
+            clusterSamplesData<-"primaryCluster"
           }
           else{
-            clusterSamplesData<-.convertToDendrogram(data@dendro_samples)
+						#make sure get the sample ids as labels of the tips:
+            clusterSamplesData<-try(convertToDendrogram(data),silent)
+						if(inherits(clusterSamplesData, "try-error")){
+	            warning("cannot make dendrogram class from stored dendrograms. Ordering by primary cluster without dendrogram")
+	            clusterSamplesData<-"primaryCluster"
+	          }
           }
         }
         if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
@@ -664,8 +670,7 @@ setMethod(
     ###Create the clustering dendrogram (samples):
     ##########
     if(clusterSamples){
-      if(inherits(clusterSamplesData, "dendrogram")| inherits(clusterSamplesData, "phylo") |inherits(clusterSamplesData, "phylo4")){
-		  clusterSamplesData<-.convertToDendrogram(clusterSamplesData)
+			if(inherits(clusterSamplesData,"dendrogram")){
         if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
         dendroSamples<-clusterSamplesData
       }
@@ -702,9 +707,8 @@ setMethod(
     }
     else{
       if(clusterFeatures){
-        if(inherits(clusterFeaturesData, "dendrogram")| inherits(clusterFeaturesData, "phylo") |inherits(clusterFeaturesData, "phylo4")){
-	  	  clusterFeaturesData<-.convertToDendrogram(clusterFeaturesData)
-          if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+        if(inherits(clusterFeaturesData, "dendrogram")){
+					if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
           dendroFeatures<-clusterFeaturesData
         }
         else{
@@ -856,7 +860,8 @@ setMethod(
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
     if(plot){
-	  out<-NMF::aheatmap(heatData,
+			browser()
+	    out <-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
