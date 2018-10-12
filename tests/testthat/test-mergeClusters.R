@@ -418,4 +418,4 @@ test_that("cluster labels not being internally changed from user input",{
                                               plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))
   
   
-  })
+})

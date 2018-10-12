@@ -112,13 +112,10 @@ test_that("`getBestFeatures` works with ClusterExperiment objects", {
 test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeatures`",{
     #test dendrogram
     ## test dendrogram
-    expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"),
-                 "must provide dendro")
+    expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"), "must provide dendro")
   
     expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
-    expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro",
-                                 dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
-    expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
+    expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
     expect_silent(dend1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro = dendro$clusters,DEMethod="limma"))
 						   
     length(grep("NodeId",dend1$ContrastName))
