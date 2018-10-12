@@ -629,7 +629,7 @@ plotHeatmap(ce,clusterSamplesData="dendrogramValue",breaks=.99,
 
 By choosing "dendrogramValue" for the clustering of the samples, we will be showing the clusters according to the hierarchical ordering of the clusters found by `makeDendrogram`. The argument `breaks=0.99` means that the last color of the heatmap spectrum will be forced to be the top 1% of the data (rather than evenly spaced through the entire range of values). This can be helpful in making sure that rare extreme values in the upper range do not absorb too much space in the color spectrum. There are many more options for `plotHeatmap`, some of which are discussed in the section on [plotHeatmap](#plotHeatmap).
 
-##RSEC
+## RSEC
 
 The above explanation follows the simple example of PAM. The original RSEC result called `RSEC` which calls these steps internally. Many of the options described above can be set through a call to RSEC, but some are restricted for simplicity. A detail explanation of the differences can be found in the section [RSEC]{#RSEC} below. But briefly, the following RSEC command, which uses most of the arguments of `RSEC`:
 
@@ -1611,7 +1611,7 @@ plotClusters(ce,whichClusters=rev(wh),axisLine=-1)
 ```
 
 
-## Creating a Hierarchy of Clusters  {#makeDendrogram}
+## Creating a Hierarchy of Clusters with `makeDendrogram`  {#makeDendrogram}
 
 As mentioned above, we find that merging clusters together based on the extent of differential expression between the features to be a useful method for combining many small clusters.
 
@@ -1733,7 +1733,7 @@ nodeLabels(ce)<-newNodeLabels
 
 
 
-## Merging clusters with little differential expression {#mergeClusters}
+## Merging clusters with `mergeClusters` {#mergeClusters}
 
 We then can use this hierarchy of clusters to merge clusters that show little difference in expression. We do this by testing, for each node of the dendrogram, for which features is the mean of the set of clusters to the right split of the node is equal to the mean on the left split. This is done via the `getBestFeatures` (see section on [getBestFeatures](#getBestFeatures)), where the `type` argument is set to "Dendro".
 

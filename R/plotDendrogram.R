@@ -284,8 +284,6 @@ setMethod(
 	  clNames<-phylobase::tipLabels(dendro)
   }
   plotArgs<-list(...)
-  dataPct<-0.5
-  offsetDivide<-16
   if(plotType=="colorblock" && is.null(clObj) && leafType=="samples") stop("Internal coding error: must provide a clustering if plotType='colorblock'")
   origPhylo<-phyloObj #so can return and get any information that gets overwritten in phyloObj
   
@@ -298,7 +296,8 @@ setMethod(
     annotNames<-c("NodeId","Contrast","isMerged", "mergeClusterId")
     methods<-colnames(mergeOutput)[!colnames(mergeOutput)%in%annotNames] #possible for which have proportion saved
   }
-  if(!is.null(mergePlotType) && !is.null(mergeOutput) && mergePlotType %in% c("all",methods,"mergeMethod")){
+  doMerge<-!is.null(mergePlotType) && !is.null(mergeOutput) && mergePlotType %in% c("all",methods,"mergeMethod")
+  if(doMerge){
     #####
     #convert names of internal nodes for plotting
     #####
@@ -517,9 +516,9 @@ setMethod(
       }
       if(plotType=="colorblock"){
         #make only edges going to/from nodes in cluster hierarchy have edge.width>0
+		#Note that some of origPhylo$node.label have NA for value; won't get unique value for these; but these aren't part of cluster hierarchy anyway (in fact could probably just pick those that are NA and use them, but this is safer(?))
 		ntips<-length(phyloObj$tip.label)
-		#Note that some of origPhylo$node.label have NA for value; won't get unique value for these; but these aren't part of cluster hierarchy anyway (infact could probably just pick those that are NA and use them, but this is safer(?))
-        positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchColumn="NodeId", returnColumn="Position")
+		positionValue<-.matchToDendroData(inputValue=origPhylo$node.label, dendro=dendro, matchColumn="NodeId", returnColumn="Position")
 		whClusterNode<-which(as.character(positionValue)%in% c("cluster hierarchy node","cluster hierarchy tip")) + ntips 
         whEdgePlot<-which(apply(phyloObj$edge,1,function(x){any(x %in% whClusterNode)}))
         edge.width<-rep(0,nrow(phyloObj$edge))
@@ -532,12 +531,27 @@ setMethod(
   #Couldn't do this before, because needed cluster id to safely match to clusterLegendMat. 
   if(leafType=="clusters") phyloObj$tip.label<-phylobase::tipLabels(dendro)
 
-  
-  #---------------
   #this next code is hack to deal with error sometimes get if very long edge length -- usually due to unusual distance, etc.
   # Divides edge lengths so not too large.
-  #---------------
   if(max(phyloObj$edge.length)>1e6) phyloObj$edge.length <- phyloObj$edge.length / max(phyloObj$edge.length) 
+  
+  #---------------
+  # PLOTTING
+  #-------------
+  #the percentage of total width will be dataPct/(1+dataPct+offsetPct)
+  #tree=64%
+  #data=32%
+  #offset=3%
+  dataPct<-0.5 
+  offsetPct<-0.01 
+  
+  .pctCalculation<-function(data,offset){
+	  denom<-1+data+offset
+	  return(c("tree"=1/denom,data=data/denom,offset=offset/denom))
+  }
+  # > .pctCalculation(.5,.01)
+#          tree        data      offset
+#   0.662251656 0.331125828 0.006622517
   
   prohibitOptions<-c("tip.color","node.pos","edge.width","horizontal","direction","type")
   if(any(prohibitOptions %in% names(plotArgs))) stop("User cannot set following options to plot.phylo:",paste(prohibitOptions, collapse=","))
@@ -545,18 +559,27 @@ setMethod(
   if(plotType=="name") do.call(ape::plot.phylo,c(list(phyloObj),plotArgs))
   else{
     #if colorblock
-    #just calculate:
-    if(!"show.tip.label"%in% plotArgs) plotArgs$show.tip.label<-FALSE
+    if(length(grep("show.tip",names(plotArgs)))==0) plotArgs$show.tip.label<-FALSE
+	sn<-grep("show.node",names(plotArgs))
+	if(length(sn)>0 & plotArgs[[sn]] & !doMerge){
+		offsetPct<-1/8	
+		dataPct<-0.6
+		# > .pctCalculation(.6,1/6)
+# 		      tree       data     offset
+# 		0.56603774 0.33962264 0.09433962
+	}
+			
+	#just calculate needed width for tree...
     phyloPlotOut<-do.call(.calculatePlotPhylo,c(list(phyloObj,plot=FALSE),plotArgs))
     treeWidth<-phyloPlotOut$x.lim[2]
     #plot dendrogram:
-    do.call(ape::plot.phylo,c(list(phyloObj,x.lim=treeWidth*(1+dataPct)),plotArgs))
+    do.call(ape::plot.phylo,c(list(phyloObj,x.lim=treeWidth*(1+dataPct+offsetPct)),plotArgs))
     
     nclusters<-ncol(colorMat)
     colnames(colorMat)<-NULL		    
     colInput<-function(n){cols}
-    width<-treeWidth*dataPct/nclusters
-	ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*dataPct/offsetDivide, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
+    width<-treeWidth*dataPct/(nclusters+.5)
+	ape::phydataplot(x=colorMat, phy=phyloObj, style="mosaic",offset=treeWidth*offsetPct, width = width, border = NA, lwd = 3,legend = legend, funcol = colInput)
     
     if(nclusters>1 & !is.null(colnames(clObj))){
       xloc<-treeWidth+treeWidth*dataPct/offsetDivide+seq(from=0,by=width,length=nclusters)
