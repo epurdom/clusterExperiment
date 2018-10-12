@@ -101,13 +101,13 @@ setMethod(
 	f="convertToDendrogram",
 	signature = "ClusterExperiment",
 	definition=function(x){
-		dendroPretty <- .setNodeLabels(x,labelType="id")$dendro_samples
-    return(.convertToDendrogram(dendroPretty))
+		dendroId <- .setNodeLabels(x,labelType="id")$dendro_samples
+    return(.convertToDendrogram(dendroId,tipNames=colnames(x)))
 		
 	})
 #' @importFrom ape as.hclust.phylo
 #' @importFrom stats as.dendrogram
-.convertToDendrogram<-function(x){
+.convertToDendrogram<-function(x,tipNames=NULL){
 	if(inherits(x,"dendrogram") )return(x)
 	if(inherits(x,"phylo4")){
 		x<-.convertToPhyClasses(x,"phylo")
@@ -117,19 +117,22 @@ setMethod(
 		x<-try(ape::as.hclust.phylo(x),FALSE)
 		if(inherits(x, "try-error")) stop("coding error -- could not convert to hclust object. Reported error:",x)
 		#need to convert integers in $order and (negative) entries in $merge into the values of $labels
-		newOrder<-as.numeric(x$labels)
+		newOrder<-as.integer(as.numeric(x$labels))
 		if(!all(sort(newOrder)==1:length(newOrder))) stop("could not convert hclust object because dendrogram does not have all consecutive sample indices as tip labels.")
 		m<-match(abs(x$merge[x$merge<0]),x$order)
 		newMerge<-x$merge
 		newMerge[x$merge<0]<-newOrder[m]
 		newMerge[x$merge<0]<-newMerge[x$merge<0]*sign(x$merge[x$merge<0])
+		newMerge<-matrix(as.integer(newMerge),ncol=2)
 		x$order<-newOrder
 		x$merge<-newMerge
-		x$labels<-NULL
+		if(is.null(tipNames)) x$labels<-NULL
+		else x$labels<-tipNames[x$order]
 	}
 	if(inherits(x,"hclust")){
 		x<-try(stats::as.dendrogram(x),FALSE)
 		if(inherits(x, "try-error")) stop("could not convert from hclust to dendrogram object. Reported error:",x)
+		if(!is.integer(unlist(x))) stop("coding error -- did not create integer valued dendrogram")
 		return(x)
 	}
 	else{ stop("input x is not of hclust, phylo4 or phylo class")}
