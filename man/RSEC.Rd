@@ -9,7 +9,9 @@
 \alias{RSEC,SingleCellExperiment-method}
 \alias{RSEC,SummarizedExperiment-method}
 \alias{RSEC,data.frame-method}
+\alias{RSEC,ClusterExperiment-method}
 \alias{RSEC,matrixOrHDF5-method}
+\alias{RSEC,SingleCellExperiment-method}
 \title{Resampling-based Sequential Ensemble Clustering}
 \usage{
 \S4method{RSEC}{SummarizedExperiment}(x, ...)
@@ -21,18 +23,17 @@
 
 \S4method{RSEC}{matrixOrHDF5}(x, ...)
 
-\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE,
-  transFun = NULL, reduceMethod = "PCA",
-  nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
-  nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
-  k0s = 4:15, subsample = TRUE, sequential = TRUE,
+\S4method{RSEC}{SingleCellExperiment}(x, isCount = FALSE, transFun = NULL,
+  reduceMethod = "PCA", nFilterDims = defaultNDims(x, reduceMethod, type =
+  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
+  "reducedDims"), k0s = 4:15, subsample = TRUE, sequential = TRUE,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, consensusProportion = 0.7,
-  consensusMinSize, dendroReduce, dendroNDims, mergeMethod = "adjP",
-  mergeCutoff, mergeLogFCcutoff, mergeDEMethod = if (isCount)
-  "limma-voom" else "limma", verbose = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
-  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
+  betas = 0.9, minSizes = 1, consensusProportion = 0.7, consensusMinSize,
+  dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
+  mergeLogFCcutoff, mergeDEMethod = if (isCount) "limma-voom" else "limma",
+  verbose = FALSE, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, whichAssay = 1, ncores = 1, random.seed = NULL,
+  stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the

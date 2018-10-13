@@ -26,11 +26,11 @@
   logFCcutoff = 0, weights = NULL, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  mergeMethod = "none", plotInfo = "all",
-  clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
-  plotType = c("colorblock", "name", "ids"), plot = TRUE,
-  whichAssay = 1, forceCalculate = FALSE, weights = if ("weights"
-  \%in\% assayNames(x)) "weights" else NULL, DEMethod, ...)
+  mergeMethod = "none", plotInfo = "all", clusterLabel = "mergeClusters",
+  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
+  "ids"), plot = TRUE, whichAssay = 1, forceCalculate = FALSE,
+  weights = if ("weights" \%in\% assayNames(x)) "weights" else NULL, DEMethod,
+  ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 

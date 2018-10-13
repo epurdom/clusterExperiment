@@ -3,15 +3,12 @@ context("mergeClusters")
 
 test_that("`mergeClusters` works with matrix",{
   expect_silent(cl1 <- clusterSingle(smSimData, 
-                       subsample=FALSE, sequential=FALSE,
-                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
-											 isCount=FALSE))
+        subsample=FALSE, sequential=FALSE,
+        mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=6)), 
+				isCount=FALSE))
 	expect_silent(clustWithDendro <- makeDendrogram(cl1))
   #matrix version
-  expect_silent(mergedList <- mergeClusters(x=transformData(cl1), DEMethod="limma",
-                              cl=primaryCluster(cl1),
-                              dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="adjP", plotInfo="mergeMethod"))
+  expect_silent(mergedList <- mergeClusters(x=transformData(cl1), DEMethod="limma", cl=primaryCluster(cl1), dendro=clustWithDendro@dendro_clusters, mergeMethod="adjP", plotInfo="mergeMethod"))
   
 })
 

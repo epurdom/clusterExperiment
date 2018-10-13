@@ -15,8 +15,9 @@
 \alias{nodeLabels<-,ClusterExperiment-method}
 \alias{nodeLabels<-}
 \alias{checkDendrogram,ClusterExperiment,phylo4d,phylo4d-method}
-\alias{nodeLabels}
+\alias{checkDendrogram}
 \alias{nodeLabels,ClusterExperiment-method}
+\alias{nodeLabels}
 \alias{nodeIds,ClusterExperiment-method}
 \alias{nodeIds}
 \alias{convertToDendrogram,ClusterExperiment-method}
@@ -35,14 +36,12 @@
 
 \S4method{nodeLabels}{ClusterExperiment}(x, ...) <- value
 
-\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x,
-  dendroCluster, dendroSample, whichCluster = "dendro")
+\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x, dendroCluster,
+  dendroSample, whichCluster = "dendro")
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 
 \S4method{nodeIds}{ClusterExperiment}(x)
-
-\S4method{nodeLabels}{ClusterExperiment}(x)
 
 \S4method{convertToDendrogram}{ClusterExperiment}(x)
 }
@@ -87,9 +86,6 @@ dendrogram
 
 \code{nodeIds} returns the internal (permanent) node ids of the
   \emph{cluster} dendrogram
-
-\code{nodeLabels} returns the node labels of the \emph{cluster}
-dendrogram
 
 \code{convertToDendrogram} returns the sample dendrogram converted to
   a \code{\link[stats]{dendrogram}} class.

@@ -173,7 +173,7 @@ setMethod(
 #' @param dendroSample a \code{phylo4d} to be check as for being cluster hierarchy
 #' @param whichCluster which cluster are the dendrograms clustering.
 #' @export
-#' @aliases nodeLabels
+#' @aliases checkDendrogram
 setMethod(
   f = "checkDendrogram",
   signature = signature(x="ClusterExperiment",dendroCluster="phylo4d",dendroSample="phylo4d"),
@@ -213,22 +213,6 @@ setMethod(
 	  phylobase::tdata(x@dendro_clusters,type="internal")[,"NodeId"]
   }
 )
-
-
-#' @rdname clusterDendrogram
-#' @return \code{nodeLabels} returns the node labels of the \emph{cluster}
-#' dendrogram
-#' @export
-#' @aliases nodeLabels
-setMethod(
-  f = "nodeLabels",
-  signature = signature(x="ClusterExperiment"),
-  definition = function(x) {
-	phylobase::nodeLabels(x@dendro_clusters)
-  }
-)
-
-
 
 #' @rdname clusterDendrogram
 #' @return \code{convertToDendrogram} returns the sample dendrogram converted to

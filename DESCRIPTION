@@ -15,13 +15,13 @@ Depends:
     R (>= 3.5.0),
     SingleCellExperiment,
 	SummarizedExperiment,
+	phylobase,
 	BiocGenerics
 Imports:
 	methods,
 	NMF,
 	RColorBrewer,
 	ape (>= 5.0),
-	phylobase,
 	cluster,
 	stats,
 	limma,

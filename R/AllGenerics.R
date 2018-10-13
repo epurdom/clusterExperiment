@@ -120,6 +120,12 @@ setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogra
 setGeneric("nodeIds",function(x){standardGeneric("nodeIds")})
 setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
 setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
+# #Have to recreate these generics, because phylobase's are nonstandardGenericFunctions because used braces.
+# setGeneric("nodeLabels",function(x){standardGeneric("nodeLabels")})
+# setGeneric("nodeLabels<-",function(x,...,value){standardGeneric("nodeLabels<-")})
+# setGeneric("tipLabels",function(x){standardGeneric("tipLabels")})
+# setGeneric("nNodes",function(x){standardGeneric("nNodes")})
+# setGeneric("nTips",function(x){standardGeneric("nTips")})
 
 
 setGeneric(

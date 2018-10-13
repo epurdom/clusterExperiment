@@ -10,14 +10,13 @@
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{makeConsensus}{matrix,missing}(x, whichClusters, proportion,
-  clusterFunction = "hierarchical01", propUnassigned = 0.5,
-  minSize = 5, ...)
+  clusterFunction = "hierarchical01", propUnassigned = 0.5, minSize = 5,
+  ...)
 
 \S4method{makeConsensus}{ClusterExperiment,numeric}(x, whichClusters,
   eraseOld = FALSE, clusterLabel = "makeConsensus", ...)
 
-\S4method{makeConsensus}{ClusterExperiment,character}(x, whichClusters,
-  ...)
+\S4method{makeConsensus}{ClusterExperiment,character}(x, whichClusters, ...)
 
 \S4method{makeConsensus}{ClusterExperiment,missing}(x, whichClusters, ...)
 }

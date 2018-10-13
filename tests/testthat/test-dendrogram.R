@@ -176,7 +176,7 @@ test_that("plotDendrogram works with nodeColors and labels", {
   expect_silent(plotDendrogram(dend,show.node.label=TRUE,leafType="clusters",plotType="name"))
 	
   nc<-palette()[1:nInternalNodes(dend)]
-  expect_silent(names(nc)<-internalNodeLabels(dend))
+  expect_silent(names(nc)<-nodeIds(dend))
   expect_silent(plotDendrogram(dend,nodeColors=nc,leafType="clusters",plotType="name"))
   
 })
