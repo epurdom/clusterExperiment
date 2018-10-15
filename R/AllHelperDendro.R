@@ -73,6 +73,7 @@
 #' @seealso \code{\link{makeDendrogram}}, \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
 #' @return \code{clusterDendrogram} returns the dendrogram describing 
 #' the clustering hierarchy.
+#' @importMethodsFrom phylobase nodeLabels nodeLabels<- nTips nNodes
 #' @export
 #' @aliases clusterDendrogram,ClusterExperiment-method
 setMethod(
@@ -202,13 +203,15 @@ setMethod(
 #' @rdname clusterDendrogram
 #' @return \code{nodeIds} returns the internal (permanent) node ids of the
 #'   \emph{cluster} dendrogram
+#' @param type the type of node to return results from. One of "all",
+#'   "internal", and "tip".
 #' @export
 #' @aliases nodeIds
 setMethod(
   f = "nodeIds",
   signature = signature(x="ClusterExperiment"),
-  definition = function(x) {
-	  phylobase::tdata(x@dendro_clusters,type="internal")[,"NodeId"]
+  definition = function(x,type=c("all","internal","tip")) {
+	  phylobase::tdata(x@dendro_clusters,type=type)[,"NodeId"]
   }
 )
 

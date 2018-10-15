@@ -1,4 +1,8 @@
 #' @include AllChecks.R
+#' @importClassesFrom HDF5Array HDF5Matrix
+#' @importClassesFrom DelayedArray DelayedArray DelayedMatrix RleArray RleMatrix
+#' @importClassesFrom phylobase phylo4 phylo4d
+#' @import phylobase
 
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("phylo4OrNULL",members=c("phylo4d", "NULL"))

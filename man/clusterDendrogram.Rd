@@ -41,7 +41,8 @@
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 
-\S4method{nodeIds}{ClusterExperiment}(x)
+\S4method{nodeIds}{ClusterExperiment}(x, type = c("all", "internal",
+  "tip"))
 
 \S4method{convertToDendrogram}{ClusterExperiment}(x)
 }
@@ -57,6 +58,9 @@
 \item{dendroSample}{a \code{phylo4d} to be check as for being cluster hierarchy}
 
 \item{whichCluster}{which cluster are the dendrograms clustering.}
+
+\item{type}{the type of node to return results from. One of "all",
+"internal", and "tip".}
 }
 \value{
 \code{clusterDendrogram} returns the dendrogram describing 

@@ -117,7 +117,7 @@ setGeneric("recolorClusters", function(object,value,...) { standardGeneric("reco
 setGeneric("sampleDendrogram", function(x) { standardGeneric("sampleDendrogram")})
 setGeneric("clusterDendrogram", function(x) { standardGeneric("clusterDendrogram")})
 setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogram")})
-setGeneric("nodeIds",function(x){standardGeneric("nodeIds")})
+setGeneric("nodeIds",function(x,type){standardGeneric("nodeIds")})
 setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
 setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
 # #Have to recreate these generics, because phylobase's are nonstandardGenericFunctions because used braces.
