@@ -100,13 +100,18 @@ setMethod(
     
     contrastType<-match.arg(contrastType)
     outputType<-match.arg(outputType)
+	
+	##############
+	## DENDROGRAM 
+	##############
     if(contrastType=="Dendro"){
       if(is.null(dendro)) stop("must provide dendrogram if contrastType='Dendro'")
       ####
-      #Convert to object used by phylobase so can navigate easily -- might should make generic function...
-      if(!inherits(dendro,"phylo4")) phylo4Obj<-.makePhylobaseTree(dendro)
-      else phylo4Obj<-dendro
+      #Convert to object used by phylobase
+	  #Note dendrogram here is the cluster dendrogram
+      phylo4Obj<-.convertToPhyClasses(dendro,"phylo4",convertNodes=TRUE,convertTips=TRUE)
       clChar<-as.character(cl)
+	  phylobase::tipLabels(phylo4Obj)<-gsub("ClusterId","",phylobase::tipLabels(phylo4Obj))
       allTipNames<-phylobase::labels(phylo4Obj)[phylobase::getNode(phylo4Obj,  type=c("tip"))]
       if(!identical(sort(unname(allTipNames)),sort(unname(unique(clChar))))) stop("tip names of dendro don't match cluster vector values")
       
@@ -129,6 +134,10 @@ setMethod(
       contrastNames<-sapply(allInternal,.makeNodeContrast)
       
     }
+	
+	##############
+	## One Against All
+	##############
     if(contrastType=="OneAgainstAll"){
       levs<-clPrettyLevels
       contrastNames<-sapply(levs,function(x){
@@ -140,7 +149,11 @@ setMethod(
       })
       names(contrastNames)<-clPrettyLevels
     }
-    if(contrastType=="Pairs"){
+    
+	##############
+	## PAIRS 
+	##############
+	if(contrastType=="Pairs"){
       if(is.null(pairMat)){ #make pair Mat of all pairwise
         levs<-levels(cl)
         pairMat<-t(apply(expand.grid(levs,levs),1,sort))
@@ -154,16 +167,7 @@ setMethod(
         paste(yPretty[1],yPretty[2],sep="-")
       })
     }
-    #     if(!removeUnassigned){
-    #         levnames<-levels(cl)
-    #         whNeg<-which(cluster<0)
-    #         if(length(whNeg)>0){
-    #             levnames[whNeg]<-paste("Neg",cluster[whNeg],sep="")
-    #         }
-    #     }
-    #     if(removeUnassigned){
-    #         levnames<-levels(factor(cluster[cluster>0]))
-    #     }
+
     levnames<-if(contrastType!="Dendro") clPrettyLevels else make.names(as.character(clLevels))
     if(outputType=="limma"){	
       contr.matrix<-limma::makeContrasts(contrasts=contrastNames,levels=levnames)

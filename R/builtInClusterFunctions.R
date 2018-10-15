@@ -3,7 +3,6 @@
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
-#' @importFrom DelayedArray DelayedArray
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
     innerProd<- t(x) %*% t(centers)
@@ -128,7 +127,6 @@
 ##---------
 
 #' @importFrom stats hclust 
-#' @importFrom phylobase rootNode getNode descendants
 .hier01Cluster<-function(diss,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
 {
   whichHierDist<-match.arg(whichHierDist)
@@ -141,7 +139,7 @@
   
   ##Could this be just done by cut with hierarchical cophenic value? Should make it an option to do that. Probably a lot faster...
   method<-evalClusterMethod
-  phylo4Obj<-.makePhylobaseTree(hDmat)
+  phylo4Obj<-.convertToPhyClasses(hDmat,returnClass=c("phylo4"))
   allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
   #each internal node (including root) calculate whether passes value of alpha or not
   nodesToCheck<-phylobase::rootNode(phylo4Obj)

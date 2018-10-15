@@ -114,6 +114,19 @@ setGeneric("clusterLegend", function(x) { standardGeneric("clusterLegend")})
 setGeneric("clusterLegend<-", function(object, value){standardGeneric("clusterLegend<-") })
 setGeneric("renameClusters", function(object,value,...) { standardGeneric("renameClusters")})
 setGeneric("recolorClusters", function(object,value,...) { standardGeneric("recolorClusters")})
+setGeneric("sampleDendrogram", function(x) { standardGeneric("sampleDendrogram")})
+setGeneric("clusterDendrogram", function(x) { standardGeneric("clusterDendrogram")})
+setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogram")})
+setGeneric("nodeIds",function(x,type){standardGeneric("nodeIds")})
+setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
+setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
+# #Have to recreate these generics, because phylobase's are nonstandardGenericFunctions because used braces.
+# setGeneric("nodeLabels",function(x){standardGeneric("nodeLabels")})
+# setGeneric("nodeLabels<-",function(x,...,value){standardGeneric("nodeLabels<-")})
+# setGeneric("tipLabels",function(x){standardGeneric("tipLabels")})
+# setGeneric("nNodes",function(x){standardGeneric("nNodes")})
+# setGeneric("nTips",function(x){standardGeneric("nTips")})
+
 
 setGeneric(
     name = "orderSamples",

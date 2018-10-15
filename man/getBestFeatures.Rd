@@ -14,8 +14,9 @@
   DEMethod = c("edgeR", "limma", "limma-voom"), dgeArgs = NULL, ...)
 
 \S4method{getBestFeatures}{ClusterExperiment}(x, contrastType = c("F",
-  "Dendro", "Pairs", "OneAgainstAll"), whichAssay = 1, DEMethod,
-  weights = if ("weights" \%in\% assayNames(x)) "weights" else NULL, ...)
+  "Dendro", "Pairs", "OneAgainstAll"), whichCluster = "primary",
+  whichAssay = 1, DEMethod, weights = if ("weights" \%in\%
+  assayNames(x)) "weights" else NULL, ...)
 }
 \arguments{
 \item{x}{data for the test. Can be a numeric matrix or a 
@@ -68,6 +69,8 @@ methods of DE. This includes normalization factors/total count values etc.}
 \code{ClusterExperiment} object, these arguments can also be those to pass 
 to the matrix version.}
 
+\item{whichCluster}{which clustering to use in performing the tests.}
+
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 }
@@ -92,11 +95,20 @@ applicable, depends on \code{contrastType} argument)}
 
 \item{\code{ContrastName}}{ The name of the contrast that the results
 corresponds to. For dendrogram searches, this will be the node of the tree of
-the dendrogram.}
+the dendrogram. If \code{x} is a \code{ClusterExperiment} object, this name 
+will make use of the user defined names of the cluster or node in \code{x}.}
 
-\item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
+\item{\code{InternalName}}{ Only present if \code{x} is a
+\code{ClusterExperiment} object. In this case this column will give the name
+of the contrast using the internal ids of the clusters and nodes, not the
+user-defined names. This provides stability in matching the contrast if the
+user has changed the names since running \code{getBestFeatures}}
 
-\item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or \code{FWER} in \code{topTags})}
+\item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in
+\code{topTags})}
+
+\item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or
+\code{FWER} in \code{topTags})}
 }
 }
 \description{

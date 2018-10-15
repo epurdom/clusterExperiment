@@ -1,4 +1,4 @@
-#----------------------------------------------------------------
+ #----------------------------------------------------------------
 # Travis-CI configuration for Bioconductor packages
 #
 # REFERENCES:
@@ -13,7 +13,7 @@
 language: r
 cache: packages
 # Temporarily enable when caching Bioconductor packages
-# script: true
+#script: true
 
 
 # R versions to be tested on
@@ -43,6 +43,7 @@ notifications:
 r_github_packages:
   - Bioconductor/DelayedArray
 #  - Bioconductor/S4Vectors
+#  - Bioconductor/DelayedArray
 #  - Bioconductor/HDF5Array
 
 

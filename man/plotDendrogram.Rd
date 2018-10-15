@@ -61,8 +61,9 @@ dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only
 available for 'ape' package >= 4.1-0.6).}
 
 \item{nodeColors}{named vector of colors to be plotted on a node in the 
-dendrogram. Names should match the name of the node (calls 
-\code{\link[ape]{nodelabels}}).}
+dendrogram (calls \code{\link[ape]{nodelabels}}). Names should match the 
+\emph{internal} name of the node (the "NodeId" value, see 
+\code{\link{clusterDendrogram}}).}
 
 \item{colData}{index (by integer or name) the sample data stored as a 
 \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
