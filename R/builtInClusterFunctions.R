@@ -3,7 +3,6 @@
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
-#' @importFrom DelayedArray DelayedArray
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
     innerProd<- t(x) %*% t(centers)

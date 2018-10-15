@@ -16,7 +16,9 @@ Depends:
     SingleCellExperiment,
 	SummarizedExperiment,
 	phylobase,
-	BiocGenerics
+	BiocGenerics,
+	DelayedArray (>= 0.5.31),
+	HDF5Array (>= 1.7.10)
 Imports:
 	methods,
 	NMF,
@@ -36,8 +38,6 @@ Imports:
 	S4Vectors,
 	grDevices,
 	Rcpp,
-	HDF5Array (>= 1.7.10),
-	DelayedArray (>= 0.5.31),
 	edgeR,
 	scales,
 	zinbwave

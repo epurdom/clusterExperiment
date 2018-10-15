@@ -36,8 +36,8 @@
 
 \S4method{nodeLabels}{ClusterExperiment}(x, ...) <- value
 
-\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x, dendroCluster,
-  dendroSample, whichCluster = "dendro")
+\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x,
+  dendroCluster, dendroSample, whichCluster = "dendro")
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 

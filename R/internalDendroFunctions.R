@@ -112,7 +112,6 @@
 #' @param convertTips logical. If true, the returned dendrogram will have the tip labels changed. If 'ClusterIdDendro' is in tdata (i.e. its a cluster dendrogram) then they are converted to Dendro cluster id (if no NAs) or if there are NAs, then merge cluster id (if dendros are NA in tips). If 'SampleIndex' is column name in tdata (i.e. is a samples dendrogram), then returns tip labels that are the SampleIndex value
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
-#' @importClassesFrom phylobase phylo4 
 #' @noRd
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)

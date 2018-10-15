@@ -17,16 +17,17 @@
   resetColors = FALSE, resetOrderSamples = FALSE, colData = NULL,
   clusterLabels = NULL, ...)
 
-\S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
+\S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters,
+  ...)
 
 \S4method{plotClusters}{matrix,missing}(object, whichClusters,
   orderSamples = NULL, colData = NULL, reuseColors = FALSE,
   matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
-  missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
-  colPalette = massivePalette, input = c("clusters", "colors"),
-  clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
-  ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
-  box = FALSE, ...)
+  missingColor = "grey", minRequireColor = 0.3,
+  startNewColors = FALSE, colPalette = massivePalette,
+  input = c("clusters", "colors"), clusterLabels = colnames(object),
+  add = FALSE, xCoord = NULL, ylim = NULL, tick = FALSE,
+  ylab = "", xlab = "", axisLine = 0, box = FALSE, ...)
 }
 \arguments{
 \item{object}{A matrix of with each column corresponding to a clustering

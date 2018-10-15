@@ -153,7 +153,6 @@ setMethod(
     })
 
 #' @rdname makeDendrogram
-#' @importFrom DelayedArray DelayedArray
 #' @export
 setMethod(
     f = "makeDendrogram",

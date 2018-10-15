@@ -97,7 +97,6 @@ setMethod(
 )
 
 
-#' @importMethodsFrom phylobase nNodes nTips
 #' @rdname clusterDendrogram
 #' @return \code{nInternalNodes} returns the number of \emph{internal} nodes of
 #'   the cluster hierarchy.
@@ -146,7 +145,6 @@ setMethod(
 #' @aliases nodeLabels<-
 #' @param value replacement value for \code{nodeLabels}. See details.
 #' @param ... additional options passed to \code{nodeLabels<-} (ignored)
-#' @importMethodsFrom phylobase nodeLabels<- nodeLabels
 setMethod(
   f = "nodeLabels<-",
   signature = signature(x="ClusterExperiment", value="ANY"),

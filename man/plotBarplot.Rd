@@ -6,26 +6,29 @@
 \alias{plotBarplot}
 \alias{plotBarplot,ClusterExperiment,missing-method}
 \alias{plotBarplot,ClusterExperiment,numeric-method}
-\alias{plotBarplot,ClusterExperiment,missing-method}
 \alias{plotBarplot,vector,missing-method}
 \alias{plotBarplot,matrix,missing-method}
 \title{Barplot of 1 or 2 clusterings}
 \usage{
-\S4method{plotBarplot}{ClusterExperiment,character}(object, whichClusters, ...)
+\S4method{plotBarplot}{ClusterExperiment,character}(object, whichClusters,
+  ...)
 
-\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters, ...)
+\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters,
+  ...)
 
 \S4method{plotBarplot}{ClusterExperiment,numeric}(object, whichClusters,
   labels = c("names", "ids"), ...)
 
-\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters, ...)
+\S4method{plotBarplot}{ClusterExperiment,missing}(object, whichClusters,
+  ...)
 
 \S4method{plotBarplot}{vector,missing}(object, whichClusters, ...)
 
-\S4method{plotBarplot}{matrix,missing}(object, whichClusters, xNames = NULL,
-  legNames = NULL, legend = ifelse(ncol(object) == 2, TRUE, FALSE),
-  xlab = NULL, legend.title = NULL, unassignedColor = "white",
-  missingColor = "grey", colPalette = NULL, ...)
+\S4method{plotBarplot}{matrix,missing}(object, whichClusters,
+  xNames = NULL, legNames = NULL, legend = ifelse(ncol(object) == 2,
+  TRUE, FALSE), xlab = NULL, legend.title = NULL,
+  unassignedColor = "white", missingColor = "grey",
+  colPalette = NULL, ...)
 }
 \arguments{
 \item{object}{A matrix of with each column corresponding to a clustering and
