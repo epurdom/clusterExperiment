@@ -26,17 +26,20 @@
 #'    standard sorting of the values to correctly sort.
 #' @details The maximum number of zeros that will be added is 3. Input integers beyond that 
 #'    point will not be correctly fixed for sorting.
+#' @details Negative integers will not be corrected, but left as-is
 #' @return A character vector
 #' @seealso \code{\link[stringr]{str_pad}}
+#' @examples
+#' numericalAsCharacter(c(-1, 5,10,20,100))
 #' @export
 numericalAsCharacter<-function(values,prefix=""){
 	if(is.factor(values)) values<-as.character(values)
 	values<-suppressWarnings(as.integer(values))
 	if(any(is.na(values))) stop("input must convert to numeric vector")
 	whPos<-which(values >0)
+	largestLength<-max(values[whPos])
 	values<-as.character(values)
 	if(length(whPos)>0){
-		largestLength<-max(values[whPos])
 		pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
 		values[whPos]<-paste(prefix,stringr::str_pad(values[whPos],width=pad,pad="0"),sep="")
   	} 

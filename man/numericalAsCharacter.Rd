@@ -27,6 +27,11 @@ The function determines the largest value and adds zeros to the front of smaller
 
 The maximum number of zeros that will be added is 3. Input integers beyond that 
    point will not be correctly fixed for sorting.
+
+Negative integers will not be corrected, but left as-is
+}
+\examples{
+numericalAsCharacter(c(-1, 5,10,20,100))
 }
 \seealso{
 \code{\link[stringr]{str_pad}}
