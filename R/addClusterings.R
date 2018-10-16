@@ -1,6 +1,8 @@
 #' @name addClusterings
 #' @title Add clusterings to ClusterExperiment object
-#' @description Function for adding new clusterings in form of vector (single cluster) or matrix (multiple clusterings) to an existing ClusterExperiment object
+#' @description Function for adding new clusterings in form of vector (single
+#'   cluster) or matrix (multiple clusterings) to an existing ClusterExperiment
+#'   object
 #' @param x a ClusterExperiment object
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
@@ -8,7 +10,8 @@
 #'   matrix, the column names of that matrix will be used by default, if
 #'   \code{clusterLabels} is not given.
 #' @param clusterLegend a list giving the cluster legend for the clusters added.
-#' @aliases addClusterings removeClusterings addClusterings,ClusterExperiment,matrix-method
+#' @aliases addClusterings removeClusterings
+#'   addClusterings,ClusterExperiment,matrix-method
 #' @inheritParams ClusterExperiment-class
 #' @return A \code{ClusterExperiment} object.
 #' @details addClusterings adds y to x, and is thus not symmetric in the two

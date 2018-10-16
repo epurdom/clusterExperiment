@@ -21,6 +21,8 @@
 #' @details For \code{plotClustersTable} \code{whichClusters}
 #'   should define 2 clusters, for \code{tableClusters} can indicate arbitrary
 #'   number.
+#' @return \code{tableClusters} returns an object of class \code{table} (see \code{\link[base]{table}}).
+#' @return \code{plotClustersTables} returns invisibly the plotted proportion table. In particular, this is the result of applying \code{\link[base]{prop.table}} to the results of \code{tableClusters} (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
 #' @rdname plotClustersTable
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples

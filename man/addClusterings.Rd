@@ -44,7 +44,9 @@ matrix, the column names of that matrix will be used by default, if
 A \code{ClusterExperiment} object.
 }
 \description{
-Function for adding new clusterings in form of vector (single cluster) or matrix (multiple clusterings) to an existing ClusterExperiment object
+Function for adding new clusterings in form of vector (single
+  cluster) or matrix (multiple clusterings) to an existing ClusterExperiment
+  object
 }
 \details{
 addClusterings adds y to x, and is thus not symmetric in the two

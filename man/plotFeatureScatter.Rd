@@ -11,9 +11,9 @@
   features, ...)
 
 \S4method{plotFeatureScatter}{ClusterExperiment,numeric}(object, features,
-  whichCluster, plotUnassigned = TRUE, unassignedColor = "grey",
-  missingColor = "white", whichAssay = 1, legendLocation = NA,
-  jitterFactor = NA, ...)
+  whichCluster = "primary", plotUnassigned = TRUE,
+  unassignedColor = "grey", missingColor = "white", whichAssay = 1,
+  legendLocation = NA, jitterFactor = NA, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -48,4 +48,15 @@ will not be plotted.}
 \description{
 Plot a scatter plot of the (transformed) values for a set of
   gene expression values, colored by cluster
+}
+\examples{
+data(simData)
+#Create a ClusterExperiment object
+cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
+   clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+   removeSil=c(TRUE,FALSE))
+#give names to the clusters
+cl<-renameClusters(cl, whichCluster=1, 
+   value=letters[1:nClusters(cl)[1]])
+plotFeatureScatter(cl,feature=1:2,pch=19,legendLocation="topright")
 }
