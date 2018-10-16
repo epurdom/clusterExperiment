@@ -383,7 +383,8 @@ setMethod(
                                     checkTransformAndAssay=FALSE)
         clusterLabels(retval)<-clusterLabel
         if(!sequential & subsample & saveSubsamplingMatrix) {
-            retval@coClustering<-1-finalClusterList$diss
+			#convert to sparse matrix:
+			retval@coClustering<-Matrix::Matrix(1-finalClusterList$diss,sparse=TRUE)
             ch<-.checkCoClustering(retval)
             if(!is.logical(ch)) stop(ch)
         }

@@ -180,7 +180,7 @@ setMethod(
     clusterLabels(newObj) <- clusterLabel
     
     if(!is.null(outlist$percentageShared)) {
-      coClustering(newObj) <- outlist$percentageShared
+      coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
     }
     ##Check if pipeline already ran previously and if so increase
 		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)

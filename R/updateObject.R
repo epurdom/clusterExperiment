@@ -270,6 +270,11 @@ setMethod(
 		}
 	}
 
+	##Fix class of coClustering
+	if(!is.null(object@coClustering) && inherits(object@coClustering,"matrix")){
+		object@coClustering<-Matrix::Matrix(object@coClustering,sparse=TRUE)
+	}
+
 	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
 	if(!inherits(object,"try-error")){
 		return(object)

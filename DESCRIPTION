@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.1.5-9007
+Version: 2.1.5-9008
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -16,7 +16,7 @@ Depends:
     SingleCellExperiment,
 	SummarizedExperiment,
 	phylobase,
-	BiocGenerics,
+	BiocGenerics
 Imports:
 	methods,
 	NMF,
@@ -40,6 +40,7 @@ Imports:
 	Rcpp,
 	edgeR,
 	scales,
+	Matrix,
 	zinbwave
 Suggests:
 	BiocStyle,

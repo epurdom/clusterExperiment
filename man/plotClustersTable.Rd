@@ -114,9 +114,13 @@ perpindicular labels to the axis (see \code{\link{par}}).}
 \item{colorScale}{the color scale for the values of the proportion table}
 }
 \value{
-\code{tableClusters} returns an object of class \code{table} (see \code{\link[base]{table}}).
+\code{tableClusters} returns an object of class \code{table} (see
+  \code{\link[base]{table}}).
 
-\code{plotClustersTables} returns invisibly the plotted proportion table. In particular, this is the result of applying \code{\link[base]{prop.table}} to the results of \code{tableClusters} (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
+\code{plotClustersTables} returns invisibly the plotted proportion
+  table. In particular, this is the result of applying
+  \code{\link[base]{prop.table}} to the results of \code{tableClusters}
+  (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
 }
 \description{
 Plot heatmap of cross-tabulations of two clusterings

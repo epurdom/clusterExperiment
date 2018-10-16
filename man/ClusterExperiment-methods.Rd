@@ -45,6 +45,7 @@
 \alias{coClustering}
 \alias{coClustering<-,ClusterExperiment,matrix-method}
 \alias{coClustering<-}
+\alias{coClustering<-,ClusterExperiment,dsCMatrix-method}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
 \alias{clusteringInfo,ClusterExperiment-method}
@@ -57,10 +58,6 @@
 \alias{clusterLegend}
 \alias{clusterLegend<-,ClusterExperiment,list-method}
 \alias{clusterLegend<-}
-\alias{renameClusters,ClusterExperiment,character-method}
-\alias{renameClusters}
-\alias{recolorClusters,ClusterExperiment,character-method}
-\alias{recolorClusters}
 \alias{orderSamples,ClusterExperiment-method}
 \alias{orderSamples}
 \alias{orderSamples<-,ClusterExperiment,numeric-method}
@@ -120,6 +117,8 @@
 
 \S4method{coClustering}{ClusterExperiment,matrix}(object) <- value
 
+\S4method{coClustering}{ClusterExperiment,dsCMatrix}(object) <- value
+
 \S4method{clusterTypes}{ClusterExperiment}(x)
 
 \S4method{clusteringInfo}{ClusterExperiment}(x)
@@ -131,12 +130,6 @@
 \S4method{clusterLegend}{ClusterExperiment}(x)
 
 \S4method{clusterLegend}{ClusterExperiment,list}(object) <- value
-
-\S4method{renameClusters}{ClusterExperiment,character}(object, value,
-  whichCluster = "primary", matchTo = c("name", "clusterIds"))
-
-\S4method{recolorClusters}{ClusterExperiment,character}(object, value,
-  whichCluster = "primary", matchTo = c("name", "clusterIds"))
 
 \S4method{orderSamples}{ClusterExperiment}(x)
 
@@ -171,9 +164,6 @@ clustering, respectively. If missing, the entire matrix of all clusterings
 is returned.}
 
 \item{clusterValue}{values of the cluster to match to for subsetting}
-
-\item{whichCluster}{argument to identify cluster, taking input like 
-\code{whichClusters}, only requires that only a single clustering can be identified.}
 
 \item{matchTo}{for subsetting, whether to match to the cluster name
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
@@ -241,10 +231,6 @@ of the clusters used to create dendrogram
 \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
-
-\code{renameClusters} changes the names assigned to clusters within a clustering
-
-\code{recolorClusters} changes the colors assigned to clusters within a clustering
 
 \code{orderSamples} returns/sets the orderSamples slot.
 
