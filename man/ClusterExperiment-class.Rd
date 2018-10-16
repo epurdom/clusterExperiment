@@ -31,7 +31,7 @@ ClusterExperiment(object, clusters, ...)
 \S4method{ClusterExperiment}{SingleCellExperiment,matrix}(object, clusters,
   transformation = function(x) {     x }, primaryIndex = 1,
   clusterTypes = "User", clusterInfo = NULL,
-  orderSamples = 1:ncol(object), dendro_samples = NULL,
+  orderSamples = seq_len(ncol(object)), dendro_samples = NULL,
   dendro_index = NA_real_, dendro_clusters = NULL,
   coClustering = NULL, merge_index = NA_real_,
   merge_cutoff = NA_real_, merge_dendrocluster_index = NA_real_,

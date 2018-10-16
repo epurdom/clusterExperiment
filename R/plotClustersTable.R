@@ -28,6 +28,7 @@
 #'   \code{\link[base]{prop.table}} to the results of \code{tableClusters}
 #'   (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
 #' @rdname plotClustersTable
+#' @author Kelly Street, Elizabeth Purdom
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
