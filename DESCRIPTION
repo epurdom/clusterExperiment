@@ -37,10 +37,10 @@ Imports:
 	grDevices,
 	DelayedArray (>= 0.5.31),
 	HDF5Array (>= 1.7.10),
+	Matrix,
 	Rcpp,
 	edgeR,
 	scales,
-	Matrix,
 	zinbwave
 Suggests:
 	BiocStyle,

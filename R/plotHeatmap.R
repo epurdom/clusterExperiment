@@ -929,12 +929,13 @@ setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
   definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
-    if(is.null(data@coClustering)) stop("coClustering slot is empty")
-    if(invert) data@coClustering<-1-data@coClustering
+	if(is.null(data@coClustering)) stop("coClustering slot is empty")
+	
+	if(invert) data@coClustering <- 1-as(data@coClustering,"matrix")
 	
 	#remove merge info in dendrogram so will make valid CE object
 	data<-eraseMergeInfo(data)
-    fakeCE<-ClusterExperiment(data@coClustering,
+    fakeCE<-ClusterExperiment(as(data@coClustering,"matrix"),
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusteringInfo(data),
