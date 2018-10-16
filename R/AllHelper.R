@@ -561,7 +561,7 @@ setMethod(
 			cm<-clusterMatrix(object,whichClusters=whichClusters)
 			if(makeFactor){
 				cnames<-colnames(cm)
-				cm<-do.call("DataFrame",c(lapply(1:ncol(cm),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+				cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
 				colnames(cm)<-cnames		
 			}
 			else cm<-DataFrame(cm,check.names=FALSE)

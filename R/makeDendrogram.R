@@ -227,9 +227,9 @@ setMethod(
    justNodes<-phylobase::getNode(clusterD,type="internal")
    justTips<-phylobase::getNode(clusterD,type="tip")
    nodeId<-rep(NA,length(clusterNodes))  #want tips last, and internal nodes first
-   nodeId[match(justNodes,clusterNodes)]<-1:length(justNodes)
-   nodeId[match(justTips,clusterNodes)]<-1:length(justTips)+length(justNodes)
-   if(!all(sort(nodeId)==sort(1:length(nodeId)))) stop("coding error in giving node names")
+   nodeId[match(justNodes,clusterNodes)]<-seq_along(justNodes)
+   nodeId[match(justTips,clusterNodes)]<-seq_along(justTips)+length(justNodes)
+   if(!all(sort(nodeId)==sort(seq_along(nodeId)))) stop("coding error in giving node names")
    
    data.cl <- data.frame(NodeId = paste("NodeId",nodeId,sep=""), ClusterIdDendro = clusterIdDendro, ClusterIdMerge= rep(NA,length(clusterNodes)),stringsAsFactors=FALSE)
 	data.cl$Position<-factor(rep("cluster hierarchy node",nrow(data.cl)), levels=.positionLevels)

@@ -210,7 +210,7 @@ definition = function(x, cluster,
   contrastAdj <- match.arg(contrastAdj)
   returnType <- "Table" 
   if(is.null(rownames(dat))) {
-    rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+    rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
   }
 	
   #only use those assigned to a cluster to get good genes.
@@ -463,7 +463,7 @@ setMethod(
       else{
         tt<-edgeR::topTags(fit2,...)
       }
-			if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
+			if(is.null(rownames(tt))){rownames(tt)<- (seq_len(nGenes))}
       tt<- data.frame("Feature"=rownames(tt), tt)
 			colnames(tt)[colnames(tt)=="PValue"]<-"P.Value"
 			if("FWER" %in% colnames(tt)) colnames(tt)[colnames(tt)=="FWER"]<-"adj.P.Val"

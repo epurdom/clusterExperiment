@@ -281,7 +281,7 @@ setMethod(
                         primaryIndex=1,
                         clusterTypes="User",
                         clusterInfo=NULL,
-                        orderSamples=1:ncol(object),
+                        orderSamples=seq_len(ncol(object)),
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,

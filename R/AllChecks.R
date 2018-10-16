@@ -80,7 +80,7 @@
 		return("dendro_clusters must have data with column names:",paste(.clusterDendroColumns,sep=","))
 	}
 	tp<-phylobase::tipLabels(dendro)
-	if(checkLabels && any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp))))
+	if(checkLabels && any(sort(as.numeric(gsub("T","",tp)))!=sort(seq_along(tp))))
 		return("dendro_clusters cannot have labels for the tips; user-defined labels for the tips (i.e. clusters) should be stored in the clusterLegend")
 	if(any(is.na(data.cl$Position))) 
 		return("dendro_clusters cannot have NA values in Position variable")
@@ -100,7 +100,7 @@
 		return("dendro_samples cannot have labels for the nodes; the labels for the nodes should be in the cluster dendrogram")
 	if(checkLabels){
 		tp<-phylobase::tipLabels(dendro)
-		if(any(sort(as.numeric(gsub("T","",tp)))!=sort(1:length(tp)))) return("dendro_samples cannot have labels for the tips; the labels for the tips should be the colnames of the object")
+		if(any(sort(as.numeric(gsub("T","",tp)))!=sort(seq_along(tp)))) return("dendro_samples cannot have labels for the tips; the labels for the tips should be the colnames of the object")
 	} 
 	data.cl<-phylobase::tdata(dendro,type="tip")
 	if(any(is.na(data.cl$SampleIndex))) 

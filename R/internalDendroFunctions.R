@@ -217,7 +217,7 @@
 	newEdge[-whEdgeTips]<-consecutiveNodes[mNodesToEdge]+length(newTips)
 	newNodes[-whNodeTips]<-consecutiveNodes+length(newTips)	
 	newEdge[whRoot,1]<-0
-	if(any(sort(newNodes)!=1:length(newNodes))) stop("coding error -- did not result in consecutive node numbers")
+	if(any(sort(newNodes)!=seq_along(newNodes))) stop("coding error -- did not result in consecutive node numbers")
 		
 	#now need to make sure everything in right order with new edges:
 	newdata<-phylo4@data[nodesKeep,]
@@ -274,7 +274,7 @@
 	if(n>1){
 		if(n>2){
 			newPhylo$edge<-cbind(seq(from=n+1,to=n+(n-1)-1,by=1),seq(from=n+2,to=n+(n-1),by=1))
-			newPhylo$edge<-rbind(newPhylo$edge,cbind(n+1:(n-1),1:(n-1)))
+			newPhylo$edge<-rbind(newPhylo$edge,cbind(n+seq_len(n-1),seq_len(n-1)))
 			newPhylo$edge<-rbind(newPhylo$edge,c(n+n-1,n))
 		}
 		else if(n==2){
@@ -360,7 +360,7 @@
 	#moved to +n2+1 in new edge matrix
 	#in node index, subtract n1+n2 -> +1
 	newPhylo$node.label<-rep(NA,times=newPhylo$Nnode)
-	if(!is.null(tree1$node.label)) newPhylo$node.label[1:m1+1]<-tree1$node.label
+	if(!is.null(tree1$node.label)) newPhylo$node.label[seq_len(m1)+1]<-tree1$node.label
 
 	if(isTree){
 		#4) Tree 2 tips: add n1
@@ -383,7 +383,7 @@
 		#in edge were +n2
 		#moved to +n1+m1+1 in new edge matrix
 		#in node index, subtract n1+n2 -> +m1+1
-			if(!is.null(tree2$node.label)) newPhylo$node.label[1:m2+m1+1]<-tree2$node.label
+			if(!is.null(tree2$node.label)) newPhylo$node.label[seq_len(m2)+m1+1]<-tree2$node.label
 
 	}
 	else{
@@ -465,18 +465,18 @@
 	#Moved to -N +sum(nVec)
 	#Then to move to nodes index by subtracting off length(newPhylo$tip.label)=sum(nVec)
 	#so same index...
-	newPhylo$node.label[1:mainTree$Nnode]<-mainTree$node.label
+	newPhylo$node.label[seq_len(mainTree$Nnode)]<-mainTree$node.label
 
 	# main tree tips that are not single become nodes -- same formula as before
 	# were c(1:N)[!isSingle] in edge matrix (and tip.label)
 	# Then moved by +sum(nVec)+M-cumSingle[!isSingle] in edge matrix
 	# Then subtract of sum(nVec) to get to node index
-	notSingleTips<-c(1:N)[!isSingle]
+	notSingleTips<-c(seq_len(N))[!isSingle]
 	newPhylo$node.label[notSingleTips+M-cumSingle[!isSingle]]<-mainTree$tip.label[notSingleTips]
 	##############
 	#change treeList edgeMatrix
 	##############
-	tipTrees<-lapply(1:length(tipTrees),function(ii){
+	tipTrees<-lapply(seq_along(tipTrees),function(ii){
 		n<-nVec[[ii]]
 		x<-tipTrees[[ii]]
 		if(nrow(x$edge)>0){
@@ -520,7 +520,7 @@
 	.testPrint("Edge matrix has two columns",dim(phyloObj$edge)[2]==2,verbose=verbose)
 
 	#no gaps in series
-	.testPrint("No gaps", all(sort(allNodes)==1:length(allNodes) ),verbose=verbose)
+	.testPrint("No gaps", all(sort(allNodes)==seq_along(allNodes) ),verbose=verbose)
 
 	#matches expected range
 	.testPrint("Range of series matches expected", length(allNodes)== ntip+ninterior ,verbose=verbose)
@@ -561,9 +561,9 @@
 	if(inherits(tree,"phylo")){
 		depth<-ape::node.depth.edgelength(tree) #in order of all nodes
 		ntips<-length(tree$tip.label)
-		maxD<-max(depth[1:ntips])
-		addValue<-maxD-depth[1:ntips]
-		whTips<-match(1:ntips,tree$edge[,2])
+		maxD<-max(depth[seq_len(ntips)])
+		addValue<-maxD-depth[seq_len(ntips)]
+		whTips<-match(seq_len(ntips),tree$edge[,2])
 		tree$edge.length[whTips]<-tree$edge.length[whTips]+addValue
 		return(tree)
 	}

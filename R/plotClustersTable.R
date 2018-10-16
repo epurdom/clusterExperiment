@@ -21,8 +21,12 @@
 #' @details For \code{plotClustersTable} \code{whichClusters}
 #'   should define 2 clusters, for \code{tableClusters} can indicate arbitrary
 #'   number.
-#' @return \code{tableClusters} returns an object of class \code{table} (see \code{\link[base]{table}}).
-#' @return \code{plotClustersTables} returns invisibly the plotted proportion table. In particular, this is the result of applying \code{\link[base]{prop.table}} to the results of \code{tableClusters} (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
+#' @return \code{tableClusters} returns an object of class \code{table} (see
+#'   \code{\link[base]{table}}).
+#' @return \code{plotClustersTables} returns invisibly the plotted proportion
+#'   table. In particular, this is the result of applying
+#'   \code{\link[base]{prop.table}} to the results of \code{tableClusters}
+#'   (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
 #' @rdname plotClustersTable
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples
@@ -128,14 +132,14 @@ setMethod(
 		varNames<-make.names(names(dimnames(tableAll)))
  	 	
 		if(!cluster){
-			rankValues<-rank(sapply(1:ncol(tableAll),FUN=function(ii){
+			rankValues<-rank(sapply(seq_len(ncol(tableAll)),FUN=function(ii){
 				whMax<-which.max(tableAll[,ii])
 	
 			}),ties.method="first")
 			order2<-order(rankValues)
 			
 		}
-		else order2<-1:ncol(tableAll)
+		else order2<-seq_len(ncol(tableAll))
 			
 		rData<-data.frame(rownames(tableAll))
 		names(rData)<-varNames[1]
@@ -260,8 +264,8 @@ setMethod(
   plot(0,0,type="n",xlim = xlim, ylim = ylim, ylab="",xlab="",axes=FALSE,frame.plot=FALSE)
    
   # get x-y coords for a grid
-  xx <- rep(1:nc.col, each = nc.row)
-  yy <- rep(1:nc.row, times = nc.col)   
+  xx <- rep(seq_len(nc.col), each = nc.row)
+  yy <- rep(seq_len(nc.row), times = nc.col)   
     
   # set color based on % overlap
   expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
@@ -277,8 +281,8 @@ setMethod(
   df <- df[df$sizeTable > 0,]
     
   # grid
-  abline(v = 1:nc.col,col=gridColor)
-  abline(h = 1:nc.row,col=gridColor)
+  abline(v = seq_len(nc.col),col=gridColor)
+  abline(h = seq_len(nc.row),col=gridColor)
   # rect(-1,nc.row+1,nc.col+1,nc.row+20, col='white', lty=0) # top
   # rect(-1,-20,nc.col+1,0, col='white', lty=0) # bottom
   # rect(-20,-1,0,nc.row+1, col='white', lty=0) # left
@@ -293,8 +297,8 @@ setMethod(
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
-  axis(1,at=1:nc.col,colnames(sizeTable), adj=1,tick=FALSE,las=las)
-  axis(2,at=1:nc.row,rownames(sizeTable), adj=1,tick=FALSE,las=las)
+  axis(1,at=seq_len(nc.col),colnames(sizeTable), adj=1,tick=FALSE,las=las)
+  axis(2,at=seq_len(nc.row),rownames(sizeTable), adj=1,tick=FALSE,las=las)
   if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
   if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
 	if(!is.null(xlab)) title(xlab=xlab)

@@ -259,7 +259,7 @@ setMethod(
 	#need to create mTipsToSamples -- match of tips to samples ("SampleIndex" is index to full data)
 	mTipsToSamplesOld <- .matchToDendroData(inputValue=phylobase::getNode(dendro,type="tip"), dendro, matchColumn="NodeIndex", returnColumn="SampleIndex")
 	#these are still indices in the full sample clObj. Now need to get their indices in the subsetted one:
-	mToSubset<-match(1:nSamples,whKeep) #gives where each of old sample indices (1:n) map to in new order of future clObj (with NA for those that not in new clObj)
+	mToSubset<-match(seq_len(nSamples),whKeep) #gives where each of old sample indices (1:n) map to in new order of future clObj (with NA for those that not in new clObj)
 	mTipsToSamples<-mToSubset[mTipsToSamplesOld] #use that to map mTipsToSamplesNew to new order
 	if(any(is.na(mTipsToSamples))) stop("coding error -- didn't update mTipsToSamples correctly")
 		#these check against names, but doesn't always have names, etc.

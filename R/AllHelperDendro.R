@@ -242,7 +242,7 @@ setMethod(
 		if(inherits(x, "try-error")) stop("coding error -- could not convert to hclust object. Reported error:",x)
 		#need to convert integers in $order and (negative) entries in $merge into the values of $labels
 		newOrder<-as.integer(as.numeric(x$labels))
-		if(!all(sort(newOrder)==1:length(newOrder))) stop("could not convert hclust object because dendrogram does not have all consecutive sample indices as tip labels.")
+		if(!all(sort(newOrder)==seq_along(newOrder))) stop("could not convert hclust object because dendrogram does not have all consecutive sample indices as tip labels.")
 		m<-match(abs(x$merge[x$merge<0]),x$order)
 		newMerge<-x$merge
 		newMerge[x$merge<0]<-newOrder[m]
