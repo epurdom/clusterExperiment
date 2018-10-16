@@ -195,18 +195,19 @@ non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 \item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}
 
-\item{\code{dendro_samples}}{\code{\link[phylobase]{phylo4}} object. A dendrogram
+\item{\code{dendro_samples}}{\code{\link[phylobase]{phylo4d}} object. A dendrogram
 containing the cluster relationship (leaves are samples; see
 \code{\link{clusterDendrogram}} for details).}
 
-\item{\code{dendro_clusters}}{\code{\link[phylobase]{phylo4}} object. A dendrogram
+\item{\code{dendro_clusters}}{\code{\link[phylobase]{phylo4d}} object. A dendrogram
 containing the cluster relationship (leaves are clusters; see see
 \code{\link{sampleDendrogram}} for details).}
 
 \item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
 make the dendrograms. NA_real_ value if no dendrograms are saved.}
 
-\item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence
+\item{\code{coClustering}}{\code{\link[Matrix]{sparseMatrix}} object. A sparse 
+representation of the matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering
 across parameter sets (see \code{clusterMany}). The matrix is a square matrix
 with number of rows/columns equal to the number of samples.}
@@ -229,4 +230,7 @@ labels <- gl(5, 2)
 cc <- ClusterExperiment(sce, as.numeric(labels), transformation =
 function(x){x})
 
+}
+\seealso{
+\code{\link[Matrix]{sparseMatrix}} \code{\link[phylobase]{phylo4d}}
 }

@@ -74,15 +74,16 @@ setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5
 #'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
-#' @slot dendro_samples \code{\link[phylobase]{phylo4}} object. A dendrogram
+#' @slot dendro_samples \code{\link[phylobase]{phylo4d}} object. A dendrogram
 #'   containing the cluster relationship (leaves are samples; see
 #'   \code{\link{clusterDendrogram}} for details).
-#' @slot dendro_clusters \code{\link[phylobase]{phylo4}} object. A dendrogram
+#' @slot dendro_clusters \code{\link[phylobase]{phylo4d}} object. A dendrogram
 #'   containing the cluster relationship (leaves are clusters; see see
 #'   \code{\link{sampleDendrogram}} for details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot coClustering matrix. A matrix with the cluster co-occurrence
+#' @slot coClustering \code{\link[Matrix]{sparseMatrix}} object. A sparse 
+#' representation of the matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
 #' with number of rows/columns equal to the number of samples.
@@ -93,7 +94,7 @@ setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5
 #' @slot orderSamples a numeric vector (of integers) defining the order of
 #' samples to be used for plotting of samples. Usually set internally by other
 #' functions.
-#'
+#' @seealso \code{\link[Matrix]{sparseMatrix}} \code{\link[phylobase]{phylo4d}} 
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
