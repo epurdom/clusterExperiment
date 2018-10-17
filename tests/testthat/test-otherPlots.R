@@ -213,13 +213,16 @@ test_that("plotClustersTable works",{
 
 	
 	#the following gives a wicked output which ignoreUnassigned=TRUE: zero overlap because some in one cluster are all -1 in makeConsensus so NaN value in proportion and only single cluster in makeConsensus
-	expect_silent(cc<-makeConsensus(cc))
+	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
+	                       isCount=FALSE))
+	expect_message(cc<-makeConsensus(cc,proportion=0.7),"no clusters specified to combine")
 	expect_error(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE) ,"Cannot create heatmap when there is only 1 column or row in the table")
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,plotType="bubble")) #gives a 
 	
 	
 	#test more complicated
-	#force different numbers of clusters
+	#so different numbers of clusters in the two clusters
 	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
 	expect_silent(ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d")))
 	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,legend=TRUE))

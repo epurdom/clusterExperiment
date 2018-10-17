@@ -116,7 +116,7 @@ test_that("`makeDendrogram` works with whichCluster", {
     expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
     #takes a long time!
     #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
-    expect_error(makeDendrogram(bigCE,whichCluster="workflow"),"'whichCluster' must identify only a single clustering")
+    expect_error(makeDendrogram(bigCE,whichCluster="workflow"),"Invalid value for 'whichCluster'")
  
     #--- check makeConsensus updates dendrogram correctly
     expect_message(bigCE<-makeConsensus(bigCE,proportion=0.3),"no clusters specified to combine, using results from clusterMany")
