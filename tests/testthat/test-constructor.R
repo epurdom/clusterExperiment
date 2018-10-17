@@ -66,6 +66,15 @@ test_that("`getClusterIndex` works", {
 	expect_error(getSingleClusterIndex(ccSE,whichCluster="dendro"),"There is no dendrogram")
 	expect_error(getSingleClusterIndex(ccSE,whichCluster="workflow"),"There are no workflow clusterings")
 	
+	
+    expect_message(ccM<-makeConsensus(ceSim,proportion=.2,clusterLabel="mySpecialLabel"),"no clusters specified to combine")
+    expect_message(ccM<-makeConsensus(ccM,proportion=.2),"no clusters specified to combine")
+    expect_silent(indCM<-getClusterIndex(ccM,wh=c("clusterMany")))
+    expect_equal(length(indCM),sum(clusterTypes(ccM)=="clusterMany"))
+    expect_equal(getClusterIndex(ccM,wh=c("mySpecialLabel","makeConsensus")),c(2,1))
+    expect_equal(getClusterIndex(ccM,wh=c("mySpecialLabel","clusterMany")),c(2,indCM))
+	expect_equal(getClusterIndex(ccM,wh=c("makeConsensus")),1)
+	expect_equal(getClusterIndex(ccM,wh=c("makeConsensus","garbage"),noMatch="silentlyRemove"),1)
 })
 
 test_that("`ClusterExperiment` constructor works with hdf5",{

@@ -130,6 +130,7 @@ setMethod(
     whCl<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     if(length(whCl)!=2) stop("invalid choice of 'whichClusters' -- must be exactly 2 clusterings chosen.")
 	tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
+	#sort them by their names
 	#if ever gets slow, could do this directly so not call tableClusters twice...
 	isMargin0<-!is.null(margin) && !is.na(margin) && margin==0
 	if(isMargin0) denomTab<-.makeUnion(tableAll)
@@ -198,12 +199,18 @@ setMethod(
   		main="",xlab=NULL,ylab=NULL,legend=TRUE,cluster=FALSE,clusterLegend=NULL, sizeTable=NULL, ...){
 		plotType<-match.arg(plotType)
 		tableAll<-object
+		if(any(dim(tableAll)==1)&& plotType=="heatmap") stop("Cannot create heatmap when there is only 1 column or row in the table") #creates error in aheatmap....
+			
+		
 		varNames<-make.names(names(dimnames(tableAll)))
- 	 	
-		if(!cluster){
+ 	 	if(!cluster){
+			#determine for each column, which is the cluster in the row that is largest
+			#will reorder the columns based on this result.
 			rankValues<-rank(sapply(seq_len(ncol(tableAll)),FUN=function(ii){
 				whMax<-which.max(tableAll[,ii])
-	
+				#return(whMax)
+				 if(length(whMax)==0) return(1) #could happen in NaN in entry
+				 else return(whMax)
 			}),ties.method="first")
 			order2<-order(rankValues)
 			
@@ -227,21 +234,23 @@ setMethod(
 			if(!"colorScale" %in% names(passedArgs)){
 				passedArgs$colorScale<-colorRampPalette(c("white","black"))(12)
 			}
-			passedArgs<-c(list(data=tableAll[,order2],colData=cData, annRow=rData,
+			passedArgs<-c(list(data=tableAll[,order2,drop=FALSE],colData=cData, annRow=rData,
 					clusterLegend=clusterLegend, main=main,annLegend=legend,
 					labelTracks =labelCols,
 					clusterFeatures=cluster,clusterSamples=cluster)
 					,passedArgs)
+			 	 	
+		
 			do.call("plotHeatmap",passedArgs)
 		}
 		if(plotType=="bubble"){
 			if(!is.null(sizeTable))
-				bubblePlot(sizeTable=sizeTable[,order2],propTable=tableAll[,order2],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
+				bubblePlot(sizeTable=sizeTable[,order2,drop=FALSE],propTable=tableAll[,order2,drop=FALSE],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
 			else
-				  bubblePlot(sizeTable=tableAll[,order2], propTable=tableAll[,order2],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
+				bubblePlot(sizeTable=tableAll[,order2,drop=FALSE], propTable=tableAll[,order2,drop=FALSE],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
 			
 		} 		
-		invisible(tableAll[,order2])
+		invisible(tableAll[,order2,drop=FALSE])
   	
   }
 	)
@@ -292,16 +301,18 @@ setMethod(
 	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),
 	maxCex=8,cexFactor, ylab,xlab,propLabel="Value of %",legend=TRUE,
 	las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
+
   if(!all(dim(propTable)==dim(sizeTable))) 
-	  	stop("propTable and sizeTable must be of the same dimensions")
-	if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) 
-	  	stop("propTable and sizeTable must have the same dimnames")
-	if(all(propTable==sizeTable)) doProp<-FALSE
-	else doProp<-TRUE
+	  stop("propTable and sizeTable must be of the same dimensions")
+  if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) 
+	  stop("propTable and sizeTable must have the same dimnames")
+  if(all(na.omit(propTable)==na.omit(sizeTable))) 
+	  doProp<-FALSE
+  else doProp<-TRUE
   nc.row <- nrow(sizeTable)
   nc.col <- ncol(sizeTable)
-  sizeTable<-sizeTable[nc.row:1,]
-  propTable<-propTable[nc.row:1,]
+  sizeTable<-sizeTable[nc.row:1, ,drop=FALSE]
+  propTable<-propTable[nc.row:1, ,drop=FALSE]
   # set up plotting window
   xlim<-c(1,nc.col)
   xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
@@ -326,8 +337,8 @@ setMethod(
   # smaller points plotted over larger points)
   df <- data.frame(xx,yy, color,
       sizeTable = as.numeric(sizeTable), 
-      propTable = as.numeric(propTable))[order(as.numeric(sizeTable), decreasing = TRUE),]
-  df <- df[df$sizeTable > 0,]
+      propTable = as.numeric(propTable))[order(as.numeric(sizeTable), decreasing = TRUE), ,drop=FALSE]
+  df <- df[df$sizeTable > 0, ,drop=FALSE]
     
   # grid
   abline(v = seq_len(nc.col),col=gridColor)

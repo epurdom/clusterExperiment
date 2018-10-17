@@ -65,7 +65,7 @@ setMethod(
 	  }
 	  else{
 	    #first match to clusterTypes  
-	    mClType<-match(whichClusters,clusterTypes(object))  
+		mClType<-match(whichClusters,clusterTypes(object))  
 	    mClLabel<-match(whichClusters,clusterLabels(object))  
 	    totalMatch<-mapply(whichClusters,mClType,mClLabel,FUN=function(cl,type,lab){
 	      if(is.na(type) & !is.na(lab)) return(lab)
@@ -77,10 +77,10 @@ setMethod(
 	    wh<-unlist(totalMatch,use.names=FALSE)
 	  }
 	} 
-	if(any(!wh %in% seq_len(nClusterings(object)))) {
+	if(any(!na.omit(wh) %in% seq_len(nClusterings(object)))) {
 		if(noMatch=="throwError") 
 			stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
-		if(noMatch=="silentlyRemove") wh[wh<=nClusterings(object) & wh>0]<-NA
+		if(noMatch=="silentlyRemove") wh[which(!is.na(wh) & !wh %in% seq_len(nClusterings(object)))]<-NA
 	}
 	if(all(is.na(wh))){
 		if(noMatch=="throwError") 
@@ -91,7 +91,7 @@ setMethod(
 	  if(any(is.na(wh))){
 	  	  if(noMatch=="throwError") 
 	  		stop("Not all values in whichCluster(s) matched a clustering in the object")
-		  if(noMatch=="silentlyRemove") wh<-na.omit(wh) #silently ignore things that don't match.
+		  if(noMatch=="silentlyRemove") wh<-as.vector(na.omit(wh)) #silently ignore things that don't match.
 	  }
 	}
 	return(wh)

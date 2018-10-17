@@ -64,8 +64,8 @@ setMethod(
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, whichClusters="primary",labels=c("names","ids"),...)
   { 
-	wh<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
-	wh<-head(wh,2) #limit it to 2
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
+	whichClusters<-head(whichClusters,2) #limit it to 2
 	labels<-match.arg(labels)
     legend<-clusterLegend(object)[[tail(whichClusters,1)]]
     args<-list(...)
@@ -80,7 +80,7 @@ setMethod(
     }
     numClusterMat<-clusterMatrix(object,whichClusters=whichClusters)
     if(labels=="names"){
-      clusterMat<-convertClusterLegend(object,output="matrixNames")[,whichClusters]
+	  clusterMat<-convertClusterLegend(object,output="matrixNames")[,whichClusters]
       if(useBuiltInColors) names(colPalette)<-legend[,"name"]
       #make sure "-1" stays "-1" 
       clusterMat[numClusterMat== -1]<- "-1"

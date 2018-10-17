@@ -9,8 +9,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim)))
-    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
-    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
 
     #test CE version
     x<-plotClusters(ceSim)
@@ -46,7 +44,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #CE object with mixture of workflow and other types
     x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
     x2<-plotClusters(object=removeClusterings(ceSim,"User"),resetColors=TRUE)
-    whP<-clusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
+    whP<-getClusterIndex(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
@@ -213,6 +211,13 @@ test_that("plotClustersTable works",{
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=NA))
 	expect_silent(plotClustersTable(tableClusters(cc,whichClusters=c(1,2))))
 
+	
+	#the following gives a wicked output which ignoreUnassigned=TRUE: zero overlap because some in one cluster are all -1 in makeConsensus so NaN value in proportion and only single cluster in makeConsensus
+	expect_silent(cc<-makeConsensus(cc))
+	expect_error(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE) ,"Cannot create heatmap when there is only 1 column or row in the table")
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,plotType="bubble")) #gives a 
+	
+	
 	#test more complicated
 	#force different numbers of clusters
 	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
