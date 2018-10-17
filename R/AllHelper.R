@@ -155,11 +155,14 @@ setMethod(
 setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters="all") {
-	  wh<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="silentlyRemove")
-	  mat<-x@clusterMatrix[,wh,drop=FALSE]
+  definition = function(x,whichClusters) {
+	  if(missing(whichClusters)) mat<-x@clusterMatrix #note that 'all' changes the order of the clusterings...
+	  else{
+		  wh<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="silentlyRemove")
+		  mat<-x@clusterMatrix[,wh,drop=FALSE]	  	
+	  }
 	  rownames(mat)<-colnames(x)
-    return(mat)
+      return(mat)
   }
 )
 

@@ -437,7 +437,7 @@ setMethod(
     #---
     #Get clusterings
     #---
-    whCl<-getClusterIndex(data,whichClusters=whichClusters,noMatch="removeSilently")
+    whCl<-getClusterIndex(data,whichClusters=whichClusters,noMatch="silentlyRemove")
     #
     if(length(whCl)>0){
       clusterData<-clusterMatrixNamed(data,whichClusters=whCl)

@@ -166,7 +166,7 @@ setMethod(
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
 	if(missing(whichClusters)){
-	  whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="removeSilently")
+	  whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="silentlyRemove")
 	  if(length(whichClusters)>0){
 	    .mynote("no clusters specified to combine, using results from clusterMany")
 	  }

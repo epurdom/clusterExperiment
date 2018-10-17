@@ -55,6 +55,17 @@ test_that("`getClusterIndex` works", {
 
 	expect_error(getClusterIndex(ccSE,whichClusters="dendro",noMatch="throwError"),"There is no dendrogram")
 	expect_error(getClusterIndex(ccSE,whichClusters="workflow",noMatch="throwError"),"There are no workflow clusterings")
+	
+
+	expect_error(getClusterIndex(ccSE,whichClusters="dendro",noMatch="throwError"),"There is no dendrogram")
+	expect_error(getClusterIndex(ccSE,whichClusters="workflow",noMatch="throwError"),"There are no workflow clusterings")
+	
+	expect_error( getSingleClusterIndex(ccSE,whichClusters="primary"),"The argument of this function is 'whichCluster'")
+	expect_error( getSingleClusterIndex(ccSE,whichCluster="all"),"Invalid value for 'whichCluster'.")
+	expect_silent(getSingleClusterIndex(ccSE,whichCluster="primary"))
+	expect_error(getSingleClusterIndex(ccSE,whichCluster="dendro"),"There is no dendrogram")
+	expect_error(getSingleClusterIndex(ccSE,whichCluster="workflow"),"There are no workflow clusterings")
+	
 })
 
 test_that("`ClusterExperiment` constructor works with hdf5",{
@@ -166,7 +177,7 @@ test_that("removeClusterings work as promised",{
   expect_equal(metadata(c6),metadata(se)) 
   expect_equal(rowData(c6),rowData(se)) 
   
-  expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),"invalid indices")
+  expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),"Invalid value for 'whichCluster'")
   
   expect_silent(c7<-removeClusterings(c4,"User")) #two have "user" label
   expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)

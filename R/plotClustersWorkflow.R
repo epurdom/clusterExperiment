@@ -72,9 +72,9 @@ setMethod(
       whichClusterMany<-allClusterMany
     }
     #convert to indices
-	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="removeSilently")
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="silentlyRemove")
     if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
-	whichClusters<-getClusterIndex(object,whichClusters=whichClusterMany,noMatch="removeSilently")
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusterMany,noMatch="silentlyRemove")
 	if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusters argument")
     
     

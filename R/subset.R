@@ -19,7 +19,7 @@ setMethod(
   f = "removeClusterings",
   signature = signature("ClusterExperiment"),
   definition = function(x, whichClusters) {
-    whichClusters<-getClusterIndex(x,whichClusters,noMatch=="throwError")
+    whichClusters<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="throwError")
     if(length(whichClusters)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment

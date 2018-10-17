@@ -118,7 +118,7 @@ setMethod(
   f = "setToCurrent",
   signature = signature("ClusterExperiment"),
   definition = function(x,whichCluster,eraseOld=FALSE){
-    whCl<-getSingleClusterIndex(x,whichClusters=whichCluster)
+    whCl<-getSingleClusterIndex(x,whichCluster=whichCluster)
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
 			#not sure here if should have argument newLabelToAdd
@@ -146,7 +146,7 @@ setMethod(
   f = "setToFinal",
   signature = signature("ClusterExperiment"),
   definition = function(x,whichCluster,clusterLabel){
-    whCl<-getSingleClusterIndex(x,whichClusters=whichCluster)
+    whCl<-getSingleClusterIndex(x,whichCluster=whichCluster)
     clusterTypes(x)[whCl]<-"final"
     if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
     primaryClusterIndex(x)<-whCl

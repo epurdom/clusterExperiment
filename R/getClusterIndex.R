@@ -105,11 +105,12 @@ setMethod(
 setMethod(
 	f="getSingleClusterIndex",
 	signature="ClusterExperiment",
-	definition=function(object,whichCluster,passedArgs=NULL){
+	definition=function(object,whichCluster,passedArgs=NULL,...){
+	passedArgs<-c(passedArgs,list(...))
 	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
 		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
 	}
-  whCl<-getClusterIndex(object,whichClusters=whichCluster,throwError=TRUE)
+  whCl<-getClusterIndex(object,whichClusters=whichCluster,noMatch="throwError")
   if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value of the argument identifies ",length(whCl)," clusterings, but this function requires that it must identify only a single clustering (a singular 'whichCluster' argument).")
 
   return(whCl)

@@ -50,7 +50,7 @@ setMethod(
 	if(searchAll) whCM<-grep("clusterMany",allClTypes)
 	else whCM<-which(allClTypes=="clusterMany")
     if(length(whCM)==0) stop("x does not have any clusterings that have clusterType 'clusterMany' ")	
-	wh <- getClusterIndex(x, whichClusters=whichClusters,noMatch="removeSilently")
+	wh <- getClusterIndex(x, whichClusters=whichClusters,noMatch="silentlyRemove")
     if(length(wh)==0){
       warning("argument whichClusters did not return any clusters; using all clusterMany clusters")
       wh<-whCM
