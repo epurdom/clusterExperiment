@@ -37,7 +37,7 @@ numericalAsCharacter<-function(values,prefix=""){
 	values<-suppressWarnings(as.integer(values))
 	if(any(is.na(values))) stop("input must convert to numeric vector")
 	whPos<-which(values >0)
-	largestLength<-max(values[whPos])
+	if(length(whPos)>0) largestLength<-max(values[whPos])
 	values<-as.character(values)
 	if(length(whPos)>0){
 		pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
