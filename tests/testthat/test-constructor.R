@@ -46,6 +46,17 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 			
 })
 
+
+test_that("`getClusterIndex` works", {
+	expect_silent( getClusterIndex(ccSE,whichClusters="all"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="primary"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="dendro"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="workflow"))
+
+	expect_error(getClusterIndex(ccSE,whichClusters="dendro",noMatch="throwError"),"There is no dendrogram")
+	expect_error(getClusterIndex(ccSE,whichClusters="workflow",noMatch="throwError"),"There are no workflow clusterings")
+})
+
 test_that("`ClusterExperiment` constructor works with hdf5",{
     #test creation
     expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))

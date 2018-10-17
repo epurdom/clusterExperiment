@@ -57,7 +57,8 @@
 
 \item{dendroSample}{a \code{phylo4d} to be check as for being cluster hierarchy}
 
-\item{whichCluster}{which cluster are the dendrograms clustering.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{type}{the type of node to return results from. One of "all",
 "internal", and "tip".}

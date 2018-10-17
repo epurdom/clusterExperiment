@@ -42,7 +42,7 @@ setMethod(
   definition = function(object, features, whichCluster="primary", plotUnassigned=TRUE,unassignedColor="grey",missingColor="white",whichAssay=1,legendLocation=NA,jitterFactor=NA,...)
   {
 		if(length(features)<2) stop("plotFeatureScatter requires at least 2 features")
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
  
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[features,]

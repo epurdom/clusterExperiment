@@ -19,7 +19,8 @@ features in the \code{assay(object)}}
 
 \item{whichCluster}{if not NULL, indicates cluster used in making the 
 significance table. Used to match to colors in \code{clusterLegend(object)} 
-(relevant for one-vs-all contrast so that color aligns).}
+(relevant for one-vs-all contrast so that color aligns). See description of 
+argument in \code{\link{getClusterIndex}} for futher details.}
 
 \item{contrastColors}{vector of colors to be given to contrasts. Should match
 the name of the contrasts in the 'Contrast' column of \code{signifTable} or

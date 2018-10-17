@@ -9,7 +9,7 @@ setMethod(
   signature = signature(object = "ClusterExperiment",whichCluster="character"),
   definition = function(object, whichCluster,...)
   {
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
     return(plotReducedDims(object,whichCluster=whCl,...))
     
   })
@@ -26,7 +26,6 @@ setMethod(
   })
 
 #' @param object a ClusterExperiment object
-#' @param whichCluster which clusters to show on the plot
 #' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in
 #'   functions of \code{\link{listBuiltInReducedDims}()}
@@ -52,6 +51,7 @@ setMethod(
 #' @param nColLegend The number of columns in legend. If missing, picks number 
 #'   of columns internally. 
 #' @param ... arguments passed to \code{\link{plot.default}}
+#' @inheritParams getClusterIndex
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
 #'   "white", will be coerced to "lightgrey" regardless of user input to
 #'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
@@ -83,7 +83,7 @@ setMethod(
                         reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
+whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){

@@ -37,8 +37,8 @@
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
-\item{whichCluster}{argument to identify clustering, with the limitation 
-that only a single clustering can be given.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{clustersToRemove}{numeric vector identifying the clusters to remove 
 (whose samples will be reassigned to -1 value).}

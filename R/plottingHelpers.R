@@ -419,7 +419,6 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 
 
 #' @export
-#' @param whichCluster which cluster to plot cluster legend
 #' @param title title for the clusterLegend plot
 #' @param clusterNames vector of names for the clusters; vector should have names
 #'  that correspond to the clusterIds in the ClusterExperiment object. If this
@@ -429,13 +428,14 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 #' @param location character passed to \code{x} argument of legend indicating 
 #'  where to place legend.
 #' @param ... arguments passed to legend
+#' @inheritParams getClusterIndex
 #' @rdname plottingFunctions
 #' @aliases plotClusterLegend
 setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
   definition = function(object,whichCluster="primary",clusterNames,title,add=FALSE,location=if(add)"topright" else "center",...){
-    whichCluster<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whichCluster<-getSingleClusterIndex(object,whichCluster,list(...))
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
       if(is.null(names(clusterNames))) stop("clusterNames must be named vector")

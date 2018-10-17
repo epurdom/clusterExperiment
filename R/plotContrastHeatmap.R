@@ -10,7 +10,8 @@
 #'   features in the \code{assay(object)}
 #' @param whichCluster if not NULL, indicates cluster used in making the 
 #'   significance table. Used to match to colors in \code{clusterLegend(object)} 
-#'   (relevant for one-vs-all contrast so that color aligns).
+#'   (relevant for one-vs-all contrast so that color aligns). See description of 
+#'   argument in \code{\link{getClusterIndex}} for futher details.
 #' @param contrastColors vector of colors to be given to contrasts. Should match
 #'   the name of the contrasts in the 'Contrast' column of \code{signifTable} or
 #'   'ContrastName', if given.. If  missing, default colors given by match to
@@ -97,7 +98,7 @@ setMethod(
     
     if(!is.null(whichCluster)){
 	  ##Assign colors to the contrasts (only does anything if contrast is oneAgainstAll)
-	  whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
+	  whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives

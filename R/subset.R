@@ -3,7 +3,7 @@
 #' @name subset
 #' @param x a ClusterExperiment object.
 #' @inheritParams ClusterExperiment-class 
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @return A \code{\link{ClusterExperiment}} object.
 #' @aliases removeClusterings,ClusterExperiment,character-method
 #' @details \code{removeClusterings} removes the clusters given by
@@ -93,8 +93,6 @@ setMethod(
 #' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
 #' @param clustersToRemove numeric vector identifying the clusters to remove 
 #'   (whose samples will be reassigned to -1 value).
-#' @param whichCluster argument to identify clustering, with the limitation 
-#'  that only a single clustering can be given.
 #' @rdname subset
 #' @inheritParams addClusterings
 #' @aliases removeClusters
@@ -236,7 +234,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(x,clusterValue,whichCluster="primary",matchTo=c("name","clusterIds")) {
     
-		whCl<-.convertSingleWhichCluster(x,whichCluster)
+		whCl<-getSingleClusterIndex(x,whichCluster)
 		matchTo<-match.arg(matchTo)
 		if(matchTo=="name"){
 			cl<-clusterMatrixNamed(x)[,whCl]

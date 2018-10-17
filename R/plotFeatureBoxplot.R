@@ -52,7 +52,7 @@ setMethod(
   signature = signature(object = "ClusterExperiment",feature="numeric"),
   definition = function(object,  feature,whichCluster="primary",plotUnassigned=FALSE,unassignedColor=NULL,missingColor=NULL,main=NULL,whichAssay=1,...)
   {
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[feature,]
     clLegend<-clusterLegend(object)[[whCl]]

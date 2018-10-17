@@ -18,8 +18,8 @@
 \arguments{
 \item{object}{A Cluster Experiment object}
 
-\item{whichCluster}{in which clustering to get cluster assignments and assign
-the unassigned samples}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{clusterLabel}{if missing, the current cluster label of the cluster will
 be appended with the string "_AllAssigned".}

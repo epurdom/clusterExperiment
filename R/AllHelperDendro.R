@@ -170,14 +170,14 @@ setMethod(
 #'   problems. Otherwise creates error.
 #' @param dendroCluster a \code{phylo4d} to be check as for being cluster hierarchy
 #' @param dendroSample a \code{phylo4d} to be check as for being cluster hierarchy
-#' @param whichCluster which cluster are the dendrograms clustering.
+#' @inheritParams getClusterIndex
 #' @export
 #' @aliases checkDendrogram
 setMethod(
   f = "checkDendrogram",
   signature = signature(x="ClusterExperiment",dendroCluster="phylo4d",dendroSample="phylo4d"),
   definition = function(x,dendroCluster,dendroSample,whichCluster="dendro") {
-	  whCl<-.convertSingleWhichCluster(x,whichCluster)
+	  whCl<-getSingleClusterIndex(x,whichCluster)
 	  x@dendro_clusters<-dendroCluster
 	  x@dendro_samples<-dendroSample
 	  x@dendro_index<-whCl

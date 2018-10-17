@@ -20,15 +20,13 @@
 #'  version of function. Indicates whether to calculate the sample dendrogram.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
-#' @param whichCluster an integer index or character string that identifies
-#'   which cluster should be used to make the dendrogram. Default is
-#'   primaryCluster.
 #' @param ... for makeDendrogram, if signature \code{matrix}, arguments passed
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to
 #'   \code{\link{plot.dendrogram}}.
 #' @inheritParams clusterSingle
 #' @inheritParams reduceFunctions
+#' @inheritParams getClusterIndex
 #' @details The function returns two dendrograms (as a list if x is a matrix or
 #'   in the appropriate slots if x is ClusterExperiment). The cluster dendrogram
 #'   is created by applying \code{\link{hclust}} to the medoids of each cluster.
@@ -85,7 +83,7 @@ setMethod(
             filterIgnoresUnassigned<-checkIgnore$val
         }
         unassignedSamples<-match.arg(unassignedSamples)
-        whCl<-.convertSingleWhichCluster(x,whichCluster,passedArgs)
+        whCl<-getSingleClusterIndex(x,whichCluster,passedArgs)
         cl<-clusterMatrix(x)[,whCl]
         ##erase merge information
         if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)

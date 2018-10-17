@@ -60,7 +60,7 @@ setMethod(
 	    if(test=="primaryCluster") wh<-primaryClusterIndex(object)
 	    if(test=="dendro"){
 	      wh<-dendroClusterIndex(object)
-	      if(is.na(wh)) wh<-.createMismatch("There is no dendrogram")
+	      if(is.na(wh)) wh<-.createMismatch("There is no dendrogram, cannot return clustering that created one")
 	    }
 	  }
 	  else{
@@ -77,7 +77,7 @@ setMethod(
 	    wh<-unlist(totalMatch,use.names=FALSE)
 	  }
 	} 
-	if(!wh %in% seq_len(nClusterings(object))) {
+	if(any(!wh %in% seq_len(nClusterings(object)))) {
 		if(noMatch=="throwError") 
 			stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
 		if(noMatch=="silentlyRemove") wh[wh<=nClusterings(object) & wh>0]<-NA

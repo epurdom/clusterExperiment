@@ -5,8 +5,6 @@
 #' @rdname assignUnassigned
 #' @aliases assignUnassigned,ClusterExperiment-method
 #' @param object A Cluster Experiment object
-#' @param whichCluster in which clustering to get cluster assignments and assign
-#'   the unassigned samples
 #' @param whichAssay which assay to use to calculate the median per cluster and
 #'   take dimensionality reduction (if requested)
 #' @param clusterLabel if missing, the current cluster label of the cluster will
@@ -14,6 +12,7 @@
 #' @param ... arguments passed to \code{\link{getReducedData}} specifying the
 #'   dimensionality reduction (if any) to be taken of the data for calculating
 #'   the medians of the clusters
+#' @inheritParams getClusterIndex
 #' @details The function \code{assignUnassigned} calculates the median values of each variable for each
 #'   cluster, and then calculates the euclidean distance of each unassigned
 #'   sample to the median of each cluster. Each unassigned sample is assigned to
@@ -41,7 +40,7 @@ setMethod(
   definition = function(object,whichCluster="primary",clusterLabel,
                         makePrimary=TRUE,whichAssay=1,reduceMethod="none",...){
 		
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
     cl<-clusterMatrix(object)[,whCl]
 		if(missing(clusterLabel)) clusterLabel<-paste0(clusterLabels(object)[whCl],"_AllAssigned")
 		whichUnassigned<-which(cl<0)
@@ -96,7 +95,7 @@ setMethod(
   f = "removeUnassigned",
   signature = "ClusterExperiment",
   definition = function(object,whichCluster="primary") {
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-getSingleClusterIndex(object,whichCluster)
 		cl<-clusterMatrix(object)[,whCl]
 		return(object[,which(cl>= 0)])
   }

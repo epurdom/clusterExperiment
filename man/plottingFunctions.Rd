@@ -96,7 +96,8 @@ breaks in the range of the data.}
 
 \item{returnBreaks}{logical as to whether to return the vector of breaks. See details.}
 
-\item{whichCluster}{which cluster to plot cluster legend}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{clusterNames}{vector of names for the clusters; vector should have names
 that correspond to the clusterIds in the ClusterExperiment object. If this

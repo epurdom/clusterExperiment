@@ -78,7 +78,7 @@ setMethod(
   f = "nClusterings",
   signature = "ClusterExperiment",
   definition = function(x){
-    return(NCOL(clusterMatrix(x)))
+    return(NCOL(x@clusterMatrix))
   }
 )
 
@@ -149,27 +149,14 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
   signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters) {
-    wh<-seq_len(ncol(x@clusterMatrix))
-    return(clusterMatrix(x,whichClusters=wh))
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
-#' @export
-#' @aliases clusterMatrix
-setMethod(
-  f = "clusterMatrix",
-  signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters) {
-	  wh<-getClusterIndex(object=x,whClusters=whichClusters,noMatch="silentlyRemove")
+  definition = function(x,whichClusters="all") {
+	  wh<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="silentlyRemove")
 	  mat<-x@clusterMatrix[,wh,drop=FALSE]
 	  rownames(mat)<-colnames(x)
     return(mat)
@@ -514,7 +501,7 @@ setMethod(
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
 		matchTo<-match.arg(matchTo)
-		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		whCl<-getSingleClusterIndex(object,whichCluster)
 		mat<-clusterLegend(object)[[whCl]]
 		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
 		mat[m,"name"]<-value
@@ -534,7 +521,7 @@ setMethod(
   signature = signature(object="ClusterExperiment", value="character"),
   definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
 		matchTo<-match.arg(matchTo)
-		whCl<-.convertSingleWhichCluster(object,whichCluster)
+		whCl<-getSingleClusterIndex(object,whichCluster)
 		mat<-clusterLegend(object)[[whCl]]
 		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
 		mat[m,"color"]<-value

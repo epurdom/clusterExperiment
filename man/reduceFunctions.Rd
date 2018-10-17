@@ -84,9 +84,8 @@ the unassigned samples are excluded in calculating the statistic. See
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
 
-\item{whichCluster}{an integer index or character string that identifies
-which cluster should be used to make the dendrogram. Default is
-primaryCluster.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}

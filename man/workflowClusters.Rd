@@ -30,7 +30,8 @@
 
 \item{iteration}{numeric. Which iteration of the workflow should be used.}
 
-\item{whichCluster}{which cluster to set to current in the workflow}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results

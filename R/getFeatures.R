@@ -10,7 +10,6 @@
 #'   \code{\link{ClusterExperiment}}.
 #' @param cluster A numeric vector with cluster assignments. ``-1'' indicates 
 #'   the sample was not assigned to a cluster.
-#' @param whichCluster which clustering to use in performing the tests.
 #' @param contrastType What type of test to do. `F' gives the omnibus 
 #'   F-statistic, `Dendro' traverses the given dendrogram and does contrasts of 
 #'   the samples in each side,  `Pairs' does pair-wise contrasts based on the 
@@ -40,6 +39,7 @@
 #'   \code{ClusterExperiment} object, these arguments can also be those to pass 
 #'   to the matrix version.
 #' @inheritParams clusterContrasts
+#' @inheritParams getClusterIndex
 #' @details getBestFeatures returns the top ranked features corresponding to a 
 #'   cluster assignment. It uses either limma or edgeR to fit the models, and 
 #'   limma/edgeR functions \code{\link[limma]{topTable}} or 
@@ -331,7 +331,7 @@ setMethod(
     function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), whichCluster="primary",
              whichAssay=1,DEMethod, weights=if("weights" %in% assayNames(x)) "weights" else NULL,...)
       {
-    whCl<-.convertSingleWhichCluster(x,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(x,whichCluster,list(...))
       contrastType <- match.arg(contrastType)
     cl<-clusterMatrix(x)[,whCl]
     if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")

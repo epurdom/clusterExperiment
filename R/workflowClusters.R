@@ -106,8 +106,8 @@ setMethod(
 
 
 #' @rdname workflowClusters
-#' @param whichCluster which cluster to set to current in the workflow
 #' @inheritParams clusterMany
+#' @inheritParams getClusterIndex
 #' @return \code{setToCurrent} returns a \code{ClusterExperiment} object where
 #'   the indicated cluster of \code{whichCluster} has been set to the most
 #'   current iteration in the workflow. Pre-existing clusters are appropriately
@@ -118,10 +118,7 @@ setMethod(
   f = "setToCurrent",
   signature = signature("ClusterExperiment"),
   definition = function(x,whichCluster,eraseOld=FALSE){
-    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
-    if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
-    
+    whCl<-getSingleClusterIndex(x,whichClusters=whichCluster)
     type<-strsplit(clusterTypes(x)[whCl],"[.]")[[1]][1]
     if(!type %in% .workflowValues[-1]) stop("Input cluster is not a workflow cluster. Must be of clustType: ",paste(.workflowValues[-1],sep=","))
 			#not sure here if should have argument newLabelToAdd
@@ -149,9 +146,7 @@ setMethod(
   f = "setToFinal",
   signature = signature("ClusterExperiment"),
   definition = function(x,whichCluster,clusterLabel){
-    if(is.character(whichCluster)) whCl<-.TypeIntoIndices(x,whClusters=whichCluster) else whCl<-whichCluster
-    if(length(whCl)!=1) warning("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-    if(!whCl %in% seq_len(nClusterings(x))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(x))
+    whCl<-getSingleClusterIndex(x,whichClusters=whichCluster)
     clusterTypes(x)[whCl]<-"final"
     if(!missing(clusterLabel)) clusterLabels(x)[whCl]<-clusterLabel
     primaryClusterIndex(x)<-whCl

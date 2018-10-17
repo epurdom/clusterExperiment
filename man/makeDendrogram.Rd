@@ -26,9 +26,8 @@
 \item{x}{data to define the medoids from. Matrix and
 \code{\link{ClusterExperiment}} supported.}
 
-\item{whichCluster}{an integer index or character string that identifies
-which cluster should be used to make the dendrogram. Default is
-primaryCluster.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{reduceMethod}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Can be either a

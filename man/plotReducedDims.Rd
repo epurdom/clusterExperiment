@@ -23,7 +23,8 @@
 \arguments{
 \item{object}{a ClusterExperiment object}
 
-\item{whichCluster}{which clusters to show on the plot}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{...}{arguments passed to \code{\link{plot.default}}}
 
