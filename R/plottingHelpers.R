@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'
@@ -36,10 +36,7 @@ setMethod(
   signature = c("ClusterExperiment"),
   definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors"),whichClusters=ifelse(output=="plotAndLegend","primary","all")){
     output<-match.arg(output)
-    whichClusters<-.TypeIntoIndices(object,whClusters=whichClusters)
-    if(length(whichClusters)==0) stop("given whichClusters value does not match any clusters")
-    
-    
+    whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     if(output=="aheatmapFormat"){
       outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }

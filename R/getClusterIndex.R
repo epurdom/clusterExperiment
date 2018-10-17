@@ -5,10 +5,10 @@
 #' @param silentlyRemove logical as to whether to silently remove mismatches. Otherwise values that do not match are given NA values, unless all values are NA in which an error is returned.
 #' @param whichClusters argument that can be either numeric or character vector
 #'   indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.
-#' @details \code{whichClusters} is used as an argument extensively across all functions, 
-#'  all of which call this function. The only difference is that this function will return 
-#'  an error if unable to match to a clustering, while some functions have a default 
-#'  behavior if the match is invalid. Note that some functions require the match return a single clustering, in which case the argument is the singular \code{whichCluster}.
+#' @param whichCluster argument that can be a single numeric or character value
+#'   indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.
+#' @param passedArgs other arguments passed to the function (only used internally)
+#' @details The function \code{getClusterIndex} is largely used internally to parse the argument \code{whichClusters} which is used as an argument extensively across functions in this package. Note that some functions require the match return a single clustering, in which case those functions use the function \code{getSingleClusterIndex} with the singular argument \code{whichCluster} and returns an error if it indicates more than one clustering. Furthermore \code{getSingleClusterIndex} does not allow for any mismatches (\code{noMatch="throwError"}. Otherwise the parsing of the two arguments \code{whichClusters} and \code{whichCluster} is the same, and is described in what follows.
 #' @details If \code{whichClusters} is numeric, then the function just returns the 
 #'  numeric values of \code{whichClusters}, after checking that they are valid. If any are invalid, they are silently removed if \code{silentlyRemove=TRUE}. The values will be returned  \emph{in the order given}, so this argument can also be used to defined by functions to give an
 #'   ordering for the clusterings (as relevant).
@@ -100,14 +100,18 @@ setMethod(
 
 })
 	
-
-.convertSingleWhichCluster<-function(object,whichCluster,passedArgs=NULL){
+#' @rdname getClusterIndex
+#' @export
+setMethod(
+	f="getSingleClusterIndex",
+	signature="ClusterExperiment",
+	definition=function(object,whichCluster,passedArgs=NULL){
 	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
 		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
 	}
-  whCl<-getClusterIndex(object,whClusters=whichCluster,throwError=TRUE)
+  whCl<-getClusterIndex(object,whichClusters=whichCluster,throwError=TRUE)
   if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value of the argument identifies ",length(whCl)," clusterings, but this function requires that it must identify only a single clustering (a singular 'whichCluster' argument).")
 
   return(whCl)
-}
+})
 

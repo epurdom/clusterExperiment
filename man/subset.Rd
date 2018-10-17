@@ -4,10 +4,8 @@
 \name{subset}
 \alias{subset}
 \alias{removeClusterings,ClusterExperiment,character-method}
-\alias{removeClusterings,ClusterExperiment,numeric-method}
-\alias{removeClusters,ClusterExperiment,numeric-method}
+\alias{removeClusters,ClusterExperiment-method}
 \alias{removeClusters}
-\alias{removeClusters,ClusterExperiment,character-method}
 \alias{[,ClusterExperiment,ANY,character,ANY-method}
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
@@ -16,16 +14,10 @@
 \alias{subsetByCluster}
 \title{Functions to subset ClusterExperiment Objects}
 \usage{
-\S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters,
-  ...)
+\S4method{removeClusterings}{ClusterExperiment}(x, whichClusters)
 
-\S4method{removeClusterings}{ClusterExperiment,numeric}(x, whichClusters)
-
-\S4method{removeClusters}{ClusterExperiment,numeric}(x, whichCluster,
+\S4method{removeClusters}{ClusterExperiment}(x, whichCluster,
   clustersToRemove, makePrimary = FALSE, clusterLabels = NULL)
-
-\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster,
-  ...)
 
 \S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ...,
   drop = TRUE)
@@ -45,10 +37,6 @@
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
-\item{...}{The arguments \code{transformation}, \code{clusterTypes} and
-\code{clusterInfo} to be passed to the constructor for signature
-\code{SingleCellExperiment,matrix}.}
-
 \item{whichCluster}{argument to identify clustering, with the limitation 
 that only a single clustering can be given.}
 
@@ -62,6 +50,10 @@ matrix, the column names of that matrix will be used by default, if
 \code{clusterLabels} is not given.}
 
 \item{i, j}{A vector of logical or integer subscripts, indicating the rows and columns to be subsetted for \code{i} and \code{j}, respectively.}
+
+\item{...}{The arguments \code{transformation}, \code{clusterTypes} and
+\code{clusterInfo} to be passed to the constructor for signature
+\code{SingleCellExperiment,matrix}.}
 
 \item{drop}{A logical scalar that is ignored.}
 

@@ -124,6 +124,7 @@ setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
 # setGeneric("nTips",function(x){standardGeneric("nTips")})
 
 setGeneric("getClusterIndex",function(object,...){standardGeneric("getClusterIndex")})
+setGeneric("getSingleClusterIndex",function(object,...){standardGeneric("getSingleClusterIndex")})
 setGeneric(
     name = "orderSamples",
     def = function(x) {
@@ -278,11 +279,11 @@ setGeneric(
 )
 
 
-setGeneric( name = "removeClusters", def = function(x, whichCluster,...) {
+setGeneric( name = "removeClusters", def = function(x, ...) {
     standardGeneric("removeClusters")})
 setGeneric( name = "addClusterings", def = function(x, y,...) {
     standardGeneric("addClusterings")})
-setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
+setGeneric(name = "removeClusterings", def = function(x,...) {
     standardGeneric("removeClusterings")})
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
 setGeneric( name = "makeConsensus", def = function(x, ...) {

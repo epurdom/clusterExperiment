@@ -16,14 +16,6 @@
 #'  \code{leafType="clusters"}).
 #'@param ... arguments passed to the \code{\link{plot.phylo}} function of 
 #'  \code{ape} that plots the dendrogram.
-#'@param whichClusters only used if \code{leafType="samples"}). If numeric, an 
-#'  index for the clusterings to be plotted with dendrogram. Otherwise, 
-#'  \code{whichClusters} can be a character value identifying the 
-#'  \code{clusterTypes} to be used, or if not matching \code{clusterTypes} then 
-#'  \code{clusterLabels}; alternatively \code{whichClusters} can be either 'all'
-#'  or 'workflow' or 'primaryCluster' to indicate choosing all clusters or 
-#'  choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates 
-#'  using the clustering that created the dendrogram.
 #'@param removeOutbranch logical, only applicable if there are missing samples 
 #'  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram for 
 #'  the samples was made by putting missing samples in an outbranch. In which 
@@ -56,6 +48,7 @@
 #'   \code{NULL} or a particular variable/cluster are not assigned a color, 
 #'   colors will be assigned internally for sample data and pull from the
 #'   \code{clusterLegend} slot of the x for the clusters.
+#' @inheritParams getClusterIndex
 #' @return A dendrogram is plotted. Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
@@ -108,8 +101,7 @@ setMethod(
     mergeInfo<-match.arg(mergeInfo,possibleMergeValues)
     
     legend<-match.arg(legend)
-    whCl<-.TypeIntoIndices(x,whClusters=whichClusters)
-    if(length(whCl)==0) stop("given whichClusters value does not match any clusters")
+    whCl<-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
     if(leafType=="clusters" && whCl!=x@dendro_index){
       warning("if leafType=='clusters', 'whichClusters' must match the clusters that created the dendrogram. Changing 'leafType' to 'samples'")
       leafType<-"samples"

@@ -16,14 +16,8 @@
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{only used if \code{leafType="samples"}). If numeric, an 
-index for the clusterings to be plotted with dendrogram. Otherwise, 
-\code{whichClusters} can be a character value identifying the 
-\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then 
-\code{clusterLabels}; alternatively \code{whichClusters} can be either 'all'
-or 'workflow' or 'primaryCluster' to indicate choosing all clusters or 
-choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates 
-using the clustering that created the dendrogram.}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{leafType}{if "samples" the dendrogram has one leaf per sample, otherwise
 it has one per cluster.}

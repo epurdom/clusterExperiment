@@ -17,20 +17,9 @@
 #' @export
 setMethod(
   f = "removeClusterings",
-  signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichClusters,...) {
-    whichClusters<-.TypeIntoIndices(x,whichClusters)
-    removeClusterings(x,whichClusters,...)
-  }
-)
-
-#' @rdname subset
-#' @export
-setMethod(
-  f = "removeClusterings",
-  signature = signature("ClusterExperiment","numeric"),
+  signature = signature("ClusterExperiment"),
   definition = function(x, whichClusters) {
-    if(any(whichClusters>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
+    whichClusters<-getClusterIndex(x,whichClusters,noMatch=="throwError")
     if(length(whichClusters)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
@@ -112,9 +101,9 @@ setMethod(
 #' @export
 setMethod(
   f = "removeClusters",
-  signature = c("ClusterExperiment","numeric"),
+  signature = c("ClusterExperiment"),
   definition = function(x,whichCluster,clustersToRemove,makePrimary=FALSE,clusterLabels=NULL) {
-    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    whCl<-getSingleClusterIndex(x,whichCluster)
     cl<-clusterMatrix(x)[,whCl]
     leg<-clusterLegend(x)[[whCl]]
     if(is.character(clustersToRemove)){
@@ -150,16 +139,7 @@ setMethod(
 
   }
 )
-#' @rdname subset
-#' @export
-setMethod(
-  f = "removeClusters",
-  signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichCluster,...) {
-    whichCluster<-.TypeIntoIndices(x,whichCluster)
-    removeClusters(x,whichCluster,...)
-  }
-)
+
 
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
