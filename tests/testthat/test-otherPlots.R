@@ -217,18 +217,18 @@ test_that("plotClustersTable works",{
 	#force different numbers of clusters
 	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
 	expect_silent(ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d")))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,annLegend=FALSE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,annLegend=FALSE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,annLegend=FALSE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,annLegend=FALSE ))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,annLegend=FALSE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",legend=TRUE ))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,legend=TRUE))
 	
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",plotType="bubble" ))
 	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,plotType="bubble"))
-
+	
 	
 })
 

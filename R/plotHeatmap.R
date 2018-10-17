@@ -91,6 +91,8 @@
 #'   requested will show in the color scale legend.
 #' @param whichAssay numeric or character specifying which assay to use. See
 #'   \code{\link[SummarizedExperiment]{assay}} for details.
+#' @param labelTracks logical, whether to put labels next to the color tracks 
+#' corresponding to the colData. 
 #' @inheritParams clusterSingle
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
 #'   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for
@@ -640,7 +642,8 @@ setMethod(
                         clusterLegend=NULL,alignColData=FALSE,
                         unassignedColor="white",missingColor="grey",
                         breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
-                        isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
+                        isSymmetric=FALSE, overRideClusterLimit=FALSE,
+						plot=TRUE,labelTracks=TRUE,...
   ){
     
     aHeatmapArgs<-list(...)  
@@ -869,7 +872,7 @@ setMethod(
       #############
       # add labels to clusters at top of heatmap
       #############
-      if(!is.null(dim(annCol))){
+      if(!is.null(dim(annCol)) & labelTracks){
         treeOfViewports<-unlist(lapply(strsplit(as.character(grid::current.vpTree(all=TRUE)),"->"),strsplit,","))
         wh<-sapply(treeOfViewports, function(x){
           length(grep(x,"pattern"="aheatmap-AHEATMAP.VP"))>0

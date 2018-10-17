@@ -30,11 +30,7 @@ setGeneric(name = "mergeCutoff", def=function(x,...){ standardGeneric("mergeCuto
 setGeneric(name="eraseMergeInfo",def=function(x,...){ standardGeneric("eraseMergeInfo")})
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 
-setGeneric(
-  name = "plotClustersWorkflow",
-	def=function(object,...){
-	standardGeneric("plotClustersWorkflow")
-	}
+setGeneric("plotClustersWorkflow", function(object,...){ standardGeneric("plotClustersWorkflow")}
 )
 setGeneric(
 	name="plotContrastHeatmap",
@@ -217,21 +213,8 @@ setGeneric(
   }
 )
 
-setGeneric(
-    name="plotClusters",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotClusters")
-    }
-)
-
-setGeneric(
-    name="plotBarplot",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotBarplot")
-    }
-)
+setGeneric( "plotClusters", function(object, ...) { standardGeneric("plotClusters")})
+setGeneric( name="plotBarplot", def=function(object, ...) { standardGeneric("plotBarplot") })
 setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
@@ -262,7 +245,7 @@ setGeneric(
 )
 setGeneric("colDataClusters",function(object,...){standardGeneric("colDataClusters")})
 setGeneric("addToColData",function(object,...){standardGeneric("addToColData")})
-setGeneric("clusterMatrix", function(x,whichClusters) { standardGeneric("clusterMatrix")})
+setGeneric("clusterMatrix", function(x,...) { standardGeneric("clusterMatrix")})
 setGeneric("clusterMatrixNamed", function(x,...) { standardGeneric("clusterMatrixNamed")})
 setGeneric("clusterMatrixColors", function(x,...) { standardGeneric("clusterMatrixColors")})
 setGeneric("primaryCluster", function(x) { standardGeneric("primaryCluster")})
@@ -302,7 +285,7 @@ setGeneric( name = "addClusterings", def = function(x, y,...) {
 setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
     standardGeneric("removeClusterings")})
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
-setGeneric( name = "makeConsensus", def = function(x, whichClusters, ...) {
+setGeneric( name = "makeConsensus", def = function(x, ...) {
     standardGeneric("makeConsensus")})
 
 

@@ -337,69 +337,7 @@ numericalAsCharacter<-function(values,prefix=""){
 }
 
 
-.convertSingleWhichCluster<-function(object,whichCluster,passedArgs=NULL){
-	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
-		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
-	}
-  if(is.character(whichCluster)) whCl<-.TypeIntoIndices(object,whClusters=whichCluster) else whCl<-whichCluster
-  if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-  if(!whCl %in% seq_len(nClusterings(object))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
-  return(whCl)
-}
 
-
-##Universal way to change character indication of clusterTypes into integer indices.
-##If no match, returns vector length 0
-.TypeIntoIndices<-function(x,whClusters){
-  if(is.numeric(whClusters)) wh<-whClusters
-  else{
-    test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
-    if(!inherits(test,"try-error")){
-      if(test=="workflow"){
-        ppIndex<-workflowClusterDetails(x)
-        if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-          wh<-unlist(lapply(.workflowValues,function(tt){
-            ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
-          }))
-        }
-        else wh<-vector("integer",length=0)
-      }
-      if(test=="all"){
-        #put primary cluster first
-        ppcl<-primaryClusterIndex(x)
-        wh<-c(ppcl,c(seq_len(nClusterings(x)))[-ppcl])
-      }
-      if(test=="none") wh<-vector("integer",length=0)
-      if(test=="primaryCluster") wh<-primaryClusterIndex(x)
-      if(test=="dendro"){
-        wh<-dendroClusterIndex(x)
-        if(is.na(wh)) wh<-vector("integer",length=0)
-      }
-    }
-    else{
-      #first match to clusterTypes  
-      mClType<-match(whClusters,clusterTypes(x))  
-      mClLabel<-match(whClusters,clusterLabels(x))  
-      totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
-        if(is.na(type) & !is.na(lab)) return(lab)
-        if(is.na(type) & is.na(lab)) return(NA)
-        if(!is.na(type)){
-          return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
-        }
-      },SIMPLIFY=FALSE)
-      totalMatch<-unlist(totalMatch,use.names=FALSE)
-      
-      if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
-      else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-    }
-  } 
-  if(any(wh>nClusterings(x) | wh<1)){
-    wh<-wh[wh<=nClusterings(x) & wh>0]
-    
-  }
-  #	 if(length(wh)>0) wh<-wh[is.integer(wh)]
-  return(wh)
-}
 
 
 

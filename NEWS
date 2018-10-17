@@ -7,10 +7,12 @@ Changes:
 * New functions: 
  - `sampleDendrogram`, `clusterDendrogram`, `nodeLabels` to access and manipulate the stored dendrograms
  - `numericalAsCharacter` to allow create two digit characters from integers for better sorting of character versions of integers.
+ - `getClusterIndex` function used to match argument `whichClusters` to indices of the `clusterMatrix` (previously was not exported or documented)
 * Added arguments to the following functions: 
  - `whichClusters` to `getBestFeatures`
  - `calculateSample` to `makeDendrogram`
- - `plotType` to `plotClustersTable` to allow version of overlap "bubble"
+ - `plotType` to `plotClustersTable` (now allows "bubble" version of plot of overlap ), and many other arguments related to controlling the plotting.
+ - `labelTracks` to `plotHeatmap` to control whether to add labels to colored tracks.
 * Changed `makeDendrogram` so that the samples dendrogram is made faster. Previously was made by the (time-consuming) process of running `hclust` with "fake data" where each sample was replaced with the mediod of cluster. Now the sample dendrogram is created by manually pasting a (arbitrary) binary tree of the samples with zero-length edges onto the cluster's hierarchical tree.
 * Cluster names like `m1`, `m2` given by `mergeClusters` or `c1`, `c2` by `makeConsensus` will now be `m01`, `m02`, etc. This will help in the sorting correctly by cluster names. If needed (i.e. there are more than 100 clusters) the numbers will be augmented to `m001`, more than 1000 to `m0001` (see  new function `numericalAsCharacter`)
 * The argument `replaceCoClustering` in `clusterSingle` has been changed to `saveSubsamplingMatrix` and the default behavior of when the subsampling matrix is saved and returned has been modified. See `clusterSingle`.

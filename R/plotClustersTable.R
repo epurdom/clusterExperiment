@@ -31,8 +31,33 @@
 #'   create circles for each cell of the contingencey table whose size
 #'   corresponds to the number of samples shared and the color based on the
 #'   value of the proportion (as chosen by the argument \code{margin}).
+#' @param main title of plot, passed to \code{plotHeatmap} or to the argument 
+#'  \code{propLabel} in \code{bubblePlot}
+#' @param propLabel the label to go with the legend of the color of the bubbles/circles
 #' @param ... arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
-#'  depending on choice of \code{plotType}
+#'  depending on choice of \code{plotType}. Note that these functions take different 
+#'  arguments so that switching from one to the other may not take all arguments. In 
+#'  particular \code{bubblePlot} calls \code{plot} while \code{plotHeatmap} calls 
+#'  \code{\link{NMF}{aheatmap}}.
+#' @param propTable table of proportions (\code{bubblePlot}))
+#' @param sizeTable table of sizes (only for use in \code{bubblePlot} or \code{plotType="bubble"}). See details.  
+#' @param gridColor color for grid lines (\code{bubblePlot}))
+#' @param cexFactor factor to multiple by to get values of circles. If missing,
+#'   finds value automatically, namely by using the maxCex value default.
+#'   Overrides value of maxCex. (\code{bubblePlot}))
+#' @param maxCex largest value of cex for any point (others will scale
+#'   proportionally smaller) (\code{bubblePlot})).
+#' @param ylab label for labeling clustering on the y-axis. If NULL, will determine names. 
+#'   If set to \code{NA} no label for clustering on the y-axis will be plotted (to turn off 
+#'   legend of the clusterings in heatmap, set \code{legend=FALSE}).
+#' @param xlab label for labeling clustering on the x-axis. If NULL, will determine names. 
+#'   If set to \code{NA} no label for clustering on the x-axis will be plotted (to turn off 
+#'   legend of the clusterings in heatmap, set \code{legend=FALSE}).
+#' @param las the value for the las value in the call to \code{\link{axis}} in
+#'   labeling the clusters in the bubble plot. Determines whether parallel or
+#'   perpindicular labels to the axis (see \code{\link{par}}).
+#' @param legend whether to draw legend along top (bubble plot) or the color legend (heatmap)
+#' @param colorScale the color scale for the values of the proportion table
 #' @seealso \code{\link{plotHeatmap}}
 #' @details For \code{plotClustersTable} applied to the class \code{table}, 
 #'  \code{sizeTable} is passed to \code{bubblePlot} to indicate the size of the 
@@ -71,15 +96,15 @@
 #' tableClusters(cl,whichClusters=1:2)
 #' #show options of margin in heatmap format:
 #' par(mfrow=c(2,3))
-#' plotClustersTable(cl,whichClusters=1:2, margin=NA, annLegend=FALSE,
+#' plotClustersTable(cl,whichClusters=1:2, margin=NA, legend=FALSE,
 #'   ignoreUnassigned=TRUE)
-#' plotClustersTable(cl,whichClusters=1:2, margin=0, annLegend=FALSE,
+#' plotClustersTable(cl,whichClusters=1:2, margin=0, legend=FALSE,
 #'   ignoreUnassigned=TRUE)
-#' plotClustersTable(cl,whichClusters=1:2, margin=1, annLegend=FALSE,
+#' plotClustersTable(cl,whichClusters=1:2, margin=1, legend=FALSE,
 #'   ignoreUnassigned=TRUE)
-#' plotClustersTable(cl,whichClusters=1:2, margin=2, annLegend=FALSE,
+#' plotClustersTable(cl,whichClusters=1:2, margin=2, legend=FALSE,
 #'   ignoreUnassigned=TRUE)
-#' plotClustersTable(cl,whichClusters=1:2, margin=NULL, annLegend=FALSE,
+#' plotClustersTable(cl,whichClusters=1:2, margin=NULL, legend=FALSE,
 #'   ignoreUnassigned=TRUE)
 #'
 #' #show options of margin in bubble format:
@@ -166,8 +191,8 @@ setMethod(
 setMethod( 
   f = "plotClustersTable",
   signature = signature(object = "table"),
-  definition = function(object,clusterLegend=NULL,cluster=FALSE,
-       plotType=c("heatmap","bubble"), main="",sizeTable=NULL, ...){
+  definition = function(object,plotType=c("heatmap","bubble"), 
+  		main="",xlab=NULL,ylab=NULL,legend=TRUE,cluster=FALSE,clusterLegend=NULL, sizeTable=NULL, ...){
 		plotType<-match.arg(plotType)
 		tableAll<-object
 		varNames<-make.names(names(dimnames(tableAll)))
@@ -181,12 +206,18 @@ setMethod(
 			
 		}
 		else order2<-seq_len(ncol(tableAll))
-			
+		
+		#rows=y-axis
+		defaultY<-is.null(ylab) || ( is.na(ylab) & plotType=="heatmap")
 		rData<-data.frame(rownames(tableAll))
-		names(rData)<-varNames[1]
-
- 	 	cData<-data.frame(colnames(tableAll)[order2])
-		names(cData)<-varNames[2]
+		names(rData)<-if(defaultY) varNames[1] else ylab
+		
+		#cols=x-axis
+		defaultX<-is.null(xlab) || ( is.na(xlab) & plotType=="heatmap")
+		cData<-data.frame(colnames(tableAll)[order2])
+		names(cData)<-if(defaultX) varNames[2] else xlab
+		labelCols<-is.null(xlab) || !is.na(xlab)
+		
 		if(!is.null(clusterLegend)) names(clusterLegend)<-make.names(names(clusterLegend))
 		if(plotType=="heatmap"){
 			passedArgs<-list(...)
@@ -194,19 +225,20 @@ setMethod(
 				passedArgs$colorScale<-colorRampPalette(c("white","black"))(12)
 			}
 			passedArgs<-c(list(data=tableAll[,order2],colData=cData, annRow=rData,
-					clusterLegend=clusterLegend, main=main,
+					clusterLegend=clusterLegend, main=main,annLegend=legend,
+					labelTracks =labelCols,
 					clusterFeatures=cluster,clusterSamples=cluster)
 					,passedArgs)
 			do.call("plotHeatmap",passedArgs)
 		}
-			if(plotType=="bubble"){
-				if(!is.null(sizeTable))
-					bubblePlot(sizeTable=sizeTable[,order2],propTable=tableAll[,order2],propLabel=main,...)
-				else
-					  bubblePlot(sizeTable=tableAll[,order2], propTable=tableAll[,order2],propLabel=main,...)
-				
-			} 		
-			invisible(tableAll[,order2])
+		if(plotType=="bubble"){
+			if(!is.null(sizeTable))
+				bubblePlot(sizeTable=sizeTable[,order2],propTable=tableAll[,order2],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
+			else
+				  bubblePlot(sizeTable=tableAll[,order2], propTable=tableAll[,order2],propLabel=main,xlab=xlab,ylab=ylab,legend=legend,...)
+			
+		} 		
+		invisible(tableAll[,order2])
   	
   }
 	)
@@ -265,23 +297,7 @@ setMethod(
 
 
 #' @rdname plotClustersTable
-#' @param propTable table of proportions
-#' @param sizeTable table of sizes (only for use in \code{bubblePlot} or \code{plotType="bubble"}). See details.  
-#' @param gridColor color for grid lines
-#' @param cexFactor factor to multiple by to get values of circles. If missing,
-#'   finds value automatically, namely by using the maxCex value default.
-#'   Overrides value of maxCex.
-#' @param maxCex largest value of cex for any point (others will scale
-#'   proportionally smaller).
-#' @param ylab label for y-axis. If missing, uses the name for rows in
-#'   sizeTable. If set to \code{NULL} no y-axis label will be plotted.
-#' @param xlab label for x-axis. If missing, uses the name for columns in 
-#'   sizeTable. If set to \code{NULL} no y-axis label will be plotted.
-#' @param las the value for the las value in the call to \code{\link{axis}} in
-#'   labeling the clusters in the bubble plot. Determines whether parallel or
-#'   perpindicular labels to the axis (see \code{\link{par}}).
-#' @param legend whether to draw legend along top
-#' @param colorScale the color scale for the values of the proportion table
+
 #' @details \code{bubblePlot} is mainly used internally by
 #'   \code{plotClustersTable} but is made public for users who want more control
 #'   and to allow documentation of the arguments. \code{bubblePlot} plots a
@@ -352,43 +368,43 @@ setMethod(
   # labels for plots
   axis(1,at=seq_len(nc.col),colnames(sizeTable), adj=1,tick=FALSE,las=las)
   axis(2,at=seq_len(nc.row),rownames(sizeTable), adj=1,tick=FALSE,las=las)
-  if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
-  if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
-  if(!is.null(xlab)) title(xlab=xlab)
-  if(!is.null(ylab)) title(ylab=ylab)
+  if(missing(ylab) || is.null(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
+  if(missing(xlab)  || is.null(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
+  if(!is.na(xlab)) title(xlab=xlab)
+  if(!is.na(ylab)) title(ylab=ylab)
 		    
   # % overlap legend
   if(legend){
-		nboxes<-length(legend.vals)
-		usr<-par("usr")
-		y<-rep(usr[4]+diff(usr[3:4]*.05), length=nboxes)
-		height<-diff(usr[3:4])*.01
-		yspace<-diff(usr[3:4])*.01
-		if(doProp){
-			#legend for color scale
-			x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
-			width<-(x[2]-x[1])/2
-			xspace<-diff(usr[1:2])*.01
+	nboxes<-length(legend.vals)
+	usr<-par("usr")
+	y<-rep(usr[4]+diff(usr[3:4]*.05), length=nboxes)
+	height<-diff(usr[3:4])*.01
+	yspace<-diff(usr[3:4])*.01
+	if(doProp){
+		#legend for color scale
+		x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
+		width<-(x[2]-x[1])/2
+		xspace<-diff(usr[1:2])*.01
 
-			xlabPos<-seq(1,nboxes,length=6)    
-			rect(xright=x-width,xleft=x+width,
-				ybottom=y-height,ytop=y+height,
-				border=NA,col=legend.col,xpd=NA)
-		    text(x=mean(x), unique(y)+height+yspace, propLabel,xpd=NA,pos=3)
-		    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
-		}
+		xlabPos<-seq(1,nboxes,length=6)    
+		rect(xright=x-width,xleft=x+width,
+			ybottom=y-height,ytop=y+height,
+			border=NA,col=legend.col,xpd=NA)
+	    text(x=mean(x), unique(y)+height+yspace, propLabel,xpd=NA,pos=3)
+	    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
+	}
 
-    # bubble size legend
-		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
-		nvals<-length(legSizeVals) #because can't precisely control 'pretty'
-		xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
-		yc<-rep(unique(y), length=nvals)
-		points(xc, yc,
-	    	cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
-			col=rgb(0,0,0,.4), pch=16,xpd=NA)
-	    text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
-	    text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
-	  }
+	# bubble size legend
+	legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
+	nvals<-length(legSizeVals) #because can't precisely control 'pretty'
+	xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
+	yc<-rep(unique(y), length=nvals)
+	points(xc, yc,
+    	cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
+		col=rgb(0,0,0,.4), pch=16,xpd=NA)
+    text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
+    text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
+  }
 
 })
 		

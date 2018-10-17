@@ -89,8 +89,8 @@
 #' @export
 setMethod(
   f = "makeConsensus",
-  signature = signature(x = "matrix", whichClusters = "missing"),
-  definition = function(x, whichClusters, proportion,
+  signature = signature(x = "matrix"),
+  definition = function(x, proportion,
                         clusterFunction="hierarchical01",
                         propUnassigned=.5, minSize=5,...) {
     
@@ -162,14 +162,21 @@ setMethod(
 #'   be set (see vignette).
 setMethod(
   f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
+  signature = signature(x = "ClusterExperiment"),
   definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
-    
-    if(!all(whichClusters %in% seq_len(NCOL(clusterMatrix(x))))) {
-      stop("Invalid indices for clusterLabels")
-    }
-    if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")
-    clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
+	if(missing(whichClusters)){
+	  whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="removeSilently")
+	  if(length(whichClusters)>0){
+	    .mynote("no clusters specified to combine, using results from clusterMany")
+	  }
+	  else{
+	    stop("no clusters specified to combine, please specify.")
+	  }
+	}
+	else{
+		whichClusters <-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
+	}
+	clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
     
     outlist <- makeConsensus(clusterMat, ...)
     newObj <- ClusterExperiment(x, outlist$clustering,
@@ -191,32 +198,6 @@ setMethod(
   }
 )
 
-#' @rdname makeConsensus
-#' @export
-setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "character"),
-  definition = function(x, whichClusters, ...){
-    
-    wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-    makeConsensus(x, wh, ...)
-  }
-)
-#' @rdname makeConsensus
-#' @export
-setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "missing"),
-  definition = function(x, whichClusters, ...){
-    wh<-.TypeIntoIndices(x,"clusterMany")
-    if(length(wh)>0){
-      .mynote("no clusters specified to combine, using results from clusterMany")
-      makeConsensus(x, whichClusters = "clusterMany",...)
-    }
-    else{
-      stop("no clusters specified to combine, please specify.")
-    }
-  }
-)
+
 
 

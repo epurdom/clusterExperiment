@@ -190,7 +190,7 @@
 #' @rdname plotClusters
 setMethod(
   f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="character"),
+  signature = signature(object = "ClusterExperiment",
   definition = function(object, whichClusters=c("workflow","all"),...)
   {
     wh<-.TypeIntoIndices(object,whClusters=whichClusters)
@@ -220,10 +220,16 @@ setMethod(
 
 setMethod(
   f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(object, whichClusters,existingColors=c("ignore","all","firstOnly"),
-                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,colData=NULL,clusterLabels=NULL,...)
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichClusters, 
+  	existingColors=c("ignore","all","firstOnly"),
+    resetNames=FALSE, resetColors=FALSE, resetOrderSamples=FALSE, colData=NULL, clusterLabels=NULL,...)
   {
+	if(missing(whichClusters)){
+	  if(!is.null(workflowClusterDetails(object))) whichClusters<-"workflow"
+	  else whichClusters<-"all"	  	
+	}
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     existingColors<-match.arg(existingColors)
     args<-list(...)    
 		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData")
@@ -379,15 +385,6 @@ setMethod(
     
   })
 
-#' @rdname plotClusters
-setMethod(
-  f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
-  {
-    if(!is.null(workflowClusterDetails(object))) plotClusters(object,whichClusters="workflow",...)
-    else plotClusters(object,whichClusters="all",...)
-  })
 
 
 #' @rdname plotClusters

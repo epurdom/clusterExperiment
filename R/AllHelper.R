@@ -149,17 +149,7 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @param whichClusters argument that can be either numeric or character value
-#'   indicating the clusters to be used. If numeric, gives the indices of the
-#'   \code{clusterMatrix} to return; this can also be used to defined an
-#'   ordering for the clusterings (as relevant). \code{whichClusters} can be a
-#'   character value identifying the \code{clusterTypes} to be used, or if not
-#'   matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-#'   \code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-#'   indicate choosing all clusterings or choosing all 
-#'   \code{\link{workflowClusters}} clusterings or choosing the 'primary'
-#'   clustering, respectively. If missing, the entire matrix of all clusterings
-#'   is returned.
+
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
@@ -177,23 +167,12 @@ setMethod(
 #' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
-  signature = c("ClusterExperiment","numeric"),
+  signature = c("ClusterExperiment"),
   definition = function(x,whichClusters) {
-	  mat<-x@clusterMatrix[,whichClusters,drop=FALSE]
+	  wh<-getClusterIndex(object=x,whClusters=whichClusters,noMatch="silentlyRemove")
+	  mat<-x@clusterMatrix[,wh,drop=FALSE]
 	  rownames(mat)<-colnames(x)
     return(mat)
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
-#' @export
-#' @aliases clusterMatrix
-setMethod(
-  f = "clusterMatrix",
-  signature = c("ClusterExperiment","character"),
-  definition = function(x,whichClusters) {
-	  wh<-.TypeIntoIndices(x,whClusters=whichClusters)
-	  return(clusterMatrix(x,whichClusters=wh))
   }
 )
 
@@ -474,6 +453,8 @@ setReplaceMethod(
     
   }
 )
+
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @inheritParams plotClustersTable
