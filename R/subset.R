@@ -102,9 +102,10 @@ setMethod(
 
 
 #' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
-#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
-#' @param whichCluster Clustering from which to remove clusters for
-#'  \code{removeCluster}. Note that it is a singular cluster.
+#' @param clustersToRemove numeric vector identifying the clusters to remove 
+#'   (whose samples will be reassigned to -1 value).
+#' @param whichCluster argument to identify clustering, with the limitation 
+#'  that only a single clustering can be given.
 #' @rdname subset
 #' @inheritParams addClusterings
 #' @aliases removeClusters
@@ -246,7 +247,7 @@ setMethod(
 #' @return \code{subsetByCluster} subsets the object by clusters in a clustering
 #' and returns a ClusterExperiment object with only those samples
 #' @param clusterValue values of the cluster to match to for subsetting
-#' @param matchTo for subsetting, whether to match to the cluster name
+#' @param matchTo whether to match to the cluster name
 #'   (\code{"name"}) or internal cluster id (\code{"clusterIds"})
 #' @export
 #' @aliases subsetByCluster

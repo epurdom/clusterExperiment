@@ -12,27 +12,27 @@
 \alias{[,ClusterExperiment,ANY,ANY,ANY-method}
 \alias{[,ClusterExperiment,ANY,logical,ANY-method}
 \alias{[,ClusterExperiment,ANY,numeric,ANY-method}
+\alias{subsetByCluster,ClusterExperiment-method}
+\alias{subsetByCluster}
 \title{Functions to subset ClusterExperiment Objects}
 \usage{
-\S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters,
-  ...)
+\S4method{removeClusterings}{ClusterExperiment,character}(x, whichClusters, ...)
 
 \S4method{removeClusterings}{ClusterExperiment,numeric}(x, whichClusters)
 
 \S4method{removeClusters}{ClusterExperiment,numeric}(x, whichCluster,
   clustersToRemove, makePrimary = FALSE, clusterLabels = NULL)
 
-\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster,
-  ...)
+\S4method{removeClusters}{ClusterExperiment,character}(x, whichCluster, ...)
 
-\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ...,
-  drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ...,
-  drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ...,
-  drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
+  whichCluster = "primary", matchTo = c("name", "clusterIds"))
 }
 \arguments{
 \item{x}{a ClusterExperiment object.}
@@ -53,10 +53,11 @@ is returned.}
 \code{clusterInfo} to be passed to the constructor for signature
 \code{SingleCellExperiment,matrix}.}
 
-\item{whichCluster}{Clustering from which to remove clusters for
-\code{removeCluster}. Note that it is a singular cluster.}
+\item{whichCluster}{argument to identify clustering, with the limitation 
+that only a single clustering can be given.}
 
-\item{clustersToRemove}{numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).}
+\item{clustersToRemove}{numeric vector identifying the clusters to remove 
+(whose samples will be reassigned to -1 value).}
 
 \item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
 
@@ -67,6 +68,11 @@ matrix, the column names of that matrix will be used by default, if
 \item{i, j}{A vector of logical or integer subscripts, indicating the rows and columns to be subsetted for \code{i} and \code{j}, respectively.}
 
 \item{drop}{A logical scalar that is ignored.}
+
+\item{clusterValue}{values of the cluster to match to for subsetting}
+
+\item{matchTo}{whether to match to the cluster name
+(\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 }
 \value{
 A \code{\link{ClusterExperiment}} object.
@@ -74,6 +80,9 @@ A \code{\link{ClusterExperiment}} object.
 \code{removeClusterings} returns a \code{ClusterExperiment} object,
  unless all clusters are removed, in which case it returns a
  \code{\link{SingleCellExperiment}} object.
+
+\code{subsetByCluster} subsets the object by clusters in a clustering
+and returns a ClusterExperiment object with only those samples
 }
 \description{
 These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings

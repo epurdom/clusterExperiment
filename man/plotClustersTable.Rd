@@ -16,22 +16,20 @@
   ignoreUnassigned = FALSE, margin = NA, ...)
 
 \S4method{plotClustersTable}{table}(object, clusterLegend = NULL,
-  cluster = FALSE, plotType = c("heatmap", "bubble"),
-  sizeTable = object, ...)
-
-\S4method{tableClusters}{ClusterExperiment,character}(object,
-  whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,missing}(object, whichClusters,
+  cluster = FALSE, plotType = c("heatmap", "bubble"), sizeTable = object,
   ...)
+
+\S4method{tableClusters}{ClusterExperiment,character}(object, whichClusters,
+  ...)
+
+\S4method{tableClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
 
 \S4method{tableClusters}{ClusterExperiment,numeric}(object, whichClusters,
   useNames = TRUE, tableMethod = c("intersect", "union"), ...)
 
-\S4method{bubblePlot}{table,table}(propTable, sizeTable,
-  gridColor = rgb(0, 0, 0, 0.05), maxCex = 8, cexFactor, ylab, xlab,
-  legend = TRUE, las = 2, colorScale = RColorBrewer::brewer.pal(11,
-  "Spectral")[-6])
+\S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
+  0, 0.05), maxCex = 8, cexFactor, ylab, xlab, legend = TRUE, las = 2,
+  colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}

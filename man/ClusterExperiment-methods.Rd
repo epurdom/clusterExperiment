@@ -24,7 +24,9 @@
 \alias{clusterMatrix,ClusterExperiment,missing-method}
 \alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,numeric-method}
+\alias{clusterMatrix}
 \alias{clusterMatrix,ClusterExperiment,character-method}
+\alias{clusterMatrix}
 \alias{primaryCluster,ClusterExperiment-method}
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
@@ -35,8 +37,6 @@
 \alias{primaryClusterNamed}
 \alias{primaryClusterType,ClusterExperiment-method}
 \alias{primaryClusterType}
-\alias{subsetByCluster,ClusterExperiment-method}
-\alias{subsetByCluster}
 \alias{primaryClusterIndex<-,ClusterExperiment,numeric-method}
 \alias{primaryClusterIndex<-}
 \alias{dendroClusterIndex,ClusterExperiment-method}
@@ -46,6 +46,7 @@
 \alias{coClustering<-,ClusterExperiment,matrix-method}
 \alias{coClustering<-}
 \alias{coClustering<-,ClusterExperiment,dsCMatrix-method}
+\alias{coClustering<-}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
 \alias{clusteringInfo,ClusterExperiment-method}
@@ -84,8 +85,7 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrixNamed}{ClusterExperiment}(x,
-  whichClusters = "all")
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x, whichClusters = "all")
 
 \S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
 
@@ -105,11 +105,7 @@
 
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
-\S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
-  whichCluster = "primary", matchTo = c("name", "clusterIds"))
-
-
-  \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
+\S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
@@ -163,11 +159,6 @@ indicate choosing all clusterings or choosing all
 clustering, respectively. If missing, the entire matrix of all clusterings
 is returned.}
 
-\item{clusterValue}{values of the cluster to match to for subsetting}
-
-\item{matchTo}{for subsetting, whether to match to the cluster name
-(\code{"name"}) or internal cluster id (\code{"clusterIds"})}
-
 \item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}.}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
@@ -214,9 +205,6 @@ labels).
 
 \code{primaryClusterIndex} returns/sets the primary clustering index
 (i.e., which column of clusterMatrix corresponds to the primary clustering).
-
-\code{subsetByCluster} subsets the object by clusters in a clustering
-and returns a ClusterExperiment object with only those samples
 
 \code{dendroClusterIndex} returns/sets the clustering index 
 of the clusters used to create dendrogram

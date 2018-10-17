@@ -15,8 +15,17 @@
   whichCluster = "primary", matchTo = c("name", "clusterIds"))
 }
 \arguments{
-\item{whichCluster}{argument to identify cluster, taking input like 
-\code{whichClusters}, only requires that only a single clustering can be identified.}
+\item{object}{a ClusterExperiment object.}
+
+\item{value}{The value to be substituted in the corresponding slot. See the
+slot descriptions in \code{\link{ClusterExperiment}} for details on what
+objects may be passed to these functions.}
+
+\item{whichCluster}{argument to identify clustering, with the limitation 
+that only a single clustering can be given.}
+
+\item{matchTo}{whether to match to the cluster name
+(\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 }
 \value{
 \code{renameClusters} changes the names assigned to clusters within a clustering
