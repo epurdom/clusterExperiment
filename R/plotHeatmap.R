@@ -203,8 +203,9 @@
 #'   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
 #'   also be set in the \code{clusterLegend} slot ). Other options should be
 #'   passed on to \code{aheatmap}, though they have not been all tested. Useful options
-#'  include \code{treeheight=0} to suppress plotting of the dendrograms, and
-#'  \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
+#'  include \code{treeheight=0} to suppress plotting of the dendrograms, 
+#'  \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
+#'  and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 #'
 #' @return Returns (invisibly) a list with elements
 #' \itemize{

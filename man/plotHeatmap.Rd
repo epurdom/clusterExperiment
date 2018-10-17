@@ -331,8 +331,9 @@ Many arguments can be passed on to \code{aheatmap}, however, some are set
   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
   also be set in the \code{clusterLegend} slot ). Other options should be
   passed on to \code{aheatmap}, though they have not been all tested. Useful options
- include \code{treeheight=0} to suppress plotting of the dendrograms, and
- \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
+ include \code{treeheight=0} to suppress plotting of the dendrograms, 
+ \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
+ and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 
 \code{plotCoClustering} is a convenience function to plot the heatmap
 of the co-clustering matrix stored in the \code{coClustering} slot of a

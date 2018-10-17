@@ -215,14 +215,19 @@ test_that("plotClustersTable works",{
 
 	#test more complicated
 	#force different numbers of clusters
-	ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]])
-	ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1))
+	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
+	expect_silent(ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d")))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,annLegend=FALSE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,annLegend=FALSE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,annLegend=FALSE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,annLegend=FALSE ))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,annLegend=FALSE))
+	
 	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,plotType="bubble"))
 	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,plotType="bubble"))
 	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,plotType="bubble"))
 
 	
 })
