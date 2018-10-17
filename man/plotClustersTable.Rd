@@ -181,15 +181,15 @@ plotClustersTable(cl,whichClusters=1:2, margin=NULL, annLegend=FALSE,
 
 #show options of margin in bubble format:
 par(mfrow=c(2,3))
-plotClustersTable(cl,whichClusters=1:2, margin=NA, annLegend=FALSE, 
+plotClustersTable(cl,whichClusters=1:2, margin=NA, 
    ignoreUnassigned=TRUE, plotType="bubble")
-plotClustersTable(cl,whichClusters=1:2, margin=0, annLegend=FALSE,
+plotClustersTable(cl,whichClusters=1:2, margin=0,
    ignoreUnassigned=TRUE, plotType="bubble")
-plotClustersTable(cl,whichClusters=1:2, margin=1, annLegend=FALSE,
+plotClustersTable(cl,whichClusters=1:2, margin=1,
    ignoreUnassigned=TRUE, plotType="bubble")
-plotClustersTable(cl,whichClusters=1:2, margin=2, annLegend=FALSE,
+plotClustersTable(cl,whichClusters=1:2, margin=2,
    ignoreUnassigned=TRUE, plotType="bubble")
-plotClustersTable(cl,whichClusters=1:2, margin=NULL, annLegend=FALSE,
+plotClustersTable(cl,whichClusters=1:2, margin=NULL,
    ignoreUnassigned=TRUE, plotType="bubble")
 }
 \seealso{
