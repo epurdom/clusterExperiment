@@ -21,10 +21,8 @@
 \alias{clusterMatrixNamed}
 \alias{clusterMatrixColors,ClusterExperiment-method}
 \alias{clusterMatrixColors}
-\alias{clusterMatrix,ClusterExperiment,missing-method}
+\alias{clusterMatrix,ClusterExperiment-method}
 \alias{clusterMatrix}
-\alias{clusterMatrix,ClusterExperiment,numeric-method}
-\alias{clusterMatrix,ClusterExperiment,character-method}
 \alias{primaryCluster,ClusterExperiment-method}
 \alias{primaryCluster}
 \alias{primaryClusterIndex,ClusterExperiment-method}
@@ -87,11 +85,9 @@
 
 \S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
 
-\S4method{clusterMatrix}{ClusterExperiment,missing}(x, whichClusters)
+\S4method{clusterMatrix}{ClusterExperiment}(x, whichClusters)
 
-\S4method{clusterMatrix}{ClusterExperiment,numeric}(x, whichClusters)
-
-\S4method{clusterMatrix}{ClusterExperiment,character}(x, whichClusters)
+\S4method{clusterMatrix}{ClusterExperiment}(x, whichClusters)
 
 \S4method{primaryCluster}{ClusterExperiment}(x)
 
@@ -146,17 +142,8 @@ objects may be passed to these functions.}
 
 \item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
 
-\item{whichClusters}{argument that can be either numeric or character value
-indicating the clusters to be used. If numeric, gives the indices of the
-\code{clusterMatrix} to return; this can also be used to defined an
-ordering for the clusterings (as relevant). \code{whichClusters} can be a
-character value identifying the \code{clusterTypes} to be used, or if not
-matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-indicate choosing all clusterings or choosing all 
-\code{\link{workflowClusters}} clusterings or choosing the 'primary'
-clustering, respectively. If missing, the entire matrix of all clusterings
-is returned.}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}.}
 
@@ -184,8 +171,6 @@ clusterMatrix).
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
 
 \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
-
-\code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{clusterMatrix} returns the matrix with all the clusterings.
 

@@ -155,7 +155,7 @@ setMethod(
 #' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
-  signature = c("ClusterExperiment","missing"),
+  signature = c("ClusterExperiment"),
   definition = function(x,whichClusters) {
     wh<-seq_len(ncol(x@clusterMatrix))
     return(clusterMatrix(x,whichClusters=wh))

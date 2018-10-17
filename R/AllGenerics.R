@@ -10,7 +10,7 @@ setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotC
 setGeneric("plotFeatureBoxplot", function(object,feature,...) { standardGeneric("plotFeatureBoxplot")})
 setGeneric("plotFeatureScatter", function(object,features,...) { standardGeneric("plotFeatureScatter")})
 
-setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })
+setGeneric( "tableClusters", function(object,...){ standardGeneric("tableClusters") })
 setGeneric( "plotClustersTable", function(object,...){ standardGeneric("plotClustersTable") })
 setGeneric("bubblePlot", function(propTable,sizeTable,...) { standardGeneric("bubblePlot")})
 
@@ -123,7 +123,7 @@ setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
 # setGeneric("nNodes",function(x){standardGeneric("nNodes")})
 # setGeneric("nTips",function(x){standardGeneric("nTips")})
 
-
+setGeneric("getClusterIndex",function(object,...){standardGeneric("getClusterIndex")})
 setGeneric(
     name = "orderSamples",
     def = function(x) {

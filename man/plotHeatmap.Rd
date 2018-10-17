@@ -101,18 +101,6 @@ color-scale), or a data.frame/matrix with same number of samples as
 \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 clusterFeaturesData will be ignored.}
 
-\item{whichClusters}{argument that can be either numeric or character value
-indicating the clusters to be used. If numeric, gives the indices of the
-\code{clusterMatrix} to return; this can also be used to defined an
-ordering for the clusterings (as relevant). \code{whichClusters} can be a
-character value identifying the \code{clusterTypes} to be used, or if not
-matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-indicate choosing all clusterings or choosing all 
-\code{\link{workflowClusters}} clusterings or choosing the 'primary'
-clustering, respectively. If missing, the entire matrix of all clusterings
-is returned.}
-
 \item{colData}{If input to \code{data} is either a
 \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
 \code{SingleCellExperiment}, then \code{colData} must index the

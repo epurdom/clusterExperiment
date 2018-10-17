@@ -19,15 +19,13 @@
 \item{object}{A \code{ClusterExperiment} object on which
 \code{\link{clusterMany}} has been run}
 
-\item{whichClusters}{which clusterings to "highlight", i.e draw separately 
-from the \code{clusterMany} results. Can be numeric or character vector, 
-indicating the indices or clusterLabels/clusterTypes of the clusterings of 
-interest, respectively.}
+\item{whichClusters}{which clusterings to "highlight", i.e draw separately
+from the bulk of the plot, see argument \code{whichClusters} of
+\code{\link{getClusterIndex}} for description of format allowed.}
 
-\item{whichClusterMany}{numeric indices of which of the clusterMany 
-clusterings to plot (if NULL, defaults to all). Unlike
-\code{whichClusters}, these must be numeric indices. They must also refer
-to clusterings of clusterType \code{clusterMany}.}
+\item{whichClusterMany}{indicate which clusterings to plot in the bulk of the
+plot, see argument \code{whichClusters} of \code{\link{getClusterIndex}}
+for description of format allowed.}
 
 \item{nBlankLines}{the number of blank (i.e. white) rows to add between the
 clusterMany clusterings and the highlighted clusterings.}

@@ -5,10 +5,7 @@
 \alias{plotClustersTable}
 \alias{plotClustersTable,ClusterExperiment-method}
 \alias{plotClustersTable,table-method}
-\alias{tableClusters,ClusterExperiment,character-method}
-\alias{tableClusters}
-\alias{tableClusters,ClusterExperiment,missing-method}
-\alias{tableClusters,ClusterExperiment,numeric-method}
+\alias{tableClusters,ClusterExperiment-method}
 \alias{bubblePlot,table,table-method}
 \title{Plot heatmap of cross-tabs of 2 clusterings}
 \usage{
@@ -19,14 +16,9 @@
   "bubble"), main = "", xlab = NULL, ylab = NULL, legend = TRUE,
   cluster = FALSE, clusterLegend = NULL, sizeTable = NULL, ...)
 
-\S4method{tableClusters}{ClusterExperiment,character}(object,
-  whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,missing}(object, whichClusters,
-  ...)
-
-\S4method{tableClusters}{ClusterExperiment,numeric}(object, whichClusters,
-  useNames = TRUE, tableMethod = c("intersect", "union"), ...)
+\S4method{tableClusters}{ClusterExperiment}(object,
+  whichClusters = "primary", useNames = TRUE,
+  tableMethod = c("intersect", "union"), ...)
 
 \S4method{bubblePlot}{table,table}(propTable, sizeTable,
   gridColor = rgb(0, 0, 0, 0.05), maxCex = 8, cexFactor, ylab, xlab,
@@ -36,17 +28,8 @@
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
-\item{whichClusters}{argument that can be either numeric or character value
-indicating the clusters to be used. If numeric, gives the indices of the
-\code{clusterMatrix} to return; this can also be used to defined an
-ordering for the clusterings (as relevant). \code{whichClusters} can be a
-character value identifying the \code{clusterTypes} to be used, or if not
-matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-indicate choosing all clusterings or choosing all 
-\code{\link{workflowClusters}} clusterings or choosing the 'primary'
-clustering, respectively. If missing, the entire matrix of all clusterings
-is returned.}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters
 in the plotting. This means they will also be ignored in the calculations

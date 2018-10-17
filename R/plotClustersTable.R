@@ -2,7 +2,7 @@
 #' @title Plot heatmap of cross-tabs of 2 clusterings
 #' @description Plot heatmap of cross-tabulations of two clusterings
 #' @aliases plotClustersTable,ClusterExperiment-method
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @inheritParams plotHeatmap
 #' @param object ClusterExperiment object (or matrix with table result)
 #' @param ignoreUnassigned logical as to whether to ignore unassigned clusters
@@ -58,6 +58,9 @@
 #'   perpindicular labels to the axis (see \code{\link{par}}).
 #' @param legend whether to draw legend along top (bubble plot) or the color legend (heatmap)
 #' @param colorScale the color scale for the values of the proportion table
+#' @param useNames for \code{tableClusters}, whether the output should be tabled
+#'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
+#' @param tableMethod the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.
 #' @seealso \code{\link{plotHeatmap}}
 #' @details For \code{plotClustersTable} applied to the class \code{table}, 
 #'  \code{sizeTable} is passed to \code{bubblePlot} to indicate the size of the 
@@ -124,64 +127,64 @@ setMethod(
   f = "plotClustersTable",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, whichClusters,ignoreUnassigned=FALSE,margin=NA,...){
-    whCl<-.TypeIntoIndices(object,whClusters=whichClusters)
+    whCl<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     if(length(whCl)!=2) stop("invalid choice of 'whichClusters' -- must be exactly 2 clusterings chosen.")
-		tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
-		#if ever gets slow, could do this directly so not call tableClusters twice...
-		isMargin0<-!is.null(margin) && !is.na(margin) && margin==0
-		if(isMargin0) denomTab<-.makeUnion(tableAll)
-				
-		cL<-clusterLegend(object)[whCl]
-		if(ignoreUnassigned){
-			rNms<-rownames(tableAll)
-			cNms<-colnames(tableAll)
-			mat1<-cL[[1]]
-			mat2<-cL[[2]]
-			#convert names to clusterIds to check for missing
-			rNms<-mat1[match(rNms,mat1[,"name"]),"clusterIds"]
-			cNms<-mat2[match(cNms,mat2[,"name"]),"clusterIds"]
+	tableAll<-tableClusters(object,whichClusters=whCl,useNames=TRUE,tableMethod="intersect")
+	#if ever gets slow, could do this directly so not call tableClusters twice...
+	isMargin0<-!is.null(margin) && !is.na(margin) && margin==0
+	if(isMargin0) denomTab<-.makeUnion(tableAll)
 			
-			if("-1" %in% rNms || "-2" %in% rNms){
-				wh<-which(! rNms %in% c("-1","-2"))
-				if(length(wh)>0){
-					tableAll<-tableAll[wh, ,drop=FALSE]
-					if(isMargin0) denomTab<-denomTab[wh, ,drop=FALSE]
-					#deal with fact that plotHeatmap doesn't fix problem with rowData!
-					mat1<-mat1[mat1[,"clusterIds"] %in% rNms[wh], ,drop=FALSE]
-					cL[[1]]<-mat1
-				}
-				else stop("All of the first clustering are unassigned, cannot use ignoreUnassigned=TRUE")
-				
+	cL<-clusterLegend(object)[whCl]
+	if(ignoreUnassigned){
+		rNms<-rownames(tableAll)
+		cNms<-colnames(tableAll)
+		mat1<-cL[[1]]
+		mat2<-cL[[2]]
+		#convert names to clusterIds to check for missing
+		rNms<-mat1[match(rNms,mat1[,"name"]),"clusterIds"]
+		cNms<-mat2[match(cNms,mat2[,"name"]),"clusterIds"]
+		
+		if("-1" %in% rNms || "-2" %in% rNms){
+			wh<-which(! rNms %in% c("-1","-2"))
+			if(length(wh)>0){
+				tableAll<-tableAll[wh, ,drop=FALSE]
+				if(isMargin0) denomTab<-denomTab[wh, ,drop=FALSE]
+				#deal with fact that plotHeatmap doesn't fix problem with rowData!
+				mat1<-mat1[mat1[,"clusterIds"] %in% rNms[wh], ,drop=FALSE]
+				cL[[1]]<-mat1
 			}
-			if("-1" %in% cNms || "-2" %in% cNms){
-				wh<-which(! cNms %in% c("-1","-2"))
-				if(length(wh)>0){
-					tableAll<-tableAll[, wh,drop=FALSE]
-					if(isMargin0) denomTab<-denomTab[, wh ,drop=FALSE]
-				}
-				else stop("All of the second clustering are unassigned, cannot use ignoreUnassigned=TRUE")
-			}
+			else stop("All of the first clustering are unassigned, cannot use ignoreUnassigned=TRUE")
 			
+		}
+		if("-1" %in% cNms || "-2" %in% cNms){
+			wh<-which(! cNms %in% c("-1","-2"))
+			if(length(wh)>0){
+				tableAll<-tableAll[, wh,drop=FALSE]
+				if(isMargin0) denomTab<-denomTab[, wh ,drop=FALSE]
+			}
+			else stop("All of the second clustering are unassigned, cannot use ignoreUnassigned=TRUE")
 		}
 		
-		#must be after the ignoreUnassigned so as to get rid of those before calculate
-		if(is.null(margin) || !is.na(margin)){
-			if(isMargin0){
-				plotTable<-tableAll/denomTab
-				propLabel="Jaccard Similarity"
-			}
-			else{
-				plotTable<-prop.table(tableAll,margin=margin)
-				if(is.null(margin)) propLabel="% overlap (out of total cells)"
-				else if(margin==1) propLabel="% overlap (out of row total)"
-				else if(margin==2) propLabel="% overlap (out of col total)"
-			}
+	}
+	
+	#must be after the ignoreUnassigned so as to get rid of those before calculate
+	if(is.null(margin) || !is.na(margin)){
+		if(isMargin0){
+			plotTable<-tableAll/denomTab
+			propLabel="Jaccard Similarity"
 		}
 		else{
-			plotTable<-tableAll
-			propLabel<-"Count of Overlap"
+			plotTable<-prop.table(tableAll,margin=margin)
+			if(is.null(margin)) propLabel="% overlap (out of total cells)"
+			else if(margin==1) propLabel="% overlap (out of row total)"
+			else if(margin==2) propLabel="% overlap (out of col total)"
 		}
-		plotClustersTable(plotTable,clusterLegend=cL,sizeTable=tableAll, main=propLabel,...)
+	}
+	else{
+		plotTable<-tableAll
+		propLabel<-"Count of Overlap"
+	}
+	plotClustersTable(plotTable,clusterLegend=cL,sizeTable=tableAll, main=propLabel,...)
 }
 )
 
@@ -243,42 +246,15 @@ setMethod(
   }
 	)
 
-#' @aliases tableClusters
 #' @rdname plotClustersTable
 #' @export
 setMethod( 
   f = "tableClusters",
-  signature = signature(object= "ClusterExperiment",whichClusters="character"),
-  definition = function(object, whichClusters,...)
-  {
-    wh<-.TypeIntoIndices(object,whClusters=whichClusters)
-    if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-    return(tableClusters(object,whichClusters=wh,...))
-    
-  })
-
-#' @rdname plotClustersTable
-#' @export
-setMethod( 
-  f = "tableClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
-  {
-    tableClusters(object,whichClusters="primaryCluster",...)
-    
-  })
-
-#' @rdname plotClustersTable
-#' @param useNames for \code{tableClusters}, whether the output should be tabled
-#'   with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})
-#' @param tableMethod the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.
-#' @export
-setMethod( 
-  f = "tableClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(object, whichClusters, useNames=TRUE, tableMethod=c("intersect","union"),...)
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichClusters="primary", useNames=TRUE, tableMethod=c("intersect","union"),...)
   { 
-		tableMethod<-match.arg(tableMethod)
+    whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
+    tableMethod<-match.arg(tableMethod)
     if(useNames) numCluster<-clusterMatrixNamed(object,whichClusters=whichClusters)
     else numCluster<-clusterMatrix(object)[,whichClusters]
 		tabAll<-table(data.frame(numCluster))

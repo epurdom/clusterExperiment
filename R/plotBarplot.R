@@ -45,9 +45,7 @@
 #' @return A plot is produced, nothing is returned
 #' @author Elizabeth Purdom
 #' @inheritParams plotClusters
-
-#' @export
-#'
+#' @inheritParams getClusterIndex
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
@@ -63,7 +61,7 @@
 #' @export
 setMethod(
   f = "plotBarplot",
-  signature = signature(object = "ClusterExperiment",
+  signature = signature(object = "ClusterExperiment"),
   definition = function(object, whichClusters="primary",labels=c("names","ids"),...)
   { 
 	wh<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
@@ -110,8 +108,8 @@ setMethod(
   })
 
 
-
 #' @rdname plotBarplot
+#' @export
 setMethod(
   f = "plotBarplot",
   signature = signature(object = "vector"),
@@ -120,6 +118,7 @@ setMethod(
   })
 
 #' @rdname plotBarplot
+#' @export
 setMethod(
   f = "plotBarplot",
   signature = signature(object = "matrix"),

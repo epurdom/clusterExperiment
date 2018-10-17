@@ -3,28 +3,29 @@
 #'Find sets of samples that stay together across clusterings in order to define 
 #'a new clustering vector.
 #'
-#'@aliases makeConsensus
+#' @aliases makeConsensus
 #'  
-#'@param x a matrix or \code{\link{ClusterExperiment}} object.
-#' @inheritParams ClusterExperiment-methods
-#'@param clusterFunction the clustering to use (passed to 
+#' @param x a matrix or \code{\link{ClusterExperiment}} object.
+
+#' @param clusterFunction the clustering to use (passed to 
 #'  \code{\link{mainClustering}}); currently must be of type '01'.
-#'@param minSize minimum size required for a set of samples to be considered in 
+#' @param minSize minimum size required for a set of samples to be considered in 
 #'  a cluster because of shared clustering, passed to
 #'  \code{\link{mainClustering}}
-#'@param proportion The proportion of times that two sets of samples should be 
+#' @param proportion The proportion of times that two sets of samples should be 
 #'  together in order to be grouped into a cluster (if <1, passed to
 #'  mainClustering via alpha = 1 - proportion)
-#'@param propUnassigned samples with greater than this proportion of assignments
+#' @param propUnassigned samples with greater than this proportion of assignments
 #'  equal to '-1' are assigned a '-1' cluster value as a last step (only if
 #'  proportion < 1)
-#'@param ... arguments to be passed on to the method for signature 
+#' @param ... arguments to be passed on to the method for signature 
 #'  \code{matrix,missing}.
-#'@inheritParams clusterMany
-#'@details This function was previously called \code{combineMany} (versions <= 2.0.0).
+#' @inheritParams clusterMany
+#' @inheritParams getClusterIndex
+#' @details This function was previously called \code{combineMany} (versions <= 2.0.0).
 #' \code{combineMany} is still available, but is considered defunct and users should 
 #' update their code accordingly. 
-#'@details The function tries to find a consensus cluster across many different 
+#' @details The function tries to find a consensus cluster across many different 
 #'  clusterings of the same samples. It does so by creating a \code{nSamples} x 
 #'  \code{nSamples} matrix of the percentage of co-occurance of each sample and 
 #'  then calling mainClustering to cluster the co-occurance matrix. The function

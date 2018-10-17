@@ -77,6 +77,7 @@ Collate:
     'clusterSingle.R'
     'dataCreation.R'
     'deprecateFunctions.R'
+    'getClusterIndex.R'
     'getFeatures.R'
     'getParams.R'
     'getReducedData.R'
