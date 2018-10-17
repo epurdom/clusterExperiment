@@ -28,6 +28,7 @@
 #'   \code{\link[base]{prop.table}} to the results of \code{tableClusters}
 #'   (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
 #' @rdname plotClustersTable
+#' @author Kelly Street, Elizabeth Purdom
 #' @seealso \code{\link[base]{prop.table}}
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
@@ -250,17 +251,19 @@ setMethod(
 	definition=function(propTable,sizeTable,gridColor=rgb(0,0,0,.05),
 	maxCex=8,cexFactor, ylab,xlab,legend=TRUE,
 	las=2, colorScale=RColorBrewer::brewer.pal(11,'Spectral')[-6]){
-	if(!all(dim(propTable)==dim(sizeTable))) stop("propTable and sizeTable must be of the same dimensions")
-		if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) stop("propTable and sizeTable must have the same dimnames")
-	 nc.row <- nrow(propTable)
-	 nc.col <- ncol(propTable)
-	propTable<-propTable[nc.row:1,]
-	sizeTable<-sizeTable[nc.row:1,]
+  if(!all(dim(propTable)==dim(sizeTable))) 
+	  stop("propTable and sizeTable must be of the same dimensions")
+  if(!all(unlist(dimnames(propTable))==unlist(dimnames(sizeTable)))) 
+	  stop("propTable and sizeTable must have the same dimnames")
+  nc.row <- nrow(propTable)
+  nc.col <- ncol(propTable)
+  propTable<-propTable[nc.row:1,]
+  sizeTable<-sizeTable[nc.row:1,]
   # set up plotting window
-	xlim<-c(1,nc.col)
-	xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
-	ylim<-c(1,nc.row)
-	ylim<-ylim+.1*diff(ylim)*c(-1,1) #increase size 10% around
+  xlim<-c(1,nc.col)
+  xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
+  ylim<-c(1,nc.row)
+  ylim<-ylim+.1*diff(ylim)*c(-1,1) #increase size 10% around
   plot(0,0,type="n",xlim = xlim, ylim = ylim, ylab="",xlab="",axes=FALSE,frame.plot=FALSE)
    
   # get x-y coords for a grid
@@ -270,7 +273,7 @@ setMethod(
   # set color based on % overlap
   expect.overlap <- min(c(nc.row,nc.col)) / max(c(nc.row,nc.col))
   legend.vals <- pretty(c(0,1),n=50)
-	allColors<-.colorby(c(propTable,0,expect.overlap,legend.vals),colors=colorScale)
+  allColors<-.colorby(c(propTable,0,expect.overlap,legend.vals),colors=colorScale)
   color <- head(allColors,nc.col*nc.row)
   legend.col<-tail(allColors,length(legend.vals))
   # put plotting information into data.frame, so we can sort by size (want
@@ -289,11 +292,11 @@ setMethod(
   # rect(nc.col+1,-1,nc.col+20,nc.row+1, col='white', lty=0) # right
     
   # plot points
-	cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
-	if(missing(cexFactor)){
-		cexFactor<-maxCex/max(cex.pch)
-	}
-	cex.pch<-cex.pch*cexFactor
+  cex.pch<-sqrt(df$sizeTable)/sqrt(max(df$sizeTable))
+  if(missing(cexFactor)){
+	cexFactor<-maxCex/max(cex.pch)
+  }
+  cex.pch<-cex.pch*cexFactor
   points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
@@ -301,40 +304,40 @@ setMethod(
   axis(2,at=seq_len(nc.row),rownames(sizeTable), adj=1,tick=FALSE,las=las)
   if(missing(ylab)) ylab<-names(attributes(sizeTable)$dimnames)[1]
   if(missing(xlab)) xlab<-names(attributes(sizeTable)$dimnames)[2]
-	if(!is.null(xlab)) title(xlab=xlab)
-	if(!is.null(ylab)) title(ylab=ylab)
+  if(!is.null(xlab)) title(xlab=xlab)
+  if(!is.null(ylab)) title(ylab=ylab)
 		
     
   # % overlap legend
-	if(legend){
-		#legend for color scale
-		nboxes<-length(legend.vals)
-		usr<-par("usr")
-		x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
-		width<-(x[2]-x[1])/2
-		y<-rep(usr[4]+diff(usr[3:4]*.05), length=nboxes)
-		height<-diff(usr[3:4])*.01
-		xspace<-diff(usr[1:2])*.01
-		yspace<-diff(usr[3:4])*.01
+  if(legend){
+	#legend for color scale
+	nboxes<-length(legend.vals)
+	usr<-par("usr")
+	x<-seq(usr[1],usr[1]+diff(usr[1:2])*.3,length = nboxes)
+	width<-(x[2]-x[1])/2
+	y<-rep(usr[4]+diff(usr[3:4]*.05), length=nboxes)
+	height<-diff(usr[3:4])*.01
+	xspace<-diff(usr[1:2])*.01
+	yspace<-diff(usr[3:4])*.01
 
-		xlabPos<-seq(1,nboxes,length=6)    
-		rect(xright=x-width,xleft=x+width,
-			ybottom=y-height,ytop=y+height,
-			border=NA,col=legend.col,xpd=NA)
+	xlabPos<-seq(1,nboxes,length=6)    
+	rect(xright=x-width,xleft=x+width,
+		ybottom=y-height,ytop=y+height,
+		border=NA,col=legend.col,xpd=NA)
     text(x=mean(x), unique(y)+height+yspace, "Value of %",xpd=NA,pos=3)
     text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
 
     # bubble size legend
-		legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
-		nvals<-length(legSizeVals) #because can't precisely control 'pretty'
-		xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
-		yc<-rep(unique(y), length=nvals)
-		points(xc, yc,
-        cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
-				col=rgb(0,0,0,.4), pch=16,xpd=NA)
+	legSizeVals<-pretty(range(as.numeric(sizeTable)),n=5)[-1] #smallest is never needed
+	nvals<-length(legSizeVals) #because can't precisely control 'pretty'
+	xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
+	yc<-rep(unique(y), length=nvals)
+	points(xc, yc,
+    	cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
+		col=rgb(0,0,0,.4), pch=16,xpd=NA)
     text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
     text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
-	}
+  }
 
 })
 		

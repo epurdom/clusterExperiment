@@ -10,15 +10,40 @@
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
   cl<-ceLegend[,"clusterIds"]
-  whPos<-which(as.numeric(cl) >0)
-  if(length(whPos)>0){
-	#determine if maximum length is 2 or 3 or 4 (in case in 100s or 1000s of clusters
-	largestLength<-length(unique(cl[whPos]))
-	pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
-  	ceLegend[whPos,"name"]<-paste(prefix,stringr::str_pad(cl[whPos],width=pad,pad="0"),sep="")
-  } 
+  ceLegend[,"name"]<-numericalAsCharacter(values=cl,prefix=prefix)
   clusterLegend(ceObj)[[whCluster]]<-ceLegend
   return(ceObj)
+}
+#' @title Convert numeric values to character that sort correctly
+#' @description Small function that takes as input integer values (or values 
+#' that can be converted to integer values) and converts them into character 
+#' values that are 'padded' with zeros at the beginning of the numbers so 
+#' that they will sort correctly.
+#' @param values vector of values to be converted into sortable character values
+#' @param prefix optional character string that will be added as prefix to the result
+#' @details The function determines the largest value and adds zeros to the front of smaller 
+#'    integers so that the resulting characters are the same number of digits. This allows 
+#'    standard sorting of the values to correctly sort.
+#' @details The maximum number of zeros that will be added is 3. Input integers beyond that 
+#'    point will not be correctly fixed for sorting.
+#' @details Negative integers will not be corrected, but left as-is
+#' @return A character vector
+#' @seealso \code{\link[stringr]{str_pad}}
+#' @examples
+#' numericalAsCharacter(c(-1, 5,10,20,100))
+#' @export
+numericalAsCharacter<-function(values,prefix=""){
+	if(is.factor(values)) values<-as.character(values)
+	values<-suppressWarnings(as.integer(values))
+	if(any(is.na(values))) stop("input must convert to numeric vector")
+	whPos<-which(values >0)
+	if(length(whPos)>0) largestLength<-max(values[whPos])
+	values<-as.character(values)
+	if(length(whPos)>0){
+		pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
+		values[whPos]<-paste(prefix,stringr::str_pad(values[whPos],width=pad,pad="0"),sep="")
+  	} 
+	return(values)
 }
 
 .addNewResult<-function(newObj,oldObj){

@@ -164,3 +164,6 @@ plotClustersTable(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
 
 \code{\link[base]{table}}
 }
+\author{
+Kelly Street, Elizabeth Purdom
+}
