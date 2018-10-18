@@ -23,6 +23,7 @@
 #'  @details If \code{whichClusters} is a character value, but its first element does not match these predesignated values, then all the values of \code{whichClusters} are attempted to be matched to the \code{\link{clusterTypes}} of the object. Note that there may be more than one clustering that matches a given type. For any entries that do not match a value in  \code{clusterTypes(object)} are then matched based on the value of \code{\link{clusterLabels}} of the object. 
 #' @export
 #' @return \code{getClusterIndex} returns a vector of all numeric indices that are indicated by the requested \code{whichClusters}. Note that there is not a one-to-one match between input values and returned values since there may be more than one value for a given value of \code{whichClusters} or no value at all.  
+#' @aliases getClusterIndex,ClusterExperiment-method
 setMethod(
 	f="getClusterIndex",
 	signature="ClusterExperiment",
@@ -101,6 +102,10 @@ setMethod(
 })
 	
 #' @rdname getClusterIndex
+#' @aliases getSingleClusterIndex
+#' @param ... Not for user use. Argument allows function \code{getSingleClusterIndex}  
+#' to catch the wrong argument (the plural \code{whichClusters} argument rather than 
+#' singular \code{whichCluster}). 
 #' @export
 setMethod(
 	f="getSingleClusterIndex",

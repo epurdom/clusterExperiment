@@ -205,6 +205,7 @@
 #' @export
 #' @importFrom grDevices gray
 #' @importFrom stringr str_sort str_order
+#' @aliases plotClusters,ClusterExperiment-method
 setMethod(
   f = "plotClusters",
   signature = signature(object = "ClusterExperiment"),

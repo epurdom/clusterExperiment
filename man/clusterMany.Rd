@@ -14,14 +14,14 @@
   nReducedDims = NA, transFun = NULL, isCount = FALSE, ...)
 
 \S4method{clusterMany}{SingleCellExperiment}(x, ks = NA, clusterFunction,
-  reduceMethod = "none", nFilterDims = defaultNDims(x, reduceMethod,
-  type = "filterStats"), nReducedDims = defaultNDims(x, reduceMethod,
-  type = "reducedDims"), alphas = 0.1, findBestK = FALSE,
-  sequential = FALSE, removeSil = FALSE, subsample = FALSE,
-  silCutoff = 0, distFunction = NA, betas = 0.9, minSizes = 1,
-  transFun = NULL, isCount = FALSE, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE, ...)
+  reduceMethod = "none", nFilterDims = defaultNDims(x, reduceMethod, type =
+  "filterStats"), nReducedDims = defaultNDims(x, reduceMethod, type =
+  "reducedDims"), alphas = 0.1, findBestK = FALSE, sequential = FALSE,
+  removeSil = FALSE, subsample = FALSE, silCutoff = 0,
+  distFunction = NA, betas = 0.9, minSizes = 1, transFun = NULL,
+  isCount = FALSE, verbose = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
+  random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),

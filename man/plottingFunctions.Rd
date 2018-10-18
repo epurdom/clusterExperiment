@@ -6,7 +6,9 @@
 \alias{makeBlankData}
 \alias{convertClusterLegend,ClusterExperiment-method}
 \alias{convertClusterLegend}
+\alias{plottingFunctions}
 \alias{showPalette}
+\alias{bigPalette}
 \alias{bigPalette}
 \alias{massivePalette}
 \alias{setBreaks}
@@ -35,8 +37,7 @@ bigPalette
 
 massivePalette
 
-setBreaks(data, breaks = NA, makeSymmetric = FALSE,
-  returnBreaks = TRUE)
+setBreaks(data, breaks = NA, makeSymmetric = FALSE, returnBreaks = TRUE)
 
 showHeatmapPalettes()
 

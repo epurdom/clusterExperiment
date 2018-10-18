@@ -4,18 +4,17 @@ Functions for running and comparing many different clusterings of single-cell se
 
 ## News and Updates
 
-* Note that some important bugs were fixed since the Bioconductor release. They have been updated in the release version of Bioconductor (version 2.0.2) as well as the development version. 
+* Version 2.2.0 will be shortly available on Bioconductor with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.2.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
 
-* Version 2.0.0 is now available on Bioconductor with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
-
-  The new 2.0.0 version does make use of packages only available in the new release of bioconductor (and thus the new release of R).
+* Summary of changes from previous versions: 
+	- Version 2.0.0  [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) 
 
 ## Publications
 
 * The paper acompanying this package can be found at:
 
-	Davide Risso, Liam Purvis, Russell Fletcher, Diya Das, John Ngai, Sandrine Dudoit, and Elizabeth Purdom (March 2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" bioRxiv, (https://www.biorxiv.org/content/early/2018/03/12/280545)[https://www.biorxiv.org/content/early/2018/03/12/280545].
-
+	Risso D, Purvis L, Fletcher R, Das D, Ngai J, Dudoit S, Purdom E (2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" PLoS Comput Biol. 2018 Sep 4;14(9):e1006378 (link)[ href=http://dx.plos.org/10.1371/journal.pcbi.1006378] 
+	
 	There is a github repository ((epurdom/RSECPaper)[https://github.com/epurdom/RSECPaper] for this paper that gives the code for reproducing the analysis in that manuscript.
 
 * A (F1000 workflow)[https://f1000research.com/articles/6-1158/v1] demonstrating the use of RSEC for clustering as part of trajectory estimation with the package `slingshot` and normalization with `zinbwave`
@@ -24,7 +23,7 @@ Functions for running and comparing many different clusterings of single-cell se
 
 * A compiled version of the vignette (i.e. tutorial) of the github version of `clusterExperiment` (corresponding to the `master` branch) can be found (here)[http://bioconductor.org/packages/devel/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
 
-* The compiled version of the version of `clusterExperiment` available with the latest release of Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
+* The compiled version of the vignette corresponding to the version of `clusterExperiment` available with the latest release of Bioconductor can be found (here)[http://bioconductor.org/packages/release/bioc/vignettes/clusterExperiment/inst/doc/clusterExperimentTutorial.html] 
 
 ## Installation instructions
 

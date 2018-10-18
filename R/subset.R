@@ -15,6 +15,7 @@
 #'  unless all clusters are removed, in which case it returns a
 #'  \code{\link{SingleCellExperiment}} object.
 #' @export
+#' @aliases removeClusterings,ClusterExperiment-method
 setMethod(
   f = "removeClusterings",
   signature = signature("ClusterExperiment"),

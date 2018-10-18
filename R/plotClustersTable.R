@@ -256,6 +256,7 @@ setMethod(
 	)
 
 #' @rdname plotClustersTable
+#' @aliases tableClusters
 #' @export
 setMethod( 
   f = "tableClusters",

@@ -6,24 +6,24 @@
 \alias{plotClustersTable,ClusterExperiment-method}
 \alias{plotClustersTable,table-method}
 \alias{tableClusters,ClusterExperiment-method}
+\alias{tableClusters}
 \alias{bubblePlot,table,table-method}
 \title{Plot heatmap of cross-tabs of 2 clusterings}
 \usage{
 \S4method{plotClustersTable}{ClusterExperiment}(object, whichClusters,
   ignoreUnassigned = FALSE, margin = NA, ...)
 
-\S4method{plotClustersTable}{table}(object, plotType = c("heatmap",
-  "bubble"), main = "", xlab = NULL, ylab = NULL, legend = TRUE,
-  cluster = FALSE, clusterLegend = NULL, sizeTable = NULL, ...)
+\S4method{plotClustersTable}{table}(object, plotType = c("heatmap", "bubble"),
+  main = "", xlab = NULL, ylab = NULL, legend = TRUE, cluster = FALSE,
+  clusterLegend = NULL, sizeTable = NULL, ...)
 
-\S4method{tableClusters}{ClusterExperiment}(object,
-  whichClusters = "primary", useNames = TRUE,
-  tableMethod = c("intersect", "union"), ...)
+\S4method{tableClusters}{ClusterExperiment}(object, whichClusters = "primary",
+  useNames = TRUE, tableMethod = c("intersect", "union"), ...)
 
-\S4method{bubblePlot}{table,table}(propTable, sizeTable,
-  gridColor = rgb(0, 0, 0, 0.05), maxCex = 8, cexFactor, ylab, xlab,
-  propLabel = "Value of \%", legend = TRUE, las = 2,
-  colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
+\S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
+  0, 0.05), maxCex = 8, cexFactor, ylab, xlab, propLabel = "Value of \%",
+  legend = TRUE, las = 2, colorScale = RColorBrewer::brewer.pal(11,
+  "Spectral")[-6])
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}

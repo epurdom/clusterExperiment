@@ -36,13 +36,12 @@
 
 \S4method{nodeLabels}{ClusterExperiment}(x, ...) <- value
 
-\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x,
-  dendroCluster, dendroSample, whichCluster = "dendro")
+\S4method{checkDendrogram}{ClusterExperiment,phylo4d,phylo4d}(x, dendroCluster,
+  dendroSample, whichCluster = "dendro")
 
 \S4method{nodeLabels}{ClusterExperiment}(x)
 
-\S4method{nodeIds}{ClusterExperiment}(x, type = c("all", "internal",
-  "tip"))
+\S4method{nodeIds}{ClusterExperiment}(x, type = c("all", "internal", "tip"))
 
 \S4method{convertToDendrogram}{ClusterExperiment}(x)
 }

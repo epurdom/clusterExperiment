@@ -7,6 +7,7 @@
 \alias{requiredArgs,list-method}
 \alias{requiredArgs,character-method}
 \alias{requiredArgs}
+\alias{requiredArgs,character-method}
 \alias{requiredArgs,factor-method}
 \alias{algorithmType,ClusterFunction-method}
 \alias{algorithmType}

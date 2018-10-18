@@ -3,14 +3,16 @@
 \docType{methods}
 \name{getClusterIndex}
 \alias{getClusterIndex}
+\alias{getClusterIndex,ClusterExperiment-method}
 \alias{getSingleClusterIndex,ClusterExperiment-method}
+\alias{getSingleClusterIndex}
 \title{getClusterIndex}
 \usage{
 \S4method{getClusterIndex}{ClusterExperiment}(object, whichClusters,
   noMatch = c("silentlyRemove", "throwError"))
 
 \S4method{getSingleClusterIndex}{ClusterExperiment}(object, whichCluster,
-  passedArgs = NULL)
+  passedArgs = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
@@ -22,6 +24,10 @@ indicating the clusterings to be used. See details of \code{\link{getClusterInde
 indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{passedArgs}{other arguments passed to the function (only used internally)}
+
+\item{...}{Not for user use. Argument allows function \code{getSingleClusterIndex}
+to catch the wrong argument (the plural \code{whichClusters} argument rather than 
+singular \code{whichCluster}).}
 
 \item{silentlyRemove}{logical as to whether to silently remove mismatches. Otherwise values that do not match are given NA values, unless all values are NA in which an error is returned.}
 }

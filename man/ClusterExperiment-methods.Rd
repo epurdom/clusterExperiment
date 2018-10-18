@@ -42,6 +42,7 @@
 \alias{coClustering<-,ClusterExperiment,matrix-method}
 \alias{coClustering<-}
 \alias{coClustering<-,ClusterExperiment,dsCMatrix-method}
+\alias{coClustering<-}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
 \alias{clusteringInfo,ClusterExperiment-method}
@@ -80,12 +81,9 @@
 
 \S4method{nSamples}{ClusterExperiment}(x)
 
-\S4method{clusterMatrixNamed}{ClusterExperiment}(x,
-  whichClusters = "all")
+\S4method{clusterMatrixNamed}{ClusterExperiment}(x, whichClusters = "all")
 
 \S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
-
-\S4method{clusterMatrix}{ClusterExperiment}(x, whichClusters)
 
 \S4method{clusterMatrix}{ClusterExperiment}(x, whichClusters)
 
@@ -99,8 +97,7 @@
 
 \S4method{primaryClusterType}{ClusterExperiment}(x)
 
-
-  \S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
+\S4method{primaryClusterIndex}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{dendroClusterIndex}{ClusterExperiment}(x)
 
@@ -171,8 +168,6 @@ clusterMatrix).
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
 
 \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
-
-\code{clusterMatrix} returns the matrix with all the clusterings.
 
 \code{clusterMatrix} returns the matrix with all the clusterings.
 
