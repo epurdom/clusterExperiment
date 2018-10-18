@@ -3,7 +3,7 @@
 \docType{methods}
 \name{plotClusters}
 \alias{plotClusters}
-\alias{plotClusters,ClusterExperiment,character-method}
+\alias{plotClusters,ClusterExperiment-method}
 \alias{plotClusters,matrix-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{

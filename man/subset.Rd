@@ -3,7 +3,7 @@
 \docType{methods}
 \name{subset}
 \alias{subset}
-\alias{removeClusterings,ClusterExperiment,character-method}
+\alias{removeClusterings,ClusterExperiment-method}
 \alias{removeClusters,ClusterExperiment-method}
 \alias{removeClusters}
 \alias{[,ClusterExperiment,ANY,character,ANY-method}

@@ -5,7 +5,6 @@
 #' @inheritParams ClusterExperiment-class 
 #' @inheritParams getClusterIndex
 #' @return A \code{\link{ClusterExperiment}} object.
-#' @aliases removeClusterings,ClusterExperiment,character-method
 #' @details \code{removeClusterings} removes the clusters given by
 #'  \code{whichClusters}. If the
 #'  \code{primaryCluster} is one of the clusters removed, the

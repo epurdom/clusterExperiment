@@ -216,7 +216,7 @@ setGeneric(
 
 setGeneric( "plotClusters", function(object, ...) { standardGeneric("plotClusters")})
 setGeneric( name="plotBarplot", def=function(object, ...) { standardGeneric("plotBarplot") })
-setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
+setGeneric("plotReducedDims",function(object,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
   name="plotHeatmap",

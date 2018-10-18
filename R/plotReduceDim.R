@@ -2,29 +2,6 @@
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a
 #'   clustering.
-#' @aliases plotReducedDims plotReducedDims,ClusterExperiment,character-method
-#' @export
-setMethod(
-  f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="character"),
-  definition = function(object, whichCluster,...)
-  {
-    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
-    return(plotReducedDims(object,whichCluster=whCl,...))
-    
-  })
-
-#' @rdname plotReducedDims
-#' @export
-setMethod(
-  f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="missing"),
-  definition = function(object, whichCluster,...)
-  {
-    plotReducedDims(object,whichCluster="primaryCluster",...)
-
-  })
-
 #' @param object a ClusterExperiment object
 #' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in
@@ -76,14 +53,15 @@ setMethod(
 #'
 #' plotReducedDims(cl,legend="bottomright")
 #' @export
+#' @aliases plotReducedDims plotReducedDims,ClusterExperiment-method
 setMethod(
   f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
-  definition = function(object, whichCluster,
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichCluster="primary",
                         reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
+	whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){
