@@ -13,14 +13,15 @@
 #'   dimensionality reduction (if any) to be taken of the data for calculating
 #'   the medians of the clusters
 #' @inheritParams getClusterIndex
-#' @details The function \code{assignUnassigned} calculates the median values of each variable for each
-#'   cluster, and then calculates the euclidean distance of each unassigned
-#'   sample to the median of each cluster. Each unassigned sample is assigned to
-#'   the cluster for which it closest to the median.
+#' @details The function \code{assignUnassigned} calculates the median values of
+#'   each variable for each cluster, and then calculates the euclidean distance
+#'   of each unassigned sample to the median of each cluster. Each unassigned
+#'   sample is assigned to the cluster for which it closest to the median.
 #' @details All unassigned samples in the cluster are given a clustering,
 #'   regardless of whether they are classified as -1 or -2.
-#' @return The function \code{assignUnassigned} returns a \code{ClusterExperiment}
-#' object with the unassigned samples assigned to one of the existing clusters. 
+#' @return The function \code{assignUnassigned} returns a
+#'   \code{ClusterExperiment} object with the unassigned samples assigned to one
+#'   of the existing clusters.
 #' @seealso \code{\link{getReducedData}}
 #' @examples
 #' #load CE object
@@ -86,10 +87,11 @@ setMethod(
 #' @rdname assignUnassigned
 #' @aliases removeUnassigned
 #' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so they may
-#'   be unclustered in other clusters found in \code{clusterMatrix(object)}).
-#' @return The function \code{removeUnassigned} returns a \code{ClusterExperiment}
-#' object with the unassigned samples removed. 
+#'   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so
+#'   they may be unclustered in other clusters found in
+#'   \code{clusterMatrix(object)}).
+#' @return The function \code{removeUnassigned} returns a
+#'   \code{ClusterExperiment} object with the unassigned samples removed.
 #' @export
 setMethod(
   f = "removeUnassigned",

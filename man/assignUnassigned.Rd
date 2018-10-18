@@ -24,7 +24,8 @@ indicating the \emph{single} clustering to be used. Giving values that result in
 \item{clusterLabel}{if missing, the current cluster label of the cluster will
 be appended with the string "_AllAssigned".}
 
-\item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
+\item{makePrimary}{whether to make the added cluster the primary cluster
+(only relevant if \code{y} is a vector)}
 
 \item{whichAssay}{which assay to use to calculate the median per cluster and
 take dimensionality reduction (if requested)}
@@ -42,28 +43,30 @@ dimensionality reduction (if any) to be taken of the data for calculating
 the medians of the clusters}
 }
 \value{
-The function \code{assignUnassigned} returns a \code{ClusterExperiment}
-object with the unassigned samples assigned to one of the existing clusters.
+The function \code{assignUnassigned} returns a
+  \code{ClusterExperiment} object with the unassigned samples assigned to one
+  of the existing clusters.
 
-The function \code{removeUnassigned} returns a \code{ClusterExperiment}
-object with the unassigned samples removed.
+The function \code{removeUnassigned} returns a
+  \code{ClusterExperiment} object with the unassigned samples removed.
 }
 \description{
 Assigns the unassigned samples in a cluster to the nearest
   cluster based on distance to the medians of the clusters.
 }
 \details{
-The function \code{assignUnassigned} calculates the median values of each variable for each
-  cluster, and then calculates the euclidean distance of each unassigned
-  sample to the median of each cluster. Each unassigned sample is assigned to
-  the cluster for which it closest to the median.
+The function \code{assignUnassigned} calculates the median values of
+  each variable for each cluster, and then calculates the euclidean distance
+  of each unassigned sample to the median of each cluster. Each unassigned
+  sample is assigned to the cluster for which it closest to the median.
 
 All unassigned samples in the cluster are given a clustering,
   regardless of whether they are classified as -1 or -2.
 
 \code{removeUnclustered} removes all samples that are unclustered
-  (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so they may
-  be unclustered in other clusters found in \code{clusterMatrix(object)}).
+  (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so
+  they may be unclustered in other clusters found in
+  \code{clusterMatrix(object)}).
 }
 \examples{
 #load CE object

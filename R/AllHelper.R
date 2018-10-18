@@ -1,8 +1,10 @@
 #' @name ClusterExperiment-methods
 #' @title Helper methods for the ClusterExperiment class
 #'
-#' @description This is a collection of helper methods for the ClusterExperiment class.
-#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}.
+#' @description This is a collection of helper methods for the ClusterExperiment
+#'   class.
+#' @param ... For \code{addToColData}, arguments passed to
+#'   \code{colDataClusters}.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -85,7 +87,8 @@ setMethod(
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{nClusters} returns the number of clusters per clustering
-#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering. 
+#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2
+#'   assignments in calculating the number of clusters per clustering.
 #' @export
 #' @aliases nClusters
 setMethod(
@@ -137,7 +140,8 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+#' @return \code{clusterMatrixColors} returns the matrix with all the
+#'   clusterings, using the internally stored colors for each cluster
 #' @export
 #' @aliases clusterMatrixColors
 setMethod(
@@ -329,7 +333,8 @@ setMethod(
 
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
+#' @return \code{clusterLabels} returns/sets the column names of the
+#'   clusterMatrix slot.
 #' @export
 #' @aliases clusterLabels
 setMethod(
@@ -491,10 +496,11 @@ setMethod(
 	})
 	
 #' @title Change assigned names or colors of clusters
-#' @description Change the assigned names or colors of the clusters in a clustering
-#'   stored in the clusterLegend slot of the object.
+#' @description Change the assigned names or colors of the clusters in a
+#'   clustering stored in the clusterLegend slot of the object.
 #' @rdname renameClusters
-#' @return \code{renameClusters} changes the names assigned to clusters within a clustering 
+#' @return \code{renameClusters} changes the names assigned to clusters within a
+#'   clustering
 #' @export
 #' @inheritParams subset
 #' @inheritParams ClusterExperiment-methods
@@ -516,7 +522,8 @@ setMethod(
 )
 
 #' @rdname renameClusters
-#' @return \code{recolorClusters} changes the colors assigned to clusters within a clustering
+#' @return \code{recolorClusters} changes the colors assigned to clusters within
+#'   a clustering
 #' @export
 #' @aliases recolorClusters
 setMethod( 

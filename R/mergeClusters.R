@@ -124,28 +124,34 @@
 #'   link up the internal nodes of the sample dendrogram to the internal nodes
 #'   of the cluster dendrogram when the unassigned samples are intermixed.
 #' @return If `x` is a matrix, it returns (invisibly) a list with elements
-#'   \itemize{
-#'		\item{\code{clustering}}{ a vector of length equal to ncol(x)
-#'   giving the integer-valued cluster ids for each sample. "-1" indicates the
-#'   sample was not clustered.}
-#'		\item{\code{oldClToNew}}{ A table of the old
-#'   cluster labels to the new cluster labels.}
-#'		\item{\code{nodeProp}}{ 
-#'A table of the proportions that are DE on each node.This table is saved in the
-#'\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
-#'accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
-#'		}
-#'		\item{\code{nodeMerge}}{ A table of indicating for each node whether merged
-#'		or not and the cluster id in the new clustering that corresponds to the
-#'		node. Note that a node can be merged and not correspond to a node in the new
-#'		clustering, if its ancestor node is also merged. But there must be some node
-#'		that corresponds to a new cluster id if merging has been done. This table is
-#'		saved in the \code{merge_nodeMerge} slot of a \code{ClusterExperiment}
-#'		object and can be accessed along with the nodeProp info with the
-#'		\code{nodeMergeInfo} function. }
-#'   \item{\code{updatedClusterDendro}}{ The dendrogram on which the merging
-#'   was based (based on the original clustering).}
-#'   \item{\code{cutoff}}{ The cutoff value for merging.} }
+#'\itemize{ 
+#'\item{\code{clustering}}{ a vector of length equal to ncol(x) giving
+#'the integer-valued cluster ids for each sample. "-1" indicates the sample was
+#'not clustered.} 
+#'\item{\code{oldClToNew}}{ A table of the old cluster labels to
+#'the new cluster labels.} 
+#'\item{\code{nodeProp}}{ A table of the proportions
+#'that are DE on each node.This table is saved in the \code{merge_nodeProp} slot
+#'of a \code{ClusterExperiment} object and can be accessed along with the
+#'nodeMerge info with the \code{nodeMergeInfo} function. 
+#'}
+#'\item{\code{nodeMerge}}{ 
+#'A table of indicating for each node whether merged or
+#'not and the cluster id in the new clustering that corresponds to the node.
+#'Note that a node can be merged and not correspond to a node in the new
+#'clustering, if its ancestor node is also merged. But there must be some node
+#'that corresponds to a new cluster id if merging has been done. This table is
+#'saved in the \code{merge_nodeMerge} slot of a \code{ClusterExperiment} object
+#'and can be accessed along with the nodeProp info with the \code{nodeMergeInfo}
+#'function. 
+#'} 
+#'\item{\code{updatedClusterDendro}}{ The dendrogram on which the
+#'merging was based (based on the original clustering).
+#'} 
+#'\item{\code{cutoff}}{
+#'The cutoff value for merging.
+#'} 
+#'}
 #' @return If `x` is a \code{\link{ClusterExperiment}}, it returns a new
 #'   \code{ClusterExperiment} object with an additional clustering based on the
 #'   merging. This becomes the new primary clustering. Note that even if

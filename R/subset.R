@@ -1,18 +1,19 @@
 #' @title Functions to subset ClusterExperiment Objects
-#' @description These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings
+#' @description These functions are used to subset ClusterExperiment objects,
+#'   either by removing samples, genes, or clusterings
 #' @name subset
 #' @param x a ClusterExperiment object.
-#' @inheritParams ClusterExperiment-class 
+#' @inheritParams ClusterExperiment-class
 #' @inheritParams getClusterIndex
 #' @return A \code{\link{ClusterExperiment}} object.
 #' @details \code{removeClusterings} removes the clusters given by
-#'  \code{whichClusters}. If the
-#'  \code{primaryCluster} is one of the clusters removed, the
-#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
-#'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
+#'   \code{whichClusters}. If the \code{primaryCluster} is one of the clusters
+#'   removed, the \code{primaryClusterIndex} is set to 1 and the dendrogram and
+#'   coclustering matrix are discarded and orderSamples is set to
+#'   \code{1:NCOL(x)}.
 #' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
-#'  unless all clusters are removed, in which case it returns a
-#'  \code{\link{SingleCellExperiment}} object.
+#'   unless all clusters are removed, in which case it returns a
+#'   \code{\link{SingleCellExperiment}} object.
 #' @export
 #' @aliases removeClusterings,ClusterExperiment-method
 setMethod(
@@ -90,8 +91,10 @@ setMethod(
 
 
 
-#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
-#' @param clustersToRemove numeric vector identifying the clusters to remove 
+#' @details \code{removeClusters} creates a new cluster that unassigns samples
+#'   in cluster \code{clustersToRemove} (in the clustering defined by
+#'   \code{whichClusters}) and assigns them to -1 (unassigned)
+#' @param clustersToRemove numeric vector identifying the clusters to remove
 #'   (whose samples will be reassigned to -1 value).
 #' @rdname subset
 #' @inheritParams addClusterings

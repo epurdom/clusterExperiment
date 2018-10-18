@@ -36,24 +36,23 @@ indicating the clusterings to be used. See details of \code{\link{getClusterInde
 in the plotting. This means they will also be ignored in the calculations
 of the proportions (if \code{margin} not NA).}
 
-\item{margin}{if NA, the actual counts from \code{tableClusters} will be plotted.
-Otherwise, \code{\link[base]{prop.table}} will be called and the argument
-\code{margin} will be passed to \code{prop.table} to determine whether
-proportions should be calculated. If '1', then the proportions in the rows
-sum to 1, if '2' the proportions in the columns sum to 1. If 'NULL' then
-the proportion across the entire matrix will sum to 1. An additional 
-option has been added so that if you set  \code{margin=0}, the entry 
-displayed in each cell
-will be the proportion equal to the size of the intersection over the size
-of the union of the clusters (a Jaccard similarity between the clusters),
-in which case each entry is a value between 0 and 1 but no combination of 
-the entries sum to 1.}
+\item{margin}{if NA, the actual counts from \code{tableClusters} will be
+plotted. Otherwise, \code{\link[base]{prop.table}} will be called and the
+argument \code{margin} will be passed to \code{prop.table} to determine
+whether proportions should be calculated. If '1', then the proportions in
+the rows sum to 1, if '2' the proportions in the columns sum to 1. If
+'NULL' then the proportion across the entire matrix will sum to 1. An
+additional option has been added so that if you set  \code{margin=0}, the
+entry displayed in each cell will be the proportion equal to the size of
+the intersection over the size of the union of the clusters (a Jaccard
+similarity between the clusters), in which case each entry is a value
+between 0 and 1 but no combination of the entries sum to 1.}
 
-\item{...}{arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
-depending on choice of \code{plotType}. Note that these functions take different 
-arguments so that switching from one to the other may not take all arguments. In 
-particular \code{bubblePlot} calls \code{plot} while \code{plotHeatmap} calls 
-\code{\link{NMF}{aheatmap}}.}
+\item{...}{arguments passed on to \code{plotHeatmap} or \code{bubblePlot}
+depending on choice of \code{plotType}. Note that these functions take
+different arguments so that switching from one to the other may not take
+all arguments. In particular \code{bubblePlot} calls \code{plot} while
+\code{plotHeatmap} calls \code{\link{NMF}{aheatmap}}.}
 
 \item{plotType}{type of plot. If "heatmap", then a heatmap will be created of
 the values of the contingency table of the two clusters (calculated as
@@ -63,31 +62,40 @@ create circles for each cell of the contingencey table whose size
 corresponds to the number of samples shared and the color based on the
 value of the proportion (as chosen by the argument \code{margin}).}
 
-\item{main}{title of plot, passed to \code{plotHeatmap} or to the argument 
+\item{main}{title of plot, passed to \code{plotHeatmap} or to the argument
 \code{propLabel} in \code{bubblePlot}}
 
-\item{xlab}{label for labeling clustering on the x-axis. If NULL, will determine names. 
-If set to \code{NA} no label for clustering on the x-axis will be plotted (to turn off 
-legend of the clusterings in heatmap, set \code{legend=FALSE}).}
+\item{xlab}{label for labeling clustering on the x-axis. If NULL, will
+determine names. If set to \code{NA} no label for clustering on the x-axis
+will be plotted (to turn off legend of the clusterings in heatmap, set
+\code{legend=FALSE}).}
 
-\item{ylab}{label for labeling clustering on the y-axis. If NULL, will determine names. 
-If set to \code{NA} no label for clustering on the y-axis will be plotted (to turn off 
-legend of the clusterings in heatmap, set \code{legend=FALSE}).}
+\item{ylab}{label for labeling clustering on the y-axis. If NULL, will
+determine names. If set to \code{NA} no label for clustering on the y-axis
+will be plotted (to turn off legend of the clusterings in heatmap, set
+\code{legend=FALSE}).}
 
-\item{legend}{whether to draw legend along top (bubble plot) or the color legend (heatmap)}
+\item{legend}{whether to draw legend along top (bubble plot) or the color
+legend (heatmap)}
 
-\item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
-to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
+\item{cluster}{logical, whether to cluster the rows and columns of the table.
+Passed to arguments \code{clusterFeatures} AND \code{clusterSamples} of
+\code{plotHeatmap}.}
 
-\item{clusterLegend}{list in \code{clusterLegend} format that gives colors for the
-clusters tabulated.}
+\item{clusterLegend}{list in \code{clusterLegend} format that gives colors
+for the clusters tabulated.}
 
-\item{sizeTable}{table of sizes (only for use in \code{bubblePlot} or \code{plotType="bubble"}). See details.}
+\item{sizeTable}{table of sizes (only for use in \code{bubblePlot} or
+\code{plotType="bubble"}). See details.}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
-\item{tableMethod}{the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.}
+\item{tableMethod}{the type of table calculation to perform. "intersect"
+refers to the standard contingency table (\code{\link[base]{table}}), where
+each entry of the resulting table is the number of objects in both
+clusters. "union" instead gives for each entry the number of objects that
+are in the union of both clusters.}
 
 \item{propTable}{table of proportions (\code{bubblePlot}))}
 
@@ -100,7 +108,8 @@ proportionally smaller) (\code{bubblePlot})).}
 finds value automatically, namely by using the maxCex value default.
 Overrides value of maxCex. (\code{bubblePlot}))}
 
-\item{propLabel}{the label to go with the legend of the color of the bubbles/circles}
+\item{propLabel}{the label to go with the legend of the color of the
+bubbles/circles}
 
 \item{las}{the value for the las value in the call to \code{\link{axis}} in
 labeling the clusters in the bubble plot. Determines whether parallel or
@@ -121,23 +130,22 @@ perpindicular labels to the axis (see \code{\link{par}}).}
 Plot heatmap of cross-tabulations of two clusterings
 }
 \details{
-For \code{plotClustersTable} applied to the class \code{table}, 
- \code{sizeTable} is passed to \code{bubblePlot} to indicate the size of the 
- circle. If \code{sizeTable=NULL}, then it is assumed that 
- the \code{object} argument is the table of counts and both the 
- \code{propTable} and \code{sizeTable} are set to the same value (hence 
- turning off the coloring of the circle/bubbles). This is equivalent effect 
- to the \code{margin=NA} option of \code{plotClustersTable} applied to the 
- \code{ClusterExperiment} class.
+For \code{plotClustersTable} applied to the class \code{table},
+  \code{sizeTable} is passed to \code{bubblePlot} to indicate the size of the
+  circle. If \code{sizeTable=NULL}, then it is assumed that the \code{object}
+  argument is the table of counts and both the \code{propTable} and
+  \code{sizeTable} are set to the same value (hence turning off the coloring
+  of the circle/bubbles). This is equivalent effect to the \code{margin=NA}
+  option of \code{plotClustersTable} applied to the \code{ClusterExperiment}
+  class.
 
-Note that the cluster labels in \code{plotClustersTable} and 
-\code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
-because \code{tableClusters} calls the R function \code{table}, which makes this 
-conversion
+Note that the cluster labels in \code{plotClustersTable} and
+  \code{tableClusters} are converted to "proper" R names via
+  \code{make.names}. This is because \code{tableClusters} calls the R
+  function \code{table}, which makes this conversion
 
-For \code{plotClustersTable}, \code{whichClusters}
-  should define 2 clusters, while for \code{tableClusters} it can indicate arbitrary
-  number.
+For \code{plotClustersTable}, \code{whichClusters} should define 2
+  clusters, while for \code{tableClusters} it can indicate arbitrary number.
 
 \code{bubblePlot} is mainly used internally by
   \code{plotClustersTable} but is made public for users who want more control

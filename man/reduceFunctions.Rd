@@ -63,7 +63,10 @@ listBuiltInFilterStats()
 listBuiltInReducedDims()
 }
 \arguments{
-\item{object}{For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.}
+\item{object}{For \code{makeReducedDims},\code{makeFilterStats},
+\code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or
+\code{ClusterExperiment} object. For \code{getReducedData} only a
+\code{ClusterExperiment} object allowed.}
 
 \item{reduceMethod}{character. A method (or methods) for reducing the size of
 the data, either by filtering the rows (genes) or by a dimensionality
@@ -158,10 +161,10 @@ will be used for each).}
 If \code{returnValue="object"}, a \code{ClusterExperiment} object.
 
 If \code{returnValue="list"} a list with elements:
-\itemize{
-\item{\code{objectUpdate}}{object, potentially updated if had to calculate dimensionality reduction or filtering statistic}
-\item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in columns, features in rows}
-}
+\itemize{ \item{\code{objectUpdate}}{object, potentially updated if had to
+calculate dimensionality reduction or filtering statistic}
+\item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in
+columns, features in rows} }
 
 \code{defaultNDims} returns a numeric vector giving the default
   dimensions the methods in \code{clusterExperiment} will use for reducing
@@ -282,5 +285,6 @@ scf<-makeReducedDims(simData, reducedDims="PCA", maxDims=3)
 scf
 }
 \seealso{
-\code{\link{makeFilterStats}},\code{\link{makeReducedDims}}, \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
+\code{\link{makeFilterStats}},\code{\link{makeReducedDims}},
+  \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
 }

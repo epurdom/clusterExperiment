@@ -245,25 +245,24 @@
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
-#' @param object name of built in function. 
+#' @param object name of built in function.
 #' @description Documents the built-in clustering options that are available in
 #'   the clusterExperiment package.
 #' @rdname builtInClusteringFunctions
-#' @details \code{listBuiltInFunctions} will return the character names of
-#'   the built-in clustering functions available.
+#' @details \code{listBuiltInFunctions} will return the character names of the
+#'   built-in clustering functions available.
 #' @details \code{listBuiltInTypeK} returns the names of the built-in functions
 #'   that have type 'K'
 #' @details \code{listBuiltInType01} returns the names of the built-in functions
 #'   that have type '01'
-#' @details \code{getBuiltInFunction} will return the
-#'   \code{ClusterFunction} object of a character value that corresponds to a
-#'   built-in function.
-#' @details \code{\link{algorithmType}} and \code{\link{inputType}} will 
-#' return the \code{algorithmType} and \code{inputType} of the
-#'   built-in clusterFunction corresponding to the character value.
-#' @details \strong{Built-in clustering methods:} The built-in clustering methods, the
-#'   names of which can be accessed by \code{listBuiltInFunctions()} are the
-#'   following: 
+#' @details \code{getBuiltInFunction} will return the \code{ClusterFunction}
+#'   object of a character value that corresponds to a built-in function.
+#' @details \code{\link{algorithmType}} and \code{\link{inputType}} will return
+#'   the \code{algorithmType} and \code{inputType} of the built-in
+#'   clusterFunction corresponding to the character value.
+#' @details \strong{Built-in clustering methods:} The built-in clustering
+#'   methods, the names of which can be accessed by
+#'   \code{listBuiltInFunctions()} are the following:
 #' \itemize{ 
 #' \item{"pam"}{Based on \code{\link[cluster]{pam}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
@@ -279,26 +278,24 @@
 #' \code{mediods.x=FALSE},\code{rngR=TRUE},
 #'  \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
 #' Input is \code{"X"}; algorithm type is "K".} 
-#' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in
-#'   \code{stats} package. Arguments to that function can be passed via
-#'   \code{clusterArgs} except for \code{centers} which is reencoded here to be
-#'   the argument 'k' 
-#' Input is \code{"X"}; algorithm type is "K"} 
-#' \item{"hierarchical01"}{\code{\link[stats]{hclust}} in
-#'   \code{stats} package is used to build hiearchical clustering. Arguments to
-#'   that function can be passed via \code{clusterArgs}. The
-#'   \code{hierarchical01} cuts the hiearchical tree based on the parameter
-#'   \code{alpha}. It does not use the \code{cutree} function, but instead 
-#'  transversing down the tree until getting a block of 
-#'   samples with whose summary of the values  is greater than or equal to 
-#'   1-alpha. Arguments that can be passed to 'hierarchical01' are 
-#'   'evalClusterMethod' which determines how to summarize the samples' values 
-#'   of D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes
-#'   the minimum of D[samples,samples] and requires it to be less than or equal
-#'   to 1-alpha; "average" requires that each row mean of D[samples,samples] be
-#'   less than or equal to 1-alpha. Additional arguments of hclust can also be passed via
-#'   clusterArgs to control the hierarchical clustering of D.  
-#' Input is \code{"diss"}; algorithm type is "01"}  
+#' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in \code{stats} package.
+#' Arguments to that function can be passed via \code{clusterArgs} except for
+#' \code{centers} which is reencoded here to be the argument 'k' Input is
+#' \code{"X"}; algorithm type is "K"}
+#' \item{"hierarchical01"}{\code{\link[stats]{hclust}} in \code{stats} package
+#' is used to build hiearchical clustering. Arguments to that function can be
+#' passed via \code{clusterArgs}. The \code{hierarchical01} cuts the hiearchical
+#' tree based on the parameter \code{alpha}. It does not use the \code{cutree}
+#' function, but instead transversing down the tree until getting a block of
+#' samples with whose summary of the values  is greater than or equal to
+#' 1-alpha. Arguments that can be passed to 'hierarchical01' are
+#' 'evalClusterMethod' which determines how to summarize the samples' values of
+#' D[samples,samples] for comparison to 1-alpha: "maximum" (default) takes the
+#' minimum of D[samples,samples] and requires it to be less than or equal to
+#' 1-alpha; "average" requires that each row mean of D[samples,samples] be less
+#' than or equal to 1-alpha. Additional arguments of hclust can also be passed
+#' via clusterArgs to control the hierarchical clustering of D. Input is
+#' \code{"diss"}; algorithm type is "01"}
 #' \item{"hierarchicalK"}{\code{\link[stats]{hclust}} in \code{stats} package is used
 #'   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
 #'   tree into \code{k} clusters.

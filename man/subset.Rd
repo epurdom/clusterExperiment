@@ -40,10 +40,11 @@ indicating the clusterings to be used. See details of \code{\link{getClusterInde
 \item{whichCluster}{argument that can be a single numeric or character value
 indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
-\item{clustersToRemove}{numeric vector identifying the clusters to remove 
+\item{clustersToRemove}{numeric vector identifying the clusters to remove
 (whose samples will be reassigned to -1 value).}
 
-\item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
+\item{makePrimary}{whether to make the added cluster the primary cluster
+(only relevant if \code{y} is a vector)}
 
 \item{clusterLabels}{label(s) for the clusters being added. If \code{y} a
 matrix, the column names of that matrix will be used by default, if
@@ -66,23 +67,26 @@ matrix, the column names of that matrix will be used by default, if
 A \code{\link{ClusterExperiment}} object.
 
 \code{removeClusterings} returns a \code{ClusterExperiment} object,
- unless all clusters are removed, in which case it returns a
- \code{\link{SingleCellExperiment}} object.
+  unless all clusters are removed, in which case it returns a
+  \code{\link{SingleCellExperiment}} object.
 
 \code{subsetByCluster} subsets the object by clusters in a clustering
 and returns a ClusterExperiment object with only those samples
 }
 \description{
-These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings
+These functions are used to subset ClusterExperiment objects,
+  either by removing samples, genes, or clusterings
 }
 \details{
 \code{removeClusterings} removes the clusters given by
- \code{whichClusters}. If the
- \code{primaryCluster} is one of the clusters removed, the
- \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
- matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
+  \code{whichClusters}. If the \code{primaryCluster} is one of the clusters
+  removed, the \code{primaryClusterIndex} is set to 1 and the dendrogram and
+  coclustering matrix are discarded and orderSamples is set to
+  \code{1:NCOL(x)}.
 
-\code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
+\code{removeClusters} creates a new cluster that unassigns samples
+  in cluster \code{clustersToRemove} (in the clustering defined by
+  \code{whichClusters}) and assigns them to -1 (unassigned)
 
 Note that when subsetting the data, the dendrogram information and
 the co-clustering matrix are lost.

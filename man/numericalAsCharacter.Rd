@@ -9,24 +9,26 @@ numericalAsCharacter(values, prefix = "")
 \arguments{
 \item{values}{vector of values to be converted into sortable character values}
 
-\item{prefix}{optional character string that will be added as prefix to the result}
+\item{prefix}{optional character string that will be added as prefix to the
+result}
 }
 \value{
 A character vector
 }
 \description{
-Small function that takes as input integer values (or values 
-that can be converted to integer values) and converts them into character 
-values that are 'padded' with zeros at the beginning of the numbers so 
-that they will sort correctly.
+Small function that takes as input integer values (or values
+  that can be converted to integer values) and converts them into character
+  values that are 'padded' with zeros at the beginning of the numbers so that
+  they will sort correctly.
 }
 \details{
-The function determines the largest value and adds zeros to the front of smaller 
-   integers so that the resulting characters are the same number of digits. This allows 
-   standard sorting of the values to correctly sort.
+The function determines the largest value and adds zeros to the
+  front of smaller integers so that the resulting characters are the same
+  number of digits. This allows standard sorting of the values to correctly
+  sort.
 
-The maximum number of zeros that will be added is 3. Input integers beyond that 
-   point will not be correctly fixed for sorting.
+The maximum number of zeros that will be added is 3. Input integers
+  beyond that point will not be correctly fixed for sorting.
 
 Negative integers will not be corrected, but left as-is
 }

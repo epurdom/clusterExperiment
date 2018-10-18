@@ -138,12 +138,14 @@
 slot descriptions in \code{\link{ClusterExperiment}} for details on what
 objects may be passed to these functions.}
 
-\item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering.}
+\item{ignoreUnassigned}{logical. If true, ignore the clusters with -1 or -2
+assignments in calculating the number of clusters per clustering.}
 
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
-\item{...}{For \code{addToColData}, arguments passed to \code{colDataClusters}.}
+\item{...}{For \code{addToColData}, arguments passed to
+\code{colDataClusters}.}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
@@ -168,7 +170,8 @@ clusterMatrix).
 
 \code{clusterMatrixNamed} returns a matrix with cluster labels.
 
-\code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+\code{clusterMatrixColors} returns the matrix with all the
+  clusterings, using the internally stored colors for each cluster
 
 \code{clusterMatrix} returns the matrix with all the clusterings.
 
@@ -196,7 +199,8 @@ of the clusters used to create dendrogram
 
 \code{clusteringInfo} returns the clusterInfo slot.
 
-\code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
+\code{clusterLabels} returns/sets the column names of the
+  clusterMatrix slot.
 
 \code{clusterLegend} returns/sets the clusterLegend slot.
 
@@ -210,7 +214,8 @@ that has the clusterings in clusterMatrix slot added to the
 \code{DataFrame} in the \code{colData} slot
 }
 \description{
-This is a collection of helper methods for the ClusterExperiment class.
+This is a collection of helper methods for the ClusterExperiment
+  class.
 }
 \details{
 Note that redefining the transformation function via

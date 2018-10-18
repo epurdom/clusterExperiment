@@ -60,16 +60,16 @@ seqPal1
 \item{groupsOfFeatures}{list, with each element of the list containing a
 vector of numeric indices of features (rows).}
 
-\item{groupsOfSamples}{list, with each element of the list containing a
-vector of numeric indices of samples (columns).}
+\item{groupsOfSamples}{list, with each element of the list containing a vector
+of numeric indices of samples (columns).}
 
 \item{nBlankFeatures}{the number of blank lines to add in the data matrix to
-separate the groups of feature indices (will govern the amount of white space if
-data is then fed to heatmap.)}
+separate the groups of feature indices (will govern the amount of white
+space if data is then fed to heatmap.)}
 
 \item{nBlankSamples}{the number of blank lines to add in the data matrix to
-separate the groups of sample indices (will govern the amount of white space if
-data is then fed to heatmap.)}
+separate the groups of sample indices (will govern the amount of white space
+if data is then fed to heatmap.)}
 
 \item{object}{a \code{ClusterExperiment} object.}
 
@@ -114,34 +114,32 @@ where to place legend.}
 \item{...}{arguments passed to legend}
 }
 \value{
-\code{makeBlankData} returns a list with items
- \itemize{
+\code{makeBlankData} returns a list with items 
+\itemize{
  \item{"dataWBlanks"}{ The data with the rows of NAs separating the given
- indices.}
- \item{"rowNamesWBlanks"}{ A vector of characters giving the rownames for the
- data, including blanks for the NA rows. These are not given as rownames to
- the returned data because they are not necessarily unique. However, they can be 
- given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
- \code{\link{plotHeatmap}}.}
+ indices.} 
+ \item{"rowNamesWBlanks"}{ A vector of characters giving the
+ rownames for the data, including blanks for the NA rows. These are not given
+ as rownames to the returned data because they are not necessarily unique.
+ However, they can be given to the \code{labRow} argument of
+ \code{\link[NMF]{aheatmap}} or \code{\link{plotHeatmap}}.}
  \item{"colNamesWBlanks"}{ A vector of characters giving the colnames for the
- data, including blanks for the NA rows. They can be 
- given to the \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
- \code{\link{plotHeatmap}}.}
- \item{"featureGroupNamesWBlanks"}{ A vector of characters of the same length 
-as the number of rows of the new data (i.e. with blanks) giving the group name  
- for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
-  list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-  names will be used, other wise "Feature Group1", "Feature Group2", etc. 
-  The NA rows are given NA values. 
- }
- \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the same length 
-as the number of columns of the new data (i.e. with blanks) giving the group name  
- for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
-  list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-  names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are 
-  given NA values. 
-  }	
-}
+ data, including blanks for the NA rows. They can be given to the
+ \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
+ \code{\link{plotHeatmap}}.} 
+ \item{"featureGroupNamesWBlanks"}{ A vector of
+ characters of the same length as the number of rows of the new data (i.e.
+ with blanks) giving the group name for the data, indicating which group
+ (i.e. which element of \code{groupsOfFeatures} list) the feature came from.
+ If \code{groupsOfFeatures} has unique names, these names will be used, other
+ wise "Feature Group1", "Feature Group2", etc. The NA rows are given NA
+ values. } 
+ \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the
+ same length as the number of columns of the new data (i.e. with blanks)
+ giving the group name for the data, indicating which group (i.e. which
+ element of \code{groupsOfFeatures} list) the feature came from. If
+ \code{groupsOfFeatures} has unique names, these names will be used, other
+ wise "SampleGroup1", "Group2", etc. The NA rows are given NA values. } }
 
 If \code{output="plotAndLegend"}, \code{"convertClusterLegend"} will
   return a list that provides the necessary information to color samples
@@ -172,9 +170,9 @@ Most of these functions are called internally by plotting
 }
 \details{
 \code{makeBlankData} pulls the data corresponding to the row indices
-  in \code{groupsOfFeatures} adds lines of NA values into data between these
-  groups. When given to heatmap, will create white space between these groups
-  of features.
+ in \code{groupsOfFeatures} adds lines of NA values into data between these
+ groups. When given to heatmap, will create white space between these groups
+ of features.
 
 convertClusterLegend pulls out information stored in the
   \code{clusterLegend} slot of the object and returns it in useful format.

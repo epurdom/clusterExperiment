@@ -1,9 +1,12 @@
-#' @title Return matrix from ClusterExperiment with reduced dimensions 
+#' @title Return matrix from ClusterExperiment with reduced dimensions
 #' @description Returns a matrix of data from a \code{ClusterExperiment} object
 #'   based on the choices of dimensionality reduction given by the user.
 #' @rdname reduceFunctions
 #' @aliases getReducedData
-#' @param object  For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.
+#' @param object  For \code{makeReducedDims},\code{makeFilterStats},
+#'   \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or
+#'   \code{ClusterExperiment} object. For \code{getReducedData} only a
+#'   \code{ClusterExperiment} object allowed.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
 #' @param whichAssay numeric or character specifying which assay to use. See
@@ -56,11 +59,12 @@
 #'   the package.
 #' @return If \code{returnValue="object"}, a \code{ClusterExperiment} object.
 #' @return If \code{returnValue="list"} a list with elements:
-#' \itemize{
-#' \item{\code{objectUpdate}}{object, potentially updated if had to calculate dimensionality reduction or filtering statistic}
-#' \item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in columns, features in rows}
-#' }
-#' @seealso \code{\link{makeFilterStats}},\code{\link{makeReducedDims}}, \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
+#' \itemize{ \item{\code{objectUpdate}}{object, potentially updated if had to
+#' calculate dimensionality reduction or filtering statistic}
+#' \item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in
+#' columns, features in rows} }
+#' @seealso \code{\link{makeFilterStats}},\code{\link{makeReducedDims}},
+#'   \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
 setMethod(
   f = "getReducedData",
   signature = "ClusterExperiment",

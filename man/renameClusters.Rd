@@ -28,11 +28,13 @@ indicating the \emph{single} clustering to be used. Giving values that result in
 (\code{"name"}) or internal cluster id (\code{"clusterIds"})}
 }
 \value{
-\code{renameClusters} changes the names assigned to clusters within a clustering
+\code{renameClusters} changes the names assigned to clusters within a
+  clustering
 
-\code{recolorClusters} changes the colors assigned to clusters within a clustering
+\code{recolorClusters} changes the colors assigned to clusters within
+  a clustering
 }
 \description{
-Change the assigned names or colors of the clusters in a clustering
-  stored in the clusterLegend slot of the object.
+Change the assigned names or colors of the clusters in a
+  clustering stored in the clusterLegend slot of the object.
 }

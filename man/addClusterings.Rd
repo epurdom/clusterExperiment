@@ -34,10 +34,11 @@ matrix, the column names of that matrix will be used by default, if
 
 \item{clusterLegend}{a list giving the cluster legend for the clusters added.}
 
-\item{makePrimary}{whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)}
+\item{makePrimary}{whether to make the added cluster the primary cluster
+(only relevant if \code{y} is a vector)}
 
-\item{...}{For \code{addClusterings}, passed to signature 
-\code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to 
+\item{...}{For \code{addClusterings}, passed to signature
+\code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to
 \code{SingleCellExperiment} subsetting function.}
 }
 \value{
@@ -58,9 +59,11 @@ addClusterings adds y to x, and is thus not symmetric in the two
 data(simData)
 
 cl1 <- clusterSingle(simData, subsample=FALSE,
-sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+clusterFunction="pam"))
 cl2 <- clusterSingle(simData, subsample=FALSE,
-sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+clusterFunction="pam"))
 
 addClusterings(cl1, cl2)
 }

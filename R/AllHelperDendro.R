@@ -1,9 +1,9 @@
 #' @name clusterDendrogram
-#' @title Accessing and manipulating the dendrograms 
+#' @title Accessing and manipulating the dendrograms
 #' @rdname clusterDendrogram
-#' @description These functions are for accessing and manipulating the dendrograms 
-#' stored in a \code{ClusterExperiment} object. We also document the required format of 
-#' these dendrograms here.
+#' @description These functions are for accessing and manipulating the
+#'   dendrograms stored in a \code{ClusterExperiment} object. We also document
+#'   the required format of these dendrograms here.
 #' @param x a ClusterExperiment object
 #' @section The Stored Dendrograms
 #' @details Two dendrograms are stored in a \code{ClusterExperiment} object. One
@@ -27,26 +27,34 @@
 #'   labels is so as to not duplicate storage of the names, see below
 #'   descriptions for where to save user-defined names.
 #' @section Cluster Hierarchy
-#' @details \itemize{
-#' \item{Labels}{The cluster dendrogram can only have labels on the
-#' \emph{internal} nodes. Labels on the internal nodes of the cluster dendrogram
-#' can be set by the user (the function \code{nodeLabels<-} is defined to work
-#' on a \code{ClusterExperiment} object to make this easy). The tips of the
-#' cluster dendrogram, corresponding to the clusters, cannot have labels; users
-#' can set the labels (e.g. for plotting, etc) in the
-#' \code{\link{clusterLegend}} slot using the function
-#' \code{\link{renameClusters}}.}
-#' \item{Data}{ 
-#' The cluster hierarchy must have data stored with it that has the following
-#' columns (additional ones are allowed):
-#'  \itemize{
-#'   \item{NodeId}{The permanent node id for the node. Must be of the format "NodeIdX" where "X" is a integer.}
-#'   \item{Position}{The type of node, in terms of its position. The internal nodes should have the values "cluster hierarchy node" while the tips should have "cluster hierarchy tip".}
-#'   \item{ClusterIdDendro}{Only for tips of dendrogram, should have the id that corresponds to its cluster in the clustering of the @dendro_index. Of the form "ClusterIdX", where "X" is the internal cluster id (see \code{\link{clusterLegend}}). Internal nodes should have NA values.}
-#'   \item{ClusterIdMerge}{The id that corresponds to the cluster in the clustering of the @merge_index, if it exists. Of the form "ClusterIdX", where "X" is the internal cluster id (see \code{\link{clusterLegend}}}
-#'  }
-#' }
-#' } 
+#' @details \itemize{ 
+#' \item{Labels}{The cluster dendrogram can only have labels
+#'   on the \emph{internal} nodes. Labels on the internal nodes of the cluster
+#'   dendrogram can be set by the user (the function \code{nodeLabels<-} is
+#'   defined to work on a \code{ClusterExperiment} object to make this easy).
+#'   The tips of the cluster dendrogram, corresponding to the clusters, cannot
+#'   have labels; users can set the labels (e.g. for plotting, etc) in the
+#'   \code{\link{clusterLegend}} slot using the function
+#'   \code{\link{renameClusters}}.} 
+#' \item{Data}{ The cluster hierarchy must have
+#'   data stored with it that has the following columns (additional ones are
+#'   allowed):
+#'   \itemize{ 
+#'   \item{NodeId}{The permanent node id for the node. Must
+#'   be of the format "NodeIdX" where "X" is a integer.} 
+#'   \item{Position}{The
+#'   type of node, in terms of its position. The internal nodes should have the
+#'   values "cluster hierarchy node" while the tips should have "cluster
+#'   hierarchy tip".} 
+#'   \item{ClusterIdDendro}{Only for tips of dendrogram, should
+#'   have the id that corresponds to its cluster in the clustering of the
+#'   @dendro_index. Of the form "ClusterIdX", where "X" is the internal cluster
+#'   id (see \code{\link{clusterLegend}}). Internal nodes should have NA
+#'   values.} 
+#'   \item{ClusterIdMerge}{The id that corresponds to the cluster in
+#'   the clustering of the @merge_index, if it exists. Of the form "ClusterIdX",
+#'   where "X" is the internal cluster id (see \code{\link{clusterLegend}}} } }
+#'   }
 #' @section Sample Hierarchy
 #' @details \itemize{
 #' \item{Labels}{The sample dendrogram is not allowed to have ANY labels. The
@@ -70,9 +78,10 @@
 #' } 
 #' }
 #' @section Helper Functions
-#' @seealso \code{\link{makeDendrogram}}, \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
-#' @return \code{clusterDendrogram} returns the dendrogram describing 
-#' the clustering hierarchy.
+#' @seealso \code{\link{makeDendrogram}},
+#'   \code{\link[phylobase]{phylo4d-class}}, \code{\link[ape]{phylo}}
+#' @return \code{clusterDendrogram} returns the dendrogram describing the
+#'   clustering hierarchy.
 #' @importMethodsFrom phylobase nodeLabels nodeLabels<- nTips nNodes
 #' @export
 #' @aliases clusterDendrogram,ClusterExperiment-method
