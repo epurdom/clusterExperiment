@@ -101,6 +101,9 @@ color-scale), or a data.frame/matrix with same number of samples as
 \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 clusterFeaturesData will be ignored.}
 
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
+
 \item{colData}{If input to \code{data} is either a
 \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
 \code{SingleCellExperiment}, then \code{colData} must index the

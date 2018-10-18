@@ -20,6 +20,11 @@
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
+\item{noMatch}{how to handle if there is no match to an given value of \code{whichClusters}.
+"silentlyRemove" means that no error will be given, and the result will be just those that
+do match (resulting in a vector of length zero if there are none that match). "throwError"
+means that the function will stop with an error describing the problem with the match.}
+
 \item{whichCluster}{argument that can be a single numeric or character value
 indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
@@ -28,8 +33,6 @@ indicating the \emph{single} clustering to be used. Giving values that result in
 \item{...}{Not for user use. Argument allows function \code{getSingleClusterIndex}
 to catch the wrong argument (the plural \code{whichClusters} argument rather than 
 singular \code{whichCluster}).}
-
-\item{silentlyRemove}{logical as to whether to silently remove mismatches. Otherwise values that do not match are given NA values, unless all values are NA in which an error is returned.}
 }
 \value{
 \code{getClusterIndex} returns a vector of all numeric indices that are indicated by the requested \code{whichClusters}. Note that there is not a one-to-one match between input values and returned values since there may be more than one value for a given value of \code{whichClusters} or no value at all.

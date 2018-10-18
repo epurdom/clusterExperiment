@@ -39,7 +39,7 @@
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
 #'   will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters
