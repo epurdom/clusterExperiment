@@ -16,14 +16,17 @@
 \usage{
 \S4method{removeClusterings}{ClusterExperiment}(x, whichClusters)
 
-\S4method{removeClusters}{ClusterExperiment}(x, whichCluster, clustersToRemove,
-  makePrimary = FALSE, clusterLabels = NULL)
+\S4method{removeClusters}{ClusterExperiment}(x, whichCluster,
+  clustersToRemove, makePrimary = FALSE, clusterLabels = NULL)
 
-\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,character,ANY}(x, i, j, ...,
+  drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,logical,ANY}(x, i, j, ...,
+  drop = TRUE)
 
-\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ClusterExperiment,ANY,numeric,ANY}(x, i, j, ...,
+  drop = TRUE)
 
 \S4method{subsetByCluster}{ClusterExperiment}(x, clusterValue,
   whichCluster = "primary", matchTo = c("name", "clusterIds"))

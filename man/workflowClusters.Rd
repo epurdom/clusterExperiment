@@ -20,7 +20,8 @@
 
 \S4method{workflowClusterTable}{ClusterExperiment}(x)
 
-\S4method{setToCurrent}{ClusterExperiment}(x, whichCluster, eraseOld = FALSE)
+\S4method{setToCurrent}{ClusterExperiment}(x, whichCluster,
+  eraseOld = FALSE)
 
 \S4method{setToFinal}{ClusterExperiment}(x, whichCluster, clusterLabel)
 }

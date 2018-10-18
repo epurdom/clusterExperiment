@@ -8,16 +8,17 @@
 \alias{plotReducedDims,ClusterExperiment,numeric-method}
 \title{Plot 2-dimensionsal representation with clusters}
 \usage{
-\S4method{plotReducedDims}{ClusterExperiment,character}(object, whichCluster,
-  ...)
+\S4method{plotReducedDims}{ClusterExperiment,character}(object,
+  whichCluster, ...)
 
-\S4method{plotReducedDims}{ClusterExperiment,missing}(object, whichCluster, ...)
+\S4method{plotReducedDims}{ClusterExperiment,missing}(object, whichCluster,
+  ...)
 
 \S4method{plotReducedDims}{ClusterExperiment,numeric}(object, whichCluster,
   reducedDim = "PCA", whichDims = c(1, 2), plotUnassigned = TRUE,
-  legend = TRUE, legendTitle = "", nColLegend = 6, clusterLegend = NULL,
-  unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
-  ylab = NULL, ...)
+  legend = TRUE, legendTitle = "", nColLegend = 6,
+  clusterLegend = NULL, unassignedColor = NULL, missingColor = NULL,
+  pch = 19, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}

@@ -7,10 +7,11 @@
 \title{Plot dendrogram of ClusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
-  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
-  "ids"), mergeInfo = "none", main, sub, clusterLabelAngle = 45,
-  removeOutbranch = TRUE, legend = c("side", "below", "none"),
-  nodeColors = NULL, colData = NULL, clusterLegend = NULL, ...)
+  leafType = c("samples", "clusters"), plotType = c("colorblock",
+  "name", "ids"), mergeInfo = "none", main, sub,
+  clusterLabelAngle = 45, removeOutbranch = TRUE, legend = c("side",
+  "below", "none"), nodeColors = NULL, colData = NULL,
+  clusterLegend = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}

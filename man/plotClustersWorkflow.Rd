@@ -11,9 +11,9 @@
   whichClusters = c("mergeClusters", "makeConsensus"),
   whichClusterMany = NULL, nBlankLines = ceiling(nClusterings(object) *
   0.05), existingColors = c("ignore", "all", "highlightOnly"),
-  nSizeResult = ceiling(nClusterings(object) * 0.02), clusterLabels = TRUE,
-  clusterManyLabels = TRUE, sortBy = c("highlighted", "clusterMany"),
-  highlightOnTop = TRUE, ...)
+  nSizeResult = ceiling(nClusterings(object) * 0.02),
+  clusterLabels = TRUE, clusterManyLabels = TRUE,
+  sortBy = c("highlighted", "clusterMany"), highlightOnTop = TRUE, ...)
 }
 \arguments{
 \item{object}{A \code{ClusterExperiment} object on which

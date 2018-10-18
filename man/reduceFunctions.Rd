@@ -30,7 +30,8 @@
   whichCluster = "primary", whichAssay = 1, returnValue = c("object",
   "list"), reducedDimName)
 
-\S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod, typeToShow)
+\S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod,
+  typeToShow)
 
 \S4method{makeFilterStats}{SummarizedExperiment}(object,
   filterStats = listBuiltInFilterStats(), transFun = NULL,
@@ -49,8 +50,9 @@ listBuiltInFilterStats()
 
 \S4method{filterNames}{SummarizedExperiment}(object)
 
-\S4method{makeReducedDims}{SingleCellExperiment}(object, reducedDims = "PCA",
-  maxDims = 500, transFun = NULL, isCount = FALSE, whichAssay = 1)
+\S4method{makeReducedDims}{SingleCellExperiment}(object,
+  reducedDims = "PCA", maxDims = 500, transFun = NULL,
+  isCount = FALSE, whichAssay = 1)
 
 \S4method{makeReducedDims}{matrixOrHDF5}(object, ...)
 
