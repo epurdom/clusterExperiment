@@ -384,7 +384,7 @@ setMethod(
 				}
 				else{
 					clusterFunctionList<-getBuiltInFunction(clusterFunction)
-					if(length(clusterFunction)==1 & class(clusterFunctionList)=="ClusterFunction"){
+					if(length(clusterFunction)==1 & is(clusterFunctionList,"ClusterFunction")){
 						clusterFunctionList<-list(clusterFunctionList)
 						names(clusterFunctionList)<-clusterFunction
 					}
@@ -736,7 +736,7 @@ setMethod(
     outval<-clusterMany(as(x,"SingleCellExperiment"), reduceMethod=reduceMethod, nFilterDims=nFilterDims,
                         nReducedDims=nReducedDims, transFun=transformation(x), ...)
 
-        if(class(outval)=="ClusterExperiment") {
+        if(is(outval,"ClusterExperiment")) {
 
       #outval<-.addBackSEInfo(newObj=outval,oldObj=x) #added to '.addNewResult'
       ##Check if clusterMany already ran previously

@@ -317,7 +317,7 @@
 	#if balanceLength==TRUE, want to rebalance so that the two trees have same node height -- without adding to 0-length edges!
 	n1<-length(tree1$tip.label)
 	m1<-tree1$Nnode
-	isTree<-is.list(tree2) & class(tree2)=="phylo" #whether tree2 merging is singleton or actual tree (different protocal from .addTipsToTrees...)
+	isTree<-is.list(tree2) & is(tree2,"phylo") #whether tree2 merging is singleton or actual tree (different protocal from .addTipsToTrees...)
 	mergeEdgeLength1<-mergeEdgeLength2<-mergeEdgeLength
 	depth1<-max(ape::node.depth.edgelength(tree1))	
 	if(isTree){

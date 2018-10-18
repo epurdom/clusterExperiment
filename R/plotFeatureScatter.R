@@ -3,8 +3,17 @@
 #' @description Plot a scatter plot of the (transformed) values for a set of
 #'   gene expression values, colored by cluster
 #' @aliases plotFeatureScatter plotFeatureScatter,ClusterExperiment,character-method
+#' @param legendLocation character value passed to \code{location} argument of 
+#'  \code{plotClusterLegend} indicating where to put the legend. If NA, legend 
+#'  will not be plotted.
+#' @param features the indices of the features (either numeric or character 
+#'  matching rownames of object) to be plotted.
+#' @param jitterFactor numeric. If NA, no jittering is done. Otherwise, passed to 
+#' \code{factor} of function \code{\link[base]{jitter}}
+#'  (useful for low counts)
 #' @inheritParams plotFeatureBoxplot
 #' @rdname plotFeatureScatter
+#' @return returns invisibly the results of \code{\link[graphics]{pairs}} or \code{\link[graphics]{plot}} command.
 #' @examples
 #' data(simData)
 #' #Create a ClusterExperiment object
@@ -26,14 +35,6 @@ setMethod(
     else invisible(plotFeatureScatter(object,features=m,...))
   })
 
-#' @param legendLocation character value passed to \code{location} argument of 
-#'  \code{plotClusterLegend} indicating where to put the legend. If NA, legend 
-#'  will not be plotted.
-#' @param features the indices of the features (either numeric or character 
-#'  matching rownames of object) to be plotted.
-#' @param jitterFactor numeric. If NA, no jittering is done. Otherwise, passed to 
-#' \code{factor} of function \code{\link[base]{jitter}}
-#'  (useful for low counts)
 #' @rdname plotFeatureScatter
 #' @export
 setMethod(
@@ -79,11 +80,11 @@ setMethod(
 		m<-match(as.character(cl),clLegend[,"clusterIds"])
 		cols<-clLegend[m,"color"]
 		if(length(features)==2){
-			invisible(plot(t(dat),col=cols,bg=cols,...))
+			invisible(graphics::plot(t(dat),col=cols,bg=cols,...))
 			if(!is.na(legendLocation)) 
-				legend(x=legendLocation,legend=clLegend[,"name"],fill=clLegend[,"color"])
+				graphics::legend(x=legendLocation,legend=clLegend[,"name"],fill=clLegend[,"color"])
 		}
 		else{
-			invisible(pairs(t(data.matrix(dat)),col=cols,bg=cols,...))
+			invisible(graphics::pairs(t(data.matrix(dat)),col=cols,bg=cols,...))
 		}
   })

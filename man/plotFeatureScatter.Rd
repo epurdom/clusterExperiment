@@ -46,6 +46,9 @@ will not be plotted.}
 \code{factor} of function \code{\link[base]{jitter}}
  (useful for low counts)}
 }
+\value{
+returns invisibly the results of \code{\link[graphics]{pairs}} or \code{\link[graphics]{plot}} command.
+}
 \description{
 Plot a scatter plot of the (transformed) values for a set of
   gene expression values, colored by cluster

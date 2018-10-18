@@ -94,7 +94,7 @@ setMethod( "filterStats",c("SummarizedExperiment","missing"),
 # #' @aliases filterStats<-
 # #' @importFrom S4Vectors DataFrame
 setReplaceMethod("filterStats", "SummarizedExperiment", function(object, type, ...,value) {
-  isMatrixLike<-is.matrix(value) || class(value)=="DataFrame"
+  isMatrixLike<-is.matrix(value) || is(value,"DataFrame")
   if(missing(type)){
     # if(is.null(value)){
     # 	object@filterStats<-NULL

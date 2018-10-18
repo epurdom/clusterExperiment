@@ -118,7 +118,7 @@ setMethod(
 	success<-TRUE
 	successMerge<-TRUE
 	if("dendro_samples" %in% snames){
-		if(class(object@dendro_clusters)=="dendrogram"){
+		if(is(object@dendro_clusters,"dendrogram")){
 			newPhyloCluster<-.makePhylobaseTree(object@dendro_clusters,type="dendro",isSamples=FALSE)
 			#-----
 			#Add necessary information: Position, NodeId, ClusterIdDendro, ClusterIdMerge
@@ -166,7 +166,7 @@ setMethod(
 				
 			}
 		}
-		if(class(object@dendro_samples)=="dendrogram"){
+		if(is(object@dendro_samples,"dendrogram")){
 			#requires old slot name @dendro_outbranch too.
 			dataNode<-phylobase::tdata(newPhyloCluster,type="internal")
 			data.cl<-phylobase::tdata(newPhyloCluster,type="all")

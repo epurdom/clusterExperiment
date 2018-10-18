@@ -219,7 +219,7 @@ setMethod(
 	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     existingColors<-match.arg(existingColors)
     args<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData")
+		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData") #06/2018 added in BioC 3.8
 		if(!is.null(checkIgnore)){
 			args<-checkIgnore$passedArgs
 			colData<-checkIgnore$val

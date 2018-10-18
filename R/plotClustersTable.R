@@ -407,7 +407,7 @@ setMethod(
     if(class(x) %in% c('integer','numeric')){
         x <- cut(x, breaks = 100)
     }
-    if(class(x)=='factor'){
+    if(is(x,'factor')){
         return(scales::alpha(mypal(length(levels(x)))[x],alpha=alpha))
     }
 }
