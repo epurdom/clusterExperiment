@@ -23,10 +23,12 @@
 #' data(simData)
 #'
 #' cl1 <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+#' clusterFunction="pam"))
 
 #' cl2 <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+#' clusterFunction="pam"))
 #'
 #' addClusterings(cl1, cl2)
 setMethod(
@@ -77,10 +79,11 @@ setMethod(
 
 #' @rdname addClusterings
 #' @export
-#' @param ... For \code{addClusterings}, passed to signature 
-#' \code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to 
-#' \code{SingleCellExperiment} subsetting function.
-#' @param makePrimary whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)
+#' @param ... For \code{addClusterings}, passed to signature
+#'   \code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to
+#'   \code{SingleCellExperiment} subsetting function.
+#' @param makePrimary whether to make the added cluster the primary cluster
+#'   (only relevant if \code{y} is a vector)
 setMethod(
   f = "addClusterings",
   signature = signature("ClusterExperiment", "vector"),
