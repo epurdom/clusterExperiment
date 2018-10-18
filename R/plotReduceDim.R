@@ -147,18 +147,18 @@ setMethod(
           if(length(wh2)>0) clColor<-clColor[-wh2]
         }
         if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
-				if(missing(nColLegend)){
-					nPerColLegend<-6
-					nColLegend<-length(clColor) %/% nPerColLegend					
-					if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
-				}
-				        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle,ncol=nColLegend)
+			if(missing(nColLegend)){
+				nPerColLegend<-6
+				nColLegend<-length(clColor) %/% nPerColLegend					
+				if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
+			}
+			graphics::legend(x=legend, legend=names(clColor), fill=clColor,title=legendTitle,ncol=nColLegend)
       }
       
     }
     else if(length(whichDims)>2){
       colnames(dat)<-paste("Dim.",whichDims,sep="")
-      pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
+      graphics::pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
     }
     
     invisible(object)

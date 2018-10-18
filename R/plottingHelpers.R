@@ -466,11 +466,11 @@ setMethod(
     }
     else ord<-seq_len(nrow(legMat))
     if(!add){
-			plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+			graphics::plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+			graphics::legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 		}
 		else{
-			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+			graphics::legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 		}
     
     

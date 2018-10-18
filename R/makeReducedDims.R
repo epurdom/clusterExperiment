@@ -169,7 +169,7 @@ listBuiltInReducedDims<-function(){c("PCA")}
     if(any(md > NROW(prc)))
       stop("Internal error in coding of principal components.")
   }
-  colnames(prc)<-paste("PC",seq_length(ncol(prc)),sep="") #make them match prcomp
+  colnames(prc)<-paste("PC",seq_len(ncol(prc)),sep="") #make them match prcomp
   return(prc)
 }
 
