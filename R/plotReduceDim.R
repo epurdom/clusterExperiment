@@ -2,31 +2,7 @@
 #' @title Plot 2-dimensionsal representation with clusters
 #' @description Plot a 2-dimensional representation of the data, color-code by a
 #'   clustering.
-#' @aliases plotReducedDims plotReducedDims,ClusterExperiment,character-method
-#' @export
-setMethod(
-  f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="character"),
-  definition = function(object, whichCluster,...)
-  {
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
-    return(plotReducedDims(object,whichCluster=whCl,...))
-    
-  })
-
-#' @rdname plotReducedDims
-#' @export
-setMethod(
-  f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="missing"),
-  definition = function(object, whichCluster,...)
-  {
-    plotReducedDims(object,whichCluster="primaryCluster",...)
-
-  })
-
 #' @param object a ClusterExperiment object
-#' @param whichCluster which clusters to show on the plot
 #' @param reducedDim What dimensionality reduction method to use. Should match
 #'   either a value in \code{reducedDimNames(object)} or one of the built-in
 #'   functions of \code{\link{listBuiltInReducedDims}()}
@@ -52,6 +28,7 @@ setMethod(
 #' @param nColLegend The number of columns in legend. If missing, picks number 
 #'   of columns internally. 
 #' @param ... arguments passed to \code{\link{plot.default}}
+#' @inheritParams getClusterIndex
 #' @details If \code{plotUnassigned=TRUE}, and the color for -1 or -2 is set to
 #'   "white", will be coerced to "lightgrey" regardless of user input to
 #'   \code{missingColor} and \code{unassignedColor}. If \code{plotUnassigned=FALSE},
@@ -76,14 +53,15 @@ setMethod(
 #'
 #' plotReducedDims(cl,legend="bottomright")
 #' @export
+#' @aliases plotReducedDims plotReducedDims,ClusterExperiment-method
 setMethod(
   f = "plotReducedDims",
-  signature = signature(object = "ClusterExperiment",whichCluster="numeric"),
-  definition = function(object, whichCluster,
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichCluster="primary",
                         reducedDim="PCA",whichDims=c(1,2),plotUnassigned=TRUE,legend=TRUE,legendTitle="",nColLegend=6,
                         clusterLegend=NULL,unassignedColor=NULL,missingColor=NULL,pch=19,xlab=NULL,ylab=NULL,...)
   {
-whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...))
+	whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
     cluster<-clusterMatrix(object)[,whichCluster]
     if("col" %in% names(list(...))) stop("plotting parameter 'col' may not be passed to plot.default. Colors must be set via 'clusterLegend' argument.")
     if(is.null(clusterLegend)){
@@ -147,7 +125,7 @@ whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...
       if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])
       if(is.null(xlab)) xlab<-paste("Dimension",whichDims[1])
       
-      plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
+      graphics::plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
       
       doLegend<-FALSE
       
@@ -169,18 +147,18 @@ whichCluster<-.convertSingleWhichCluster(object,whichCluster,passedArgs=list(...
           if(length(wh2)>0) clColor<-clColor[-wh2]
         }
         if(is.null(legendTitle)) legendTitle<-clusterLabels(object)[whichCluster]
-				if(missing(nColLegend)){
-					nPerColLegend<-6
-					nColLegend<-length(clColor) %/% nPerColLegend					
-					if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
-				}
-				        legend(x=legend,legend=names(clColor),fill=clColor,title=legendTitle,ncol=nColLegend)
+			if(missing(nColLegend)){
+				nPerColLegend<-6
+				nColLegend<-length(clColor) %/% nPerColLegend					
+				if(length(clColor)%% nPerColLegend > 0) nColLegend<-nColLegend+1
+			}
+			graphics::legend(x=legend, legend=names(clColor), fill=clColor,title=legendTitle,ncol=nColLegend)
       }
       
     }
     else if(length(whichDims)>2){
       colnames(dat)<-paste("Dim.",whichDims,sep="")
-      pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
+      graphics::pairs(data.frame(dat),col=clColor[as.character(clFactor)],pch=pch,...)
     }
     
     invisible(object)

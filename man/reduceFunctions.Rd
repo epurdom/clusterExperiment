@@ -30,7 +30,8 @@
   whichCluster = "primary", whichAssay = 1, returnValue = c("object",
   "list"), reducedDimName)
 
-\S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod, typeToShow)
+\S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod,
+  typeToShow)
 
 \S4method{makeFilterStats}{SummarizedExperiment}(object,
   filterStats = listBuiltInFilterStats(), transFun = NULL,
@@ -49,8 +50,9 @@ listBuiltInFilterStats()
 
 \S4method{filterNames}{SummarizedExperiment}(object)
 
-\S4method{makeReducedDims}{SingleCellExperiment}(object, reducedDims = "PCA",
-  maxDims = 500, transFun = NULL, isCount = FALSE, whichAssay = 1)
+\S4method{makeReducedDims}{SingleCellExperiment}(object,
+  reducedDims = "PCA", maxDims = 500, transFun = NULL,
+  isCount = FALSE, whichAssay = 1)
 
 \S4method{makeReducedDims}{matrixOrHDF5}(object, ...)
 
@@ -61,7 +63,10 @@ listBuiltInFilterStats()
 listBuiltInReducedDims()
 }
 \arguments{
-\item{object}{For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.}
+\item{object}{For \code{makeReducedDims},\code{makeFilterStats},
+\code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or
+\code{ClusterExperiment} object. For \code{getReducedData} only a
+\code{ClusterExperiment} object allowed.}
 
 \item{reduceMethod}{character. A method (or methods) for reducing the size of
 the data, either by filtering the rows (genes) or by a dimensionality
@@ -82,9 +87,8 @@ the unassigned samples are excluded in calculating the statistic. See
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
 
-\item{whichCluster}{an integer index or character string that identifies
-which cluster should be used to make the dendrogram. Default is
-primaryCluster.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
@@ -157,10 +161,10 @@ will be used for each).}
 If \code{returnValue="object"}, a \code{ClusterExperiment} object.
 
 If \code{returnValue="list"} a list with elements:
-\itemize{
-\item{\code{objectUpdate}}{object, potentially updated if had to calculate dimensionality reduction or filtering statistic}
-\item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in columns, features in rows}
-}
+\itemize{ \item{\code{objectUpdate}}{object, potentially updated if had to
+calculate dimensionality reduction or filtering statistic}
+\item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in
+columns, features in rows} }
 
 \code{defaultNDims} returns a numeric vector giving the default
   dimensions the methods in \code{clusterExperiment} will use for reducing
@@ -281,5 +285,6 @@ scf<-makeReducedDims(simData, reducedDims="PCA", maxDims=3)
 scf
 }
 \seealso{
-\code{\link{makeFilterStats}},\code{\link{makeReducedDims}}, \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
+\code{\link{makeFilterStats}},\code{\link{makeReducedDims}},
+  \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
 }

@@ -39,6 +39,7 @@
 #'   \code{ClusterExperiment} object, these arguments can also be those to pass 
 #'   to the matrix version.
 #' @inheritParams clusterContrasts
+#' @inheritParams getClusterIndex
 #' @details getBestFeatures returns the top ranked features corresponding to a 
 #'   cluster assignment. It uses either limma or edgeR to fit the models, and 
 #'   limma/edgeR functions \code{\link[limma]{topTable}} or 
@@ -104,11 +105,20 @@
 #'
 #' \item{\code{ContrastName}}{ The name of the contrast that the results
 #' corresponds to. For dendrogram searches, this will be the node of the tree of
-#' the dendrogram.}
+#' the dendrogram. If \code{x} is a \code{ClusterExperiment} object, this name 
+#' will make use of the user defined names of the cluster or node in \code{x}.}
 #' 
-#' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in \code{topTags})}
+#' \item{\code{InternalName}}{ Only present if \code{x} is a
+#' \code{ClusterExperiment} object. In this case this column will give the name
+#' of the contrast using the internal ids of the clusters and nodes, not the
+#' user-defined names. This provides stability in matching the contrast if the
+#' user has changed the names since running \code{getBestFeatures}}
 #' 
-#' \item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or \code{FWER} in \code{topTags})}
+#' \item{\code{P.Value}}{ The unadjusted p-value (changed from \code{PValue} in
+#' \code{topTags})}
+#' 
+#' \item{\code{adj.P.Val}}{ The adjusted p-value (changed from \code{FDR} or
+#' \code{FWER} in \code{topTags})}
 #' }
 #'
 #' @references Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and
@@ -200,7 +210,7 @@ definition = function(x, cluster,
   contrastAdj <- match.arg(contrastAdj)
   returnType <- "Table" 
   if(is.null(rownames(dat))) {
-    rownames(dat) <- paste("Row", as.character(1:nrow(dat)), sep="")
+    rownames(dat) <- paste("Row", as.character(seq_len(nrow(dat))), sep="")
   }
 	
   #only use those assigned to a cluster to get good genes.
@@ -289,7 +299,13 @@ definition = function(x, cluster,
 			fit=fitContr,fitF=fitF,DEMethod=DEMethod,
 			contrastAdj=contrastAdj, ...)
   }
+  if(contrastType=="Pairs"){
+	  tops <- data.frame(ContrastName=tops$Contrast,tops)
+  	  
+  }
   tops <- data.frame(IndexInOriginal=match(tops$Feature, rownames(tmp)),tops)
+  
+  
   
   
   if(returnType=="Index") {
@@ -312,23 +328,24 @@ setMethod(
   f = "getBestFeatures",
   signature = signature(x = "ClusterExperiment"),
   definition = 
-    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), 
+    function(x, contrastType=c("F", "Dendro", "Pairs", "OneAgainstAll"), whichCluster="primary",
              whichAssay=1,DEMethod, weights=if("weights" %in% assayNames(x)) "weights" else NULL,...)
       {
+    whCl<-getSingleClusterIndex(x,whichCluster,list(...))
       contrastType <- match.arg(contrastType)
-    cl<-primaryCluster(x)
+    cl<-clusterMatrix(x)[,whCl]
     if(length(unique(cl[cl>0]))==1) stop("only single cluster in clustering -- cannot run getBestFeatures")
     if(contrastType=="Dendro") {
       if(is.null(x@dendro_clusters)) {
         stop("If `contrastType='Dendro'`, `makeDendrogram` must be run before `getBestFeatures`")
       } else {
-        if(primaryClusterIndex(x)!= dendroClusterIndex(x)){
+        if(whCl!= dendroClusterIndex(x)){
           #check if merge from cluster that made dendro
-          if(primaryClusterIndex(x)==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
+          if(whCl==mergeClusterIndex(x) && x@merge_dendrocluster_index == dendroClusterIndex(x)){
             dendro<-.makeMergeDendrogram(x)
             if(is.null(dendro)) stop("Could not make merge dendrogram")
           }
-          else stop("Primary cluster does not match the cluster on which the dendrogram was made. Either replace existing dendrogram with on using the primary cluster (via 'makeDendrogram'), or reset primaryCluster with 'primaryClusterIndex' to be equal to index of 'dendo_index' slot")
+          else stop("Cluster given in 'whichCluster' does not match either the cluster on which the dendrogram was made or the merge cluster from this dendrogram. Either replace the existing dendrogram with one based on using your preferred clustering (via 'makeDendrogram'), or set 'whichCluster' to be equal to index of 'dendo_index' or 'merge_index' slot")
         }
         else dendro <- x@dendro_clusters
       }
@@ -338,10 +355,44 @@ setMethod(
     else dat<-assay(x,whichAssay)
     
     if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
-    		getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
+    		tops<-getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
     }
-    else getBestFeatures(dat, primaryCluster(x), contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
-    
+    else tops<-getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=weights,DEMethod=DEMethod,...)
+
+
+    #### Fix up names
+	#### Add column $InternalName -- 
+	if(contrastType!="F"){
+		wh<-which(colnames(tops)%in%c("IndexInOriginal", "ContrastName"))
+		tops<-data.frame(tops[,wh],InternalName=tops$ContrastName,tops[,-wh])
+		legMat<-clusterLegend(x)[[whCl]]
+		#### Each contrastType needs different parsing
+    if(contrastType=="Pairs"){
+  	  #ContrastName in form of 'Cl01-Cl02' ...
+  	  parseName<-gsub("Cl","",tops$InternalName)
+  	  parseName<-strsplit(parseName,"-")
+	    #note, incase there is padding in name, but not in clusterIds
+  	  firstCl<-as.character(as.numeric(sapply(parseName,.subset2,1)))
+  	  secondCl<-as.character(as.numeric(sapply(parseName,.subset2,2)))
+  	  m1<-match(firstCl,as.numeric(legMat[,"clusterIds"]))
+  	  m2<-match(secondCl,as.numeric(legMat[,"clusterIds"]))
+	    if(any(is.na(m1))||any(is.na(m2))) stop("coding error -- cannot match parse cluster id from contrastName (no match to clusterLegend)")
+  	  tops$ContrastName<-paste(legMat[m1,"name"],legMat[m2,"name"],sep="-")
+    }
+    if(contrastType=="OneAgainstAll"){
+	    #ContrastName in form of Cl01
+	  	parseName<-as.character(as.numeric(gsub("Cl","",tops$InternalName)))
+  	  m1<-match(parseName,as.numeric(legMat[,"clusterIds"]))
+  	  tops$ContrastName<-legMat[m1,"name"]
+    }
+    if(contrastType=="Dendro"){
+	    #ContrastName in form of InternalNodeId5
+	    m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
+	    tops$ContrastName<-phylobase::labels(dendro)[m]
+    }
+		tops$ContrastName<-factor(tops$ContrastName) #make it consistent with the others and the results of matrix version
+	}
+	return(tops)
   }
 )
 
@@ -412,7 +463,7 @@ setMethod(
       else{
         tt<-edgeR::topTags(fit2,...)
       }
-			if(is.null(rownames(tt))){rownames(tt)<- (1:nGenes)}
+			if(is.null(rownames(tt))){rownames(tt)<- (seq_len(nGenes))}
       tt<- data.frame("Feature"=rownames(tt), tt)
 			colnames(tt)[colnames(tt)=="PValue"]<-"P.Value"
 			if("FWER" %in% colnames(tt)) colnames(tt)[colnames(tt)=="FWER"]<-"adj.P.Val"
@@ -460,114 +511,99 @@ setMethod(
 
 }
 
-
-#' @importFrom phylobase descendants nodeLabels subset tipLabels
 .makeMergeDendrogram<-function(object){
+	#this function returns a dendrogram where the tips are the merged clusters, rather than the clusters of the original dendrogram.
   if(is.na(object@dendro_index)) stop("no dendrogram for this ClusterExperiment Object")
   #should this instead just silently return the existing?
   if(is.na(object@merge_index)) stop("no merging was done for this ClusterExperiment Object")
   if(object@merge_dendrocluster_index != object@dendro_index) stop("dendrogram of this object was made from different cluster than that of merge cluster.")
-  #test mergeClusters actually subset of the cluster says merged
+  
+  #-----
+  #test mergeClusters actually subset of the cluster says merged -- 
+  # -- should go back to this with new phylo4d object
+  #-----
   whClusterNode<-which(!is.na(object@merge_nodeMerge[,"mergeClusterId"]))
-  clusterNode<-object@merge_nodeMerge[whClusterNode,"Node"]
-  clusterId<-object@merge_nodeMerge[whClusterNode,"mergeClusterId"]
-  phylo4Obj <- .makePhylobaseTree(object@dendro_clusters, "dendro")
-  newPhylo4<-phylo4Obj
-  if(names(rootNode(phylo4Obj)) %in% clusterNode){
-    stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
-  }
-  for(node in clusterNode){
-    #first remove tips of children nodes so all children of node in question are tips
-    
-    desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
-    whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    while(length(whDescNodes)>0){
-      tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))) #internal ids, not names, and no names to it
-      newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
-      #redo to check fixed problem
-      desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
-      whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
-    }
-    #should only have tips now
-    tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
-    newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
-  }
-  
+  clusterNode<-object@merge_nodeMerge[whClusterNode,"NodeId"]
+  nodePruneIndex <- .matchToDendroData(inputValue=clusterNode,dendro=object@dendro_clusters,matchColumn="NodeId",returnColumn="NodeIndex")
+  mergePhylo<-.pruneToNodes(phylo4=object@dendro_clusters,nodesPruned=nodePruneIndex)
   ##################
-  #Now need to change tip name to be that of the merge cluster
-  #Currently tips should be either
-  #1) Name of makeConsensus cluster (i.e. integer) which needs to translate to a merge cluster
-  #2) Node name which now should be a merge cluster id
-  ##################
-  newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
-  #
-  
-  #Solve 1) First:
-  #Find the correspondence between old and new
-  #replace the old (i.e. non-nodes) with the new
-  corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
-  whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be
-  if(length(whOldCl)>0){
-    newTips[whOldCl]<-corrsp[currTips[whOldCl]]
-  }
-  ## Solve 2) Now:
-  ## should all be clusterNode
-  if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
-  mClusterNode<-match(clusterNode, currTips)
-  newTips[mClusterNode]<-as.character(clusterId)
-  names(newTips)<-names(currTips) #this is the internal numbering of the nodes
-  phylobase::tipLabels(newPhylo4)<-newTips
-
-  #--------
-  #just some checks didn't screw up
-  #--------
-  whMergeNode<-which(currTips %in% clusterNode)
-  if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
-  if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
-  mCl<-clusterMatrix(object)[,object@merge_index]
-  mCl<-unique(mCl[mCl>0])
-  if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
-  if(!identical(sort(unname(as.character(mCl))),sort(unname(phylobase::tipLabels(newPhylo4))))){
-    stop("coding error -- names of new tips of tree do not match cluster ids")
-  }
-  return(newPhylo4)
-  #newPhylo4<-.force.ultrametric(newPhylo4)
-  #convert back to dendrogram class and return
-  ##as.dendrogram.phylo in dendextend first converts to hclust with ape function, then dendrogram with their (non-exported) function as.dendrogram.hclust:
-  ## as.dendrogram(ape::as.hclust.phylo(object))
-  ##Hit a problem from ape that doesn't return matrix in merge entry if only 2 tips, single node. Reported to ape.
-  ##Have to restep through and manually fix it
-  #previously had to do, but no longer using:
-  #@importFrom ape as.hclust.phylo
-  #@import dendextend (Couldn't import from because the as.dendrogram.hclust was not exported)
-  # xxhclust<-ape::as.hclust.phylo(as(newPhylo4,"phylo"))
-  # if(is.null(dim(xxhclust$merge))) xxhclust$merge<-matrix(xxhclust$merge,ncol=2)
-  # return(as.dendrogram(xxhclust))
-  #return(as.dendrogram(as(newPhylo4,"phylo"))) #as.dendrogram.phylo from dendextend, not exported...
+  #Now need to change tip labels to be that of the merge cluster ids
+  ##################  
+  tipIndex<-phylobase::getNode(mergePhylo,type="tip")
+  clusterIds <- .matchToDendroData(inputValue=tipIndex, dendro=mergePhylo, matchColumn="NodeIndex", returnColumn="ClusterIdMerge")
+  phylobase::labels(mergePhylo,type="tip")<-gsub("ClusterId","",clusterIds)
+  return(mergePhylo)
 
 }
+  # old .makeMergeDendrogram code:
+  #
+  # phylo4Obj <- .convertToPhyClasses(object@dendro_clusters,"phylo4",convertNodes=TRUE,convertTips=TRUE)
+  # newPhylo4<-phylo4Obj
+  # if(names(rootNode(phylo4Obj)) %in% clusterNode){
+  #   stop("coding error -- trying to make dendrogram from merge cluster when only 1 cluster in the clustering.")
+  # }
+  #
+  #
+  # #-----
+  # # remove tips
+  # # Note that subset function only removes specified tips (i.e. give tips to exclude)
+  # # Doesn't allow you to give nodes you want to keep...
+  # #-----
+  # #After have updated merge, should come back to this...
+  # for(node in clusterNode){
+  #   #first remove tips of children nodes so all children of node in question are tips
+  #
+  #   desc<-phylobase::descendants(newPhylo4, node, type = c("all")) #names are names
+  #   whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+  #   while(length(whDescNodes)>0){
+  #     tipNodeDesc<-unique(unlist(phylobase::descendants(newPhylo4, desc[whDescNodes], type = c("tips")))) #internal ids, not names, and no names to it
+  #     newPhylo4<-phylobase::subset(newPhylo4,tips.exclude=tipNodeDesc,trim.internal =FALSE)
+  #     #redo to check fixed problem
+  #     desc<-phylobase::descendants(newPhylo4, node, type = c("all"))
+  #     whDescNodes<-which(names(desc) %in% phylobase::nodeLabels(newPhylo4))
+  #   }
+  #   #should only have tips now
+  #   tipsRemove<-phylobase::descendants(newPhylo4, node, type = c("tips"))
+  #   newPhylo4<-.safePhyloSubset(newPhylo4,tipsRemove=tipsRemove,nodeName=node) #use instead of subset, because run into problems in phylobase in subset when small tree.
+  # }
+  #
+  # ##################
+  # #Now need to change tip name to be that of the merge cluster
+  # #Currently tips should be either
+  # #1) Name of makeConsensus cluster (i.e. integer) which needs to translate to a merge cluster
+  # #2) Node name which now should be a merge cluster id
+  # ##################
+  # newTips<-currTips<-phylobase::tipLabels(newPhylo4) #has *names* as entries
+  # #
+  #
+  # #Solve 1) First:
+  # #Find the correspondence between old and new
+  # #replace the old (i.e. non-nodes) with the new
+  # corrsp<-getMergeCorrespond(object,by="original") #should be vector with names corresponding to original clusters, entries to merge clusters
+  # whOldCl<-which(currTips %in% names(corrsp)) #which are cluster names of the original; these are ones that should be
+  # if(length(whOldCl)>0){
+  #   newTips[whOldCl]<-corrsp[currTips[whOldCl]]
+  # }
+  # ## Solve 2) Now:
+  # ## should all be clusterNode
+  # if(!all(clusterNode %in% currTips)) stop("coding error -- some cluster nodes didn't wind up as tips of new tree")
+  # mClusterNode<-match(clusterNode, currTips)
+  # newTips[mClusterNode]<-as.character(clusterId)
+  # names(newTips)<-names(currTips) #this is the internal numbering of the nodes
+  # phylobase::tipLabels(newPhylo4)<-newTips
+  #
+  # #--------
+  # #just some checks didn't screw up
+  # #--------
+  # whMergeNode<-which(currTips %in% clusterNode)
+  # if(length(intersect(whMergeNode,whOldCl))) stop("coding error -- should be no overlap bwettween merged node in tree tips and old clusters")
+  # if(length(union(whMergeNode,whOldCl))!= length(currTips)) stop("coding error -- all tips should be either old clusters of merged nodes")
+  # mCl<-clusterMatrix(object)[,object@merge_index]
+  # mCl<-unique(mCl[mCl>0])
+  # if(length(currTips)!= length(mCl)) stop("coding error -- number of tips of new tree not equal to the number of clusters in merged cluster")
+  # if(!identical(sort(unname(as.character(mCl))),sort(unname(phylobase::tipLabels(newPhylo4))))){
+  #   stop("coding error -- names of new tips of tree do not match cluster ids")
+  # }
+  # return(newPhylo4)
 
-#' #' @importFrom phylobase nodeHeight tipLabels edgeLength edges edgeId
-#' ##From http://blog.phytools.org/2017/03/forceultrametric-method-for-ultrametric.html
-#' .force.ultrametric<-function(tree){
-#' 	if(!inherits(tree,"phylo4")) stop("tree must be of class phylo4")
-#' 
-#' 	allTips<-phylobase::tipLabels(tree)
-#' 	depthToTips<-phylobase::nodeHeight(tree,allTips,from="root")
-#' 	maxD<-max(depthToTips)
-#' 	addValue<-maxD-depthToTips
-#' 	allLen<-phylobase::edgeLength(tree)
-#'   edgeMat<-phylobase::edges(tree)
-#'   tipIds<-as.numeric(names(allTips))
-#'   m<-match(tipIds,edgeMat[,2])
-#'   edgeIds<-paste(edgeMat[m,1],edgeMat[m,2],sep="-")
-#' 
-#'   #check didn't do something stupid:
-#'   checkTipEdges<-phylobase::edgeId(tree,type="tip")
-#'   if(!identical(sort(unname(checkTipEdges)),sort(unname(edgeIds)))) stop("coding error -- didn't correctly get edge ids for tips")
-#' 
-#'   #replace with new edges:
-#' 	allLen[edgeIds]<-allLen[edgeIds]+addValue
-#' 	phylobase::edgeLength(tree)<-allLen
-#' 	tree
-#' }
+

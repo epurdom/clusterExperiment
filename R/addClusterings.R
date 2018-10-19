@@ -1,6 +1,8 @@
 #' @name addClusterings
 #' @title Add clusterings to ClusterExperiment object
-#' @description Function for adding new clusterings in form of vector (single cluster) or matrix (multiple clusterings) to an existing ClusterExperiment object
+#' @description Function for adding new clusterings in form of vector (single
+#'   cluster) or matrix (multiple clusterings) to an existing ClusterExperiment
+#'   object
 #' @param x a ClusterExperiment object
 #' @param y additional clusters to add to x. Can be a ClusterExperiment object
 #'   or a matrix/vector of clusters.
@@ -8,7 +10,8 @@
 #'   matrix, the column names of that matrix will be used by default, if
 #'   \code{clusterLabels} is not given.
 #' @param clusterLegend a list giving the cluster legend for the clusters added.
-#' @aliases addClusterings removeClusterings addClusterings,ClusterExperiment,matrix-method
+#' @aliases addClusterings removeClusterings
+#'   addClusterings,ClusterExperiment,matrix-method
 #' @inheritParams ClusterExperiment-class
 #' @return A \code{ClusterExperiment} object.
 #' @details addClusterings adds y to x, and is thus not symmetric in the two
@@ -20,10 +23,12 @@
 #' data(simData)
 #'
 #' cl1 <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+#' clusterFunction="pam"))
 
 #' cl2 <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"))
+#' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+#' clusterFunction="pam"))
 #'
 #' addClusterings(cl1, cl2)
 setMethod(
@@ -74,10 +79,11 @@ setMethod(
 
 #' @rdname addClusterings
 #' @export
-#' @param ... For \code{addClusterings}, passed to signature 
-#' \code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to 
-#' \code{SingleCellExperiment} subsetting function.
-#' @param makePrimary whether to make the added cluster the primary cluster (only relevant if \code{y} is a vector)
+#' @param ... For \code{addClusterings}, passed to signature
+#'   \code{ClusterExperiment,matrix}. For \code{[} (subsetting), passed to
+#'   \code{SingleCellExperiment} subsetting function.
+#' @param makePrimary whether to make the added cluster the primary cluster
+#'   (only relevant if \code{y} is a vector)
 setMethod(
   f = "addClusterings",
   signature = signature("ClusterExperiment", "vector"),

@@ -18,8 +18,9 @@ and 'IndexInOriginal' giving the grouping and original index of the
 features in the \code{assay(object)}}
 
 \item{whichCluster}{if not NULL, indicates cluster used in making the 
-significance table. Used to match to names in \code{clusterLegend(object)} 
-(relevant for one-vs-all contrast so that color aligns).}
+significance table. Used to match to colors in \code{clusterLegend(object)} 
+(relevant for one-vs-all contrast so that color aligns). See description of 
+argument in \code{\link{getClusterIndex}} for futher details.}
 
 \item{contrastColors}{vector of colors to be given to contrasts. Should match
 the name of the contrasts in the 'Contrast' column of \code{signifTable} or
@@ -42,6 +43,10 @@ If the column 'ContrastName' is given in \code{signifTable}, these
 
 Within each contrast, the genes are sorted by log fold-change if the
   column "logFC" is in the \code{signifTable} data.frame
+
+Note that if \code{whichCluster} is NOT given (the default) then there is 
+no automatic match of colors with contrasts based on the information in 
+\code{object}.
 }
 \examples{
 data(simData)

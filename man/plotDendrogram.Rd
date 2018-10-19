@@ -7,22 +7,17 @@
 \title{Plot dendrogram of ClusterExperiment object}
 \usage{
 \S4method{plotDendrogram}{ClusterExperiment}(x, whichClusters = "dendro",
-  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
-  "ids"), mergeInfo = "none", main, sub, clusterLabelAngle = 45,
-  removeOutbranch = TRUE, legend = c("side", "below", "none"),
-  nodeColors = NULL, colData = NULL, clusterLegend = NULL, ...)
+  leafType = c("samples", "clusters"), plotType = c("colorblock",
+  "name", "ids"), mergeInfo = "none", main, sub,
+  clusterLabelAngle = 45, removeOutbranch = TRUE, legend = c("side",
+  "below", "none"), nodeColors = NULL, colData = NULL,
+  clusterLegend = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{\link{ClusterExperiment}} object.}
 
-\item{whichClusters}{only used if \code{leafType="samples"}). If numeric, an 
-index for the clusterings to be plotted with dendrogram. Otherwise, 
-\code{whichClusters} can be a character value identifying the 
-\code{clusterTypes} to be used, or if not matching \code{clusterTypes} then 
-\code{clusterLabels}; alternatively \code{whichClusters} can be either 'all'
-or 'workflow' or 'primaryCluster' to indicate choosing all clusters or 
-choosing all \code{\link{workflowClusters}}. Default 'dendro' indicates 
-using the clustering that created the dendrogram.}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{leafType}{if "samples" the dendrogram has one leaf per sample, otherwise
 it has one per cluster.}
@@ -60,8 +55,9 @@ dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only
 available for 'ape' package >= 4.1-0.6).}
 
 \item{nodeColors}{named vector of colors to be plotted on a node in the 
-dendrogram. Names should match the name of the node (calls 
-\code{\link[ape]{nodelabels}}).}
+dendrogram (calls \code{\link[ape]{nodelabels}}). Names should match the 
+\emph{internal} name of the node (the "NodeId" value, see 
+\code{\link{clusterDendrogram}}).}
 
 \item{colData}{index (by integer or name) the sample data stored as a 
 \code{DataFrame} in \code{colData} slot of the object. Only discrete valued

@@ -117,8 +117,8 @@ setMethod(
       stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")  
     filterStats<-unique(filterStats)
     if(!is.null(whichClusterIgnoreUnassigned)){
-      whCluster<-.TypeIntoIndices(object,whichClusterIgnoreUnassigned)
-      if(length(whCluster)>1) warning("'whichClusterIgnoreUnassigned' corresponds to multiple clusterings. Ignoring input")
+      whCluster<-getClusterIndex(object,whichClusterIgnoreUnassigned,noMatch="silentlyRemove")
+      if(length(whCluster)>1) warning("'whichClusterIgnoreUnassigned' corresponds to multiple clusterings. Ignoring argument")
       else if(length(whCluster)==0) warning("'whichClusterIgnoreUnassigned' does not correspond to a clustering. Ignoring argument.")
       else{
         #give new names to filters to indicate based on clustering.

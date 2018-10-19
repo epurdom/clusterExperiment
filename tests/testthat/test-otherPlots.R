@@ -9,8 +9,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
     expect_equal(dim(clusterMatrix(ceSim)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim)))
-    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters="garbage"),"unable to find an inherited method")
-    expect_error(plotClusters(object=clusterMatrix(ceSim),whichClusters=c(1,3,4)),"unable to find an inherited method")
 
     #test CE version
     x<-plotClusters(ceSim)
@@ -46,7 +44,7 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #CE object with mixture of workflow and other types
     x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
     x2<-plotClusters(object=removeClusterings(ceSim,"User"),resetColors=TRUE)
-    whP<-clusterExperiment:::.TypeIntoIndices(ceSim,"workflow")
+    whP<-getClusterIndex(ceSim,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
@@ -213,17 +211,32 @@ test_that("plotClustersTable works",{
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=NA))
 	expect_silent(plotClustersTable(tableClusters(cc,whichClusters=c(1,2))))
 
+	
+	#the following gives a wicked output which ignoreUnassigned=TRUE: zero overlap because some in one cluster are all -1 in makeConsensus so NaN value in proportion and only single cluster in makeConsensus
+	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
+	                       isCount=FALSE))
+	expect_message(cc<-makeConsensus(cc,proportion=0.7),"no clusters specified to combine")
+	expect_error(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE) ,"Cannot create heatmap when there is only 1 column or row in the table")
+	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,plotType="bubble")) #gives a 
+	
+	
 	#test more complicated
-	#force different numbers of clusters
-	ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]])
-	ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=2,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=0,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=1,plotType="bubble"))
-
+	#so different numbers of clusters in the two clusters
+	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
+	expect_silent(ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d")))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,legend=TRUE))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",legend=TRUE ))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,legend=TRUE))
+	
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",plotType="bubble" ))
+	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,plotType="bubble"))
+	
 	
 })
 

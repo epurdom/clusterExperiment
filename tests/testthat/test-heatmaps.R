@@ -189,8 +189,7 @@ test_that("`plotCoClustering` works", {
 #  smMin1<-makeConsensus(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
   expect_silent(plotCoClustering(smMin1,clusterSamplesData="hclust"))
   ## Have changed so now changes it internally to primary cluster then hclust
-  expect_warning(plotCoClustering(smMin1,clusterSamplesData="dendrogramValue",plot=plotAll),
-               "cannot make dendrogram from 'data'")
+  expect_warning( plotCoClustering(smMin1, clusterSamplesData="dendrogramValue", plot=plotAll), "cannot make dendrogram from 'data'")
   expect_silent(sm<-makeConsensus(smSimCE,whichClusters=1:4,proportion=.5))
   expect_silent(plotCoClustering(sm,clusterSamplesData="dendrogramValue"))
 })

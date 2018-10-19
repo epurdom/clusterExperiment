@@ -5,7 +5,7 @@
 #'
 #' @param object a \code{ClusterExperiment} object.
 #' @param output character value, indicating desired type of conversion.
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @details convertClusterLegend pulls out information stored in the
 #'   \code{clusterLegend} slot of the object and returns it in useful format.
 #'
@@ -36,10 +36,7 @@ setMethod(
   signature = c("ClusterExperiment"),
   definition = function(object,output=c("plotAndLegend","aheatmapFormat","matrixNames","matrixColors"),whichClusters=ifelse(output=="plotAndLegend","primary","all")){
     output<-match.arg(output)
-    whichClusters<-.TypeIntoIndices(object,whClusters=whichClusters)
-    if(length(whichClusters)==0) stop("given whichClusters value does not match any clusters")
-    
-    
+    whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     if(output=="aheatmapFormat"){
       outval<-.convertToAheatmap(clusterLegend(object)[whichClusters])
     }
@@ -422,7 +419,6 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 
 
 #' @export
-#' @param whichCluster which cluster to plot cluster legend
 #' @param title title for the clusterLegend plot
 #' @param clusterNames vector of names for the clusters; vector should have names
 #'  that correspond to the clusterIds in the ClusterExperiment object. If this
@@ -432,13 +428,14 @@ seqPal1<-rev(RColorBrewer::brewer.pal(11, "Spectral"))
 #' @param location character passed to \code{x} argument of legend indicating 
 #'  where to place legend.
 #' @param ... arguments passed to legend
+#' @inheritParams getClusterIndex
 #' @rdname plottingFunctions
 #' @aliases plotClusterLegend
 setMethod(
   f = "plotClusterLegend",
   signature = c("ClusterExperiment"),
   definition = function(object,whichCluster="primary",clusterNames,title,add=FALSE,location=if(add)"topright" else "center",...){
-    whichCluster<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whichCluster<-getSingleClusterIndex(object,whichCluster,list(...))
     legMat<-clusterLegend(object)[[whichCluster]]
     if(!missing(clusterNames)){
       if(is.null(names(clusterNames))) stop("clusterNames must be named vector")
@@ -469,11 +466,11 @@ setMethod(
     }
     else ord<-seq_len(nrow(legMat))
     if(!add){
-			plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
-			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+			graphics::plot(0,0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+			graphics::legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 		}
 		else{
-			legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
+			graphics::legend(x=location,legend=clusterNames[ord],fill=legMat[ord,"color"],title=title,...)
 		}
     
     

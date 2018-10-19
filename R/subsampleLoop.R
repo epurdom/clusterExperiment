@@ -37,7 +37,7 @@ searchForPairs<-function(ii,clusterList,N){
 	# 	gc()
 	# }
 	clusterWithTab<-table(unlist(clusterWith))
-    jointNames<-as.character(1:N)
+    jointNames<-as.character(seq_len(N))
 	whLower<-which(as.integer(as.numeric(jointNames))<ii)
 	return(as.integer(clusterWithTab[jointNames][whLower])/as.integer(sampledWithTab[jointNames][whLower]))
 

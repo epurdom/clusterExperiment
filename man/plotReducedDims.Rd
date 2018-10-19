@@ -3,28 +3,20 @@
 \docType{methods}
 \name{plotReducedDims}
 \alias{plotReducedDims}
-\alias{plotReducedDims,ClusterExperiment,character-method}
-\alias{plotReducedDims,ClusterExperiment,missing-method}
-\alias{plotReducedDims,ClusterExperiment,numeric-method}
+\alias{plotReducedDims,ClusterExperiment-method}
 \title{Plot 2-dimensionsal representation with clusters}
 \usage{
-\S4method{plotReducedDims}{ClusterExperiment,character}(object, whichCluster,
-  ...)
-
-\S4method{plotReducedDims}{ClusterExperiment,missing}(object, whichCluster, ...)
-
-\S4method{plotReducedDims}{ClusterExperiment,numeric}(object, whichCluster,
-  reducedDim = "PCA", whichDims = c(1, 2), plotUnassigned = TRUE,
-  legend = TRUE, legendTitle = "", nColLegend = 6, clusterLegend = NULL,
-  unassignedColor = NULL, missingColor = NULL, pch = 19, xlab = NULL,
-  ylab = NULL, ...)
+\S4method{plotReducedDims}{ClusterExperiment}(object,
+  whichCluster = "primary", reducedDim = "PCA", whichDims = c(1, 2),
+  plotUnassigned = TRUE, legend = TRUE, legendTitle = "",
+  nColLegend = 6, clusterLegend = NULL, unassignedColor = NULL,
+  missingColor = NULL, pch = 19, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{object}{a ClusterExperiment object}
 
-\item{whichCluster}{which clusters to show on the plot}
-
-\item{...}{arguments passed to \code{\link{plot.default}}}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{reducedDim}{What dimensionality reduction method to use. Should match
 either a value in \code{reducedDimNames(object)} or one of the built-in
@@ -61,6 +53,8 @@ for missing (-2) samples (overrides \code{clusterLegend}) default.}
 \item{xlab}{Label for x axis}
 
 \item{ylab}{Label for y axis}
+
+\item{...}{arguments passed to \code{\link{plot.default}}}
 }
 \value{
 A plot is created. Nothing is returned.

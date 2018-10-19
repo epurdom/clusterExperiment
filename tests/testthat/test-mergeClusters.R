@@ -1,50 +1,55 @@
 context("mergeClusters")
 
 
-test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
-  cl1 <- clusterSingle(smSimData, 
-                       subsample=FALSE, sequential=FALSE,
-                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
-											 isCount=FALSE)
-  leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
-  leg[,"name"]<-letters[1:6]
-  clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
-  clustWithDendro <- makeDendrogram(cl1)
+test_that("`mergeClusters` works with matrix",{
+  expect_silent(cl1 <- clusterSingle(smSimData, 
+        subsample=FALSE, sequential=FALSE,
+        mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=6)), 
+				isCount=FALSE))
+	expect_silent(clustWithDendro <- makeDendrogram(cl1))
   #matrix version
-  mergedList <- mergeClusters(x=transformData(cl1), DEMethod="limma",
-                              cl=primaryCluster(cl1),
-                              dendro=clustWithDendro@dendro_clusters,
-                              mergeMethod="adjP", plotInfo="mergeMethod")
+  expect_silent(mergedList <- mergeClusters(x=transformData(cl1), DEMethod="limma", cl=primaryCluster(cl1), dendro=clustWithDendro@dendro_clusters, mergeMethod="adjP", plotInfo="mergeMethod"))
   
+})
+
+test_that("`mergeClusters` works with ClusterExperiment objects", { 
+    expect_silent(cl1 <- clusterSingle(smSimData, 
+                         subsample=FALSE, sequential=FALSE,
+                         mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
+  											 isCount=FALSE))
+    leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
+    leg[,"name"]<-letters[1:6]
+    clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg
+    expect_silent(clustWithDendro <- makeDendrogram(cl1))
 	#check plotting types:
-  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
-	 mergeMethod="none",plotInfo="all")
-  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
-		mergeMethod="none", plotInfo="adjP")
-  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
-		mergeMethod="none", plotInfo="locfdr")
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
+	 mergeMethod="none",plotInfo="all"),"Note: Merging will be done on")
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+		mergeMethod="none", plotInfo="adjP"),"Note: Merging will be done on")
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+		mergeMethod="none", plotInfo="locfdr"),"Note: Merging will be done on")
   expect_warning(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
 		 mergeMethod="none", plotInfo="locfdr",showWarnings=TRUE))
   expect_error(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
 	 mergeMethod="none", plotInfo="mergeMethod"),
 	 "can only plot 'mergeMethod' results if one method is selected")
-  clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", 
-		DEMethod="limma", plotInfo="none")
+  expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", 
+		DEMethod="limma", plotInfo="none"),"Note: Merging will be done on")
 
   #check all methods run
   for(method in clusterExperiment:::.availMergeMethods){
-	  clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
-			mergeMethod=method, plotInfo="mergeMethod")
+	  expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", 
+			mergeMethod=method, plotInfo="mergeMethod"),"Note: Merging will be done on")
   }
   
   expect_true("mergeClusters" %in% clusterTypes(clustMerged))
   expect_true("mergeClusters" %in% colnames(clusterMatrix(clustMerged)))
 
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma",
-		 plotInfo="mergeMethod",leafType="samples",plotType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="samples",plotType="name")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock")
-	clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="name")
+ expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma",
+		 plotInfo="mergeMethod",leafType="samples",plotType="colorblock"),"Note: Merging will be done on")
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="samples",plotType="name"),"Note: Merging will be done on")
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="colorblock"),"Note: Merging will be done on")
+	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="clusters",plotType="name"),"Note: Merging will be done on")
 
   expect_error(mergeClusters(x=transformData(clustWithDendro), DEMethod="limma",
                                cl=primaryCluster(clustWithDendro),plot="none",
@@ -63,7 +68,7 @@ test_that("`mergeClusters` works with matrix and ClusterExperiment objects", {
   expect_true("mergeClusters.1" %in% clusterTypes(clustMerged2))
   expect_true(!"makeConsensus.1" %in% clusterTypes(clustMerged2))
   expect_true(!"clusterMany.1" %in% clusterTypes(clustMerged2))
-  removeClusterings(clustMerged, whichClusters = "mergeClusters")
+  expect_silent(removeClusterings(clustMerged, whichClusters = "mergeClusters"))
 })
 
 
@@ -155,6 +160,29 @@ test_that("saving merge info works",{
   expect_equal(clustMerged4@merge_index,1)
   expect_equal(clustMerged4@merge_nodeMerge[,"mergeClusterId"],c(NA,NA,1,3,NA))
   expect_equal(clustMerged4@merge_nodeMerge[,"isMerged"],c(FALSE,FALSE,TRUE,TRUE,TRUE))
+  # > clustMerged4@merge_nodeMerge
+ #         Node               Contrast isMerged mergeClusterId
+ #  Node1 Node1  X3-(X1+X5+X6+X2+X4)/5    FALSE             NA
+ #  Node2 Node2 (X1+X5)/2-(X6+X2+X4)/3    FALSE             NA
+ #  Node3 Node3                  X1-X5     TRUE              1
+ #  Node4 Node4           X6-(X2+X4)/2     TRUE              3
+ #  Node5 Node5                  X2-X4     TRUE             NA
+ # > clustMerged4@merge_nodeProp
+ #        Node               Contrast Storey PC adjP locfdr MB JC
+ # Node1 Node1  X3-(X1+X5+X6+X2+X4)/5    1.0 NA 0.55     NA NA NA
+ # Node2 Node2 (X1+X5)/2-(X6+X2+X4)/3    1.0 NA 0.75     NA NA NA
+ # Node3 Node3                  X1-X5    0.0 NA 0.10     NA NA NA
+ # Node4 Node4           X6-(X2+X4)/2    0.1 NA 0.15     NA NA NA
+ # Node5 Node5                  X2-X4    0.4 NA 0.00     NA NA NA
+
+ # > clustMerged4@merge_nodeMerge
+#                             NodeId               Contrast isMerged mergeClusterId
+#  InternalNodeId7   InternalNodeId7  X3-(X1+X5+X6+X2+X4)/5    FALSE             NA
+#  InternalNodeId8   InternalNodeId8 (X1+X5)/2-(X6+X2+X4)/3    FALSE             NA
+#  InternalNodeId9   InternalNodeId9                  X1-X5     TRUE              1
+#  InternalNodeId10 InternalNodeId10           X6-(X2+X4)/2     TRUE              3
+#  InternalNodeId11 InternalNodeId11                  X2-X4     TRUE             NA
+#
 
   #check really gets clusterIds and not names
   expect_silent(clusterLegend(clustMerged3)[["clusterSingle"]][,"name"]<-letters[1:6])
@@ -387,4 +415,4 @@ test_that("cluster labels not being internally changed from user input",{
                                               plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))
   
   
-  })
+})

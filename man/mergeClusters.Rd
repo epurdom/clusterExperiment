@@ -26,11 +26,11 @@
   logFCcutoff = 0, weights = NULL, ...)
 
 \S4method{mergeClusters}{ClusterExperiment}(x, eraseOld = FALSE,
-  mergeMethod = "none", plotInfo = "all", clusterLabel = "mergeClusters",
-  leafType = c("samples", "clusters"), plotType = c("colorblock", "name",
-  "ids"), plot = TRUE, whichAssay = 1, forceCalculate = FALSE,
-  weights = if ("weights" \%in\% assayNames(x)) "weights" else NULL, DEMethod,
-  ...)
+  mergeMethod = "none", plotInfo = "all",
+  clusterLabel = "mergeClusters", leafType = c("samples", "clusters"),
+  plotType = c("colorblock", "name", "ids"), plot = TRUE,
+  whichAssay = 1, forceCalculate = FALSE, weights = if ("weights"
+  \%in\% assayNames(x)) "weights" else NULL, DEMethod, ...)
 
 \S4method{nodeMergeInfo}{ClusterExperiment}(x)
 
@@ -103,8 +103,9 @@ clusters.}
 results}
 
 \item{DEMethod}{character vector describing how the differential expression 
-analysis should be performed (replaces previous argument \code{isCount}. 
-See details.}
+ analysis should be performed that will be used in the estimation of the
+percentage DE per node. See \link{getBestFeatures} for current options. 
+ See details.}
 
 \item{logFCcutoff}{Relevant only if the \code{mergeMethod} selected is 
 "adjP", in which case the calculation of the proportion of individual tests
@@ -163,30 +164,34 @@ corresponding to the original clustering ids. See return value for details.}
 }
 \value{
 If `x` is a matrix, it returns (invisibly) a list with elements
-  \itemize{
-	\item{\code{clustering}}{ a vector of length equal to ncol(x)
-  giving the integer-valued cluster ids for each sample. "-1" indicates the
-  sample was not clustered.}
-	\item{\code{oldClToNew}}{ A table of the old
-  cluster labels to the new cluster labels.}
-	\item{\code{nodeProp}}{ 
-A table of the proportions that are DE on each node.This table is saved in the
-\code{merge_nodeProp} slot of a \code{ClusterExperiment} object and can be 
-accessed along with the nodeMerge info with the \code{nodeMergeInfo} function.
-	}
-	\item{\code{nodeMerge}}{ 
-	A table of indicating for each node whether merged or not and the cluster id
-	in the new clustering that corresponds to the node. Note that a node can be
-	merged and not correspond to a node in the new clustering, if its ancestor
-	node is also merged. But there must be some node that corresponds to a new
-	cluster id if merging has been done. This table is saved in the
-	\code{merge_nodeMerge} slot of a \code{ClusterExperiment} object and can be
-	accessed along with the nodeProp info with the \code{nodeMergeInfo}
-	function.
-	}
-  \item{\code{originalClusterDendro}}{ The dendrogram on which the merging
-  was based (based on the original clustering).}
-  \item{\code{cutoff}}{ The cutoff value for merging.} }
+\itemize{ 
+\item{\code{clustering}}{ a vector of length equal to ncol(x) giving
+the integer-valued cluster ids for each sample. "-1" indicates the sample was
+not clustered.} 
+\item{\code{oldClToNew}}{ A table of the old cluster labels to
+the new cluster labels.} 
+\item{\code{nodeProp}}{ A table of the proportions
+that are DE on each node.This table is saved in the \code{merge_nodeProp} slot
+of a \code{ClusterExperiment} object and can be accessed along with the
+nodeMerge info with the \code{nodeMergeInfo} function. 
+}
+\item{\code{nodeMerge}}{ 
+A table of indicating for each node whether merged or
+not and the cluster id in the new clustering that corresponds to the node.
+Note that a node can be merged and not correspond to a node in the new
+clustering, if its ancestor node is also merged. But there must be some node
+that corresponds to a new cluster id if merging has been done. This table is
+saved in the \code{merge_nodeMerge} slot of a \code{ClusterExperiment} object
+and can be accessed along with the nodeProp info with the \code{nodeMergeInfo}
+function. 
+} 
+\item{\code{updatedClusterDendro}}{ The dendrogram on which the
+merging was based (based on the original clustering).
+} 
+\item{\code{cutoff}}{
+The cutoff value for merging.
+} 
+}
 
 If `x` is a \code{\link{ClusterExperiment}}, it returns a new
   \code{ClusterExperiment} object with an additional clustering based on the
@@ -235,7 +240,7 @@ Takes an input of hierarchical clusterings of clusters and
   below a certain cutoff.
 }
 \details{
-\strong{Estimation of Proportion non-null} "Storey" refers to the
+\strong{Estimation of proportion non-null} "Storey" refers to the
   method of Storey (2002). "PC" refers to the method of Pounds and Cheng
   (2004). "JC" refers to the method of Ji and Cai (2007), and implementation
   of "JC" method is copied from code available on Jiashin Ji's website,
@@ -246,10 +251,6 @@ Takes an input of hierarchical clusterings of clusters and
   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
   refers to the proportion of genes that are found significant based on a FDR
   adjusted p-values (method "BH") and a cutoff of 0.05.
-
-\strong{DEMethod} If  \code{DEMethod=="limma"}, and \code{x} is a \code{ClusterExperiment} object, then transformData(x) will be
-  given as the input to \code{getBestFeatures}. Otherwise, the original data stored in 
- the assay will be passed to \code{getBestFeatures} (and the remaining methods assume the data will be counts.)
 
 \strong{Control of Plotting} If \code{mergeMethod} is not equal to
   'none' then the plotting will indicate where the clusters will be merged by
@@ -269,7 +270,21 @@ Takes an input of hierarchical clusterings of clusters and
   with no merging performed nor demonstrated on the plot, see
   \code{\link{plotDendrogram}}.
 
-\strong{Saving and Reusing of results} By default, the function saves the results in the \code{ClusterExperiment} object and will not recalculate them if not needed. Note that by default \code{calculateAll=TRUE}, which means that regardless of the value of \code{mergeMethod}, all the methods will be calculated so that those results will be stored and if you change the mergeMethod, no additional calculations are needed. Since the computationally intensive step is the running the DE method on the genes, this is a big savings (all of the methods then calculate the proportion from those results). However, note that if \code{calculateAll=TRUE} and ANY of the methods returned NA for any value, the calculation will be redone. Thus if, for example, the \code{locfdr} function does not run successfully and returns NA, the function will always recalculate each time, even if you don't specifically want the results of \code{locfdr}. In this case, it makes sense to turn \code{calculateAll=FALSE}.
+\strong{Saving and Reusing of results} By default, the function
+  saves the results in the \code{ClusterExperiment} object and will not
+  recalculate them if not needed. Note that by default
+  \code{calculateAll=TRUE}, which means that regardless of the value of
+  \code{mergeMethod}, all the methods will be calculated so that those
+  results will be stored and if you change the mergeMethod, no additional
+  calculations are needed. Since the computationally intensive step is the
+  running the DE method on the genes, this is a big savings (all of the
+  methods then calculate the proportion from those results). However, note
+  that if \code{calculateAll=TRUE} and ANY of the methods returned NA for any
+  value, the calculation will be redone. Thus if, for example, the
+  \code{locfdr} function does not run successfully and returns NA, the
+  function will always recalculate each time, even if you don't specifically
+  want the results of \code{locfdr}. In this case, it makes sense to turn
+  \code{calculateAll=FALSE}.
 
 If the dendrogram was made with option
   \code{unassignedSamples="cluster"} (i.e. unassigned were clustered in with

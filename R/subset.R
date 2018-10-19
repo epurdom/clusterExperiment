@@ -1,36 +1,26 @@
 #' @title Functions to subset ClusterExperiment Objects
-#' @description These functions are used to subset ClusterExperiment objects, either by removing samples, genes, or clusterings
+#' @description These functions are used to subset ClusterExperiment objects,
+#'   either by removing samples, genes, or clusterings
 #' @name subset
 #' @param x a ClusterExperiment object.
-#' @inheritParams ClusterExperiment-class 
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams ClusterExperiment-class
+#' @inheritParams getClusterIndex
 #' @return A \code{\link{ClusterExperiment}} object.
-#' @aliases removeClusterings,ClusterExperiment,character-method
 #' @details \code{removeClusterings} removes the clusters given by
-#'  \code{whichClusters}. If the
-#'  \code{primaryCluster} is one of the clusters removed, the
-#'  \code{primaryClusterIndex} is set to 1 and the dendrogram and coclustering
-#'  matrix are discarded and orderSamples is set to \code{1:NCOL(x)}.
+#'   \code{whichClusters}. If the \code{primaryCluster} is one of the clusters
+#'   removed, the \code{primaryClusterIndex} is set to 1 and the dendrogram and
+#'   coclustering matrix are discarded and orderSamples is set to
+#'   \code{1:NCOL(x)}.
 #' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
-#'  unless all clusters are removed, in which case it returns a
-#'  \code{\link{SingleCellExperiment}} object.
+#'   unless all clusters are removed, in which case it returns a
+#'   \code{\link{SingleCellExperiment}} object.
 #' @export
+#' @aliases removeClusterings,ClusterExperiment-method
 setMethod(
   f = "removeClusterings",
-  signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichClusters,...) {
-    whichClusters<-.TypeIntoIndices(x,whichClusters)
-    removeClusterings(x,whichClusters,...)
-  }
-)
-
-#' @rdname subset
-#' @export
-setMethod(
-  f = "removeClusterings",
-  signature = signature("ClusterExperiment","numeric"),
+  signature = signature("ClusterExperiment"),
   definition = function(x, whichClusters) {
-    if(any(whichClusters>NCOL(clusterMatrix(x)))) stop("invalid indices -- must be between 1 and",NCOL(clusterMatrix(x)))
+    whichClusters<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="throwError")
     if(length(whichClusters)==NCOL(clusterMatrix(x))){
       warning("All clusters have been removed. Will return just a Summarized Experiment Object")
       #make it Summarized Experiment
@@ -43,87 +33,78 @@ setMethod(
     newClusterColors<-clusterLegend(x)[-whichClusters]
     coMat<-x@coClustering
     orderSamples<-orderSamples(x)
-    if(primaryClusterIndex(x) %in% whichClusters) pIndex<-1
+    if(primaryClusterIndex(x) %in% whichClusters) 
+		pIndex<-1
     else 
-			pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+		pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
 		
-		#fix dendro info
-	  dend_samples <- x@dendro_samples
+	
+	#fix merge info:
+	#erase merge info if either dendro or merge index deleted.
+	if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
+      x<-.eraseMerge(x)
+	  merge_index<-x@merge_index
+	  merge_dendrocluster_index<-x@merge_dendrocluster_index
+	}
+	else{
+      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
+      
+	}
+	#fix dendro info
+	dend_samples <- x@dendro_samples
     dend_cl <- x@dendro_clusters
     dend_ind<-dendroClusterIndex(x)
-    dend_out<-x@dendro_outbranch
     if(dendroClusterIndex(x) %in% whichClusters){
       dend_cl<-NULL
       dend_samples<-NULL
       dend_ind<-NA_real_
-      dend_out<-NA
     }
     else{
       dend_ind<-match(dend_ind,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
     }
-		#fix merge info:
-		#erase merge info if either dendro or merge index deleted.
-	  if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
-      merge_index=NA_real_
-      merge_cutoff=NA_real_
-      merge_dendrocluster_index=NA_real_
-      merge_nodeProp=NULL
-      merge_nodeMerge=NULL
-      merge_method=NA_character_
-			merge_demethod=NA_character_
-	  }
-		else{
-      merge_index<-match(x@merge_index,seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-      merge_dendrocluster_index<-match(x@merge_dendrocluster_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-      merge_cutoff=x@merge_cutoff
-      merge_nodeProp=x@merge_nodeProp
-      merge_nodeMerge=x@merge_nodeMerge
-      merge_method=x@merge_method
-      merge_demethod=x@merge_demethod
-				}
-
-    retval<-ClusterExperiment(as(x,"SingleCellExperiment"),
-                              clusters=newClLabels,
-                              transformation=transformation(x),
-                              clusterTypes=newClusterType,
-                              clusterInfo<-newClusterInfo,
-                              primaryIndex=pIndex,
-                              dendro_samples=dend_samples,
-                              dendro_clusters=dend_cl,
-                              dendro_index=dend_ind,
-                              dendro_outbranch=dend_out,
-															merge_index=merge_index,
-															merge_dendrocluster_index=merge_dendrocluster_index,
-												      merge_cutoff=merge_cutoff,
-												      merge_nodeProp=merge_nodeProp,
-												      merge_nodeMerge=merge_nodeMerge,
-												      merge_method=merge_method,
-												      merge_demethod=merge_demethod,                              
-															coClustering=coMat,
-                              orderSamples=orderSamples,
-                              clusterLegend=newClusterColors,
-                              checkTransformAndAssay=FALSE
+    retval<-ClusterExperiment(
+		as(x,"SingleCellExperiment"),
+		clusters=newClLabels,
+		transformation=transformation(x),
+		clusterTypes=newClusterType,
+		clusterInfo<-newClusterInfo,
+		primaryIndex=pIndex,
+		dendro_samples=dend_samples,
+		dendro_clusters=dend_cl,
+		dendro_index=dend_ind,
+		merge_index=merge_index,
+		merge_dendrocluster_index=merge_dendrocluster_index,
+		merge_cutoff=x@merge_cutoff,
+		merge_nodeProp=x@merge_nodeProp,
+		merge_nodeMerge=x@merge_nodeMerge,
+		merge_method=x@merge_method,
+		merge_demethod=x@merge_demethod,                              
+		coClustering=coMat,
+		orderSamples=orderSamples,
+		clusterLegend=newClusterColors,
+		checkTransformAndAssay=FALSE
     )
-    #    clusterLegend(retval)<-newClusterColors
     return(retval)
   }
 )
 
 
 
-#' @details \code{removeClusters} creates a new cluster that unassigns samples in cluster \code{clustersToRemove} (in the clustering defined by \code{whichClusters}) and assigns them to -1 (unassigned)
-#' @param clustersToRemove numeric vector identifying the clusters to remove (whose samples will be reassigned to -1 value).
-#' @param whichCluster Clustering from which to remove clusters for
-#'  \code{removeCluster}. Note that it is a singular cluster.
+#' @details \code{removeClusters} creates a new cluster that unassigns samples
+#'   in cluster \code{clustersToRemove} (in the clustering defined by
+#'   \code{whichClusters}) and assigns them to -1 (unassigned)
+#' @param clustersToRemove numeric vector identifying the clusters to remove
+#'   (whose samples will be reassigned to -1 value).
 #' @rdname subset
 #' @inheritParams addClusterings
 #' @aliases removeClusters
 #' @export
 setMethod(
   f = "removeClusters",
-  signature = c("ClusterExperiment","numeric"),
+  signature = c("ClusterExperiment"),
   definition = function(x,whichCluster,clustersToRemove,makePrimary=FALSE,clusterLabels=NULL) {
-    whCl<-.convertSingleWhichCluster(x,whichCluster)
+    whCl<-getSingleClusterIndex(x,whichCluster)
     cl<-clusterMatrix(x)[,whCl]
     leg<-clusterLegend(x)[[whCl]]
     if(is.character(clustersToRemove)){
@@ -159,16 +140,7 @@ setMethod(
 
   }
 )
-#' @rdname subset
-#' @export
-setMethod(
-  f = "removeClusters",
-  signature = signature("ClusterExperiment","character"),
-  definition = function(x, whichCluster,...) {
-    whichCluster<-.TypeIntoIndices(x,whichCluster)
-    removeClusters(x,whichCluster,...)
-  }
-)
+
 
 #' @details Note that when subsetting the data, the dendrogram information and
 #' the co-clustering matrix are lost.
@@ -251,3 +223,27 @@ setMethod(
     return(out)
   }
 )
+
+#' @rdname subset
+#' @return \code{subsetByCluster} subsets the object by clusters in a clustering
+#' and returns a ClusterExperiment object with only those samples
+#' @param clusterValue values of the cluster to match to for subsetting
+#' @param matchTo whether to match to the cluster name
+#'   (\code{"name"}) or internal cluster id (\code{"clusterIds"})
+#' @export
+#' @aliases subsetByCluster
+setMethod(
+  f = "subsetByCluster",
+  signature = "ClusterExperiment",
+  definition = function(x,clusterValue,whichCluster="primary",matchTo=c("name","clusterIds")) {
+    
+		whCl<-getSingleClusterIndex(x,whichCluster)
+		matchTo<-match.arg(matchTo)
+		if(matchTo=="name"){
+			cl<-clusterMatrixNamed(x)[,whCl]
+		}
+		else cl<-clusterMatrix(x)[,whCl]
+		return(x[,which(cl %in% clusterValue)])
+  }
+)
+

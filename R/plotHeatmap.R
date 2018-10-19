@@ -33,12 +33,13 @@
 #' @param clusterSamplesData If \code{data} is a matrix,
 #'   \code{clusterSamplesData} is either a matrix that will be used by
 #'   \code{hclust} to define the hiearchical clustering of samples (e.g.
-#'   normalized data) or a pre-existing dendrogram that clusters the samples. If
+#'   normalized data) or a pre-existing dendrogram (of class
+#'  \code{\link[stats]{dendrogram}}) that clusters the samples. If
 #'   \code{data} is a \code{ClusterExperiment} object, \code{clusterSamplesData}
 #'   should be either character or integers or logical which indicates how (and
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
-#' @inheritParams ClusterExperiment-methods
+#' @inheritParams getClusterIndex
 #' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
 #'   will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters
@@ -90,6 +91,8 @@
 #'   requested will show in the color scale legend.
 #' @param whichAssay numeric or character specifying which assay to use. See
 #'   \code{\link[SummarizedExperiment]{assay}} for details.
+#' @param labelTracks logical, whether to put labels next to the color tracks 
+#' corresponding to the colData. 
 #' @inheritParams clusterSingle
 #' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
 #'   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for
@@ -202,8 +205,9 @@
 #'   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
 #'   also be set in the \code{clusterLegend} slot ). Other options should be
 #'   passed on to \code{aheatmap}, though they have not been all tested. Useful options
-#'  include \code{treeheight=0} to suppress plotting of the dendrograms, and
-#'  \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
+#'  include \code{treeheight=0} to suppress plotting of the dendrograms, 
+#'  \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
+#'  and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 #'
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
@@ -217,7 +221,7 @@
 #' for quantile.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}
+#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}}, \code{\link[stats]{dendrogram}}
 #' @export
 #' @examples
 #' data(simData)
@@ -325,7 +329,7 @@ setMethod(
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
     userList<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData")
+		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData") #06/2018 added in BioC 3.8
 		if(!is.null(checkIgnore)){
 			userList<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
@@ -433,7 +437,7 @@ setMethod(
     #---
     #Get clusterings
     #---
-    whCl<-.TypeIntoIndices(data,whClusters=whichClusters)
+    whCl<-getClusterIndex(data,whichClusters=whichClusters,noMatch="silentlyRemove")
     #
     if(length(whCl)>0){
       clusterData<-clusterMatrixNamed(data,whichClusters=whCl)
@@ -522,15 +526,20 @@ setMethod(
           clusterSamples<-FALSE
         }
         else if(clusterSamplesData=="dendrogramValue"){
-          if(is.null(data@dendro_samples)){
-            clusterSamplesData<-try(makeDendrogram(data)@dendro_samples,silent = TRUE)
-            if(inherits(clusterSamplesData, "try-error")){
-              warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
-              clusterSamplesData<-"primaryCluster"
-            }
+					if(is.null(data@dendro_samples)){
+			      clusterSamplesData <- try( convertToDendrogram(makeDendrogram(data)) ,silent = TRUE) 
+	          if(inherits(clusterSamplesData, "try-error")){
+	            warning("cannot make dendrogram from 'data' with default makeDendrogram options. Ordering by primary cluster without dendrogram")
+	            clusterSamplesData<-"primaryCluster"
+	          }
           }
           else{
-            clusterSamplesData<-data@dendro_samples
+						#make sure get the sample ids as labels of the tips:
+            clusterSamplesData<-try(convertToDendrogram(data),silent=TRUE)
+						if(inherits(clusterSamplesData, "try-error")){
+	            warning("cannot make dendrogram class from stored dendrograms. Ordering by primary cluster without dendrogram")
+	            clusterSamplesData<-"primaryCluster"
+	          }
           }
         }
         if(is.character(clusterSamplesData) && clusterSamplesData=="primaryCluster"){
@@ -633,11 +642,12 @@ setMethod(
                         clusterLegend=NULL,alignColData=FALSE,
                         unassignedColor="white",missingColor="grey",
                         breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
-                        isSymmetric=FALSE, overRideClusterLimit=FALSE, plot=TRUE,...
+                        isSymmetric=FALSE, overRideClusterLimit=FALSE,
+						plot=TRUE,labelTracks=TRUE,...
   ){
     
     aHeatmapArgs<-list(...)  
-		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData")
+		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData") #06/2018 added in BioC 3.8
 		if(!is.null(checkIgnore)){
 			aHeatmapArgs<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
@@ -664,7 +674,7 @@ setMethod(
     ###Create the clustering dendrogram (samples):
     ##########
     if(clusterSamples){
-      if(inherits(clusterSamplesData, "dendrogram")){
+			if(inherits(clusterSamplesData,"dendrogram")){
         if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
         dendroSamples<-clusterSamplesData
       }
@@ -702,7 +712,7 @@ setMethod(
     else{
       if(clusterFeatures){
         if(inherits(clusterFeaturesData, "dendrogram")){
-          if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
+					if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
           dendroFeatures<-clusterFeaturesData
         }
         else{
@@ -854,7 +864,7 @@ setMethod(
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
     if(plot){
-      out<-NMF::aheatmap(heatData,
+	    out <-NMF::aheatmap(heatData,
                          Rowv =Rowv,Colv = Colv,
                          color = colorScale, scale = getHeatmapValue("scale","none"),
                          annCol = annCol,annColors=annColors,breaks=breaks,...)
@@ -862,7 +872,7 @@ setMethod(
       #############
       # add labels to clusters at top of heatmap
       #############
-      if(!is.null(dim(annCol))){
+      if(!is.null(dim(annCol)) & labelTracks){
         treeOfViewports<-unlist(lapply(strsplit(as.character(grid::current.vpTree(all=TRUE)),"->"),strsplit,","))
         wh<-sapply(treeOfViewports, function(x){
           length(grep(x,"pattern"="aheatmap-AHEATMAP.VP"))>0
@@ -923,9 +933,13 @@ setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
   definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
-    if(is.null(data@coClustering)) stop("coClustering slot is empty")
-    if(invert) data@coClustering<-1-data@coClustering
-    fakeCE<-ClusterExperiment(data@coClustering,
+	if(is.null(data@coClustering)) stop("coClustering slot is empty")
+	
+	if(invert) data@coClustering <- 1-as(data@coClustering,"matrix")
+	
+	#remove merge info in dendrogram so will make valid CE object
+	data<-eraseMergeInfo(data)
+    fakeCE<-ClusterExperiment(as(data@coClustering,"matrix"),
                               clusterMatrix(data),
                               transformation=function(x){x},
                               clusterInfo=clusteringInfo(data),
@@ -934,7 +948,6 @@ setMethod(
                               dendro_samples=data@dendro_samples,
                               dendro_clusters=data@dendro_clusters,
                               dendro_index=data@dendro_index,
-                              dendro_outbranch=data@dendro_outbranch,
                               primaryIndex=data@primaryIndex,
                               clusterLegend=clusterLegend(data),
                               checkTransformAndAssay=FALSE

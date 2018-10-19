@@ -196,22 +196,18 @@ setMethod(
 
 
 #' @rdname clusterSingle
-#' @param replaceCoClustering logical. Applicable if \code{x} is a
-#'   \code{ClusterExperiment} object. If TRUE, the co-clustering resulting from
-#'   subsampling is returned in the coClustering object and replaces any
-#'   existing coClustering object in the slot \code{coClustering}.
 #' @export
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "ClusterExperiment", diss="missing"),
-  definition = function(x, replaceCoClustering=FALSE,...) {
+  definition = function(x, ...) {
 	if(any(c("transFun","isCount") %in% names(list(...))))
 		stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
     outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
     retval<-addClusterings(x,outval)
 	#make most recent clustering the primary cluster
 	primaryClusterIndex(retval)<-nClusterings(retval)
-	if(replaceCoClustering | is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
+	if(!is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
 	#make sure save the calculated information
 	retval<-.addBackSEInfo(newObj=retval,oldObj=outval)
 	return(retval)
@@ -268,6 +264,10 @@ setMethod(
 
 #' @rdname clusterSingle
 #' @export
+#' @param saveSubsamplingMatrix logical. If TRUE, the co-clustering matrix resulting from
+#'   subsampling is returned in the coClustering slot (and replaces any
+#'   existing coClustering object in the slot \code{coClustering} if input object is a
+#' 	 \code{ClusterExperiment} object.)
 setMethod(
   f = "clusterSingle",
   signature = signature(x = "matrixOrHDF5OrNULL",diss="matrixOrNULL"),
@@ -275,7 +275,8 @@ setMethod(
       mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
       isCount=FALSE,transFun=NULL,
 	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
-      nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",checkDiss=TRUE) {
+      nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",
+			saveSubsamplingMatrix=FALSE,checkDiss=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
@@ -375,25 +376,26 @@ setMethod(
     ## Convert to ClusterExperiment Object
     ##########
     if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
-
-      retval <- ClusterExperiment(origX, outlist$clustering,
-                transformation=transFun,
-               clusterInfo=clInfo, clusterTypes="clusterSingle",
-			    checkTransformAndAssay=FALSE)
-	  clusterLabels(retval)<-clusterLabel
-      if(!sequential & subsample) {
-        retval@coClustering<-1-finalClusterList$diss
-		ch<-.checkCoClustering(retval)
-		if(!is.logical(ch)) stop(ch)
-      }
-	  if(!is.null(transObj)){
-		  #add in the reduceMethod stuff
-		  retval<-.addBackSEInfo(newObj=retval,oldObj=transObj)
-	  }
-      return(retval)
+        
+        retval <- ClusterExperiment(origX, outlist$clustering,
+                                    transformation=transFun,
+                                    clusterInfo=clInfo, clusterTypes="clusterSingle",
+                                    checkTransformAndAssay=FALSE)
+        clusterLabels(retval)<-clusterLabel
+        if(!sequential & subsample & saveSubsamplingMatrix) {
+			#convert to sparse matrix:
+			retval@coClustering<-Matrix::Matrix(1-finalClusterList$diss,sparse=TRUE)
+            ch<-.checkCoClustering(retval)
+            if(!is.logical(ch)) stop(ch)
+        }
+        if(!is.null(transObj)){
+            #add in the reduceMethod stuff
+            retval<-.addBackSEInfo(newObj=retval,oldObj=transObj)
+        }
+        return(retval)
     }
     else{
-      out<-list(clustering=outlist$clustering,clusterInfo=clInfo,diss=outlist$diss)
+        out<-list(clustering=outlist$clustering,clusterInfo=clInfo,diss=outlist$diss)
     }
 
   }

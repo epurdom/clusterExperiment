@@ -4,20 +4,18 @@ context("Assays")
 multi_se <- SummarizedExperiment(assays = list(counts = simCount,
                                                logcounts = log1p(simCount)))
 multi_cc <- ClusterExperiment(multi_se, trueCluster)
-cc <- ClusterExperiment(simCount, trueCluster)
-cc2 <- ClusterExperiment(simCount, trueCluster, transformation = log1p)
+ccTrue <- ClusterExperiment(simCount, trueCluster)
+ccTrue2 <- ClusterExperiment(simCount, trueCluster, transformation = log1p)
 
 test_that("clusterSingle works with non defalt assays", {
 
   ###Apply to SE
   expect_silent(cl1 <- clusterSingle(multi_se, whichAssay = "counts",
-                                     mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"),
-                                     subsample=FALSE, sequential=FALSE))
+                                     mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"), subsample=FALSE, sequential=FALSE))
 
   ###Apply to CE
   expect_silent(cl2 <- clusterSingle(multi_cc, whichAssay = "counts",
-                                     mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"),
-                                     subsample=FALSE, sequential=FALSE))
+                                     mainClusterArgs=list(clusterArgs=list(k=3), clusterFunction="pam"), subsample=FALSE, sequential=FALSE))
 
   expect_equal(primaryCluster(cl1), primaryCluster(cl2))
 
@@ -91,14 +89,14 @@ test_that("RSEC works wih non default assays", {
                             random.seed=495, whichAssay = "logcounts"),
                  "Merging will be done on")
 
-  expect_message(out3<-RSEC(x=cc, reduceMethod="none",
+  expect_message(out3<-RSEC(x=ccTrue, reduceMethod="none",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
                             random.seed=495),
                  "Merging will be done on")
 
-  expect_message(out4<-RSEC(x=cc2, reduceMethod="none",
+  expect_message(out4<-RSEC(x=ccTrue2, reduceMethod="none",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),

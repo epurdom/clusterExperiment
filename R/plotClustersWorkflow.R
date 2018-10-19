@@ -7,14 +7,12 @@
 #'   results.
 #' @param object A \code{ClusterExperiment} object on which
 #'   \code{\link{clusterMany}} has been run
-#' @param whichClusterMany numeric indices of which of the clusterMany 
-#'   clusterings to plot (if NULL, defaults to all). Unlike
-#'   \code{whichClusters}, these must be numeric indices. They must also refer
-#'   to clusterings of clusterType \code{clusterMany}.
-#' @param whichClusters which clusterings to "highlight", i.e draw separately 
-#'   from the \code{clusterMany} results. Can be numeric or character vector, 
-#'   indicating the indices or clusterLabels/clusterTypes of the clusterings of 
-#'   interest, respectively.
+#' @param whichClusterMany indicate which clusterings to plot in the bulk of the
+#'   plot, see argument \code{whichClusters} of \code{\link{getClusterIndex}}
+#'   for description of format allowed.
+#' @param whichClusters which clusterings to "highlight", i.e draw separately
+#'   from the bulk of the plot, see argument \code{whichClusters} of
+#'   \code{\link{getClusterIndex}} for description of format allowed.
 #' @param nBlankLines the number of blank (i.e. white) rows to add between the
 #'   clusterMany clusterings and the highlighted clusterings.
 #' @param nSizeResult the number of rows each highlighted clustering should take up.
@@ -73,17 +71,12 @@ setMethod(
     if(is.null(whichClusterMany)){
       whichClusterMany<-allClusterMany
     }
-    # if(!is.numeric(whichClusterMany)) stop("'whichClusterMany' must give numeric indices of clusters of the ClusterExperiment object")
-    # if(any(!whichClusterMany %in% allClusterMany)) stop("input to `whichClusterMany` must be indices to clusters of type 'clusterMany' ")
     #convert to indices
-    if(is.character(whichClusters)){
-      whichClusters<- .TypeIntoIndices(object,whClusters=whichClusters)
-      if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
-    }
-    if(is.character(whichClusterMany)){
-      whichClusterMany<- .TypeIntoIndices(object,whClusters=whichClusterMany)
-      if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusterMany argument")
-    }
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="silentlyRemove")
+    if(length(whichClusters)==0) stop("invalid identification of clusters for whichClusters argument")
+	whichClustersMany<-getClusterIndex(object,whichClusters=whichClusterMany,noMatch="silentlyRemove")
+	if(length(whichClusterMany)==0) stop("invalid identification of clusters for whichClusters argument")
+    
     
     #result labels (yaxis):
     if(is.logical(clusterLabels)){

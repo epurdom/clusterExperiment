@@ -1,8 +1,10 @@
 #' @name ClusterExperiment-methods
 #' @title Helper methods for the ClusterExperiment class
 #'
-#' @description This is a collection of helper methods for the ClusterExperiment class.
-#' @param ... For \code{addToColData}, arguments passed to \code{colDataClusters}.
+#' @description This is a collection of helper methods for the ClusterExperiment
+#'   class.
+#' @param ... For \code{addToColData}, arguments passed to
+#'   \code{colDataClusters}.
 #' @param value The value to be substituted in the corresponding slot. See the
 #'   slot descriptions in \code{\link{ClusterExperiment}} for details on what
 #'   objects may be passed to these functions.
@@ -78,14 +80,15 @@ setMethod(
   f = "nClusterings",
   signature = "ClusterExperiment",
   definition = function(x){
-    return(NCOL(clusterMatrix(x)))
+    return(NCOL(x@clusterMatrix))
   }
 )
 
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{nClusters} returns the number of clusters per clustering
-#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2 assignments in calculating the number of clusters per clustering. 
+#' @param ignoreUnassigned logical. If true, ignore the clusters with -1 or -2
+#'   assignments in calculating the number of clusters per clustering.
 #' @export
 #' @aliases nClusters
 setMethod(
@@ -137,7 +140,8 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrixColors} returns the matrix with all the clusterings, using the internally stored colors for each cluster
+#' @return \code{clusterMatrixColors} returns the matrix with all the
+#'   clusterings, using the internally stored colors for each cluster
 #' @export
 #' @aliases clusterMatrixColors
 setMethod(
@@ -149,51 +153,20 @@ setMethod(
 )
 
 #' @rdname ClusterExperiment-methods
-#' @param whichClusters argument that can be either numeric or character value
-#'   indicating the clusters to be used. If numeric, gives the indices of the
-#'   \code{clusterMatrix} to return; this can also be used to defined an
-#'   ordering for the clusterings (as relevant). \code{whichClusters} can be a
-#'   character value identifying the \code{clusterTypes} to be used, or if not
-#'   matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-#'   \code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-#'   indicate choosing all clusterings or choosing all 
-#'   \code{\link{workflowClusters}} clusterings or choosing the 'primary'
-#'   clustering, respectively. If missing, the entire matrix of all clusterings
-#'   is returned.
 #' @return \code{clusterMatrix} returns the matrix with all the clusterings.
 #' @export
 #' @aliases clusterMatrix
 setMethod(
   f = "clusterMatrix",
-  signature = c("ClusterExperiment","missing"),
+  signature = c("ClusterExperiment"),
   definition = function(x,whichClusters) {
-    wh<-seq_len(ncol(x@clusterMatrix))
-    return(clusterMatrix(x,whichClusters=wh))
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
-#' @export
-#' @aliases clusterMatrix
-setMethod(
-  f = "clusterMatrix",
-  signature = c("ClusterExperiment","numeric"),
-  definition = function(x,whichClusters) {
-	  mat<-x@clusterMatrix[,whichClusters,drop=FALSE]
+	  if(missing(whichClusters)) mat<-x@clusterMatrix #note that 'all' changes the order of the clusterings...
+	  else{
+		  wh<-getClusterIndex(object=x,whichClusters=whichClusters,noMatch="silentlyRemove")
+		  mat<-x@clusterMatrix[,wh,drop=FALSE]	  	
+	  }
 	  rownames(mat)<-colnames(x)
-    return(mat)
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @return \code{clusterMatrix} returns the matrix with all the clusterings.
-#' @export
-#' @aliases clusterMatrix
-setMethod(
-  f = "clusterMatrix",
-  signature = c("ClusterExperiment","character"),
-  definition = function(x,whichClusters) {
-	  wh<-.TypeIntoIndices(x,whClusters=whichClusters)
-	  return(clusterMatrix(x,whichClusters=wh))
+      return(mat)
   }
 )
 
@@ -261,28 +234,6 @@ setMethod(
 )
 
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{subsetByCluster} subsets the object by clusters in a clustering
-#' and returns a ClusterExperiment object with only those samples
-#' @param clusterValue values of the cluster to match to for subsetting
-#' @param matchTo for subsetting, whether to match to the cluster name
-#'   (\code{"name"}) or internal cluster id (\code{"clusterIds"})
-#' @export
-#' @aliases subsetByCluster
-setMethod(
-  f = "subsetByCluster",
-  signature = "ClusterExperiment",
-  definition = function(x,clusterValue,whichCluster="primary",matchTo=c("name","clusterIds")) {
-    
-		whCl<-.convertSingleWhichCluster(x,whichCluster)
-		matchTo<-match.arg(matchTo)
-		if(matchTo=="name"){
-			cl<-clusterMatrixNamed(x)[,whCl]
-		}
-		else cl<-clusterMatrix(x)[,whCl]
-		return(x[,which(cl %in% clusterValue)])
-  }
-)
 
 
 #' @rdname ClusterExperiment-methods
@@ -324,7 +275,6 @@ setMethod(
     return(x@coClustering)
   }
 )
-
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @aliases coClustering<-
@@ -332,11 +282,26 @@ setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="matrix"),
   definition = function(object, value) {
+    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)
+    ch<-.checkCoClustering(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases coClustering<-
+setReplaceMethod(
+  f = "coClustering",
+  signature = signature(object="ClusterExperiment", value="dsCMatrix"),
+  definition = function(object, value) {
     object@coClustering <- value
     ch<-.checkCoClustering(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
+
+
+
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{clusterTypes} returns/sets the clusterTypes slot.
@@ -368,7 +333,8 @@ setMethod(
 
 
 #' @rdname ClusterExperiment-methods
-#' @return \code{clusterLabels} returns/sets the column names of the clusterMatrix slot.
+#' @return \code{clusterLabels} returns/sets the column names of the
+#'   clusterMatrix slot.
 #' @export
 #' @aliases clusterLabels
 setMethod(
@@ -441,47 +407,7 @@ setReplaceMethod(
 	}
 	return(m)
 }
-#' @rdname ClusterExperiment-methods
-#' @return \code{renameClusters} changes the names assigned to clusters within a clustering
-#' @param whichCluster argument to identify cluster, taking input like 
-#' \code{whichClusters}, only requires that only a single clustering can be identified. 
-#' @export
-#' @aliases renameClusters
-setMethod( 
-  f = "renameClusters",
-  signature = signature(object="ClusterExperiment", value="character"),
-  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
-		matchTo<-match.arg(matchTo)
-		whCl<-.convertSingleWhichCluster(object,whichCluster)
-		mat<-clusterLegend(object)[[whCl]]
-		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
-		mat[m,"name"]<-value
-		clusterLegend(object)[[whCl]]<-mat
-		
-    ch<-.checkClusterLegend(object)
-    if(is.logical(ch) && ch) return(object) else stop(ch)
-  }
-)
 
-#' @rdname ClusterExperiment-methods
-#' @return \code{recolorClusters} changes the colors assigned to clusters within a clustering
-#' @export
-#' @aliases recolorClusters
-setMethod( 
-  f = "recolorClusters",
-  signature = signature(object="ClusterExperiment", value="character"),
-  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
-		matchTo<-match.arg(matchTo)
-		whCl<-.convertSingleWhichCluster(object,whichCluster)
-		mat<-clusterLegend(object)[[whCl]]
-		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
-		mat[m,"color"]<-value
-		clusterLegend(object)[[whCl]]<-mat
-		
-    ch<-.checkClusterLegend(object)
-    if(is.logical(ch) && ch) return(object) else stop(ch)
-  }
-)
 
 #' @rdname ClusterExperiment-methods
 #' @return \code{orderSamples} returns/sets the orderSamples slot.
@@ -522,6 +448,8 @@ setReplaceMethod(
     
   }
 )
+
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @inheritParams plotClustersTable
@@ -559,10 +487,57 @@ setMethod(
 			cm<-clusterMatrix(object,whichClusters=whichClusters)
 			if(makeFactor){
 				cnames<-colnames(cm)
-				cm<-do.call("DataFrame",c(lapply(1:ncol(cm),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+				cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
 				colnames(cm)<-cnames		
 			}
 			else cm<-DataFrame(cm,check.names=FALSE)
 		}
 		return(cbind(colData(object),cm))
 	})
+	
+#' @title Change assigned names or colors of clusters
+#' @description Change the assigned names or colors of the clusters in a
+#'   clustering stored in the clusterLegend slot of the object.
+#' @rdname renameClusters
+#' @return \code{renameClusters} changes the names assigned to clusters within a
+#'   clustering
+#' @export
+#' @inheritParams subset
+#' @inheritParams ClusterExperiment-methods
+#' @aliases renameClusters
+setMethod( 
+  f = "renameClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
+		matchTo<-match.arg(matchTo)
+		whCl<-getSingleClusterIndex(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
+		mat[m,"name"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+	
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname renameClusters
+#' @return \code{recolorClusters} changes the colors assigned to clusters within
+#'   a clustering
+#' @export
+#' @aliases recolorClusters
+setMethod( 
+  f = "recolorClusters",
+  signature = signature(object="ClusterExperiment", value="character"),
+  definition = function(object, value,whichCluster="primary",matchTo=c("name","clusterIds")) {
+		matchTo<-match.arg(matchTo)
+		whCl<-getSingleClusterIndex(object,whichCluster)
+		mat<-clusterLegend(object)[[whCl]]
+		m<-.checkMatch(clMat=mat,value=value,matchTo=matchTo)
+		mat[m,"color"]<-value
+		clusterLegend(object)[[whCl]]<-mat
+	
+    ch<-.checkClusterLegend(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)

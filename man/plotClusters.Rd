@@ -3,26 +3,19 @@
 \docType{methods}
 \name{plotClusters}
 \alias{plotClusters}
-\alias{plotClusters,ClusterExperiment,character-method}
-\alias{plotClusters,ClusterExperiment,numeric-method}
-\alias{plotClusters,ClusterExperiment,missing-method}
-\alias{plotClusters,matrix,missing-method}
+\alias{plotClusters,ClusterExperiment-method}
+\alias{plotClusters,matrix-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
-\S4method{plotClusters}{ClusterExperiment,character}(object,
-  whichClusters = c("workflow", "all"), ...)
-
-\S4method{plotClusters}{ClusterExperiment,numeric}(object, whichClusters,
+\S4method{plotClusters}{ClusterExperiment}(object, whichClusters,
   existingColors = c("ignore", "all", "firstOnly"), resetNames = FALSE,
   resetColors = FALSE, resetOrderSamples = FALSE, colData = NULL,
   clusterLabels = NULL, ...)
 
-\S4method{plotClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
-
-\S4method{plotClusters}{matrix,missing}(object, whichClusters,
-  orderSamples = NULL, colData = NULL, reuseColors = FALSE,
-  matchToTop = FALSE, plot = TRUE, unassignedColor = "white",
-  missingColor = "grey", minRequireColor = 0.3, startNewColors = FALSE,
+\S4method{plotClusters}{matrix}(object, orderSamples = NULL,
+  colData = NULL, reuseColors = FALSE, matchToTop = FALSE,
+  plot = TRUE, unassignedColor = "white", missingColor = "grey",
+  minRequireColor = 0.3, startNewColors = FALSE,
   colPalette = massivePalette, input = c("clusters", "colors"),
   clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
   ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
@@ -34,21 +27,8 @@ and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 matrix, the function will plot the clusterings in order of this matrix, and
 their order influences the plot greatly.}
 
-\item{whichClusters}{argument that can be either numeric or character value
-indicating the clusters to be used. If numeric, gives the indices of the
-\code{clusterMatrix} to return; this can also be used to defined an
-ordering for the clusterings (as relevant). \code{whichClusters} can be a
-character value identifying the \code{clusterTypes} to be used, or if not
-matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-indicate choosing all clusterings or choosing all 
-\code{\link{workflowClusters}} clusterings or choosing the 'primary'
-clustering, respectively. If missing, the entire matrix of all clusterings
-is returned.}
-
-\item{...}{for \code{plotClusters} arguments passed either to the method
-of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
-(if \code{add=FALSE}).}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{existingColors}{how to make use of the exiting colors in the 
 \code{ClusterExperiment} object. 'ignore' will ignore them and assign new 
@@ -88,6 +68,10 @@ columns, they will be encoded as 'unassigned' and receive the same color as
 If the user gives only names for the clusterings, the code will try to 
 anticipate that and use the column names of the sample data, but this is
 fragile. If set to \code{FALSE}, then no labels will be plotted.}
+
+\item{...}{for \code{plotClusters} arguments passed either to the method
+of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
+(if \code{add=FALSE}).}
 
 \item{orderSamples}{A predefined order in which the samples will be plotted.
 Otherwise the order will be found internally by aligning the clusters

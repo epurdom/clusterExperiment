@@ -45,9 +45,7 @@
 #' @return A plot is produced, nothing is returned
 #' @author Elizabeth Purdom
 #' @inheritParams plotClusters
-
-#' @export
-#'
+#' @inheritParams getClusterIndex
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
@@ -60,37 +58,15 @@
 #' plotBarplot(cl,whichClusters=1:2)
 #'
 #' @rdname plotBarplot
-setMethod(
-  f = "plotBarplot",
-  signature = signature(object = "ClusterExperiment",whichClusters="character"),
-  definition = function(object, whichClusters,...)
-  {
-    wh<-.TypeIntoIndices(object,whClusters=whichClusters)
-    if(length(wh)==0) stop("invalid choice of 'whichClusters'")
-    wh<-head(wh,2) #limit it to 2
-    plotBarplot(object,whichClusters=wh,...)
-    
-  })
-
-#' @rdname plotBarplot
 #' @export
 setMethod(
   f = "plotBarplot",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
-  {
-    plotBarplot(object,whichClusters="primaryCluster")
-    
-  })
-
-#' @rdname plotBarplot
-#' @export
-setMethod(
-  f = "plotBarplot",
-  signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(object, whichClusters,labels=c("names","ids"),...)
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichClusters="primary",labels=c("names","ids"),...)
   { 
-    labels<-match.arg(labels)
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
+	whichClusters<-head(whichClusters,2) #limit it to 2
+	labels<-match.arg(labels)
     legend<-clusterLegend(object)[[tail(whichClusters,1)]]
     args<-list(...)
     if(!"colPalette" %in% names(args)){
@@ -104,7 +80,7 @@ setMethod(
     }
     numClusterMat<-clusterMatrix(object,whichClusters=whichClusters)
     if(labels=="names"){
-      clusterMat<-convertClusterLegend(object,output="matrixNames")[,whichClusters]
+	  clusterMat<-convertClusterLegend(object,output="matrixNames")[,whichClusters]
       if(useBuiltInColors) names(colPalette)<-legend[,"name"]
       #make sure "-1" stays "-1" 
       clusterMat[numClusterMat== -1]<- "-1"
@@ -131,30 +107,23 @@ setMethod(
     
   })
 
-#' @rdname plotBarplot
-setMethod(
-  f = "plotBarplot",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
-  {
-    plotBarplot(object,whichClusters="primaryCluster",...)
-  })
-
-
 
 #' @rdname plotBarplot
+#' @export
 setMethod(
   f = "plotBarplot",
-  signature = signature(object = "vector",whichClusters="missing"),
-  definition = function(object, whichClusters, ...){
+  signature = signature(object = "vector"),
+  definition = function(object, ...){
     plotBarplot(matrix(object,ncol=1),...)
   })
 
 #' @rdname plotBarplot
+#' @importFrom graphics barplot
+#' @export
 setMethod(
   f = "plotBarplot",
-  signature = signature(object = "matrix",whichClusters="missing"),
-  definition = function(object, whichClusters, xNames=NULL, legNames=NULL, legend=ifelse(ncol(object)==2,TRUE,FALSE), xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=NULL,...){
+  signature = signature(object = "matrix"),
+  definition = function(object,  xNames=NULL, legNames=NULL, legend=ifelse(ncol(object)==2,TRUE,FALSE), xlab=NULL, legend.title=NULL, unassignedColor="white", missingColor="grey", colPalette=NULL,...){
     if(ncol(object)>2) stop("if 'object' a matrix, must contain at most 2 clusters (i.e. 2 columns)")
     clLeg<-object[,1]
     if(is.null(xlab)) xlab<-colnames(object)[1]
@@ -266,7 +235,7 @@ setMethod(
       
     }
     par(mar=c(9.1,4.1,4.1,1.1),las=2)
-    bp<-barplot(x,col=colPalette,legend=legend,args.legend=list(title=legend.title), names.arg=rep("",length(labs)),xlab="",...)
+    bp<-graphics::barplot(x,col=colPalette,legend=legend,args.legend=list(title=legend.title), names.arg=rep("",length(labs)),xlab="",...)
     xsize<-diff(par("usr")[3:4])
     text(bp, par("usr")[3]+.0*xsize, labels=labs, srt=45, adj=c(1,2), xpd=TRUE)
     title(xlab=xlab,line=7)

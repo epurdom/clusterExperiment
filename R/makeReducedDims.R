@@ -78,7 +78,7 @@ setMethod(
     ##Do loop over reducedDims values:
     ###################
     currErrors<-c()
-    for(kk in 1:length(reducedDims)){
+    for(kk in seq_along(reducedDims)){
       dr<-reducedDims[[kk]]
       md<-maxDims[[kk]]
       isPct <- md < 1
@@ -169,7 +169,7 @@ listBuiltInReducedDims<-function(){c("PCA")}
     if(any(md > NROW(prc)))
       stop("Internal error in coding of principal components.")
   }
-  colnames(prc)<-paste("PC",1:ncol(prc),sep="") #make them match prcomp
+  colnames(prc)<-paste("PC",seq_len(ncol(prc)),sep="") #make them match prcomp
   return(prc)
 }
 

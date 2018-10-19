@@ -3,13 +3,11 @@
 #' Align multiple clusterings of the same set of samples and provide a
 #' color-coded plot of their shared cluster assignments
 #' @name plotClusters
-#' @aliases plotClusters,ClusterExperiment,character-method
 #' @docType methods
 #' @param object A matrix of with each column corresponding to a clustering
 #'   and each row a sample or a \code{\link{ClusterExperiment}} object. If a
 #'   matrix, the function will plot the clusterings in order of this matrix, and
 #'   their order influences the plot greatly.
-#' @inheritParams ClusterExperiment-methods
 #' @param orderSamples A predefined order in which the samples will be plotted.
 #'   Otherwise the order will be found internally by aligning the clusters
 #'   (assuming \code{input="clusters"})
@@ -73,6 +71,21 @@
 #' @param ... for \code{plotClusters} arguments passed either to the method
 #'   of \code{plotClusters} for matrices, or ultimately to \code{\link{plot}}
 #'   (if \code{add=FALSE}).
+#' @param existingColors how to make use of the exiting colors in the 
+#'   \code{ClusterExperiment} object. 'ignore' will ignore them and assign new 
+#'   colors. 'firstOnly' will use the existing colors of only the 1st 
+#'   clustering, and then align the remaining clusters and give new colors for
+#'   the remaining only. 'all' will use all of the existing colors.
+#' @param resetNames logical. Whether to reset the names of the clusters in
+#'   \code{clusterLegend} to be the aligned integer-valued ids from
+#'   \code{plotClusters}.
+#' @param resetColors logical. Whether to reset the colors in
+#'   \code{clusterLegend} in the \code{ClusterExperiment} returned to be the
+#'   colors from the \code{plotClusters}.
+#' @param resetOrderSamples logical. Whether to replace the existing
+#'   \code{orderSamples} slot in the \code{ClusterExperiment} object with the
+#'   new order found.
+#' @inheritParams getClusterIndex
 #' @details All arguments of the matrix version can be passed to the
 #'   \code{ClusterExperiment} version. As noted above, however, some arguments
 #'   have different interpretations.
@@ -188,45 +201,25 @@
 #' transformation=transformation(cl))
 #' plotClusters(cl2)
 #' @rdname plotClusters
-setMethod(
-  f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="character"),
-  definition = function(object, whichClusters=c("workflow","all"),...)
-  {
-    wh<-.TypeIntoIndices(object,whClusters=whichClusters)
-    return(plotClusters(object,whichClusters=wh,...))
-
-  })
-
-
-#' @rdname plotClusters
-#' @param existingColors how to make use of the exiting colors in the 
-#'   \code{ClusterExperiment} object. 'ignore' will ignore them and assign new 
-#'   colors. 'firstOnly' will use the existing colors of only the 1st 
-#'   clustering, and then align the remaining clusters and give new colors for
-#'   the remaining only. 'all' will use all of the existing colors.
-#' @param resetNames logical. Whether to reset the names of the clusters in
-#'   \code{clusterLegend} to be the aligned integer-valued ids from
-#'   \code{plotClusters}.
-#' @param resetColors logical. Whether to reset the colors in
-#'   \code{clusterLegend} in the \code{ClusterExperiment} returned to be the
-#'   colors from the \code{plotClusters}.
-#' @param resetOrderSamples logical. Whether to replace the existing
-#'   \code{orderSamples} slot in the \code{ClusterExperiment} object with the
-#'   new order found.
 #' @export
 #' @importFrom grDevices gray
 #' @importFrom stringr str_sort str_order
-
+#' @aliases plotClusters,ClusterExperiment-method
 setMethod(
   f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="numeric"),
-  definition = function(object, whichClusters,existingColors=c("ignore","all","firstOnly"),
-                        resetNames=FALSE,resetColors=FALSE,resetOrderSamples=FALSE,colData=NULL,clusterLabels=NULL,...)
+  signature = signature(object = "ClusterExperiment"),
+  definition = function(object, whichClusters, 
+  	existingColors=c("ignore","all","firstOnly"),
+    resetNames=FALSE, resetColors=FALSE, resetOrderSamples=FALSE, colData=NULL, clusterLabels=NULL,...)
   {
+	if(missing(whichClusters)){
+	  if(!is.null(workflowClusterDetails(object))) whichClusters<-"workflow"
+	  else whichClusters<-"all"	  	
+	}
+	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
     existingColors<-match.arg(existingColors)
     args<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData")
+		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData") #06/2018 added in BioC 3.8
 		if(!is.null(checkIgnore)){
 			args<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
@@ -379,22 +372,14 @@ setMethod(
     
   })
 
-#' @rdname plotClusters
-setMethod(
-  f = "plotClusters",
-  signature = signature(object = "ClusterExperiment",whichClusters="missing"),
-  definition = function(object, whichClusters,...)
-  {
-    if(!is.null(workflowClusterDetails(object))) plotClusters(object,whichClusters="workflow",...)
-    else plotClusters(object,whichClusters="all",...)
-  })
 
 
 #' @rdname plotClusters
+#' @export
 setMethod(
   f = "plotClusters",
-  signature = signature(object = "matrix",whichClusters="missing"),
-  definition = function(object, whichClusters,
+  signature = signature(object = "matrix"),
+  definition = function(object, 
               orderSamples=NULL,colData=NULL,reuseColors=FALSE,matchToTop=FALSE,
               plot=TRUE,unassignedColor="white",missingColor="grey",
               minRequireColor=0.3,startNewColors=FALSE,colPalette=massivePalette,
@@ -738,7 +723,7 @@ setMethod(
 		ybottom<-ylim[1]
 		ytop<-ylim[2]
 	}
-	if(!add) plot(NULL,xlim=range(c(xleft,xright)),ylim=ylim,axes=FALSE,ylab=ylab,xlab=xlab,bty="n",...)
+	if(!add) graphics::plot(NULL, xlim=range(c(xleft,xright)), ylim=ylim,axes=FALSE, ylab=ylab, xlab=xlab, bty="n",...)
 
 	for(i in seq_len(nrow(m))){
     rect(  xleft=xleft, xright=xright,  ybottom=rep(ybottom[i],ncol(m)) , ytop=rep(ytop[i],ncol(m)), col=m[i,],border=NA,xpd=NA)

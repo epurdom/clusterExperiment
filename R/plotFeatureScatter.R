@@ -3,8 +3,27 @@
 #' @description Plot a scatter plot of the (transformed) values for a set of
 #'   gene expression values, colored by cluster
 #' @aliases plotFeatureScatter plotFeatureScatter,ClusterExperiment,character-method
+#' @param legendLocation character value passed to \code{location} argument of 
+#'  \code{plotClusterLegend} indicating where to put the legend. If NA, legend 
+#'  will not be plotted.
+#' @param features the indices of the features (either numeric or character 
+#'  matching rownames of object) to be plotted.
+#' @param jitterFactor numeric. If NA, no jittering is done. Otherwise, passed to 
+#' \code{factor} of function \code{\link[base]{jitter}}
+#'  (useful for low counts)
 #' @inheritParams plotFeatureBoxplot
 #' @rdname plotFeatureScatter
+#' @return returns invisibly the results of \code{\link[graphics]{pairs}} or \code{\link[graphics]{plot}} command.
+#' @examples
+#' data(simData)
+#' #Create a ClusterExperiment object
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
+#'    clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+#'    removeSil=c(TRUE,FALSE))
+#' #give names to the clusters
+#' cl<-renameClusters(cl, whichCluster=1, 
+#'    value=letters[1:nClusters(cl)[1]])
+#' plotFeatureScatter(cl,feature=1:2,pch=19,legendLocation="topright")
 #' @export
 setMethod(
   f = "plotFeatureScatter",
@@ -16,23 +35,15 @@ setMethod(
     else invisible(plotFeatureScatter(object,features=m,...))
   })
 
-#' @param legendLocation character value passed to \code{location} argument of 
-#'  \code{plotClusterLegend} indicating where to put the legend. If NA, legend 
-#'  will not be plotted.
-#' @param features the indices of the features (either numeric or character 
-#'  matching rownames of object) to be plotted.
-#' @param jitterFactor numeric. If NA, no jittering is done. Otherwise, passed to 
-#' \code{factor} of function \code{\link[base]{jitter}}
-#'  (useful for low counts)
 #' @rdname plotFeatureScatter
 #' @export
 setMethod(
   f = "plotFeatureScatter",
   signature = signature(object = "ClusterExperiment",features="numeric"),
-  definition = function(object, features, whichCluster, plotUnassigned=TRUE,unassignedColor="grey",missingColor="white",whichAssay=1,legendLocation=NA,jitterFactor=NA,...)
+  definition = function(object, features, whichCluster="primary", plotUnassigned=TRUE,unassignedColor="grey",missingColor="white",whichAssay=1,legendLocation=NA,jitterFactor=NA,...)
   {
 		if(length(features)<2) stop("plotFeatureScatter requires at least 2 features")
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
  
     #get data:
     dat<-transformData(object, whichAssay=whichAssay)[features,]
@@ -69,11 +80,11 @@ setMethod(
 		m<-match(as.character(cl),clLegend[,"clusterIds"])
 		cols<-clLegend[m,"color"]
 		if(length(features)==2){
-			invisible(plot(t(dat),col=cols,bg=cols,...))
+			invisible(graphics::plot(t(dat),col=cols,bg=cols,...))
 			if(!is.na(legendLocation)) 
-				legend(x=legendLocation,legend=clLegend[,"name"],fill=clLegend[,"color"])
+				graphics::legend(x=legendLocation,legend=clLegend[,"name"],fill=clLegend[,"color"])
 		}
 		else{
-			invisible(pairs(t(data.matrix(dat)),col=cols,bg=cols,...))
+			invisible(graphics::pairs(t(data.matrix(dat)),col=cols,bg=cols,...))
 		}
   })

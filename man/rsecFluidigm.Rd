@@ -40,15 +40,25 @@ system.time(
                      dendroReduce= "mad",
                      dendroNDims=1000,
                      mergeMethod="adjP",
-                     mergeCutoff=0.03,
+	                    mergeDEMethod="limma",
+                     mergeCutoff=0.01,
                      ncores=ncores, 
                      random.seed=176201)
 )
 metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
+## Tests that haven't changed the clustering results.
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
 y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 5) stop("rsecFluidigm object has changed -- mergeClusters")
+if(length(x[x>0]) != 8) 
+  stop("rsecFluidigm object has changed -- makeConsensus")
+if(length(y[y>0]) != 6) 
+  stop("rsecFluidigm object has changed -- different # of mergeClusters")
+adjPValues<-c(0.049794879, 0.007356062, 0.008204838, 
+  0.013156033, 0.009336540, 0.007497524, 0.033526666)
+if(nrow(rsecFluidigm@merge_nodeProp)!=length(adjPValues)) 
+  stop("rsecFluidigm object has changed -- makeDendrogram")
+if(!all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"])) 
+  stop("rsecFluidigm object has changed -- different percentages")	
 devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }

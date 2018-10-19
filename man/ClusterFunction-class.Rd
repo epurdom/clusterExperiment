@@ -5,7 +5,6 @@
 \alias{internalFunctionCheck}
 \alias{ClusterFunction-class}
 \alias{ClusterFunction}
-\alias{ClusterFunction}
 \alias{ClusterFunction,function-method}
 \title{Class ClusterFunction}
 \usage{
@@ -15,7 +14,8 @@ ClusterFunction(clusterFUN, ...)
 
 \S4method{ClusterFunction}{`function`}(clusterFUN, inputType, outputType,
   algorithmType, inputClassifyType = NA_character_,
-  requiredArgs = NA_character_, classifyFUN = NULL, checkFunctions = TRUE)
+  requiredArgs = NA_character_, classifyFUN = NULL,
+  checkFunctions = TRUE)
 }
 \arguments{
 \item{clusterFUN}{function passed to slot \code{clusterFUN}.}

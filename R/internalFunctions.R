@@ -6,13 +6,46 @@
 	message(paste("Note:",x))
 }
 
-
+#' @importFrom stringr str_pad
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
-  whPos<-which(as.numeric(ceLegend[,"clusterIds"]) >0)
-  if(length(whPos)>0) ceLegend[whPos,"name"]<-paste(prefix,ceLegend[whPos,"clusterIds"],sep="")
+  cl<-ceLegend[,"clusterIds"]
+  ceLegend[,"name"]<-numericalAsCharacter(values=cl,prefix=prefix)
   clusterLegend(ceObj)[[whCluster]]<-ceLegend
   return(ceObj)
+}
+#' @title Convert numeric values to character that sort correctly
+#' @description Small function that takes as input integer values (or values
+#'   that can be converted to integer values) and converts them into character
+#'   values that are 'padded' with zeros at the beginning of the numbers so that
+#'   they will sort correctly.
+#' @param values vector of values to be converted into sortable character values
+#' @param prefix optional character string that will be added as prefix to the
+#'   result
+#' @details The function determines the largest value and adds zeros to the
+#'   front of smaller integers so that the resulting characters are the same
+#'   number of digits. This allows standard sorting of the values to correctly
+#'   sort.
+#' @details The maximum number of zeros that will be added is 3. Input integers
+#'   beyond that point will not be correctly fixed for sorting.
+#' @details Negative integers will not be corrected, but left as-is
+#' @return A character vector
+#' @seealso \code{\link[stringr]{str_pad}}
+#' @examples
+#' numericalAsCharacter(c(-1, 5,10,20,100))
+#' @export
+numericalAsCharacter<-function(values,prefix=""){
+	if(is.factor(values)) values<-as.character(values)
+	values<-suppressWarnings(as.integer(values))
+	if(any(is.na(values))) stop("input must convert to numeric vector")
+	whPos<-which(values >0)
+	if(length(whPos)>0) largestLength<-max(values[whPos])
+	values<-as.character(values)
+	if(length(whPos)>0){
+		pad<-if(largestLength<100) 2 else if(largestLength<1000) 3 else 4			
+		values[whPos]<-paste(prefix,stringr::str_pad(values[whPos],width=pad,pad="0"),sep="")
+  	} 
+	return(values)
 }
 
 .addNewResult<-function(newObj,oldObj){
@@ -23,7 +56,6 @@
   if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
     retval@dendro_samples<-oldObj@dendro_samples
     retval@dendro_clusters<-oldObj@dendro_clusters
-    retval@dendro_outbranch<-oldObj@dendro_outbranch
     retval@dendro_index<-oldObj@dendro_index+nClusterings(newObj) #update index to where dendrogram from
   }
   if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
@@ -55,7 +87,6 @@
                             orderSamples=orderSamples(newObj),
                             coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
-                            dendro_outbranch=newObj@dendro_outbranch,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,
                             merge_index=newObj@merge_index,
@@ -308,166 +339,7 @@
 }
 
 
-.convertSingleWhichCluster<-function(object,whichCluster,passedArgs=NULL){
-	if(!is.null(passedArgs) && any(c("whichClusters") %in% names(passedArgs))){
-		stop("The argument of this function is 'whichCluster' (singular) not 'whichClusters' indicating only a single clustering can be used for this cluster")
-	}
-  if(is.character(whichCluster)) whCl<-.TypeIntoIndices(object,whClusters=whichCluster) else whCl<-whichCluster
-  if(length(whCl)!=1) stop("Invalid value for 'whichCluster'. Current value identifies ",length(whCl)," clusterings, but 'whichCluster' must identify only a single clustering.")
-  if(!whCl %in% seq_len(nClusterings(object))) stop("Invalid value for 'whichCluster'. Must be integer between 1 and ", nClusterings(object))
-  return(whCl)
-}
-##Universal way to change character indication of clusterTypes into integer indices.
-##If no match, returns vector length 0
-.TypeIntoIndices<-function(x,whClusters){
-  if(is.numeric(whClusters)) wh<-whClusters
-  else{
-    test<-try(match.arg(whClusters[1],c("workflow","all","none","primaryCluster","dendro")),silent=TRUE)
-    if(!inherits(test,"try-error")){
-      if(test=="workflow"){
-        ppIndex<-workflowClusterDetails(x)
-        if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-          wh<-unlist(lapply(.workflowValues,function(tt){
-            ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
-          }))
-        }
-        else wh<-vector("integer",length=0)
-      }
-      if(test=="all"){
-        #put primary cluster first
-        ppcl<-primaryClusterIndex(x)
-        wh<-c(ppcl,c(seq_len(nClusterings(x)))[-ppcl])
-      }
-      if(test=="none") wh<-vector("integer",length=0)
-      if(test=="primaryCluster") wh<-primaryClusterIndex(x)
-      if(test=="dendro"){
-        wh<-dendroClusterIndex(x)
-        if(is.na(wh)) wh<-vector("integer",length=0)
-      }
-    }
-    else{
-      #first match to clusterTypes  
-      mClType<-match(whClusters,clusterTypes(x))  
-      mClLabel<-match(whClusters,clusterLabels(x))  
-      totalMatch<-mapply(whClusters,mClType,mClLabel,FUN=function(cl,type,lab){
-        if(is.na(type) & !is.na(lab)) return(lab)
-        if(is.na(type) & is.na(lab)) return(NA)
-        if(!is.na(type)){
-          return(which(clusterTypes(x) %in% cl)) #prioritize clusterType and get ALL of them, not just first match
-        }
-      },SIMPLIFY=FALSE)
-      totalMatch<-unlist(totalMatch,use.names=FALSE)
-      
-      if(all(is.na(totalMatch))) wh<-vector("integer",length=0)
-      else wh<-na.omit(totalMatch) #silently ignore things that don't match.
-    }
-  } 
-  if(any(wh>nClusterings(x) | wh<1)){
-    wh<-wh[wh<=nClusterings(x) & wh>0]
-    
-  }
-  #	 if(length(wh)>0) wh<-wh[is.integer(wh)]
-  return(wh)
-}
 
 
 
-####
-#Convert to object used by phylobase so can navigate easily 
-.makePhylobaseTree<-function(x,type,isSamples=FALSE,outbranch=FALSE){
-  type<-match.arg(type,c("hclust","dendro"))
-  if(type=="hclust"){
-    #first into phylo from ape package
-    tempPhylo<-try(ape::as.phylo(x),FALSE)
-    if(inherits(tempPhylo, "try-error")) stop("the hclust object cannot be converted to a phylo class with the methods of the 'ape' package.")
-  }
-  if(type=="dendro"){
-    tempPhylo<-try(dendextend::as.phylo.dendrogram(x),FALSE)
-    if(inherits(tempPhylo, "try-error")) stop("the dendrogram object cannot be converted to a phylo class with the methods of 'dendextend' package. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-  }
-  phylo4Obj<-try(as(tempPhylo,"phylo4"),FALSE) 
-  if(inherits(phylo4Obj, "try-error")) stop("the internally created phylo object cannot be converted to a phylo4 class. Check that you gave simple hierarchy of clusters, and not one with fake data per sample")
-  
-  if(isSamples){
-    #NOTE: clusterNodes are found by those with non-zero edge-length between them and their decendents
-    nonZeroEdges<-phylobase::edgeLength(phylo4Obj)[which(phylobase::edgeLength(phylo4Obj)>0)] #doesn't include root
-    trueInternal<-sort(unique(as.numeric(sapply(strsplit(names(nonZeroEdges),"-"),.subset2,1)))) #this also picks up the outbranch between -1,-2
-    #old way of doing it:
-    #clusterNodes<-sort(unique(unlist(phylobase::ancestors(phylo4Obj,node=phylobase::getNode(phylo4Obj,type="tip"),type="parent"),recursive=FALSE,use.names=FALSE)))
-    if(outbranch){#remove root from labeling if -1 outbranch
-      #######
-      #remove root
-      #######
-      rootNode<-phylobase::rootNode(phylo4Obj)
-      trueInternal<-trueInternal[!trueInternal%in%rootNode]
-      
-      #######
-      #find the -1/-2 internal node (if it exists)
-      #determine it as the one without 0-length tip edges.
-      #assumes all tips in the non-outbranch have 0-length (so max value is zero)
-      #######
-      rootChild<-phylobase::descendants(phylo4Obj,node=rootNode,type="children")
-      #find tip descendants of each of these:
-      rootChildDesc<-lapply(rootChild,phylobase::descendants,phy=phylo4Obj,type="tip")
-      rootChildLeng<-lapply(rootChildDesc,phylobase::edgeLength,x=phylo4Obj)
-      
-      #Problem here!!! if there is single sample in a cluster, then could be a tip with length not equal to zero. Need to ignore these....how? If take the min, then a single zero length in outbranch will result in both having zeros...
-      #maybe should change function so have to provide a single name of a sample that is in outbranch so as to identify it that way. 
-      #for now, lets hope that never happens! i.e. that BOTH a single sample in a cluster and that outbranch has a zero length
-      rootChildNum<-sapply(rootChildLeng,min) #minimum length 
-      
-      #indicator of which child node is the 
-      whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) #just incase not *exactly* 0
-      if(sum(whKeep)!=1){
-        #if both sides have a zero, then use max instead. 
-        rootChildNum<-sapply(rootChildLeng,max) #maximum length 
-        whKeep<-sapply(rootChildNum,function(x){isTRUE(all.equal(x,0))}) 
-      }
-      if(sum(whKeep)!=1) stop("Internal coding error in finding which is the outbranch in the dendro_samples slot. Please report to git repository!")
-      outbranchNode<-rootChild[!whKeep]
-      
-      if(outbranchNode %in% trueInternal){
-        outbranchIsInternal<-TRUE
-        outbranchNodeDesc<-phylobase::descendants(phylo4Obj,node=outbranchNode,type="ALL") #includes itself
-        trueInternal<-trueInternal[!trueInternal%in%outbranchNodeDesc]
-        outbranchNodeDesc<-outbranchNodeDesc[outbranchNodeDesc %in% phylobase::getNode(phylo4Obj,type="internal")]
-      }
-      else outbranchIsInternal<-FALSE
-      
-    }
-    #trueInternal<-allInternal[!allInternal%in%clusterNodes]
-    
-    phylobase::nodeLabels(phylo4Obj)[as.character(trueInternal)]<-paste("Node",seq_along(trueInternal),sep="")
-    #add new label for root 
-    if(outbranch){
-      phylobase::nodeLabels(phylo4Obj)[as.character(rootNode)]<-"Root"
-      if(outbranchIsInternal) phylobase::nodeLabels(phylo4Obj)[as.character(outbranchNodeDesc)]<-paste("MissingNode",seq_along(outbranchNodeDesc),sep="")
-    }
-  }
-  else phylobase::nodeLabels(phylo4Obj)<-paste("Node",seq_len(phylobase::nNodes(phylo4Obj)),sep="")
-  
-  return(phylo4Obj)
-}
 
-# clTree<-.makePhylobaseTree(clustWithDendro@dendro_clusters,"dendro")
-# sampTree<-.makePhylobaseTree(clustWithDendro@dendro_samples,"dendro",isSamples=TRUE,outbranch=FALSE)
-
-.safePhyloSubset<-function(phylo4,tipsRemove,nodeName){
-  if(length(phylobase::tipLabels(phylo4))-length(tipsRemove)<2){
-    ###Check that would have >1 tips left after remove (otherwise gives an error, not sure why with trim.internal=FALSE; should report it)
-    ###Remove all but 1 tip seems to work -- collapse down desptie trim.internal=FALSE. Very weird.
-    keptTip<-TRUE
-    tipKeep<-names(tipsRemove)[1] #label of the tip removed (tipsRemove has internal names as value)
-    tipsRemove<-tipsRemove[-1] 
-  }
-  else keptTip<-FALSE
-  phylo4<-phylobase::subset(phylo4,tips.exclude=tipsRemove,trim.internal =FALSE)
-  #have to give that 
-  if(keptTip){
-    labs<-phylobase::tipLabels(phylo4)
-    wh<-which(labs==tipKeep)
-    labs[wh]<-nodeName
-    phylobase::tipLabels(phylo4)<-labs
-  }
-  return(phylo4)
-}

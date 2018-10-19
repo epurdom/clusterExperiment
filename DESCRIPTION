@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.1.5
+Version: 2.1.6
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -17,44 +17,44 @@ Depends:
 	SummarizedExperiment,
 	BiocGenerics
 Imports:
-    methods,
-    NMF,
-    RColorBrewer,
-    ape (>= 5.0),
-    phylobase,
-    cluster,
-    stats,
-    limma,
-    dendextend,
-    howmany,
-    locfdr,
-    matrixStats,
-    graphics,
-    parallel,
-    RSpectra,
-	  kernlab,
-	  stringr,
-	  S4Vectors,
-	  grDevices,
-	  Rcpp,
-	  HDF5Array (>= 1.7.10),
-	  DelayedArray (>= 0.5.31),
-		edgeR,
-		scales,
-		zinbwave
+	methods,
+	NMF,
+	RColorBrewer,
+	ape (>= 5.0),
+	cluster,
+	stats,
+	limma,
+	howmany,
+	locfdr,
+	matrixStats,
+	graphics,
+	parallel,
+	RSpectra,
+	kernlab,
+	stringr,
+	S4Vectors,
+	grDevices,
+	DelayedArray (>= 0.7.48),
+	HDF5Array (>= 1.7.10),
+	Matrix,
+	Rcpp,
+	edgeR,
+	scales,
+	zinbwave,
+	phylobase
 Suggests:
-  BiocStyle,
-  knitr,
-  testthat,
+	BiocStyle,
+	knitr,
+	testthat,
 	scRNAseq,
-  MAST,
+	MAST,
 	Rtsne,
 	scran,
 	igraph
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
 Collate: 
     'AllChecks.R'
@@ -62,11 +62,13 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperClusterFunction.R'
+    'AllHelperDendro.R'
     'AllHelperFilter.R'
     'JiashinJiCode.R'
     'RcppExports.R'
     'addClusterings.R'
     'assignUnassigned.R'
+    'internalDendroFunctions.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
     'builtInClusterFunctions.R'
@@ -75,6 +77,7 @@ Collate:
     'clusterSingle.R'
     'dataCreation.R'
     'deprecateFunctions.R'
+    'getClusterIndex.R'
     'getFeatures.R'
     'getParams.R'
     'getReducedData.R'

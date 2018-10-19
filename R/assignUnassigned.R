@@ -5,8 +5,6 @@
 #' @rdname assignUnassigned
 #' @aliases assignUnassigned,ClusterExperiment-method
 #' @param object A Cluster Experiment object
-#' @param whichCluster in which clustering to get cluster assignments and assign
-#'   the unassigned samples
 #' @param whichAssay which assay to use to calculate the median per cluster and
 #'   take dimensionality reduction (if requested)
 #' @param clusterLabel if missing, the current cluster label of the cluster will
@@ -14,14 +12,16 @@
 #' @param ... arguments passed to \code{\link{getReducedData}} specifying the
 #'   dimensionality reduction (if any) to be taken of the data for calculating
 #'   the medians of the clusters
-#' @details The function \code{assignUnassigned} calculates the median values of each variable for each
-#'   cluster, and then calculates the euclidean distance of each unassigned
-#'   sample to the median of each cluster. Each unassigned sample is assigned to
-#'   the cluster for which it closest to the median.
+#' @inheritParams getClusterIndex
+#' @details The function \code{assignUnassigned} calculates the median values of
+#'   each variable for each cluster, and then calculates the euclidean distance
+#'   of each unassigned sample to the median of each cluster. Each unassigned
+#'   sample is assigned to the cluster for which it closest to the median.
 #' @details All unassigned samples in the cluster are given a clustering,
 #'   regardless of whether they are classified as -1 or -2.
-#' @return The function \code{assignUnassigned} returns a \code{ClusterExperiment}
-#' object with the unassigned samples assigned to one of the existing clusters. 
+#' @return The function \code{assignUnassigned} returns a
+#'   \code{ClusterExperiment} object with the unassigned samples assigned to one
+#'   of the existing clusters.
 #' @seealso \code{\link{getReducedData}}
 #' @examples
 #' #load CE object
@@ -41,7 +41,7 @@ setMethod(
   definition = function(object,whichCluster="primary",clusterLabel,
                         makePrimary=TRUE,whichAssay=1,reduceMethod="none",...){
 		
-    whCl<-.convertSingleWhichCluster(object,whichCluster,list(...))
+    whCl<-getSingleClusterIndex(object,whichCluster,list(...))
     cl<-clusterMatrix(object)[,whCl]
 		if(missing(clusterLabel)) clusterLabel<-paste0(clusterLabels(object)[whCl],"_AllAssigned")
 		whichUnassigned<-which(cl<0)
@@ -87,17 +87,18 @@ setMethod(
 #' @rdname assignUnassigned
 #' @aliases removeUnassigned
 #' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so they may
-#'   be unclustered in other clusters found in \code{clusterMatrix(object)}).
-#' @return The function \code{removeUnassigned} returns a \code{ClusterExperiment}
-#' object with the unassigned samples removed. 
+#'   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so
+#'   they may be unclustered in other clusters found in
+#'   \code{clusterMatrix(object)}).
+#' @return The function \code{removeUnassigned} returns a
+#'   \code{ClusterExperiment} object with the unassigned samples removed.
 #' @export
 setMethod(
   f = "removeUnassigned",
   signature = "ClusterExperiment",
   definition = function(object,whichCluster="primary") {
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-getSingleClusterIndex(object,whichCluster)
 		cl<-clusterMatrix(object)[,whCl]
-		return(object[,cl>= 0])
+		return(object[,which(cl>= 0)])
   }
 )

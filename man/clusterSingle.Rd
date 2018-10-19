@@ -17,8 +17,7 @@
 
 \S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
 
-\S4method{clusterSingle}{ClusterExperiment,missing}(x,
-  replaceCoClustering = FALSE, ...)
+\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
 
 \S4method{clusterSingle}{SingleCellExperiment,missing}(x,
   reduceMethod = "none", nDims = defaultNDims(x, reduceMethod),
@@ -29,7 +28,8 @@
   subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
   transFun = NULL, reduceMethod = c("none", listBuiltInReducedDims(),
   listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
-  clusterLabel = "clusterSingle", checkDiss = TRUE)
+  clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
+  checkDiss = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
@@ -42,11 +42,6 @@ on which to run the clustering.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
-
-\item{replaceCoClustering}{logical. Applicable if \code{x} is a
-\code{ClusterExperiment} object. If TRUE, the co-clustering resulting from
-subsampling is returned in the coClustering object and replaces any
-existing coClustering object in the slot \code{coClustering}.}
 
 \item{reduceMethod}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Options are 1)
@@ -95,6 +90,11 @@ this parameter will result in an error.}
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result
 of a call to \code{clusterSingle}.}
+
+\item{saveSubsamplingMatrix}{logical. If TRUE, the co-clustering matrix resulting from
+subsampling is returned in the coClustering slot (and replaces any
+existing coClustering object in the slot \code{coClustering} if input object is a
+   \code{ClusterExperiment} object.)}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}

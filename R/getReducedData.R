@@ -1,14 +1,14 @@
-#' @title Return matrix from ClusterExperiment with reduced dimensions 
+#' @title Return matrix from ClusterExperiment with reduced dimensions
 #' @description Returns a matrix of data from a \code{ClusterExperiment} object
 #'   based on the choices of dimensionality reduction given by the user.
 #' @rdname reduceFunctions
 #' @aliases getReducedData
-#' @param object  For \code{makeReducedDims},\code{makeFilterStats}, \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or \code{ClusterExperiment} object. For \code{getReducedData} only a \code{ClusterExperiment} object allowed.
+#' @param object  For \code{makeReducedDims},\code{makeFilterStats},
+#'   \code{defaultNDims} either matrix-like, \code{SingleCellExperiment}, or
+#'   \code{ClusterExperiment} object. For \code{getReducedData} only a
+#'   \code{ClusterExperiment} object allowed.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
 #'   missing calls \code{\link{defaultNDims}}.
-#' @param whichCluster an integer index or character string that identifies
-#'   which cluster should be used to make the dendrogram. Default is
-#'   primaryCluster.
 #' @param whichAssay numeric or character specifying which assay to use. See
 #'   \code{\link[SummarizedExperiment]{assay}} for details.
 #' @param filterIgnoresUnassigned logical. Whether filtering statistics should 
@@ -25,6 +25,7 @@
 #'   default name: if \code{reduceMethod} is a dimensionality reduction, then
 #'   \code{reduceMethod} will be given as the name; if a filtering statistic,
 #'   "filteredBy_" followed by \code{reduceMethod}.
+#' @inheritParams getClusterIndex
 #' @details This function determines the matrix of values that can be used for
 #'   computation based on the user's choice of dimensionality methods. The
 #'   methods can be either of the filtering kind or the more general
@@ -58,11 +59,12 @@
 #'   the package.
 #' @return If \code{returnValue="object"}, a \code{ClusterExperiment} object.
 #' @return If \code{returnValue="list"} a list with elements:
-#' \itemize{
-#' \item{\code{objectUpdate}}{object, potentially updated if had to calculate dimensionality reduction or filtering statistic}
-#' \item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in columns, features in rows}
-#' }
-#' @seealso \code{\link{makeFilterStats}},\code{\link{makeReducedDims}}, \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
+#' \itemize{ \item{\code{objectUpdate}}{object, potentially updated if had to
+#' calculate dimensionality reduction or filtering statistic}
+#' \item{\code{dataMatrix}}{the reduced dimensional matrix with the samples in
+#' columns, features in rows} }
+#' @seealso \code{\link{makeFilterStats}},\code{\link{makeReducedDims}},
+#'   \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
 setMethod(
   f = "getReducedData",
   signature = "ClusterExperiment",
@@ -70,7 +72,7 @@ setMethod(
                         nDims=defaultNDims(object,reduceMethod),whichCluster="primary", 
                         whichAssay=1, returnValue=c("object","list"),reducedDimName){
     if(isReducedDims(object,reduceMethod) & isFilterStats(object,reduceMethod)) stop(paste(reduceMethod,"is the name of both a stored filtering statistic and a stored dimensionality reduction -- cannot create reduced data"))
-    whCl<-.convertSingleWhichCluster(object,whichCluster)
+    whCl<-getSingleClusterIndex(object,whichCluster)
     returnValue<-match.arg(returnValue)
     reduceMethodName<-reduceMethod
     if(missing(filterIgnoresUnassigned)){

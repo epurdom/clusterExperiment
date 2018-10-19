@@ -1,4 +1,4 @@
-#----------------------------------------------------------------
+ #----------------------------------------------------------------
 # Travis-CI configuration for Bioconductor packages
 #
 # REFERENCES:
@@ -42,8 +42,8 @@ notifications:
 ## Use patched devtools
 #r_github_packages:
 #  - Bioconductor/S4Vectors
-#  - Bioconductor/HDF5Array
 #  - Bioconductor/DelayedArray
+#  - Bioconductor/HDF5Array
 
 
 ## Code coverage

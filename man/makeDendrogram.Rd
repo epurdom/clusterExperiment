@@ -10,22 +10,24 @@
 \usage{
 \S4method{makeDendrogram}{ClusterExperiment}(x,
   whichCluster = "primaryCluster", reduceMethod = "mad",
-  nDims = defaultNDims(x, reduceMethod), filterIgnoresUnassigned = TRUE,
-  unassignedSamples = c("outgroup", "cluster"), whichAssay = 1, ...)
+  nDims = defaultNDims(x, reduceMethod),
+  filterIgnoresUnassigned = TRUE, unassignedSamples = c("outgroup",
+  "cluster"), whichAssay = 1, ...)
 
-\S4method{makeDendrogram}{dist}(x, cluster, unassignedSamples = c("outgroup",
-  "cluster", "remove"), ...)
+\S4method{makeDendrogram}{dist}(x, cluster,
+  unassignedSamples = c("outgroup", "cluster", "remove"),
+  calculateSample = TRUE, ...)
 
 \S4method{makeDendrogram}{matrixOrHDF5}(x, cluster,
-  unassignedSamples = c("outgroup", "cluster", "remove"), ...)
+  unassignedSamples = c("outgroup", "cluster", "remove"),
+  calculateSample = TRUE, ...)
 }
 \arguments{
 \item{x}{data to define the medoids from. Matrix and
 \code{\link{ClusterExperiment}} supported.}
 
-\item{whichCluster}{an integer index or character string that identifies
-which cluster should be used to make the dendrogram. Default is
-primaryCluster.}
+\item{whichCluster}{argument that can be a single numeric or character value
+indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}
 
 \item{reduceMethod}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Can be either a
@@ -59,6 +61,9 @@ signature \code{matrix}. For plotDendrogram, passed to
 \item{cluster}{A numeric vector with cluster assignments. If x is a
 ClusterExperiment object, cluster is automatically the primaryCluster(x).
 ``-1'' indicates the sample was not assigned to a cluster.}
+
+\item{calculateSample}{only relevant for \code{matrix} or \code{dist}
+version of function. Indicates whether to calculate the sample dendrogram.}
 }
 \value{
 If x is a matrix, a list with two dendrograms, one in which the

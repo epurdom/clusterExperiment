@@ -4,7 +4,6 @@
 \name{ClusterExperiment-class}
 \alias{ClusterExperiment-class}
 \alias{ClusterExperiment}
-\alias{ClusterExperiment}
 \alias{ClusterExperiment,matrixOrHDF5,ANY-method}
 \alias{ClusterExperiment,SummarizedExperiment,ANY-method}
 \alias{ClusterExperiment,SingleCellExperiment,numeric-method}
@@ -17,26 +16,28 @@ ClusterExperiment(object, clusters, ...)
 
 \S4method{ClusterExperiment}{matrixOrHDF5,ANY}(object, clusters, ...)
 
-\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters, ...)
-
-\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(object, clusters,
+\S4method{ClusterExperiment}{SummarizedExperiment,ANY}(object, clusters,
   ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,character}(object, clusters,
-  ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,numeric}(object,
+  clusters, ...)
 
-\S4method{ClusterExperiment}{SingleCellExperiment,factor}(object, clusters, ...)
+\S4method{ClusterExperiment}{SingleCellExperiment,character}(object,
+  clusters, ...)
+
+\S4method{ClusterExperiment}{SingleCellExperiment,factor}(object, clusters,
+  ...)
 
 \S4method{ClusterExperiment}{SingleCellExperiment,matrix}(object, clusters,
   transformation = function(x) {     x }, primaryIndex = 1,
   clusterTypes = "User", clusterInfo = NULL,
-  orderSamples = 1:ncol(object), dendro_samples = NULL,
-  dendro_index = NA_real_, dendro_clusters = NULL, dendro_outbranch = NA,
-  coClustering = NULL, merge_index = NA_real_, merge_cutoff = NA_real_,
-  merge_dendrocluster_index = NA_real_, merge_nodeProp = NULL,
-  merge_nodeMerge = NULL, merge_method = NA_character_,
-  merge_demethod = NA_character_, clusterLegend = NULL,
-  checkTransformAndAssay = TRUE)
+  orderSamples = seq_len(ncol(object)), dendro_samples = NULL,
+  dendro_index = NA_real_, dendro_clusters = NULL,
+  coClustering = NULL, merge_index = NA_real_,
+  merge_cutoff = NA_real_, merge_dendrocluster_index = NA_real_,
+  merge_nodeProp = NULL, merge_nodeMerge = NULL,
+  merge_method = NA_character_, merge_demethod = NA_character_,
+  clusterLegend = NULL, checkTransformAndAssay = TRUE)
 }
 \arguments{
 \item{object}{a matrix or \code{SummarizedExperiment} or
@@ -65,14 +66,11 @@ be used when creating a new object with the constructor.}
 \item{orderSamples}{a vector of integers. Sets the `orderSamples` slot (see
 Slots).}
 
-\item{dendro_samples}{dendrogram. Sets the `dendro_samples` slot (see Slots).}
+\item{dendro_samples}{phylo4 object. Sets the `dendro_samples` slot (see Slots).}
 
 \item{dendro_index}{numeric. Sets the \code{dendro_index} slot (see Slots).}
 
-\item{dendro_clusters}{dendrogram. Sets the `dendro_clusters` slot (see
-Slots).}
-
-\item{dendro_outbranch}{logical. Sets the \code{dendro_outbranch} slot (see
+\item{dendro_clusters}{phylo4 object. Sets the `dendro_clusters` slot (see
 Slots).}
 
 \item{coClustering}{matrix. Sets the \code{coClustering} slot (see Slots).}
@@ -197,21 +195,19 @@ non-null at each node of dendrogram. See \code{\link{mergeClusters}}}
 \item{\code{clusterTypes}}{character vector with the origin of each column of
 clusterMatrix.}
 
-\item{\code{dendro_samples}}{dendrogram. A dendrogram containing the cluster
-relationship (leaves are samples; see \code{\link{makeDendrogram}} for
-details).}
+\item{\code{dendro_samples}}{\code{\link[phylobase]{phylo4d}} object. A dendrogram
+containing the cluster relationship (leaves are samples; see
+\code{\link{clusterDendrogram}} for details).}
 
-\item{\code{dendro_clusters}}{dendrogram. A dendrogram containing the cluster
-relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
-details).}
+\item{\code{dendro_clusters}}{\code{\link[phylobase]{phylo4d}} object. A dendrogram
+containing the cluster relationship (leaves are clusters; see see
+\code{\link{sampleDendrogram}} for details).}
 
 \item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
 make the dendrograms. NA_real_ value if no dendrograms are saved.}
 
-\item{\code{dendro_outbranch}}{logical. Whether the dendro_samples dendrogram put
-missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.}
-
-\item{\code{coClustering}}{matrix. A matrix with the cluster co-occurrence
+\item{\code{coClustering}}{\code{\link[Matrix]{sparseMatrix}} object. A sparse 
+representation of the matrix with the cluster co-occurrence
 information; this can either be based on subsampling or on co-clustering
 across parameter sets (see \code{clusterMany}). The matrix is a square matrix
 with number of rows/columns equal to the number of samples.}
@@ -234,4 +230,7 @@ labels <- gl(5, 2)
 cc <- ClusterExperiment(sce, as.numeric(labels), transformation =
 function(x){x})
 
+}
+\seealso{
+\code{\link[Matrix]{sparseMatrix}} \code{\link[phylobase]{phylo4d}}
 }

@@ -10,7 +10,7 @@ setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotC
 setGeneric("plotFeatureBoxplot", function(object,feature,...) { standardGeneric("plotFeatureBoxplot")})
 setGeneric("plotFeatureScatter", function(object,features,...) { standardGeneric("plotFeatureScatter")})
 
-setGeneric( "tableClusters", function(object,whichClusters,...){ standardGeneric("tableClusters") })
+setGeneric( "tableClusters", function(object,...){ standardGeneric("tableClusters") })
 setGeneric( "plotClustersTable", function(object,...){ standardGeneric("plotClustersTable") })
 setGeneric("bubblePlot", function(propTable,sizeTable,...) { standardGeneric("bubblePlot")})
 
@@ -30,11 +30,7 @@ setGeneric(name = "mergeCutoff", def=function(x,...){ standardGeneric("mergeCuto
 setGeneric(name="eraseMergeInfo",def=function(x,...){ standardGeneric("eraseMergeInfo")})
 setGeneric(name = "nClusters", function(x,...){ standardGeneric("nClusters")})
 
-setGeneric(
-  name = "plotClustersWorkflow",
-	def=function(object,...){
-	standardGeneric("plotClustersWorkflow")
-	}
+setGeneric("plotClustersWorkflow", function(object,...){ standardGeneric("plotClustersWorkflow")}
 )
 setGeneric(
 	name="plotContrastHeatmap",
@@ -114,7 +110,21 @@ setGeneric("clusterLegend", function(x) { standardGeneric("clusterLegend")})
 setGeneric("clusterLegend<-", function(object, value){standardGeneric("clusterLegend<-") })
 setGeneric("renameClusters", function(object,value,...) { standardGeneric("renameClusters")})
 setGeneric("recolorClusters", function(object,value,...) { standardGeneric("recolorClusters")})
+setGeneric("sampleDendrogram", function(x) { standardGeneric("sampleDendrogram")})
+setGeneric("clusterDendrogram", function(x) { standardGeneric("clusterDendrogram")})
+setGeneric("convertToDendrogram",function(x){standardGeneric("convertToDendrogram")})
+setGeneric("nodeIds",function(x,type){standardGeneric("nodeIds")})
+setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
+setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
+# #Have to recreate these generics, because phylobase's are nonstandardGenericFunctions because used braces.
+# setGeneric("nodeLabels",function(x){standardGeneric("nodeLabels")})
+# setGeneric("nodeLabels<-",function(x,...,value){standardGeneric("nodeLabels<-")})
+# setGeneric("tipLabels",function(x){standardGeneric("tipLabels")})
+# setGeneric("nNodes",function(x){standardGeneric("nNodes")})
+# setGeneric("nTips",function(x){standardGeneric("nTips")})
 
+setGeneric("getClusterIndex",function(object,...){standardGeneric("getClusterIndex")})
+setGeneric("getSingleClusterIndex",function(object,...){standardGeneric("getSingleClusterIndex")})
 setGeneric(
     name = "orderSamples",
     def = function(x) {
@@ -204,22 +214,9 @@ setGeneric(
   }
 )
 
-setGeneric(
-    name="plotClusters",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotClusters")
-    }
-)
-
-setGeneric(
-    name="plotBarplot",
-    def=function(object, whichClusters,...)
-    {
-        standardGeneric("plotBarplot")
-    }
-)
-setGeneric("plotReducedDims",function(object, whichCluster,...){ standardGeneric("plotReducedDims")})
+setGeneric( "plotClusters", function(object, ...) { standardGeneric("plotClusters")})
+setGeneric( name="plotBarplot", def=function(object, ...) { standardGeneric("plotBarplot") })
+setGeneric("plotReducedDims",function(object,...){ standardGeneric("plotReducedDims")})
 
 setGeneric(
   name="plotHeatmap",
@@ -249,7 +246,7 @@ setGeneric(
 )
 setGeneric("colDataClusters",function(object,...){standardGeneric("colDataClusters")})
 setGeneric("addToColData",function(object,...){standardGeneric("addToColData")})
-setGeneric("clusterMatrix", function(x,whichClusters) { standardGeneric("clusterMatrix")})
+setGeneric("clusterMatrix", function(x,...) { standardGeneric("clusterMatrix")})
 setGeneric("clusterMatrixNamed", function(x,...) { standardGeneric("clusterMatrixNamed")})
 setGeneric("clusterMatrixColors", function(x,...) { standardGeneric("clusterMatrixColors")})
 setGeneric("primaryCluster", function(x) { standardGeneric("primaryCluster")})
@@ -282,14 +279,14 @@ setGeneric(
 )
 
 
-setGeneric( name = "removeClusters", def = function(x, whichCluster,...) {
+setGeneric( name = "removeClusters", def = function(x, ...) {
     standardGeneric("removeClusters")})
 setGeneric( name = "addClusterings", def = function(x, y,...) {
     standardGeneric("addClusterings")})
-setGeneric(name = "removeClusterings", def = function(x, whichClusters,...) {
+setGeneric(name = "removeClusterings", def = function(x,...) {
     standardGeneric("removeClusterings")})
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
-setGeneric( name = "makeConsensus", def = function(x, whichClusters, ...) {
+setGeneric( name = "makeConsensus", def = function(x, ...) {
     standardGeneric("makeConsensus")})
 
 

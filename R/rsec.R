@@ -20,8 +20,10 @@
 #'   \code{\link{mergeClusters}}
 #' @param mergeDEMethod passed to \code{DEMethod} argument in
 #'   \code{\link{mergeClusters}}. By default, unless otherwise chosen by the
-#'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="edgeR"}, otherwise
-#'   \code{mergeDEMethod="limma"}.
+#'   user, if \code{isCount=TRUE}, then \code{mergeDEMethod="limma-voom"}, 
+#' otherwise \code{mergeDEMethod="limma"}. These choices are for speed
+#'  considerations and the user may want to try \code{mergeDEMethod="edgeR"} 
+#' on smaller datasets of counts.
 #' @param rerunClusterMany logical. If the object is a ClusterExperiment object,
 #'   determines whether to rerun the clusterMany step. Useful if want to try
 #'   different parameters for combining clusters after the clusterMany step,
@@ -34,6 +36,7 @@
 #'   \code{TRUE} option is only provided for debugging purposes.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all
 #'   of the clusterings from the steps of RSEC
+#' @details Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
 #' @inheritParams clusterMany
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method
@@ -62,13 +65,15 @@ setMethod(
   f = "RSEC",
   signature = signature(x = "ClusterExperiment"),
   definition = function(x, eraseOld=FALSE, rerunClusterMany=FALSE,...){
-		passedArgs<-list(...)
-		if("isCount" %in% names(passedArgs) & !"mergeDEMethod" %in% names(passedArgs)){
-			if(passedArgs$isCount) passedArgs$mergeDEMethod<-"edgeR"
-			else passedArgs$mergeDEMethod<-"limma"
-		}
+	passedArgs<-list(...)
+	if(!"mergeDEMethod" %in% names(passedArgs) & is.na(x@merge_demethod) & "isCount" %in% names(passedArgs)){
+		if(passedArgs$isCount) passedArgs$mergeDEMethod<-"limma-voom"
+		else passedArgs$mergeDEMethod<-"limma"
+		# wh<-which(names(passedArgs)=="isCount")
+# 		passedArgs<-passedArgs[-wh]
+	}
     if(rerunClusterMany | !"clusterMany" %in% clusterTypes(x)){
-	  	if(any(c("transFun","isCount") %in% names(list(...))))
+	  	if(any(c("transFun","isCount") %in% names(passedArgs)))
 	  		warning("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' has no effect other than to set a default for 'mergeDEMethod' (if not set by user).")
       newObj <- do.call("RSEC",c(list(x=as(x,"SingleCellExperiment"),  transFun=transformation(x)),passedArgs))
       ##Check if pipeline already ran previously and if so increase
@@ -82,6 +87,7 @@ setMethod(
 		  reducedDims(retval)<-reducedDims(newObj)
     }
     else{
+		if(!is.na(x@merge_demethod)) passedArgs$mergeDEMethod<-x@merge_demethod
       retval<-do.call(".postClusterMany",c(list(ce=x),passedArgs))
     }
 
@@ -123,7 +129,7 @@ setMethod(
     mergeMethod="adjP",
     mergeCutoff,
     mergeLogFCcutoff,
-		mergeDEMethod=if(isCount) "edgeR" else "limma",
+	mergeDEMethod=if(isCount) "limma-voom" else "limma",
     verbose=FALSE,
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
@@ -186,8 +192,17 @@ setMethod(
   b <- body(method)
   if(is(b, "{") && is(b[[2]], "<-") && identical(b[[2]][[2]], as.name(".local"))) {
     local <- eval(b[[2]][[3]])
-    if(is.function(local))
-      return(formals(local))
+    if(is.function(local)){
+		forms<-formals(b[[2]][[3]])
+    	whConditional<-which(sapply(forms,function(x){class(x)=="if"}))
+		if(length(whConditional)>0){
+			#note, converts it to a list (rather than pairlist) class, but doesn't matter for me.
+			forms[whConditional]<-sapply(forms[whConditional],function(x){
+				eval(x,envir=forms)
+			})
+		}
+		return(forms)
+    }
     warning("Expected a .local assignment to be a function. Corrupted method?")
   }
   genFormals
@@ -234,20 +249,19 @@ setMethod(
         if("mergeLogFCCutoff" %in% names(passedArgs)){
           args1<-c(args1,"logFCcutoff="=passedArgs$mergeLogFCCutoff)
         }
-				if("mergeDEMethod" %in% names(passedArgs)){
-					args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
-					mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
-
-				}
-				else{
-					mergeTry<-"mergeDEMethod argument is missing with no default"
-					class(mergeTry)<-"try-error"
-				}
+		if("mergeDEMethod" %in% names(passedArgs)){
+			args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
+			mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
+		}
+		else{
+			mergeTry<-"mergeDEMethod argument is missing with no default"
+			class(mergeTry)<-"try-error"
+		}
         if(!inherits(mergeTry,"try-error")){
           ce<-mergeTry
         }
         else{
-        	if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
+			if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
 					else stop(mergeTry)
         }
       }

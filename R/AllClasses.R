@@ -1,16 +1,18 @@
 #' @include AllChecks.R
 #' @importClassesFrom HDF5Array HDF5Matrix
-#' @importClassesFrom DelayedArray DelayedMatrix
-
-setOldClass("dendrogram")
+#' @importClassesFrom DelayedArray DelayedArray DelayedArray1 DelayedMatrix RleArray RleMatrix
+#' @importClassesFrom phylobase phylo4 phylo4d
+#' @rawNamespace import(phylobase, except = plot)
+#' @import Matrix
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
-setClassUnion("dendrogramOrNULL",members=c("dendrogram", "NULL"))
+setClassUnion("phylo4OrNULL",members=c("phylo4d", "NULL"))
 setClassUnion("matrixOrNULL",members=c("matrix", "NULL"))
 setClassUnion("listOrNULL",members=c("list", "NULL"))
 setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
-setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray", "HDF5Matrix"))
+setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray","HDF5Matrix")) #Sometimes it appears necessary to have HDF5Matrix listed separately, not sure why, but otherwise not finding it. 
 setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix","NULL"))
+setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5Matrix","NULL"))
 
 #############################################################
 #############################################################
@@ -72,17 +74,16 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
-#' @slot dendro_samples dendrogram. A dendrogram containing the cluster
-#' relationship (leaves are samples; see \code{\link{makeDendrogram}} for
-#' details).
-#' @slot dendro_clusters dendrogram. A dendrogram containing the cluster
-#' relationship (leaves are clusters; see \code{\link{makeDendrogram}} for
-#' details).
+#' @slot dendro_samples \code{\link[phylobase]{phylo4d}} object. A dendrogram
+#'   containing the cluster relationship (leaves are samples; see
+#'   \code{\link{clusterDendrogram}} for details).
+#' @slot dendro_clusters \code{\link[phylobase]{phylo4d}} object. A dendrogram
+#'   containing the cluster relationship (leaves are clusters; see see
+#'   \code{\link{sampleDendrogram}} for details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot dendro_outbranch logical. Whether the dendro_samples dendrogram put
-#' missing/non-clustered samples in an outbranch, or intermixed in the dendrogram.
-#' @slot coClustering matrix. A matrix with the cluster co-occurrence
+#' @slot coClustering \code{\link[Matrix]{sparseMatrix}} object. A sparse 
+#' representation of the matrix with the cluster co-occurrence
 #' information; this can either be based on subsampling or on co-clustering
 #' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
 #' with number of rows/columns equal to the number of samples.
@@ -93,14 +94,13 @@ setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix
 #' @slot orderSamples a numeric vector (of integers) defining the order of
 #' samples to be used for plotting of samples. Usually set internally by other
 #' functions.
-#'
+#' @seealso \code{\link[Matrix]{sparseMatrix}} \code{\link[phylobase]{phylo4d}} 
 #' @name ClusterExperiment-class
 #' @aliases ClusterExperiment
 #' @rdname ClusterExperiment-class
 #' @import SingleCellExperiment
 #' @import SummarizedExperiment
 #' @import methods
-#' @importFrom dendextend as.phylo.dendrogram
 #' @export
 #'
 setClass(
@@ -112,11 +112,10 @@ setClass(
     primaryIndex = "numeric",
     clusterInfo = "list",
     clusterTypes = "character",
-    dendro_samples = "dendrogramOrNULL",
-    dendro_clusters = "dendrogramOrNULL",
+    dendro_samples = "phylo4OrNULL",
+    dendro_clusters = "phylo4OrNULL",
     dendro_index = "numeric",
-	dendro_outbranch = "logical",
-    coClustering = "matrixOrHDF5OrNULL",
+    coClustering = "sparseOrHDF5OrNULL",
     clusterLegend="list",
     orderSamples="numeric",
 	merge_index="numeric",
@@ -240,12 +239,10 @@ setMethod(
 #'@param primaryIndex integer. Sets the `primaryIndex` slot (see Slots).
 #'@param orderSamples a vector of integers. Sets the `orderSamples` slot (see
 #'  Slots).
-#'@param dendro_samples dendrogram. Sets the `dendro_samples` slot (see Slots).
-#'@param dendro_clusters dendrogram. Sets the `dendro_clusters` slot (see
+#'@param dendro_samples phylo4 object. Sets the `dendro_samples` slot (see Slots).
+#'@param dendro_clusters phylo4 object. Sets the `dendro_clusters` slot (see
 #'  Slots).
 #'@param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
-#'@param dendro_outbranch logical. Sets the \code{dendro_outbranch} slot (see
-#'  Slots).
 #'@param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
 #'@param checkTransformAndAssay logical. Whether to check the content of the
 #'  assay and given transformation function for whether they are valid.
@@ -286,11 +283,10 @@ setMethod(
                         primaryIndex=1,
                         clusterTypes="User",
                         clusterInfo=NULL,
-                        orderSamples=1:ncol(object),
+                        orderSamples=seq_len(ncol(object)),
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,
-                        dendro_outbranch=NA,
                         coClustering=NULL,
                         merge_index=NA_real_,
                         merge_cutoff=NA_real_,
@@ -368,7 +364,6 @@ setMethod(
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
                dendro_index=dendro_index,
-               dendro_outbranch=dendro_outbranch,
                merge_index=merge_index,
                merge_cutoff=merge_cutoff,
                merge_dendrocluster_index=merge_dendrocluster_index,

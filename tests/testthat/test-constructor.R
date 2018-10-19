@@ -46,6 +46,37 @@ test_that("`ClusterExperiment` constructor works with matrix and SummarizedExper
 			
 })
 
+
+test_that("`getClusterIndex` works", {
+	expect_silent( getClusterIndex(ccSE,whichClusters="all"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="primary"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="dendro"))
+	expect_silent(getClusterIndex(ccSE,whichClusters="workflow"))
+
+	expect_error(getClusterIndex(ccSE,whichClusters="dendro",noMatch="throwError"),"There is no dendrogram")
+	expect_error(getClusterIndex(ccSE,whichClusters="workflow",noMatch="throwError"),"There are no workflow clusterings")
+	
+
+	expect_error(getClusterIndex(ccSE,whichClusters="dendro",noMatch="throwError"),"There is no dendrogram")
+	expect_error(getClusterIndex(ccSE,whichClusters="workflow",noMatch="throwError"),"There are no workflow clusterings")
+	
+	expect_error( getSingleClusterIndex(ccSE,whichClusters="primary"),"The argument of this function is 'whichCluster'")
+	expect_error( getSingleClusterIndex(ccSE,whichCluster="all"),"Invalid value for 'whichCluster'.")
+	expect_silent(getSingleClusterIndex(ccSE,whichCluster="primary"))
+	expect_error(getSingleClusterIndex(ccSE,whichCluster="dendro"),"There is no dendrogram")
+	expect_error(getSingleClusterIndex(ccSE,whichCluster="workflow"),"There are no workflow clusterings")
+	
+	
+    expect_message(ccM<-makeConsensus(ceSim,proportion=.2,clusterLabel="mySpecialLabel"),"no clusters specified to combine")
+    expect_message(ccM<-makeConsensus(ccM,proportion=.2),"no clusters specified to combine")
+    expect_silent(indCM<-getClusterIndex(ccM,wh=c("clusterMany")))
+    expect_equal(length(indCM),sum(clusterTypes(ccM)=="clusterMany"))
+    expect_equal(getClusterIndex(ccM,wh=c("mySpecialLabel","makeConsensus")),c(2,1))
+    expect_equal(getClusterIndex(ccM,wh=c("mySpecialLabel","clusterMany")),c(2,indCM))
+	expect_equal(getClusterIndex(ccM,wh=c("makeConsensus")),1)
+	expect_equal(getClusterIndex(ccM,wh=c("makeConsensus","garbage"),noMatch="silentlyRemove"),1)
+})
+
 test_that("`ClusterExperiment` constructor works with hdf5",{
     #test creation
     expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))
@@ -155,7 +186,7 @@ test_that("removeClusterings work as promised",{
   expect_equal(metadata(c6),metadata(se)) 
   expect_equal(rowData(c6),rowData(se)) 
   
-  expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),"invalid indices")
+  expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),"Invalid value for 'whichCluster'")
   
   expect_silent(c7<-removeClusterings(c4,"User")) #two have "user" label
   expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)

@@ -1,51 +1,49 @@
-#' @rdname plottingFunctions
-#' @name plottingFunctions
-#' @aliases makeBlankData
-#' @param data matrix with samples on columns and features on rows.
-#' @param groupsOfFeatures list, with each element of the list containing a
-#'   vector of numeric indices of features (rows).
-#' @param groupsOfSamples list, with each element of the list containing a
-#'   vector of numeric indices of samples (columns).
-#' @param nBlankFeatures the number of blank lines to add in the data matrix to
-#'   separate the groups of feature indices (will govern the amount of white space if
-#'   data is then fed to heatmap.)
-#' @param nBlankSamples the number of blank lines to add in the data matrix to
-#'   separate the groups of sample indices (will govern the amount of white space if
-#'   data is then fed to heatmap.)
-#' @details \code{makeBlankData} pulls the data corresponding to the row indices
-#'   in \code{groupsOfFeatures} adds lines of NA values into data between these
-#'   groups. When given to heatmap, will create white space between these groups
-#'   of features.
-#' @seealso \code{\link{plotHeatmap}}
-#' @return \code{makeBlankData} returns a list with items
-#'  \itemize{
+#'@rdname plottingFunctions
+#'@name plottingFunctions
+#'@aliases makeBlankData
+#'@param data matrix with samples on columns and features on rows.
+#'@param groupsOfFeatures list, with each element of the list containing a
+#'  vector of numeric indices of features (rows).
+#'@param groupsOfSamples list, with each element of the list containing a vector
+#'  of numeric indices of samples (columns).
+#'@param nBlankFeatures the number of blank lines to add in the data matrix to
+#'  separate the groups of feature indices (will govern the amount of white
+#'  space if data is then fed to heatmap.)
+#'@param nBlankSamples the number of blank lines to add in the data matrix to
+#'  separate the groups of sample indices (will govern the amount of white space
+#'  if data is then fed to heatmap.)
+#'@details \code{makeBlankData} pulls the data corresponding to the row indices
+#'  in \code{groupsOfFeatures} adds lines of NA values into data between these
+#'  groups. When given to heatmap, will create white space between these groups
+#'  of features.
+#'@seealso \code{\link{plotHeatmap}}
+#'@return \code{makeBlankData} returns a list with items 
+#'\itemize{
 #'  \item{"dataWBlanks"}{ The data with the rows of NAs separating the given
-#'  indices.}
-#'  \item{"rowNamesWBlanks"}{ A vector of characters giving the rownames for the
-#'  data, including blanks for the NA rows. These are not given as rownames to
-#'  the returned data because they are not necessarily unique. However, they can be 
-#'  given to the \code{labRow} argument of \code{\link[NMF]{aheatmap}} or
-#'  \code{\link{plotHeatmap}}.}
+#'  indices.} 
+#'  \item{"rowNamesWBlanks"}{ A vector of characters giving the
+#'  rownames for the data, including blanks for the NA rows. These are not given
+#'  as rownames to the returned data because they are not necessarily unique.
+#'  However, they can be given to the \code{labRow} argument of
+#'  \code{\link[NMF]{aheatmap}} or \code{\link{plotHeatmap}}.}
 #'  \item{"colNamesWBlanks"}{ A vector of characters giving the colnames for the
-#'  data, including blanks for the NA rows. They can be 
-#'  given to the \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
-#'  \code{\link{plotHeatmap}}.}
-#'  \item{"featureGroupNamesWBlanks"}{ A vector of characters of the same length 
-#'	as the number of rows of the new data (i.e. with blanks) giving the group name  
-#'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
-#'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-#'   names will be used, other wise "Feature Group1", "Feature Group2", etc. 
-#'   The NA rows are given NA values. 
-#'  }
-#'  \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the same length 
-#'	as the number of columns of the new data (i.e. with blanks) giving the group name  
-#'  for the data, indicating which group (i.e. which element of \code{groupsOfFeatures}
-#'   list) the feature came from. If \code{groupsOfFeatures} has unique names, these 
-#'   names will be used, other wise "SampleGroup1", "Group2", etc. The NA rows are 
-#'   given NA values. 
-#'   }	
-#' }
-#'
+#'  data, including blanks for the NA rows. They can be given to the
+#'  \code{labCol} argument of \code{\link[NMF]{aheatmap}} or
+#'  \code{\link{plotHeatmap}}.} 
+#'  \item{"featureGroupNamesWBlanks"}{ A vector of
+#'  characters of the same length as the number of rows of the new data (i.e.
+#'  with blanks) giving the group name for the data, indicating which group
+#'  (i.e. which element of \code{groupsOfFeatures} list) the feature came from.
+#'  If \code{groupsOfFeatures} has unique names, these names will be used, other
+#'  wise "Feature Group1", "Feature Group2", etc. The NA rows are given NA
+#'  values. } 
+#'  \item{"sampleGroupNamesWBlanks"}{ A vector of characters of the
+#'  same length as the number of columns of the new data (i.e. with blanks)
+#'  giving the group name for the data, indicating which group (i.e. which
+#'  element of \code{groupsOfFeatures} list) the feature came from. If
+#'  \code{groupsOfFeatures} has unique names, these names will be used, other
+#'  wise "SampleGroup1", "Group2", etc. The NA rows are given NA values. } }
+#'  
 #' @export
 #'
 #' @examples

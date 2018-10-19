@@ -3,28 +3,29 @@
 #'Find sets of samples that stay together across clusterings in order to define 
 #'a new clustering vector.
 #'
-#'@aliases makeConsensus
+#' @aliases makeConsensus
 #'  
-#'@param x a matrix or \code{\link{ClusterExperiment}} object.
-#' @inheritParams ClusterExperiment-methods
-#'@param clusterFunction the clustering to use (passed to 
+#' @param x a matrix or \code{\link{ClusterExperiment}} object.
+
+#' @param clusterFunction the clustering to use (passed to 
 #'  \code{\link{mainClustering}}); currently must be of type '01'.
-#'@param minSize minimum size required for a set of samples to be considered in 
+#' @param minSize minimum size required for a set of samples to be considered in 
 #'  a cluster because of shared clustering, passed to
 #'  \code{\link{mainClustering}}
-#'@param proportion The proportion of times that two sets of samples should be 
+#' @param proportion The proportion of times that two sets of samples should be 
 #'  together in order to be grouped into a cluster (if <1, passed to
 #'  mainClustering via alpha = 1 - proportion)
-#'@param propUnassigned samples with greater than this proportion of assignments
+#' @param propUnassigned samples with greater than this proportion of assignments
 #'  equal to '-1' are assigned a '-1' cluster value as a last step (only if
 #'  proportion < 1)
-#'@param ... arguments to be passed on to the method for signature 
+#' @param ... arguments to be passed on to the method for signature 
 #'  \code{matrix,missing}.
-#'@inheritParams clusterMany
-#'@details This function was previously called \code{combineMany} (versions <= 2.0.0).
-#' \code{combineMany} is still available, but is considered defunct and users should 
-#' update their code accordingly. 
-#'@details The function tries to find a consensus cluster across many different 
+#' @inheritParams clusterMany
+#' @inheritParams getClusterIndex
+#' @details This function was previously called \code{combineMany} (versions <=
+#'   2.0.0). \code{combineMany} is still available, but is considered defunct
+#'   and users should update their code accordingly.
+#' @details The function tries to find a consensus cluster across many different 
 #'  clusterings of the same samples. It does so by creating a \code{nSamples} x 
 #'  \code{nSamples} matrix of the percentage of co-occurance of each sample and 
 #'  then calling mainClustering to cluster the co-occurance matrix. The function
@@ -89,8 +90,8 @@
 #' @export
 setMethod(
   f = "makeConsensus",
-  signature = signature(x = "matrix", whichClusters = "missing"),
-  definition = function(x, whichClusters, proportion,
+  signature = signature(x = "matrix"),
+  definition = function(x, proportion,
                         clusterFunction="hierarchical01",
                         propUnassigned=.5, minSize=5,...) {
     
@@ -114,7 +115,7 @@ setMethod(
     } else{
       
       if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
-      else if(class(clusterFunction)=="ClusterFunction") typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
+      else if(is(clusterFunction,"ClusterFunction")) typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
       if(typeAlg!="01") {
         stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
@@ -162,14 +163,21 @@ setMethod(
 #'   be set (see vignette).
 setMethod(
   f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "numeric"),
+  signature = signature(x = "ClusterExperiment"),
   definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
-    
-    if(!all(whichClusters %in% seq_len(NCOL(clusterMatrix(x))))) {
-      stop("Invalid indices for clusterLabels")
-    }
-    if(length(whichClusters)==0) stop("No clusters chosen (whichClusters has length 0)")
-    clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
+	if(missing(whichClusters)){
+	  whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="silentlyRemove")
+	  if(length(whichClusters)>0){
+	    .mynote("no clusters specified to combine, using results from clusterMany")
+	  }
+	  else{
+	    stop("no clusters specified to combine, please specify.")
+	  }
+	}
+	else{
+		whichClusters <-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
+	}
+	clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
     
     outlist <- makeConsensus(clusterMat, ...)
     newObj <- ClusterExperiment(x, outlist$clustering,
@@ -180,7 +188,7 @@ setMethod(
     clusterLabels(newObj) <- clusterLabel
     
     if(!is.null(outlist$percentageShared)) {
-      coClustering(newObj) <- outlist$percentageShared
+      coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
     }
     ##Check if pipeline already ran previously and if so increase
 		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
@@ -191,32 +199,6 @@ setMethod(
   }
 )
 
-#' @rdname makeConsensus
-#' @export
-setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "character"),
-  definition = function(x, whichClusters, ...){
-    
-    wh <- .TypeIntoIndices(x, whClusters=whichClusters)
-    makeConsensus(x, wh, ...)
-  }
-)
-#' @rdname makeConsensus
-#' @export
-setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment", whichClusters = "missing"),
-  definition = function(x, whichClusters, ...){
-    wh<-.TypeIntoIndices(x,"clusterMany")
-    if(length(wh)>0){
-      .mynote("no clusters specified to combine, using results from clusterMany")
-      makeConsensus(x, whichClusters = "clusterMany",...)
-    }
-    else{
-      stop("no clusters specified to combine, please specify.")
-    }
-  }
-)
+
 
 

@@ -5,71 +5,54 @@
 \alias{plotClustersTable}
 \alias{plotClustersTable,ClusterExperiment-method}
 \alias{plotClustersTable,table-method}
-\alias{tableClusters,ClusterExperiment,character-method}
+\alias{tableClusters,ClusterExperiment-method}
 \alias{tableClusters}
-\alias{tableClusters,ClusterExperiment,missing-method}
-\alias{tableClusters,ClusterExperiment,numeric-method}
 \alias{bubblePlot,table,table-method}
 \title{Plot heatmap of cross-tabs of 2 clusterings}
 \usage{
 \S4method{plotClustersTable}{ClusterExperiment}(object, whichClusters,
   ignoreUnassigned = FALSE, margin = NA, ...)
 
-\S4method{plotClustersTable}{table}(object, clusterLegend = NULL,
-  cluster = FALSE, plotType = c("heatmap", "bubble"), sizeTable = object,
-  ...)
+\S4method{plotClustersTable}{table}(object, plotType = c("heatmap",
+  "bubble"), main = "", xlab = NULL, ylab = NULL, legend = TRUE,
+  cluster = FALSE, clusterLegend = NULL, sizeTable = NULL, ...)
 
-\S4method{tableClusters}{ClusterExperiment,character}(object, whichClusters,
-  ...)
+\S4method{tableClusters}{ClusterExperiment}(object,
+  whichClusters = "primary", useNames = TRUE,
+  tableMethod = c("intersect", "union"), ...)
 
-\S4method{tableClusters}{ClusterExperiment,missing}(object, whichClusters, ...)
-
-\S4method{tableClusters}{ClusterExperiment,numeric}(object, whichClusters,
-  useNames = TRUE, tableMethod = c("intersect", "union"), ...)
-
-\S4method{bubblePlot}{table,table}(propTable, sizeTable, gridColor = rgb(0, 0,
-  0, 0.05), maxCex = 8, cexFactor, ylab, xlab, legend = TRUE, las = 2,
+\S4method{bubblePlot}{table,table}(propTable, sizeTable,
+  gridColor = rgb(0, 0, 0, 0.05), maxCex = 8, cexFactor, ylab, xlab,
+  propLabel = "Value of \%", legend = TRUE, las = 2,
   colorScale = RColorBrewer::brewer.pal(11, "Spectral")[-6])
 }
 \arguments{
 \item{object}{ClusterExperiment object (or matrix with table result)}
 
-\item{whichClusters}{argument that can be either numeric or character value
-indicating the clusters to be used. If numeric, gives the indices of the
-\code{clusterMatrix} to return; this can also be used to defined an
-ordering for the clusterings (as relevant). \code{whichClusters} can be a
-character value identifying the \code{clusterTypes} to be used, or if not
-matching \code{clusterTypes} then \code{clusterLabels}; alternatively
-\code{whichClusters} can be either 'all' or 'workflow' or 'primary' to
-indicate choosing all clusterings or choosing all 
-\code{\link{workflowClusters}} clusterings or choosing the 'primary'
-clustering, respectively. If missing, the entire matrix of all clusterings
-is returned.}
+\item{whichClusters}{argument that can be either numeric or character vector
+indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
 \item{ignoreUnassigned}{logical as to whether to ignore unassigned clusters
 in the plotting. This means they will also be ignored in the calculations
 of the proportions (if \code{margin} not NA).}
 
-\item{margin}{if NA, the counts from \code{tableClusters} will be plotted.
-Otherwise, \code{\link[base]{prop.table}} will be called and the argument
-\code{margin} will be passed to \code{prop.table} to determine whether
-proportions should be calculated. If '1', then the proportions in the rows
-sum to 1, if '2' the proportions in the columns sum to 1. If 'NULL' then
-the proportion across the entire matrix will sum to 1. For a symmetric
-version, you can set \code{margin=0}, and the entry displayed in each cell
-will be the proportion equal to the size of the intersection over the size
-of the union of the clusters (a Jaccard similarity between the clusters),
-in which case each entry is a proportion but no combination of the entries 
-sum to 1.}
+\item{margin}{if NA, the actual counts from \code{tableClusters} will be
+plotted. Otherwise, \code{\link[base]{prop.table}} will be called and the
+argument \code{margin} will be passed to \code{prop.table} to determine
+whether proportions should be calculated. If '1', then the proportions in
+the rows sum to 1, if '2' the proportions in the columns sum to 1. If
+'NULL' then the proportion across the entire matrix will sum to 1. An
+additional option has been added so that if you set  \code{margin=0}, the
+entry displayed in each cell will be the proportion equal to the size of
+the intersection over the size of the union of the clusters (a Jaccard
+similarity between the clusters), in which case each entry is a value
+between 0 and 1 but no combination of the entries sum to 1.}
 
-\item{...}{arguments passed on to \code{plotHeatmap} or \code{bubblePlot} 
-depending on choice of \code{plotType}}
-
-\item{clusterLegend}{list in \code{clusterLegend} format that gives colors for the
-clusters tabulated.}
-
-\item{cluster}{logical, whether to cluster the rows and columns of the table. Passed
-to arguments \code{clusterFeatures} AND \code{clusterSamples} of \code{plotHeatmap}.}
+\item{...}{arguments passed on to \code{plotHeatmap} or \code{bubblePlot}
+depending on choice of \code{plotType}. Note that these functions take
+different arguments so that switching from one to the other may not take
+all arguments. In particular \code{bubblePlot} calls \code{plot} while
+\code{plotHeatmap} calls \code{\link{NMF}{aheatmap}}.}
 
 \item{plotType}{type of plot. If "heatmap", then a heatmap will be created of
 the values of the contingency table of the two clusters (calculated as
@@ -79,31 +62,54 @@ create circles for each cell of the contingencey table whose size
 corresponds to the number of samples shared and the color based on the
 value of the proportion (as chosen by the argument \code{margin}).}
 
-\item{sizeTable}{table of sizes}
+\item{main}{title of plot, passed to \code{plotHeatmap} or to the argument
+\code{propLabel} in \code{bubblePlot}}
+
+\item{xlab}{label for labeling clustering on the x-axis. If NULL, will
+determine names. If set to \code{NA} no label for clustering on the x-axis
+will be plotted (to turn off legend of the clusterings in heatmap, set
+\code{legend=FALSE}).}
+
+\item{ylab}{label for labeling clustering on the y-axis. If NULL, will
+determine names. If set to \code{NA} no label for clustering on the y-axis
+will be plotted (to turn off legend of the clusterings in heatmap, set
+\code{legend=FALSE}).}
+
+\item{legend}{whether to draw legend along top (bubble plot) or the color
+legend (heatmap)}
+
+\item{cluster}{logical, whether to cluster the rows and columns of the table.
+Passed to arguments \code{clusterFeatures} AND \code{clusterSamples} of
+\code{plotHeatmap}.}
+
+\item{clusterLegend}{list in \code{clusterLegend} format that gives colors
+for the clusters tabulated.}
+
+\item{sizeTable}{table of sizes (only for use in \code{bubblePlot} or
+\code{plotType="bubble"}). See details.}
 
 \item{useNames}{for \code{tableClusters}, whether the output should be tabled
 with names (\code{useNames=TRUE}) or ids (\code{useNames=FALSE})}
 
-\item{tableMethod}{the type of table calculation to perform. "intersect" refers to the standard contingency table (\code{\link[base]{table}}), where each entry of the resulting table is the number of objects in both clusters. "union" instead gives for each entry the number of objects that are in the union of both clusters.}
+\item{tableMethod}{the type of table calculation to perform. "intersect"
+refers to the standard contingency table (\code{\link[base]{table}}), where
+each entry of the resulting table is the number of objects in both
+clusters. "union" instead gives for each entry the number of objects that
+are in the union of both clusters.}
 
-\item{propTable}{table of proportions}
+\item{propTable}{table of proportions (\code{bubblePlot}))}
 
-\item{gridColor}{color for grid lines}
+\item{gridColor}{color for grid lines (\code{bubblePlot}))}
 
 \item{maxCex}{largest value of cex for any point (others will scale
-proportionally smaller).}
+proportionally smaller) (\code{bubblePlot})).}
 
 \item{cexFactor}{factor to multiple by to get values of circles. If missing,
 finds value automatically, namely by using the maxCex value default.
-Overrides value of maxCex.}
+Overrides value of maxCex. (\code{bubblePlot}))}
 
-\item{ylab}{label for y-axis. If missing, uses the name for rows in
-sizeTable. If set to \code{NULL} no y-axis label will be plotted.}
-
-\item{xlab}{label for x-axis. If missing, uses the name for columns in 
-sizeTable. If set to \code{NULL} no y-axis label will be plotted.}
-
-\item{legend}{whether to draw legend along top}
+\item{propLabel}{the label to go with the legend of the color of the
+bubbles/circles}
 
 \item{las}{the value for the las value in the call to \code{\link{axis}} in
 labeling the clusters in the bubble plot. Determines whether parallel or
@@ -111,26 +117,46 @@ perpindicular labels to the axis (see \code{\link{par}}).}
 
 \item{colorScale}{the color scale for the values of the proportion table}
 }
+\value{
+\code{tableClusters} returns an object of class \code{table} (see
+  \code{\link[base]{table}}).
+
+\code{plotClustersTables} returns invisibly the plotted proportion
+  table. In particular, this is the result of applying
+  \code{\link[base]{prop.table}} to the results of \code{tableClusters}
+  (after removing unclustered samples if \code{ignoreUnassigned=TRUE}).
+}
 \description{
 Plot heatmap of cross-tabulations of two clusterings
 }
 \details{
-For \code{plotClustersTable} \code{whichClusters}
-  should define 2 clusters, for \code{tableClusters} can indicate arbitrary
-  number.
+For \code{plotClustersTable} applied to the class \code{table},
+  \code{sizeTable} is passed to \code{bubblePlot} to indicate the size of the
+  circle. If \code{sizeTable=NULL}, then it is assumed that the \code{object}
+  argument is the table of counts and both the \code{propTable} and
+  \code{sizeTable} are set to the same value (hence turning off the coloring
+  of the circle/bubbles). This is equivalent effect to the \code{margin=NA}
+  option of \code{plotClustersTable} applied to the \code{ClusterExperiment}
+  class.
 
-Note that the cluster labels in \code{plotClustersTable} and 
-\code{tableClusters} are converted to "proper" R names via \code{make.names}. This is 
-because \code{tableClusters} calls the R function \code{table}, which makes this 
-conversion
+Note that the cluster labels in \code{plotClustersTable} and
+  \code{tableClusters} are converted to "proper" R names via
+  \code{make.names}. This is because \code{tableClusters} calls the R
+  function \code{table}, which makes this conversion
+
+For \code{plotClustersTable}, \code{whichClusters} should define 2
+  clusters, while for \code{tableClusters} it can indicate arbitrary number.
 
 \code{bubblePlot} is mainly used internally by
   \code{plotClustersTable} but is made public for users who want more control
   and to allow documentation of the arguments. \code{bubblePlot} plots a
   circle for each intersection of two clusters, where the color of the circle
   is based on the value in \code{propTable} and the size of the circle is
-  based on the value in \code{sizeTable}. The size is determined by setting
-  the \code{cex} value of the point as
+  based on the value in \code{sizeTable}. If \code{propTable}
+  is equal to \code{sizeTable}, then the \code{propTable} is ignored and the 
+  coloring of the circles is not performed, only the adjusting of the
+  size of the circles based on the total size. The size is determined by 
+  setting the \code{cex} value of the point as
   $sqrt(sizeTable[i,j])/sqrt(max(sizeTable))*cexFactor$.
 }
 \examples{
@@ -143,13 +169,39 @@ removeSil=c(TRUE,FALSE))
 #give arbitrary names to clusters for demonstration
 cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichCluster=1)
 tableClusters(cl,whichClusters=1:2)
-#heatmap of the counts in each entry of table:
-plotClustersTable(cl,whichClusters=1:2, ignoreUnassigned=TRUE)
+#show options of margin in heatmap format:
+par(mfrow=c(2,3))
+plotClustersTable(cl,whichClusters=1:2, margin=NA, legend=FALSE,
+  ignoreUnassigned=TRUE)
+plotClustersTable(cl,whichClusters=1:2, margin=0, legend=FALSE,
+  ignoreUnassigned=TRUE)
+plotClustersTable(cl,whichClusters=1:2, margin=1, legend=FALSE,
+  ignoreUnassigned=TRUE)
+plotClustersTable(cl,whichClusters=1:2, margin=2, legend=FALSE,
+  ignoreUnassigned=TRUE)
+plotClustersTable(cl,whichClusters=1:2, margin=NULL, legend=FALSE,
+  ignoreUnassigned=TRUE)
+
+#show options of margin in bubble format:
+par(mfrow=c(2,3))
+plotClustersTable(cl,whichClusters=1:2, margin=NA, 
+   ignoreUnassigned=TRUE, plotType="bubble")
+plotClustersTable(cl,whichClusters=1:2, margin=0,
+   ignoreUnassigned=TRUE, plotType="bubble")
+plotClustersTable(cl,whichClusters=1:2, margin=1,
+   ignoreUnassigned=TRUE, plotType="bubble")
+plotClustersTable(cl,whichClusters=1:2, margin=2,
+   ignoreUnassigned=TRUE, plotType="bubble")
+plotClustersTable(cl,whichClusters=1:2, margin=NULL,
+   ignoreUnassigned=TRUE, plotType="bubble")
 }
 \seealso{
-\code{\link[base]{prop.table}}
-
 \code{\link{plotHeatmap}}
 
 \code{\link[base]{table}}
+
+\code{\link[base]{prop.table}}
+}
+\author{
+Kelly Street, Elizabeth Purdom
 }
