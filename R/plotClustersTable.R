@@ -327,7 +327,7 @@ setMethod(
   xlim<-xlim+.1*diff(xlim)*c(-1,1) #increase size 10% around
   ylim<-c(1,nc.row)
   ylim<-ylim+.1*diff(ylim)*c(-1,1) #increase size 10% around
-  plot(0,0,type="n",xlim = xlim, ylim = ylim, ylab="",xlab="",axes=FALSE,frame.plot=FALSE)
+  graphics::plot(0,0,type="n",xlim = xlim, ylim = ylim, ylab="",xlab="",axes=FALSE,frame.plot=FALSE)
    
   # get x-y coords for a grid
   xx <- rep(seq_len(nc.col), each = nc.row)

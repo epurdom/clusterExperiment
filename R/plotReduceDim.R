@@ -125,7 +125,7 @@ setMethod(
       if(is.null(ylab)) ylab<-paste("Dimension",whichDims[2])
       if(is.null(xlab)) xlab<-paste("Dimension",whichDims[1])
       
-      plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
+      graphics::plot(dat,col=clColor[as.character(clFactor)],pch=pch,xlab=xlab,ylab=ylab,...)
       
       doLegend<-FALSE
       

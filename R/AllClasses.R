@@ -2,7 +2,7 @@
 #' @importClassesFrom HDF5Array HDF5Matrix
 #' @importClassesFrom DelayedArray DelayedArray DelayedArray1 DelayedMatrix RleArray RleMatrix
 #' @importClassesFrom phylobase phylo4 phylo4d
-#' @import phylobase
+#' @rawNamespace import(phylobase, except = plot)
 #' @import Matrix
 setClassUnion("matrixOrMissing",members=c("matrix", "missing"))
 setClassUnion("phylo4OrNULL",members=c("phylo4d", "NULL"))

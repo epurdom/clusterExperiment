@@ -723,7 +723,7 @@ setMethod(
 		ybottom<-ylim[1]
 		ytop<-ylim[2]
 	}
-	if(!add) plot(NULL,xlim=range(c(xleft,xright)),ylim=ylim,axes=FALSE,ylab=ylab,xlab=xlab,bty="n",...)
+	if(!add) graphics::plot(NULL, xlim=range(c(xleft,xright)), ylim=ylim,axes=FALSE, ylab=ylab, xlab=xlab, bty="n",...)
 
 	for(i in seq_len(nrow(m))){
     rect(  xleft=xleft, xright=xright,  ybottom=rep(ybottom[i],ncol(m)) , ytop=rep(ytop[i],ncol(m)), col=m[i,],border=NA,xpd=NA)

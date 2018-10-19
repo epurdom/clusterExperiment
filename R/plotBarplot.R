@@ -118,6 +118,7 @@ setMethod(
   })
 
 #' @rdname plotBarplot
+#' @importFrom graphics barplot
 #' @export
 setMethod(
   f = "plotBarplot",
@@ -234,7 +235,7 @@ setMethod(
       
     }
     par(mar=c(9.1,4.1,4.1,1.1),las=2)
-    bp<-barplot(x,col=colPalette,legend=legend,args.legend=list(title=legend.title), names.arg=rep("",length(labs)),xlab="",...)
+    bp<-graphics::barplot(x,col=colPalette,legend=legend,args.legend=list(title=legend.title), names.arg=rep("",length(labs)),xlab="",...)
     xsize<-diff(par("usr")[3:4])
     text(bp, par("usr")[3]+.0*xsize, labels=labs, srt=45, adj=c(1,2), xpd=TRUE)
     title(xlab=xlab,line=7)

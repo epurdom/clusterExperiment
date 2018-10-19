@@ -46,6 +46,7 @@ setMethod(
 #' cl<-renameClusters(cl, whichCluster=1, 
 #'    value=letters[1:nClusters(cl)[1]])
 #' plotFeatureBoxplot(cl,feature=1)
+#' @importFrom graphics boxplot
 #' @export
 setMethod(
   f = "plotFeatureBoxplot",
@@ -97,7 +98,7 @@ setMethod(
       else paste("Gene expression of feature, index number",feature)
     }
     cl<-factor(cl,levels=if(uniqueNames) clLegend[,"name"] else clLegend[,"clusterIds"])
-    bxpOut<-boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...)
+    bxpOut<-graphics::boxplot(as.vector(dat) ~ cl, names=clLegend[,"name"],main=main,col=clLegend[,"color"],...)
 		bxpOut<-c(bxpOut,list(colors=clLegend[,"color"],clusterIds=clLegend[,"clusterIds"]))
 		invisible(bxpOut)
   })
