@@ -321,7 +321,7 @@ setMethod(
 ####
 #Convert dendrogram class slots to class used by phylobase (phylo4) so can navigate easily. Does so by first converting to class of ape (phylo)
 #' @importFrom ape as.phylo
-#' @importFrom stats as.hclust
+#' @importFrom stats as.hclust.dendrogram
 #' @importClassesFrom phylobase phylo4 
 ####
 #Convert to object used by phylobase so can navigate easily 
