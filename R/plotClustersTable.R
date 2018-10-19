@@ -359,7 +359,7 @@ setMethod(
 	 cexFactor<-maxCex/max(cex.pch)
   }
   cex.pch<-cex.pch*cexFactor
-  points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
+  graphics::points(df$xx,df$yy, cex=cex.pch, col=as.character(df$color), pch=16)
     
   # labels for plots
   axis(1,at=seq_len(nc.col),colnames(sizeTable), adj=1,tick=FALSE,las=las)
@@ -383,11 +383,11 @@ setMethod(
 		xspace<-diff(usr[1:2])*.01
 
 		xlabPos<-seq(1,nboxes,length=6)    
-		rect(xright=x-width,xleft=x+width,
+		graphics::rect(xright=x-width,xleft=x+width,
 			ybottom=y-height,ytop=y+height,
 			border=NA,col=legend.col,xpd=NA)
-	    text(x=mean(x), unique(y)+height+yspace, propLabel,xpd=NA,pos=3)
-	    text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
+	    graphics::text(x=mean(x), unique(y)+height+yspace, propLabel,xpd=NA,pos=3)
+	    graphics::text(x[xlabPos],unique(y)-height-yspace, labels=legend.vals[xlabPos], xpd=NA,pos=1)
 	}
 
 	# bubble size legend
@@ -395,11 +395,11 @@ setMethod(
 	nvals<-length(legSizeVals) #because can't precisely control 'pretty'
 	xc<-seq(mean(usr[1:2]),mean(usr[1:2])+diff(usr[1:2])*.5,length = nvals)
 	yc<-rep(unique(y), length=nvals)
-	points(xc, yc,
+	graphics::points(xc, yc,
     	cex = sqrt(legSizeVals)/sqrt(max(df$sizeTable))*cexFactor, 
 		col=rgb(0,0,0,.4), pch=16,xpd=NA)
-    text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
-    text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
+    graphics::text(x=xc, y=yc-height-yspace, labels=legSizeVals, xpd=NA,pos=1)
+    graphics::text(x=mean(xc), unique(yc)+height+yspace, "# Cells",xpd=NA,pos=3)
   }
 
 })

@@ -15,7 +15,6 @@ Depends:
     R (>= 3.5.0),
     SingleCellExperiment,
 	SummarizedExperiment,
-	phylobase,
 	BiocGenerics
 Imports:
 	methods,
@@ -41,7 +40,8 @@ Imports:
 	Rcpp,
 	edgeR,
 	scales,
-	zinbwave
+	zinbwave,
+	phylobase
 Suggests:
 	BiocStyle,
 	knitr,

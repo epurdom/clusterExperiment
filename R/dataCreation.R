@@ -121,16 +121,6 @@ NULL
 #' }
 NULL
 
-# ###> system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,ncores=5,random.seed=176201))
-# # Note: Merging will be done on ' makeConsensus ', with clustering index 1
-# # Note: If `isCount=TRUE` the data will be transformed with voom() rather than
-# # with the transformation function in the slot `transformation`.
-# # This makes sense only for counts.
-# #    user  system elapsed
-# # 170.428   5.408  61.705
-# # > packageVersion("clusterExperiment")
-# # [1] ‘1.3.3.9001’
-#
-# # devtools::use_data(rsecFluidigm, pkg = ".", internal = FALSE, overwrite = FALSE, compress = "bzip2")
+
 
 
