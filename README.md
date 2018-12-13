@@ -13,11 +13,11 @@ Functions for running and comparing many different clusterings of single-cell se
 
 * The paper acompanying this package can be found at:
 
-	Risso D, Purvis L, Fletcher R, Das D, Ngai J, Dudoit S, Purdom E (2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" PLoS Comput Biol. 2018 Sep 4;14(9):e1006378 (link)[ href=http://dx.plos.org/10.1371/journal.pcbi.1006378] 
+	Risso D, Purvis L, Fletcher R, Das D, Ngai J, Dudoit S, Purdom E (2018) "clusterExperiment and RSEC: A Bioconductor package and framework for clustering of single-cell and other large gene expression datasets" PLoS Comput Biol. 2018 Sep 4;14(9):e1006378 [link](http://dx.plos.org/10.1371/journal.pcbi.1006378)
 	
-	There is a github repository ((epurdom/RSECPaper)[https://github.com/epurdom/RSECPaper] for this paper that gives the code for reproducing the analysis in that manuscript.
+	There is a github repository ([epurdom/RSECPaper](https://github.com/epurdom/RSECPaper) for this paper that gives the code for reproducing the analysis in that manuscript.
 
-* A (F1000 workflow)[https://f1000research.com/articles/6-1158/v1] demonstrating the use of RSEC for clustering as part of trajectory estimation with the package `slingshot` and normalization with `zinbwave`
+* A [F1000 workflow](https://f1000research.com/articles/6-1158/v1) demonstrating the use of RSEC for clustering as part of trajectory estimation with the package `slingshot` and normalization with `zinbwave`
 
 	Perraudeau F, Risso D, Street K, Purdom E, and Dudoit S (2017) "Bioconductor workflow for single-cell RNA sequencing: Normalization, dimensionality reduction, clustering, and lineage inference" F1000Research 6:1158. 
 
@@ -32,8 +32,9 @@ Functions for running and comparing many different clusterings of single-cell se
 We recommend installation of the package via bioconductor.
 
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite("clusterExperiment")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("clusterExperiment")
 ```
 
 To install the most recent version of the package available on the development branch of bioconductor, follow the above instructions, after downloading the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
