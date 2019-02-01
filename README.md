@@ -4,7 +4,7 @@ Functions for running and comparing many different clusterings of single-cell se
 
 ## News and Updates
 
-* Version 2.2.0 will be shortly available on Bioconductor with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.2.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
+* Version 2.3.0 is on Bioconductor (development version) with many new changes. Checkout out a [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.4.md) of the major changes. For complete details, see the [NEWS](https://github.com/epurdom/clusterExperiment/blob/master/NEWS) file.
 
 * Summary of changes from previous versions: 
 	- Version 2.0.0  [brief description](https://github.com/epurdom/clusterExperiment/blob/master/update2.0.md) 
