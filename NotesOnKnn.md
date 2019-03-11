@@ -2,7 +2,7 @@
 
 ## Background
 
-Currently the results of subsampling (or consensus between clusters) is stored as a NxN matrix, with entries $s_{ij}$ being the number of times cell $i$ and $j$ are in the same cluster over the $B$ clusterings of which they both were assigned. 
+Currently the results of subsampling (or consensus between clusters) is stored as a NxN matrix, with entries $s_{ij}$ being the proportion of times cell $i$ and $j$ are in the same cluster over the $B$ clusterings of which they both were assigned. 
 
 *Note*: For subsampling, they may not be assigned because they were not both subsampled; for consensus they may not be assigned because one of them was a -1. 
 
