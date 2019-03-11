@@ -20,11 +20,11 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
 
 1) We use `findNeighbors` from the `BiocNeighbors` package using `threshold=alpha`. 
 
-** To Do ** this function only works with Manhattan distance and Euclidean distance. We would need to see if the algorithm is even valid for our arbitrary distance (basically a Hamming distance) -- Aaron would probably know. Then we would need get Aaron to allow us to do a pull request and write C code for our distance function to be added to `BiocNeighbors`. Luckily it has already been updated to allow for two, so adding a third would hopefully not be a problem.
+**To Do** This function only works with Manhattan distance and Euclidean distance. We would need to see if the algorithm is even valid for our arbitrary distance (basically a Hamming distance) -- Aaron would probably know. Then we would need get Aaron to allow us to do a pull request and write C code for our distance function to be added to `BiocNeighbors`. Luckily it has already been updated to allow for two, so adding a third would hopefully not be a problem.
 
 2) Convert these results into an object for `igraph`. 
 
-** To Do ** Not clear that there is an automatic way to do this. Might be relevant add on to `BiocNeighbors`. More generally if we create a wrapper package for the clustering methods that we were talking about, I think interface between igraph and `BiocNeighbors` may be needed, but I haven't looked into this. 
+**To Do** Not clear that there is an existing function to do this. Might be relevant add on to `BiocNeighbors`. More generally if we create a wrapper package for the clustering methods that we were talking about, I think interface between igraph and `BiocNeighbors` may be needed, but I haven't looked into this. 
 
 3) Determine the clusters. There are several logical choices, only some of which would not require any further parameters to be passed.
 
@@ -36,9 +36,9 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
   
   However, note that in `hier01` our iterations go down the tree and split the existing cluster rather than pruning away cell by cell. Without that difference, this pruning could easily devolve into b) with much worse speed. 
   
-  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component for any algorithm worth anything. This would likely require some parameter to the clustering. 
+  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component (for any algorithm worth anything). This would likely require some parameter to the clustering. 
   
-It is unclear how different a) and b) will from each other in practice -- i.e. how much extra is added by including in any cell with small alpha to at least one cell. But seems like we need some kind of method like our current one that is somewhere in between the two, since we don't know.
+It is unclear how different a) and b) will from each other in practice -- i.e. how much extra is added by including in any cell with small alpha to at least one cell. Clearly if not, none of these differences matter. But seems like we need some kind of method like our current one that is somewhere in between the two, since we don't know.
   
   
   
