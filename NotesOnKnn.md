@@ -10,7 +10,7 @@ Then `hier01` clusters this NxN matrix by taking entries $d_{ij}=1-s_{ij}$ and p
 
 1) $\forall i,j \in \mathcal{C}, s_{ij} \geq 1-\alpha$, i.e. the maximal allowable $d_{ij}$ for any $i,j$ in the cluster is $\alpha$. 
 
-2) $\forall i \in \mathcal{C}, mean(s_{ij}) \geq 1-\alpha$
+2) $\forall i \in \mathcal{C}, mean(s_{ij}) \geq 1-\alpha$ [default]
 
 Instead of calculating and storing the $NxN$ matrix, we would like to store the $NxB$ matrix of the cluster assignments. 
 
@@ -32,11 +32,11 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
   
   b) Take all maximal cliques (i.e. fully connected components) with the function `igraph_maximal_cliques`. This would basically correspond to the maximal option we currently have
   
-  c) From each maximally connected component iteratively prune off vertices, based on the criteria that the remaining cluster must have all vertices with degree $< |V|/2$, where $|V|$ is the size of the cluster -- i.e. require them to be connected to at least half the other vertices in the cluster. This is similar to the mean criteria above, if we had considered the median instead of the mean. (It would have to be iterative since removing a node will change the degree of all remaining nodes). Could use some varient of this without iteration, where we look at degree distribution per connected components and pick some value for degree edge; perhaps can find a degree number that would guaranteed mathematically that the resulting vertices have degree at least $<|V|/2$ without iteration. 
+  c) From each maximally connected component iteratively prune off vertices, based on the criteria that the remaining cluster must have all vertices with degree $< |V|/2$, where $|V|$ is the size of the cluster -- i.e. require them to be connected to at least half the other vertices in the cluster. This is similar to the mean criteria above, if we had considered the median instead of the mean. (It would have to be iterative since removing a node will change the degree of all remaining nodes). Could use some varient of this without iteration, where we look at degree distribution per connected components and pick some value for degree edge; perhaps by looking at distribution it's possible to find a degree number that would guaranteed mathematically that the resulting vertices have degree at least $<|V|/2$ without iteration (e.g. if removing 25% of vertices means that the remaining had degree $>.75|V|$ on full graph, then clearly pruned graph would have degree $>|V|/2$). 
   
-  However, note that in `hier01` our iterations go down the tree and split the existing cluster rather than pruning away cell by cell. Without that difference, this pruning could easily devolve into b) with much worse speed. 
+  However, note that in `hier01` our iterations go down the tree and split the existing cluster rather than pruning away cell by cell. Without that difference, this pruning could easily devolve into b) with much worse speed and perhaps even worse (after all if a connected component consists of 2 maximal cliques, then maximal cliques would find both, while iterative would only get one of them). So seems like its important to have ability to "capture" those that are discarded, and not clear how to do that.
   
-  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component (for any algorithm worth anything). This would likely require some parameter to the clustering. 
+  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component (for any algorithm worth anything). This would likely require some parameter to the clustering. Maybe question is how bad this parameter is relative to our current (arbitrary) options; advantage of our current method is at least based on a guarantee on resulting clustering regarding $\alpha$ in some way, which a clustering wouldn't necessarily. 
   
 It is unclear how different a) and b) will from each other in practice -- i.e. how much extra is added by including in any cell with small alpha to at least one cell. Clearly if not, none of these differences matter. But seems like we need some kind of method like our current one that is somewhere in between the two, since we don't know.
   
