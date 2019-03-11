@@ -24,7 +24,7 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
 
 2) Convert these results into an object for `igraph`
 
-3) Determine the clusters. There are three logical choices, that would not require any further parameters to be passed.
+3) Determine the clusters. There are several logical choices, only some of which would not require any further parameters to be passed.
 
  a) Take all maximally connected components with the function `components` in `igraph`. This is a far looser requirement than any we have now.
   
@@ -32,7 +32,9 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
   
   c) From each maximally connected component iteratively prune off vertices, based on the criteria that the remaining cluster must have all vertices with degree $< |V|/2$, where $|V|$ is the size of the cluster -- i.e. require them to be connected to at least half the other vertices in the cluster. This is similar to the mean criteria above, if we consider the median instead of the mean. (It would have to be iterative since removing a node will change the degree of all remaining nodes, though it could be made simpler by removing all such vertices at each iteration, though this is not exactly equivalent). However, note that in `hier01` our iterations go down the tree and split the existing cluster rather than pruning away cell by cell. 
   
-  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component for any algorithm worth anything. 
+  d) apply some community clustering algorithm to the $\alpha$-graph, which is equivalent to applying it to each maximally connected component for any algorithm worth anything. This would likely require some parameter to the clustering. 
+  
+It is unclear how different a) and b) are from each other -- i.e. how much extra is added by adding in any with small alpha. But seems like we need some kind of method like our current one that is somewhere in between the two, since we don't know.
   
   
   
