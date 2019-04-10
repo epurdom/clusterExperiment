@@ -9,8 +9,8 @@ if(ncol(simData) != 300) {
   #Can delete this once package is stabilized.
 }
 ## make sure the tests are reproducible
-set.seed(23)
-
+## This code uses old version of sampling to match what was used. Will give warning. 
+set.seed(23, sample.kind = "Rounding")
 #################################
 ###Simple, trivial sized objects for testing:
 # mat=20x15 matrix of data with row and column names
