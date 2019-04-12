@@ -61,7 +61,7 @@
 #'   that all of the runs are run on the same subsample of the data). Note, if
 #'   'random.seed' is set, argument 'ncores' should NOT be passed via
 #'   subsampleArgs; instead set the argument 'ncores' of clusterMany directly
-#'   (which is preferred for improving speed anyway).
+#'   (which is preferred for improving speed anyway). 
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
 #'   rownames equal to the names of the resulting column names of clMat object

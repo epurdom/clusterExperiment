@@ -10,7 +10,9 @@ if(ncol(simData) != 300) {
 }
 ## make sure the tests are reproducible
 ## This code uses old version of sampling to match what was used. Will give warning. 
-set.seed(23, sample.kind = "Rounding")
+RNGkind(sample.kind="Rounding")
+set.seed(23)
+
 #################################
 ###Simple, trivial sized objects for testing:
 # mat=20x15 matrix of data with row and column names
