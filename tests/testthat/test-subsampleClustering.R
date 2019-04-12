@@ -6,7 +6,7 @@ test_that("subsampling", {
   subAll <- subsampleClustering(x=mat,clusterFunction="pam",
                                 clusterArgs=list(k=3), classifyMethod="All",
                                 resamp.num = 100,
-                                samp.p = 0.7,ncores=1)
+                                samp.p = 0.7,mc.cores=1)
 
 
   ## Windows does not support mclapply
@@ -16,7 +16,7 @@ test_that("subsampling", {
     subAllParal <- subsampleClustering(x=mat,clusterFunction="pam",
                                        clusterArgs=list(k=3), classifyMethod="All",
                                        resamp.num = 100,
-                                       samp.p = 0.7,ncores=2)
+                                       samp.p = 0.7,mc.cores=2)
 
     expect_identical(subAllParal,subAll)
 
@@ -29,15 +29,17 @@ test_that("subsampling", {
                                      clusterFunction="pam",
                                      classifyMethod=c("InSample"),
                                      resamp.num = 100,
-                                     samp.p = 0.7,ncores=1)
+                                     samp.p = 0.7,mc.cores=1)
 
   #test in passing to subsampleArgs
+	set.seed(495)
 	rsecOut1<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,
 	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
-	               subsampleArgs=list(resamp.num=5),random.seed=495)
+	               subsampleArgs=list(resamp.num=5),mc.set.seed=FALSE)
+	set.seed(495)
 	rsecOut2<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,
 	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
-	               subsampleArgs=list(resamp.num=5),random.seed=495)
+	               subsampleArgs=list(resamp.num=5),mc.set.seed=FALSE)
 	expect_identical(clusterMatrix(rsecOut1),clusterMatrix(rsecOut2))
 
 })

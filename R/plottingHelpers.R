@@ -228,9 +228,14 @@ bigPalette<-c(
 
 #' @importFrom grDevices colors
 .rcolors<-function(){
-	#so sure that setting seed doesn't mess up when installing package
+	#This should only be called
+	#so sure that setting seed doesn't mess up when loading package
+	currentRNG<-RNGkind()
+	RNGkind(sample.kind="Rounding")
 	set.seed(23589)
 	return(sample(colors()[-c(152:361)]))
+	
+	#set it back to default
 }
 
 #' @rdname plottingFunctions

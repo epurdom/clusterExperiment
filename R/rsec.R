@@ -134,7 +134,7 @@ setMethod(
     mainClusterArgs=NULL,
     subsampleArgs=NULL,
     seqArgs=NULL, whichAssay = 1,
-    ncores=1, random.seed=NULL,
+    mc.cores=1, mc.set.seed=TRUE,
 		stopOnErrors=FALSE, run=TRUE
   )
   {
@@ -153,7 +153,7 @@ setMethod(
 										reduceMethod=reduceMethod,nFilterDims=eval(nFilterDims),
                     nReducedDims=eval(nReducedDims),
                     mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
-                    seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run,
+                    seqArgs=seqArgs,mc.cores=mc.cores,mc.set.seed=mc.set.seed,run=run,
                     whichAssay=whichAssay)
 
     if(run){

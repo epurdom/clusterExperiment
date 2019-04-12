@@ -56,31 +56,31 @@
 #'   (only used if clusterFunction of type "K")
 #' @inheritParams clusterSingle
 #' @inheritParams mainClustering
-#' @param ncores the number of threads
-#' @param random.seed a value to set seed before each run of clusterSingle (so
-#'   that all of the runs are run on the same subsample of the data). Note, if
-#'   'random.seed' is set, argument 'ncores' should NOT be passed via
-#'   subsampleArgs; instead set the argument 'ncores' of clusterMany directly
-#'   (which is preferred for improving speed anyway). 
+#' @param mc.cores the number of threads, passed to \code{\link{mclapply}}.
+#' @param mc.set.seed logical (takes place of previous argument \code{random.seed}). 
+#'  See details below. 
 #' @param run logical. If FALSE, doesn't run clustering, but just returns matrix
 #'   of parameters that will be run, for the purpose of inspection by user (with
 #'   rownames equal to the names of the resulting column names of clMat object
 #'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 #'   however, the function will create the dimensionality reductions of the data
 #'   indicated by the user input.
-#' @param ... For signature \code{list}, arguments to be passed on to mclapply
-#'   (if ncores>1). For all the other signatures, arguments to be passed to the
-#'   method for signature \code{list}.
+#' @param ... For signature \code{SummarizedExperiment}, arguments to be passed 
+#'   on to mclapply(if mc.cores>1). For all the other signatures, arguments to be 
+#'   passed to the method for signature \code{SummarizedExperiment}.
 #' @param verbose logical. If TRUE it will print informative messages.
 #' @details Some combinations of these parameters are not feasible. See the
 #'   documentation of \code{\link{clusterSingle}} for important information on
 #'   how these parameter choices interact.
+#' @details If the input is a \code{ClusterExperiment} object, current
+#'   implementation is that existing \code{orderSamples},\code{coClustering} or
+#'   the many dendrogram slots will be retained.
 #' @details While the function allows for multiple values of clusterFunction,
 #'   the code does not reuse the same subsampling matrix and try different
 #'   clusterFunctions on it. This is because if sequential=TRUE, different
 #'   subsample clusterFunctions will create different sets of data to subsample
 #'   so it is not possible; if sequential=FALSE, we have not implemented
-#'   functionality for this reuse. Setting the \code{random.seed} value,
+#'   functionality for this reuse. Setting the \code{mc.set} value,
 #'   however, should mean that the subsampled matrix is the same for each, but
 #'   there is no gain in computational complexity (i.e. each subsampled
 #'   co-occurence matrix is recalculated for each set of parameters).
@@ -102,9 +102,10 @@
 #'   that the default option of setting \code{kRange} that depends on the input
 #'   \code{k} (see \code{\link{mainClustering}}) is not available in
 #'   \code{clusterMany}, only in \code{\link{clusterSingle}}.
-#' @details If the input is a \code{ClusterExperiment} object, current
-#'   implementation is that existing \code{orderSamples},\code{coClustering} or
-#'   the many dendrogram slots will be retained.
+#' @details \emph{Parallelization} If \code{mc.cores>1} then the calls to \code{clusterSingle} will each be run on a separate core. It does not parallelize the subsampling (for runs of \code{clusterSingle} where \code{subsample=TRUE}). How to do this is discussed below. 
+#' @details \emph{Parallelization and setting the seed} The following discussion assumes that the user has set the seed in the global environment via the call to \code{set.seed} and describes how this will affect the results for calls to \code{clusterSingle} which involve subsampling (\code{subsample=TRUE}). If the user does not set \code{set.seed} before calling \code{clusterMany} this discussion has no impact. The argument \code{mc.set.seed} can control how the seed is set across multiple cores so as to guaranteed reproducible results. It is an argument that is passed directly to \code{mclapply} and takes the place of the previous argument `random.seed` (Users should read the documentation in \code{\link[parallel]{mcparallel} for more details). If \code{mc.set.seed=FALSE}, each run of \code{clusterSingle} on a core will use the seed in the global environment (which the user has set via \code{set.seed}), so that each call to \code{clusterSingle} will have the same initial seed. This can be useful if you want to call \code{subsample=TRUE} and try different parameters on the same random subsets of data. This is the behavior of the old \code{random.seed} argument. If \code{mc.set.seed=TRUE} AND the user has set the random number generator in the global environment to be "L'Ecuyer-CMRG" (via a call \code{RNGkind("L'Ecuyer-CMRG")}) then each core (i.e. each call to \code{clusterSingle}) will have a different seed, but they will stay fixed across multiple calls of \code{clusterMany} -- i.e. the cores, while each having different seeds, will have the same seeds for each run. This makes the calls to \code{clusterMany} reproducible, but will mean that each run of \code{clusterSingle} will be on different subsets of the data. 
+#' @details \emph{Parallelization of subsampling} To parallelize the subsampling, the user should pass the argument \code{mc.cores} to \code{subsampleArgs}. The user should be aware, however, that if the argument \code{mc.cores} is also greater than 1 in the call to \code{clusterMany} this will multiple the number of cores that the call is making (i.e. each of the \code{mc.core} calls of \code{clusterSingle} that is running in parallel with \code{subsample=TRUE} will then spawn \code{mc.core} more cores). Users who parallelize the subsampling then need to be careful about what the argument to \code{mc.set.seed} to use, and may need to also pass \code{mc.set.seed} in \code{subsampleArgs}, depending on whether they have set the RNG to "L'Ecuyer-CMRG". In particular, if you do NOT have \code{RNGkind("L'Ecuyer-CMRG")} and you set \code{mc.set.seed=FALSE} in the call to \code{clusterMany}, then it will have the effect described above (i.e. have the same set of subsampled data in each clustering) ONLY if you \emph{also} send the argument \code{mc.set.seed=FALSE} to \code{subsampleArgs}. On the other hand, if you set \code{RNGkind("L'Ecuyer-CMRG")}, you will have the behavior described above when you set \code{mc.set.seed=TRUE} regardless of what value of \code{mc.set.seed} (if any) you pass to \code{subsampleArgs}. 
+ 
 #' @return If \code{run=TRUE} and the input is not a list of data matrices, will
 #'   return a \code{ClusterExperiment} object, where the results are stored as
 #'   clusterings with clusterTypes \code{clusterMany}. Depending on
@@ -128,7 +129,7 @@
 #'   arguments to subsampleArgs} }
 #' @return If \code{run=FALSE} a list similar to that described above, but
 #'   without the clustering results.
-#'
+#' @seealso \code{\link[parallel]{mcparallel}}, \code{\link[parallel]{mclapply}}, \code{\link{RNGkind}}
 #' @examples
 #' data(simData)
 #'
@@ -159,10 +160,11 @@
 #' \dontrun{
 #'	#following code takes around 1+ minutes to run because of the subsampling
 #'	#that is redone each time:
+#'  set.seed(48120)
 #'	system.time(clusterTrack <- clusterMany(simData, ks=2:15,
 #'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
 #'	subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam",
-#'	mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
+#'	mainClusterArgs=list(minSize=5, kRange=2:15), mc.cores=1, mc.set.seed=FALSE))
 #' }
 #'
 #' @rdname clusterMany
@@ -262,18 +264,27 @@ setMethod(
                         subsampleArgs=NULL,
                         seqArgs=NULL,
                         whichAssay=1,
-                        ncores=1, random.seed=NULL, run=TRUE,
+                        mc.cores=1, mc.set.seed=TRUE, run=TRUE,
                         ...
   )
   {
+    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.X
+    if(!is.null(checkIgnore)){
+        passedArgs<-checkIgnore$passedArgs
+        mc.cores<-checkIgnore$val
+    }
+    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.set.seed", "random.seed") #04/12/2019 added in BioC 3.X
+    if(!is.null(checkIgnore)){
+        passedArgs<-checkIgnore$passedArgs
+        mc.set.seed<-checkIgnore$val
+    }
+    if(!is.logical(mc.set.seed)){
+			stop(sprintf("the argument mc.set.seed expects a logical (unlike previous argument `random.seed`). You should call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` to replicate the previous behavior of `random.seed`", mc.set.seed))
+    }
     inputArgs<-as.list(environment()) #need so can pass all the args, not just the ...
     transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
     paramMatrix<-NULL
-    if(!is.null(random.seed)){
-      if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
-        if(subsampleArgs[["ncores"]]>1) stop("setting random.seed will not be reproducible if ncores given to subsampleArgs")
-      }
-    }
+    
 
     #issue: have to send reduceMethod, but don't know which are which type
     isExisting<-isReducedDims(x,reduceMethod) | isFilterStats(x,reduceMethod)
@@ -629,9 +640,6 @@ setMethod(
         mainClusterArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
         mainClusterArgs[["clusterFunction"]]<-clusterFunction
         seqArgs[["verbose"]]<-FALSE
-        if(!is.null(random.seed)) {
-          set.seed(random.seed)
-        }
         ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
         if(reduceMethod=="none")
           dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
@@ -687,8 +695,8 @@ setMethod(
           cat("Running Clustering on Parameter Combinations...")
         }
 
-        if(ncores>1) {
-          out <- mclapply(seq_len(nrow(param)), FUN=paramFun, mc.cores=ncores, ...)
+        if(mc.cores>1) {
+          out <- mclapply(seq_len(nrow(param)), FUN=paramFun, mc.cores=mc.cores, mc.set.seed=mc.set.seed, ...)
           nErrors <- which(sapply(out, function(x){inherits(x, "try-error")}))
           if(length(nErrors)>0) {
             stop(length(nErrors)," parameter values (of ",length(out),") hit an error. The first was:\n",out[nErrors[1]])

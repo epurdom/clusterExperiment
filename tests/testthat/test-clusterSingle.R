@@ -751,7 +751,7 @@ if(.Platform$OS.type == "unix"){
                                                    subsampleArgs=list(clusterFunction="kmeans",
                                                                       resamp.num=3,
                                                                       clusterArgs=list(k=3),
-                                                                      ncores=2),
+                                                                      mc.cores=2),
                                                    mainClusterArgs=list(clusterFunction="pam",
                                                                         clusterArgs=list(k=3)),
                                                    isCount=FALSE))
@@ -761,7 +761,7 @@ if(.Platform$OS.type == "unix"){
                                                    subsampleArgs=list(clusterFunction="kmeans",
                                                                       resamp.num=3,
                                                                       clusterArgs=list(k=3),
-                                                                      ncores=1),
+                                                                      mc.cores=1),
                                                    mainClusterArgs=list(clusterFunction="pam",
                                                                         clusterArgs=list(k=3)),
                                                    isCount=FALSE))

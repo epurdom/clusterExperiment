@@ -29,9 +29,10 @@ NULL
 #'   calculating the co-occurance matrix. "All"= all samples, "OutOfSample"=
 #'   those not subsampled, and "InSample"=those in the subsample.  See details
 #'   for explanation.
-#' @param ncores integer giving the number of cores. If ncores>1, mclapply will
+#' @param mc.cores integer giving the number of cores. If mc.cores>1, mclapply will
 #'   be called.
-#' @param ... arguments passed to mclapply (if ncores>1).
+#' @param mc.set.seed logical If \code{mc.cores>1} (i.e. parallelizing the computations across cores) and you want to make the subsampling replicable, e.g. via a \code{set.seed} command before calling subsampleClustering, you need to do call \code{RNGkind("L'Ecuyer-CMRG")} and then set \code{mc.set.seed=TRUE}. Users will not generally want \code{mc.set.seed=FALSE}, because this will mean each subsample will be exactly the same. See \code{\link[parallel]{mcparallel}} for more details. 
+#' @param ... arguments passed to mclapply (if mc.cores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle
 #'
@@ -104,13 +105,18 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,... )
+                      resamp.num = 100, samp.p = 0.7,mc.cores=1,mc.set.seed=TRUE,checkArgs=TRUE,checkDiss=TRUE,... )
   {
 		largeDataset<-FALSE
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
-    input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.X
+    if(!is.null(checkIgnore)){
+        passedArgs<-checkIgnore$passedArgs
+        mc.cores<-checkIgnore$val
+    }
+     input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
     classifyMethod<-match.arg(classifyMethod)
     if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
       classifyMethod<-"InSample" #silently change it...
@@ -224,13 +230,13 @@ setMethod(
       }
     }
 
-    if(ncores==1){
+    if(mc.cores==1){
 
       DList<-apply(idx,2,perSample)
 
     }
     else{
-      DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+      DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=mc.cores,mc.set.seed=mc.set.seed, ...)
 
       if(!largeDataset) {
         DList <- simplify2array(DList)

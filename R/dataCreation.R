@@ -83,6 +83,8 @@ NULL
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
 #' library(clusterExperiment)
 #' ncores<-1
+#' RNGkind(sample.kind="Rounding") #was made under older R versions
+#' set.seed(176201)
 #' system.time(
 #'   rsecFluidigm<-RSEC(se, 
 #'                      isCount = TRUE, 
@@ -100,8 +102,8 @@ NULL
 #'                      mergeMethod="adjP",
 #' 	                    mergeDEMethod="limma",
 #'                      mergeCutoff=0.01,
-#'                      ncores=ncores, 
-#'                      random.seed=176201)
+#'                      mc.cores=ncores, 
+#'                      mc.set.seed=FALSE)
 #' )
 #' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
 #' ## Tests that haven't changed the clustering results.
