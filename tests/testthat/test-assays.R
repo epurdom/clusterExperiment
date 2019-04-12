@@ -6,7 +6,7 @@ multi_se <- SummarizedExperiment(assays = list(counts = simCount,
 multi_cc <- ClusterExperiment(multi_se, trueCluster)
 ccTrue <- ClusterExperiment(simCount, trueCluster)
 ccTrue2 <- ClusterExperiment(simCount, trueCluster, transformation = log1p)
-seedValue<-01875
+seedValue<-495 #01875 works for sample.kind="Rejection"
 
 test_that("clusterSingle works with non defalt assays", {
 
