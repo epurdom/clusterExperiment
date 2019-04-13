@@ -36,7 +36,18 @@
 #'   \code{TRUE} option is only provided for debugging purposes.
 #' @return A \code{\link{ClusterExperiment}} object is returned containing all
 #'   of the clusterings from the steps of RSEC
-#' @details Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
+#' @details Note that the argument \code{isCount} is mainly used when the input
+#'   is a matrix or SingleCellExperiment Class and passed to \code{clusterMany}
+#'   to set the transformation function of the data. However, if RSEC is being
+#'   re-called on an existing \code{ClusterExperiment} object, it does not reset
+#'   the transformation; in this case the only impact it will have is in setting
+#'   the default value for \code{DEMethod} for \code{mergeClusters} step, but
+#'   ONLY if \code{mergeClusters} hasn't already been calculated. To set
+#'   arguments that allow you to recalculate the non-null probabilities of the
+#'   hierarchy see \code{\link{mergeClusters}}.
+#' @details See the details of \code{\link{clusterMany}} for explanation of the
+#'   parallelization and the role of parameters \code{mc.cores} and
+#'   \code{mc.set.seed}.
 #' @inheritParams clusterMany
 #' @name RSEC
 #' @aliases RSEC RSEC-methods RSEC,ClusterExperiment-method RSEC,matrix-method RSEC,SingleCellExperiment-method RSEC,SummarizedExperiment-method

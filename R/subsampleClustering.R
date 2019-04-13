@@ -31,7 +31,13 @@ NULL
 #'   for explanation.
 #' @param mc.cores integer giving the number of cores. If mc.cores>1, mclapply will
 #'   be called.
-#' @param mc.set.seed logical If \code{mc.cores>1} (i.e. parallelizing the computations across cores) and you want to make the subsampling replicable, e.g. via a \code{set.seed} command before calling subsampleClustering, you need to do call \code{RNGkind("L'Ecuyer-CMRG")} and then set \code{mc.set.seed=TRUE}. Users will not generally want \code{mc.set.seed=FALSE}, because this will mean each subsample will be exactly the same. See \code{\link[parallel]{mcparallel}} for more details. 
+#' @param mc.set.seed logical If \code{mc.cores>1} (i.e. parallelizing the
+#'   computations across cores) and you want to make the subsampling replicable,
+#'   e.g. via a \code{set.seed} command before calling subsampleClustering, you
+#'   need to do call \code{RNGkind("L'Ecuyer-CMRG")} and then set
+#'   \code{mc.set.seed=TRUE}. Users will not generally want
+#'   \code{mc.set.seed=FALSE}, because this will mean each subsample will be
+#'   exactly the same. See \code{\link[parallel]{mcparallel}} for more details.
 #' @param ... arguments passed to mclapply (if mc.cores>1).
 #' @inheritParams mainClustering
 #' @inheritParams clusterSingle

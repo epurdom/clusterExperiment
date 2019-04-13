@@ -102,10 +102,59 @@
 #'   that the default option of setting \code{kRange} that depends on the input
 #'   \code{k} (see \code{\link{mainClustering}}) is not available in
 #'   \code{clusterMany}, only in \code{\link{clusterSingle}}.
-#' @details \emph{Parallelization} If \code{mc.cores>1} then the calls to \code{clusterSingle} will each be run on a separate core. It does not parallelize the subsampling (for runs of \code{clusterSingle} where \code{subsample=TRUE}). How to do this is discussed below. 
-#' @details \emph{Parallelization and setting the seed} The following discussion assumes that the user has set the seed in the global environment via the call to \code{set.seed} and describes how this will affect the results for calls to \code{clusterSingle} which involve subsampling (\code{subsample=TRUE}). If the user does not set \code{set.seed} before calling \code{clusterMany} this discussion has no impact. The argument \code{mc.set.seed} can control how the seed is set across multiple cores so as to guaranteed reproducible results. It is an argument that is passed directly to \code{mclapply} and takes the place of the previous argument `random.seed` (Users should read the documentation in \code{\link[parallel]{mcparallel} for more details). If \code{mc.set.seed=FALSE}, each run of \code{clusterSingle} on a core will use the seed in the global environment (which the user has set via \code{set.seed}), so that each call to \code{clusterSingle} will have the same initial seed. This can be useful if you want to call \code{subsample=TRUE} and try different parameters on the same random subsets of data. This is the behavior of the old \code{random.seed} argument. If \code{mc.set.seed=TRUE} AND the user has set the random number generator in the global environment to be "L'Ecuyer-CMRG" (via a call \code{RNGkind("L'Ecuyer-CMRG")}) then each core (i.e. each call to \code{clusterSingle}) will have a different seed, but they will stay fixed across multiple calls of \code{clusterMany} -- i.e. the cores, while each having different seeds, will have the same seeds for each run. This makes the calls to \code{clusterMany} reproducible, but will mean that each run of \code{clusterSingle} will be on different subsets of the data. 
-#' @details \emph{Parallelization of subsampling} To parallelize the subsampling, the user should pass the argument \code{mc.cores} to \code{subsampleArgs}. The user should be aware, however, that if the argument \code{mc.cores} is also greater than 1 in the call to \code{clusterMany} this will multiple the number of cores that the call is making (i.e. each of the \code{mc.core} calls of \code{clusterSingle} that is running in parallel with \code{subsample=TRUE} will then spawn \code{mc.core} more cores). Users who parallelize the subsampling then need to be careful about what the argument to \code{mc.set.seed} to use, and may need to also pass \code{mc.set.seed} in \code{subsampleArgs}, depending on whether they have set the RNG to "L'Ecuyer-CMRG". In particular, if you do NOT have \code{RNGkind("L'Ecuyer-CMRG")} and you set \code{mc.set.seed=FALSE} in the call to \code{clusterMany}, then it will have the effect described above (i.e. have the same set of subsampled data in each clustering) ONLY if you \emph{also} send the argument \code{mc.set.seed=FALSE} to \code{subsampleArgs}. On the other hand, if you set \code{RNGkind("L'Ecuyer-CMRG")}, you will have the behavior described above when you set \code{mc.set.seed=TRUE} regardless of what value of \code{mc.set.seed} (if any) you pass to \code{subsampleArgs}. 
- 
+#' @details \emph{Parallelization} If \code{mc.cores>1} then the different 
+#'   clusterings, as requested by the combination of parameters requested by the
+#'   user, will each be on a different core (i.e. each call to 
+#'   \code{clusterSingle}). It does not parallelize the subsampling for
+#'   clusterings where \code{subsample=TRUE}. How parallelize the subsampling is
+#'   discussed below.
+#' @details \emph{Parallelization and setting the seed} The following discussion
+#'   assumes that the user has set the seed in the global environment via the 
+#'   call to \code{set.seed} in order to make the results replicable and 
+#'   describes how this will affect the results for clusterings which involve 
+#'   subsampling (\code{subsample=TRUE}) -- if the user does not set 
+#'   \code{set.seed} before calling \code{clusterMany} this discussion has no 
+#'   impact. The argument \code{mc.set.seed} can control how the seed is set 
+#'   across multiple cores so as to guaranteed reproducible results. It is an 
+#'   argument that is passed directly to \code{mclapply} and takes the place of 
+#'   the previous argument `random.seed` (Users should read the documentation in
+#'   \code{\link[parallel]{mcparallel} for more details). If 
+#'   \code{mc.set.seed=FALSE}, each run of \code{clusterSingle} on a core will 
+#'   use the seed in the global environment (which the user has set via 
+#'   \code{set.seed}), so that each call to \code{clusterSingle} will have the 
+#'   same initial seed. This can be useful if your clusterings use 
+#'   \code{subsample=TRUE} and try different parameters on the same random 
+#'   subsets of data. This is the behavior of the old \code{random.seed} 
+#'   argument. If \code{mc.set.seed=TRUE} AND the user has set the random number
+#'   generator in the global environment to be "L'Ecuyer-CMRG" (via a call 
+#'   \code{RNGkind("L'Ecuyer-CMRG")}) then each core (i.e. each call to 
+#'   \code{clusterSingle}) will have a different seed, but they will stay fixed 
+#'   across multiple calls of \code{clusterMany} -- i.e. the cores, while each 
+#'   having different seeds, will have the same seeds for each run. This makes 
+#'   the calls to \code{clusterMany} reproducible, but will mean that each run 
+#'   of \code{clusterSingle} will be on different subsets of the data. If the
+#'   global environment does not use "L'Ecuyer-CMRG" for sampling, then
+#'   \code{mc.set.seed=TRUE} has no effect
+#' @details \emph{Parallelization of subsampling} To parallelize the 
+#'   subsampling, the user should pass the argument \code{mc.cores} to 
+#'   \code{subsampleArgs}. The user should be aware, however, that if the 
+#'   argument \code{mc.cores} is also greater than 1 in the call to 
+#'   \code{clusterMany} this will multiple the number of cores that the
+#'   \code{clusterMany} call is making (i.e. each of the \code{mc.core} calls of
+#'   \code{clusterSingle} that is running in parallel with \code{subsample=TRUE}
+#'   will then spawn \code{mc.core} more cores). Users who parallelize the
+#'   subsampling need to be careful about what the argument to
+#'   \code{mc.set.seed} to use, and may need to also pass \code{mc.set.seed} in
+#'   \code{subsampleArgs} to achieve the desired effect, depending on whether
+#'   they have set the RNG to "L'Ecuyer-CMRG". In particular, if you do NOT have
+#'   \code{RNGkind("L'Ecuyer-CMRG")} and you set \code{mc.set.seed=FALSE} in the
+#'   call to \code{clusterMany}, then it will have the effect described above
+#'   (i.e. have the same set of subsampled data in each clustering) ONLY if you
+#'   \emph{also} send the argument \code{mc.set.seed=FALSE} to
+#'   \code{subsampleArgs}. On the other hand, if you set
+#'   \code{RNGkind("L'Ecuyer-CMRG")}, you will have the behavior described above
+#'   when you set \code{mc.set.seed=TRUE} regardless of what value of 
+#'   \code{mc.set.seed} (if any) you pass to \code{subsampleArgs}.
 #' @return If \code{run=TRUE} and the input is not a list of data matrices, will
 #'   return a \code{ClusterExperiment} object, where the results are stored as
 #'   clusterings with clusterTypes \code{clusterMany}. Depending on
@@ -129,7 +178,8 @@
 #'   arguments to subsampleArgs} }
 #' @return If \code{run=FALSE} a list similar to that described above, but
 #'   without the clustering results.
-#' @seealso \code{\link[parallel]{mcparallel}}, \code{\link[parallel]{mclapply}}, \code{\link{RNGkind}}
+#' @seealso \code{\link[parallel]{mcparallel}},
+#'   \code{\link[parallel]{mclapply}}, \code{\link{RNGkind}}
 #' @examples
 #' data(simData)
 #'
