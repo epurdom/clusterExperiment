@@ -232,7 +232,7 @@ bigPalette<-c(
 	RNGkind(sample.kind="Rounding")
 	set.seed(23589)
 	#set it back to default
-	RNGkind(sammple.kind=currentRNG[3])
+	RNGkind(sample.kind=currentRNG[3])
 	return(sample(colors()[-c(152:361)]))
 }
 
