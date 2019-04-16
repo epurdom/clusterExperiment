@@ -12,8 +12,8 @@
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction,
   x = NULL, diss = NULL, distFunction = NA, clusterArgs = NULL,
   classifyMethod = c("All", "InSample", "OutOfSample"),
-  resamp.num = 100, samp.p = 0.7, ncores = 1, checkArgs = TRUE,
-  checkDiss = TRUE, ...)
+  resamp.num = 100, samp.p = 0.7, mc.cores = 1, mc.set.seed = TRUE,
+  checkArgs = TRUE, checkDiss = TRUE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -25,7 +25,7 @@ clustering routines provided in package. Type
 clustering routines. If \code{clusterFunction} is missing, the default is
 set to "pam".}
 
-\item{...}{arguments passed to mclapply (if ncores>1).}
+\item{...}{arguments passed to mclapply (if mc.cores>1).}
 
 \item{x}{the data on which to run the clustering (samples in columns).}
 
@@ -51,8 +51,16 @@ for explanation.}
 
 \item{samp.p}{the proportion of samples to sample for each subsample.}
 
-\item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
+\item{mc.cores}{integer giving the number of cores. If mc.cores>1, mclapply will
 be called.}
+
+\item{mc.set.seed}{logical If \code{mc.cores>1} (i.e. parallelizing the
+computations across cores) and you want to make the subsampling replicable,
+e.g. via a \code{set.seed} command before calling subsampleClustering, you
+need to do call \code{RNGkind("L'Ecuyer-CMRG")} and then set
+\code{mc.set.seed=TRUE}. Users will not generally want
+\code{mc.set.seed=FALSE}, because this will mean each subsample will be
+exactly the same. See \code{\link[parallel]{mcparallel}} for more details.}
 
 \item{checkArgs}{logical as to whether should give warning if arguments given
 that don't match clustering choices given. Otherwise, inapplicable 

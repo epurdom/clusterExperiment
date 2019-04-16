@@ -31,8 +31,9 @@
   consensusMinSize, dendroReduce, dendroNDims, mergeMethod = "adjP",
   mergeCutoff, mergeLogFCcutoff, mergeDEMethod = if (isCount)
   "limma-voom" else "limma", verbose = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
-  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1,
+  mc.cores = 1, mc.set.seed = TRUE, stopOnErrors = FALSE,
+  run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -41,9 +42,9 @@ following classes: matrix (with genes in rows),
 \code{\link[SingleCellExperiment]{SingleCellExperiment}}
 or \code{ClusterExperiment}.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
-(if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+\item{...}{For signature \code{SummarizedExperiment}, arguments to be passed 
+on to mclapply(if mc.cores>1). For all the other signatures, arguments to be 
+passed to the method for signature \code{SummarizedExperiment}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
@@ -154,13 +155,10 @@ step, see help pages of \code{\link{mainClustering}}.}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{ncores}{the number of threads}
+\item{mc.cores}{the number of threads, passed to \code{\link{mclapply}}.}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data). Note, if
-'random.seed' is set, argument 'ncores' should NOT be passed via
-subsampleArgs; instead set the argument 'ncores' of clusterMany directly
-(which is preferred for improving speed anyway).}
+\item{mc.set.seed}{logical (takes place of previous argument \code{random.seed}). 
+See details below.}
 
 \item{stopOnErrors}{logical. If \code{FALSE}, if RSEC hits an error
 \emph{after} the \code{clusterMany} step, it will return the results up to
@@ -187,5 +185,17 @@ Implementation of the RSEC algorithm (Resampling-based
   results in the output of RSEC.
 }
 \details{
-Note that the argument \code{isCount} is mainly used when the input is a matrix or SingleCellExperiment Class and passed to \code{clusterMany} to set the transformation function of the data. However, if RSEC is being re-called on an existing \code{ClusterExperiment} object, it does not reset the transformation; in this case the only impact it will have is in setting the default value for \code{DEMethod} for \code{mergeClusters} step, but ONLY if \code{mergeClusters} hasn't already been calculated. To set arguments that allow you to recalculate the non-null probabilities of the hierarchy see \code{\link{mergeClusters}}.
+Note that the argument \code{isCount} is mainly used when the input
+  is a matrix or SingleCellExperiment Class and passed to \code{clusterMany}
+  to set the transformation function of the data. However, if RSEC is being
+  re-called on an existing \code{ClusterExperiment} object, it does not reset
+  the transformation; in this case the only impact it will have is in setting
+  the default value for \code{DEMethod} for \code{mergeClusters} step, but
+  ONLY if \code{mergeClusters} hasn't already been calculated. To set
+  arguments that allow you to recalculate the non-null probabilities of the
+  hierarchy see \code{\link{mergeClusters}}.
+
+See the details of \code{\link{clusterMany}} for explanation of the
+  parallelization and the role of parameters \code{mc.cores} and
+  \code{mc.set.seed}.
 }

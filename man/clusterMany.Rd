@@ -21,7 +21,8 @@
   silCutoff = 0, distFunction = NA, betas = 0.9, minSizes = 1,
   transFun = NULL, isCount = FALSE, verbose = FALSE,
   mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE, ...)
+  whichAssay = 1, mc.cores = 1, mc.set.seed = TRUE, run = TRUE,
+  ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
@@ -60,9 +61,9 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
-(if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+\item{...}{For signature \code{SummarizedExperiment}, arguments to be passed 
+on to mclapply(if mc.cores>1). For all the other signatures, arguments to be 
+passed to the method for signature \code{SummarizedExperiment}.}
 
 \item{ks}{the range of k values (see details for the meaning of \code{k} for
 different choices of other parameters).}
@@ -133,13 +134,10 @@ step, see help pages of \code{\link{mainClustering}}.}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{ncores}{the number of threads}
+\item{mc.cores}{the number of threads, passed to \code{\link{mclapply}}.}
 
-\item{random.seed}{a value to set seed before each run of clusterSingle (so
-that all of the runs are run on the same subsample of the data). Note, if
-'random.seed' is set, argument 'ncores' should NOT be passed via
-subsampleArgs; instead set the argument 'ncores' of clusterMany directly
-(which is preferred for improving speed anyway).}
+\item{mc.set.seed}{logical (takes place of previous argument \code{random.seed}). 
+See details below.}
 
 \item{run}{logical. If FALSE, doesn't run clustering, but just returns matrix
 of parameters that will be run, for the purpose of inspection by user (with
@@ -191,12 +189,16 @@ Some combinations of these parameters are not feasible. See the
   documentation of \code{\link{clusterSingle}} for important information on
   how these parameter choices interact.
 
+If the input is a \code{ClusterExperiment} object, current
+  implementation is that existing \code{orderSamples},\code{coClustering} or
+  the many dendrogram slots will be retained.
+
 While the function allows for multiple values of clusterFunction,
   the code does not reuse the same subsampling matrix and try different
   clusterFunctions on it. This is because if sequential=TRUE, different
   subsample clusterFunctions will create different sets of data to subsample
   so it is not possible; if sequential=FALSE, we have not implemented
-  functionality for this reuse. Setting the \code{random.seed} value,
+  functionality for this reuse. Setting the \code{mc.set} value,
   however, should mean that the subsampled matrix is the same for each, but
   there is no gain in computational complexity (i.e. each subsampled
   co-occurence matrix is recalculated for each set of parameters).
@@ -219,9 +221,61 @@ The argument \code{ks} is interpreted differently for different
   \code{k} (see \code{\link{mainClustering}}) is not available in
   \code{clusterMany}, only in \code{\link{clusterSingle}}.
 
-If the input is a \code{ClusterExperiment} object, current
-  implementation is that existing \code{orderSamples},\code{coClustering} or
-  the many dendrogram slots will be retained.
+\emph{Parallelization} If \code{mc.cores>1} then the different 
+  clusterings, as requested by the combination of parameters requested by the
+  user, will each be on a different core (i.e. each call to 
+  \code{clusterSingle}). It does not parallelize the subsampling for
+  clusterings where \code{subsample=TRUE}. How to parallelize the subsampling is
+  discussed below.
+
+\emph{Parallelization and setting the seed} The following discussion
+  assumes that the user has set the seed in the global environment via the 
+  call to \code{set.seed} in order to make the results replicable and 
+  describes how this will affect the results for clusterings which involve 
+  subsampling (\code{subsample=TRUE}) -- if the user does not set 
+  \code{set.seed} before calling \code{clusterMany} this discussion has no 
+  impact. The argument \code{mc.set.seed} can control how the seed is set 
+  across multiple cores so as to guaranteed reproducible results. It is an 
+  argument that is passed directly to \code{mclapply} and takes the place of 
+  the previous argument `random.seed` (Users should read the documentation in
+  \code{\link[parallel]{mcparallel}} for more details). If 
+  \code{mc.set.seed=FALSE}, each run of \code{clusterSingle} on a core will 
+  use the seed in the global environment (which the user has set via 
+  \code{set.seed}), so that each call to \code{clusterSingle} will have the 
+  same initial seed. This can be useful if your clusterings use 
+  \code{subsample=TRUE} and try different parameters on the same random 
+  subsets of data. This is the behavior of the old \code{random.seed} 
+  argument. If \code{mc.set.seed=TRUE} AND the user has set the random number
+  generator in the global environment to be "L'Ecuyer-CMRG" (via a call 
+  \code{RNGkind("L'Ecuyer-CMRG")}) then each core (i.e. each call to 
+  \code{clusterSingle}) will have a different seed, but they will stay fixed 
+  across multiple calls of \code{clusterMany} -- i.e. the cores, while each 
+  having different seeds, will have the same seeds for each run. This makes 
+  the calls to \code{clusterMany} reproducible, but will mean that each run 
+  of \code{clusterSingle} will be on different subsets of the data. If the
+  global environment does not use "L'Ecuyer-CMRG" for sampling, then
+  \code{mc.set.seed=TRUE} has no effect
+
+\emph{Parallelization of subsampling} To parallelize the 
+  subsampling, the user should pass the argument \code{mc.cores} to 
+  \code{subsampleArgs}. The user should be aware, however, that if the 
+  argument \code{mc.cores} is also greater than 1 in the call to 
+  \code{clusterMany} this will multiple the number of cores that the
+  \code{clusterMany} call is making (i.e. each of the \code{mc.core} calls of
+  \code{clusterSingle} that is running in parallel with \code{subsample=TRUE}
+  will then spawn \code{mc.core} more cores). Users who parallelize the
+  subsampling need to be careful about what the argument to
+  \code{mc.set.seed} to use, and may need to also pass \code{mc.set.seed} in
+  \code{subsampleArgs} to achieve the desired effect, depending on whether
+  they have set the RNG to "L'Ecuyer-CMRG". In particular, if you do NOT have
+  \code{RNGkind("L'Ecuyer-CMRG")} and you set \code{mc.set.seed=FALSE} in the
+  call to \code{clusterMany}, then it will have the effect described above
+  (i.e. have the same set of subsampled data in each clustering) ONLY if you
+  \emph{also} send the argument \code{mc.set.seed=FALSE} to
+  \code{subsampleArgs}. On the other hand, if you set
+  \code{RNGkind("L'Ecuyer-CMRG")}, you will have the behavior described above
+  when you set \code{mc.set.seed=TRUE} regardless of what value of 
+  \code{mc.set.seed} (if any) you pass to \code{subsampleArgs}.
 
 The given \code{reduceMethod} values must either be \emph{all}
   precalculated filtering/dimensionality reduction stored in the appropriate
@@ -266,10 +320,15 @@ plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 \dontrun{
 #following code takes around 1+ minutes to run because of the subsampling
 #that is redone each time:
+ set.seed(48120)
 system.time(clusterTrack <- clusterMany(simData, ks=2:15,
 alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
 subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam",
-mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
+mainClusterArgs=list(minSize=5, kRange=2:15), mc.cores=1, mc.set.seed=FALSE))
 }
 
+}
+\seealso{
+\code{\link[parallel]{mcparallel}},
+  \code{\link[parallel]{mclapply}}, \code{\link{RNGkind}}
 }

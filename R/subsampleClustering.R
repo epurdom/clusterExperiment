@@ -117,6 +117,7 @@ setMethod(
     #######################
     ### Check both types of inputs and create diss if needed, and check it.
     #######################
+		passedArgs<-list(...)
     checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.X
     if(!is.null(checkIgnore)){
         passedArgs<-checkIgnore$passedArgs

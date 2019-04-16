@@ -1,5 +1,5 @@
 context("RSEC")
-seedValue<-495 #01875 works for sample.kind="Rejection"
+seedValue<-495 #01875 works for sample.kind="Rejection" (i.e. can merge without error that all -1)
 test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 	##these examples don't do dendrogram/merge because all -1 after makeConsensus
 	##only tests clusterMany, makeConsensus parts.
