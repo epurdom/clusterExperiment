@@ -25,7 +25,7 @@ wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
 library(clusterExperiment)
 ncores<-1
-RNGkind(sample.kind="Rounding") #was made under older R versions
+suppressWarnings(RNGversion("3.5.0")) #was made under older R versions
 set.seed(176201)
 system.time(
   rsecFluidigm<-RSEC(se, 
