@@ -135,7 +135,6 @@ test_that("`RSEC` works with hdf5",{
 	set.seed(seedValue)
 	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-		
         subsampleArgs=list(resamp.num=5),mc.set.seed=FALSE),
 		"Merging will be done on"
 		)
