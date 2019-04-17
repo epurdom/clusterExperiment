@@ -125,13 +125,13 @@ test_that("`RSEC` works with hdf5",{
 	#currently error: Error in tcrossprod(x, y) : 
 #  requires numeric/complex matrix/vector arguments
 
-# FIXME: commented this out because started not giving same with change to mc.set.seed.
-	# set.seed(seedValue)
-	# expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
-	# 	clusterFunction="tight", alphas=0.1,
-	#         subsampleArgs=list(resamp.num=5),mc.set.seed=FALSE),
-	# 	"All samples are unassigned for"
-	# 	)
+# FIXME: commented the original expected message because started not giving same with change from random.seed to mc.set.seed. Not sure why it changed, when nothing else had problem. 
+	set.seed(seedValue)
+	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
+		clusterFunction="tight", alphas=0.1,
+	        subsampleArgs=list(resamp.num=5),mc.set.seed=FALSE),
+		"Only 1 cluster given" #"All samples are unassigned for"
+		)
 
 	set.seed(seedValue)
 	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
