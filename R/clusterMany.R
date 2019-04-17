@@ -319,12 +319,12 @@ setMethod(
   )
   {
     passedArgs<-list(...)    
-    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.X
+    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.9
     if(!is.null(checkIgnore)){
         passedArgs<-checkIgnore$passedArgs
         mc.cores<-checkIgnore$val
     }
-    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.set.seed", "random.seed") #04/12/2019 added in BioC 3.X
+    checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.set.seed", "random.seed") #04/12/2019 added in BioC 3.9
     if(!is.null(checkIgnore)){
         passedArgs<-checkIgnore$passedArgs
         mc.set.seed<-checkIgnore$val

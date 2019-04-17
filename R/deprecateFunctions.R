@@ -20,7 +20,7 @@ setMethod(
   f = "combineMany",
   signature = signature(x = "ANY"),
   definition = function(x,...) {
-		.Deprecated("makeConsensus") #06/2018 added in BioC 3.8
+		.Deprecated("makeConsensus") #06/2018 added in BioC 3.9
 		makeConsensus(x,...)
 	}
 	)
@@ -28,7 +28,7 @@ setMethod(
   f = "removeUnclustered",
   signature = signature(x = "ANY"),
   definition = function(x,...) {
-		.Deprecated("removeUnassigned") #06/2018 added in BioC 3.8
+		.Deprecated("removeUnassigned") #06/2018 added in BioC 3.9
 		removeUnassigned(x,...)
   }
 )

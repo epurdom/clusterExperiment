@@ -77,7 +77,7 @@ setMethod(
     {
         passedArgs<-list(...)
         
-        checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar") #06/2018 added in BioC 3.8
+        checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar") #06/2018 added in BioC 3.9
         if(!is.null(checkIgnore)){
             passedArgs<-checkIgnore$passedArgs
             filterIgnoresUnassigned<-checkIgnore$val

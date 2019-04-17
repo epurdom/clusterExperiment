@@ -329,7 +329,7 @@ setMethod(
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
     userList<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData") #06/2018 added in BioC 3.8
+		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData") #06/2018 added in BioC 3.9
 		if(!is.null(checkIgnore)){
 			userList<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
@@ -647,7 +647,7 @@ setMethod(
   ){
     
     aHeatmapArgs<-list(...)  
-		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData") #06/2018 added in BioC 3.8
+		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData") #06/2018 added in BioC 3.9
 		if(!is.null(checkIgnore)){
 			aHeatmapArgs<-checkIgnore$passedArgs
 			colData<-checkIgnore$val
