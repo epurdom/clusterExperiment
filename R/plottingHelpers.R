@@ -233,6 +233,18 @@ bigPalette<-c(
 	return(x)
 }
 
+##If want to keep the same colors could:
+# if(!exists(".Random.seed", envir = .GlobalEnv)) {
+#     message("calling runif(1)"); runif(1) }
+# old.R.s <- .Random.seed
+# ## will reset everything on exiting this function:
+# on.exit(assign(".Random.seed", old.R.s, envir=.GlobalEnv))
+# ## set seed for sample() "back compatibly":
+# suppressWarnings(RNGversion("3.5.0"))
+# set.seed(seed)
+# ## return random permutation of "my colors"
+# sample(colors()[-c(152:361)])
+
 #' @rdname plottingFunctions
 #' @export
 massivePalette<-unique(c(bigPalette,.rcolors()))
