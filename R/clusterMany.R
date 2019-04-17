@@ -80,10 +80,10 @@
 #'   clusterFunctions on it. This is because if sequential=TRUE, different
 #'   subsample clusterFunctions will create different sets of data to subsample
 #'   so it is not possible; if sequential=FALSE, we have not implemented
-#'   functionality for this reuse. Setting the \code{mc.set} value,
-#'   however, should mean that the subsampled matrix is the same for each, but
-#'   there is no gain in computational complexity (i.e. each subsampled
-#'   co-occurence matrix is recalculated for each set of parameters).
+#'   functionality for this reuse. Setting the \code{mc.set.seed=FALSE} value
+#'   (see below), however, should mean that the subsampled matrix is the same
+#'   for each, but there is no gain in computational complexity (i.e. each
+#'   subsampled co-occurence matrix is recalculated for each set of parameters).
 #'
 #' @details The argument \code{ks} is interpreted differently for different
 #'   choices of the other parameters. When/if sequential=TRUE, \code{ks} defines
@@ -117,8 +117,8 @@
 #'   impact. The argument \code{mc.set.seed} can control how the seed is set 
 #'   across multiple cores so as to guaranteed reproducible results. It is an 
 #'   argument that is passed directly to \code{mclapply} and takes the place of 
-#'   the previous argument `random.seed` (Users should read the documentation in
-#'   \code{\link[parallel]{mcparallel} for more details). If 
+#'   the previous argument \code{random.seed} (Users should read the documentation in
+#'   \code{\link[parallel]{mcparallel}} for more details). If 
 #'   \code{mc.set.seed=FALSE}, each run of \code{clusterSingle} on a core will 
 #'   use the seed in the global environment (which the user has set via 
 #'   \code{set.seed}), so that each call to \code{clusterSingle} will have the 
