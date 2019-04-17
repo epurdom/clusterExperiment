@@ -10,7 +10,7 @@ if(ncol(simData) != 300) {
 }
 ## make sure the tests are reproducible
 ## This code uses old version of sampling to match what was used. Will give warning. 
-RNGkind(sample.kind="Rounding")
+suppressWarnings(RNGkind(sample.kind="Rounding"))
 set.seed(23)
 
 #################################

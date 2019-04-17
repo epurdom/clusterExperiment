@@ -106,7 +106,7 @@
 #'   clusterings, as requested by the combination of parameters requested by the
 #'   user, will each be on a different core (i.e. each call to 
 #'   \code{clusterSingle}). It does not parallelize the subsampling for
-#'   clusterings where \code{subsample=TRUE}. How parallelize the subsampling is
+#'   clusterings where \code{subsample=TRUE}. How to parallelize the subsampling is
 #'   discussed below.
 #' @details \emph{Parallelization and setting the seed} The following discussion
 #'   assumes that the user has set the seed in the global environment via the 
@@ -318,6 +318,7 @@ setMethod(
                         ...
   )
   {
+    passedArgs<-list(...)    
     checkIgnore <- .depricateArgument(passedArgs=passedArgs, "mc.cores", "ncores") #04/12/2019 added in BioC 3.X
     if(!is.null(checkIgnore)){
         passedArgs<-checkIgnore$passedArgs
