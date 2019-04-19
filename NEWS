@@ -4,6 +4,9 @@ Changes in version 2.4.0( Release date: 2019-04-16)
 Changes:
 * MAJOR CHANGE TO CLASS (1): the dendrogram is now stored in the object as the S4 class `phylo4d` in the package `phylobase`. This allows easier manipulation of the dendrogram by the user (including user-defined dendrograms), as well as allowing storage of information about dendrogram nodes that the programs can make use of. The slot "dendro_outbranch" has been removed because this information is now stored in the `phylo4d` object.
 * MAJOR CHANGE TO CLASS (2): the `coClustering` is now stored in the object as a sparse matrix of the S4 class `Matrix` from the package `Matrix`  
+* New version of R (3.6) has changed the default method in which sampling is done. Previous results where `set.seed()` was called will no longer result in the same results, unless you call `RNGversion("3.5.0")`. Furthermore, we have changed how the user should set the seed for reproducing subsampling when there is parallelization to rely on the arguments of `mclapply`:
+	- `random.seed` -> `mc.set.seed` in `clusterMany`/`RSEC`. This argument is now passed directly to `mclapply` in parallelizing, and the user should set the seed externally from the function call (see help pages of `clusterMany` for how to recreate previous results of `random.seed`). 
+	- `ncores` -> `mc.cores` in `clusterMany`/`RSEC`
 * New functions: 
  - `sampleDendrogram`, `clusterDendrogram`, `nodeLabels` to access and manipulate the stored dendrograms
  - `numericalAsCharacter` to allow create two digit characters from integers for better sorting of character versions of integers.
@@ -13,9 +16,6 @@ Changes:
  - `calculateSample` to `makeDendrogram`
  - `plotType` to `plotClustersTable` (now allows "bubble" version of plot of overlap ), and many other arguments related to controlling the plotting.
  - `labelTracks` to `plotHeatmap` to control whether to add labels to colored tracks.
-* Changed names of arguments to following functions:
-	- `random.seed` -> `mc.set.seed` in `clusterMany`/`RSEC`. This argument is now passed directly to `mclapply` in parallelizing, and the user should set the seed externally from the function call (see help pages of `clusterMany`). 
-	- `ncores` -> `mc.cores` in `clusterMany`/`RSEC`
 * Changed `makeDendrogram` so that the samples dendrogram is made faster. Previously was made by the (time-consuming) process of running `hclust` with "fake data" where each sample was replaced with the mediod of cluster. Now the sample dendrogram is created by manually pasting a (arbitrary) binary tree of the samples with zero-length edges onto the cluster's hierarchical tree.
 * Cluster names like `m1`, `m2` given by `mergeClusters` or `c1`, `c2` by `makeConsensus` will now be `m01`, `m02`, etc. This will help in the sorting correctly by cluster names. If needed (i.e. there are more than 100 clusters) the numbers will be augmented to `m001`, more than 1000 to `m0001` (see  new function `numericalAsCharacter`)
 * The argument `replaceCoClustering` in `clusterSingle` has been changed to `saveSubsamplingMatrix` and the default behavior of when the subsampling matrix is saved and returned has been modified. See `clusterSingle`.
