@@ -329,11 +329,18 @@ setMethod(
         passedArgs<-checkIgnore$passedArgs
         mc.set.seed<-checkIgnore$val
     }
+		###This is because can't currently reproduce the old random.seed and don't have time to figure out why (and maybe not possible?)
+		setSeed<-FALSE
     if(!is.logical(mc.set.seed)){
-			warning(sprintf("unlike previous argument `random.seed`, the argument mc.set.seed expects a logical. Unless you are trying to replicate a previous call to `random.seed`, you should instead call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` ", mc.set.seed))
+			warning(sprintf("unlike previous argument `random.seed`, the argument mc.set.seed expects a logical. Unless you are trying to replicate a previous call that used `random.seed`, you should instead call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` ", mc.set.seed))
 			setSeed<-TRUE
 			random.seed<-mc.set.seed
 			mc.set.seed<-TRUE
+	    if(!is.null(random.seed)){
+	      if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
+	        if(subsampleArgs[["ncores"]]>1) stop("using random.seed will not be reproducible if ncores given to subsampleArgs. See help for how to set the seed for parallelizations of the subsampling")
+	      }
+	    }
     }
     inputArgs<-as.list(environment()) #need so can pass all the args, not just the ...
     transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
@@ -694,6 +701,9 @@ setMethod(
         mainClusterArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
         mainClusterArgs[["clusterFunction"]]<-clusterFunction
         seqArgs[["verbose"]]<-FALSE
+        if(setSeed) {
+          set.seed(random.seed)
+        }
         ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
         if(reduceMethod=="none")
           dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
