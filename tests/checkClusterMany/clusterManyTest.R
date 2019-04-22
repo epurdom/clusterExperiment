@@ -39,7 +39,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
 suppressWarnings(RNGversion("3.5.0"))
-set.seed(21321)
+#set.seed(21321)
 cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5,
@@ -49,7 +49,8 @@ cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
                  mc.cores=ncores, subsampleArgs=list(resamp.num=20,
                                                    clusterFunction="kmeans",
                                                    clusterArgs=list(nstart=1)),
-                 mc.set.seed=FALSE, run=TRUE)
+																									
+                 mc.set.seed=21321, run=TRUE) #note that this is not preferred, but currently can't reproduce with mc.set.seed=FALSE
 endtm<-proc.time()
 tm<-endtm-sttm
 #save(cl, file=paste(tag,"_",version,".rda",sep=""))
