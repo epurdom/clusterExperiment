@@ -330,7 +330,10 @@ setMethod(
         mc.set.seed<-checkIgnore$val
     }
     if(!is.logical(mc.set.seed)){
-			stop(sprintf("the argument mc.set.seed expects a logical (unlike previous argument `random.seed`). You should call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` to replicate the previous behavior of `random.seed`", mc.set.seed))
+			warning(sprintf("unlike previous argument `random.seed`, the argument mc.set.seed expects a logical. Unless you are trying to replicate a previous call to `random.seed`, you should instead call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` ", mc.set.seed))
+			setSeed<-TRUE
+			random.seed<-mc.set.seed
+			mc.set.seed<-TRUE
     }
     inputArgs<-as.list(environment()) #need so can pass all the args, not just the ...
     transFun<-.makeTransFun(transFun=transFun,isCount=isCount)
