@@ -335,7 +335,7 @@ setMethod(
 			warning(sprintf("unlike previous argument `random.seed`, the argument mc.set.seed expects a logical. Unless you are trying to replicate a previous call that used `random.seed`, you should instead call `set.seed(%s)` in the global environment and set `mc.set.seed=FALSE` ", mc.set.seed))
 			setSeed<-TRUE
 			random.seed<-mc.set.seed
-			mc.set.seed<-TRUE
+			mc.set.seed<-TRUE #The default. A bit risky if anyone set this, but unlikely. 
 	    if(!is.null(random.seed)){
 	      if(!is.null(subsampleArgs) && "ncores" %in% names(subsampleArgs)){
 	        if(subsampleArgs[["ncores"]]>1) stop("using random.seed will not be reproducible if ncores given to subsampleArgs. See help for how to set the seed for parallelizations of the subsampling")
