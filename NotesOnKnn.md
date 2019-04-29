@@ -40,5 +40,32 @@ Davide proposed using KNN functionality to determine the neighbors of a cell $i$
   
 It is unclear how different a) and b) will from each other in practice -- i.e. how much extra is added by including in any cell with small alpha to at least one cell. Clearly if not, none of these differences matter. But seems like we need some kind of method like our current one that is somewhere in between the two, since we don't know.
   
-  
-  
+## Updating findNeighbors
+
+### General outline of the function
+`findNeighbors` is a upper-level function that finds all neighbors within a given distance of each point. It takes a parameter `BiocNeighborParam` to define the algorithm to do so (this is a argument of class `BiocNeighborParam`). `findKNN` is the corresponding function that finds the k-nearest neighbors of each point. 
+
+`findNeighbors` has two possible options for the algorithm, which is basically a choice of how to most efficiently organize the data in the search: "Kmknn" or "VPTree". `findNeighbors` essentially dispatches `rangeFindKmknn` or `rangeFindVptree`. Note that these functions allow the `threshold` argument to be a vector, specifying a different threshold for each point, though not clear this is useful for us. `findNeighbors` will return not just the indices of the points, but also their distances (if they are less than the threshold).  (`findKNN` also has approximate methods `Annoy` and `Hnsw` but these do not appear to be options for finding within a particular distance; it would be important to consider in comparison methods, like Seurat that build a knn neighbor graph, whether the speed increases they have for large datasets are based on using approximations or not). 
+
+(I would note however, that the  help function for `BiocNeighborParam` only lists "2 concrete subclasses",  `KmknnParam` and `AnnoyParam`. It's not clear why the help doesn't list the other two options as subclasses.)
+
+biocNeighbors has two methods for preprocessing data for fast (exact) computation (from :
+
+* KMKNN (k-means nearest neighbor): In the KMKNN algorithm (Wang, 2012), k-means clustering is first applied to the data points usingthe square root of the number of points as the number of cluster centers. The cluster assignment anddistance to the assigned cluster center for each point represent the KMKNN indexing information.This speeds up the nearest neighbor search by exploiting the triangle inequality between clustercenters, the query point and each point in the cluster to narrow the search space. The advantage ofthe KMKNN approach is its simplicity and minimal overhead, resulting in performance improve-ments over conventional tree-based methods for high-dimensional data where most points need tobe searched anyway.  It is also trivially extended to find all neighbors within a threshold distancefrom a query point.  Note that KMKNN operates much more naturally with Euclidean distances, so your mileage may vary when using it with Manhattan distances.
+	- The pre-step runs kmeans on the data (`buildKmknn` using `stat::kmeans`, all R code)
+	- Then `.range_find_kmknn` is run, which is a call to C code: `.Call(cxx_range_find_kmknn,...)`
+* Vantage-point tree (VPTree): In a VP tree (Yianilos, 1993), each node contains a subset of points and has a defined threshold distance (usually the median distance to all points in the subset). The left child of this node containsthe further subset of points within the radius, while the right child contains the remaining points inthe subset that are outside.  The nearest neighbor search traverses the tree and exploits the triangle inequality between query points, node centers and thresholds to narrow the search space. VP trees are often faster than more conventional KD-trees or ball trees as the former uses the points them-selves as the nodes of the tree, avoiding the need to create many intermediate nodes and reducing the total number of distance calculations.  Like KMKNN, it is also trivially extended to find all neighbors within a threshold distance from a query point. "A vantage-point tree (or VP tree) is a metric tree that segregates data in a metric space by choosing a position in the space (the "vantage point") and partitioning the data points into two parts: those points that are nearer to the vantage point than a threshold, and those points that are not. By recursively applying this procedure to partition the data into smaller and smaller sets, a tree data structure is created where neighbors in the tree are likely to be neighbors in the space... The vantage-point tree is particularly useful in dividing data in a non-standard metric space into a metric tree... All it needs is the distance function that satisfies the properties of the metric space... The time cost to build a Vantage-Point tree is approximately O(n log n)" (Wikipedia). 
+	- The pre-step builds the VP Tree (`buildVptree` which is a C call, `.Call(cxx_build_vptree,...)`
+	- Then call to `.range_find_vptree` (`.Call(cxx_range_find_vptree,...)`)
+
+### Our distance
+
+We need to be sure that our proposed distance satifies the triangle-inequality / defines a proper metric. Otherwise, neither of these algorithms may work... Hamming distance is a proper metric, but we are doing an alternative of it, to deal with NA values (i.e. not use the NA values, but then normalize the distance to account for the number of positions shared).
+
+*How important is this?* For subsampling, we can have samples that were not subsampled togeter, and thus have NA for their clustering. Our default implementation doesn't actually do this -- instead it assignes every sample, not only the subsampled, based on the clusters defined by the subsampled samples. But if user picked the other option, then it would be a problem. 
+
+For consensus clustering, we get -1 values, and we do not count that against the sample. Namely, we ignore the -1, get the proportion of times together; we then filter out those with too many -1. 
+
+If dealing with the proportion becomes a problem, rather than straightforward Hamming distance, then we could maybe reconsider these options. 
+
+*Algorithms* Clearly the kmknn is not a good option for our distance, since kmeans on our $N x B$ matrix is not going to be terribly informative. 
