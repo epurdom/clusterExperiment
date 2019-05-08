@@ -39,6 +39,8 @@ BiocManager::install("clusterExperiment")
 
 To install the most recent version of the package available on the development branch of bioconductor, follow the above instructions, after downloading the development version of bioconductor (see  [here](https://www.bioconductor.org/developers/how-to/useDevel/) for instructions).
 
+If you are having problems installing/updating the package `gsl` from source because your gsl installation is not found, [this answer](https://stackoverflow.com/a/26616008) (and the comment following it) on stackoverflow may be of help.
+
 ### Installation of Github Version:
 
 We generally try to keep the bioconductor *devel* version up-to-date with the *master* branch of this git repository. But since this can require installing R and/or bioconductor development version, it can be convenient to be able to get just the most recent version from github. 
