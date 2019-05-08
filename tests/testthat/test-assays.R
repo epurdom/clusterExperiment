@@ -40,7 +40,6 @@ test_that("clusterSingle works with non defalt assays", {
 })
 
 test_that("clusterMany works with non default assays", {
-
   expect_silent(cl1 <- clusterMany(multi_cc, ks=c(3,4),clusterFunction="pam",
                                    subsample=FALSE, sequential=FALSE,
                                    whichAssay = "counts"))
@@ -76,6 +75,7 @@ test_that("mergeClusters works with non default assays", {
 })
 
 test_that("RSEC works wih non default assays", {
+  skip_on_os("windows")
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
@@ -122,6 +122,7 @@ test_that("plotting works wih non default assays", {
 })
 
 test_that("RSEC works independent of assay order", {
+  skip_on_os("windows")
   multi_se <- SummarizedExperiment(assays = list(counts = simCount,
                                                  logcounts = log1p(simCount)))
   multi_se2 <- SummarizedExperiment(assays = list(logcounts = log1p(simCount),

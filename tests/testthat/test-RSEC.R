@@ -35,6 +35,8 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 })
 
 test_that("`RSEC` works through whole series of steps",{
+    skip_on_os("windows")
+	
 #bigger example where actually goes through all the steps, takes some time:
   expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
