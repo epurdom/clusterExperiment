@@ -1,3 +1,9 @@
+##Code for timing the results of the tests:
+# testOutput<-testOutput<-test_dir("testthat/",reporter=ListReporter)
+# timingDf<-do.call("rbind", lapply(testOutput, function(x){data.frame(file=x$file, test=x$test, time=round(x$real,2))}))
+# timingDf<-timingDf[order(timingDf$time),]
+# write.table(file="testTimings.txt", x=timingDf)
+
 ###Note: any changes to this file should be at the END so as to not mess up the seed calls.
 library(clusterExperiment)
 # library(devtools)
