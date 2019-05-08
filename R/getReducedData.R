@@ -186,7 +186,7 @@ setMethod(
 #'   defaultNDims(se,"PCA")
 #'   defaultNDims(se,"mad")
 #' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
-#' 
+#' @export
 setMethod( 
   f="defaultNDims",
   "SingleCellExperiment",
@@ -216,7 +216,8 @@ setMethod(
     
   })
 
-
+#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
+#' @export
 setMethod( 
   f="defaultNDims","matrixOrHDF5",function(object,...){
     return(defaultNDims(SingleCellExperiment(object),...))

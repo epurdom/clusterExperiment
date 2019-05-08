@@ -1,13 +1,12 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.3.0-9001
+Version: 2.3.2-9001
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
             role = c("aut", "cre", "cph")),
-	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com"),
-	     person("Marla", "Johnson", role = "ctb"))
-Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut], Marla Johnson [ctb]
+	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com"))
+Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0

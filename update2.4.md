@@ -1,8 +1,8 @@
-# New to Version 2.2.0
+# New to Version 2.3.0
 
 ## Change to `ClusterExperiment` Object
 
-**Important** If you have objects created since 2.0.0 but with a version < 2.2.0 (i.e. including 2.0.0), you should run `updateObject` to update the class definition because there have been changes to the class definition since that version:
+**Important** If you have objects created since 2.0.0 but with a version < 2.3.0 (i.e. including 2.0.0), you should run `updateObject` to update the class definition because there have been changes to the class definition since that version:
 
 ```
 ceObj<-updateObject(ceObj)
