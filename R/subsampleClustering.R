@@ -168,7 +168,7 @@ setMethod(
       #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
       argsClusterList <- c(argsClusterList,
                            list("checkArgs"=checkArgs,
-                           "cluster.only"=TRUE))
+                           "cluster.only"=(classifyMethod=="InSample")))
       result <- do.call(clusterFunction@clusterFUN,
                         c(argsClusterList,clusterArgs))
 

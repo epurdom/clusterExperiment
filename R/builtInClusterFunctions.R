@@ -55,8 +55,7 @@
   else return(.kmeansPartitionObject(x,out)) 
 } 
 .kmeansClassify <- function(x, clusterResult) { 
-  centers <- clusterResult$mediods
-  suppressWarnings(stats::kmeans(t(x), centers, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
+  suppressWarnings(stats::kmeans(t(x), clusterResult$medoids, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
 } 
 #make partition object same form as pam output
 #' @importFrom cluster daisy silhouette
@@ -67,7 +66,7 @@
   # if(!inherits(silObj,"try-error"))
   #   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
   # else silinfo<-NULL
-  return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
+  return(list(medoids=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=NULL, objective=NA, diss=NULL, data=x))
 }
 .kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 #internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
