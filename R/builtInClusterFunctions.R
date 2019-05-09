@@ -7,13 +7,24 @@
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
+.makeNumeric<-function(x){
+    if(is.integer(x)){
+  	  if(!is.null(dim(x))){
+  		  x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))	  	
+  	  }
+  	  else x<-as.numeric(x)
+    }
+	return(x)
+}
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
-	pracma::distmat(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))
+	x<-as.matrix(DelayedArray::DelayedArray(t(x)))
+	centers<-as.matrix(DelayedArray::DelayedArray(centers))
   }
-  else{
-    distMat<-pracma::distmat(t(x),centers)
-  }
+  #avoid integer overflow...
+  x<-.makeNumeric(x)
+  centers<-.makeNumeric(centers)
+  distMat<-pracma::distmat(t(x),centers)
   apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
