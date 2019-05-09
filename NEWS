@@ -1,4 +1,8 @@
-Changes in version 2.1.6( Release date: )
+Changes in version 2.5.1 (Release date: )
+==============
+* Improve internals in built-in cluster functions so as to not make unnecessary nxn distance matrices.
+
+Changes in version 2.3.0( Release date: May 3, 2019)
 ==============
 
 Changes:

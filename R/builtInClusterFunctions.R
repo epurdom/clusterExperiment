@@ -1,3 +1,7 @@
+##Note to self:
+## 5/9/2019: currently, if classifyMethod=="InSample", cluster.only=TRUE, otherwise FALSE. Our default is "All", so generally doing the cluster.only=FALSE. 
+
+
 #' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R
 
 ################
@@ -5,15 +9,11 @@
 ################
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
-    innerProd<- t(x) %*% t(centers)
-    distMat<-as.matrix(dist(rbind(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))))
+	pracma::distmat(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))
   }
   else{
-    innerProd<-tcrossprod(t(x),centers) #equivalent to x %*% t(y), slightly faster
-    #gives a n x k matrix of inner-products between them
-    distMat<-as.matrix(dist(rbind(t(x),centers)))
+    distMat<-pracma::distmat(t(x),centers)
   }
-  distMat<-distMat[seq_len(ncol(x)),(ncol(x)+1):ncol(distMat)]
   apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
@@ -61,11 +61,12 @@
 #make partition object same form as pam output
 #' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
-  dissE<-(cluster::daisy(t(x)))^2
-  silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
-  if(!inherits(silObj,"try-error")) 
-    silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
-  else silinfo<-NULL
+	#This is hugely computationally expensive. 
+  # dissE<-(cluster::daisy(t(x)))^2
+  # silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
+  # if(!inherits(silObj,"try-error"))
+  #   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
+  # else silinfo<-NULL
   return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
 }
 .kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
