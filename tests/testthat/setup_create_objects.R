@@ -16,7 +16,7 @@ if(ncol(simData) != 300) {
 }
 ## make sure the tests are reproducible
 ## This code uses old version of sampling to match what was used. Will give warning. 
-RNGversion("3.5.0")
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(23)
 
 #################################
