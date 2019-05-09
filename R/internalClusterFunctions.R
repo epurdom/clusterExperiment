@@ -13,7 +13,7 @@
     return(clust.id)
 }
 #Note, only returns 'both' if inputType is not given...otherwise picks
-.checkXDissInput<-function(x,diss,inputType=NA,algType,checkDiss=TRUE){
+.checkXDissInput<-function(x,diss,inputType=NA,algType,checkDiss){
   if(is.null(x) & is.null(diss)) stop("must give either x or diss argument")
   #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
   if(!is.null(x) & is.null(diss)) input<-"X"
@@ -98,6 +98,11 @@
 	else return(res)
 }
 
+#' @param dataInput one of "X", "diss" to indicate type of data
+#' @param funInput one of "X","diss" to indicate type function expects
+#' @param xData the "X" data
+#' @param dissData the "diss" data
+#' @return returns list of arguments of the data with the corrected input that can be combined in a do.call to the function
 .makeDataArgs<-function(dataInput,funInput,xData,dissData){
 	if(dataInput=="X"){
 		if(funInput=="diss") stop("Internal coding error: should have caught that wrong data input ('X') for this clusterFunction")

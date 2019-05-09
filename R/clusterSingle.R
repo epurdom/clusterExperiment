@@ -276,7 +276,7 @@ setMethod(
       isCount=FALSE,transFun=NULL,
 	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
       nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",
-			saveSubsamplingMatrix=FALSE,checkDiss=TRUE) {
+			saveSubsamplingMatrix=FALSE,checkDiss=FALSE) {
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...

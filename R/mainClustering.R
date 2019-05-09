@@ -97,7 +97,7 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction,x=NULL, diss=NULL,
                       distFunction=NA,clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
-                      format=c("vector","list"),checkArgs=TRUE,checkDiss=TRUE,returnData=FALSE,...){
+                      format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
     orderBy<-match.arg(orderBy)
     format<-match.arg(format)
     postProcessArgs<-list(...)

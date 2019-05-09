@@ -1,6 +1,8 @@
 Changes in version 2.5.1 (Release date: )
 ==============
 * Improve internals in built-in cluster functions so as to not make unnecessary nxn distance matrices.
+* Set checkDiss=FALSE by default for most all functions.
+* Add warnings when forced to calculate the nxn distance matrix 
 
 Changes in version 2.3.0( Release date: May 3, 2019)
 ==============

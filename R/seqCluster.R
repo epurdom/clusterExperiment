@@ -142,7 +142,7 @@
 #' @export
 seqCluster<-function(x=NULL, diss=NULL, k0,  
                      subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
-                     k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=TRUE)
+                     k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=FALSE)
 {
   ########
   ####Checks
