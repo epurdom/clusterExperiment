@@ -189,7 +189,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
      expect_silent(clustSeq <- clusterSingle(assay(hdfObj),reduceMethod="none",subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
 
 
-	 ####FIXME Test subsample option
+	 ####Test subsample option
      expect_silent(clusterSingle(hdfObj, reduceMethod="none", 
 	 	subsample=TRUE, sequential=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
@@ -197,7 +197,6 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, clusterArgs=list(k=3))
 		)
 	 )
-     ####FIXME
 	 expect_silent(clusterSingle(assay(hdfObj), reduceMethod="none", 
 	 	subsample=TRUE, sequential=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
@@ -207,6 +206,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 	 )
 	
 })
+
 test_that("`clusterSingle` works with filtering", {
     ####Check built in functions ####
 	for(fs in listBuiltInFilterStats()){
@@ -499,6 +499,8 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 	expect_equal(primaryCluster(cc5),primaryCluster(cc))
 
 })
+
+
 		  # > clustSeqHier_v2 <- clusterSingle(simData,
 		  # + sequential=FALSE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
 		  # + clusterFunction="kmeans", clusterArgs=list(nstart=10)),
@@ -628,38 +630,58 @@ test_that("Different options of subsampling",{
     expect_warning(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, saveSubsamplingMatrix=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
     expect_equal(coClustering(test),coClustering(clustSubsampleCE))
 
+	###########
     #check subsample works with all of the builtin functions and opposite type in mainClusterArgs
+	###########
     set.seed(3325)
     biggerMat<-matrix(data=rnorm(20*100), ncol=100)
+	#----
+	# Check K methods
+	#----
     kMethods<-listBuiltInTypeK()
+	mainArgs<-list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.3))
+	subArgs<-list(resamp.num=20, clusterArgs=list(k=3))
 	for(cf in kMethods){
 		set.seed(1045)
-	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.3)),isCount=FALSE))
+		#In sample
+	    if(cf!="hierarchicalK") 
+			expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="InSample"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
+		else expect_message(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="InSample"),subArgs), mainClusterArgs=mainArgs),"require calculation of the n x n")
        if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
+		#All 
    		set.seed(1045)
-	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="All"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))
+	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="All"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
+		#OutOfSample
 		set.seed(1045)
-	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=40, clusterArgs=list(k=3),clusterFunction=cf,classifyMethod="OutOfSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1)),isCount=FALSE))
+	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="OutOfSample"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
 
        }
 	}
+	#----
+	# Check 01 methods
+	#----
     aMethods<-listBuiltInType01()
+	mainArgs<-list(clusterFunction="pam", clusterArgs=list(k=3))
+	subArgs<-list(resamp.num=20, clusterArgs=list(alpha=0.1))
 	for(cf in aMethods){
-
 		set.seed(1045)
-	    expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(alpha=0.1),clusterFunction=cf,classifyMethod="InSample"), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),isCount=FALSE))
-        if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
-			##Check outofsample/all
-			set.seed(1045)
-	    	expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=20, clusterArgs=list(alpha=0.1),clusterFunction=cf,classifyMethod="All"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(k=3)),isCount=FALSE))
-			set.seed(1045)
-	    	expect_silent(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=40, clusterArgs=list(alpha=0.1),clusterFunction=cf,classifyMethod="OutOfSample"), mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(k=3)),isCount=FALSE))
+		#In sample
+	    if(!cf%in%c("hierarchical01","tight")) 
+			expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="InSample"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
+		else expect_message(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="InSample"),subArgs), mainClusterArgs=mainArgs),"require calculation of the n x n")
+       if(!is.null(getBuiltInFunction(cf)@classifyFUN)){
+		#All 
+   		set.seed(1045)
+	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="All"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
+		#OutOfSample
+		set.seed(1045)
+	    expect_silent(clusterSingle(biggerMat,  subsample=TRUE, sequential=FALSE, subsampleArgs=c(list(clusterFunction=cf,classifyMethod="OutOfSample"),subArgs), mainClusterArgs=mainArgs,isCount=FALSE))
 
-        }
+       }
 	}
 
     ## get NA values
-	set.seed(1045)
+	#set.seed(1045)
 	# with the new version, we fix NA's in subsampleClustering
 #     expect_error(clusterSingle(mat,
 #        subsample=TRUE, sequential=FALSE,
@@ -667,13 +689,20 @@ test_that("Different options of subsampling",{
 # 	   classifyMethod="OutOfSample"),
 #        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),"NA values found in dissimilarity matrix")
 
-    #warnings in missing args in subsample -- should borrow from mainClusterArgs .
-    expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(clusterFunction="pam",resamp.num=3),  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE),
-                   "missing arguments k provided from those in 'mainClusterArgs'")
-	#warnings in missing clusterFunction in subsample -- should borrow from mainClusterArgs .
-	expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(resamp.num=3,clusterArgs=list(k=3)),  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)), isCount=FALSE),
-			                      "a clusterFunction was not set for subsampleClustering")
-	#different function types -- should error out.
+    # Check warnings in missing args in subsample -- should borrow from mainClusterArgs .
+	set.seed(1045)
+    expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE,
+		subsampleArgs= list(clusterFunction="pam", resamp.num=3), 
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE),
+        "missing arguments k provided from those in 'mainClusterArgs'")
+	# Check warnings in missing clusterFunction in subsample -- should borrow from mainClusterArgs .
+	expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE,
+		subsampleArgs=list(resamp.num=3,clusterArgs=list(k=3)), 
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE),
+		"a clusterFunction was not set for subsampleClustering")
+	#Check different function types -- should error out.
     expect_error(clusterSingle(mat,  subsample=TRUE, sequential=FALSE, subsampleArgs=list(clusterFunction="pam",resamp.num=3),  mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(alpha=0.1)), isCount=FALSE),
 	"must supply arguments: k")
 
@@ -745,27 +774,21 @@ test_that("`clusterSingle` preserves the colData and rowData of SE", {
 
 })
 
-## Windows does not support mclapply
-if(.Platform$OS.type == "unix"){
-  test_that("`clusterSingle` works with parallel subsampling", {
-    expect_silent(clustSubsample2 <- clusterSingle(mat,  subsample=TRUE,
-                                                   sequential=FALSE,
-                                                   subsampleArgs=list(clusterFunction="kmeans",
-                                                                      resamp.num=3,
-                                                                      clusterArgs=list(k=3),
-                                                                      ncores=2),
-                                                   mainClusterArgs=list(clusterFunction="pam",
-                                                                        clusterArgs=list(k=3)),
-                                                   isCount=FALSE))
+test_that("`clusterSingle` works with parallel subsampling", {
+	## Windows does not support mclapply
+	skip_on_os("windows")
+	expect_silent(clustSubsample2 <- 
+		clusterSingle(mat,  subsample=TRUE,sequential=FALSE,
+        subsampleArgs=list(clusterFunction="kmeans",resamp.num=3,
+        clusterArgs=list(k=3),ncores=2),
+        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE))
 
-    expect_silent(clustSubsample1 <- clusterSingle(mat,  subsample=TRUE,
-                                                   sequential=FALSE,
-                                                   subsampleArgs=list(clusterFunction="kmeans",
-                                                                      resamp.num=3,
-                                                                      clusterArgs=list(k=3),
-                                                                      ncores=1),
-                                                   mainClusterArgs=list(clusterFunction="pam",
-                                                                        clusterArgs=list(k=3)),
-                                                   isCount=FALSE))
-  })
-}
+    expect_silent(clustSubsample1 <- 
+		clusterSingle(mat,  subsample=TRUE,sequential=FALSE,
+        subsampleArgs=list(clusterFunction="kmeans",resamp.num=3,
+        clusterArgs=list(k=3),ncores=1),
+        mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),
+        isCount=FALSE))
+})
+
