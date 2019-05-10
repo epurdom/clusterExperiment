@@ -202,13 +202,15 @@
 	  #Checks for when no cluster function set for subsampling..
 	  #---
 	  if(!sequential || algorithmType(clusterFunction)=="K"){
-        if(warn) warning("a clusterFunction was not set for subsampleClustering -- set to be the same as the mainClustering step.")
+		  mess<-"a clusterFunction was not set for subsampleClustering -- set to be the same as the mainClustering step"
+		  if(is.character(mainClusterArgs[["clusterFunction"]])) mess<-sprintf("%s (%s)",mess,mainClusterArgs[["clusterFunction"]])
+        if(warn) .mynote(mess)
         subsampleArgs[["clusterFunction"]]<-clusterFunction
         inputSubsample<-input
         diffSubsampleCF<-FALSE
       }
       else{
-        if(warn) warning(sprintf("a clusterFunction was not set for subsampleClustering and sequential=TRUE means that it must be of type 'K' so cannot be set to that of mainClustering step. The clusterFunction for subsampling was set to the default of %s",default))
+        if(warn) .mynote(sprintf("a clusterFunction was not set for subsampleClustering (and sequential=TRUE means that it must be of type 'K' so cannot be set to that of mainClustering step). The clusterFunction for subsampling was set to the default of %s",default))
         subsampleArgs[["clusterFunction"]]<-default
 		diffSubsampleCF<-TRUE
       }

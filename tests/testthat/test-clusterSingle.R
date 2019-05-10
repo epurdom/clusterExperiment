@@ -610,24 +610,24 @@ test_that("Different options of mainClustering",{
 })
 
 test_that("Different options of subsampling",{
-	expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+	expect_message(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
 	
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
     expect_false(is.null(coClustering(clustSubsample)))
-    expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE,verbose=FALSE))
     expect_true(is.null(coClustering(clustSubsample)))
     
-    expect_warning(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE,verbose=FALSE))
     expect_false(is.null(coClustering(test)))
-    expect_warning(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(test <- clusterSingle(sce,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE,verbose=FALSE))
     expect_true(is.null(coClustering(test)))
     
-    expect_warning(clustSubsampleCE <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(clustSubsampleCE <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),verbose=FALSE))
     expect_false(is.null(coClustering(clustSubsampleCE)))
-    expect_warning(test <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(test <- clusterSingle(cc,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),verbose=FALSE))
     expect_true(is.null(coClustering(test)))
     
-    expect_warning(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, saveSubsamplingMatrix=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3))),"a clusterFunction was not set for subsampleClustering")
+    expect_silent(test <- clusterSingle(clustSubsampleCE,  subsample=TRUE, sequential=FALSE, saveSubsamplingMatrix=FALSE,subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),verbose=FALSE))
     expect_equal(coClustering(test),coClustering(clustSubsampleCE))
 
 	###########
@@ -697,7 +697,7 @@ test_that("Different options of subsampling",{
 		isCount=FALSE),
         "missing arguments k provided from those in 'mainClusterArgs'")
 	# Check warnings in missing clusterFunction in subsample -- should borrow from mainClusterArgs .
-	expect_warning(clusterSingle(mat,  subsample=TRUE, sequential=FALSE,
+	expect_message(clusterSingle(mat,  subsample=TRUE, sequential=FALSE,
 		subsampleArgs=list(resamp.num=3,clusterArgs=list(k=3)), 
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 		isCount=FALSE),
