@@ -71,7 +71,7 @@
 #make partition object same form as pam output
 #' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
-	#This is hugely computationally expensive. 
+	#This is hugely computationally expensive and don't need it! 
   # dissE<-(cluster::daisy(t(x)))^2
   # silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
   # if(!inherits(silObj,"try-error"))

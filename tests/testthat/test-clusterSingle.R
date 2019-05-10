@@ -27,7 +27,7 @@ test_that("`clusterSingle` works with matrix, ClusterExperiment objects,
 	                              subsample=FALSE, sequential=FALSE,
 	                              isCount=FALSE))
 	#error because not 01 distance
-	expect_error(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight",distFunction=function(x){dist(x,method="manhattan")}),
+	expect_error(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction="tight",distFunction=function(x){dist(x,method="manhattan")},checkDiss=TRUE),
 	                           subsample=FALSE, sequential=FALSE,isCount=FALSE),"distance function must give values between 0 and 1")
 
 	#test default K distance
@@ -137,7 +137,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     kMethods<-listBuiltInTypeK()
 	seedValue<-571839
   	for(cf in kMethods){
-		print(cf)
+		#print(cf)
 		set.seed(seedValue)
   	    expect_silent(clust1<-clusterSingle(sceSimDataDimRed, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
   	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
@@ -161,7 +161,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
   	}
     aMethods<-listBuiltInType01()
     for(cf in aMethods){
-		print(cf)
+		#print(cf)
 		set.seed(seedValue)
   	    expect_silent(clust1<-clusterSingle(sceSimDataDimRed, reduceMethod = "none", mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
  	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
@@ -189,7 +189,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
      expect_silent(clustSeq <- clusterSingle(assay(hdfObj),reduceMethod="none",subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
 
 
-	 ####Test subsample option
+	 ####FIXME Test subsample option
      expect_silent(clusterSingle(hdfObj, reduceMethod="none", 
 	 	subsample=TRUE, sequential=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
@@ -197,7 +197,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, clusterArgs=list(k=3))
 		)
 	 )
-     expect_silent(clusterSingle(assay(hdfObj), reduceMethod="none", 
+     ####FIXME
+	 expect_silent(clusterSingle(assay(hdfObj), reduceMethod="none", 
 	 	subsample=TRUE, sequential=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 		isCount=FALSE,
@@ -600,7 +601,7 @@ test_that("Different options of mainClustering",{
                    "Some arguments passed via '...' in mainClustering do not match the algorithmType")
     expect_error(clusterSingle(mat,
                                  subsample=FALSE, sequential=FALSE,
-                                 mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(alpha=0.1),distFunction=function(x){abs(cor(t(x)))}),isCount=FALSE),
+                                 mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(alpha=0.1),distFunction=function(x){abs(cor(t(x)))},checkDiss=TRUE),isCount=FALSE),
                    "Dissimilarity matrix must have zero values on the diagonal")
 
 
@@ -608,6 +609,7 @@ test_that("Different options of mainClustering",{
 
 test_that("Different options of subsampling",{
 	expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+	
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
     expect_false(is.null(coClustering(clustSubsample)))
     expect_warning(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=FALSE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
