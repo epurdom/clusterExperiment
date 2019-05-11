@@ -81,7 +81,6 @@ Collate:
     'getFeatures.R'
     'getParams.R'
     'getReducedData.R'
-    'largeDataSets.R'
     'mainClustering.R'
     'makeBlankData.R'
     'makeConsensus.R'

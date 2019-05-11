@@ -123,6 +123,7 @@ test_that("plotting works wih non default assays", {
 
 test_that("RSEC works independent of assay order", {
   skip_on_os("windows")
+  #create two with different order of the assays
   multi_se <- SummarizedExperiment(assays = list(counts = simCount,
                                                  logcounts = log1p(simCount)))
   multi_se2 <- SummarizedExperiment(assays = list(logcounts = log1p(simCount),
@@ -130,6 +131,7 @@ test_that("RSEC works independent of assay order", {
   multi_cc <- ClusterExperiment(multi_se, trueCluster)
   multi_cc2 <- ClusterExperiment(multi_se2, trueCluster)
 
+  #use character, logcounts on both 
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
@@ -146,6 +148,7 @@ test_that("RSEC works independent of assay order", {
 
   expect_equal(out1, out2)
 
+  #use numeric
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
@@ -162,6 +165,7 @@ test_that("RSEC works independent of assay order", {
 
   expect_equal(out1, out2)
 
+  #use character, counts on both with PCA reduce
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="PCA", nReducedDims = 50,
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
@@ -178,6 +182,7 @@ test_that("RSEC works independent of assay order", {
 
   expect_equal(out1, out2)
 
+  #use character, counts on both with var reduce
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="var",
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,

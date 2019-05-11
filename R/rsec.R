@@ -154,7 +154,7 @@ setMethod(
                     nReducedDims=eval(nReducedDims),
                     mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
                     seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run,
-                    whichAssay=whichAssay)
+                    whichAssay=whichAssay, verbose=verbose)
 
     if(run){
       #first add ones that have default value

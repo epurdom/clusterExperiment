@@ -18,7 +18,7 @@
 }
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
-	x<-as.matrix(DelayedArray::DelayedArray(t(x)))
+	x<-as.matrix(DelayedArray::DelayedArray(x))
 	centers<-as.matrix(DelayedArray::DelayedArray(centers))
   }
   #avoid integer overflow...

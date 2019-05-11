@@ -9,19 +9,6 @@ test_that("subsampling", {
                                 samp.p = 0.7,ncores=1))
 
 
-  ## Windows does not support mclapply
-  if(.Platform$OS.type == "unix"){
-
-    set.seed(4897)
-    expect_silent(subAllParal <- 
-		subsampleClustering(x=mat,clusterFunction="pam",
-               clusterArgs=list(k=3), classifyMethod="All",
-               resamp.num = 100,samp.p = 0.7,ncores=2)
-	)
-
-    expect_identical(subAllParal,subAll)
-
-  }
 
 
 	#subsample clusterings won't have identification to all samples...
@@ -45,6 +32,19 @@ test_that("subsampling", {
 	               subsampleArgs=list(resamp.num=5),random.seed=495),
 				   "makeDendrogram encountered following error")
 	expect_identical(clusterMatrix(rsecOut1),clusterMatrix(rsecOut2))
+	
+    ## Windows does not support mclapply
+    skip_on_os("windows")
+	set.seed(4897)
+	expect_silent(subAllParal <- 
+	subsampleClustering(x=mat,clusterFunction="pam",
+	         clusterArgs=list(k=3), classifyMethod="All",
+	         resamp.num = 100,samp.p = 0.7,ncores=2)
+	)
+
+	expect_identical(subAllParal,subAll)
+
+	
 
 })
 
