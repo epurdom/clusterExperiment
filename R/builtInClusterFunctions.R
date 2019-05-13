@@ -100,7 +100,7 @@
 .mbkmeansClassify <- function(x, clusterResult) {
 	#This will not be HDF5 friendly...will have to bring it into memory...
 	#Should write a C++ code to do this?? Maybe in mbkmeans? 
-  suppressWarnings(stats::kmeans(x, clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
+  suppressWarnings(stats::kmeans(t(x), clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
 } 
 .mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
@@ -277,7 +277,7 @@
 #########
 ## Put them together so user/code can access easily
 #########
-.builtInClusterObjects<-list("pam"=.pamCF,"clara"=.claraCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF)
+.builtInClusterObjects<-list("pam"=.pamCF,"clara"=.claraCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF,"mbkmeans"=.mbkmeansCF)
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
@@ -318,6 +318,7 @@
 #' Arguments to that function can be passed via \code{clusterArgs} except for
 #' \code{centers} which is reencoded here to be the argument 'k' Input is
 #' \code{"X"}; algorithm type is "K"}
+#' \item{"mbkmeans"}{\code{\link[mbkmeans]{mbkmeans}} runs mini-batch kmeans, a more computationally efficient version of kmeans. }
 #' \item{"hierarchical01"}{\code{\link[stats]{hclust}} in \code{stats} package
 #' is used to build hiearchical clustering. Arguments to that function can be
 #' passed via \code{clusterArgs}. The \code{hierarchical01} cuts the hiearchical
