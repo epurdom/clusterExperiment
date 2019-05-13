@@ -11,7 +11,7 @@ Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
 Depends:
-    R (>= 3.5.0),
+    R (>= 3.6.0),
     SingleCellExperiment,
 	SummarizedExperiment,
 	BiocGenerics
@@ -41,7 +41,8 @@ Imports:
 	scales,
 	zinbwave,
 	phylobase,
-	pracma
+	pracma,
+	mbkmeans
 Suggests:
 	BiocStyle,
 	knitr,

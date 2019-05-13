@@ -82,6 +82,31 @@
 .kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 #internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
 
+
+##---------
+##Mini-batch Kmeans
+##---------
+# mbkmeans(x, clusters, batch_size = ifelse(ncol(x) > 100,
+#   ceiling(ncol(x) * 0.05), ncol(x)), max_iters = 100, num_init = 1,
+#   init_fraction = ifelse(ncol(x) > 100, 0.25, 1),
+#   initializer = "kmeans++", calc_wcss = FALSE, early_stop_iter = 10,
+#   verbose = FALSE, CENTROIDS = NULL, tol = 1e-04)
+.mbkmeansCluster <- function(x,k, checkArgs,cluster.only,...) { 
+  passedArgs<-.getPassedArgs(FUN=mbkmeans::mbkmeans,passedArgs=list(...) ,checkArgs=checkArgs)
+  out<-do.call(mbkmeans::mbkmeans,c(list(x=x,clusters=k),passedArgs))
+  if(cluster.only) return(out$Clusters)
+  else return(out) 
+} 
+.mbkmeansClassify <- function(x, clusterResult) {
+	#This will not be HDF5 friendly...will have to bring it into memory...
+	#Should write a C++ code to do this?? Maybe in mbkmeans? 
+  suppressWarnings(stats::kmeans(x, clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
+} 
+.mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+
+#internalFunctionCheck(.mbkmeansCluster,inputType="X",algorithmType="K",outputType="vector")
+
+
 ##---------
 ##PAM
 ##---------
