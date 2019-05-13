@@ -405,11 +405,12 @@ setMethod(
 #'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
 #'   must take the corresponding required arguments (see details below).
 #' @slot classifyFUN a function that takes as input new data and the output of
-#'   \code{clusterFUN} (when \code{cluster.only=FALSE} and results in cluster
-#'   assignments of the new data.  Note that the function should assume that the
+#'   \code{clusterFUN} (when \code{cluster.only=TRUE}) and results in cluster
+#'   assignments of the new data.  Used in
+#'   subsampling clustering. Note that the function should assume that the
 #'   input 'x' is not the same samples that were input to the ClusterFunction
-#'   (but can assume that it is the same number of features/columns). Used in
-#'   subsampling clustering. If given value \code{NULL} then subsampling can
+#'   (but does assume that it is the same number of features/columns).  
+#'   If given value \code{NULL} then subsampling type can
 #'   only be \code{"InSample"}, see \code{\link{subsampleClustering}}.
 #' @slot inputClassifyType the input type for the classification function (if
 #'   not NULL); like \code{inputType}, must be one of "diss","X", or "either"
@@ -431,25 +432,30 @@ setMethod(
 #' @slot checkFunctions logical. If TRUE, the validity check of the
 #'   \code{ClusterFunction} object will check the \code{clusterFUN} with simple
 #'   toy data using the function \code{internalFunctionCheck}.
-#' @details Required arguments for \code{clusterFUN}: \itemize{ \item{"x or
-#'   diss"}{either \code{x} and/or \code{diss} depending on \code{inputType}. If
-#'   \code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
-#'   assay(CEObj) would give)} \item{"checkArgs"}{logical argument. If
-#'   \code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
-#'   passed in \code{...} are valid and return an error if not; otherwise, no
-#'   error will be given, but the check should be done and only valid arguments
-#'   in \code{...} passed along. This is necessary for the function to work with
-#'   \code{clusterMany} which passes all arguments to all functions without
-#'   checking. } \item{"cluster.only"}{logical argument. If
-#'   \code{cluster.only=TRUE}, then \code{clusterFUN} should return only the
-#'   vector of cluster assignments (or list if \code{outputType="list"}). If
-#'   \code{cluster.only=FALSE} then the \code{clusterFUN} should return a named
-#'   list where one of the elements entitled \code{clustering} contains the
-#'   vector described above (no list!); anything else needed by the
-#'   \code{classifyFUN} to classify new data should be contained in the output
-#'   list as well. \code{cluster.only} is set internally depending on whether
-#'   \code{classifyFUN} will be used by subsampling or only for clustering the
-#'   final product.} \item{"..."}{Any additional arguments specific to the
+#' @details Required arguments for \code{clusterFUN}: 
+#' \itemize{ 
+#'	\item{"x or diss"}{either \code{x} and/or \code{diss} must be an argument 
+#'		depending on \code{inputType}. If
+#'   	\code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
+#'   	assay(CEObj) would give)} 
+#'  \item{"checkArgs"}{logical argument. If
+#'   	\code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
+#'   	passed in \code{...} are valid and return an error if not; otherwise, no
+#'   	error will be given, but the check should be done and only valid arguments
+#'   	in \code{...} passed along. This is necessary for the function to work with
+#'   	\code{clusterMany} which passes all arguments to all functions without
+#'   	checking. } 
+#'	\item{"cluster.only"}{logical argument. If
+#'   	\code{cluster.only=TRUE}, then \code{clusterFUN} should return only the
+#'   	vector of cluster assignments (or list if \code{outputType="list"}). If
+#'   	\code{cluster.only=FALSE} then the \code{clusterFUN} should return a named
+#'   	list where one of the elements entitled \code{clustering} contains the
+#'   	vector described above (no list!); anything else needed by the
+#'   	\code{classifyFUN} to classify new data should be contained in the output
+#'   	list as well. \code{cluster.only} is set internally depending on whether
+#'   	\code{classifyFUN} will be used by subsampling or only for clustering the
+#'   	final product.} 
+#'  \item{"..."}{Any additional arguments specific to the
 #'   algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT
 #'   passed via arguments to \code{clusterFUN}} \item{"Other required
 #'   arguments"}{\code{clusterFUN} must also accept arguments required for its

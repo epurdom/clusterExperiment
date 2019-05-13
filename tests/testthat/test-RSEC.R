@@ -35,6 +35,8 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 })
 
 test_that("`RSEC` works through whole series of steps",{
+    skip_on_os("windows")
+	
 #bigger example where actually goes through all the steps, takes some time:
   expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
@@ -109,15 +111,8 @@ test_that("`RSEC` returns clusterMany even when errors later",{
 })
 
 test_that("`RSEC` works with hdf5",{
-	#no reduce method, do everything on raw data
-	#currently error: Error in tcrossprod(x, y) : 
-#  requires numeric/complex matrix/vector arguments
 
-	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
-		clusterFunction="tight", alphas=0.1, 
-        subsampleArgs=list(resamp.num=5),random.seed=seedValue),
-		"All samples are unassigned for"
-		)
+	skip_on_os("windows")
 
 	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
@@ -133,4 +128,13 @@ test_that("`RSEC` works with hdf5",{
 		)
 
 	expect_equal(clusterMatrix(rsecOut2),clusterMatrix(rsecOut3))
+	
+	#no reduce method, do everything on raw data
+	#currently error: Error in tcrossprod(x, y) : 
+#  requires numeric/complex matrix/vector arguments
+	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
+		clusterFunction="tight", alphas=0.1, 
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue),
+		"All samples are unassigned for"
+		)
 })
