@@ -1,4 +1,4 @@
- #----------------------------------------------------------------
+#----------------------------------------------------------------
 # Travis-CI configuration for Bioconductor packages
 #
 # REFERENCES:
@@ -41,7 +41,7 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - Bioconductor/zinbwave
+  - drisso/zinbwave
 #  - Bioconductor/DelayedArray
 #  - Bioconductor/HDF5Array
 
