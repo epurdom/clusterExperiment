@@ -41,7 +41,7 @@ notifications:
 
 ## Use patched devtools
 r_github_packages:
-  - drisso/zinbwave
+#  - drisso/zinbwave
 #  - Bioconductor/DelayedArray
 #  - Bioconductor/HDF5Array
 
