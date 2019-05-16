@@ -169,14 +169,14 @@ test_that("RSEC works independent of assay order", {
   expect_message(out1<-RSEC(x=multi_cc, reduceMethod="PCA", nReducedDims = 50,
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
+                            subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
                             random.seed=seedValue, whichAssay = "counts"),
                  "Merging will be done on")
 
   expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="PCA", nReducedDims = 50,
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
+                            subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
                             random.seed=seedValue, whichAssay = "counts"),
                  "Merging will be done on")
 
