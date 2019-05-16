@@ -7,7 +7,7 @@
 seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
   top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
-  checkDiss = TRUE)
+  checkDiss = FALSE)
 }
 \arguments{
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in
