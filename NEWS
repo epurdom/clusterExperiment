@@ -1,4 +1,8 @@
-Changes in version 2.5.1 (Release date: )
+Changes in version 2.5.3-9001 (Release date: )
+==============
+
+
+Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============
 
 Changes:
@@ -6,6 +10,7 @@ Changes:
 * Set checkDiss=FALSE by default for most all functions (exception is when user defines distance function)
 * Add warnings when forced to calculate a nxn distance matrix 
 * Improve generic classification to centroids (used by "pam") so not calculate unnecessary distances. 
+* Added mbkmeans as built-in cluster function
 
 Bugs:
 * Remove bug in built-in cluster function "kmeans" so as to not make unnecessary nxn distance matrix.
