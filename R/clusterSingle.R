@@ -35,6 +35,7 @@
 #'   of a call to \code{clusterSingle}.
 #' @param checkDiss logical. Whether to check whether the input \code{diss} is
 #'   valid.
+#' @param verbose logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters. 
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #' @inheritParams transformData
@@ -276,13 +277,13 @@ setMethod(
       isCount=FALSE,transFun=NULL,
 	  reduceMethod=c("none",listBuiltInReducedDims(),listBuiltInFilterStats()),
       nDims=defaultNDims(x,reduceMethod),clusterLabel="clusterSingle",
-			saveSubsamplingMatrix=FALSE,checkDiss=TRUE) {
+			saveSubsamplingMatrix=FALSE,checkDiss=FALSE, verbose=TRUE) {
     ##########
     ##Check arguments and set defaults as needed
 	##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
     ##########
 
- 	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss)
+ 	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=verbose)
 	if(is.character(checkOut)) stop(checkOut)
 	else {
 		mainClusterArgs<-checkOut$mainClusterArgs
@@ -318,7 +319,7 @@ setMethod(
         stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
       }
       if(!is.na(nDims) & reduceMethod=="none") {
-        warning("specifying nDims has no effect if reduceMethod==`none`")
+        if(verbose) warning("specifying nDims has no effect if reduceMethod==`none`")
       }
 	  if(reduceMethod=="none"){
 		  x<-transformData(x,transFun=transFun)

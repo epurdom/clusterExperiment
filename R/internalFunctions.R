@@ -168,6 +168,7 @@ numericalAsCharacter<-function(values,prefix=""){
   if(is.factor(x)){
     x<-as.character(x)
   }
+  # FIXME what is this doing???
   if(is.character(x)){
     op <- options(warn=2)
     #if character values convert to numeric, will use that, otherwise convert to factor first
