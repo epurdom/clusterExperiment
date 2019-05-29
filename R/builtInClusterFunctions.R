@@ -1,19 +1,30 @@
+##Note to self:
+## 5/9/2019: currently, if classifyMethod=="InSample", cluster.only=TRUE, otherwise FALSE. Our default is "All", so generally doing the cluster.only=FALSE. 
+
+
 #' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R
 
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
+.makeNumeric<-function(x){
+    if(is.integer(x)){
+  	  if(!is.null(dim(x))){
+  		  x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))	  	
+  	  }
+  	  else x<-as.numeric(x)
+    }
+	return(x)
+}
 .genericClassify<-function(x,centers){
   if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
-    innerProd<- t(x) %*% t(centers)
-    distMat<-as.matrix(dist(rbind(DelayedArray::DelayedArray(t(x)),DelayedArray::DelayedArray(centers))))
+	x<-as.matrix(DelayedArray::DelayedArray(x))
+	centers<-as.matrix(DelayedArray::DelayedArray(centers))
   }
-  else{
-    innerProd<-tcrossprod(t(x),centers) #equivalent to x %*% t(y), slightly faster
-    #gives a n x k matrix of inner-products between them
-    distMat<-as.matrix(dist(rbind(t(x),centers)))
-  }
-  distMat<-distMat[seq_len(ncol(x)),(ncol(x)+1):ncol(distMat)]
+  #avoid integer overflow...
+  x<-.makeNumeric(x)
+  centers<-.makeNumeric(centers)
+  distMat<-pracma::distmat(t(x),centers)
   apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
@@ -55,18 +66,18 @@
   else return(.kmeansPartitionObject(x,out)) 
 } 
 .kmeansClassify <- function(x, clusterResult) { 
-  centers <- clusterResult$mediods
-  suppressWarnings(stats::kmeans(t(x), centers, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
+  suppressWarnings(stats::kmeans(t(x), clusterResult$medoids, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
 } 
 #make partition object same form as pam output
 #' @importFrom cluster daisy silhouette
 .kmeansPartitionObject<-function(x,kmeansObj){ 
-  dissE<-(cluster::daisy(t(x)))^2
-  silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
-  if(!inherits(silObj,"try-error")) 
-    silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
-  else silinfo<-NULL
-  return(list(mediods=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=silinfo, objective=NA, diss=dissE, data=x))
+	#This is hugely computationally expensive and don't need it! 
+  # dissE<-(cluster::daisy(t(x)))^2
+  # silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
+  # if(!inherits(silObj,"try-error"))
+  #   silinfo<-list(widths=silObj, clus.avg.widths=summary(silObj)$clus.avg.widths, ave.width=summary(silObj)$avg.width)
+  # else silinfo<-NULL
+  return(list(medoids=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=NULL, objective=NA, diss=NULL, data=x))
 }
 .kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 #internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
