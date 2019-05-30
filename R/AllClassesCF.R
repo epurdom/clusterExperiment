@@ -109,7 +109,7 @@ setClass(
 		checkFunctions="logical"
   	)
 )
-.inputTypes<-c("X","diss","either")
+.inputTypes<-c("X","diss","either","cat")
 .algTypes<-c("01","K")
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
@@ -145,7 +145,7 @@ setValidity("ClusterFunction", function(object) {
 	# function arguments are as needed
 	#----
 	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to ClusterFunction doesn't contain 'x'")
-		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to ClusterFunction doesn't contain 'diss'")
+	if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to ClusterFunction doesn't contain 'diss'")
 	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to ClusterFunction doesn't contain", paste(.required01Args,collapse=","))
 

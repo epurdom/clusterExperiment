@@ -39,6 +39,21 @@
 .wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
 
 ##---------
+##KNN for concensus
+##---------
+.knnHamming<-function(cat,checkArgs,cluster.only,...){
+	passedArgs<-.getPassedArgs(FUN= .igraphKnnHamming ,passedArgs=list(...) ,checkArgs=checkArgs)
+	
+}
+.knnHammingCF<-ClusterFunction(clusterFUN=.knnHamming, classifyFUN=NULL, inputType="cat", algorithmType="01",outputType="vector")
+
+## Temporary function to create distance matrix based on our hamming distance, and then create graph and create igraph object. 
+## Total hack to get the infrastructure in place -- cannot use for real sized data!!
+.igraphKnnHamming<-function(cat){
+	
+}
+
+##---------
 ##Spectral
 ##---------
 
