@@ -1,52 +1,54 @@
 context("RSEC")
-
+seedValue<-495 #01875 works for sample.kind="Rejection"
 test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 	##these examples don't do dendrogram/merge because all -1 after makeConsensus
 	##only tests clusterMany, makeConsensus parts.
 	##so can't do expect_silent, because returns NOTE about that issue.
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,
 		clusterFunction="tight", alphas=0.1,dendroReduce="none",
-        subsampleArgs=list(resamp.num=5),random.seed=495
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue
   	 	),"makeDendrogram encountered following error")
    expect_message(rsecOut2<-RSEC(x=cc, reduceMethod="none",k0s=4:5,
    		clusterFunction="tight", alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495
+       subsampleArgs=list(resamp.num=5),random.seed=seedValue
   	 	),"makeDendrogram encountered following error")
   expect_message(rsecOut3<-RSEC(x=ccSE,
 	  reduceMethod="none",k0s=4:5,clusterFunction="tight", 
 	  alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495),
+       subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 	   "makeDendrogram encountered following error")
    expect_message(rsecOut4<-RSEC(x=se,isCount=FALSE,reduceMethod="none",
    		k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",
-       subsampleArgs=list(resamp.num=5),random.seed=495),
+       subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 	   "makeDendrogram encountered following error")
 	   #test rerunClusterMany argument:
 	expect_message(rsecOut5<-RSEC(rsecOut2,reduceMethod="none",
 		k0s=4:5,clusterFunction="tight", alphas=0.1,dendroReduce="none",rerunClusterMany=TRUE,
-		subsampleArgs=list(resamp.num=5),random.seed=495),
+		subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 		"makeDendrogram encountered following error")
     #makes dendrogram so important have here so has to catch defaults of RSEC...
 	expect_message(rsecOut6<-RSEC(rsecOut2,
 			reduceMethod="none",k0s=4:5,clusterFunction="tight", 
 			alphas=0.1,dendroReduce="none",rerunClusterMany=FALSE,
-			subsampleArgs=list(resamp.num=5),random.seed=495),
+			subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 			"makeDendrogram encountered following error")
 })
 
 test_that("`RSEC` works through whole series of steps",{
+    skip_on_os("windows")
+	
 #bigger example where actually goes through all the steps, takes some time:
   expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
               k0s=4:5,clusterFunction="tight", alphas=0.1,
               betas=0.9,dendroReduce="none",minSizes=1,
-       subsampleArgs=list(resamp.num=5),random.seed=495),
+       subsampleArgs=list(resamp.num=5),random.seed=seedValue),
   "Merging will be done on")
    expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, clusterFunction="tight", alphas=0.1, betas=0.9, minSizes=1,
   isCount=TRUE, reduceMethod="none", transFun = NULL,
  sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
                  nFilterDims=NA,nReducedDims=NA,
                  mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
-                 ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=495
+                 ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=seedValue
  ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
  expect_message(combOut<-makeConsensus(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
@@ -77,7 +79,7 @@ test_that("`RSEC` works with no merging",{
   rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
                 k0s=4:5,clusterFunction="tight", alphas=0.1,
                 betas=0.9,dendroReduce="none",minSizes=1,
-                subsampleArgs=list(resamp.num=5),random.seed=495,
+                subsampleArgs=list(resamp.num=5),random.seed=seedValue,
                 mergeMethod="none")
 })
 
@@ -85,14 +87,14 @@ test_that("`RSEC` returns clusterMany even when errors later",{
 	#error in makeConsensus param
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-        subsampleArgs=list(resamp.num=5),random.seed=495, consensusProportion = -1, consensusMinSize = 5),"Invalid value for the 'proportion' parameter"
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue, consensusProportion = -1, consensusMinSize = 5),"Invalid value for the 'proportion' parameter"
   	 	)
 	expect_true("clusterMany" %in% clusterTypes(rsecOut1))
 
 	#error in dendro param
 	expect_message(rsecOut2<-RSEC(x=mat, isCount=FALSE,k0s=4:5,
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-        subsampleArgs=list(resamp.num=5),random.seed=495, 
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue, 
 		dendroReduce="myfakemethod"
   	 	),"does not contain the given 'reduceMethod' value")
     expect_true(all(c("clusterMany","makeConsensus") %in% clusterTypes(rsecOut2)))
@@ -101,7 +103,7 @@ test_that("`RSEC` returns clusterMany even when errors later",{
 	expect_message(rsecOut3<-RSEC(x=assay(seSimCount[sample(size=50,x=1:nrow(seSimCount)),]), isCount=TRUE,reduceMethod="none",
               k0s=4:5,clusterFunction="pam", alphas=0.1,
               betas=0.9,dendroReduce="none",minSizes=1,
-       subsampleArgs=list(resamp.num=5),random.seed=495,
+       subsampleArgs=list(resamp.num=5),random.seed=seedValue,
 		mergeMethod="fakeMerge"
   	 	),"mergeClusters encountered following error")
     expect_true(all(c("clusterMany","makeConsensus") %in% clusterTypes(rsecOut3)))
@@ -109,28 +111,30 @@ test_that("`RSEC` returns clusterMany even when errors later",{
 })
 
 test_that("`RSEC` works with hdf5",{
-	#no reduce method, do everything on raw data
-	#currently error: Error in tcrossprod(x, y) : 
-#  requires numeric/complex matrix/vector arguments
 
-	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
-		clusterFunction="tight", alphas=0.1, 
-        subsampleArgs=list(resamp.num=5),random.seed=495),
-		"All samples are unassigned for"
-		)
+	skip_on_os("windows")
 
 	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="PCA",
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
 		
-        subsampleArgs=list(resamp.num=5),random.seed=495),
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 		"Merging will be done on"
 		)
 
 	expect_message(rsecOut3<-RSEC(assay(hdfObj), isCount=FALSE,k0s=4:5,reduceMethod="PCA",
 		clusterFunction="tight", alphas=0.1, nReducedDims=3,
-	    subsampleArgs=list(resamp.num=5),random.seed=495),
+	    subsampleArgs=list(resamp.num=5),random.seed=seedValue),
 		"Merging will be done on"
 		)
 
 	expect_equal(clusterMatrix(rsecOut2),clusterMatrix(rsecOut3))
+	
+	#no reduce method, do everything on raw data
+	#currently error: Error in tcrossprod(x, y) : 
+#  requires numeric/complex matrix/vector arguments
+	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,reduceMethod="none",
+		clusterFunction="tight", alphas=0.1, 
+        subsampleArgs=list(resamp.num=5,clusterFunction="pam"),random.seed=seedValue),
+		"All samples are unassigned for"
+		)
 })

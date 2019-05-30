@@ -38,6 +38,7 @@ cat("Running clusterMany...",file=outfile,append=TRUE)
 #                  mainClusterArgs=list(minSize=5, verbose=FALSE),
 #                  random.seed=21321, run=TRUE)
 sttm<-proc.time()
+suppressWarnings(RNGversion("3.5.0"))
 cl <-clusterMany(l5, reduceMethod = "PCA", nReducedDims = 50, isCount=TRUE,
                  ks=4:8, clusterFunction="hierarchical01",
                  beta=0.9, minSize=5,

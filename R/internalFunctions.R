@@ -6,7 +6,6 @@
 	message(paste("Note:",x))
 }
 
-#' @importFrom stringr str_pad
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
   cl<-ceLegend[,"clusterIds"]
@@ -33,11 +32,12 @@
 #' @seealso \code{\link[stringr]{str_pad}}
 #' @examples
 #' numericalAsCharacter(c(-1, 5,10,20,100))
+#' @importFrom stringr str_pad
 #' @export
 numericalAsCharacter<-function(values,prefix=""){
 	if(is.factor(values)) values<-as.character(values)
 	values<-suppressWarnings(as.integer(values))
-	if(any(is.na(values))) stop("input must convert to numeric vector")
+	if(any(is.na(values))) stop("input must convert to numeric (integer) vector")
 	whPos<-which(values >0)
 	if(length(whPos)>0) largestLength<-max(values[whPos])
 	values<-as.character(values)
@@ -168,6 +168,7 @@ numericalAsCharacter<-function(values,prefix=""){
   if(is.factor(x)){
     x<-as.character(x)
   }
+  # FIXME what is this doing???
   if(is.character(x)){
     op <- options(warn=2)
     #if character values convert to numeric, will use that, otherwise convert to factor first

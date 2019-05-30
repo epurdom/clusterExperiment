@@ -90,9 +90,8 @@ setMethod(
     ###--------
     ### Fix up the names
     ###--------
-    pad<-if(length(unique(cl))<100) 2 else 3
-    clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
-    clLevels<-unique(cl[order(clPretty)])
+    clPretty<-numericalAsCharacter(cl,prefix="Cl")
+	clLevels<-unique(cl[order(clPretty)])
     clPrettyLevels<-unique(clPretty[order(clPretty)])
     #get them ordered
     cl<-factor(cl,levels=clLevels)

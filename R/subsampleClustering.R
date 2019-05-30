@@ -104,24 +104,39 @@ setMethod(
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=TRUE,... )
+                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
   {
-		largeDataset<-FALSE
-    #######################
-    ### Check both types of inputs and create diss if needed, and check it.
-    #######################
-    input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,checkDiss=checkDiss)
+	###########################
+	######## CHECKS
+	###########################
+	
+    ##------------
+    ### Check both types of inputs (for both clustering and 
+	### classification of subsamples)
+    ##------------
+    input<-.checkXDissInput(x, diss, inputType=clusterFunction@inputType, checkDiss=checkDiss)
     classifyMethod<-match.arg(classifyMethod)
+	
+	##If don't have a classify method, must make subsampling type "InSample"
     if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
       classifyMethod<-"InSample" #silently change it...
     }
     else{
-      inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice!
+      inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
     }
+	
+	#------------
+	###Check if required to calculate the dissimilarity matrix:
+	#------------
     if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
-      diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
-      if(input=="X") input<-"diss"
-      if(inputClassify=="X") inputClassify<-"diss"
+		if(input=="X" & clusterFunction@inputType=="diss") 
+			warnDiss<-sprintf("The following arguments require calculation of the n x n dissimilarity matrix: input=%s, clusterFunction@inputType=%s", input, clusterFunction@inputType)
+		if(classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")
+			warnDiss<-sprintf("The following arguments require calculation of the n x n dissimilarity matrix: classifyMethod=%s, inputClassify=%s, clusterFunction@inputClassifyType=%s", classifyMethod, inputClassify, clusterFunction@inputClassifyType)
+     	.mynote(warnDiss)
+		diss<-.makeDiss(x, distFunction=distFunction, checkDiss=checkDiss, algType=clusterFunction@algorithmType)
+      	if(input=="X") input<-"diss"
+      	if(inputClassify=="X") inputClassify<-"diss"
     }
     #-----
     # Other Checks
@@ -137,16 +152,13 @@ setMethod(
     idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
     #each column a set of indices for the subsample.
 
-    #-----
+    ###########################
     # Function that calls the clustering for each subsample
     # Called over a loop (lapply or mclapply)
-    #-----
+    ###########################
     perSample<-function(ids){
-      ## Calls rm and gc frequently to free up memory
-      ## (mclapply child processes don't know when other processes are using large memory. )
-
       ##----
-      ##Cluster part of subsample
+      ##Cluster subsample
       ##----
       argsClusterList <- .makeDataArgs(dataInput=input,
                                        funInput=clusterFunction@inputType,
@@ -156,29 +168,28 @@ setMethod(
       #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
       argsClusterList <- c(argsClusterList,
                            list("checkArgs"=checkArgs,
-                                "cluster.only"=(classifyMethod=="InSample")))
+						   "cluster.only"=(classifyMethod=="InSample")))
       result <- do.call(clusterFunction@clusterFUN,
                         c(argsClusterList,clusterArgs))
 
       ##----
-      ##Classify part of subsample
+      ##Classify subsample
       ##----
       if(classifyMethod=="All"){
+		  ##FIXME make this actually only recluster the out-of-sample, but otherwise use the clustering results from the method!
         argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
-                                          funInput=clusterFunction@inputClassifyType,
-                                          xData=x, dissData=diss)
+                               funInput=clusterFunction@inputClassifyType,
+                               xData=x, dissData=diss)
         classX <- do.call(clusterFunction@classifyFUN,
                           c(argsClassifyList,list(clusterResult=result)))
-
       }
-
       if(classifyMethod=="OutOfSample"){
         argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
-                                          funInput=clusterFunction@inputClassifyType,
-                                          xData=x[,-ids,drop=FALSE],
-                                          dissData=diss[-ids,-ids,drop=FALSE])
+                                 funInput=clusterFunction@inputClassifyType,
+                                 xData=x[,-ids,drop=FALSE],
+                                 dissData=diss[-ids,-ids,drop=FALSE])
         classElse <- do.call(clusterFunction@classifyFUN,
-                             c(argsClassifyList, list(clusterResult=result)))
+                         c(argsClassifyList, list(clusterResult=result)))
 
         classX <- rep(NA,N)
         classX[-ids] <- classElse
@@ -187,13 +198,7 @@ setMethod(
       if(classifyMethod=="InSample"){
         classX <- rep(NA,N)
 
-        #methods that do not have
         if(is.list(result)){
-          #the next shouldn't happen any more because should be cluster.only=TRUE
-          # if("clustering" %in% names(result)){
-          # 	classX[ids]<-result$clustering
-          # }
-          # 		  	  else{
           if(clusterFunction@outputType=="list"){
             resultVec <- .convertClusterListToVector(result,N=length(ids))
             classX[ids] <- resultVec
@@ -208,20 +213,7 @@ setMethod(
 
       #classX is length N
       #classX has NA if method does not classify all of the data.
-      if(!largeDataset){
-
-        return(classX)
-
-      }
-      else{
-        #instead return
-        # 1) one vector of length na.omit(classX) of the original indices, where ids in clusters are adjacent in the vector and
-        # 2) another vector of length K indicating length of each cluster (allows to decode where the cluster stopes in the above vector),
-        # What does this do with NAs? Removes them -- not included.
-        clusterIds<-unlist(tapply(seq_len(N),classX,function(x){x},simplify=FALSE),use.names=FALSE)
-        clusterLengths<-tapply(seq_len(N),classX,length)
-        return(list(clusterIds=clusterIds,clusterLengths=clusterLengths))
-      }
+      return(classX)
     }
 
     if(ncores==1){
@@ -231,11 +223,7 @@ setMethod(
     }
     else{
       DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
-
-      if(!largeDataset) {
-        DList <- simplify2array(DList)
-      }
-
+	  DList <- simplify2array(DList)
     }
 
     if(!is.null(diss)){
@@ -244,33 +232,10 @@ setMethod(
     if(!is.null(x)){
       idnames<-colnames(x)
     }
-
-    if(!largeDataset){
-
-      Dbar <- search_pairs(t(DList))
-      Dbar <- Dbar + t(Dbar)
-      Dbar[is.na(Dbar)] <- 0
-      diag(Dbar) <- 1
-
-    }
-    else{
-      #############
-      #Need to calculate number of times pairs together without building large NxN matrix
-      #############
-
-      matResults<-subsampleLoop(DList, N)
-      ord<-order(matResults[,2],matResults[,1])
-      pairList<- matResults[ord,3]/matResults[ord,4]
-
-      #Create NxN matrix
-      Dbar<-matrix(0,N,N)
-      Dbar[upper.tri(Dbar, diag = FALSE)]<-pairList
-      Dbar<-Dbar+t(Dbar)
-      Dbar[is.na(Dbar)]<-0
-      diag(Dbar)<-1
-
-    }
-
+	Dbar <- search_pairs(t(DList))
+	Dbar <- Dbar + t(Dbar)
+	Dbar[is.na(Dbar)] <- 0
+	diag(Dbar) <- 1
     rownames(Dbar)<-colnames(Dbar)<-idnames
     return(Dbar)
   })

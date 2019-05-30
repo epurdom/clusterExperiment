@@ -185,7 +185,6 @@
 #' testFEdge$P.Value[order(testFEdge$Index)],log="xy")
 #' @export
 #' @import limma
-#' @importFrom stringr str_pad
 #' @rdname getBestFeatures
 setMethod(f = "getBestFeatures",
 signature = signature(x = "matrixOrHDF5"),
@@ -227,8 +226,7 @@ definition = function(x, cluster,
   ###--------
   ### Fix up the names
   ###--------
-  pad<-if(length(unique(cl))<100) 2 else 3
-  clPretty<-paste("Cl",stringr::str_pad(cl,width=pad,pad="0"),sep="")
+  clPretty<-numericalAsCharacter(cl,prefix="Cl")
   clLevels<-unique(cl[order(clPretty)])
   clPrettyLevels<-unique(clPretty[order(clPretty)])
   #get them ordered nicely.

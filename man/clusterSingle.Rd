@@ -29,7 +29,7 @@
   transFun = NULL, reduceMethod = c("none", listBuiltInReducedDims(),
   listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
   clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
-  checkDiss = TRUE)
+  checkDiss = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{x}{the data on which to run the clustering (features in rows), or a
@@ -98,6 +98,8 @@ existing coClustering object in the slot \code{coClustering} if input object is 
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
+
+\item{verbose}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
 }
 \value{
 A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
