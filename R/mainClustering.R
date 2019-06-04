@@ -125,13 +125,11 @@ setMethod(
 		format=mainClusterArgs[["format"]]
 		checkArgs=mainClusterArgs[["checkArgs"]]
 		postProcessArgs=mainClusterArgs[["postProcessArgs"]]
- 
+    makeDiss=mainClusterArgs[["makeDiss"]]
  	  ## Make dissimilarity if required.
-    if(input=="X" & (clusterFunction@inputType=="diss" || doKPostProcess)){
+    if(makeDiss){
         diss<-.makeDiss(x, distFunction=distFunction, checkDiss=checkDiss, algType=clusterFunction@algorithmType)
-        if(clusterFunction@inputType=="diss") input<-"diss"
     }
-
     if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     
     #######################
