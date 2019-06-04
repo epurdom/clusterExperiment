@@ -140,7 +140,7 @@
 #' @export
 #' @rdname seqCluster
 #' @export
-seqCluster<-function(x=NULL, diss=NULL, k0,  
+seqCluster<-function(x=NULL, diss=NULL, cat=NULL, k0,  
                      subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
                      k.max=k0+10,verbose=TRUE, subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=FALSE)
 {
@@ -148,7 +148,7 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
   ####Checks
   ########
   
-  checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+  checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,cat=cat, subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
   if(is.character(checkOut)) stop(checkOut)
   else {
     mainClusterArgs<-checkOut$mainClusterArgs

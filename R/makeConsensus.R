@@ -115,28 +115,23 @@ setMethod(
     } else{
       
       if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
-      else if(is(clusterFunction,"ClusterFunction")) typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
+      else{
+				if(is(clusterFunction,"ClusterFunction")) 
+					typeAlg<-algorithmType(clusterFunction) 
+				else 
+					stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
+			}
       if(typeAlg!="01") {
         stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
-      
+      ## FIXME: This conversion of integers could be very slow in large datasets.
       ##Make clusterMat integer, just in case
-      clusterMat <- apply(clusterMat, 2, as.integer)
-      clusterMat[clusterMat %in%  c(-1,-2)] <- NA
-      sharedPerct <- search_pairs(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
-      
-      #fix those pairs that have no clusterings for which they are both not '-1'
-      sharedPerct <- sharedPerct + t(sharedPerct)
-      sharedPerct[is.na(sharedPerct)] <- 0
-      sharedPerct[is.nan(sharedPerct)] <- 0
-      diag(sharedPerct) <- 1
-      
       clustArgs<-list(alpha=1-proportion)
       clustArgs<-c(clustArgs,list(...))
       if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
         clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
       }
-      cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
+      cl <- mainClustering(diss=.clustersHammingDistance(t(clusterMat)), clusterFunction=clusterFunction,
                            minSize=minSize, format="vector",
                            clusterArgs=clustArgs)
       

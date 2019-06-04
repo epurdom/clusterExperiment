@@ -114,7 +114,7 @@ setMethod(
     ### Check both types of inputs (for both clustering and 
 	### classification of subsamples)
     ##------------
-    input<-.checkXDissInput(x, diss, inputType=clusterFunction@inputType, checkDiss=checkDiss)
+    input<-.checkCFInput(x, diss, inputType=clusterFunction@inputType, checkDiss=checkDiss)
     classifyMethod<-match.arg(classifyMethod)
 	
 	##If don't have a classify method, must make subsampling type "InSample"
@@ -122,7 +122,7 @@ setMethod(
       classifyMethod<-"InSample" #silently change it...
     }
     else{
-      inputClassify<-.checkXDissInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
+      inputClassify<-.checkCFInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
     }
 	
 	#------------
@@ -232,10 +232,8 @@ setMethod(
     if(!is.null(x)){
       idnames<-colnames(x)
     }
-	Dbar <- search_pairs(t(DList))
-	Dbar <- Dbar + t(Dbar)
-	Dbar[is.na(Dbar)] <- 0
-	diag(Dbar) <- 1
-    rownames(Dbar)<-colnames(Dbar)<-idnames
-    return(Dbar)
+    # DList is a NxB matrix
+    # FIXME: Replace with returning DList, the NxB matrix. Or perhaps have an argument?
+    # FIXME: This returns the distance, rather than the percentage shared.
+    return(.clustersHammingDistance(t(DList)))
   })

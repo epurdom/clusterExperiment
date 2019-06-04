@@ -38,20 +38,19 @@
 }
 .wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
 
-##---------
-##KNN for concensus
-##---------
-.knnHamming<-function(cat,checkArgs,cluster.only,...){
-	passedArgs<-.getPassedArgs(FUN= .igraphKnnHamming ,passedArgs=list(...) ,checkArgs=checkArgs)
-	
-}
-.knnHammingCF<-ClusterFunction(clusterFUN=.knnHamming, classifyFUN=NULL, inputType="cat", algorithmType="01",outputType="vector")
+# ##---------
+# ##KNN for consensus
+# ##---------
+# .knnHamming<-function(cat,checkArgs,cluster.only,...){
+# 	passedArgs<-.getPassedArgs(FUN= .igraphKnnHamming ,passedArgs=list(...) ,checkArgs=checkArgs)
+#
+# }
+# .knn01<-ClusterFunction(clusterFUN=.knnHamming, classifyFUN=NULL, inputType="cat", algorithmType="01",outputType="vector")
+# .knnK<-ClusterFunction(clusterFUN=.knnHamming, classifyFUN=NULL, inputType="cat", algorithmType="01",outputType="vector")
+#
+# ## Temporary function to create distance matrix based on our hamming distance, and then create graph and create igraph object.
+# ## Total hack to get the infrastructure in place -- cannot use for real sized data!!
 
-## Temporary function to create distance matrix based on our hamming distance, and then create graph and create igraph object. 
-## Total hack to get the infrastructure in place -- cannot use for real sized data!!
-.igraphKnnHamming<-function(cat){
-	
-}
 
 ##---------
 ##Spectral
@@ -130,18 +129,19 @@
 .pamCluster<-function(x,diss,k,checkArgs,cluster.only,...){
   
   passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
-  input<-.checkXDissInput(x,diss,checkDiss=FALSE,algType="K")
-  if(input=="X"){
+  input<-.checkCFInput(x=x, diss=diss, cat=NULL, inputType=c("x","diss"), checkDiss=FALSE, algType="K")
+	## prioritize "diss", because otherwise pam just creates a diss matrix.
+  if("diss" %in% input) return(do.call(cluster::pam, c(list(x=diss, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+  if("X" %in% input){
     return(do.call(cluster::pam, c(list(x=t(x),k=k, cluster.only=cluster.only), passedArgs)))  
   } 
-  if(input=="diss" | input=="both") return(do.call(cluster::pam, c(list(x=diss,k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
 }
 .pamClassify <- function(x, clusterResult) { #x p x n matrix
   .genericClassify(x,clusterResult$medoids)
 } 
-.pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType="either", inputClassifyType="X", algorithmType="K",outputType="vector")
+.pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType=c("x","diss"), inputClassifyType="X", algorithmType="K",outputType="vector")
 
-#internalFunctionCheck(.pamCluster,inputType="either",algType="K",outputType="vector")
+#internalFunctionCheck(.pamCluster,inputType=c("x","diss"),algType="K",outputType="vector")
 
 ##---------
 ##clara
@@ -178,10 +178,14 @@
 ##---------
 
 #' @importFrom stats hclust 
-.hier01Cluster<-function(diss,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
+.hier01Cluster<-function(diss,cat,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,cluster.only,...)
 {
   whichHierDist<-match.arg(whichHierDist)
   evalClusterMethod<-match.arg(evalClusterMethod)
+  input<-.checkCFInput(cat=cat, diss=diss, x=NULL, inputType=c("cat","diss"), checkDiss=FALSE, algType="K") #will give error if neither "cat" nor "diss" given
+	if(!"diss" %in% input){
+		diss<-.clustersHammingDistance(cat)
+	}
   if(is.null(rownames(diss))) rownames(diss)<-colnames(diss)<-as.character(seq_len(nrow(diss)))
   passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
   S<-round(1-diss,10)
@@ -224,9 +228,31 @@
   ##Need to update this code so converts vector result into lists of indices ...
   return(clusterListIndices)
 }
-.hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType="diss", algorithmType="01",outputType="list")
+.hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list")
 
-
+## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a NxB matrix of clusterings
+## Best if entries of matrix are already of class integer.
+.clustersHammingDistance<-function(clusterMat){
+    #clusterMat is BxN (samples in columns)
+    idnames<-rownames(clusterMat)
+    
+    ###Make distance matrix
+    if(!is.integer(clusterMat)){
+        clusterMat <- apply(clusterMat, 2, as.integer)
+    }
+    clusterMat[clusterMat %in%  c(-1,-2)] <- NA
+    ## Since x input is nfeatures x nsamples, 
+    ## Takes a BxN matrix, even though NxB is natural way to store (because same format as our clustermatrix)
+    sharedPerct <- search_pairs(clusterMat) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
+    #make symmetric matrix of % with NAs when all missing
+    sharedPerct <- sharedPerct + t(sharedPerct)
+    #fix those pairs that have no clusterings for which they are both not '-1' (returned as NAs)
+    sharedPerct[is.na(sharedPerct)] <- 0
+    sharedPerct[is.nan(sharedPerct)] <- 0
+    diag(sharedPerct) <- 1
+    rownames(sharedPerct)<-colnames(sharedPerct)<-idnames
+    return(1-sharedPerct)
+}
 ##---------
 ##Tight
 ##---------
@@ -318,7 +344,7 @@
 #' \item{"pam"}{Based on \code{\link[cluster]{pam}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
 #'   \code{clusterArgs}. 
-#' Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+#' Input can be either \code{"x"} or \code{"diss"}; algorithm type is "K"} 
 #' \item{"clara"}{Based on \code{\link[cluster]{clara}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
 #'   \code{clusterArgs}. Note that we have changed the default arguments of 

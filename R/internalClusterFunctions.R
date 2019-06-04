@@ -1,5 +1,5 @@
 #######
-#Internal algorithms for clustering
+#Internal algorithms for cluster functions
 #######
 #convert list output into cluster vector.
 .convertClusterListToVector<-function(clusterList,N)
@@ -12,29 +12,20 @@
     }
     return(clust.id)
 }
-#Note, only returns 'both' if inputType is not given...otherwise picks
-.checkXDissInput<-function(x,diss,inputType=NA,algType,checkDiss){
-  if(is.null(x) & is.null(diss)) stop("must give either x or diss argument")
-  #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
-  if(!is.null(x) & is.null(diss)) input<-"X"
-  if(!is.null(x) & !is.null(diss)) input<-"both"
-  if(is.null(x) & !is.null(diss)) input<-"diss"
-  if(input %in% c("diss","both") & checkDiss) .checkDissFunction(diss,algType=algType)
-  if(input == "both" && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.") 
-  if(!is.na(inputType)){
-	  if(input=="both"){
-		  if(inputType=="diss") input<-"diss"
-		  if(inputType=="X") input<-"X"
-		  if(inputType=="either") input<-"diss"	#if both given and both acceptable, use diss.	  
-	  }
-	  if(input == "diss" & inputType=="X") stop("given clusterFunction/classifyFuntion only takes a X matrix")
-	  #commented this out, because actually want the ability to use distFunction to make default diss if missing one. 
-	#  if(input == "X" & inputType=="diss") stop("given clusterFunction/classifyFuntion only takes dissimilarity matrix")
-  	
-  }
- 
-  return(input)
+
+
+.checkDissFunction<-function(D,algType=NA){
+	if(anyNA(D)) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
+	if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
+	if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
+	if(any(diag(D)!=0)) stop("Dissimilarity matrix must have zero values on the diagonal")
+	if(!all(D==t(D))) stop("Dissimilarity matrix must result in a symmetric matrix")
+	if(algType=="01" & any(D>1)) stop("distance function must give values between 0 and 1 when algorithm type of the ClusterFunction object is '01'")
 }
+
+
+
+
 .makeDiss<-function(x,distFunction,algType,checkDiss){
   if(!is.function(distFunction)){
 	  if(length(distFunction)>1) stop("if distFunction is not a function, it must be of length 1")
@@ -53,16 +44,6 @@
 	  
 	
 }
-.checkDissFunction<-function(D,algType=NA){
-	if(anyNA(D)) stop("NA values found in dissimilarity matrix (could be from too small of subsampling if classifyMethod!='All', see documentation of subsampleClustering)")
-	if(any(is.nan(D) | is.infinite(D))) stop("Dissimilarity matrix contains either NAs, NANs or Infinite values.")
-	if(any(D<0)) stop("Dissimilarity matrix must have strictly positive values")
-	if(any(diag(D)!=0)) stop("Dissimilarity matrix must have zero values on the diagonal")
-	if(!all(D==t(D))) stop("Dissimilarity matrix must result in a symmetric matrix")
-	if(algType=="01" & any(D>1)) stop("distance function must give values between 0 and 1 when algorithm type of the ClusterFunction object is '01'")
-}
-
-
 
 
 .clusterVectorToList<-function(vec){
@@ -98,29 +79,69 @@
 	else return(res)
 }
 
+
+# if inputType is vector, returns all those that match given input
+# if inputType is NA, just returns those that are found (i.e. doesn't narrow them down.)
+.checkCFInput<-function(x,diss,cat,inputType=NA,algType,checkDiss){
+  if(!all(inputType %in% .inputTypes)) stop(sprintf("not all inputType values match allowable values (%s)",paste(.inputTypes,", ")))
+	if(is.null(x) & is.null(diss) & is.null(cat)) stop("must give either x or diss or cat argument")
+  #  if(!is.null(x) & !is.null(diss)) stop("cannot give both x and diss argument")
+  input<-c()
+	if(!is.null(x)) 
+		input<-c(input,"X")
+	if(!is.null(diss))
+		input<-c(input,"diss")
+	if(!is.null(cat))
+		input<-c(input,"cat")
+	
+	##If multiple inputs, check that they are compatible dimensions
+	bothXDiss<-all(c("X","diss") %in% input)
+  if(bothXDiss %in% input) && ncol(x)!=ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.") 
+	bothCatDiss<-all(c("X","diss") %in% input)
+  if(bothCatDiss %in% input) && ncol(cat)!=ncol(diss)) stop("ncol(cat)!=ncol(diss): if both cat and diss given then must have compatible dimensions.") 
+	bothCatX<-all(c("X","cat") %in% input)
+  if(bothCatX %in% input) && ncol(cat)!=ncol(X)) stop("ncol(cat)!=ncol(X): if both cat and diss given then must have compatible dimensions.") 
+
+	if(!is.na(inputType)){
+		intersect<-intersect(inputType,input)
+		if(length(intersect)==0){
+			stop(sprintf("given clusterFunction/classifyFuntion does not take as input matrices of type %s",paste(input,collapse=" or "))
+		}		
+	}
+	else{
+		intersect<-input
+	}
+  if(any(intersect %in% c("diss")) & checkDiss) .checkDissFunction(diss,algType=algType)
+	return(intersect)
+}
+
 #' @param dataInput one of "X", "diss" to indicate type of data
 #' @param funInput one of "X","diss" to indicate type function expects
 #' @param xData the "X" data
 #' @param dissData the "diss" data
 #' @return returns list of arguments of the data with the corrected input that can be combined in a do.call to the function
-.makeDataArgs<-function(dataInput,funInput,xData,dissData){
+.makeDataArgs<-function(dataInput,funInput,xData,dissData,catData){
 	if(dataInput=="X"){
 		if(funInput=="diss") stop("Internal coding error: should have caught that wrong data input ('X') for this clusterFunction")
   		argsClusterList<-switch(funInput,"X"=list(x=xData), "either"=list(diss=NULL,x=xData))	
 	}
 	if(dataInput=="diss"){
-		if(funInput=="X") stop("Internal coding error: should have caught that wrong data input ('diss') for this clusterFunction")
+		if(funInput%in% c("X","cat")) stop("Internal coding error: should have caught that wrong data input ('diss') for this clusterFunction")
   		argsClusterList<-switch(funInput,"diss"=list(diss=dissData), "either"=list(diss=dissData,x=NULL)	)	
+	}
+	if(dataInput=="cat"){
+		if(funInput%in% c("X","diss")) stop("Internal coding error: should have caught that wrong data input ('cat') for this clusterFunction")
+  		argsClusterList<-switch(funInput,"cat"=list(cat=catData), "either"=list(diss=dissData,x=NULL)	)	
 	}
 	return(argsClusterList)	
 }
 
-###This function checks the mainClusterArgs and subsampleArgs to make sure make sense with combination of sequential, subsample, x, and diss given by the user. 
+###This function checks the mainClusterArgs and subsampleArgs to make sure makes sense with combination of sequential, subsample, x, and diss given by the user. 
 #' @return If there is error, returns a character string describing error, otherwise returns list with necessary information:
 #' inputClusterD
 #' mainClusterArgs
 #' subsampleArgs
-.checkSubsampleClusterDArgs<-function(x,diss,subsample,sequential,mainClusterArgs,subsampleArgs,checkDiss,warn=TRUE){
+.checkSubsampleClusterDArgs<-function(x,diss,cat,subsample,sequential,mainClusterArgs,subsampleArgs,checkDiss,warn=TRUE){
   
   ########
   #checks for mainClustering stuff
@@ -131,7 +152,7 @@
     if(is.character(clusterFunction)) clusterFunction<-getBuiltInFunction(clusterFunction)
     
     #Following input commands will return only X or Diss because gave the inputType argument...
-    input<-.checkXDissInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
+    input<-.checkCFInput(x, diss, inputType=inputType(clusterFunction), algType=algorithmType(clusterFunction), checkDiss=checkDiss)
     algType<-algorithmType(clusterFunction)
   }
   else{
@@ -148,12 +169,36 @@
   if(length(reqArgs)>0 & algorithmType(clusterFunction)=="K" & "findBestK" %in% names(mainClusterArgs)){
     if(mainClusterArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
   }
+	
+	#Check minSize valid
+  if(!is.numeric(mainClusterArgs[[minSize]]) || mainClusterArgs[[minSize]]<0) 
+    return("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster (in main clustering step).")
+  else mainClusterArgs[[minSize]]<-round(mainClusterArgs[[minSize]]) #incase not integer.
+  
+	## Check post-processing arguments
+	doKPostProcess<-FALSE
+  if(length(mainClusterArgs[[postProcessArgs]])>0){
+		postProcessArgs<-mainClusterArgs[[postProcessArgs]]
+    #get rid of wrong args passed because of user confusion between the two
+    whRightArgs<-which(names(postProcessArgs) %in% getPostProcessingArgs(clusterFunction))
+    if(length(whRightArgs)!=length(postProcessArgs) & checkArgs & warn) warning("Some arguments passed via '...' in mainClustering do not match the algorithmType of the given ClusterFunction object")
+    if(length(whRightArgs)>0) postProcessArgs<-postProcessArgs[whRightArgs]
+    else postProcessArgs<-NULL
+		mainClusterArgs[[postProcessArgs]]<-postProcessArgs
+    if(clusterFunction@algorithmType=="K"){
+      if("findBestK"  %in% names(postProcessArgs) && postProcessArgs[["findBestK"]]) doKPostProcess<-TRUE
+      if("removeSil"  %in% names(postProcessArgs) && postProcessArgs[["removeSil"]]) doKPostProcess<-TRUE
+    }
+  }
+	mainClusterArgs[["doKPostProcess"]]<-doKPostProcess
+	
   #------
   # Check have required args for mainClustering
   #------
   if(length(reqArgs)>0){
     if(("clusterArgs"%in% names(mainClusterArgs) & !all(reqArgs %in% names(mainClusterArgs[["clusterArgs"]]))) || !("clusterArgs"%in% names(mainClusterArgs))) return(paste("For the clusterFunction algorithm type ('",algorithmType(clusterFunction),"') given in 'mainClusterArgs', must supply arguments:",reqArgs,"These must be supplied as elements of the list of 'clusterArgs' given in 'mainClusterArgs'"))
   } 
+		
   ########
   # Checks for Sequential stuff
   ########
@@ -178,7 +223,8 @@
     # Check that mainClustering cluster function takes input that is Diss
 	# Reason: if subsampling, then the D from subsampling sent to the clusterFunction.
     if(inputType(clusterFunction)=="X") return("If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is dissimilarity.")
-	default<-if(input=="X") "kmeans" else "pam"    
+		#default clusterFunction for subsampled data, if not given.
+		default<-switch(input, "X"="kmeans",cat="hier01",diss="pam") 
 	# Get parameters for subsampling
     if("clusterFunction" %in% names(subsampleArgs)){	    
   	  #---
@@ -220,7 +266,7 @@
 	  # Note: this will check diss again if checkDiss=TRUE
 	  # Reason: if algorithm on main is 01 and other isn't, need to check diss again.
 	  if(diffSubsampleCF){
-	      inputSubsample<-.checkXDissInput(x, diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) 
+	      inputSubsample<-.checkCFInput(x, diss, inputType=inputType(subsampleCF),  algType=algorithmType(subsampleCF), checkDiss=checkDiss) 
 	  }
       
     }

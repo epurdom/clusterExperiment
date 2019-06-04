@@ -14,7 +14,7 @@
 #' @slot clusterFUN a function defining the clustering function. See details for
 #'   required arguments.
 #' @slot inputType a character defining what type of input \code{clusterFUN}
-#'   takes. Must be one of either "diss","X", or "either"
+#'   takes. Must be one of either "diss","X", or "cat"
 #' @slot algorithmType a character defining what type of clustering algorithm
 #'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
 #'   must take the corresponding required arguments (see details below).
@@ -27,7 +27,7 @@
 #'   If given value \code{NULL} then subsampling type can
 #'   only be \code{"InSample"}, see \code{\link{subsampleClustering}}.
 #' @slot inputClassifyType the input type for the classification function (if
-#'   not NULL); like \code{inputType}, must be one of "diss","X", or "either"
+#'   not NULL); like \code{inputType}, must be one of "diss","X", or "cat"
 #' @slot outputType the type of output given by \code{clusterFUN}. Must either
 #'   be "vector" or "list". If "vector" then the output should be a vector of
 #'   length equal to the number of observations   with integer-valued elements
@@ -48,10 +48,13 @@
 #'   toy data using the function \code{internalFunctionCheck}.
 #' @details Required arguments for \code{clusterFUN}: 
 #' \itemize{ 
-#'	\item{"x or diss"}{either \code{x} and/or \code{diss} must be an argument 
+#'	\item{"x or diss or cat"}{either \code{x} and/or \code{diss} and/or \code{cat} 
+#'	    must be an argument 
 #'		depending on \code{inputType}. If
 #'   	\code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
-#'   	assay(CEObj) would give)} 
+#'   	assay(CEObj) would give). If \code{cat} then nfeatures x nsamples, but all 
+#'   	entries should be categorical levels, encoded by positive
+#'   	integers, with -1/-2 types of NA (like a clusterMatrix slot, with dimensions switched)}
 #'  \item{"checkArgs"}{logical argument. If
 #'   	\code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
 #'   	passed in \code{...} are valid and return an error if not; otherwise, no
@@ -109,7 +112,7 @@ setClass(
 		checkFunctions="logical"
   	)
 )
-.inputTypes<-c("X","diss","either","cat")
+.inputTypes<-c("X","diss","cat")
 .algTypes<-c("01","K")
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
@@ -144,9 +147,10 @@ setValidity("ClusterFunction", function(object) {
 	#----
 	# function arguments are as needed
 	#----
-	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to ClusterFunction doesn't contain 'x'")
-	if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to ClusterFunction doesn't contain 'diss'")
-	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
+	if(any(object@inputType%in%c("X")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType includes 'X' but arguments to ClusterFunction doesn't contain argument 'x'")
+	if(any(object@inputType%in%c("diss")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType includes 'diss' but arguments to ClusterFunction doesn't contain argument 'diss'")
+    if(any(object@inputType%in%c("cat")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType includes 'cat' but arguments to ClusterFunction doesn't contain argument 'cat'")
+    if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to ClusterFunction doesn't contain", paste(.required01Args,collapse=","))
 
 

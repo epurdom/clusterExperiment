@@ -95,68 +95,63 @@ setMethod(
 setMethod(
   f = "mainClustering",
   signature = signature(clusterFunction = "ClusterFunction"),
-  definition=function(clusterFunction,x=NULL, diss=NULL,
+  definition=function(clusterFunction,x=NULL, diss=NULL, cat=NULL,
                       distFunction=NA,clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
                       format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
     orderBy<-match.arg(orderBy)
     format<-match.arg(format)
+    #######################
+    ### Check input and Create distance if needed, and check it. Do it in centralized function so can make same checks everywhere.
+    #######################
     postProcessArgs<-list(...)
-    if(!is.numeric(minSize) || minSize<0) 
-      stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
-    else minSize<-round(minSize) #incase not integer.
-    if(length(postProcessArgs)>0){
-      #get rid of wrong args passed because of user confusion between the two
-      whRightArgs<-which(names(postProcessArgs) %in% getPostProcessingArgs(clusterFunction))
-      if(length(whRightArgs)!=length(postProcessArgs) & checkArgs) warning("Some arguments passed via '...' in mainClustering do not match the algorithmType of the given ClusterFunction object")
-      if(length(whRightArgs)>0) postProcessArgs<-postProcessArgs[whRightArgs]
-      else postProcessArgs<-NULL
-    }
-    #######################
-    ### Check input and Create distance if needed, and check it.
-    #######################
-    input<-.checkXDissInput(x,diss,inputType=clusterFunction@inputType,algType=clusterFunction@algorithmType,checkDiss=checkDiss)
-    #K-post processing requires diss for the silhouette.
-    doKPostProcess<-FALSE
-    if(clusterFunction@algorithmType=="K"){
-      if("findBestK"  %in% names(postProcessArgs) && postProcessArgs[["findBestK"]]) doKPostProcess<-TRUE
-      if("removeSil"  %in% names(postProcessArgs) && postProcessArgs[["removeSil"]]) doKPostProcess<-TRUE
-    }
+		mainArgs<-list(clusterFunction=clusterFunction,
+                      distFunction=distFunction,clusterArgs=clusterArgs,
+											minSize=minSize, orderBy=orderBy,
+                      format=format,checkArgs=checkArgs,postProcessArgs=postProcessArgs)
+		checkOut<-.checkSubsampleClusterDArgs<-function(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
+			warn=TRUE)		
+	  if(is.character(checkOut)) stop(checkOut)
+	  else{
+	    mainClusterArgs<-checkOut$mainClusterArgs
+	  }
+		
+		input<-mainClusterArgs[["input"]]
+		doKPostProcess<-mainClusterArgs[["doKPostProcess"]]
+		clusterFunction=mainClusterArgs[["clusterFunction"]]
+		distFunction=mainClusterArgs[["distFunction"]]
+		clusterArgs=mainClusterArgs[["clusterArgs"]]
+		minSize=mainClusterArgs[["minSize"]] 
+		orderBy=mainClusterArgs[["orderBy"]]
+		format=mainClusterArgs[["format"]]
+		checkArgs=mainClusterArgs[["checkArgs"]]
+		postProcessArgs=mainClusterArgs[["postProcessArgs"]]
+ 
+ 	  ## Make dissimilarity if required.
     if(input=="X" & (clusterFunction@inputType=="diss" || doKPostProcess)){
-      diss<-.makeDiss(x,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
-      if(clusterFunction@inputType=="diss") input<-"diss"
+        diss<-.makeDiss(x, distFunction=distFunction, checkDiss=checkDiss, algType=clusterFunction@algorithmType)
+        if(clusterFunction@inputType=="diss") input<-"diss"
     }
-    
-    
-    #-----
-    # Other Checks
-    #-----
-    reqArgs<-requiredArgs(clusterFunction)
-    #remove required args not needed if certain postProcessArgs are given:
-    # don't need define 'k' if choose 'findBestK=TRUE'
-    if(algorithmType(clusterFunction)=="K" & "findBestK" %in% names(postProcessArgs)){
-      if(postProcessArgs[["findBestK"]]) reqArgs<-reqArgs[-which(reqArgs=="k")]
-    }
-    if(length(reqArgs)>0 & !all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
-    
+
+    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     
     #######################
     ####Run clustering:
     #######################
-    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     
-    argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss)
+    argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss, catData=cat)
     argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
-    if(algorithmType(clusterFunction)=="01") {
-      res<-do.call(clusterFunction@clusterFUN,argsClusterList)
-    }
-    if(algorithmType(clusterFunction)=="K") {
-      res<-do.call(".postProcessClusterK",c(list(clusterFunction=clusterFunction,clusterArgs=argsClusterList,N=N,orderBy=orderBy,diss=diss),postProcessArgs))
+    if(doKPostProcess) {
+      res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, diss=diss), postProcessArgs))
       ###Note to self: .postProcessClusterK returns clusters in list form.
+    }
+    else{
+      res<-do.call(clusterFunction@clusterFUN,argsClusterList)
     }
     
     #######################
     #Now format into desired output, order
     #######################
+		## FIXME: need to get rid of this, unless needed/requested (though it is requested by sequential)
     #this is perhaps not efficient. For now will do this, then consider going back and only converting when, where needed.
     if(clusterFunction@outputType=="vector" & algorithmType(clusterFunction)!="K"){
       res<-.clusterVectorToList(res)
