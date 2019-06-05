@@ -1,0 +1,10 @@
+TO DO:
+-- Need mainClustering to take input 'cat' for categorical
+-- Need to have types be 'X','diss','cat', and no both. Instead need to be able to take vector of types of input. This changes structure in the clusterFunction class
+-- Need to have output of subsampling be NxB matrix, and downstream deal with that.
+-- Fix .checkXDissInput
+-- clusterSingle -- have intersection between type of data and dimensionality reduction! need to go back to this for what it means for type="cat". 
+-- For clusterSingle and seqCluter  the check of inputs done by .checkSubsampleClusterDArgs, the outputted input match needs to be a single value, not all possible matches. Need to go back to both of these functions once decide what will do with .checkSubsampleClsuterDArgs as output.Need to fix the postProcessArgs
+-- .makeDataArgs has a handle for data "either", need to go back to.
+-- Should all 'diss' version take 'cat' with internal conversion into 'diss', or make user clarify that?
+-- .checkCFInput makes stops, but .checkSubsampleClusterDArgs wants characters...should make try?
