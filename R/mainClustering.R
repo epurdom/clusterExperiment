@@ -8,10 +8,6 @@
 #'   columns).
 #' @param diss \code{n x n} data matrix of dissimilarities between the samples 
 #'   on which to run the clustering
-#' @param distFunction a distance function to be applied to \code{D}. Only
-#'   relevant if input is only \code{x} (a matrix of data), and
-#'   \code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
-#'   required format of the distance function.
 #' @param minSize the minimum number of samples in a cluster. Clusters found 
 #'   below this size will be discarded and samples in the cluster will be given 
 #'   a cluster assignment of "-1" to indicate that they were not clustered.
@@ -53,9 +49,9 @@
 #' cl1<-mainClustering(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
 #' cl2<-mainClustering(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
 #' cl3<-mainClustering(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
-#' #change distance to manhattan distance
-#' cl4<-mainClustering(simData,clusterFunction="pam",clusterArgs=list(k=3),
-#'      distFunction=function(x){dist(x,method="manhattan")})
+#' #supply a dissimilarity
+#' diss<-dist(t(simData),method="manhattan")
+#' cl4<-mainClustering(diss=diss,clusterFunction="pam",clusterArgs=list(k=3))
 #' 
 #' #run hierarchical method for finding blocks, with method of evaluating
 #' #coherence of block set to evalClusterMethod="average", and the hierarchical
@@ -96,7 +92,7 @@ setMethod(
   f = "mainClustering",
   signature = signature(clusterFunction = "ClusterFunction"),
   definition=function(clusterFunction,x=NULL, diss=NULL, cat=NULL,
-                      distFunction=NA,clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
+                      clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
                       format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
     orderBy<-match.arg(orderBy)
     format<-match.arg(format)
@@ -104,37 +100,31 @@ setMethod(
     ### Check input and Create distance if needed, and check it. Do it in centralized function so can make same checks everywhere.
     #######################
     postProcessArgs<-list(...)
-		mainArgs<-list(clusterFunction=clusterFunction,
-                      distFunction=distFunction,clusterArgs=clusterArgs,
-											minSize=minSize, orderBy=orderBy,
-                      format=format,checkArgs=checkArgs,postProcessArgs=postProcessArgs)
-		checkOut<-.checkSubsampleClusterDArgs<-function(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
+		mainArgs<-c(list(clusterFunction=clusterFunction,
+                      clusterArgs=clusterArgs,
+											minSize=minSize, orderBy=orderBy, postProcessNames=names(postProcessArgs),
+                      format=format,checkArgs=checkArgs),postProcessArgs)
+		checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
 			warn=TRUE)		
 	  if(is.character(checkOut)) stop(checkOut)
 	  else{
 	    mainClusterArgs<-checkOut$mainClusterArgs
 	  }
 		
-		input<-mainClusterArgs[["input"]]
+		input<-checkOut$inputClusterD
 		doKPostProcess<-mainClusterArgs[["doKPostProcess"]]
 		clusterFunction=mainClusterArgs[["clusterFunction"]]
-		distFunction=mainClusterArgs[["distFunction"]]
 		clusterArgs=mainClusterArgs[["clusterArgs"]]
 		minSize=mainClusterArgs[["minSize"]] 
 		orderBy=mainClusterArgs[["orderBy"]]
 		format=mainClusterArgs[["format"]]
 		checkArgs=mainClusterArgs[["checkArgs"]]
 		postProcessArgs=mainClusterArgs[["postProcessArgs"]]
-    makeDiss=mainClusterArgs[["makeDiss"]]
- 	  ## Make dissimilarity if required.
-    if(makeDiss){
-        diss<-.makeDiss(x, distFunction=distFunction, checkDiss=checkDiss, algType=clusterFunction@algorithmType)
-    }
-    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     
     #######################
     ####Run clustering:
     #######################
+    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
     
     argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss, catData=cat)
     argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))

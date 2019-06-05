@@ -102,47 +102,24 @@ setMethod(
 setMethod(
   f = "subsampleClustering",
   signature = signature(clusterFunction = "ClusterFunction"),
-  definition=function(clusterFunction, x=NULL,diss=NULL,distFunction=NA,clusterArgs=NULL,
+  definition=function(clusterFunction, x=NULL,diss=NULL,cat=NULL, clusterArgs=NULL,
                       classifyMethod=c("All","InSample","OutOfSample"),
                       resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
   {
 	###########################
 	######## CHECKS
 	###########################
-	
-    ##------------
-    ### Check both types of inputs (for both clustering and 
-	### classification of subsamples)
-    ##------------
-    input<-.checkCFInput(x, diss, inputType=clusterFunction@inputType, checkDiss=checkDiss)
-    classifyMethod<-match.arg(classifyMethod)
-	
-	##If don't have a classify method, must make subsampling type "InSample"
-    if(classifyMethod %in% c("All","OutOfSample") && is.null(clusterFunction@classifyFUN)){
-      classifyMethod<-"InSample" #silently change it...
-    }
-    else{
-      inputClassify<-.checkCFInput(x, diss, inputType=clusterFunction@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
-    }
-	
-	#------------
-	###Check if required to calculate the dissimilarity matrix:
-	#------------
-    if((input=="X" & clusterFunction@inputType=="diss") || (classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")){
-		if(input=="X" & clusterFunction@inputType=="diss") 
-			warnDiss<-sprintf("The following arguments require calculation of the n x n dissimilarity matrix: input=%s, clusterFunction@inputType=%s", input, clusterFunction@inputType)
-		if(classifyMethod!="InSample" && inputClassify=="X" && clusterFunction@inputClassifyType=="diss")
-			warnDiss<-sprintf("The following arguments require calculation of the n x n dissimilarity matrix: classifyMethod=%s, inputClassify=%s, clusterFunction@inputClassifyType=%s", classifyMethod, inputClassify, clusterFunction@inputClassifyType)
-     	.mynote(warnDiss)
-		diss<-.makeDiss(x, distFunction=distFunction, checkDiss=checkDiss, algType=clusterFunction@algorithmType)
-      	if(input=="X") input<-"diss"
-      	if(inputClassify=="X") inputClassify<-"diss"
-    }
-    #-----
-    # Other Checks
-    #-----
-    reqArgs<-requiredArgs(clusterFunction)
-    if(!all(reqArgs %in% names(clusterArgs))) stop(paste("For this clusterFunction algorithm type ('",algorithmType(clusterFunction),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs'"))
+	moreArgs<-list(...)
+	subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
+	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, cat=cat, subsample=TRUE, sequential=FALSE, mainClusterArgs=NULL, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=TRUE)		
+  if(is.character(checkOut)) stop(checkOut)
+  else{
+    subsampleArgs<-checkOut$subsampleArgs
+  }
+  classifyMethod<-subsampleArgs[["classifyMethod"]]
+	clusterFunction<-subsampleArgs[["clusterFunction"]]
+	clusterArgs<-subsampleArgs[["clusterArgs"]]
+	input<-subsampleArgs[["input"]]
 
     #-----
     # Basic parameters, subsamples
