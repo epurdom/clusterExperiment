@@ -154,25 +154,24 @@
     
     ##If multiple inputs, check that they are compatible dimensions
     bothXDiss <- all(c("X", "diss") %in% input)
-    if (bothXDiss %in% input)
-        &&
-        ncol(x) != ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.")
-bothCatDiss<-all(c("X","diss") %in% input)
-if(bothCatDiss %in% input) && ncol(cat)!=ncol(diss)) stop("ncol(cat)!=ncol(diss): if both cat and diss given then must have compatible dimensions.")
-bothCatX<-all(c("X","cat") %in% input)
-if(bothCatX %in% input) && ncol(cat)!=ncol(X)) stop("ncol(cat)!=ncol(X): if both cat and diss given then must have compatible dimensions.")
+    if (bothXDiss %in% input && ncol(x) != ncol(diss)) stop("ncol(x)!=ncol(diss): if both x and diss given then must have compatible dimensions.")
+	bothCatDiss<-all(c("X","diss") %in% input)
+	if(bothCatDiss %in% input && ncol(cat)!=ncol(diss)) stop("ncol(cat)!=ncol(diss): if both cat and diss given then must have compatible dimensions.")
+	bothCatX<-all(c("X","cat") %in% input)
+	if(bothCatX %in% input && ncol(cat)!=ncol(X)) stop("ncol(cat)!=ncol(X): if both cat and diss given then must have compatible dimensions.")
 
-if(!is.na(inputType)){
-    intersect<-intersect(inputType,input)
-    if(length(intersect)==0){
-        stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(input,collapse=" or "))
-    }
-}
-else{
-    intersect<-input
-}
-if(any(intersect %in% c("diss")) & checkDiss) .checkDissFunction(diss,algType=algType)
-return(intersect)
+	if(!is.na(inputType)){
+    	intersect<-intersect(inputType,input)
+    	if(length(intersect)==0){
+        	stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(input,collapse=" or "))
+    	}
+	}
+	else{
+    	intersect<-input
+	}
+	if(any(intersect %in% c("diss")) & checkDiss) 
+		.checkDissFunction(diss,algType=algType)
+	return(intersect)
 }
 
 #' @param dataInput one of "X", "diss" to indicate type of data
