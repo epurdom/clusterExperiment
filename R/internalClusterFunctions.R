@@ -233,18 +233,19 @@ return(intersect)
     function(x,
              diss,
              cat,
+			 main=TRUE,
              subsample,
              sequential,
              mainClusterArgs,
              subsampleArgs,
              checkDiss,
-						 allowMakeDiss=FALSE, #if FALSE, will give error if not match. 
+			 allowMakeDiss=FALSE, #if FALSE, will give error if not match. 
              warn = TRUE) {
         ########
         #checks for mainClustering stuff
         ########
 				makeDiss<-FALSE
-				if (!is.null(mainClusterArgs)) {
+				if (main) {
             if ("clusterFunction" %in% names(mainClusterArgs)) {
                 #get clusterFunction for cluster D
                 clusterFunction <- mainClusterArgs[["clusterFunction"]]
@@ -357,7 +358,7 @@ return(intersect)
         ########
         # Adapt MainClusteringArgs if using Sequential
         ########
-        if (sequential & !is.null(mainClusterArgs)) {
+        if (sequential & main) {
             # Remove argument 'k'
             # Reason: if subsample=FALSE, then need to change k of the mainClustering step for sequential. If subsample=TRUE, similarly set the k of mainClustering step to match that used in subsample. Either way, can't be predefined by user
             if ("clusterArgs" %in% names(mainClusterArgs)) {
@@ -382,14 +383,21 @@ return(intersect)
         if (subsample) {
             # Check that mainClustering cluster function takes input that is Diss
             # Reason: if subsampling, then the D from subsampling sent to the clusterFunction.
-            if (!is.null(mainClusterArgs) && inputType(clusterFunction) == "X" )
+            
+			# Set default for when clusterFunction for subsampling 
+			# not given or needs to be overridden (only used if main=TRUE)
+			if(main) default <- switch(input, 
+                              "X" = "kmeans",
+                              cat = "hier01",
+                              diss = "pam")
+            if (main && inputType(clusterFunction) == "X" )
                 return(
-                    "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is dissimilarity."
+                    "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity matrix."
                 )
 						
             #--------
-						# Evaluate subsample clusterFunction
-						#--------
+			# Evaluate subsample clusterFunction
+			#--------
             if ("clusterFunction" %in% names(subsampleArgs)) {
                 #---
                 #Checks for when cluster function set by user for subsampling..
@@ -398,12 +406,11 @@ return(intersect)
                 if (is.character(subsampleCF))
                     subsampleCF <- getBuiltInFunction(subsampleCF)
                 subsampleAlgType <- algorithmType(subsampleCF)
-                
-						    inputSub<-.checkCFInput(x=x, diss=diss, cat=cat,inputType=subsampleCF@inputType, checkDiss=checkDiss)
+                inputSub<-.checkCFInput(x=x, diss=diss, cat=cat,inputType=subsampleCF@inputType, checkDiss=checkDiss)
 								
                 # Check that subsample clustering function is of type 'k' if sequential=TRUE
                 # Reason: seqCluster requires subsampling cluster function to be of type "K"
-                if (sequential & algorithmType(subsampleCF) != "K") {
+                if (main & sequential & algorithmType(subsampleCF) != "K") {
                     if (warn)
                         warning(
                             sprintf(
@@ -415,15 +422,10 @@ return(intersect)
                     diffSubsampleCF <- TRUE
                 }
             }
-            else if(!is.null(mainClusterArgs)){
-	            #default clusterFunction for subsampled data, if not given.
-	            default <- switch(inputSub,
-	                              "X" = "kmeans",
-	                              cat = "hier01",
-	                              diss = "pam")
-							
+            else if(main){
                 #---
                 #Checks for when no cluster function set for subsampling..
+				# use default clusterFunction of main clustering
                 #---
                 if (!sequential || algorithmType(clusterFunction) == "K") {
                     mess <-
@@ -433,7 +435,7 @@ return(intersect)
                     if (warn)
                         .mynote(mess)
                     subsampleArgs[["clusterFunction"]] <- clusterFunction
-                    inputSubsample <- inputSub
+                    inputSub <- input
                     diffSubsampleCF <- FALSE
                 }
                 else{
@@ -465,26 +467,26 @@ return(intersect)
                 }
                 
             }
-						else return("Must give 'clusterFunction' value to 'subsampleClustering'.")
-            
-							#Check the classify function
-						if (is.null(subsampleCF@classifyFUN)) {
+			else return("Must give 'clusterFunction' value to 'subsampleClustering'.")
+			#-----
+			#Check the classify function
+			#-----
+			if (is.null(subsampleCF@classifyFUN)) {
                 if ("classifyMethod" %in% names(subsampleArgs) &&
                     subsampleArgs[["classifyMethod"]] != "InSample")
-                    stop(
+                    return(
                         "Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot"
                     )
-                subsampleArgs[["classifyMethod"]] <- "InSample"
+                else subsampleArgs[["classifyMethod"]] <- "InSample"
             }
-						inputClassify<-.checkXDissInput(x, diss, cat inputType=subsampleCF@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
-						if(subsampleArgs[["classifyMethod"]]!="InSample"){
-							if(inputClassify=="X" && subsampleCF@inputClassifyType=="diss")
-								if(warn) warning(sprintf("The following arguments regarding the clusterFunction for subsampleArgs require calculation of the n x n dissimilarity matrix: classifyMethod=%s, inputClassify=%s, inputClassifyType=%s. Changing classifyMethod to 'InSample'", subsampleArgs[["classifyMethod"]], inputClassify, subsampleCF@inputClassifyType)
-					    }
-							subsampleArgs[["classifyMethod"]]<-"InSample"
-				    }
+			inputClassify<-.checkXDissInput(x, diss, cat inputType=subsampleCF@inputClassifyType, checkDiss=FALSE) #don't need to check it twice, even if asked for it!
+			if(subsampleArgs[["classifyMethod"]]!="InSample"){
+				if(inputClassify=="X" && subsampleCF@inputClassifyType=="diss")
+				if(warn) warning(sprintf("The following arguments regarding the clusterFunction for subsampleArgs require calculation of the n x n dissimilarity matrix: classifyMethod=%s, inputClassify=%s, inputClassifyType=%s. Changing classifyMethod to 'InSample'", subsampleArgs[["classifyMethod"]], inputClassify, subsampleCF@inputClassifyType)
+				subsampleArgs[["classifyMethod"]]<-"InSample"
+			}
 					    
-            #Reason: check subsampleArgs has required arguments for function, repeated from subsamplingClustering, but want it here before do calculations... if not, see if can borrow from mainClusterArgs
+           
             ##------
             ##Check have required args for subsample. If missing, 'borrow' those args from mainClusterArgs.
             ##------
@@ -493,40 +495,41 @@ return(intersect)
             #Reason: sequential sets k for the subsampling via k0
             if (sequential & length(reqSubArgs) > 0)
                 reqSubArgs <- reqSubArgs[-which(reqSubArgs == "k")]
-            if (length(reqSubArgs) > 0)}
-						 		if(!is.null(mainClusterArgs)) {
-                #check if can borrow...
-                if ("clusterArgs" %in% names(mainClusterArgs)) {
-                    mainReqArgs <- requiredArgs(clusterFunction)
-                    mainReqArgs <-
-                        mainReqArgs[mainReqArgs %in% names(mainClusterArgs[["clusterArgs"]])]
-                    if (!is.null(subsampleArgs) &&
-                        "clusterArgs" %in% names(subsampleArgs)) {
-                        #check if existing clusterArgs has required names already
-                        #if not, give them those of mainClustering if exist.
-                        if (!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
-                            missingArgs <-
-                                reqSubArgs[!reqSubArgs %in% names(subsampleArgs[["clusterArgs"]])]
-                            missingArgs <- missingArgs[missingArgs %in% mainReqArgs]
+            if (length(reqSubArgs) > 0)){
+				if(main){
+	                #check if can borrow...
+	                if ("clusterArgs" %in% names(mainClusterArgs)) {
+	                    mainReqArgs <- requiredArgs(clusterFunction)
+	                    mainReqArgs <-
+	                        mainReqArgs[mainReqArgs %in% names(mainClusterArgs[["clusterArgs"]])]
+	                    if (!is.null(subsampleArgs) &&
+	                        "clusterArgs" %in% names(subsampleArgs)) {
+	                        #check if existing clusterArgs has required names already
+	                        #if not, give them those of mainClustering if exist.
+	                        if (!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
+	                            missingArgs <-
+	                                reqSubArgs[!reqSubArgs %in% names(subsampleArgs[["clusterArgs"]])]
+	                            missingArgs <- missingArgs[missingArgs %in% mainReqArgs]
                             
-                        }
-                        else
-                            missingArgs <- c()
-                    }
-                    else{
-                        missingArgs <- reqSubArgs[reqSubArgs %in% mainReqArgs]
-                    }
-                    if (length(missingArgs) > 0) {
-                        subsampleArgs[["clusterArgs"]][missingArgs] <-
-                            mainClusterArgs[["clusterArgs"]][missingArgs]
-                        if (warn)
-                            warning(
-                                "missing arguments ",
-                                missingArgs,
-                                " provided from those in 'mainClusterArgs'"
-                            )
-                    }
-                }
+	                        }
+	                        else
+	                            missingArgs <- c()
+	                    }
+	                    else{
+	                        missingArgs <- reqSubArgs[reqSubArgs %in% mainReqArgs]
+	                    }
+	                    if (length(missingArgs) > 0) {
+	                        subsampleArgs[["clusterArgs"]][missingArgs] <-
+	                            mainClusterArgs[["clusterArgs"]][missingArgs]
+	                        if (warn)
+	                            warning(
+	                                "missing arguments ",
+	                                missingArgs,
+	                                " provided from those in 'mainClusterArgs'"
+	                            )
+	                    }
+	                }
+				}
                 #now check if got everything needed...
                 if (("clusterArgs" %in% names(subsampleArgs) &
                      !all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) ||
@@ -540,20 +543,14 @@ return(intersect)
                             ". These must be supplied as elements of the list of 'clusterArgs' given in 'subsampleArgs'"
                         )
                     )
-									}
-									else{
-								    #-----
-								    # Other Checks
-								    #-----
-								    
-								    if(!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) return(paste("For this clusterFunction algorithm type ('",algorithmType(subsampleCF),"') must supply arguments",reqArgs,"as elements of the list of 'clusterArgs' in the 'subsampleArgs' argument."))
-            }
-						
-					    
-						
-						}
-            #Reason, if subsample=TRUE, user can't set distance function because use diss from subsampling.
-            if(!is.null(mainClusterArgs) &&
+				}
+			}
+			
+			#---
+			#Check don't give distance function and subsample=TRUE
+            #Reason, if subsample=TRUE, user can't set distance function because use diss provided from subsampling.
+			#---
+            if(main &&
                 "distFunction" %in% names(mainClusterArgs) &&
                 !is.na(mainClusterArgs[["distFunction"]])) {
                 if (warn)
@@ -581,9 +578,9 @@ return(intersect)
             }
         }
         else{
-            #not subsample, additional 
-            if (sequential & !is.null(mainClusterArgs)) {
-                #Reason: if subsample=FALSE, and sequential then need to adjust K in the mainClustering step, so need algorithm of type K
+            #subsample=FALSE,  need other checks additional 
+            if (sequential & main) {
+                #Reason: if subsample=FALSE, and sequential=TRUE then need to adjust K in the mainClustering step, so need algorithm of type K
                 if (algorithmType(clusterFunction) != "K") {
                     return(
                         "if subsample=FALSE, sequentical clustering can only be implemented with a clusterFunction with algorithmType 'K'. See documentation of seqCluster."
@@ -609,7 +606,7 @@ return(intersect)
                 inputClusterD = input,
                 mainClusterArgs = mainClusterArgs,
                 subsampleArgs = subsampleArgs,
-								makeDiss=makeDiss
+				makeDiss=makeDiss
             )
         )
         
