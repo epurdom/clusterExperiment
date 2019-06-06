@@ -229,7 +229,7 @@ return(intersect)
 #' inputClusterD
 #' mainClusterArgs
 #' subsampleArgs
-.checkSubsampleClusterDArgs <-
+.checkArgs <-
     function(x,
              diss,
              cat,

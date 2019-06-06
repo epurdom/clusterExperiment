@@ -104,7 +104,7 @@ setMethod(
                       clusterArgs=clusterArgs,
 											minSize=minSize, orderBy=orderBy, postProcessNames=names(postProcessArgs),
                       format=format,checkArgs=checkArgs),postProcessArgs)
-		checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
+		checkOut<-.checkArgs(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
 			warn=TRUE)		
 	  if(is.character(checkOut)) stop(checkOut)
 	  else{

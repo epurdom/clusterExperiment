@@ -428,7 +428,7 @@ setMethod(
               param[intersect(whFindBestK,whNoSeq),"k"] <- NA
             }
             #and if subsample=TRUE, then user needs to set k via subsampleArgs
-            ##Might could handle this better by call to .checkSubsampleClusterDArgs
+            ##Might could handle this better by call to .checkArgs
             whNoSeqSub <- which(!param[,"sequential"] & param[,"subsample"])
             if(length(intersect(whFindBestK,whNoSeqSub))>0 &
                is.null(subsampleArgs[["clusterArgs"]]) && is.null(subsampleArgs[["clusterArgs"]][["k"]])){
@@ -522,7 +522,7 @@ setMethod(
 
         #####
         #deal with those that are invalid combinations:
-        # Might could handle this better by call to .checkSubsampleClusterDArgs for each parameter combination
+        # Might could handle this better by call to .checkArgs for each parameter combination
         # Also, if ever reinstate param option, then should apply these checks to that param
         ######
         whInvalid <- which(!param[,"subsample"] & param[,"sequential"]

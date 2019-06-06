@@ -293,7 +293,7 @@ setMethod(
         ##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
         ##########
         
-        checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, cat=cat, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=verbose)
+        checkOut<-.checkArgs(x=x, diss=diss, cat=cat, subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=verbose)
         if(is.character(checkOut)) stop(checkOut)
         else {
             mainClusterArgs<-checkOut$mainClusterArgs

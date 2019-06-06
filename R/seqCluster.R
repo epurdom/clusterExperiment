@@ -148,7 +148,7 @@ seqCluster<-function(x=NULL, diss=NULL, cat=NULL, k0,
   ####Checks
   ########
   
-  checkOut<-.checkSubsampleClusterDArgs(x=x,diss=diss,cat=cat, subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+  checkOut<-.checkArgs(x=x,diss=diss,cat=cat, subsample=subsample,sequential=TRUE,mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,checkDiss=checkDiss)
   if(is.character(checkOut)) stop(checkOut)
   else {
     mainClusterArgs<-checkOut$mainClusterArgs

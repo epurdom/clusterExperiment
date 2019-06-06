@@ -111,7 +111,7 @@ setMethod(
 	###########################
 	moreArgs<-list(...)
 	subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
-	checkOut<-.checkSubsampleClusterDArgs(x=x, diss=diss, cat=cat, subsample=TRUE, sequential=FALSE, mainClusterArgs=NULL, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=TRUE)		
+	checkOut<-.checkArgs(x=x, diss=diss, cat=cat, subsample=TRUE, sequential=FALSE, mainClusterArgs=NULL, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=TRUE)		
   if(is.character(checkOut)) stop(checkOut)
   else{
     subsampleArgs<-checkOut$subsampleArgs
