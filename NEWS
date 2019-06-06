@@ -1,6 +1,7 @@
 Changes in version 2.5.3-9001 (Release date: )
 ==============
 * Changes to internals
+	- no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added. 
 	- Allow input of categorical matrix to all the intermediate functions
 	- no longer allow distFunction as argument to internal functions (subsampleClustering, mainClustering, seqCluster). These functions no longer will calculate distances, only the top level function, `clusterSingle`. 
 
