@@ -147,7 +147,7 @@ seqCluster<-function(inputMatrix, inputType, k0,
     ########
     ####Checks
     ########
-    
+    if(missing(inputType)) stop("Internal error: inputType was not passed to sequential clustering step")
     checkOut<-.checkArgs(inputMatrix=inputMatrix,
 		inputType=inputType, main=TRUE, subsample=subsample,sequential=TRUE,
 		mainClusterArgs=mainClusterArgs,

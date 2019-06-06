@@ -645,15 +645,18 @@ setMethod(
         if(!is.null(distFunction)){
           #need to update here when have filter (see below)
           diss<- allDist[[distFunction]]
-          clusterSingle(x=dat, diss=diss,subsample=subsample, reduceMethod="none",
+          ###FIXME: this is the one place where I want both x and diss!
+          ###   if only give a diss, it will not create output as clusterExperiment object. Sigh. 
+          return(clusterSingle(x=dat, diss=diss,subsample=subsample, reduceMethod="none",
                         mainClusterArgs=mainClusterArgs,
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose)       }
+                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose))
+        }
         else
-          clusterSingle(x=dat, subsample=subsample,
+          return(clusterSingle(inputMatrix=dat, inputType="X", subsample=subsample,
                         mainClusterArgs=mainClusterArgs, reduceMethod="none",
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose)
+                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose))
       }
       if(run){
         ##Calculate distances necessary only once

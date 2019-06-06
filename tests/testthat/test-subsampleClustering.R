@@ -3,10 +3,11 @@ context("subsampleClustering")
 test_that("subsampling", {
 
   set.seed(4897)
-  expect_silent(subAll <- subsampleClustering(x=mat,clusterFunction="pam",
-                                clusterArgs=list(k=3), classifyMethod="All",
-                                resamp.num = 100,
-                                samp.p = 0.7,ncores=1))
+  expect_silent(subAll <- subsampleClustering(inputMatrix=mat, 
+      inputType="X",clusterFunction="pam",
+      clusterArgs=list(k=3), classifyMethod="All",
+      resamp.num = 100,
+      samp.p = 0.7,ncores=1))
 
 
 

@@ -56,10 +56,13 @@ The constructor \code{ClusterFunction} creates an object of the
 
 Required arguments for \code{clusterFUN}: 
 \itemize{ 
-\item{"x or diss"}{either \code{x} and/or \code{diss} must be an argument 
+\item{"x or diss or cat"}{either \code{x} and/or \code{diss} and/or \code{cat} 
+    must be an argument 
 	depending on \code{inputType}. If
   	\code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
-  	assay(CEObj) would give)} 
+  	assay(CEObj) would give). If \code{cat} then nfeatures x nsamples, but all 
+  	entries should be categorical levels, encoded by positive
+  	integers, with -1/-2 types of NA (like a clusterMatrix slot, with dimensions switched)}
  \item{"checkArgs"}{logical argument. If
   	\code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
   	passed in \code{...} are valid and return an error if not; otherwise, no
@@ -106,7 +109,7 @@ Required arguments for \code{clusterFUN}:
 required arguments.}
 
 \item{\code{inputType}}{a character defining what type of input \code{clusterFUN}
-takes. Must be one of either "diss","X", or "either"}
+takes. Must be one of either "diss","X", or "cat"}
 
 \item{\code{algorithmType}}{a character defining what type of clustering algorithm
 \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
@@ -122,7 +125,7 @@ If given value \code{NULL} then subsampling type can
 only be \code{"InSample"}, see \code{\link{subsampleClustering}}.}
 
 \item{\code{inputClassifyType}}{the input type for the classification function (if
-not NULL); like \code{inputType}, must be one of "diss","X", or "either"}
+not NULL); like \code{inputType}, must be one of "diss","X", or "cat"}
 
 \item{\code{outputType}}{the type of output given by \code{clusterFUN}. Must either
 be "vector" or "list". If "vector" then the output should be a vector of

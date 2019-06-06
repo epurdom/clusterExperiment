@@ -11,10 +11,10 @@
 \usage{
 \S4method{mainClustering}{character}(clusterFunction, ...)
 
-\S4method{mainClustering}{ClusterFunction}(clusterFunction, x = NULL,
-  diss = NULL, distFunction = NA, clusterArgs = NULL, minSize = 1,
-  orderBy = c("size", "best"), format = c("vector", "list"),
-  checkArgs = TRUE, checkDiss = FALSE, returnData = FALSE, ...)
+\S4method{mainClustering}{ClusterFunction}(clusterFunction, inputMatrix,
+  inputType, clusterArgs = NULL, minSize = 1, orderBy = c("size",
+  "best"), format = c("vector", "list"), checkArgs = TRUE,
+  checkDiss = FALSE, returnData = FALSE, ...)
 
 \S4method{getPostProcessingArgs}{ClusterFunction}(clusterFunction)
 }
@@ -32,17 +32,6 @@ set to "pam".}
 The available post-processing arguments for a \code{ClusterFunction} object
 depend on it's algorithm type and can be found by calling
 \code{getPostProcessingArgs}. See details below for documentation.}
-
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
-columns).}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
-on which to run the clustering}
-
-\item{distFunction}{a distance function to be applied to \code{D}. Only
-relevant if input is only \code{x} (a matrix of data), and
-\code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
-required format of the distance function.}
 
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
@@ -72,6 +61,12 @@ valid.}
 \item{returnData}{logical as to whether to return the \code{diss} or \code{x}
 matrix in the output. If \code{FALSE} only the clustering vector is
 returned.}
+
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
+columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
+on which to run the clustering}
 }
 \value{
 mainClustering returns a vector of cluster assignments (if
@@ -113,9 +108,9 @@ data(simData)
 cl1<-mainClustering(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
 cl2<-mainClustering(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
 cl3<-mainClustering(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
-#change distance to manhattan distance
-cl4<-mainClustering(simData,clusterFunction="pam",clusterArgs=list(k=3),
-     distFunction=function(x){dist(x,method="manhattan")})
+#supply a dissimilarity
+diss<-dist(t(simData),method="manhattan")
+cl4<-mainClustering(diss=diss,clusterFunction="pam",clusterArgs=list(k=3))
 
 #run hierarchical method for finding blocks, with method of evaluating
 #coherence of block set to evalClusterMethod="average", and the hierarchical

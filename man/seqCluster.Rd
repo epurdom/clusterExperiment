@@ -4,18 +4,12 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
+seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
   top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
   checkDiss = FALSE)
 }
 \arguments{
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
-columns).}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering}
-
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
 
@@ -54,6 +48,12 @@ progress.}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
+
+\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
+columns).}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering}
 }
 \value{
 A list with values

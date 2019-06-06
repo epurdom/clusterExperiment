@@ -93,19 +93,23 @@ setMethod(
     signature = signature(clusterFunction = "ClusterFunction"),
     definition=function(clusterFunction,inputMatrix, inputType,
                         clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
-                        format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
+                        format=c("vector","list"),
+                        checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
+        if(missing(inputType)) stop("Internal error: inputType was not passed to mainClustering step")
         orderBy<-match.arg(orderBy)
         format<-match.arg(format)
         #######################
         ### Check arguments.
         #######################
         postProcessArgs<-list(...)
+        #remove those based added by clusterSingle/seqCluster
+        if("doKPostProcess" %in% names(postProcessArgs)) postProcessArgs<-postProcessArgs[-grep("doKPostProcess",names(postProcessArgs))]
         mainArgs<-c(list(clusterFunction=clusterFunction,
                          clusterArgs=clusterArgs,
                          minSize=minSize, orderBy=orderBy,
-						 postProcessNames=names(postProcessArgs),
+						 extraArguments=names(postProcessArgs),
                          format=format,checkArgs=checkArgs),postProcessArgs)
-        checkOut<-.checkArgs(inputMatrix=inputMatrix, inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, warn=TRUE)		
+        checkOut<-.checkArgs(inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, subsampleArgs=NULL,warn=TRUE)		
         if(is.character(checkOut)) stop(checkOut)
 		mainClusterArgs<-checkOut$mainClusterArgs
 		inputType<-mainClusterArgs[["inputType"]]
@@ -116,7 +120,7 @@ setMethod(
         orderBy=mainClusterArgs[["orderBy"]]
         format=mainClusterArgs[["format"]]
         checkArgs=mainClusterArgs[["checkArgs"]]
-        postProcessArgs=mainClusterArgs[["postProcessArgs"]]
+        postProcessArgs=mainClusterArgs[mainClusterArgs[["extraArguments"]]]
         
         
         
@@ -126,7 +130,9 @@ setMethod(
         N <- dim(inputMatrix)[2]
         argsClusterList<-c(clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE,inputMatrix=inputMatrix,inputType=inputType))
         if(doKPostProcess) {
-            res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, diss=diss), postProcessArgs))
+            if(inputType=="diss") giveDiss<-TRUE
+            else giveDiss<-FALSE
+            res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, giveDiss=giveDiss), postProcessArgs))
             ###Note to self: .postProcessClusterK returns clusters in list form.
         }
         else{
@@ -192,9 +198,10 @@ setMethod(
 .argsPostClusterK<-c("findBestK","kRange","removeSil","silCutoff")
 
 #' @importFrom cluster silhouette
-.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
+.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,giveDiss=FALSE)
 {
-    doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
+    # FIXME: this new strategy (where not have diss and x given) makes it not possible to do these post-processing steps unless inputMatrix is a dissimilarity matrix (and so clustering function works on diss)
+    doPostProcess<-(findBestK | removeSil ) & giveDiss #whether will calculate silhouette or not; if not, speeds up the function... 
     k<-clusterArgs[["k"]]
     if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
     if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
@@ -217,8 +224,9 @@ setMethod(
         return(cl)
     })
     if(doPostProcess){
+        ###FIXME: Here is problem with post-processing -- has to use the input matrix...
         silClusters<-lapply(clusters,function(cl){
-            cluster::silhouette(cl,dmatrix=diss)
+            cluster::silhouette(cl,dmatrix=clusterArgs[["inputMatrix"]])
         })
         if(length(ks)>1){
             whichBest<-which.max(sapply(silClusters, mean))

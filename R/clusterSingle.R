@@ -268,19 +268,21 @@ setMethod(
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
                           isCount=FALSE,transFun=NULL, 
                           reduceMethod=c("none", listBuiltInReducedDims(), listBuiltInFilterStats()),
-                          nDims=defaultNDims(x, reduceMethod),
+                          nDims=defaultNDims(inputMatrix, reduceMethod),
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, checkDiss=FALSE, verbose=TRUE) {
         transInputType<-inputType
+        makeDiss<-FALSE
         if(!is.na(distFunction)){
             if(inputType!="diss"){
-                makeDiss=TRUE
+                makeDiss<-TRUE
                 inputType<-"diss"
             }
             else{
                 stop("Cannot provide argument distFunction for an inputMatrix that is already a dissimilarity (inputType='diss')")
             }			
         }
+        
         ##########
         ## Check arguments and set defaults as needed
         ## Note, some checks are duplicative of internal functions, 

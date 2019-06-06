@@ -10,10 +10,9 @@
 \S4method{subsampleClustering}{character}(clusterFunction, ...)
 
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction,
-  x = NULL, diss = NULL, distFunction = NA, clusterArgs = NULL,
-  classifyMethod = c("All", "InSample", "OutOfSample"),
-  resamp.num = 100, samp.p = 0.7, ncores = 1, checkArgs = TRUE,
-  checkDiss = FALSE, ...)
+  inputMatrix, inputType, clusterArgs = NULL, classifyMethod = c("All",
+  "InSample", "OutOfSample"), resamp.num = 100, samp.p = 0.7,
+  ncores = 1, checkArgs = TRUE, checkDiss = FALSE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -26,15 +25,6 @@ clustering routines. If \code{clusterFunction} is missing, the default is
 set to "pam".}
 
 \item{...}{arguments passed to mclapply (if ncores>1).}
-
-\item{x}{the data on which to run the clustering (samples in columns).}
-
-\item{diss}{a dissimilarity matrix on which to run the clustering.}
-
-\item{distFunction}{a distance function to be applied to \code{D}. Only
-relevant if input is only \code{x} (a matrix of data), and
-\code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
-required format of the distance function.}
 
 \item{clusterArgs}{a list of parameter arguments to be passed to the function
 defined in the \code{clusterFunction} slot of the \code{ClusterFunction}
@@ -60,6 +50,10 @@ arguments will be ignored without warning.}
 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
+
+\item{x}{the data on which to run the clustering (samples in columns).}
+
+\item{diss}{a dissimilarity matrix on which to run the clustering.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with

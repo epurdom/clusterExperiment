@@ -4,42 +4,29 @@
 \name{clusterSingle}
 \alias{clusterSingle}
 \alias{clusterSingle,missing,matrixOrNULL-method}
-\alias{clusterSingle,matrixOrHDF5OrNULL,missing-method}
-\alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,ClusterExperiment,missing-method}
-\alias{clusterSingle,SingleCellExperiment,missing-method}
-\alias{clusterSingle,matrixOrHDF5OrNULL,matrixOrNULL-method}
+\alias{clusterSingle,ClusterExperiment-method}
+\alias{clusterSingle,SingleCellExperiment-method}
+\alias{clusterSingle,matrixOrHDF5OrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
-\S4method{clusterSingle}{missing,matrixOrNULL}(x, diss, ...)
+\S4method{clusterSingle}{SummarizedExperiment}(inputMatrix, ...)
 
-\S4method{clusterSingle}{matrixOrHDF5OrNULL,missing}(x, diss, ...)
+\S4method{clusterSingle}{ClusterExperiment}(inputMatrix, ...)
 
-\S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
+\S4method{clusterSingle}{SingleCellExperiment}(inputMatrix,
+  reduceMethod = "none", nDims = defaultNDims(inputMatrix,
+  reduceMethod), whichAssay = 1, ...)
 
-\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
-
-\S4method{clusterSingle}{SingleCellExperiment,missing}(x,
-  reduceMethod = "none", nDims = defaultNDims(x, reduceMethod),
-  whichAssay = 1, ...)
-
-\S4method{clusterSingle}{matrixOrHDF5OrNULL,matrixOrNULL}(x, diss,
-  subsample = TRUE, sequential = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
-  transFun = NULL, reduceMethod = c("none", listBuiltInReducedDims(),
-  listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
-  clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
-  checkDiss = FALSE, verbose = TRUE)
+\S4method{clusterSingle}{matrixOrHDF5OrNULL}(inputMatrix,
+  inputType = "X", subsample = TRUE, sequential = FALSE,
+  distFunction = NA, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, isCount = FALSE, transFun = NULL,
+  reduceMethod = c("none", listBuiltInReducedDims(),
+  listBuiltInFilterStats()), nDims = defaultNDims(inputMatrix,
+  reduceMethod), clusterLabel = "clusterSingle",
+  saveSubsamplingMatrix = FALSE, checkDiss = FALSE, verbose = TRUE)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (features in rows), or a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}},
-\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
-object.}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering.}
-
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
 
@@ -100,15 +87,28 @@ existing coClustering object in the slot \code{coClustering} if input object is 
 valid.}
 
 \item{verbose}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
+
+\item{x}{numerical data on which to run the clustering (features in rows), or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
+
+\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
+on which to run the clustering.}
+
+\item{cat}{data matrix (features in rows) of all categorical features, encoded by positive integers (mainly used internally for clustering sets of clusterings).}
 }
 \value{
 A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
 
 If input was \code{diss}, then the result is a list with values
-  \itemize{ \item{clustering: }{The vector of clustering results}
-  \item{clusterInfo: }{A list with information about the parameters run in
-  the clustering} \item{diss: }{The dissimilarity matrix used in the
-  clustering} }
+  \itemize{ 
+       \item{clustering: }{The vector of clustering results}
+       \item{clusterInfo: }{A list with information about the parameters run in
+  the clustering} 
+       \item{diss: }{The dissimilarity matrix used in the
+  clustering} 
+  }
 }
 \description{
 Given input data, this function will find clusters, based on a single
@@ -138,7 +138,9 @@ Unlike \code{\link{clusterMany}}, most of the relevant arguments for
 
 Only certain combinations of parameters are possible for certain
   choices of \code{sequential} and \code{subsample}. These restrictions are
-  documented below. \itemize{ \item{\code{clusterFunction} for
+  documented below. 
+  \itemize{ 
+      \item{\code{clusterFunction} for
   \code{mainClusterArgs}: }{The choice of \code{subsample=TRUE} also controls
   what algorithm type of clustering functions can be used in the
   mainClustering step. When \code{subsample=TRUE}, then resulting
@@ -153,17 +155,20 @@ Only certain combinations of parameters are possible for certain
   \code{algorithmType} 'K'.  When \code{subsample=FALSE} and
   \code{sequential=FALSE}, then there are no restrictions on the
   \code{ClusterFunction} and that clustering is applied directly to the input
-  data. } \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
+  data. } 
+  \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
   \code{ClusterFunction} object given to the \code{clusterArgs} of
   \code{subsamplingArgs} is missing the algorithm will use the default for
   \code{\link{subsampleClustering}} (currently "pam"). If
   \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type
-  'K'. } \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
+  'K'. } 
+  \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
   and \code{sequential=TRUE}, the current K of the sequential iteration
   determines the 'k' argument passed to \code{\link{subsampleClustering}}  so
   setting 'k=' in the list given to the subsampleArgs will not do anything
   and will produce a warning to that effect (see documentation of
-  \code{\link{seqCluster}}).} \item{Setting \code{k} for mainClustering step:
+  \code{\link{seqCluster}}).} 
+  \item{Setting \code{k} for mainClustering step:
   }{If \code{sequential=TRUE} then the user should not set \code{k} in the
   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be
   set by the sequential code, which has a iterative reseting of the
@@ -172,7 +177,8 @@ Only certain combinations of parameters are possible for certain
   \code{subsample=TRUE}, then the \code{k} in the clustering of
   mainClustering step (assuming the clustering function is of type 'K') will
   use the \code{k} used in the subsampling step to make sure that the
-  \code{k} used in the mainClustering step is reasonable. } \item{Setting
+  \code{k} used in the mainClustering step is reasonable. } 
+  \item{Setting
   \code{findBestK} in \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
   \code{subsample=FALSE}, the user should not set 'findBestK=TRUE' in
   \code{mainClusterArgs}. This is because in this case the sequential method

@@ -128,17 +128,15 @@
 
 # if inputType is character value, returns if matches desiredInputType, otherwise throws appropriate errors. 
 
-.checkCFInput <- function(inputType, desiredInputType = NA) {
+.checkCFInput <- function(inputType, desiredInputType) {
     if (!all(desiredInputType %in% .inputTypes))
         stop(sprintf(
             "not all values in 'desiredInputType' match allowable values (%s)",
             paste(.inputTypes, ", ")
         ))
-    if(!is.na(desiredInputType)){
-        intersect<-intersect(desiredInputType,inputType)
-        if(length(intersect)==0){
-            stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(inputType,collapse=" or ")))
-        }
+    intersect<-intersect(desiredInputType,inputType)
+    if(length(intersect)==0){
+        stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(inputType,collapse=" or ")))
     }
     return(inputType)
 }
@@ -265,18 +263,15 @@
                 mainClusterArgs[["minSize"]] <-
                     round(mainClusterArgs[["minSize"]]) #in case not integer.
             
+            #-------
             ## Check post-processing arguments
+            #-------
             doKPostProcess <- FALSE
             whPostProcessArgs <-
                 which(names(mainClusterArgs) %in% getPostProcessingArgs(clusterFunction))
             if (length(whPostProcessArgs) > 0) {
-                ##FIXME: Do I need both checkArgs and warn?
                 #get rid of wrong args passed because of user confusion between the two
-                if (!is.null(mainClusterArgs[["postProcessNames"]]) && length(whPostProcessArgs) != length(mainClusterArgs[["postProcessNames"]]) & checkArgs & warn)
-                    warning(
-                        "Some arguments passed via '...' in mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object"
-                    )
-                postProcessArgs <- mainClusterArgs[whRightArgs]
+                postProcessArgs <- mainClusterArgs[whPostProcessArgs]
                 if (clusterFunction@algorithmType == "K") {
                     if ("findBestK"  %in% names(postProcessArgs) &&
                         postProcessArgs[["findBestK"]])
@@ -285,9 +280,23 @@
                         postProcessArgs[["removeSil"]])
                         doKPostProcess <- TRUE
                 }
-                mainClusterArgs[["postProcessArgs"]] <- postProcessArgs
+                if(!is.null(mainClusterArgs[["extraArguments"]])){
+                    # remove existing ones, and only keep usable ones.
+                    # Only relevant in the check run in mainClustering, 
+                    # where need get rid of extra ones.
+                    if (length(whPostProcessArgs) !=
+                         length(mainClusterArgs[["extraArguments"]]) & warn)
+                        warning(
+                            "Some arguments passed via '...' in mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object"
+                        )
+                    whRm<-which(names(mainClusterArgs) %in% mainClusterArgs[["extraArguments"]])
+                    if(length(whRm)>0){
+                        mainClusterArgs<-mainClusterArgs[-whRm]
+                        mainClusterArgs<-c(mainClusterArgs,postProcessArgs)           
+                    }
+                    mainClusterArgs[["extraArguments"]] <- names(postProcessArgs)     
+                }
             }
-            else mainClusterArgs[["postProcessArgs"]]<-NULL
             mainClusterArgs[["doKPostProcess"]] <- doKPostProcess
             
             #------
@@ -307,7 +316,7 @@
                         )
                     )
             }
-            mainClusterArgs[["inputType"=input]]
+            mainClusterArgs[["inputType"]]<-input
         }
         
         
