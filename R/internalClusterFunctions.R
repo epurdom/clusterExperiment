@@ -1,8 +1,21 @@
 #######
 #Internal algorithms for cluster functions
 #######
-#convert list output into cluster vector.
-.convertClusterListToVector <- function(clusterList, N)
+
+.clusterVectorToList <- function(vec) {
+    clList <- tapply(seq_along(vec), vec, function(x) {
+        x
+    }, simplify = FALSE)
+    whNotAssign <- which(sapply(clList, function(x) {
+        all(vec[x] == -1)
+    }))
+    if (length(whNotAssign) > 1)
+        stop("Internal coding error in removing unclustered samples")
+    if (length(whNotAssign) > 0)
+        clList <- clList[-whNotAssign]
+    return(clList)
+}
+.clusterListToVector <- function(clusterList, N)
 {
     clust.id <- rep(-1, N)
     nfound <- length(clusterList)
@@ -13,8 +26,6 @@
     }
     return(clust.id)
 }
-
-
 .checkDissFunction <- function(D, algType = NA) {
     if (anyNA(D))
         stop(
@@ -60,8 +71,7 @@
             stop("if distFunction is not a function, it must be either NA or a character")
     }
     ###Add data.matrix here for HDF5, not optimized.
-    D <-
-        try(as.matrix(distFunction(data.matrix(t(x)))))
+    D <-try(as.matrix(distFunction(data.matrix(t(x)))))
     #distances assumed to be of observations on rows
     if (inherits(D, "try-error"))
         stop("input distance function gives error when applied to x")
@@ -81,36 +91,7 @@
 }
 
 
-.clusterVectorToList <- function(vec) {
-    clList <- tapply(seq_along(vec), vec, function(x) {
-        x
-    }, simplify = FALSE)
-    whNotAssign <- which(sapply(clList, function(x) {
-        all(vec[x] == -1)
-    }))
-    if (length(whNotAssign) > 1)
-        stop("Internal coding error in removing unclustered samples")
-    if (length(whNotAssign) > 0)
-        clList <- clList[-whNotAssign]
-}
-.clusterListToVector <- function(ll, N) {
-    if (length(ll) == 0)
-        return(rep(-1, N))
-    else{
-        names(ll) <- as.character(seq_along(ll))
-        clId <-
-            lapply(seq_along(ll), function(ii) {
-                rep(ii, length = length(ll[[ii]]))
-            })
-        clVal <- unlist(clId)
-        clInd <- unlist(ll)
-        clusterVec <- rep(-1, length = N)
-        clusterVec[clInd] <- clVal
-        return(clusterVec)
-        
-    }
-    
-}
+
 .orderByAlpha <- function(res, S)
 {
     if (length(res) > 0) {
@@ -201,7 +182,7 @@
         #checks for mainClustering stuff
         ########
         inputType<-match.arg(inputType,.inputTypes)
-        makeDiss<-FALSE
+        doDiss<-FALSE #If returns TRUE, then was a mismatch, but could be fixed by X -> Diss
         if (main) {
             if ("clusterFunction" %in% names(mainClusterArgs)) {
                 #get clusterFunction for cluster D
@@ -212,13 +193,13 @@
                 #Following input commands will return only X or Diss because gave the inputType argument...
                 ## FIXME: Will need to be "cat" soon, for now leave it. 
                 if(subsample){
-                    mainInputType<-"diss"
                     # Check that mainClustering cluster function takes 
                     # input that is Diss
                     # Reason: if subsampling, then the D from subsampling 
                     # sent to the clusterFunction.
                     # This would be caught below anyway, 
                     # but this is a more informative error
+                    mainInputType<-"diss"
                     if (inputType(clusterFunction) != "diss" )
                         return(
                             "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity matrix."
@@ -229,7 +210,18 @@
                     inputType=mainInputType,
                     desiredInputType = inputType(clusterFunction)),
                     silent=TRUE)
-                if(inherits(input, "try-error")) return(input)
+                if(inherits(input, "try-error")){
+                    ##In clusterSingle, can build diss if should.
+                    if(allowMakeDiss){
+                       if(mainInputType=="X" & "diss" %in% inputType(clusterFunction)){
+                           doDiss<-TRUE 
+                           input<-"diss"
+                       }
+                    }
+                    else{
+                        return(paste("In mainClustering step,",input)) 
+                    }
+                } 
                 algType <- algorithmType(clusterFunction)
             }
             else{
@@ -254,15 +246,16 @@
             }
             
             #Check that minSize is valid
-            if (!is.numeric(mainClusterArgs[["minSize"]]) ||
-                mainClusterArgs[["minSize"]] < 0)
-                return(
-                    "Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster (in main clustering step)."
-                )
-            else
-                mainClusterArgs[["minSize"]] <-
-                    round(mainClusterArgs[["minSize"]]) #in case not integer.
-            
+            if("minSize" %in% names(mainClusterArgs)){
+                if (!is.numeric(mainClusterArgs[["minSize"]]) ||
+                    mainClusterArgs[["minSize"]] < 0)
+                    return(
+                        "Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster (in main clustering step)."
+                    )
+                else
+                    mainClusterArgs[["minSize"]] <-
+                        round(mainClusterArgs[["minSize"]]) #in case not integer.                
+            }
             #-------
             ## Check post-processing arguments
             #-------
@@ -418,8 +411,20 @@
                     subsampleCF <- getBuiltInFunction(subsampleCF)
                 subsampleAlgType <- algorithmType(subsampleCF)
                 inputSub<-try(.checkCFInput(inputType=inputSub, 
-                                            desiredInputType=subsampleCF@inputType),silent=TRUE)
-                if(inherits(inputSub, "try-error")) return(inputSub)
+                    desiredInputType=inputType(subsampleCF)),
+                    silent=TRUE)
+                if(inherits(inputSub, "try-error")){
+                    ##In clusterSingle, can build diss if should.
+                    if(allowMakeDiss){
+                       if(inputType=="X" & "diss" %in% inputType(subsampleCF)){
+                           doDiss<-TRUE 
+                           inputSub<-"diss"
+                       }
+                    }
+                    else{
+                        return(paste("In subsampling clustering step,",input)) 
+                    }
+                } 
                 
                 # Check that subsample clustering function is of type 'k' if sequential=TRUE
                 # Reason: seqCluster requires subsampling cluster function to be of type "K"
@@ -437,22 +442,25 @@
             }
             else return("Must give 'clusterFunction' value to 'subsampleClustering'.")
             #-----
-            #Check the classify function
+            #Check the classifyMethod argument
             #-----
-            if (is.null(subsampleCF@classifyFUN)) {
-                if ("classifyMethod" %in% names(subsampleArgs) &&
-                    subsampleArgs[["classifyMethod"]] != "InSample")
-                    if(warn) warning(
-                        "Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot. Changing classifyMethod to 'InSample'."
-                    )
-                subsampleArgs[["classifyMethod"]] <- "InSample"
-            }
-            if(subsampleArgs[["classifyMethod"]]!="InSample"){
-                if(!inputSub %in% subsampleCF@inputClassifyType){
-                    if(warn) warning(sprintf("The clusterFunction for subsampling chosen does not provide ability to classify new samples from input type %s to clusters in the subsampling step (needed by classifyMethod=%s in 'subsampleArgs'). Changing classifyMethod to 'InSample'.", inputSub, subsampleArgs[["classifyMethod"]]))
-                    subsampleArgs[["classifyMethod"]]<-"InSample"
+            if(!is.null(subsampleArgs[["classifyMethod"]])){
+                if (is.null(subsampleCF@classifyFUN)) {
+                    if ("classifyMethod" %in% names(subsampleArgs) &&
+                        subsampleArgs[["classifyMethod"]] != "InSample")
+                        if(warn) warning(
+                            "Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot. Changing classifyMethod to 'InSample'."
+                        )
+                    subsampleArgs[["classifyMethod"]] <- "InSample"
+                }
+                if(subsampleArgs[["classifyMethod"]]!="InSample"){
+                    if(!inputSub %in% subsampleCF@inputClassifyType){
+                        if(warn) warning(sprintf("The clusterFunction for subsampling chosen does not provide ability to classify new samples from input type %s to clusters in the subsampling step (needed by classifyMethod=%s in 'subsampleArgs'). Changing classifyMethod to 'InSample'.", inputSub, subsampleArgs[["classifyMethod"]]))
+                        subsampleArgs[["classifyMethod"]]<-"InSample"
+                    }
                 }
             }
+
             
             ##------
             ## Check have required args for subsample. 
@@ -549,7 +557,8 @@
         return(
             list(
                 mainClusterArgs = mainClusterArgs,
-                subsampleArgs = subsampleArgs
+                subsampleArgs = subsampleArgs,
+                doDiss=doDiss
             )
         )
         

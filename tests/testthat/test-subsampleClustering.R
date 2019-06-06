@@ -15,7 +15,7 @@ test_that("subsampling", {
 	#subsample clusterings won't have identification to all samples...
   set.seed(4897)
   expect_silent(subInSample <- 
-	  subsampleClustering(x=mat,clusterArgs=list(k=3),
+	  subsampleClustering(inputMatrix=mat,inputType="X",clusterArgs=list(k=3),
                                      clusterFunction="pam",
                                      classifyMethod=c("InSample"),
                                      resamp.num = 100,

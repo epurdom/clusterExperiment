@@ -267,34 +267,38 @@ setMethod(
                           subsample=TRUE, sequential=FALSE, distFunction=NA,
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
                           isCount=FALSE,transFun=NULL, 
-                          reduceMethod=c("none", listBuiltInReducedDims(), listBuiltInFilterStats()),
+                          reduceMethod=if(inputType=="X") c("none", listBuiltInReducedDims(), listBuiltInFilterStats()) else "none",
                           nDims=defaultNDims(inputMatrix, reduceMethod),
+                          makeMissingDiss=FALSE,
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, checkDiss=FALSE, verbose=TRUE) {
         transInputType<-inputType
-        makeDiss<-FALSE
-        if(!is.na(distFunction)){
+        doDiss<-FALSE
+        if(is.function(distFunction) || !is.na(distFunction)){
             if(inputType!="diss"){
-                makeDiss<-TRUE
                 inputType<-"diss"
+                doDiss<-TRUE
             }
             else{
                 stop("Cannot provide argument distFunction for an inputMatrix that is already a dissimilarity (inputType='diss')")
-            }			
+            }
         }
-        
         ##########
         ## Check arguments and set defaults as needed
         ## Note, some checks are duplicative of internal functions, 
         ## but better here, because don't want to find error after 
         ## already done extensive calculation...
         ##########
-        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, warn=verbose)
+        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, allowMakeDiss=makeMissingDiss & !doDiss,warn=verbose)
         if(is.character(checkOut)) stop(checkOut)
-        else {
-            mainClusterArgs<-checkOut$mainClusterArgs
-            subsampleArgs<-checkOut$subsampleArgs
-        }
+        mainClusterArgs<-checkOut$mainClusterArgs
+        subsampleArgs<-checkOut$subsampleArgs
+        ## if makeMissingDiss=TRUE, then will tell whether to create diss from X with euclidean distance
+        if(!doDiss){
+            doDiss<-checkOut$doDiss
+            if(doDiss) distFunction<-function(x){dist(x)}
+        } 
+        
         if(sequential){
             if(is.null(seqArgs)) {
                 ##To DO: Question: if missing seqArgs, should we grab k0 from subsampleArgs?
@@ -346,8 +350,12 @@ setMethod(
         
         
         #Make dissimilarity AFTER transforming data
-        if(makeDiss){
-            inputMatrix<-.makeDiss(inputMatrix,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+        if(doDiss){
+            cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
+            inputMatrix<-.makeDiss(inputMatrix,
+                distFunction=distFunction,
+                checkDiss=checkDiss,
+                algType=algorithmType(cf))
             
         }
         
@@ -356,7 +364,8 @@ setMethod(
         ##########
         if(sequential){
             outlist <- do.call("seqCluster",
-                               c(list(inputMatrix=inputMatrix, subsample=subsample,
+                               c(list(inputMatrix=inputMatrix,
+                                    inputType=inputType, subsample=subsample,
                                       subsampleArgs=subsampleArgs,
                                       mainClusterArgs=mainClusterArgs), seqArgs))
         }
@@ -368,7 +377,7 @@ setMethod(
                                                 subsample=subsample,
                                                 subsampleArgs=subsampleArgs,
                                                 mainClusterArgs=mainClusterArgs)
-            outlist <- list("clustering"=.convertClusterListToVector(finalClusterList$result, N))
+            outlist <- list("clustering"=.clusterListToVector(finalClusterList$result, N))
             
         }
         clInfo<-list(list(clusterInfo = outlist$clusterInfo,
@@ -415,10 +424,10 @@ setMethod(
 #wrapper that calls the clusterSampling and mainClustering routines in reasonable order.
 #called by both seqCluster and clusterSingle
 #clusterFunction assumed to be defined in mainClusterArgs AND subsampleArgs
-.clusterWrapper <- function(inputMatrix,  subsample, mainClusterArgs=NULL, subsampleArgs=NULL)
+.clusterWrapper <- function(inputMatrix,  subsample, mainClusterArgs, subsampleArgs)
 {
     if(subsample){
-        diss<-do.call("subsampleClustering",
+        inputMatrix<-do.call("subsampleClustering",
 			c(list(inputMatrix=inputMatrix), 
 			subsampleArgs))
     }    

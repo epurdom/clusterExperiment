@@ -148,10 +148,9 @@ seqCluster<-function(inputMatrix, inputType, k0,
     ####Checks
     ########
     if(missing(inputType)) stop("Internal error: inputType was not passed to sequential clustering step")
-    checkOut<-.checkArgs(inputMatrix=inputMatrix,
-		inputType=inputType, main=TRUE, subsample=subsample,sequential=TRUE,
+    checkOut<-.checkArgs(inputType, main=TRUE, subsample=subsample,sequential=TRUE,
 		mainClusterArgs=mainClusterArgs,
-		subsampleArgs=subsampleArgs,checkDiss=checkDiss)
+		subsampleArgs=subsampleArgs)
     if(is.character(checkOut)) stop(checkOut)
     mainClusterArgs<-checkOut$mainClusterArgs
     subsampleArgs<-checkOut$subsampleArgs
@@ -163,33 +162,29 @@ seqCluster<-function(inputMatrix, inputType, k0,
     if(input=="diss") rownames(inputMatrix)<-colnames(inputMatrix)
     
     #########
-    #Function that does the actual clustering steps
+    # Function that updates k and runs clustering
     # (Called at each iteration)
+    # Note that depends on .checkArgs having removed the 'k' option 
+    # from the user inputs
     #########
     updateClustering<-function(newk){
         if(verbose) cat(paste("k =", newk,"\n"))
+        # set k to the new k in main cluster step
+        # note is subsample=TRUE, and alg. of main is type K, 
+        # means k is always equal at subsample and main step. 
+        tempMainArgs<-mainClusterArgs
+        tempMainArgs[["clusterArgs"]]<-c(list(k=newk),
+			mainClusterArgs[["clusterArgs"]])       
+        tempSubArgs<-subsampleArgs
+        # set k to new k in subsampling step.
         if(subsample){
-            tempArgs<-subsampleArgs
-            tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k  
-            #also set the k for the mainClustering to be the same as in subsampling.
-            tempClusterDArgs<-mainClusterArgs
-            tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
-            
-            res <- .clusterWrapper(inputMatrix=inputMatrix, subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
+            tempSubArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) 
         }
-        else{
-            tempArgs<-mainClusterArgs
-            #set k:
-            tempArgs[["clusterArgs"]]<-c(list(k=newk),
-				mainClusterArgs[["clusterArgs"]])       
-			res <- .clusterWrapper(inputMatrix=inputMatrix,
-				subsample=subsample,  subsampleArgs=subsampleArgs,
-				mainClusterArgs=tempArgs)$results
-            
-        }
+        res <- .clusterWrapper(inputMatrix=inputMatrix, 
+                subsample=subsample,  subsampleArgs=tempSubArgs,
+                mainClusterArgs=tempMainArgs)$results
         return(res)
     }
-    
     
     #########
     ## Iteration code
@@ -325,7 +320,7 @@ seqCluster<-function(inputMatrix, inputType, k0,
         if(remain< remain.n) whyStop<-"Ran out of samples"
         if(!found & k>k.max) whyStop<-paste("Went past k.max=",k.max,"in looking for cluster with similarity to previous.")
     }
-    clusterVector<-.convertClusterListToVector(tclust,N)
+    clusterVector<-.clusterListToVector(tclust,N)
     if(all(clusterVector==-1) & length(tclust)>0) stop("coding error")
     if(nfound>0){
         size <- sapply(tclust, length)

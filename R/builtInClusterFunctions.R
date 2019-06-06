@@ -17,15 +17,15 @@ NULL
     }
     return(x)
 }
-.genericClassify<-function(x,centers){
-    if(inherits(x,"DelayedArray") || inherits(centers,"DelayedArray")){
-        x<-as.matrix(DelayedArray::DelayedArray(x))
+.genericClassify<-function(inputMatrix, inputType, centers){
+    if(inherits(inputMatrix,"DelayedArray") || inherits(centers,"DelayedArray")){
+        inputMatrix<-as.matrix(DelayedArray::DelayedArray(inputMatrix))
         centers<-as.matrix(DelayedArray::DelayedArray(centers))
     }
     #avoid integer overflow...
-    x<-.makeNumeric(x)
+    inputMatrix<-.makeNumeric(inputMatrix)
     centers<-.makeNumeric(centers)
-    distMat<-pracma::distmat(t(x),centers)
+    distMat<-pracma::distmat(t(inputMatrix),centers)
     apply(distMat,1,which.min)	
 }
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
@@ -76,7 +76,8 @@ NULL
 #' @importFrom stats kmeans
 .kmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) { 
     passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
-    out<-do.call(stats::kmeans,c(list(x=t(inputMatrix),centers=k),passedArgs))
+    out<-do.call(stats::kmeans,
+        c(list(x=t(inputMatrix),centers=k),passedArgs))
     if(cluster.only) return(out$cluster)
     else return(.kmeansPartitionObject(x,out)) 
 } 
@@ -115,7 +116,7 @@ NULL
 .mbkmeansClassify <- function(inputMatrix, inputType, clusterResult) {
     #This will not be HDF5 friendly...will have to bring it into memory...
     #Should write a C++ code to do this?? Maybe in mbkmeans? 
-    suppressWarnings(stats::kmeans(t(x), clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
+    suppressWarnings(stats::kmeans(t(inputMatrix), clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
 } 
 .mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
 
@@ -136,8 +137,8 @@ NULL
         return(do.call(cluster::pam, c(list(x=t(inputMatrix),k=k, cluster.only=cluster.only), passedArgs)))  
     } 
 }
-.pamClassify <- function(x, clusterResult) { #x p x n matrix
-    .genericClassify(x,clusterResult$medoids)
+.pamClassify <- function(inputMatrix, inputType,clusterResult) { #x p x n matrix
+    .genericClassify(inputMatrix,centers=clusterResult$medoids)
 } 
 .pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType=c("X","diss"), inputClassifyType="X", algorithmType="K",outputType="vector")
 

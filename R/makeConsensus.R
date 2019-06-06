@@ -131,7 +131,8 @@ setMethod(
       if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
         clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
       }
-      cl <- mainClustering(diss=.clustersHammingDistance(t(clusterMat)), clusterFunction=clusterFunction,
+      cl <- mainClustering(inputMatrix=.clustersHammingDistance(t(clusterMat)),
+               inputType="diss",clusterFunction=clusterFunction,
                            minSize=minSize, format="vector",
                            clusterArgs=clustArgs)
       

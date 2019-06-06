@@ -143,9 +143,14 @@ setMethod(
             ##Cluster subsample
             ##----
             #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
-            argsClusterList <- c(argsClusterList,
-                                 list(inputMatrix=inputMatrix,inputType=inputType,"checkArgs"=checkArgs,
-                                      "cluster.only"=(classifyMethod=="InSample")))
+            argsClusterList <- list(inputType=inputType,"checkArgs"=checkArgs,
+                "cluster.only"=(classifyMethod=="InSample"))
+            if(inputType=="diss") 
+                argsClusterList<-c(argsClusterList, 
+                    list(inputMatrix=inputMatrix[ids,ids,drop=FALSE]))
+            else
+                argsClusterList<-c(argsClusterList, 
+                    list(inputMatrix=inputMatrix[,ids,drop=FALSE]))
             result <- do.call(clusterFunction@clusterFUN,
                               c(argsClusterList,clusterArgs))
             
@@ -164,13 +169,11 @@ setMethod(
                 classX <- rep(NA,N)
                 classX[-ids] <- classElse
             }
-            
             if(classifyMethod=="InSample"){
                 classX <- rep(NA,N)
-                
                 if(is.list(result)){
                     if(clusterFunction@outputType=="list"){
-                        resultVec <- .convertClusterListToVector(result,N=length(ids))
+                        resultVec <- .clusterListToVector(result,N=length(ids))
                         classX[ids] <- resultVec
                     } else {
                         stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")

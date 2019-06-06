@@ -32,6 +32,7 @@ mat <- matrix(data=rnorm(20*15), ncol=15)
 mat[1,1]<- -1 #force a negative value
 colnames(mat)<-paste("Sample",1:ncol(mat))
 rownames(mat)<-paste("Gene",1:nrow(mat))
+dissMat<-as.matrix(dist(t(mat)))
 numLabels <- as.character(gl(5, 3))
 numLabels[c(1:2)]<- c("-1","-2") #make sure some not assigned
 numLabels<-factor(numLabels)

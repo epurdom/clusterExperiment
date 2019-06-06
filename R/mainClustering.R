@@ -144,7 +144,7 @@ setMethod(
         #######################
         ## FIXME: need to get rid of this, unless needed/requested (though it is requested by sequential)
         #this is perhaps not efficient. For now will do this, then consider going back and only converting when, where needed.
-        if(clusterFunction@outputType=="vector" & algorithmType(clusterFunction)!="K"){
+        if(clusterFunction@outputType=="vector" & !doKPostProcess){
             res<-.clusterVectorToList(res)
         }
         clusterSize<-sapply(res, length)
