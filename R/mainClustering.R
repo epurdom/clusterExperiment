@@ -79,84 +79,82 @@
 #' @aliases mainClustering,character-method
 #' @export
 setMethod(
-  f = "mainClustering",
-  signature = signature(clusterFunction = "character"),
-  definition = function(clusterFunction,...){
-  	mainClustering(getBuiltInFunction(clusterFunction),...)
-	  
-  }
- )
+    f = "mainClustering",
+    signature = signature(clusterFunction = "character"),
+    definition = function(clusterFunction,...){
+        mainClustering(getBuiltInFunction(clusterFunction),...)
+        
+    }
+)
 #' @rdname mainClustering
 #' @export
 setMethod(
-  f = "mainClustering",
-  signature = signature(clusterFunction = "ClusterFunction"),
-  definition=function(clusterFunction,x=NULL, diss=NULL, cat=NULL,
-                      clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
-                      format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
-    orderBy<-match.arg(orderBy)
-    format<-match.arg(format)
-    #######################
-    ### Check input and Create distance if needed, and check it. Do it in centralized function so can make same checks everywhere.
-    #######################
-    postProcessArgs<-list(...)
-		mainArgs<-c(list(clusterFunction=clusterFunction,
-                      clusterArgs=clusterArgs,
-											minSize=minSize, orderBy=orderBy, postProcessNames=names(postProcessArgs),
-                      format=format,checkArgs=checkArgs),postProcessArgs)
-		checkOut<-.checkArgs(x=x, diss=diss, cat=cat, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, checkDiss=checkDiss,
-			warn=TRUE)		
-	  if(is.character(checkOut)) stop(checkOut)
-	  else{
-	    mainClusterArgs<-checkOut$mainClusterArgs
-	  }
-		
-		input<-checkOut$inputClusterD
-		doKPostProcess<-mainClusterArgs[["doKPostProcess"]]
-		clusterFunction=mainClusterArgs[["clusterFunction"]]
-		clusterArgs=mainClusterArgs[["clusterArgs"]]
-		minSize=mainClusterArgs[["minSize"]] 
-		orderBy=mainClusterArgs[["orderBy"]]
-		format=mainClusterArgs[["format"]]
-		checkArgs=mainClusterArgs[["checkArgs"]]
-		postProcessArgs=mainClusterArgs[["postProcessArgs"]]
-    
-    #######################
-    ####Run clustering:
-    #######################
-    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-    
-    argsClusterList<-.makeDataArgs(dataInput=input,funInput=clusterFunction@inputType, xData=x, dissData=diss, catData=cat)
-    argsClusterList<-c(argsClusterList, clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE))
-    if(doKPostProcess) {
-      res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, diss=diss), postProcessArgs))
-      ###Note to self: .postProcessClusterK returns clusters in list form.
+    f = "mainClustering",
+    signature = signature(clusterFunction = "ClusterFunction"),
+    definition=function(clusterFunction,inputMatrix, inputType,
+                        clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
+                        format=c("vector","list"),checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
+        orderBy<-match.arg(orderBy)
+        format<-match.arg(format)
+        #######################
+        ### Check arguments.
+        #######################
+        postProcessArgs<-list(...)
+        mainArgs<-c(list(clusterFunction=clusterFunction,
+                         clusterArgs=clusterArgs,
+                         minSize=minSize, orderBy=orderBy,
+						 postProcessNames=names(postProcessArgs),
+                         format=format,checkArgs=checkArgs),postProcessArgs)
+        checkOut<-.checkArgs(inputMatrix=inputMatrix, inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, warn=TRUE)		
+        if(is.character(checkOut)) stop(checkOut)
+		mainClusterArgs<-checkOut$mainClusterArgs
+		inputType<-mainClusterArgs[["inputType"]]
+        doKPostProcess<-mainClusterArgs[["doKPostProcess"]]
+        clusterFunction=mainClusterArgs[["clusterFunction"]]
+        clusterArgs=mainClusterArgs[["clusterArgs"]]
+        minSize=mainClusterArgs[["minSize"]] 
+        orderBy=mainClusterArgs[["orderBy"]]
+        format=mainClusterArgs[["format"]]
+        checkArgs=mainClusterArgs[["checkArgs"]]
+        postProcessArgs=mainClusterArgs[["postProcessArgs"]]
+        
+        
+        
+        #######################
+        ####Run clustering:
+        #######################
+        N <- dim(inputMatrix)[2]
+        argsClusterList<-c(clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE,inputMatrix=inputMatrix,inputType=inputType))
+        if(doKPostProcess) {
+            res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, diss=diss), postProcessArgs))
+            ###Note to self: .postProcessClusterK returns clusters in list form.
+        }
+        else{
+            res<-do.call(clusterFunction@clusterFUN,argsClusterList)
+        }
+        
+        #######################
+        #Now format into desired output, order
+        #######################
+        ## FIXME: need to get rid of this, unless needed/requested (though it is requested by sequential)
+        #this is perhaps not efficient. For now will do this, then consider going back and only converting when, where needed.
+        if(clusterFunction@outputType=="vector" & algorithmType(clusterFunction)!="K"){
+            res<-.clusterVectorToList(res)
+        }
+        clusterSize<-sapply(res, length)
+        if(length(res)>0) res <- res[clusterSize>=minSize]
+        if(length(res)!=0 & orderBy=="size"){ #i.e. there exist clusters found that passed minSize
+            clusterSize<-sapply(res, length) #redo because dropped small clusters earlier
+            res <- res[order(clusterSize,decreasing=TRUE)]
+        }
+        if(format=="vector"){
+            res<-.clusterListToVector(res,N)
+			#FIXME can't I take colnames of a diss too?
+            names(res)<-if(inputType!="diss") colnames(inputMatrix) else rownames(inputMatrix)
+        }
+        if(!returnData) return(res)
+        else return(list(results=res,inputMatrix=inputMatrix))
     }
-    else{
-      res<-do.call(clusterFunction@clusterFUN,argsClusterList)
-    }
-    
-    #######################
-    #Now format into desired output, order
-    #######################
-		## FIXME: need to get rid of this, unless needed/requested (though it is requested by sequential)
-    #this is perhaps not efficient. For now will do this, then consider going back and only converting when, where needed.
-    if(clusterFunction@outputType=="vector" & algorithmType(clusterFunction)!="K"){
-      res<-.clusterVectorToList(res)
-    }
-    clusterSize<-sapply(res, length)
-    if(length(res)>0) res <- res[clusterSize>=minSize]
-    if(length(res)!=0 & orderBy=="size"){ #i.e. there exist clusters found that passed minSize
-      clusterSize<-sapply(res, length) #redo because dropped small clusters earlier
-      res <- res[order(clusterSize,decreasing=TRUE)]
-    }
-    if(format=="vector"){
-      res<-.clusterListToVector(res,N)
-      names(res)<-if(input=="X") colnames(x) else rownames(diss)
-    }
-    if(!returnData) return(res)
-    else return(list(results=res,diss=diss,x=x))
-  }
 )
 
 
@@ -183,11 +181,11 @@ setMethod(
 #' }
 #' @export
 setMethod(
-  f = "getPostProcessingArgs",
-  signature = c("ClusterFunction"),
-  definition = function(clusterFunction) {
-  	switch(algorithmType(clusterFunction),"01"=.argsPostCluster01,"K"=.argsPostClusterK)
-}
+    f = "getPostProcessingArgs",
+    signature = c("ClusterFunction"),
+    definition = function(clusterFunction) {
+        switch(algorithmType(clusterFunction),"01"=.argsPostCluster01,"K"=.argsPostClusterK)
+    }
 )
 
 .argsPostCluster01<-c("")
@@ -196,73 +194,73 @@ setMethod(
 #' @importFrom cluster silhouette
 .postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,diss=NULL)
 {
-  doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
-  k<-clusterArgs[["k"]]
-  if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
-  if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
-  if(findBestK){
-    if(missing(kRange)){
-      if(!is.null(k)) kRange<-(k-2):(k+20)
-      else kRange<-2:20
+    doPostProcess<-(findBestK | removeSil ) & !is.null(diss) #whether will calculate silhouette or not; if not, speeds up the function... 
+    k<-clusterArgs[["k"]]
+    if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
+    if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
+    if(findBestK){
+        if(missing(kRange)){
+            if(!is.null(k)) kRange<-(k-2):(k+20)
+            else kRange<-2:20
+        }
+        if(any(kRange<2)){
+            kRange<-kRange[kRange>=2]
+            if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
+        }
+        ks<-kRange 
     }
-    if(any(kRange<2)){
-      kRange<-kRange[kRange>=2]
-      if(length(kRange)==0) stop("Undefined values for kRange; must be greater than or equal to 2")
-    }
-    ks<-kRange 
-  }
-  else ks<-k
-  if(any(ks>= N)) ks<-ks[ks<N]
-  clusters<-lapply(ks,FUN=function(currk){
-    cl<-do.call(clusterFunction@clusterFUN,c(list(k=currk),clusterArgs))
-    if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
-    return(cl)
-  })
-  if(doPostProcess){
-    silClusters<-lapply(clusters,function(cl){
-      cluster::silhouette(cl,dmatrix=diss)
+    else ks<-k
+    if(any(ks>= N)) ks<-ks[ks<N]
+    clusters<-lapply(ks,FUN=function(currk){
+        cl<-do.call(clusterFunction@clusterFUN,c(list(k=currk),clusterArgs))
+        if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
+        return(cl)
     })
-    if(length(ks)>1){
-      whichBest<-which.max(sapply(silClusters, mean))
-      finalCluster<-clusters[[whichBest]]
-      sil<-silClusters[[whichBest]][,"sil_width"]
+    if(doPostProcess){
+        silClusters<-lapply(clusters,function(cl){
+            cluster::silhouette(cl,dmatrix=diss)
+        })
+        if(length(ks)>1){
+            whichBest<-which.max(sapply(silClusters, mean))
+            finalCluster<-clusters[[whichBest]]
+            sil<-silClusters[[whichBest]][,"sil_width"]
+        }
+        else{
+            finalCluster<-clusters[[1]]
+            sil<-silClusters[[1]][,"sil_width"]
+        }
+        if(removeSil){
+            cl<-as.numeric(sil>silCutoff)
+            cl[cl==0]<- -1
+            cl[cl>0]<-finalCluster[cl>0]
+            sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
+        }
+        else{
+            cl<-finalCluster
+        }
     }
     else{
-      finalCluster<-clusters[[1]]
-      sil<-silClusters[[1]][,"sil_width"]
+        cl<-clusters[[1]]
     }
-    if(removeSil){
-      cl<-as.numeric(sil>silCutoff)
-      cl[cl==0]<- -1
-      cl[cl>0]<-finalCluster[cl>0]
-      sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
+    
+    
+    #make list of indices and put in order of silhouette width (of positive)
+    clList<-tapply(seq_along(cl),cl,function(x){x},simplify=FALSE)
+    if(doPostProcess){
+        if(orderBy=="best"){
+            clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
+            clList[order(clAveWidth,decreasing=TRUE)]
+        }
+        #remove -1 group
+        if(removeSil){
+            whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
+            if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
+            if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
+        }
     }
-    else{
-      cl<-finalCluster
-    }
-  }
-  else{
-    cl<-clusters[[1]]
-  }
-  
-  
-  #make list of indices and put in order of silhouette width (of positive)
-  clList<-tapply(seq_along(cl),cl,function(x){x},simplify=FALSE)
-  if(doPostProcess){
-    if(orderBy=="best"){
-      clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
-      clList[order(clAveWidth,decreasing=TRUE)]
-    }
-    #remove -1 group
-    if(removeSil){
-      whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
-      if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
-      if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
-    }
-  }
-  
-  return(clList)
-  
+    
+    return(clList)
+    
 }
 
 

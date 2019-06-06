@@ -174,48 +174,28 @@
 #' @aliases clusterSingle,missing,matrixOrNULL-method
 #' @rdname clusterSingle
 #' @export
-setMethod(
-    f = "clusterSingle",
-    signature = signature(x = "missing",diss="matrixOrNULL"),
-    definition = function(x, diss,...) {
-        clusterSingle(x=NULL,diss=diss,...)
-        
-    })
-
-#' @rdname clusterSingle
-#' @export
-setMethod(
-    f = "clusterSingle",
-    signature = signature(x = "matrixOrHDF5OrNULL",diss="missing"),
-    definition = function(x, diss,...) {
-        clusterSingle(x=x,diss=NULL,...)
-        
-    })
 
 
 #' @rdname clusterSingle
 #' @export
 setMethod(
     f = "clusterSingle",
-    signature = signature(x = "SummarizedExperiment", diss="missing"),
-    definition = function(x, ...) {
-        clusterSingle(as(x,"SingleCellExperiment"),...)
+    signature = signature(inputMatrix = "SummarizedExperiment" ),
+    definition = function(inputMatrix, ...) {
+        clusterSingle(as(inputMatrix,"SingleCellExperiment"),...)
     }
 )
 
-
-
-
 #' @rdname clusterSingle
 #' @export
 setMethod(
     f = "clusterSingle",
-    signature = signature(x = "ClusterExperiment", diss="missing"),
-    definition = function(x, ...) {
+    signature = signature(inputMatrix = "ClusterExperiment"),
+    definition = function(inputMatrix, ...) {
         if(any(c("transFun","isCount") %in% names(list(...))))
             stop("The internally saved transformation function of a ClusterExperiment object must be used when given as input and setting 'transFun' or 'isCount' for a 'ClusterExperiment' is not allowed.")
-        outval <- clusterSingle(as(x,"SingleCellExperiment"),transFun=transformation(x),...)
-        retval<-addClusterings(x,outval)
+        outval <- clusterSingle(as(inputMatrix,"SingleCellExperiment"),transFun=transformation(inputMatrix),...)
+        retval<-addClusterings(inputMatrix,outval)
         #make most recent clustering the primary cluster
         primaryClusterIndex(retval)<-nClusterings(retval)
         if(!is.null(outval@coClustering)) retval@coClustering<-outval@coClustering
@@ -230,19 +210,20 @@ setMethod(
 #' @export
 setMethod(
     f = "clusterSingle",
-    signature = signature(x = "SingleCellExperiment",diss="missing"),
-    definition = function(x, reduceMethod="none",
-                          nDims=defaultNDims(x,reduceMethod),
+    signature = signature(inputMatrix = "SingleCellExperiment"),
+    definition = function(inputMatrix, reduceMethod="none",
+                          nDims=defaultNDims(inputMatrix,reduceMethod),
                           whichAssay=1, ...) {
         inputArgs<-list(...)
-        isDimReduced<- anyValidReducedDims(x) && isReducedDims(x,reduceMethod)
-        isFilter<-anyValidFilterStats(x) && isFilterStats(x,reduceMethod)
+        isDimReduced<- anyValidReducedDims(inputMatrix) && isReducedDims(inputMatrix,reduceMethod)
+        isFilter<-anyValidFilterStats(inputMatrix) && isFilterStats(inputMatrix,reduceMethod)
         if(isDimReduced & isFilter) stop("reduceMethod matches both reducedDimNames and filtering statistic")
         if(reduceMethod=="none" || (!isDimReduced && !isFilter)){
             #go to matrix version using assay(x) and will calculate reduceMethod etc.
-            outval<-clusterSingle(assay(x, whichAssay),reduceMethod=reduceMethod,nDims=nDims,...)
+            outval<-clusterSingle(assay(inputMatrix, whichAssay),
+                                  reduceMethod=reduceMethod,nDims=nDims,...)
             #add back in the SingleCellExperiment stuff lost
-            retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+            retval<-.addBackSEInfo(newObj=outval,oldObj=inputMatrix)
             #but now need the filter/reducedDim
             if(reduceMethod!="none"){
                 if(isFilterStats(outval,reduceMethod)) filterStats(retval)<-filterStats(outval)
@@ -256,16 +237,16 @@ setMethod(
                     inputArgs<-inputArgs[!names(inputArgs)%in%"transFun"]
                 if(any(names(inputArgs)%in%"isCount"))
                     inputArgs<-inputArgs[!names(inputArgs)%in%"isCount"]
-                if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
-                outval<-do.call("clusterSingle",c(list(x=(t(reducedDim(x,type=reduceMethod)[,seq_len(nDims)])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))
+                if(is.na(nDims)) nDims<-defaultNDims(inputMatrix,reduceMethod)
+                outval<-do.call("clusterSingle",c(list(inputMatrix=(t(reducedDim(inputMatrix,type=reduceMethod)[,seq_len(nDims)])),reduceMethod="none",transFun=function(x){x},isCount=FALSE),inputArgs))
             }
             if(isFilter){
                 #Need to think how can pass options to filterData...
-                if(is.na(nDims)) nDims<-defaultNDims(x,reduceMethod)
-                outval<-clusterSingle(filterData(x,filterStats=reduceMethod,percentile=nDims),reduceMethod="none",...)			#do transform filtered data...
+                if(is.na(nDims)) nDims<-defaultNDims(inputMatrix,reduceMethod)
+                outval<-clusterSingle(filterData(inputMatrix,filterStats=reduceMethod,percentile=nDims),reduceMethod="none",...)			#do transform filtered data...
             }
             #add back in the SingleCellExperiment stuff lost
-            retval<-.addBackSEInfo(newObj=outval,oldObj=x)
+            retval<-.addBackSEInfo(newObj=outval,oldObj=inputMatrix)
             
         }
         return(retval)
@@ -287,22 +268,30 @@ setMethod(
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
                           isCount=FALSE,transFun=NULL, 
                           reduceMethod=c("none", listBuiltInReducedDims(), listBuiltInFilterStats()),
-                          nDims=defaultNDims(x, reduceMethod), clusterLabel="clusterSingle",
+                          nDims=defaultNDims(x, reduceMethod),
+                          clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, checkDiss=FALSE, verbose=TRUE) {
-        ##########
-        ##Check arguments and set defaults as needed
-        ##Note, some checks are duplicative of internal, but better here, because don't want to find error after already done extensive calculation...
-        ##########
+        transInputType<-inputType
         if(!is.na(distFunction)){
-        	
+            if(inputType!="diss"){
+                makeDiss=TRUE
+                inputType<-"diss"
+            }
+            else{
+                stop("Cannot provide argument distFunction for an inputMatrix that is already a dissimilarity (inputType='diss')")
+            }			
         }
-		
-        checkOut<-.checkArgs(inputValue=inputValue subsample=subsample, sequential=sequential, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=verbose)
+        ##########
+        ## Check arguments and set defaults as needed
+        ## Note, some checks are duplicative of internal functions, 
+        ## but better here, because don't want to find error after 
+        ## already done extensive calculation...
+        ##########
+        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, warn=verbose)
         if(is.character(checkOut)) stop(checkOut)
         else {
             mainClusterArgs<-checkOut$mainClusterArgs
             subsampleArgs<-checkOut$subsampleArgs
-            input<-checkOut$inputClusterD
         }
         if(sequential){
             if(is.null(seqArgs)) {
@@ -319,11 +308,11 @@ setMethod(
         ##########
         ## Handle dimensionality reduction:
         ##########
-        ###Don't do this until do the checks, because takes some time.
+        ###Don't do this until after do the checks, because takes some time.
         transObj<-NULL
-        if(input %in% c("X")){
-            N <- dim(x)[2]
-            origX <- x #ngenes x nsamples
+        if(transInputType == "X"){
+            origX<-inputMatrix # Need this to make CE object later!
+            N <- dim(inputMatrix)[2] #ngenes x nsamples
             ##########
             ##transformation to data x that will be input to clustering
             ##########
@@ -336,25 +325,28 @@ setMethod(
                 if(verbose) warning("specifying nDims has no effect if reduceMethod==`none`")
             }
             if(reduceMethod=="none"){
-                x<-transformData(x,transFun=transFun)
+                inputMatrix<-transformData(inputMatrix,transFun=transFun)
             }
             else if(reduceMethod%in%listBuiltInReducedDims()){
-                transObj<-makeReducedDims(x,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
-                x<-t(reducedDim(transObj,type=reduceMethod))
+                transObj<-makeReducedDims(inputMatrix,reducedDims=reduceMethod, maxDims=nDims, transFun=transFun,isCount=isCount)
+                inputMatrix<-t(reducedDim(transObj,type=reduceMethod))
             }
             else if(reduceMethod %in% listBuiltInFilterStats()){
-                transObj<-makeFilterStats(x,filterStat=reduceMethod, transFun=transFun,isCount=isCount)
-                x<-transformData(filterData(transObj, filterStats=reduceMethod, percentile=nDims), transFun=transFun, isCount=isCount)
+                transObj<-makeFilterStats(inputMatrix,filterStat=reduceMethod, transFun=transFun,isCount=isCount)
+                inputMatrix<-transformData(filterData(transObj, filterStats=reduceMethod, percentile=nDims), transFun=transFun, isCount=isCount)
             }
             else stop("invalid value for reduceMethod -- not in built-in filter or reducedDim method")
         }
         else{
-            if(any(reduceMethod!="none")) stop("reduceMethod only applies when diss not given or clusterFunction object doesn't accept the given diss as input")
-            N<-nrow(diss)
-            if(!is.null(x)) origX<-x
+            if(any(reduceMethod!="none")) stop("'reduceMethod' cannot be given if 'inputType' argument is not of type 'X'.")
+            N<-nrow(inputMatrix)
         }
-        if(input %in% c("both","diss") && !is.null(mainClusterArgs) && "distFunction" %in% names(mainClusterArgs)){
-            if(!is.na(mainClusterArgs[["distFunction"]])) stop("if give diss as input to clusterSingle, cannot specify 'distFunction' in mainClusterArgs")
+        
+        
+        #Make dissimilarity AFTER transforming data
+        if(makeDiss){
+            inputMatrix<-.makeDiss(inputMatrix,distFunction=distFunction,checkDiss=checkDiss,algType=clusterFunction@algorithmType)
+            
         }
         
         ##########
@@ -362,7 +354,7 @@ setMethod(
         ##########
         if(sequential){
             outlist <- do.call("seqCluster",
-                               c(list(x=x, diss=diss,subsample=subsample,
+                               c(list(inputMatrix=inputMatrix, subsample=subsample,
                                       subsampleArgs=subsampleArgs,
                                       mainClusterArgs=mainClusterArgs), seqArgs))
         }
@@ -370,7 +362,7 @@ setMethod(
             ##########
             ##.clusterWrapper just deciphers choices and makes clustering.
             ##########
-            finalClusterList <- .clusterWrapper(x=x, diss=diss,
+            finalClusterList <- .clusterWrapper(inputMatrix=inputMatrix,
                                                 subsample=subsample,
                                                 subsampleArgs=subsampleArgs,
                                                 mainClusterArgs=mainClusterArgs)
@@ -390,16 +382,17 @@ setMethod(
         ##########
         ## Convert to ClusterExperiment Object
         ##########
-        if(!is.null(x)){ #if give diss and x, will use diss but still have x to make CE object with
-            
+        if(transInputType == "X"){ 
+            #saved original X to make CE object with
             retval <- ClusterExperiment(origX, outlist$clustering,
                                         transformation=transFun,
-                                        clusterInfo=clInfo, clusterTypes="clusterSingle",
+                                        clusterInfo=clInfo, 
+                                        clusterTypes="clusterSingle",
                                         checkTransformAndAssay=FALSE)
             clusterLabels(retval)<-clusterLabel
             if(!sequential & subsample & saveSubsamplingMatrix) {
                 #convert to sparse matrix:
-                retval@coClustering<-Matrix::Matrix(1-finalClusterList$diss,sparse=TRUE)
+                retval@coClustering <- Matrix::Matrix(finalClusterList$diss, sparse=TRUE)
                 ch<-.checkCoClustering(retval)
                 if(!is.logical(ch)) stop(ch)
             }
@@ -410,7 +403,9 @@ setMethod(
             return(retval)
         }
         else{
-            out<-list(clustering=outlist$clustering,clusterInfo=clInfo,diss=outlist$diss)
+            out<-list(clustering=outlist$clustering, 
+				clusterInfo=clInfo,
+				diss=outlist$diss)
         }
         
     }
@@ -418,15 +413,17 @@ setMethod(
 #wrapper that calls the clusterSampling and mainClustering routines in reasonable order.
 #called by both seqCluster and clusterSingle
 #clusterFunction assumed to be defined in mainClusterArgs AND subsampleArgs
-.clusterWrapper <- function(x, diss, subsample, mainClusterArgs=NULL, subsampleArgs=NULL)
+.clusterWrapper <- function(inputMatrix,  subsample, mainClusterArgs=NULL, subsampleArgs=NULL)
 {
     if(subsample){
-        #make it a dissimilarity by 1- of the resulting Dbar.
-        diss<-1-do.call("subsampleClustering", c(list(x=x,diss=diss), subsampleArgs))
-        x<-NULL #disable using x
-    }
-    
-    resList<-do.call("mainClustering",c(list(x=x,diss=diss,format="list", returnData=TRUE),mainClusterArgs))
+        diss<-do.call("subsampleClustering",
+			c(list(inputMatrix=inputMatrix), 
+			subsampleArgs))
+    }    
+    resList<-do.call("mainClustering",
+		c(list(inputMatrix=inputMatrix, 
+			format="list", returnData=TRUE),
+		mainClusterArgs))
     return(resList)
 }
 

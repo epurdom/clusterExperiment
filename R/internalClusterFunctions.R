@@ -137,7 +137,7 @@
     if(!is.na(desiredInputType)){
         intersect<-intersect(desiredInputType,inputType)
         if(length(intersect)==0){
-            stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(inputType,collapse=" or "))
+            stop(sprintf("given clusterFunction/classifyFunction does not take as input matrices of type %s",paste(inputType,collapse=" or ")))
         }
     }
     return(inputType)
@@ -202,7 +202,7 @@
         ########
         #checks for mainClustering stuff
         ########
-        
+        inputType<-match.arg(inputType,.inputTypes)
         makeDiss<-FALSE
         if (main) {
             if ("clusterFunction" %in% names(mainClusterArgs)) {
@@ -307,6 +307,7 @@
                         )
                     )
             }
+            mainClusterArgs[["inputType"=input]]
         }
         
         
@@ -432,15 +433,16 @@
             if (is.null(subsampleCF@classifyFUN)) {
                 if ("classifyMethod" %in% names(subsampleArgs) &&
                     subsampleArgs[["classifyMethod"]] != "InSample")
-                    return(
-                        "Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot"
+                    if(warn) warning(
+                        "Cannot set 'classifyMethod' to anything but 'InSample' if do not specify a clusterFunction in subsampleArgs that has a non-null classifyFUN slot. Changing classifyMethod to 'InSample'."
                     )
-                else subsampleArgs[["classifyMethod"]] <- "InSample"
+                subsampleArgs[["classifyMethod"]] <- "InSample"
             }
             if(subsampleArgs[["classifyMethod"]]!="InSample"){
-                if(!inputClassify %in% subsampleCF@inputClassifyType)
-                    if(warn) warning(sprintf("The following arguments regarding the clusterFunction for subsampleArgs need a n x n dissimilarity matrix: classifyMethod=%s, inputClassify=%s, inputClassifyType=%s. Changing classifyMethod to 'InSample'", subsampleArgs[["classifyMethod"]], inputClassify, subsampleCF@inputClassifyType))
-                subsampleArgs[["classifyMethod"]]<-"InSample"
+                if(!inputSub %in% subsampleCF@inputClassifyType){
+                    if(warn) warning(sprintf("The clusterFunction for subsampling chosen does not provide ability to classify new samples from input type %s to clusters in the subsampling step (needed by classifyMethod=%s in 'subsampleArgs'). Changing classifyMethod to 'InSample'.", inputSub, subsampleArgs[["classifyMethod"]]))
+                    subsampleArgs[["classifyMethod"]]<-"InSample"
+                }
             }
             
             ##------
@@ -533,10 +535,10 @@
                     subsampleArgs[["clusterArgs"]] <- list() #make it if doesn't exist
                 }
             }
+            subsampleArgs[["inputType"]]<-inputSub
         }        
         return(
             list(
-                inputClusterD = input,
                 mainClusterArgs = mainClusterArgs,
                 subsampleArgs = subsampleArgs
             )

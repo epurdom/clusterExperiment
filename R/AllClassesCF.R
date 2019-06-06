@@ -120,22 +120,19 @@ setClass(
 
 
 setValidity("ClusterFunction", function(object) {
-    if(is.na(object@outputType)) {
-      return("Must define outputType.")
-    }
-	if(!object@outputType%in%.outputTypes) return(paste("outputType must be one of",paste(.outputTypes,collapse=",")))
     #----
 	# inputType
 	#----
-    if(is.na(object@inputType)) {
-      return("Must define inputType.")
-    }
-	if(!object@inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
-	if(is.null(object@classifyFUN)& !is.na(object@inputClassifyType)) return("should not define inputClassifyType if classifyFUN is not defined")
-    if(!is.null(object@classifyFUN) & is.na(object@inputClassifyType)) {
-      return("Must define inputClassifyType if define classifyFUN.")
-    }
-	if(!is.null(object@classifyFUN) & !object@inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+	if(any(!object@inputType%in%.inputTypes)) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
+        
+	if(is.null(object@classifyFUN)&& any(!is.na(object@inputClassifyType))) 
+        return("should not define inputClassifyType if classifyFUN is not defined")
+    if(!is.null(object@classifyFUN)){
+        if(length(object@inputClassifyType)==1 && is.na(object@inputClassifyType))
+            return("Must define inputClassifyType if define classifyFUN.")
+        if(!object@inputClassifyType%in%.inputTypes)
+           return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+    } 
     #----
 	# algorithmType
 	#----
@@ -147,9 +144,6 @@ setValidity("ClusterFunction", function(object) {
 	#----
 	# function arguments are as needed
 	#----
-	if(any(object@inputType%in%c("X")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType includes 'X' but arguments to ClusterFunction doesn't contain argument 'x'")
-	if(any(object@inputType%in%c("diss")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType includes 'diss' but arguments to ClusterFunction doesn't contain argument 'diss'")
-    if(any(object@inputType%in%c("cat")) & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType includes 'cat' but arguments to ClusterFunction doesn't contain argument 'cat'")
     if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to ClusterFunction doesn't contain", paste(.required01Args,collapse=","))
 

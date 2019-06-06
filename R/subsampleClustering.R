@@ -79,12 +79,12 @@ NULL
 #' @aliases subsampleClustering,character-method
 #' @export
 setMethod(
-  f = "subsampleClustering",
-  signature = signature(clusterFunction = "character"),
-  definition = function(clusterFunction,...){
-    subsampleClustering(getBuiltInFunction(clusterFunction),...)
-
-  }
+    f = "subsampleClustering",
+    signature = signature(clusterFunction = "character"),
+    definition = function(clusterFunction,...){
+        subsampleClustering(getBuiltInFunction(clusterFunction),...)
+        
+    }
 )
 
 # #' @rdname subsampleClustering
@@ -100,117 +100,101 @@ setMethod(
 #' @rdname subsampleClustering
 #' @export
 setMethod(
-  f = "subsampleClustering",
-  signature = signature(clusterFunction = "ClusterFunction"),
-  definition=function(clusterFunction, x=NULL,diss=NULL,cat=NULL, clusterArgs=NULL,
-                      classifyMethod=c("All","InSample","OutOfSample"),
-                      resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
-  {
-	###########################
-	######## CHECKS
-	###########################
-	moreArgs<-list(...)
-	subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
-	checkOut<-.checkArgs(x=x, diss=diss, cat=cat, subsample=TRUE, sequential=FALSE, mainClusterArgs=NULL, subsampleArgs=subsampleArgs, checkDiss=checkDiss, warn=TRUE)		
-  if(is.character(checkOut)) stop(checkOut)
-  else{
-    subsampleArgs<-checkOut$subsampleArgs
-  }
-  classifyMethod<-subsampleArgs[["classifyMethod"]]
-	clusterFunction<-subsampleArgs[["clusterFunction"]]
-	clusterArgs<-subsampleArgs[["clusterArgs"]]
-	input<-subsampleArgs[["input"]]
-
-    #-----
-    # Basic parameters, subsamples
-    #-----
-    if(input %in% c("X","both")) N <- dim(x)[2] else N<-dim(diss)[2]
-    subSize <- round(samp.p * N)
-    idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
-    #each column a set of indices for the subsample.
-
-    ###########################
-    # Function that calls the clustering for each subsample
-    # Called over a loop (lapply or mclapply)
-    ###########################
-    perSample<-function(ids){
-      ##----
-      ##Cluster subsample
-      ##----
-      argsClusterList <- .makeDataArgs(dataInput=input,
-                                       funInput=clusterFunction@inputType,
-                                       xData=x[,ids,drop=FALSE],
-                                       dissData=diss[ids,ids,drop=FALSE])
-
-      #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
-      argsClusterList <- c(argsClusterList,
-                           list("checkArgs"=checkArgs,
-						   "cluster.only"=(classifyMethod=="InSample")))
-      result <- do.call(clusterFunction@clusterFUN,
-                        c(argsClusterList,clusterArgs))
-
-      ##----
-      ##Classify subsample
-      ##----
-      if(classifyMethod=="All"){
-		  ##FIXME make this actually only recluster the out-of-sample, but otherwise use the clustering results from the method!
-        argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
-                               funInput=clusterFunction@inputClassifyType,
-                               xData=x, dissData=diss)
-        classX <- do.call(clusterFunction@classifyFUN,
-                          c(argsClassifyList,list(clusterResult=result)))
-      }
-      if(classifyMethod=="OutOfSample"){
-        argsClassifyList <- .makeDataArgs(dataInput=inputClassify,
-                                 funInput=clusterFunction@inputClassifyType,
-                                 xData=x[,-ids,drop=FALSE],
-                                 dissData=diss[-ids,-ids,drop=FALSE])
-        classElse <- do.call(clusterFunction@classifyFUN,
-                         c(argsClassifyList, list(clusterResult=result)))
-
-        classX <- rep(NA,N)
-        classX[-ids] <- classElse
-      }
-
-      if(classifyMethod=="InSample"){
-        classX <- rep(NA,N)
-
-        if(is.list(result)){
-          if(clusterFunction@outputType=="list"){
-            resultVec <- .convertClusterListToVector(result,N=length(ids))
-            classX[ids] <- resultVec
-          } else {
-            stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
-          }
-          #			  }
-        } else{
-          classX[ids]<-result
+    f = "subsampleClustering",
+    signature = signature(clusterFunction = "ClusterFunction"),
+    definition=function(clusterFunction, inputMatrix,inputType, clusterArgs=NULL,
+                        classifyMethod=c("All","InSample","OutOfSample"),
+                        resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
+    {
+        ###########################
+        ######## CHECKS
+        ###########################
+        moreArgs<-list(...)
+        subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
+        checkOut<-.checkArgs(inputMatrix=inputMatrix,inputType=inputType, 
+                             main=FALSE, subsample=TRUE, sequential=FALSE,
+							 mainClusterArgs=NULL,
+                             subsampleArgs=subsampleArgs, 
+							 checkDiss=checkDiss, warn=TRUE)		
+        if(is.character(checkOut)) stop(checkOut)
+        else{
+            subsampleArgs<-checkOut$subsampleArgs
         }
-      }
-
-      #classX is length N
-      #classX has NA if method does not classify all of the data.
-      return(classX)
-    }
-
-    if(ncores==1){
-
-      DList<-apply(idx,2,perSample)
-
-    }
-    else{
-      DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
-	  DList <- simplify2array(DList)
-    }
-
-    if(!is.null(diss)){
-      idnames<-colnames(diss)
-    }
-    if(!is.null(x)){
-      idnames<-colnames(x)
-    }
-    # DList is a NxB matrix
-    # FIXME: Replace with returning DList, the NxB matrix. Or perhaps have an argument?
-    # FIXME: This returns the distance, rather than the percentage shared.
-    return(.clustersHammingDistance(t(DList)))
-  })
+        classifyMethod<-subsampleArgs[["classifyMethod"]]
+        clusterFunction<-subsampleArgs[["clusterFunction"]]
+        clusterArgs<-subsampleArgs[["clusterArgs"]]
+        inputType<-subsampleArgs[["inputType"]]
+        
+        #-----
+        # Basic parameters, subsamples
+        #-----
+        N <- dim(inputMatrix)[2]
+        subSize <- round(samp.p * N)
+        idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
+        #each column a set of indices for the subsample.
+        
+        ###########################
+        # Function that calls the clustering for each subsample
+        # Called over a loop (lapply or mclapply)
+        ###########################
+        perSample<-function(ids){
+            ##----
+            ##Cluster subsample
+            ##----
+            #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
+            argsClusterList <- c(argsClusterList,
+                                 list(inputMatrix=inputMatrix,inputType=inputType,"checkArgs"=checkArgs,
+                                      "cluster.only"=(classifyMethod=="InSample")))
+            result <- do.call(clusterFunction@clusterFUN,
+                              c(argsClusterList,clusterArgs))
+            
+            ##----
+            ##Classify subsample
+            ##----
+            if(classifyMethod=="All"){
+                ##FIXME make this actually only recluster the out-of-sample, but otherwise use the clustering results from the method!
+				classX <- do.call(clusterFunction@classifyFUN, list(inputMatrix=inputMatrix,inputType=inputType,clusterResult=result))
+            }
+            if(classifyMethod=="OutOfSample"){
+                classElse <- do.call(clusterFunction@classifyFUN,
+                                     list(clusterResult=result,
+										 inputMatrix=if(inputType!="diss") inputMatrix[,-ids,drop=FALSE] else inputMatrix[-ids,-ids,drop=FALSE]))
+                
+                classX <- rep(NA,N)
+                classX[-ids] <- classElse
+            }
+            
+            if(classifyMethod=="InSample"){
+                classX <- rep(NA,N)
+                
+                if(is.list(result)){
+                    if(clusterFunction@outputType=="list"){
+                        resultVec <- .convertClusterListToVector(result,N=length(ids))
+                        classX[ids] <- resultVec
+                    } else {
+                        stop("The clusterFunction given to subsampleClustering returns a list when cluster.only=FALSE but does not have a named element 'clustering' nor outputType='list'")
+                    }
+                    #			  }
+                } else{
+                    classX[ids]<-result
+                }
+            }
+            
+            #classX is length N
+            #classX has NA if method does not classify all of the data.
+            return(classX)
+        }
+        
+        if(ncores==1){
+            DList<-apply(idx,2,perSample)
+        }
+        else{
+            DList<-parallel::mclapply(seq_len(ncol(idx)), function(nc){ perSample(idx[,nc]) }, mc.cores=ncores,...)
+            DList <- simplify2array(DList)
+        }
+        idnames<-colnames(inputMatrix)
+        # DList is a NxB matrix
+        # FIXME: Replace with returning DList, the NxB matrix. Or perhaps have an argument?
+        # FIXME: This returns the distance, rather than the percentage shared. Previously returned percentage... Need to check on that.
+        return(.clustersHammingDistance(t(DList)))
+    })
