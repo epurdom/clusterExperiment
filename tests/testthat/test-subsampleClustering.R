@@ -2,24 +2,24 @@ context("subsampleClustering")
 
 test_that("subsampling", {
 
-  set.seed(4897)
-  expect_silent(subAll <- subsampleClustering(inputMatrix=mat, 
-      inputType="X",clusterFunction="pam",
-      clusterArgs=list(k=3), classifyMethod="All",
-      resamp.num = 100,
-      samp.p = 0.7,ncores=1))
+    set.seed(4897)
+    expect_silent(subAll <- subsampleClustering(inputMatrix=mat, 
+        inputType="X",clusterFunction="pam",
+        clusterArgs=list(k=3), classifyMethod="All",
+        resamp.num = 100,
+        samp.p = 0.7,ncores=1))
 
 
 
 
 	#subsample clusterings won't have identification to all samples...
-  set.seed(4897)
-  expect_silent(subInSample <- 
-	  subsampleClustering(inputMatrix=mat,inputType="X",clusterArgs=list(k=3),
-                                     clusterFunction="pam",
-                                     classifyMethod=c("InSample"),
-                                     resamp.num = 100,
-                                     samp.p = 0.7,ncores=1))
+    set.seed(4897)
+    expect_silent(subInSample <- subsampleClustering(inputMatrix=mat,
+            inputType="X",clusterArgs=list(k=3),
+            clusterFunction="pam",
+            classifyMethod=c("InSample"),
+            resamp.num = 100,
+            samp.p = 0.7,ncores=1))
 
   #test in passing to subsampleArgs
 	expect_message(rsecOut1<-RSEC(x=mat, 
