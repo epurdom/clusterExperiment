@@ -5,3 +5,5 @@ TO DO:
 -- Need to check the whole question of 1-diss of the percentages shared clustering (and what is stored in co-clustering matrix slot...)
 -- Problem in clusterMany -- want to pass the X matrix and diss if using distFunction, but can't now
 -- post-processing needs diss matrix; by not passing both, have disabled ability to do the post-processing unless have clustering function that takes diss. The main reason might calculate the dissimilarity in clusterSingle? Might allow it there and then have a post-processing argument that is the diss...
+-- Add some kind of bare check that diss are at least symmetric dimensions!
+-- check in seqCluster status of verbose versus checking arguments. 

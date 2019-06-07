@@ -92,9 +92,11 @@ setMethod(
     f = "mainClustering",
     signature = signature(clusterFunction = "ClusterFunction"),
     definition=function(clusterFunction,inputMatrix, inputType,
-                        clusterArgs=NULL,minSize=1, orderBy=c("size","best"),
+                        clusterArgs=NULL,
+                        minSize=1, 
+                        orderBy=c("size","best"),
                         format=c("vector","list"),
-                        checkArgs=TRUE,checkDiss=FALSE,returnData=FALSE,...){
+                        returnData=FALSE,...){
         if(missing(inputType)) stop("Internal error: inputType was not passed to mainClustering step")
         orderBy<-match.arg(orderBy)
         format<-match.arg(format)
@@ -108,7 +110,7 @@ setMethod(
                          clusterArgs=clusterArgs,
                          minSize=minSize, orderBy=orderBy,
 						 extraArguments=names(postProcessArgs),
-                         format=format,checkArgs=checkArgs),postProcessArgs)
+                         format=format),postProcessArgs)
         checkOut<-.checkArgs(inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, subsampleArgs=NULL,warn=TRUE)		
         if(is.character(checkOut)) stop(checkOut)
 		mainClusterArgs<-checkOut$mainClusterArgs
@@ -121,8 +123,6 @@ setMethod(
         format=mainClusterArgs[["format"]]
         checkArgs=mainClusterArgs[["checkArgs"]]
         postProcessArgs=mainClusterArgs[mainClusterArgs[["extraArguments"]]]
-        
-        
         
         #######################
         ####Run clustering:

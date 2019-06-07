@@ -106,6 +106,7 @@ setMethod(
                         classifyMethod=c("All","InSample","OutOfSample"),
                         resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
     {
+        classifyMethod<-match.arg(classifyMethod)
         ###########################
         ######## CHECKS
         ###########################

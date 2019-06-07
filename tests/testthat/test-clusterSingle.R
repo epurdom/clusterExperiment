@@ -272,21 +272,28 @@ test_that("`clusterSingle` works with filtering", {
     ####Check built in functions ####
 	for(fs in listBuiltInFilterStats()){
 	    expect_silent(clusterSingle(mat,
-	        subsample=FALSE, sequential=FALSE, reduceMethod=fs,
-	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-	 	   isCount=FALSE))
+	        subsample=FALSE, 
+            sequential=FALSE, 
+            reduceMethod=fs,
+	        nDims=3,
+             mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)),
+            isCount=FALSE))
 
 	}
-    expect_warning(clusterSingle(mat,  subsample=FALSE, sequential=FALSE,
-           reduceMethod="var", nDims=NROW(mat)+1,
-		   mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-		 isCount=FALSE),
-                 "the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
+    expect_warning(clusterSingle(mat,  
+        subsample=FALSE, 
+        sequential=FALSE,
+        reduceMethod="var",
+        nDims=NROW(mat)+1,
+        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+		isCount=FALSE),
+        "the number of most features requested after filtering is either missing or larger than the number of features. Will not do any filtering")
     expect_warning(clusterSingle(mat,
       subsample=FALSE, sequential=FALSE,
       reduceMethod="none",nDims=3,
-	  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),isCount=FALSE),
-                   "specifying nDims has no effect if reduceMethod==`none`")
+	  mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+      isCount=FALSE),
+      "specifying nDims has no effect if reduceMethod==`none`")
 
     #check returns filterStats
     expect_silent(cc <- clusterSingle(mat,
@@ -575,81 +582,36 @@ expect_equal(round(transformData(cc)[1,],2), expectTrans1)
 		  # + seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
 
 
-test_that("Different options algorithms of `mainClustering` ", {
-  #check builtIn algorithms
-  #bigger matrix so not kill spectral
-  set.seed(3325)
-  biggerMat<-matrix(data=rnorm(20*50), ncol=50)
+test_that("Different clustering algorithms of `mainClustering` ", {
+    #check builtIn algorithms
+    #bigger matrix so not kill spectral
+    set.seed(3325)
+    biggerMat<-matrix(data=rnorm(20*50), ncol=50)
 
-  kMethods<-listBuiltInTypeK()
-	for(cf in kMethods){
-	    expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
-	  			subsample=FALSE, sequential=FALSE,isCount=FALSE)
-				)
-		#post-processing arguments for type 'K'
-		#Upped
-		expect_silent(clusterSingle(biggerMat, mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), subsample=FALSE, sequential=FALSE,isCount=FALSE))
+    kMethods<-listBuiltInTypeK()
+    for(cf in kMethods){
+    expect_silent(clusterSingle(mat,
+          makeMissingDiss=TRUE, 
+          mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+    	subsample=FALSE, sequential=FALSE,isCount=FALSE)
+    		)
+    #post-processing arguments for type 'K'
+    #Upped
+    expect_silent(clusterSingle(biggerMat, 
+          makeMissingDiss=TRUE,
+          mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), 
+          subsample=FALSE, sequential=FALSE,isCount=FALSE))
 
-	  }
-      aMethods<-listBuiltInType01()
-  	for(cf in aMethods){
-  	  expect_silent(clusterSingle(mat, mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction=cf),
-                     subsample=FALSE, sequential=FALSE,isCount=FALSE))
-	 }
-
-  ########
-  #Check mainClustering
-  ########
-  ###Check pam exactly same:
-  expect_silent(x<-mainClustering(mat, clusterFunction="pam",clusterArgs=list(k=3),
-           minSize=1, removeSil=FALSE))
-  expect_equal(length(x),ncol(mat))
-  x2<-cluster::pam(t(mat),k=3,cluster.only=TRUE)
-  expect_equal(x,x2)
-  ###Check hierarchicalK exactly same:
-  expect_silent(x<-mainClustering(mat, clusterFunction="hierarchicalK",clusterArgs=list(k=3),
-              minSize=1, removeSil=FALSE))
-  expect_equal(length(x),ncol(mat))
-  x2<-stats::cutree(stats::hclust(dist(t(mat))),k=3)
-  expect_equal(x,x2)
-
-
-  #check giving wrong parameters gives warning:
-  expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1),
-      minSize=5, removeSil=TRUE),"do not match the algorithmType")
-  expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1,k=3),
-      minSize=5, removeSil=TRUE),"do not match the algorithmType")
-  expect_error(mainClustering(mat, clusterFunction="tight",
-	      minSize=5),"must supply arguments alpha")
-  expect_error(mainClustering(mat, clusterFunction="pam", clusterArgs=list(alpha=0.1),
-			      minSize=5, removeSil=TRUE),"must supply arguments k")
-  expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(k=3,alpha=0.1),
-						      minSize=5),"arguments passed via clusterArgs to the clustering function tight are not all applicable")
-  expect_warning(mainClustering(mat, clusterFunction="pam", clusterArgs=list(k=3,alpha=0.1),
-				      minSize=5, removeSil=TRUE),"arguments passed via clusterArgs to the clustering function pam are not all applicable")
-
-
-
-  expect_warning(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1, evalClusterMethod="average")),"arguments passed via clusterArgs to the clustering function tight are not all applicable")
-  expect_warning(mainClustering(mat, clusterFunction="hierarchical01", clusterArgs=list(alpha=0.1, minSize.core=4)),"arguments passed via clusterArgs to the clustering function hclust are not all applicable")
-
-  #test default 01 distance
-  expect_silent(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1)))
-  #test default K distance
-  expect_silent(mainClustering(mat, clusterFunction="hierarchicalK", clusterArgs=list(k=3)))
-
-
-  #check turn off if checkArgs=TRUE
-  expect_silent(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1),checkArgs=FALSE,
-                          minSize=5, removeSil=TRUE))
-  expect_silent(mainClustering(mat, clusterFunction="pam", clusterArgs=list(alpha=0.1),checkArgs=FALSE,
-                          minSize=5, removeSil=TRUE, findBestK=TRUE))
-  expect_silent(mainClustering(mat, clusterFunction="tight", clusterArgs=list(alpha=0.1,evalClusterMethod="average"),checkArgs=FALSE))
-  expect_silent(mainClustering(mat, clusterFunction="hierarchical01", checkArgs=FALSE,
-                          clusterArgs=list(alpha=0.1,minSize.core=4)))
-
+    }
+    aMethods<-listBuiltInType01()
+    for(cf in aMethods){
+      expect_silent(clusterSingle(mat, 
+        makeMissingDiss=TRUE,
+        mainClusterArgs= list(clusterArgs=list(alpha=0.1),clusterFunction=cf),
+        subsample=FALSE, sequential=FALSE,isCount=FALSE))
+    }
 })
-
+             
 test_that("Different options of mainClustering",{
     #check errors and warnings
     expect_error(clusterSingle(mat,  subsample=FALSE, sequential=TRUE, seqArgs=list(verbose=FALSE), isCount=FALSE,mainClusterArgs=list(clusterFunction="pam")),

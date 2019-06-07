@@ -271,7 +271,8 @@ setMethod(
                           nDims=defaultNDims(inputMatrix, reduceMethod),
                           makeMissingDiss=FALSE,
                           clusterLabel="clusterSingle",
-                          saveSubsamplingMatrix=FALSE, checkDiss=FALSE, verbose=TRUE) {
+                          saveSubsamplingMatrix=FALSE, 
+                          checkDiss=FALSE, verbose=TRUE) {
         transInputType<-inputType
         doDiss<-FALSE
         if(is.function(distFunction) || !is.na(distFunction)){
@@ -351,14 +352,14 @@ setMethod(
         
         #Make dissimilarity AFTER transforming data
         if(doDiss){
-            cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
             inputMatrix<-.makeDiss(inputMatrix,
                 distFunction=distFunction,
-                checkDiss=checkDiss,
-                algType=algorithmType(cf))
-            
+                checkDiss=FALSE)
         }
-        
+        cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
+        if(inputType=="diss" & checkDiss){
+            .checkDissFunction(inputMatrix, algType = algorithmType(cf))
+        }
         ##########
         ## Start running clustering
         ##########

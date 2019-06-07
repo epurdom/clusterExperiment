@@ -200,7 +200,7 @@
                     # This would be caught below anyway, 
                     # but this is a more informative error
                     mainInputType<-"diss"
-                    if (inputType(clusterFunction) != "diss" )
+                    if (!"diss" %in% inputType(clusterFunction))
                         return(
                             "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity matrix."
                         )
