@@ -564,6 +564,7 @@ setMethod(
             # Do first run to get rid of invalid selections (i.e. silently)
             # Note! Cannot run apply on param if don't want all character values.
             # e.g. checks<-apply(param,1,paramCheck,returnValue="logical")
+            browser()
             checks<-sapply(1:nrow(param), 
                 function(i){paramCheck(param[i,],returnValue="logical")})
             whInvalid<-which(!checks)
@@ -847,7 +848,7 @@ setMethod(
     subsample <- as.logical(gsub(" ","",paramRow["subsample"]))
     findBestK <- as.logical(gsub(" ","",paramRow["findBestK"]))
     clusterFunctionName <- as.character(paramRow[["clusterFunction"]])
-    distFunction <- if(!is.na(paramRow[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
+    distFunction <- if(!is.na(paramRow[["distFunction"]])) as.character(paramRow[["distFunction"]]) else NULL
     if(!is.null(clusterFunctionList)){
         clusterFunction<-clusterFunctionList[[clusterFunctionName]]        
     }
