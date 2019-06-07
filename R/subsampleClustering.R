@@ -113,7 +113,7 @@ setMethod(
         ###########################
         if(missing(inputType)) stop("Internal error: inputType was not passed to subsampling step")
         moreArgs<-list(...)
-        subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
+        subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod),moreArgs)
         checkOut<-.checkArgs(inputType=inputType, 
                         main=FALSE, subsample=TRUE, sequential=FALSE,
                         mainClusterArgs=NULL,

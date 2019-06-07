@@ -166,9 +166,10 @@
 
 ###This function checks the mainClusterArgs and subsampleArgs to make sure makes sense with combination of sequential, subsample, x, and diss given by the user.
 #' @return If there is error, returns a character string describing error, otherwise returns list with necessary information:
-#' inputClusterD
 #' mainClusterArgs
 #' subsampleArgs
+#' makeDiss (if allowMakeDiss=FALSE, will always be FALSE)
+#' Note that warnings will be printed if warn=TRUE (different than errors...)
 .checkArgs <-
     function(inputType,
              main=TRUE,
@@ -234,8 +235,7 @@
             #-----
             reqArgs <- requiredArgs(clusterFunction)
             # remove 'k' if sequential is given
-            if (sequential &
-                length(reqArgs) > 0)
+            if (sequential & length(reqArgs) > 0)
                 reqArgs <- reqArgs[-which(reqArgs == "k")]
             # remove 'k' if choose 'findBestK=TRUE'
             if (length(reqArgs) > 0 &
@@ -244,8 +244,47 @@
                 if (mainClusterArgs[["findBestK"]])
                     reqArgs <- reqArgs[-which(reqArgs == "k")]
             }
+            #------
+            # Check have required args for mainClustering
+            #------
+            if (length(reqArgs) > 0) {
+                if (("clusterArgs" %in% names(mainClusterArgs) &
+                     !all(reqArgs %in% names(mainClusterArgs[["clusterArgs"]]))) ||
+                    !("clusterArgs" %in% names(mainClusterArgs)))
+                    return(
+                        paste(
+                            "For the clusterFunction algorithm type ('",
+                            algorithmType(clusterFunction),
+                            "') given in 'mainClusterArgs', must supply arguments:",
+                            reqArgs,
+                            "These must be supplied as elements of the list of 'clusterArgs' given in 'mainClusterArgs'"
+                        )
+                    )
+                    #----------
+                    # check clusterArgs alpha and k are valid
+                    #----------
+                    if("clusterArgs" %in% names(mainClusterArgs)){
+                        clArgs<-mainClusterArgs[["clusterArgs"]]
+                        if("alpha" %in% names(clArgs) & algType=="01"){
+                            if(is.na(clArgs[["alpha"]]) ||
+                                clArgs[["alpha"]]<0 || 
+                                clArgs[["alpha"]]>1){
+                                return("alpha parameter for type 01 clustering functions must be in (0,1)")
+                            }
+                        }
+                        if("k" %in% names(clArgs) & algType=="K"){
+                            if(clArgs[["k"]]<0 || 
+                                !is.whole(clArgs[["k"]])){
+                                return("k parameter for type K clustering functions must be positive whole number")
+                            }
+                        }
+                    }
+            }
             
+            
+            #--------
             #Check that minSize is valid
+            #--------
             if("minSize" %in% names(mainClusterArgs)){
                 if (!is.numeric(mainClusterArgs[["minSize"]]) ||
                     mainClusterArgs[["minSize"]] < 0)
@@ -256,6 +295,7 @@
                     mainClusterArgs[["minSize"]] <-
                         round(mainClusterArgs[["minSize"]]) #in case not integer.                
             }
+            
             #-------
             ## Check post-processing arguments
             #-------
@@ -292,74 +332,61 @@
             }
             mainClusterArgs[["doKPostProcess"]] <- doKPostProcess
             
-            #------
-            # Check have required args for mainClustering
-            #------
-            if (length(reqArgs) > 0) {
-                if (("clusterArgs" %in% names(mainClusterArgs) &
-                     !all(reqArgs %in% names(mainClusterArgs[["clusterArgs"]]))) ||
-                    !("clusterArgs" %in% names(mainClusterArgs)))
-                    return(
-                        paste(
-                            "For the clusterFunction algorithm type ('",
-                            algorithmType(clusterFunction),
-                            "') given in 'mainClusterArgs', must supply arguments:",
-                            reqArgs,
-                            "These must be supplied as elements of the list of 'clusterArgs' given in 'mainClusterArgs'"
-                        )
-                    )
-            }
+
+
             mainClusterArgs[["inputType"]]<-input
 			if(!"checkArgs" %in% names(mainClusterArgs[["clusterArgs"]]))
                 mainClusterArgs[["clusterArgs"]][["checkArgs"]]<-warn
             mainClusterArgs[["warnings"]]<-warn
-        }
-        
-        
-        ########
-        # Adapt MainClusteringArgs if using Sequential
-        ########
-        if (sequential & main) {
-            # Remove argument 'k'
-            # Reason: if subsample=FALSE, then need to change k of the mainClustering step for sequential. If subsample=TRUE, similarly set the k of mainClustering step to match that used in subsample. Either way, can't be predefined by user
-            if ("clusterArgs" %in% names(mainClusterArgs)) {
-                if ("k" %in% names(mainClusterArgs[["clusterArgs"]])) {
-                    #remove predefined versions of k from both.
-                    whK <- which(names(mainClusterArgs[["clusterArgs"]]) == "k")
-                    if (warn)
-                        warning(
-                            "Setting 'k' in mainClusterArgs when sequential clustering is requested will have no effect."
-                        )
-                    mainClusterArgs[["clusterArgs"]] <-
-                        mainClusterArgs[["clusterArgs"]][-whK]
+            #----------
+            # Adapt MainClusteringArgs if using Sequential
+            #----------
+            if (sequential) {
+                # Remove argument 'k'
+                # Reason: if subsample=FALSE, then need to change k of the mainClustering step for sequential. If subsample=TRUE, similarly set the k of mainClustering step to match that used in subsample. Either way, can't be predefined by user
+                if ("clusterArgs" %in% names(mainClusterArgs)) {
+                    if ("k" %in% names(mainClusterArgs[["clusterArgs"]])) {
+                        #remove predefined versions of k from both.
+                        whK <- which(names(mainClusterArgs[["clusterArgs"]]) == "k")
+                        if (warn)
+                            warning(
+                                "Setting 'k' in mainClusterArgs when sequential clustering is requested will have no effect."
+                            )
+                        mainClusterArgs[["clusterArgs"]] <-
+                            mainClusterArgs[["clusterArgs"]][-whK]
+                    }
+                } else{
+                    #make it exist... not sure if I need this.
+                    mainClusterArgs[["clusterArgs"]] <- NULL 
                 }
-            } else{
-                #make it exist... not sure if I need this.
-                mainClusterArgs[["clusterArgs"]] <- NULL 
-            }
-            if(!subsample){
-                # Reason: if subsample=FALSE, and sequential=TRUE 
-                # then need to adjust K in the mainClustering step, so need algorithm of type K
-                if (algorithmType(clusterFunction) != "K") {
-                    return(
-                        "if subsample=FALSE, sequentical clustering can only be implemented with a clusterFunction for mainClustering step with algorithmType 'K'. See documentation of seqCluster."
-                    )
-                    #Not sure why this was here!
-                    # subsampleArgs <-
-                    #                         subsampleArgs[-which(names(subsampleArgs) == "clusterFunction")]
-                }
-                # Reason: subsample=FALSE can't do sequential clustering 
-                # and findBestK=TRUE because need to remove cluster based on
-                # testing many k and finding stable, and if not doing it over 
-                # subsample, then do it over actual clustering
-                if ("findBestK" %in% names(mainClusterArgs)) {
-                    if (mainClusterArgs[["findBestK"]])
+                if(!subsample){
+                    # Reason: if subsample=FALSE, and sequential=TRUE 
+                    # then need to adjust K in the mainClustering step, so need algorithm of type K
+                    if (algorithmType(clusterFunction) != "K") {
                         return(
-                            "Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed to the mainClustering step via mainClusterArgs. See help documentation of seqCluster."
+                            "if subsample=FALSE, sequentical clustering can only be implemented with a clusterFunction for mainClustering step with algorithmType 'K'. See documentation of seqCluster."
                         )
-                }     
-            }  
+                        #Not sure why this was here!
+                        # subsampleArgs <-
+                        #                         subsampleArgs[-which(names(subsampleArgs) == "clusterFunction")]
+                    }
+                    # Reason: subsample=FALSE can't do sequential clustering 
+                    # and findBestK=TRUE because need to remove cluster based on
+                    # testing many k and finding stable, and if not doing it over 
+                    # subsample, then do it over actual clustering
+                    if ("findBestK" %in% names(mainClusterArgs)) {
+                        if (mainClusterArgs[["findBestK"]])
+                            return(
+                                "Cannot do sequential clustering where subsample=FALSE and 'findBestK=TRUE' is passed to the mainClustering step via mainClusterArgs. See help documentation of seqCluster."
+                            )
+                    }     
+                }  
+            }
+        
         }
+        
+        
+
         
         #########
         # Checks related to subsample=TRUE
@@ -570,3 +597,14 @@
         )
         
     }
+
+
+# from Martin Maechler  to test if whole number https://stat.ethz.ch/pipermail/r-help/2003-April/032471.html
+is.whole <- function(a, tol = 1e-7) { 
+   is.eq <- function(x,y) { 
+	 r <- all.equal(x,y, tol=tol)
+	 is.logical(r) && r 
+   }
+   (is.numeric(a) && is.eq(a, floor(a))) ||
+   (is.complex(a) && {ri <- c(Re(a),Im(a)); is.eq(ri, floor(ri))})
+}
