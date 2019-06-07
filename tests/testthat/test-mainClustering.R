@@ -25,8 +25,7 @@ test_that("`mainClustering` options", {
 
 
     #check giving wrong parameters gives warning:
-    ##FIXME: the next two  did this give warning before? because of removeSil?
-    expect_warning(mainClustering(mat, 
+    expect_warning(mainClustering(dissMat, 
         inputType="diss",
         clusterFunction="tight", 
         clusterArgs=list(alpha=0.1),
@@ -38,6 +37,7 @@ test_that("`mainClustering` options", {
         minSize=5, 
         removeSil=TRUE),
         "do not match the algorithmType")
+    #check missing required parameters gives warning:
     expect_error(mainClustering(dissMat,
         inputType="diss", 
         clusterFunction="tight",
@@ -49,6 +49,7 @@ test_that("`mainClustering` options", {
         clusterArgs=list(alpha=0.1),
         minSize=5, removeSil=TRUE),
         "must supply arguments: k")
+    #check warning for superfluous arguments passed to clustering function:
     expect_warning(mainClustering(dissMat, 
         inputType="diss",
         clusterFunction="tight", 
@@ -62,7 +63,6 @@ test_that("`mainClustering` options", {
         minSize=5, 
         removeSil=TRUE),
         "arguments passed via clusterArgs to the clustering function pam are not all applicable")
-    
     expect_warning(mainClustering(dissMat, 
         inputType="diss",
         clusterFunction="tight", 

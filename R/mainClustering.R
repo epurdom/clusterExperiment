@@ -106,7 +106,8 @@ setMethod(
         #######################
         postProcessArgs<-list(...)
         #remove those based added by clusterSingle/seqCluster
-				if("doKPostProcess" %in% names(postProcessArgs)) postProcessArgs<-postProcessArgs[-grep("doKPostProcess",names(postProcessArgs))]
+		if("doKPostProcess" %in% names(postProcessArgs)) 
+            postProcessArgs <- postProcessArgs[-grep("doKPostProcess", names(postProcessArgs))]
         mainArgs<-c(list(clusterFunction=clusterFunction,
                          clusterArgs=clusterArgs,
                          minSize=minSize, orderBy=orderBy,

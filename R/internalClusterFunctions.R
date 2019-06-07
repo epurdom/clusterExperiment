@@ -262,7 +262,7 @@
             doKPostProcess <- FALSE
             whPostProcessArgs <-
                 which(names(mainClusterArgs) %in% getPostProcessingArgs(clusterFunction))
-            if (length(whPostProcessArgs) > 0) {
+            if (length(whPostProcessArgs) > 0 | !is.null(mainClusterArgs[["extraArguments"]])) {
                 #get rid of wrong args passed because of user confusion between the two
                 postProcessArgs <- mainClusterArgs[whPostProcessArgs]
                 if (clusterFunction@algorithmType == "K") {
@@ -280,7 +280,7 @@
                     if (length(whPostProcessArgs) !=
                          length(mainClusterArgs[["extraArguments"]]) & warn)
                         warning(
-                            "Some arguments passed via '...' in mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object"
+                            "Some arguments passed via mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object"
                         )
                     whRm<-which(names(mainClusterArgs) %in% mainClusterArgs[["extraArguments"]])
                     if(length(whRm)>0){
