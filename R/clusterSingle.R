@@ -290,7 +290,7 @@ setMethod(
         ## but better here, because don't want to find error after 
         ## already done extensive calculation...
         ##########
-        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, allowMakeDiss=makeMissingDiss & !doDiss,warn=warnings)
+        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, seqArgs=seqArgs,allowMakeDiss=makeMissingDiss & !doDiss,warn=warnings)
         if(is.character(checkOut)) stop(checkOut)
         mainClusterArgs<-checkOut$mainClusterArgs
         subsampleArgs<-checkOut$subsampleArgs

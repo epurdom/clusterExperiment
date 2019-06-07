@@ -143,18 +143,29 @@
 seqCluster<-function(inputMatrix, inputType, k0,  
                      subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
                      k.max=k0+10,verbose=TRUE, 
-										 subsampleArgs=NULL,mainClusterArgs=NULL,checkDiss=FALSE)
+                     subsampleArgs=NULL,mainClusterArgs=NULL)
 {
     ########
     ####Checks
     ########
-    if(missing(inputType)) stop("Internal error: inputType was not passed to sequential clustering step")
+    if(missing(inputType)) 
+        stop("Internal error: inputType was not passed to sequential clustering step")
+    argsList<-list(k0=k0, beta=beta, top.can = top.can, 
+        remain.n = remain.n, k.min = k.min, k.max=k.max)
     checkOut<-.checkArgs(inputType, main=TRUE, subsample=subsample,sequential=TRUE,
 		mainClusterArgs=mainClusterArgs,
-		subsampleArgs=subsampleArgs)
+		subsampleArgs=subsampleArgs, seqArgs=argsList)
     if(is.character(checkOut)) stop(checkOut)
     mainClusterArgs<-checkOut$mainClusterArgs
     subsampleArgs<-checkOut$subsampleArgs
+    seqArgs<-checkOut$seqArgs
+    k0=seqArgs[["k0"]]
+    beta=seqArgs[["beta"]]
+    top.can = seqArgs[["top.can"]]
+    remain.n = seqArgs[["remain.n"]]
+    k.min = seqArgs[["k.min"]]
+    k.max=seqArgs[["k.max"]]
+    
     if(subsample) input<-subsampleArgs[["inputType"]]
     else input<-mainClusterArgs[["inputType"]]
     #Note, for the purpose of this

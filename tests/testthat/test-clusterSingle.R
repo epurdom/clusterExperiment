@@ -908,12 +908,17 @@ test_that("Different passed options of seqCluster",{
         seqArgs=list(k0=5,beta=0.9,verbose=FALSE))
         )
     expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE), "if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
-    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE)), "seqArgs must contain element 'beta'")
-	expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(beta=0.9,verbose=FALSE)), "seqArgs must contain element 'k0'")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE)), "required argument 'beta' is missing")
+	expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(beta=0.9,verbose=FALSE)), "required argument 'k0' is missing")
 
 	#right clusterFunctions
-	expect_error(clusterSingle(mat, mainClusterArgs=list(clusterFunction="kmeans"), subsample=TRUE, sequential=TRUE, subsampleArgs=list(clusterFunction="pam",n.sample=40), isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)),
-							  "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity")
+	expect_error(clusterSingle(mat, 
+        mainClusterArgs=list(clusterFunction="kmeans"), 
+        subsample=TRUE, sequential=TRUE, 
+        subsampleArgs=list(clusterFunction="pam",n.sample=40), 
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE)),
+        "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity")
 	expect_error(clusterSingle(dissMat, inputType="diss", 
         mainClusterArgs=list(clusterFunction="tight"),  
         subsample=FALSE, sequential=TRUE, 

@@ -177,6 +177,7 @@
              sequential,
              mainClusterArgs,
              subsampleArgs,
+             seqArgs=NULL,
              allowMakeDiss=FALSE,
              warn = TRUE) {
         ########
@@ -587,11 +588,45 @@
                 subsampleArgs[["clusterArgs"]][["checkArgs"]]<-warn
             subsampleArgs[["warnings"]]<-warn
 						
-        }        
+        }    
+        
+        #########
+        # Check seqArgs
+        #########
+        if(sequential){
+            if(is.null(seqArgs))
+                return("if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
+            
+            ## Test parameters that need to be whole positive numbers
+            testFUN<-function(name){
+                if(name %in% seqArgs){
+                    if(is.na(seqArgs[[name]]) || !is.whole(seqArgs[[name]]) || seqArgs[[name]]<0) return(sprintf("%s must be a positive whole number",name))
+                    else return(TRUE)                    
+                }
+                else return(TRUE)
+            }
+            if(!"k0"%in%names(seqArgs)) {
+                stop("required argument 'k0' is missing for the sequential clustering step")
+            }
+            else{
+                out<-testFUN("k0")
+                if(!is.logical(out)) return(out)
+            }
+            if(!"beta" %in% names(seqArgs))
+                return("required argument 'beta' is missing for the sequential clustering step")
+            else{
+                if(is.na(seqArgs[["beta"]]) || seqArgs[["beta"]]<=0 || seqArgs[["beta"]]>=1 ) return("beta parameter for sequential clustering step must be in (0,1)")
+            }
+            for(nam in c("top.can","remain.n","k.min","k.max")){
+                out<-testFUN(nam)
+                if(!is.logical(out)) return(out)
+            }
+        }    
         return(
             list(
                 mainClusterArgs = mainClusterArgs,
                 subsampleArgs = subsampleArgs,
+                seqArgs = seqArgs,
                 doDiss=doDiss
             )
         )
