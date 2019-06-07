@@ -614,26 +614,49 @@ test_that("Different clustering algorithms of `mainClustering` ", {
              
 test_that("Different options of mainClustering",{
     #check errors and warnings
-    expect_error(clusterSingle(mat,  subsample=FALSE, sequential=TRUE, seqArgs=list(verbose=FALSE), isCount=FALSE,mainClusterArgs=list(clusterFunction="pam")),
+    expect_error(clusterSingle(mat,  
+        subsample=FALSE, sequential=TRUE, 
+        seqArgs=list(verbose=FALSE), 
+        isCount=FALSE,
+        mainClusterArgs=list(clusterFunction="pam")),
                  "seqArgs must contain element 'k0'")
-    expect_error(clusterSingle(mat,  subsample=FALSE, sequential=TRUE, seqArgs=list(verbose=FALSE), isCount=FALSE, mainClusterArgs=list(clusterFunction="pam","findBestK"==TRUE)),
+    expect_error(clusterSingle(mat,  
+        subsample=FALSE, sequential=TRUE, 
+        seqArgs=list(verbose=FALSE), isCount=FALSE, 
+        mainClusterArgs=list(clusterFunction="pam","findBestK"==TRUE)),
                  "seqArgs must contain element 'k0'")
-    expect_error(clusterSingle(mat,
-                                 subsample=FALSE, sequential=FALSE,
-                                 mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(k=3)), isCount=FALSE),
+    expect_error(clusterSingle(mat, makeMissingDiss=TRUE,
+        subsample=FALSE, sequential=FALSE,
+        mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(k=3)), 
+        isCount=FALSE),
                    "must supply arguments: alpha")
-    expect_warning(clusterSingle(mat,  subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(alpha=0.1),findBestK=TRUE),isCount=FALSE),
-                   "Some arguments passed via '...' in mainClustering do not match the algorithmType")
+    ##FIXME: problem with not detecting that findBestK doesn't work
+    expect_warning(clusterSingle(mat,  makeMissingDiss=TRUE,
+        subsample=FALSE, sequential=FALSE, 
+        mainClusterArgs=list(clusterFunction="tight", clusterArgs=list(alpha=0.1),findBestK=TRUE),
+        isCount=FALSE),
+        "Some arguments passed via '...' in mainClustering do not match the algorithmType")
     expect_error(clusterSingle(mat,
-                                 subsample=FALSE, sequential=FALSE,
-                                 mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(alpha=0.1),distFunction=function(x){abs(cor(t(x)))},checkDiss=TRUE),isCount=FALSE),
-                   "Dissimilarity matrix must have zero values on the diagonal")
+        subsample=FALSE, sequential=FALSE,
+        distFunction=function(x){abs(cor(t(x)))},  
+        mainClusterArgs=list(clusterFunction="tight", clusterArgs=list(alpha=0.1)),
+        checkDiss=TRUE,isCount=FALSE),
+        "Dissimilarity matrix must have zero values on the diagonal")
 
 
 })
 
 test_that("Different options of subsampling",{
-	expect_message(clustSubsample <- clusterSingle(mat,  subsample=TRUE, saveSubsamplingMatrix=TRUE,sequential=FALSE, subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), isCount=FALSE),"a clusterFunction was not set for subsampleClustering")
+    ###STOP HERE: 
+	expect_message(clustSubsample <- clusterSingle(mat,  
+        inputType="X",
+        subsample=TRUE, 
+        saveSubsamplingMatrix=TRUE,
+        sequential=FALSE, 
+        subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), 
+        isCount=FALSE),
+        "a clusterFunction was not set for subsampleClustering")
 	
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
     expect_false(is.null(coClustering(clustSubsample)))
