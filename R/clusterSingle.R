@@ -379,7 +379,7 @@ setMethod(
                                                 subsample=subsample,
                                                 subsampleArgs=subsampleArgs,
                                                 mainClusterArgs=mainClusterArgs)
-            outlist <- list("clustering"=.clusterListToVector(finalClusterList$result, N))
+            outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N))
             
         }
         clInfo<-list(list(clusterInfo = outlist$clusterInfo,
@@ -396,23 +396,17 @@ setMethod(
         ## Convert to ClusterExperiment Object
         ##########
         if(transInputType == "X"){ 
-            #saved original X to make CE object with
-            retval <- ClusterExperiment(origX, outlist$clustering,
-                                        transformation=transFun,
-                                        clusterInfo=clInfo, 
-                                        clusterTypes="clusterSingle",
-                                        checkTransformAndAssay=FALSE)
-            clusterLabels(retval)<-clusterLabel
-            if(!sequential & subsample & saveSubsamplingMatrix) {
-                #convert to sparse matrix:
-				retval@coClustering <- Matrix::Matrix(finalClusterList$inputMatrix, sparse=TRUE)
-                ch<-.checkCoClustering(retval)
-                if(!is.logical(ch)) stop(ch)
-            }
-            if(!is.null(transObj)){
-                #add in the reduceMethod stuff
-                retval<-.addBackSEInfo(newObj=retval,oldObj=transObj)
-            }
+            retval<-.convertOutListToCE(
+                xMatrix=origX,
+                clustering=outlist$clustering,
+                clusterInfo=clInfo,
+                diss=finalClusterList$inputMatrix, 
+                transFun=transFun,
+                clusterLabel=clusterLabel,
+                sequential=sequential, 
+                subsample=subsample, 
+                saveSubsamplingMatrix=saveSubsamplingMatrix, 
+                existingCE=transObj)
             return(retval)
         }
         else{
@@ -423,6 +417,31 @@ setMethod(
         
     }
 )
+# Do this so clear how to transform diss version of output into CE 
+# (for reuse in clusterMany...)
+.convertOutListToCE<-function(xMatrix,
+    clustering,clusterInfo,diss, 
+    clusterLabel,sequential, 
+    subsample, transFun,
+    saveSubsamplingMatrix, existingCE){
+    retval <- ClusterExperiment(xMatrix, clustering,
+                                transformation=transFun,
+                                clusterInfo=clusterInfo, 
+                                clusterTypes="clusterSingle",
+                                checkTransformAndAssay=FALSE)
+    clusterLabels(retval)<-clusterLabel
+    if(!sequential & subsample & saveSubsamplingMatrix) {
+        #convert to sparse matrix:
+		retval@coClustering <- Matrix::Matrix(finalClusterList$inputMatrix, sparse=TRUE)
+        ch<-.checkCoClustering(retval)
+        if(!is.logical(ch)) stop(ch)
+    }
+    if(!is.null(existingCE)){
+        #add in the reduceMethod stuff
+        retval<-.addBackSEInfo(newObj=retval,oldObj=existingCE)
+    }
+    return(retval)
+}
 #wrapper that calls the clusterSampling and mainClustering routines in reasonable order.
 #called by both seqCluster and clusterSingle
 #clusterFunction assumed to be defined in mainClusterArgs AND subsampleArgs

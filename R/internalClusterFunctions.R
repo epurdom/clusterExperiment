@@ -55,7 +55,11 @@
         if (length(distFunction) > 1)
             stop("if distFunction is not a function, it must be of length 1")
         if (is.character(distFunction)) {
-            distFunction <- get(distFunction, envir = globalenv())
+            ## Handle defaults in `dist` function
+            if(distFunction %in% c("euclidean", "maximum", "manhattan", "canberra", "binary" ,"minkowski")){
+                distFunction<-function(x){dist(x,method=distFunction)}
+            }
+            else distFunction <- get(distFunction, envir = globalenv())
         } else if (is.na(distFunction)) {
             distFunction <-
                 switch(
@@ -606,7 +610,7 @@
                 else return(TRUE)
             }
             if(!"k0"%in%names(seqArgs)) {
-                stop("required argument 'k0' is missing for the sequential clustering step")
+                return("required argument 'k0' is missing for the sequential clustering step")
             }
             else{
                 out<-testFUN("k0")
