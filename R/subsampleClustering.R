@@ -104,7 +104,8 @@ setMethod(
     signature = signature(clusterFunction = "ClusterFunction"),
     definition=function(clusterFunction, inputMatrix,inputType, clusterArgs=NULL,
                         classifyMethod=c("All","InSample","OutOfSample"),
-                        resamp.num = 100, samp.p = 0.7,ncores=1,checkArgs=TRUE,checkDiss=FALSE,... )
+                        resamp.num = 100, samp.p = 0.7,
+						ncores=1,warnings=TRUE,... )
     {
         classifyMethod<-match.arg(classifyMethod)
         ###########################
@@ -114,10 +115,10 @@ setMethod(
         moreArgs<-list(...)
         subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod, checkArgs=TRUE),moreArgs)
         checkOut<-.checkArgs(inputType=inputType, 
-                             main=FALSE, subsample=TRUE, sequential=FALSE,
-							 mainClusterArgs=NULL,
-                             subsampleArgs=subsampleArgs, 
-							 warn=TRUE)		
+                        main=FALSE, subsample=TRUE, sequential=FALSE,
+                        mainClusterArgs=NULL,
+                        subsampleArgs=subsampleArgs, 
+                        warn=warnings)		
         if(is.character(checkOut)) stop(checkOut)
         else{
             subsampleArgs<-checkOut$subsampleArgs
@@ -144,7 +145,7 @@ setMethod(
             ##Cluster subsample
             ##----
             #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
-            argsClusterList <- list(inputType=inputType,"checkArgs"=checkArgs,
+            argsClusterList <- list(inputType=inputType,
                 "cluster.only"=(classifyMethod=="InSample"))
             if(inputType=="diss") 
                 argsClusterList<-c(argsClusterList, 

@@ -650,13 +650,15 @@ setMethod(
           return(clusterSingle(x=dat, diss=diss,subsample=subsample, reduceMethod="none",
                         mainClusterArgs=mainClusterArgs,
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose))
+                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE,
+												warnings=verbose))
         }
         else
           return(clusterSingle(inputMatrix=dat, inputType="X", subsample=subsample,
                         mainClusterArgs=mainClusterArgs, reduceMethod="none",
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE, verbose=verbose))
+                        sequential=sequential, transFun=function(x){x},checkDiss=FALSE,
+												warnings=verbose))
       }
       if(run){
         ##Calculate distances necessary only once

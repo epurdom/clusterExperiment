@@ -79,7 +79,7 @@ NULL
     out<-do.call(stats::kmeans,
         c(list(x=t(inputMatrix),centers=k),passedArgs))
     if(cluster.only) return(out$cluster)
-    else return(.kmeansPartitionObject(x,out)) 
+    else return(.kmeansPartitionObject(inputMatrix,out)) 
 } 
 .kmeansClassify <- function(inputMatrix, inputType, clusterResult) { 
     suppressWarnings(stats::kmeans(t(inputMatrix), clusterResult$medoids, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers

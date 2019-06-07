@@ -36,7 +36,7 @@
 #'   of a call to \code{clusterSingle}.
 #' @param checkDiss logical. Whether to check whether the input \code{diss} is
 #'   valid.
-#' @param verbose logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters. 
+#' @param warnings logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters. 
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #' @inheritParams transformData
@@ -272,7 +272,7 @@ setMethod(
                           makeMissingDiss=FALSE,
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, 
-                          checkDiss=FALSE, verbose=TRUE) {
+                          checkDiss=FALSE, warnings=TRUE) {
         transInputType<-inputType
         doDiss<-FALSE
         if(is.function(distFunction) || !is.na(distFunction)){
@@ -290,7 +290,7 @@ setMethod(
         ## but better here, because don't want to find error after 
         ## already done extensive calculation...
         ##########
-        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, allowMakeDiss=makeMissingDiss & !doDiss,warn=verbose)
+        checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, allowMakeDiss=makeMissingDiss & !doDiss,warn=warnings)
         if(is.character(checkOut)) stop(checkOut)
         mainClusterArgs<-checkOut$mainClusterArgs
         subsampleArgs<-checkOut$subsampleArgs
@@ -329,7 +329,7 @@ setMethod(
                 stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
             }
             if(!is.na(nDims) & reduceMethod=="none") {
-                if(verbose) warning("specifying nDims has no effect if reduceMethod==`none`")
+                if(warnings) warning("specifying nDims has no effect if reduceMethod==`none`")
             }
             if(reduceMethod=="none"){
                 inputMatrix<-transformData(inputMatrix,transFun=transFun)
@@ -352,6 +352,7 @@ setMethod(
         
         #Make dissimilarity AFTER transforming data
         if(doDiss){
+            if(warnings) .mynote("Making nxn dissimilarity matrix.")
             inputMatrix<-.makeDiss(inputMatrix,
                 distFunction=distFunction,
                 checkDiss=FALSE)
@@ -404,7 +405,7 @@ setMethod(
             clusterLabels(retval)<-clusterLabel
             if(!sequential & subsample & saveSubsamplingMatrix) {
                 #convert to sparse matrix:
-                retval@coClustering <- Matrix::Matrix(finalClusterList$diss, sparse=TRUE)
+				retval@coClustering <- Matrix::Matrix(finalClusterList$inputMatrix, sparse=TRUE)
                 ch<-.checkCoClustering(retval)
                 if(!is.logical(ch)) stop(ch)
             }

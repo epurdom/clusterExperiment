@@ -310,6 +310,9 @@
                     )
             }
             mainClusterArgs[["inputType"]]<-input
+			if(!"checkArgs" %in% names(mainClusterArgs[["clusterArgs"]]))
+                mainClusterArgs[["clusterArgs"]][["checkArgs"]]<-warn
+            mainClusterArgs[["warnings"]]<-warn
         }
         
         
@@ -375,9 +378,10 @@
             # set some defaults if at top level 
             #---
             if(main & !"clusterFunction" %in% names(subsampleArgs)){
-                if (!sequential & inputSub=="diss") {
+                cfInp<-inputType(mainClusterArgs[["clusterFunction"]])
+                if (inputSub %in% cfInp) {
                     mess <-
-                        "a clusterFunction was not set for subsampleClustering -- set to be the same as the mainClustering step"
+                        "a clusterFunction was not given for subsampleClustering -- set to be the same as the mainClustering step"
                     if (is.character(mainClusterArgs[["clusterFunction"]]))
                         mess <- sprintf("%s (%s)", mess, mainClusterArgs[["clusterFunction"]])
                     if (warn)
@@ -386,13 +390,12 @@
                     diffSubsampleCF <- FALSE
                 }
                 else{
-                    if (warn)
-                        .mynote(
-                            sprintf(
-                                "a clusterFunction was not set for subsampleClustering (and sequential=TRUE means that it must be of type 'K' so cannot be set to that of mainClustering step). The clusterFunction for subsampling was set to the default of %s",
+                    if (warn & sequential){
+                        mess<-sprintf("a clusterFunction was not given for subsampleClustering (and inputMatrix is not of type allowed by clusterFunction of mainClustering step). The clusterFunction for subsampling was set to the default of %s",
                                 default
                             )
-                        )
+                        .mynote(mess)
+                    }
                     subsampleArgs[["clusterFunction"]] <- default
                     diffSubsampleCF <- TRUE
                     
@@ -422,7 +425,7 @@
                        }
                     }
                     else{
-                        return(paste("In subsampling clustering step,",input)) 
+                        return(paste("In subsampling clustering step,",inputSub)) 
                     }
                 } 
                 
@@ -553,6 +556,10 @@
                 }
             }
             subsampleArgs[["inputType"]]<-inputSub
+            if(!"checkArgs" %in% names(subsampleArgs[["clusterArgs"]]))
+                subsampleArgs[["clusterArgs"]][["checkArgs"]]<-warn
+            subsampleArgs[["warnings"]]<-warn
+						
         }        
         return(
             list(

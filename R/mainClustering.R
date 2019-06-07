@@ -22,7 +22,7 @@
 #'   part.
 #' @param clusterArgs arguments to be passed directly to the \code{clusterFUN}
 #'   slot of the \code{ClusterFunction} object
-#' @param checkArgs logical as to whether should give warning if arguments given
+#' @param warnings logical as to whether should give warning if arguments given
 #'   that don't match clustering choices given. Otherwise, inapplicable 
 #'   arguments will be ignored without warning.
 #' @param returnData logical as to whether to return the \code{diss} or \code{x}
@@ -70,7 +70,7 @@
 #' minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 #'
 #' # note that passing the wrong arguments for an algorithm results in warnings
-#' # (which can be turned off with checkArgs=FALSE)
+#' # (which can be turned off with warnings=FALSE)
 #' clustSubTight_test <- mainClustering(simData, clusterFunction="tight",
 #' clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
 #' clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",
@@ -96,7 +96,8 @@ setMethod(
                         minSize=1, 
                         orderBy=c("size","best"),
                         format=c("vector","list"),
-                        returnData=FALSE,...){
+                        returnData=FALSE,
+												warnings=TRUE,...){
         if(missing(inputType)) stop("Internal error: inputType was not passed to mainClustering step")
         orderBy<-match.arg(orderBy)
         format<-match.arg(format)
@@ -105,13 +106,13 @@ setMethod(
         #######################
         postProcessArgs<-list(...)
         #remove those based added by clusterSingle/seqCluster
-        if("doKPostProcess" %in% names(postProcessArgs)) postProcessArgs<-postProcessArgs[-grep("doKPostProcess",names(postProcessArgs))]
+				if("doKPostProcess" %in% names(postProcessArgs)) postProcessArgs<-postProcessArgs[-grep("doKPostProcess",names(postProcessArgs))]
         mainArgs<-c(list(clusterFunction=clusterFunction,
                          clusterArgs=clusterArgs,
                          minSize=minSize, orderBy=orderBy,
 						 extraArguments=names(postProcessArgs),
                          format=format),postProcessArgs)
-        checkOut<-.checkArgs(inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, subsampleArgs=NULL,warn=TRUE)		
+        checkOut<-.checkArgs(inputType=inputType, main=TRUE, subsample=FALSE, sequential=FALSE, mainClusterArgs=mainArgs, subsampleArgs=NULL,warn=warnings)		
         if(is.character(checkOut)) stop(checkOut)
 		mainClusterArgs<-checkOut$mainClusterArgs
 		inputType<-mainClusterArgs[["inputType"]]
@@ -121,14 +122,14 @@ setMethod(
         minSize=mainClusterArgs[["minSize"]] 
         orderBy=mainClusterArgs[["orderBy"]]
         format=mainClusterArgs[["format"]]
-        checkArgs=mainClusterArgs[["checkArgs"]]
         postProcessArgs=mainClusterArgs[mainClusterArgs[["extraArguments"]]]
         
         #######################
         ####Run clustering:
         #######################
         N <- dim(inputMatrix)[2]
-        argsClusterList<-c(clusterArgs, list("checkArgs"=checkArgs, "cluster.only"=TRUE,inputMatrix=inputMatrix,inputType=inputType))
+        argsClusterList<-c(clusterArgs, list("cluster.only"=TRUE,
+					inputMatrix=inputMatrix,inputType=inputType))
         if(doKPostProcess) {
             if(inputType=="diss") giveDiss<-TRUE
             else giveDiss<-FALSE
