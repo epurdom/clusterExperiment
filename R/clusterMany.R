@@ -250,8 +250,10 @@ setMethod(
     signature = signature(x = "SingleCellExperiment"),
     definition = function(x, ks=NA, clusterFunction,
                           reduceMethod="none",
-                          nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
-                          nReducedDims=defaultNDims(x,reduceMethod,type="reducedDims"),
+                          nFilterDims= defaultNDims(x, 
+                              reduceMethod, type="filterStats"),
+                          nReducedDims= defaultNDims(x, 
+                              reduceMethod, type="reducedDims"),
                           alphas=0.1, findBestK=FALSE,
                           sequential=FALSE, removeSil=FALSE, subsample=FALSE,
                           silCutoff=0, distFunction=NA,
@@ -262,6 +264,7 @@ setMethod(
                           subsampleArgs=NULL,
                           seqArgs=NULL,
                           whichAssay=1,
+                          makeMissingDiss=FALSE,
                           ncores=1, random.seed=NULL, run=TRUE,
                           ...
     )
@@ -481,15 +484,15 @@ setMethod(
             #Check value alpha, beta values
             #---
             alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
-            if(length(alpha01)>0){
-                stop("alpha value must be in (0,1)")
-                param[alpha01,"alpha"]<-NA
-            }
+            # if(length(alpha01)>0){
+            #     stop("alpha value must be in (0,1)")
+            #     param[alpha01,"alpha"]<-NA
+            # }
             beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
-            if(length(beta01)>0){
-                stop("beta value must be in (0,1)")
-                param[beta01,"beta"]<-NA
-            }
+            # if(length(beta01)>0){
+            #     stop("beta value must be in (0,1)")
+            #     param[beta01,"beta"]<-NA
+            # }
             
             #---
             # deal with nReducedDims NA or larger than the size of the dataset
@@ -540,6 +543,9 @@ setMethod(
             # Might could handle this better by call to .checkArgs for each parameter combination
             # Also, if ever reinstate param option, then should apply these checks to that param
             ######
+            # paramCheck<-function(paramRow){
+             # }
+            
             whInvalid <- which(!param[,"subsample"] & param[,"sequential"]
                                & param[,"findBestK"])
             if(length(whInvalid)>0) {
@@ -616,64 +622,57 @@ setMethod(
         if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
         paramFun <- function(i){
             par <- param[i,]
-            #make them logical values... otherwise adds a space before the TRUE and doesn't recognize.
-            #well, sometimes. Maybe don't need this?
-            removeSil <- as.logical(gsub(" ","",par["removeSil"]))
-            sequential <- as.logical(gsub(" ","",par["sequential"]))
-            subsample <- as.logical(gsub(" ","",par["subsample"]))
-            findBestK <- as.logical(gsub(" ","",par["findBestK"]))
-            clusterFunctionName <- as.character(par[["clusterFunction"]])
-            clusterFunction<-clusterFunctionList[[clusterFunctionName]]
-            reduceMethod<-as.character(par[["reduceMethod"]])
-            distFunction<-if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
-            if(!is.na(par[["k"]])){
-                if(sequential) {
-                    seqArgs[["k0"]] <- par[["k"]]
-                } else{
-                    #to be safe, set both in case user set one.
-                    subsampleArgs[["clusterArgs"]][["k"]] <- par[["k"]]
-                    mainClusterArgs[["clusterArgs"]][["k"]] <- par[["k"]]
-                }
-            }
-            mainClusterArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
-            seqArgs[["beta"]] <- par[["beta"]]
-            mainClusterArgs[["minSize"]] <- par[["minSize"]]
-            mainClusterArgs[["findBestK"]] <- findBestK
-            mainClusterArgs[["removeSil"]] <- removeSil
-            mainClusterArgs[["silCutoff"]] <- par[["silCutoff"]]
-            mainClusterArgs[["checkArgs"]] <- FALSE #turn off printing of warnings that arguments off
-            mainClusterArgs[["clusterFunction"]]<-clusterFunction
-            seqArgs[["verbose"]]<-FALSE
+            totalArgs<-.makeArgsFromParam(par,
+                mainClusterArgs=mainClusterArgs,
+                seqArgs=seqArgs,
+                subsampleArgs=subsampleArgs,
+                clusterFunctionList=clusterFunctionList)
             if(!is.null(random.seed)) {
                 set.seed(random.seed)
             }
-            ##Note that currently, checkDiss=FALSE, also turns off warnings about arguments
             if(reduceMethod=="none")
                 dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
             else if(isReducedDims(x,reduceMethod))
                 dat<-t(reducedDim(x,reduceMethod)[,seq_len(par[["nReducedDims"]])] )
             else if(isFilterStats(x,reduceMethod))
-                dat<-transformData( filterData(x, filterStats=reduceMethod, percentile=par[["nFilterDims"]]),
-                                    transFun=transFun, whichAssay=whichAssay)
+                dat<-transformData( filterData(x, 
+                    filterStats=reduceMethod, 
+                    percentile=par[["nFilterDims"]]),
+                    transFun=transFun, 
+                    whichAssay=whichAssay)
             else stop("Internal error: reduceMethod value that not in filtering statistics or reducedDimNames")
             #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
+            distFunction <- if(!is.na(par[["distFunction"]])) as.character(par[["distFunction"]]) else NULL
             if(!is.null(distFunction)){
                 #need to update here when have filter (see below)
                 diss<- allDist[[distFunction]]
                 ###FIXME: this is the one place where I want both x and diss!
                 ###   if only give a diss, it will not create output as clusterExperiment object. Sigh. 
-                return(clusterSingle(x=dat, diss=diss,subsample=subsample, reduceMethod="none",
-                                     mainClusterArgs=mainClusterArgs,
-                                     subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                                     sequential=sequential, transFun=function(x){x},checkDiss=FALSE,
-                                     warnings=verbose))
+                return(clusterSingle(x=dat, diss=diss,
+                    sequential=sequential, 
+                    subsample=subsample, 
+                    reduceMethod="none",
+                    mainClusterArgs=totalArgs$mainClusterArgs,
+                    subsampleArgs=totalArgs$subsampleArgs, 
+                    seqArgs=totalArgs$seqArgs,
+                    transFun=function(x){x},
+                    checkDiss=FALSE,
+                    makeMissingDiss=FALSE,
+                    warnings=verbose))
             }
             else
-                return(clusterSingle(inputMatrix=dat, inputType="X", subsample=subsample,
-                                     mainClusterArgs=mainClusterArgs, reduceMethod="none",
-                                     subsampleArgs=subsampleArgs, seqArgs=seqArgs,
-                                     sequential=sequential, transFun=function(x){x},checkDiss=FALSE,
-                                     warnings=verbose))
+                return(clusterSingle(inputMatrix=dat, 
+                    inputType="X", 
+                    sequential=sequential, 
+                    subsample=subsample,
+                    reduceMethod="none",
+                    mainClusterArgs=totalArgs$mainClusterArgs, 
+                    subsampleArgs=totalArgs$subsampleArgs, 
+                    seqArgs=totalArgs$seqArgs,
+                    transFun=function(x){x},
+                    checkDiss=FALSE,
+                    makeMissingDiss=FALSE,
+                    warnings=verbose))
         }
         if(run){
             ##Calculate distances necessary only once
@@ -798,4 +797,46 @@ setMethod(
 )
 
 
+.makeArgsFromParam<-function(par,
+    mainClusterArgs=NULL,
+    seqArgs=NULL,
+    subsampleArgs=NULL,
+    clusterFunctionList=NULL){
 
+    #The following fixes logical values that got messed up
+    #otherwise adds a space before the TRUE and doesn't recognize.
+    #well, sometimes. Maybe don't need this?
+    removeSil <- as.logical(gsub(" ","",par["removeSil"]))
+    sequential <- as.logical(gsub(" ","",par["sequential"]))
+    subsample <- as.logical(gsub(" ","",par["subsample"]))
+    findBestK <- as.logical(gsub(" ","",par["findBestK"]))
+    clusterFunctionName <- as.character(par[["clusterFunction"]])
+    if(!is.null(clusterFunctionList)){
+        clusterFunction<-clusterFunctionList[[clusterFunctionName]]        
+    }
+    else clusterFunction <- getBuiltInFunction(clusterFunctionName)
+    reduceMethod<-as.character(par[["reduceMethod"]])
+    if(!is.na(par[["k"]])){
+        if(sequential) {
+            seqArgs[["k0"]] <- par[["k"]]
+        } else{
+            #to be safe, set both in case user set one.
+            subsampleArgs[["clusterArgs"]][["k"]] <- par[["k"]]
+            mainClusterArgs[["clusterArgs"]][["k"]] <- par[["k"]]
+        }
+    }
+    mainClusterArgs[["clusterArgs"]][["alpha"]] <- par[["alpha"]]
+    seqArgs[["beta"]] <- par[["beta"]]
+    mainClusterArgs[["minSize"]] <- par[["minSize"]]
+    mainClusterArgs[["findBestK"]] <- findBestK
+    mainClusterArgs[["removeSil"]] <- removeSil
+    mainClusterArgs[["silCutoff"]] <- par[["silCutoff"]]
+    mainClusterArgs[["clusterFunction"]]<-clusterFunction
+    seqArgs[["verbose"]]<-FALSE
+    
+    return(list(
+        mainClusterArgs=mainClusterArgs,
+        subsampleArgs=subsampleArgs,
+        seqArgs=seqArgs
+        ))
+}
