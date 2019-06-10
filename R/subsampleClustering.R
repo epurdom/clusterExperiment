@@ -202,5 +202,6 @@ setMethod(
         # DList is a NxB matrix
         # FIXME: Replace with returning DList, the NxB matrix. Or perhaps have an argument?
         # FIXME: This returns the distance, rather than the percentage shared. Previously returned percentage... Need to check on that.
-        return(.clustersHammingDistance(t(DList)))
+        #return(.clustersHammingDistance(t(DList)))
+        return(DList)
     })

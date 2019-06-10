@@ -38,7 +38,31 @@ NULL
     return(passedArgs)
 }
 .wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
-
+## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
+## Best if entries of matrix are already of class integer.
+.clustersHammingDistance<-function(clusterMat){
+    #clusterMat is BxN (samples in columns)
+    idnames<-colnames(clusterMat)
+    
+    ## FIXME: This conversion of integers could be very slow in large datasets.
+    ##Make clusterMat integer, just in case
+    ###Make distance matrix
+    if(!is.integer(clusterMat)){
+        clusterMat <- apply(clusterMat, 2, as.integer)
+    }
+    clusterMat[clusterMat %in%  c(-1,-2)] <- NA
+    ## Since x input is nfeatures x nsamples, 
+    ## Takes a BxN matrix, even though NxB is natural way to store (because same format as our clustermatrix)
+    sharedPerct <- search_pairs(clusterMat) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
+    #make symmetric matrix of % with NAs when all missing
+    sharedPerct <- sharedPerct + t(sharedPerct)
+    #fix those pairs that have no clusterings for which they are both not '-1' (returned as NAs)
+    sharedPerct[is.na(sharedPerct)] <- 0
+    sharedPerct[is.nan(sharedPerct)] <- 0
+    diag(sharedPerct) <- 1
+    rownames(sharedPerct)<-colnames(sharedPerct)<-idnames
+    return(1-sharedPerct)
+}
 # ##---------
 # ##KNN for consensus
 # ##---------
@@ -67,7 +91,7 @@ NULL
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
-.speccCF<-ClusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector")
+.speccCF<-ClusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 
 ##---------
@@ -95,7 +119,7 @@ NULL
     # else silinfo<-NULL
     return(list(medoids=kmeansObj$centers, clustering=kmeansObj$cluster, call=NA,silinfo=NULL, objective=NA, diss=NULL, data=x))
 }
-.kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+.kmeansCF<-ClusterFunction(clusterFUN=.kmeansCluster, classifyFUN=.kmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 #internalFunctionCheck(.kmeansCluster,inputType="X",algType="K",outputType="vector")
 
 
@@ -118,7 +142,7 @@ NULL
     #Should write a C++ code to do this?? Maybe in mbkmeans? 
     suppressWarnings(stats::kmeans(t(inputMatrix), clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
 } 
-.mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+.mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 #internalFunctionCheck(.mbkmeansCluster,inputType="X",algorithmType="K",outputType="vector")
 
@@ -131,6 +155,10 @@ NULL
 .pamCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     
     passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
+    if(inputType=="cat"){
+        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        inputType<-"diss"
+    }
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
     if(inputType=="diss") return(do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
     if(inputType=="X"){
@@ -140,7 +168,7 @@ NULL
 .pamClassify <- function(inputMatrix, inputType,clusterResult) { #x p x n matrix
     .genericClassify(inputMatrix,centers=clusterResult$medoids)
 } 
-.pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType=c("X","diss"), inputClassifyType="X", algorithmType="K",outputType="vector")
+.pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType=c("X","diss","cat"), inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 #internalFunctionCheck(.pamCluster,inputType=c("x","diss"),algType="K",outputType="vector")
 
@@ -157,7 +185,7 @@ NULL
     
 }
 
-.claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector")
+.claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 
 ##---------
@@ -166,10 +194,14 @@ NULL
 #' @importFrom stats hclust cutree
 .hierKCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
-    hclustOut<-do.call(stats::hclust,c(list(d=as.dist(inputMatrix)),passedArgs))
+    if(inputType=="cat"){
+        inputMatrix<-.clustersHammingDistance(inputMatrix)
+    }
+    hclustOut<-do.call(stats::hclust,
+        c(list(d=as.dist(inputMatrix)),passedArgs))
     stats::cutree(hclustOut,k)
 }
-.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType="diss", algorithmType="K",outputType="vector")
+.hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType=c("diss","cat"), algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 #internalFunctionCheck(.hierKCluster,inputType="diss",algType="K",outputType="vector")
 
@@ -177,31 +209,6 @@ NULL
 ##---------
 ##Hiearchical01
 ##---------
-## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
-## Best if entries of matrix are already of class integer.
-.clustersHammingDistance<-function(clusterMat){
-    #clusterMat is BxN (samples in columns)
-    idnames<-colnames(clusterMat)
-    
-    ## FIXME: This conversion of integers could be very slow in large datasets.
-    ##Make clusterMat integer, just in case
-    ###Make distance matrix
-    if(!is.integer(clusterMat)){
-        clusterMat <- apply(clusterMat, 2, as.integer)
-    }
-    clusterMat[clusterMat %in%  c(-1,-2)] <- NA
-    ## Since x input is nfeatures x nsamples, 
-    ## Takes a BxN matrix, even though NxB is natural way to store (because same format as our clustermatrix)
-    sharedPerct <- search_pairs(clusterMat) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
-    #make symmetric matrix of % with NAs when all missing
-    sharedPerct <- sharedPerct + t(sharedPerct)
-    #fix those pairs that have no clusterings for which they are both not '-1' (returned as NAs)
-    sharedPerct[is.na(sharedPerct)] <- 0
-    sharedPerct[is.nan(sharedPerct)] <- 0
-    diag(sharedPerct) <- 1
-    rownames(sharedPerct)<-colnames(sharedPerct)<-idnames
-    return(1-sharedPerct)
-}
 #' @importFrom stats hclust 
 .hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,inputType,cluster.only,...)
 {
@@ -262,6 +269,10 @@ NULL
 ##---------
 .tightCluster <- function(inputMatrix, alpha, minSize.core=2,checkArgs,inputType,cluster.only,...)
 {
+    if(inputType=="cat"){
+        inputMatrix<-.clustersHammingDistance(inputMatrix)
+    }
+    
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
     inputMatrix<-1-inputMatrix #now is similarity matrix...
     if(length(list(...))>0 & checkArgs) 	warning(.wrongArgsWarning("tight"))
@@ -316,7 +327,7 @@ NULL
     return(res)
     
 }
-.tightCF<-ClusterFunction(clusterFUN=.tightCluster, inputType="diss", algorithmType="01",outputType="list")
+.tightCF<-ClusterFunction(clusterFUN=.tightCluster, inputType=c("diss","cat"), algorithmType="01",outputType="list",checkFunctions=FALSE)
 
 
 #########

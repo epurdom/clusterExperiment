@@ -27,10 +27,11 @@
   nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
   k0s = 4:15, subsample = TRUE, sequential = TRUE,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, consensusProportion = 0.7,
-  consensusMinSize, dendroReduce, dendroNDims, mergeMethod = "adjP",
-  mergeCutoff, mergeLogFCcutoff, mergeDEMethod = if (isCount)
-  "limma-voom" else "limma", verbose = FALSE, mainClusterArgs = NULL,
+  betas = 0.9, minSizes = 1, makeMissingDiss = FALSE,
+  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
+  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff,
+  mergeDEMethod = if (isCount) "limma-voom" else "limma",
+  verbose = FALSE, parameterWarnings = FALSE, mainClusterArgs = NULL,
   subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
   random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }

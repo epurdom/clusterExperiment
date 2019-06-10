@@ -13,8 +13,8 @@
 
 \S4method{mainClustering}{ClusterFunction}(clusterFunction, inputMatrix,
   inputType, clusterArgs = NULL, minSize = 1, orderBy = c("size",
-  "best"), format = c("vector", "list"), checkArgs = TRUE,
-  checkDiss = FALSE, returnData = FALSE, ...)
+  "best"), format = c("vector", "list"), returnData = FALSE,
+  warnings = TRUE, ...)
 
 \S4method{getPostProcessingArgs}{ClusterFunction}(clusterFunction)
 }
@@ -51,16 +51,13 @@ ordering is only possible if slot \code{outputType} of the
 clustering assignments. List is mainly for compatibility with sequential 
 part.}
 
-\item{checkArgs}{logical as to whether should give warning if arguments given
-that don't match clustering choices given. Otherwise, inapplicable 
-arguments will be ignored without warning.}
-
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
-
 \item{returnData}{logical as to whether to return the \code{diss} or \code{x}
 matrix in the output. If \code{FALSE} only the clustering vector is
 returned.}
+
+\item{warnings}{logical as to whether should give warning if arguments given
+that don't match clustering choices given. Otherwise, inapplicable 
+arguments will be ignored without warning.}
 
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
 columns).}
@@ -129,7 +126,7 @@ clustSubPamBestK <- mainClustering(simData, clusterFunction="pam", silCutoff=0,
 minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 
 # note that passing the wrong arguments for an algorithm results in warnings
-# (which can be turned off with checkArgs=FALSE)
+# (which can be turned off with warnings=FALSE)
 clustSubTight_test <- mainClustering(simData, clusterFunction="tight",
 clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
 clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",

@@ -1,7 +1,26 @@
 context("Constructor")
 
+test_that("run ClusterFunction check on all built in functions", {
+    
+    kMethods<-listBuiltInTypeK()
+    for(cf in kMethods){
+        expect_silent(internalFunctionCheck(cf@ClusterFunction,
+            inputType=inputType(cf),
+            algorithmType=algorithmType(cf),
+            outputType=cf@outputType))
+   }
+   aMethods<-listBuiltInType01()
+   for(cf in aMethods){
+       expect_silent(internalFunctionCheck(cf@ClusterFunction,
+           inputType=inputType(cf),
+           algorithmType=algorithmType(cf),
+           outputType=cf@outputType))
+  } 
+})
 
 test_that("built in cluster functions work", {
+    
+    
     #test some easy ones
     
     #PAM
@@ -17,5 +36,5 @@ test_that("built in cluster functions work", {
     out<-getBuiltInFunction("kmeans")@clusterFUN(inputMatrix=mat,
          inputType="X",k=3,cluster.only=TRUE)
     expect_equal(truth,out)
-       
+    
  })

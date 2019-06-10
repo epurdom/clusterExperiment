@@ -87,6 +87,10 @@ test_that("`mainClustering` options", {
 
 
 test_that("`mainClustering` works with cat", {
+    #test default 01 distance
+    expect_silent(mainClustering(catMat, inputType="cat",
+        clusterFunction="hierarchical01", 
+        clusterArgs=list(alpha=0.1)))
     
 })
 

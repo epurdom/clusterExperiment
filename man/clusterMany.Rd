@@ -19,9 +19,11 @@
   type = "reducedDims"), alphas = 0.1, findBestK = FALSE,
   sequential = FALSE, removeSil = FALSE, subsample = FALSE,
   silCutoff = 0, distFunction = NA, betas = 0.9, minSizes = 1,
-  transFun = NULL, isCount = FALSE, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE, ...)
+  transFun = NULL, isCount = FALSE, verbose = TRUE,
+  parameterWarnings = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1,
+  makeMissingDiss = FALSE, ncores = 1, random.seed = NULL,
+  run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),

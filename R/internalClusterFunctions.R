@@ -128,48 +128,6 @@
     return(inputType)
 }
 
-# #' @param dataInput one of "X", "diss" to indicate type of data
-# #' @param funInput one of "X","diss" to indicate type function expects
-# #' @param xData the "X" data
-# #' @param dissData the "diss" data
-# #' @return returns list of arguments of the data with the corrected input that can be combined in a do.call to the function
-# .makeDataArgs <- function(dataInput,
-#                           funInput,
-#                           xData,
-#                           dissData,
-#                           catData) {
-# 	if (! dataInput %in% funInput)
-# 	  stop(
-# 	      sprintf("Internal coding error: should have caught that wrong data input (%s) for this clusterFunction inputType (%s)",dataInput,funInput)
-# 	  )
-# 	argsClusterList <-
-#     if (dataInput == "X") {
-#         argsClusterList <-
-#             switch(
-#                 funInput,
-#                 "X" = list(x = xData),
-#                 "either" = list(diss = NULL, x = xData)
-#             )
-#     }
-#     if (dataInput == "diss") {
-#         argsClusterList <-
-#             switch(
-#                 funInput,
-#                 "diss" = list(diss = dissData),
-#                 "either" = list(diss = dissData, x = NULL)
-#             )
-#     }
-#     if (dataInput == "cat") {
-#         argsClusterList <-
-#             switch(
-#                 funInput,
-#                 "cat" = list(cat = catData),
-#                 "either" = list(diss = dissData, x = NULL)
-#             )
-#     }
-#     return(argsClusterList)
-# }
-
 ###This function checks the mainClusterArgs and subsampleArgs to make sure makes sense with combination of sequential, subsample, x, and diss given by the user.
 #' @return If there is error, returns a character string describing error, otherwise returns list with necessary information:
 #' mainClusterArgs
@@ -198,19 +156,17 @@
                 if (is.character(clusterFunction))
                     clusterFunction <- getBuiltInFunction(clusterFunction)
                 
-                #Following input commands will return only X or Diss because gave the inputType argument...
-                ## FIXME: Will need to be "cat" soon, for now leave it. 
                 if(subsample){
                     # Check that mainClustering cluster function takes 
-                    # input that is Diss
-                    # Reason: if subsampling, then the D from subsampling 
+                    # input that is cat
+                    # Reason: if subsampling, then the results from subsampling 
                     # sent to the clusterFunction.
                     # This would be caught below anyway, 
                     # but this is a more informative error
-                    mainInputType<-"diss"
-                    if (!"diss" %in% inputType(clusterFunction))
+                    mainInputType<-"cat"
+                    if (!"cat" %in% inputType(clusterFunction))
                         return(
-                            "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity matrix."
+                            "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a categorical (inputType='cat') matrix."
                         )
                 }
                 else mainInputType<-inputType

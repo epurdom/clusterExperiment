@@ -111,7 +111,6 @@ setMethod(
       tab <- tab[names(tab) != allUnass]
       cl <- match(singleValueClusters, names(tab))
       cl[is.na(cl)] <- -1
-      sharedPerct<-NULL
     } else{
       
       if(is.character(clusterFunction)) 
@@ -132,11 +131,8 @@ setMethod(
         clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
       }
            
-      ## FIXME: This needs to take 'cat'. For now turned off, because not working in loading package. Need to see if that's a load_all problem or more general.
-      ## Once do that, need to deal with fact return sharedPerct.
-      sharedPerct<-.clustersHammingDistance(t(clusterMat))
-      cl <- mainClustering(inputMatrix=sharedPerct,
-               inputType="diss",
+      cl <- mainClustering(inputMatrix=t(clusterMat),
+               inputType="cat",
                clusterFunction=clusterFunction,
                minSize=minSize, format="vector",
                clusterArgs=clustArgs)
@@ -151,7 +147,7 @@ setMethod(
     clUnassigned <- cl
     clUnassigned[whUnassigned] <- -1
     
-    return(list(clustering=clUnassigned, percentageShared=sharedPerct,
+    return(list(clustering=clUnassigned, 
                 noUnassignedCorrection=cl))
   }
 )
@@ -188,9 +184,12 @@ setMethod(
     newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
     clusterLabels(newObj) <- clusterLabel
     
-    if(!is.null(outlist$percentageShared)) {
-      coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
-    }
+    # ## FIXME: the function no longer returns this object.
+    #  need to the index of clusterings used for the makeConsensus?
+    # Or save it only if plot it (i.e. calculate it)?
+    # if(!is.null(outlist$percentageShared)) {
+    #   coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
+    # }
     ##Check if pipeline already ran previously and if so increase
 		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
 		

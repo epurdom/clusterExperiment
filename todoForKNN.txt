@@ -9,3 +9,4 @@ TO DO:
 -- check in seqCluster status of verbose versus checking arguments. 
 
 -- type "cat" problem in load built in because needs C code that is not recognized. 
+-- figure out what to do for the coClustering slot.

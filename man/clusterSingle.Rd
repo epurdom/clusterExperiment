@@ -21,10 +21,11 @@
   inputType = "X", subsample = TRUE, sequential = FALSE,
   distFunction = NA, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  reduceMethod = c("none", listBuiltInReducedDims(),
-  listBuiltInFilterStats()), nDims = defaultNDims(inputMatrix,
-  reduceMethod), clusterLabel = "clusterSingle",
-  saveSubsamplingMatrix = FALSE, checkDiss = FALSE, verbose = TRUE)
+  reduceMethod = if (inputType == "X") c("none",
+  listBuiltInReducedDims(), listBuiltInFilterStats()) else "none",
+  nDims = defaultNDims(inputMatrix, reduceMethod),
+  makeMissingDiss = FALSE, clusterLabel = "clusterSingle",
+  saveSubsamplingMatrix = FALSE, checkDiss = FALSE, warnings = TRUE)
 }
 \arguments{
 \item{...}{arguments to be passed on to the method for signature
@@ -86,7 +87,7 @@ existing coClustering object in the slot \code{coClustering} if input object is 
 \item{checkDiss}{logical. Whether to check whether the input \code{diss} is
 valid.}
 
-\item{verbose}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
+\item{warnings}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
 
 \item{x}{numerical data on which to run the clustering (features in rows), or a
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},

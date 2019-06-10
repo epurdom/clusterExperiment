@@ -451,6 +451,7 @@ setMethod(
         inputMatrix<-do.call("subsampleClustering",
 			c(list(inputMatrix=inputMatrix), 
 			subsampleArgs))
+        mainClusterArgs[["inputType"]]<-"cat"
     }    
     resList<-do.call("mainClustering",
 		c(list(inputMatrix=inputMatrix, 

@@ -327,6 +327,7 @@ setGeneric(
     standardGeneric("inputType")
   }
 )
+
 setGeneric(
   name = "getPostProcessingArgs",
   def = function(clusterFunction, ...) {

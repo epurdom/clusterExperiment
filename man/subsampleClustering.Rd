@@ -12,7 +12,7 @@
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction,
   inputMatrix, inputType, clusterArgs = NULL, classifyMethod = c("All",
   "InSample", "OutOfSample"), resamp.num = 100, samp.p = 0.7,
-  ncores = 1, checkArgs = TRUE, checkDiss = FALSE, ...)
+  ncores = 1, warnings = TRUE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -44,12 +44,9 @@ for explanation.}
 \item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
 be called.}
 
-\item{checkArgs}{logical as to whether should give warning if arguments given
+\item{warnings}{logical as to whether should give warning if arguments given
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
-
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
 
 \item{x}{the data on which to run the clustering (samples in columns).}
 

@@ -7,7 +7,7 @@
 seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
   top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
-  checkDiss = FALSE)
+  warnings = FALSE)
 }
 \arguments{
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
@@ -46,8 +46,7 @@ progress.}
 \item{mainClusterArgs}{list of arguments to be passed to
 \code{\link{mainClustering}}).}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
+\item{warnings}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
 
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}

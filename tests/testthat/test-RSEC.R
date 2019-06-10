@@ -171,3 +171,19 @@ test_that("`RSEC` works with hdf5",{
 		"All samples are unassigned for"
 		)
 })
+
+test_that("`RSEC` passing args to subsample"){
+    #test in passing to subsampleArgs
+  	expect_message(rsecOut1<-RSEC(x=mat, 
+  				   isCount=FALSE,reduceMethod="none",k0s=4:5,
+  	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
+  	               subsampleArgs=list(resamp.num=5),random.seed=495),
+  				   "makeDendrogram encountered following error")
+  	expect_message(rsecOut2<-RSEC(x=mat, 
+  				   isCount=FALSE,reduceMethod="none",k0s=4:5,
+  	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
+  	               subsampleArgs=list(resamp.num=5),random.seed=495),
+  				   "makeDendrogram encountered following error")
+  	expect_identical(clusterMatrix(rsecOut1),clusterMatrix(rsecOut2))
+    
+}

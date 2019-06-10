@@ -21,26 +21,15 @@ test_that("subsampling", {
             resamp.num = 100,
             samp.p = 0.7,ncores=1))
 
-  #test in passing to subsampleArgs
-	expect_message(rsecOut1<-RSEC(x=mat, 
-				   isCount=FALSE,reduceMethod="none",k0s=4:5,
-	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
-	               subsampleArgs=list(resamp.num=5),random.seed=495),
-				   "makeDendrogram encountered following error")
-	expect_message(rsecOut2<-RSEC(x=mat, 
-				   isCount=FALSE,reduceMethod="none",k0s=4:5,
-	               clusterFunction="tight", alphas=0.1,dendroReduce="none",
-	               subsampleArgs=list(resamp.num=5),random.seed=495),
-				   "makeDendrogram encountered following error")
-	expect_identical(clusterMatrix(rsecOut1),clusterMatrix(rsecOut2))
 	
     ## Windows does not support mclapply
     skip_on_os("windows")
 	set.seed(4897)
 	expect_silent(subAllParal <- 
-	subsampleClustering(x=mat,clusterFunction="pam",
-	         clusterArgs=list(k=3), classifyMethod="All",
-	         resamp.num = 100,samp.p = 0.7,ncores=2)
+	    subsampleClustering(inputMatrix=mat,
+            inputType="X",clusterFunction="pam",
+	        clusterArgs=list(k=3), classifyMethod="All",
+	        resamp.num = 100,samp.p = 0.7,ncores=2)
 	)
 
 	expect_identical(subAllParal,subAll)
