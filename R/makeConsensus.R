@@ -114,7 +114,8 @@ setMethod(
       sharedPerct<-NULL
     } else{
       
-      if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
+      if(is.character(clusterFunction)) 
+          typeAlg <- algorithmType(clusterFunction)
       else{
 				if(is(clusterFunction,"ClusterFunction")) 
 					typeAlg<-algorithmType(clusterFunction) 
@@ -124,14 +125,17 @@ setMethod(
       if(typeAlg!="01") {
         stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
       }
-      ## FIXME: This conversion of integers could be very slow in large datasets.
-      ##Make clusterMat integer, just in case
+      
       clustArgs<-list(alpha=1-proportion)
       clustArgs<-c(clustArgs,list(...))
       if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
         clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
       }
-      cl <- mainClustering(inputMatrix=.clustersHammingDistance(t(clusterMat)),
+           
+      ## FIXME: This needs to take 'cat'. For now turned off, because not working
+      ## Once do that, need to deal with fact return sharedPerct.
+      sharedPerct<-.clustersHammingDistance(t(clusterMat))
+      cl <- mainClustering(inputMatrix=sharedPerct,
                inputType="diss",clusterFunction=clusterFunction,
                            minSize=minSize, format="vector",
                            clusterArgs=clustArgs)

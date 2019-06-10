@@ -177,12 +177,14 @@ NULL
 ##---------
 ##Hiearchical01
 ##---------
-## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a NxB matrix of clusterings
+## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
 ## Best if entries of matrix are already of class integer.
 .clustersHammingDistance<-function(clusterMat){
     #clusterMat is BxN (samples in columns)
-    idnames<-rownames(clusterMat)
+    idnames<-colnames(clusterMat)
     
+    ## FIXME: This conversion of integers could be very slow in large datasets.
+    ##Make clusterMat integer, just in case
     ###Make distance matrix
     if(!is.integer(clusterMat)){
         clusterMat <- apply(clusterMat, 2, as.integer)
