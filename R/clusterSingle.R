@@ -400,7 +400,7 @@ setMethod(
                 xMatrix=origX,
                 clustering=outlist$clustering,
                 clusterInfo=clInfo,
-                coClusterMatrix=finalClusterList$inputMatrix, 
+                coClusterMatrix=if(!sequential) finalClusterList$inputMatrix else NULL, 
                 transFun=transFun,
                 clusterLabel=clusterLabel,
                 sequential=sequential, 
@@ -448,13 +448,15 @@ setMethod(
 .clusterWrapper <- function(inputMatrix,  subsample, mainClusterArgs, subsampleArgs)
 {
     if(subsample){
-        inputMatrix<-do.call("subsampleClustering",
+        #Returns NxB matrix
+        inputMatrix<-t(do.call("subsampleClustering",
 			c(list(inputMatrix=inputMatrix), 
-			subsampleArgs))
+			subsampleArgs)))
         mainClusterArgs[["inputType"]]<-"cat"
     }    
+    #Takes as input BxN matrix...
     resList<-do.call("mainClustering",
-		c(list(inputMatrix=t(inputMatrix), 
+		c(list(inputMatrix=inputMatrix, 
 			format="list", returnData=TRUE),
 		mainClusterArgs))
     return(resList)

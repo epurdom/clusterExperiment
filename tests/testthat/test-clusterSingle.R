@@ -926,7 +926,7 @@ test_that("Different passed options of seqCluster",{
         subsampleArgs=list(clusterFunction="pam",n.sample=40), 
         isCount=FALSE,
         seqArgs=list(k0=5,beta=0.9,verbose=FALSE)),
-        "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a dissimilarity")
+        "If choosing subsample=TRUE, the clusterFunction used in the mainClustering step must take input that is a categorical")
 	expect_error(clusterSingle(dissMat, inputType="diss", 
         mainClusterArgs=list(clusterFunction="tight"),  
         subsample=FALSE, sequential=TRUE, 
@@ -937,7 +937,8 @@ test_that("Different passed options of seqCluster",{
 	expect_warning(clusterSingle(mat, 
         mainClusterArgs=list(clusterFunction="pam"), 
         subsample=TRUE, sequential=TRUE, 
-        subsampleArgs=list(clusterFunction="pam",n.sample=40,clusterArgs=list(k=3)), 
+        subsampleArgs=list(clusterFunction="pam",
+            n.sample=40,clusterArgs=list(k=3)), 
         isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)),
 		"Setting 'k' in subsampleArgs when sequential=TRUE is called will have no effect.")
 	expect_warning(clusterSingle(mat, 
