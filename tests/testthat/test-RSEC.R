@@ -38,18 +38,25 @@ test_that("`RSEC` works through whole series of steps",{
     skip_on_os("windows")
 	
 #bigger example where actually goes through all the steps, takes some time:
-  expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
-              k0s=4:5,clusterFunction="tight", alphas=0.1,
-              betas=0.9,dendroReduce="none",minSizes=1,
-       subsampleArgs=list(resamp.num=5),random.seed=seedValue),
-  "Merging will be done on")
-   expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, clusterFunction="tight", alphas=0.1, betas=0.9, minSizes=1,
-  isCount=TRUE, reduceMethod="none", transFun = NULL,
- sequential=TRUE,removeSil=FALSE,subsample=TRUE,silCutoff=0,distFunction=NA,
-                 nFilterDims=NA,nReducedDims=NA,
-                 mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
-                 ncores=1,run=TRUE,seqArgs=list(verbose=FALSE),random.seed=seedValue
- ))
+  expect_message(rsecOut<-RSEC(
+      x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
+      k0s=4:5,clusterFunction="tight", alphas=0.1,
+      betas=0.9,dendroReduce="none",minSizes=1,
+      subsampleArgs=list(resamp.num=5),random.seed=seedValue),
+      "Merging will be done on")
+   expect_silent(ceOut<- 
+       clusterMany(x=assay(seSimCount), ks=4:5, 
+       clusterFunction="tight", alphas=0.1, 
+       betas=0.9, minSizes=1,
+       isCount=TRUE, reduceMethod="none", 
+       transFun = NULL,
+       sequential=TRUE,removeSil=FALSE,subsample=TRUE,
+       silCutoff=0,distFunction=NA,
+       nFilterDims=NA,nReducedDims=NA,
+       mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
+       ncores=1,run=TRUE,
+       seqArgs=list(verbose=FALSE),random.seed=seedValue
+       ))
 	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
  expect_message(combOut<-makeConsensus(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
   expect_equal(clusterMatrix(rsecOut,whichClusters="makeConsensus"),clusterMatrix(combOut,whichClusters="makeConsensus"))

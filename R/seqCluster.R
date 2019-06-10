@@ -141,9 +141,11 @@
 #' @rdname seqCluster
 #' @export
 seqCluster<-function(inputMatrix, inputType, k0,  
-                     subsample=TRUE, beta, top.can = 5, remain.n = 30, k.min = 3, 
+                     subsample=TRUE, beta, 
+                     top.can = 5, remain.n = 30, k.min = 3, 
                      k.max=k0+10,verbose=TRUE, 
-                     subsampleArgs=NULL,mainClusterArgs=NULL)
+                     subsampleArgs=NULL,mainClusterArgs=NULL,
+                     warnings=FALSE)
 {
     ########
     ####Checks
@@ -152,9 +154,10 @@ seqCluster<-function(inputMatrix, inputType, k0,
         stop("Internal error: inputType was not passed to sequential clustering step")
     argsList<-list(k0=k0, beta=beta, top.can = top.can, 
         remain.n = remain.n, k.min = k.min, k.max=k.max)
-    checkOut<-.checkArgs(inputType, main=TRUE, subsample=subsample,sequential=TRUE,
+    checkOut<-.checkArgs(inputType, main=TRUE, 
+        subsample=subsample,sequential=TRUE,
 		mainClusterArgs=mainClusterArgs,
-		subsampleArgs=subsampleArgs, seqArgs=argsList)
+		subsampleArgs=subsampleArgs, seqArgs=argsList,warn=warnings)
     if(is.character(checkOut)) stop(checkOut)
     mainClusterArgs<-checkOut$mainClusterArgs
     subsampleArgs<-checkOut$subsampleArgs

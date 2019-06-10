@@ -627,6 +627,7 @@
                 out<-testFUN(nam)
                 if(!is.logical(out)) return(out)
             }
+            seqArgs[["warnings"]]<-warn
         }    
         return(
             list(

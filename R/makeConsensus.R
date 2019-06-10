@@ -132,7 +132,7 @@ setMethod(
         clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
       }
            
-      ## FIXME: This needs to take 'cat'. For now turned off, because not working
+      ## FIXME: This needs to take 'cat'. For now turned off, because not working in loading package. Need to see if that's a load_all problem or more general.
       ## Once do that, need to deal with fact return sharedPerct.
       sharedPerct<-.clustersHammingDistance(t(clusterMat))
       cl <- mainClustering(inputMatrix=sharedPerct,

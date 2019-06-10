@@ -369,16 +369,16 @@ setMethod(
                                c(list(inputMatrix=inputMatrix,
                                     inputType=inputType, subsample=subsample,
                                       subsampleArgs=subsampleArgs,
-                                      mainClusterArgs=mainClusterArgs), seqArgs))
+                                      mainClusterArgs=mainClusterArgs),
+                                      seqArgs))
         }
         else{
             ##########
             ##.clusterWrapper just deciphers choices and makes clustering.
             ##########
             finalClusterList <- .clusterWrapper(inputMatrix=inputMatrix,
-                                                subsample=subsample,
-                                                subsampleArgs=subsampleArgs,
-                                                mainClusterArgs=mainClusterArgs)
+                    subsample=subsample,
+                    subsampleArgs=subsampleArgs,                                                mainClusterArgs=mainClusterArgs)
             outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N))
             
         }

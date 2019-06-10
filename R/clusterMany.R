@@ -259,7 +259,8 @@ setMethod(
                           silCutoff=0, distFunction=NA,
                           betas=0.9, minSizes=1,
                           transFun=NULL,isCount=FALSE,
-                          verbose=FALSE,
+                          verbose=TRUE,
+                          parameterWarnings=FALSE,
                           mainClusterArgs=NULL,
                           subsampleArgs=NULL,
                           seqArgs=NULL,
@@ -533,7 +534,7 @@ setMethod(
             ######
             if(is.null(mainClusterArgs)) mainClusterArgs<-list(clusterArgs=list())
             if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
-            paramCheck<-function(paramRow, returnValue){
+            paramCheck<-function(paramRow, returnValue, warn){
                 totalArgs<- .makeArgsFromParam(paramRow,
                     mainClusterArgs=mainClusterArgs,
                     seqArgs=seqArgs,
@@ -547,7 +548,7 @@ setMethod(
                                  subsampleArgs=totalArgs$subsampleArgs,
                                  seqArgs=totalArgs$seqArgs,
                                  allowMakeDiss=makeMissingDiss,
-                                 warn = verbose) #most of these are because have extra parameters 
+                                 warn = warn) #most of these are because have extra parameters 
                 if(returnValue=="logical"){
                     if(is.character(checkOut)) return(FALSE)
                     else return(TRUE)                    
@@ -561,7 +562,8 @@ setMethod(
             # Note! Cannot run apply on param if don't want all character values.
             # e.g. checks<-apply(param,1,paramCheck,returnValue="logical")
             checks<-sapply(1:nrow(param), 
-                function(i){paramCheck(param[i,],returnValue="logical")})
+                function(i){paramCheck(param[i,],returnValue="logical",
+                    warn=FALSE)})
             whInvalid<-which(!checks)
             if(length(whInvalid)>0) {
                 if(length(whInvalid)==nrow(param)){
@@ -576,7 +578,8 @@ setMethod(
             # & deal with creating distances
             # FIXME: Haven't done duplicates, since not clear how work with CF
             checks<-lapply(1:nrow(param), 
-                function(i){paramCheck(param[i,],returnValue="full")})
+                function(i){paramCheck(param[i,],returnValue="full",
+                    warn=parameterWarnings)})
             
             doDiss<-sapply(checks,function(x){x$doDiss})
             missDiss<-any(doDiss) & is.na(param[,"distFunction"])
@@ -680,7 +683,7 @@ setMethod(
                     transFun=function(x){x},
                     checkDiss=FALSE,
                     makeMissingDiss=FALSE,
-                    warnings=verbose)
+                    warnings=parameterWarnings)
                 #because a distance, have to convert it back to a CE object.
                 #Using same internal function as clusterSingle
                 return(.convertOutListToCE(xMatrix=dat,
@@ -689,7 +692,8 @@ setMethod(
                         diss=out$diss, 
                         clusterLabel="clusterSingle",
                         sequential=totalArgs$sequential, 
-                        subsample=totalArgs$subsample, transFun=function(x){x},
+                        subsample=totalArgs$subsample,
+                        transFun=function(x){x},
                         saveSubsamplingMatrix=FALSE, existingCE=NULL))
                 
             }
@@ -705,7 +709,7 @@ setMethod(
                     transFun=function(x){x},
                     checkDiss=FALSE,
                     makeMissingDiss=FALSE,
-                    warnings=verbose))
+                    warnings=parameterWarnings))
         }
         if(run){
             ##------------
