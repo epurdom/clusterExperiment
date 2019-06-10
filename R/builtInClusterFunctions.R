@@ -38,6 +38,17 @@ NULL
     return(passedArgs)
 }
 .wrongArgsWarning<-function(funName){paste("arguments passed via clusterArgs to the clustering function",funName,"are not all applicable (clusterArgs should only be arguments to,", funName,"). Extra arguments will be ignored")}
+
+## Function to remove duplicates and return index of old to new
+## clusterMat is BxN matrix of clusterings
+.dupRemove<-function(clusterMat){
+    smMat<-clusterMat[,!duplicated(t(clusterMat))]
+    val<-apply(clusterMat,2,paste,collapse=",")
+    valSm<-apply(smMat,2,paste,collapse=",")
+    ind<-match(val,valSm)
+    return(list(smallMat=smMat,mapping=ind))
+}
+
 ## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
 ## Best if entries of matrix are already of class integer.
 .clustersHammingDistance<-function(clusterMat){
@@ -155,12 +166,25 @@ NULL
 .pamCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     
     passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
+    convertCat<-FALSE
     if(inputType=="cat"){
-        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        smallInput<-.dupRemove(inputMatrix)
+        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
         inputType<-"diss"
+        convertCat<-TRUE
     }
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
-    if(inputType=="diss") return(do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs)))
+    if(inputType=="diss"){
+        out<-do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs))
+        if(convertCat){
+            if(cluster.only) out<-out[smallInput$mapping]
+            else{
+                #this is a problem for silhouette stuff!
+                out$clustering<-clustering[smallInput$mapping]
+            }
+        }
+        return(out)
+    }
     if(inputType=="X"){
         return(do.call(cluster::pam, c(list(x=t(inputMatrix),k=k, cluster.only=cluster.only), passedArgs)))  
     } 
@@ -195,11 +219,16 @@ NULL
 .hierKCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
     if(inputType=="cat"){
-        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        smallInput<-.dupRemove(inputMatrix)
+        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
     }
     hclustOut<-do.call(stats::hclust,
         c(list(d=as.dist(inputMatrix)),passedArgs))
-    stats::cutree(hclustOut,k)
+    out<-stats::cutree(hclustOut,k)
+    if(inputType=="cat"){
+        out<-out[smallInput$mapping]
+    }
+    return(out)
 }
 .hierKCF<-ClusterFunction(clusterFUN=.hierKCluster, inputType=c("diss","cat"), algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
@@ -215,7 +244,9 @@ NULL
     whichHierDist<-match.arg(whichHierDist)
     evalClusterMethod<-match.arg(evalClusterMethod)
     if(inputType=="cat"){
-        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        smallInput<-.dupRemove(inputMatrix)
+        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
+        #inputMatrix<-.clustersHammingDistance(inputMatrix)
     }
     if(is.null(rownames(inputMatrix))) rownames(inputMatrix)<-colnames(inputMatrix)<-as.character(seq_len(nrow(inputMatrix)))
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
@@ -256,6 +287,12 @@ NULL
     })
     clusterListIndices<-.orderByAlpha(clusterListIndices,S)
     ##Need to update this code so converts vector result into lists of indices ...
+    if(inputType=="cat"){
+        ## FIXME: this seems very akward. Should be able to do better!
+        clusterListIndices<-lapply(clusterListIndices,function(x){
+            unlist(lapply(x,function(i){which(smallInput$mapping==i)}))
+        })
+    }
     return(clusterListIndices)
 }
 # .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list")
@@ -270,7 +307,9 @@ NULL
 .tightCluster <- function(inputMatrix, alpha, minSize.core=2,checkArgs,inputType,cluster.only,...)
 {
     if(inputType=="cat"){
-        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        smallInput<-.dupRemove(inputMatrix)
+        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
+        #inputMatrix<-.clustersHammingDistance(inputMatrix)
     }
     
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
@@ -324,6 +363,12 @@ NULL
     }
     res<-.orderByAlpha(res,inputMatrix)
     ##Need to update this code so converts vector result into lists of indices ...
+    if(inputType=="cat"){
+        ## FIXME: this seems very akward. Should be able to do better!
+        res<-lapply(res,function(x){
+            unlist(lapply(x,function(i){which(smallInput$mapping==i)}))
+        })
+    }
     return(res)
     
 }

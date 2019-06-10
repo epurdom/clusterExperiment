@@ -391,6 +391,8 @@ internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
     if("cat" %in% inputType){
         set.seed(2851)
         x<-matrix(sample(x=1:4,size=N*3,replace=TRUE),ncol=N,nrow=3)
+        x<-cbind(x,x)
+        x<-x[,sample(1:ncol(x))]
         test<-try(do.call(clusterFUN,
             c(list(inputMatrix=x,inputType="cat"),argList)),silent=TRUE)
         if(inherits(test,"try-error")) return(paste("function test fails with inputType='cat'. ",test[1]))
