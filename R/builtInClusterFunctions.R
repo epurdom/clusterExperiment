@@ -2,7 +2,7 @@
 ## 5/9/2019: currently, if classifyMethod=="InSample", cluster.only=TRUE, otherwise FALSE. Our default is "All", so generally doing the cluster.only=FALSE. 
 
 
-#' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R RcppExports.R
+#' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R RcppExports.R subsampleClustering.R
 NULL
 
 ################
@@ -253,7 +253,8 @@ NULL
 }
 # .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list")
 #FIXME: load_all not working with inputType="cat" because doesn't like to call C code (can't find it), and since these objects are tested on load_all, hits error. Might need to turn off testing for this one function temporarily.
-.hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss"), algorithmType="01",outputType="list")
+.hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list",checkFunctions=FALSE)
+#internalFunctionCheck(.hier01Cluster,inputType=c("diss","cat"),algorithmType="01",outputType="list")
 
 
 ##---------

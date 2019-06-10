@@ -122,3 +122,12 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 #####################
 hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
 hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
+
+###################
+## Create cat stuff
+###################
+catMat <- matrix(sample(x=1:4,size=20*19,replace=TRUE),ncol=20)
+catMat[1,1]<- -1 #force a negative value
+colnames(catMat)<-paste("Sample",1:ncol(catMat))
+rownames(catMat)<-paste("Gene",1:nrow(catMat))
+

@@ -3,8 +3,9 @@ TO DO:
 -- clusterSingle -- have intersection between type of data and dimensionality reduction! need to go back to this for what it means for type="cat". 
 -- Should all 'diss' version take 'cat' with internal conversion into 'diss', or make user clarify that?
 -- Need to check the whole question of 1-diss of the percentages shared clustering (and what is stored in co-clustering matrix slot...)
--- Problem in clusterMany -- want to pass the X matrix and diss if using distFunction, but can't now
+
 -- post-processing needs diss matrix; by not passing both, have disabled ability to do the post-processing unless have clustering function that takes diss. The main reason might calculate the dissimilarity in clusterSingle? Might allow it there and then have a post-processing argument that is the diss...
 -- Add some kind of bare check that diss are at least symmetric dimensions!
 -- check in seqCluster status of verbose versus checking arguments. 
--- Several tests have problem that no longer can warning that post-processing args don't work for 01. 
+
+-- type "cat" problem in load built in because needs C code that is not recognized. 

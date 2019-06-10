@@ -84,3 +84,9 @@ test_that("`mainClustering` options", {
         clusterArgs=list(k=3)))
 
 })
+
+
+test_that("`mainClustering` works with cat", {
+    
+})
+
