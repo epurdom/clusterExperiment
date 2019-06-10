@@ -49,18 +49,19 @@
 
 
 
-
+.defaultDiss<-c("euclidean", "maximum", "manhattan", "canberra", "binary" ,"minkowski")
 .makeDiss <- function(x, distFunction, algType, checkDiss) {
     if (!is.function(distFunction)) {
         if (length(distFunction) > 1)
             stop("if distFunction is not a function, it must be of length 1")
-        if (is.character(distFunction)) {
+        if (is.character(distFunction) & distFunction!="default") {
             ## Handle defaults in `dist` function
-            if(distFunction %in% c("euclidean", "maximum", "manhattan", "canberra", "binary" ,"minkowski")){
-                distFunction<-function(x){dist(x,method=distFunction)}
+            if(distFunction %in% .defaultDiss){
+                distMethod<-distFunction
+                distFunction<-function(x){dist(x,method=distMethod)}
             }
             else distFunction <- get(distFunction, envir = globalenv())
-        } else if (is.na(distFunction)) {
+        } else if (is.na(distFunction) || distFunction=="default") {
             distFunction <-
                 switch(
                     algType,
@@ -74,7 +75,8 @@
         } else
             stop("if distFunction is not a function, it must be either NA or a character")
     }
-    ###Add data.matrix here for HDF5, not optimized.
+    ### FIXME: HDF5 optimization could be improved?
+    ### Add data.matrix here for HDF5, not optimized.
     D <-try(as.matrix(distFunction(data.matrix(t(x)))))
     #distances assumed to be of observations on rows
     if (inherits(D, "try-error"))

@@ -414,7 +414,9 @@ setMethod(
                                  subsample=subsample,
                                  clusterFunction=clusterFunctionNames,
                                  silCutoff=silCutoff)
-            
+            if(nrow(param)<=1) {
+                stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
+            }
             #-------------
             # Check param matrix:
             # don't vary them across ones that don't matter (i.e. 0-1 versus K);
@@ -482,12 +484,6 @@ setMethod(
             }
             
             #---
-            #Check value alpha, beta values
-            #---
-            alpha01 <- which(param[,"alpha"]<0 | param[,"alpha"]>1)
-            beta01 <- which(param[,"beta"]<0 | param[,"beta"]>1)
-            
-            #---
             # deal with nReducedDims NA or larger than the size of the dataset
             # set it to the maximum value possible.
             #---
@@ -527,7 +523,7 @@ setMethod(
             if(length(whOther)>0){
                 param[whOther,"nFilterDims"]<-NA
             }
-
+           
             # get rid of duplicates
             param <- unique(param)
             
@@ -549,7 +545,7 @@ setMethod(
                                  sequential=totalArgs$sequential,
                                  mainClusterArgs=totalArgs$mainClusterArgs,
                                  subsampleArgs=totalArgs$subsampleArgs,
-                                 seqArgs=totalArgs$subsampleArgs,
+                                 seqArgs=totalArgs$seqArgs,
                                  allowMakeDiss=makeMissingDiss,
                                  warn = verbose) #most of these are because have extra parameters 
                 if(returnValue=="logical"){
@@ -564,14 +560,18 @@ setMethod(
             # Do first run to get rid of invalid selections (i.e. silently)
             # Note! Cannot run apply on param if don't want all character values.
             # e.g. checks<-apply(param,1,paramCheck,returnValue="logical")
-            browser()
             checks<-sapply(1:nrow(param), 
                 function(i){paramCheck(param[i,],returnValue="logical")})
             whInvalid<-which(!checks)
             if(length(whInvalid)>0) {
-                param <- param[-whInvalid,]
+                if(length(whInvalid)==nrow(param)){
+                    checksFull<-lapply(1:nrow(param), 
+                        function(i){paramCheck(param[i,],returnValue="full")})
+                    stop(sprintf("Set of parameters imply %s combinations, none of which are valid (note that if clustering matrix requires calculation of distance matrix, user must now set `makeMissingDiss=TRUE`).  Errors given are:\n\n %s",nrow(param),paste(checksFull[whInvalid],collapse="\n")))
+                    
+                }
+                param <- param[-whInvalid, ,drop=FALSE]
             }
-            
             # Do second run to get rid of any duplicates, 
             # & deal with creating distances
             # FIXME: Haven't done duplicates, since not clear how work with CF
@@ -580,8 +580,11 @@ setMethod(
             
             doDiss<-sapply(checks,function(x){x$doDiss})
             missDiss<-any(doDiss) & is.na(param[,"distFunction"])
-            if(makeMissingDiss){
-                param[,"distFunction"]<-"euclidean"
+            if(any(missDiss) & !makeMissingDiss){
+                stop("Parameter combinations requested require calculation of at least one distance matrix. User must now set `makeMissingDiss=TRUE` to have clusterMany calculated the necessary distances.")
+            }
+            if(any(missDiss) & makeMissingDiss){
+                param[missDiss,"distFunction"]<-"default"
             }
             
             if(any(!is.na(param[,"nFilterDims"]) & !is.na(param[,"nReducedDims"])))
@@ -593,7 +596,7 @@ setMethod(
             #require at least 2 combinations:
             #####
             if(nrow(param)<=1) {
-                stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
+                stop("set of parameters imply only 1 combination, after removing duplicates and invalid combinations. If you wish to run a single clustering, use 'clusterSingle'")
             }
             
             #####
@@ -647,6 +650,7 @@ setMethod(
             if(!is.null(random.seed)) {
                 set.seed(random.seed)
             }
+            reduceMethod<-as.character(par[["reduceMethod"]])
             if(reduceMethod=="none")
                 dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
             else if(isReducedDims(x,reduceMethod))
@@ -666,6 +670,7 @@ setMethod(
                 ### this is the one place where I wanted both x and diss!
                 ###   if only give a diss, it will not create output as clusterExperiment object. Sigh. 
                 out<-clusterSingle(inputMatrix=diss,
+                    inputType="diss",
                     sequential=totalArgs$sequential, 
                     subsample=totalArgs$subsample, 
                     reduceMethod="none",
@@ -708,8 +713,8 @@ setMethod(
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-unique(param[,c("reduceMethod","nFilterDims","distFunction")])
-                distParam<-distParam[!is.na(distParam[,"distFunction"]),]
+                distParam<-unique(param[, c("reduceMethod", "nFilterDims", "distFunction")])
+                distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
                 ##Assume only take distances on original data (or filtered version of it)
                 if(verbose) {
                     cat(sprintf("Calculating the %s Requested Distance Matrix needed to run clustering comparasions...\n",nrow(distParam)))
@@ -733,7 +738,7 @@ setMethod(
                 #need to update here when have filter
                 ##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
                 names(allDist)<-distParam[,"distFunction"]
-                cat("\tdone.\n\n")
+                if(verbose) cat("\tdone.\n\n")
             }
             
             ##------------
