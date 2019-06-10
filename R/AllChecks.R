@@ -224,12 +224,14 @@
     return(TRUE)
 }
 .checkCoClustering<-function(object){
+    ## FIXME: this needs to be changed if now return NxB matrix. 
+    ## For now, commenting out the check entirely. Can be anything...
     ## Check co-clustering
-    if(!is.null(object@coClustering) &&
-       (NROW(object@coClustering) != NCOL(object@coClustering)
-        | NCOL(object@coClustering) != NCOL(object))) {
-        return("`coClustering` must be a sample by sample matrix.")
-    }
+    # if(!is.null(object@coClustering) &&
+    #    (NROW(object@coClustering) != NCOL(object@coClustering)
+    #     | NCOL(object@coClustering) != NCOL(object))) {
+    #     return("`coClustering` must be a sample by sample matrix.")
+    # }
     return(TRUE)
 }
 

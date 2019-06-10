@@ -689,7 +689,7 @@ setMethod(
                 return(.convertOutListToCE(xMatrix=dat,
                         clustering=out$clustering,
                         clusterInfo=out$clusterInfo,
-                        diss=out$diss, 
+                        coClusterMatrix=NULL, 
                         clusterLabel="clusterSingle",
                         sequential=totalArgs$sequential, 
                         subsample=totalArgs$subsample,

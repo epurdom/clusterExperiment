@@ -400,7 +400,7 @@ setMethod(
                 xMatrix=origX,
                 clustering=outlist$clustering,
                 clusterInfo=clInfo,
-                diss=finalClusterList$inputMatrix, 
+                coClusterMatrix=finalClusterList$inputMatrix, 
                 transFun=transFun,
                 clusterLabel=clusterLabel,
                 sequential=sequential, 
@@ -420,7 +420,7 @@ setMethod(
 # Do this so clear how to transform diss version of output into CE 
 # (for reuse in clusterMany...)
 .convertOutListToCE<-function(xMatrix,
-    clustering,clusterInfo,diss, 
+    clustering,clusterInfo, coClusterMatrix, 
     clusterLabel,sequential, 
     subsample, transFun,
     saveSubsamplingMatrix, existingCE){
@@ -430,9 +430,9 @@ setMethod(
                                 clusterTypes="clusterSingle",
                                 checkTransformAndAssay=FALSE)
     clusterLabels(retval)<-clusterLabel
-    if(!sequential & subsample & saveSubsamplingMatrix) {
+    if(!is.null(coClusterMatrix) & !sequential & subsample & saveSubsamplingMatrix) {
         #convert to sparse matrix:
-		retval@coClustering <- Matrix::Matrix(finalClusterList$inputMatrix, sparse=TRUE)
+		retval@coClustering <- Matrix::Matrix(coClusterMatrix, sparse=TRUE)
         ch<-.checkCoClustering(retval)
         if(!is.logical(ch)) stop(ch)
     }
@@ -454,7 +454,7 @@ setMethod(
         mainClusterArgs[["inputType"]]<-"cat"
     }    
     resList<-do.call("mainClustering",
-		c(list(inputMatrix=inputMatrix, 
+		c(list(inputMatrix=t(inputMatrix), 
 			format="list", returnData=TRUE),
 		mainClusterArgs))
     return(resList)

@@ -712,12 +712,12 @@ test_that("Different options of mainClustering",{
         seqArgs=list(verbose=FALSE), 
         isCount=FALSE,
         mainClusterArgs=list(clusterFunction="pam")),
-                 "seqArgs must contain element 'k0'")
+                 "required argument 'k0' is missing for the sequential clustering step")
     expect_error(clusterSingle(mat,  
         subsample=FALSE, sequential=TRUE, 
         seqArgs=list(verbose=FALSE), isCount=FALSE, 
         mainClusterArgs=list(clusterFunction="pam","findBestK"==TRUE)),
-                 "seqArgs must contain element 'k0'")
+                 "required argument 'k0' is missing for the sequential clustering step")
     expect_error(clusterSingle(mat, makeMissingDiss=TRUE,
         subsample=FALSE, sequential=FALSE,
         mainClusterArgs=list(clusterFunction="tight",clusterArgs=list(k=3)), 
@@ -725,7 +725,8 @@ test_that("Different options of mainClustering",{
                    "must supply arguments: alpha")
     expect_warning(clusterSingle(mat,  makeMissingDiss=TRUE,
         subsample=FALSE, sequential=FALSE, 
-        mainClusterArgs=list(clusterFunction="tight", clusterArgs=list(alpha=0.1),findBestK=TRUE),
+        mainClusterArgs=list(clusterFunction="tight",
+             clusterArgs=list(alpha=0.1),findBestK=TRUE),
         isCount=FALSE),
         "Some arguments passed via mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object")
     expect_error(clusterSingle(mat,
