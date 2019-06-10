@@ -104,6 +104,9 @@ test_that("`RSEC` returns clusterMany even when errors later",{
         %in% clusterTypes(rsecOut2)))
 	
 	#error in merging -- have to get one where can make dendrogram... takes longer.
+    # > sample(size=50,x=1:nrow(seSimCount))
+#      [1]  67  47  34 124  23  40 104  93  18  26 123  77  64  35  90  58 103 153  62  66 138  57 118  50  60 145  52 134  45  78  12
+#     [32]  38 121  63 128 111 117  56  43  51 149   9  73 150   6  39 125 133 127 152
 	expect_message(rsecOut3<-RSEC(x=
         assay(seSimCount[sample(size=50,x=1:nrow(seSimCount)),]), 
         isCount=TRUE,reduceMethod="none",
