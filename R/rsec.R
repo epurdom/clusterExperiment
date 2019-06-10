@@ -112,7 +112,7 @@ setMethod(
   f = "RSEC",
   signature = signature(x = "SingleCellExperiment"),
   definition = function(x,
-		isCount=FALSE,
+      isCount=FALSE,
 		transFun=NULL,
     reduceMethod="PCA",
     nFilterDims=defaultNDims(x,reduceMethod,type="filterStats"),
@@ -122,6 +122,7 @@ setMethod(
 		sequential=TRUE,
     clusterFunction="hierarchical01", #listBuiltInType01(),
     alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
+    makeMissingDiss=FALSE,
     consensusProportion=0.7,
     consensusMinSize,
     dendroReduce,
@@ -147,15 +148,18 @@ setMethod(
     else seqArgs[["verbose"]]<-FALSE #turn off sequential messages
     ce<-clusterMany(x,ks=k0s,clusterFunction=clusterFunction,
                     alphas=alphas,betas=betas,minSizes=minSizes,
-                    sequential=sequential,removeSil=FALSE,subsample=subsample,
+                    sequential=sequential,removeSil=FALSE,
+                    subsample=subsample,
                     silCutoff=0,distFunction=NA,
                     isCount=isCount,transFun=transFun,
-										reduceMethod=reduceMethod,nFilterDims=eval(nFilterDims),
+                    reduceMethod=reduceMethod,nFilterDims=eval(nFilterDims),
                     nReducedDims=eval(nReducedDims),
-                    mainClusterArgs=mainClusterArgs,subsampleArgs=subsampleArgs,
-                    seqArgs=seqArgs,ncores=ncores,random.seed=random.seed,run=run,
+                    mainClusterArgs=mainClusterArgs,
+                    subsampleArgs=subsampleArgs,
+                    seqArgs=seqArgs,makeMissingDiss=makeMissingDiss,
+                    ncores=ncores,random.seed=random.seed,run=run,
                     whichAssay=whichAssay, verbose=verbose)
-
+    
     if(run){
       #first add ones that have default value
       passedArgs<-list(ce=ce,consensusProportion=consensusProportion,
@@ -221,7 +225,9 @@ setMethod(
   if("consensusProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$consensusProportion)
   if("consensusMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$consensusMinSize)
   whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters  	else "clusterMany"
-  combineTry<-try(do.call("makeConsensus",c(list(x=ce,whichClusters=whClusters),args1)), silent=TRUE)
+  combineTry<-try(do.call("makeConsensus",
+      c(list(x=ce,whichClusters=whClusters),args1)), 
+      silent=TRUE)
   if(!inherits(combineTry,"try-error")){
     ce<-combineTry
     #------------

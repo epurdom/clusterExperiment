@@ -214,11 +214,8 @@ NULL
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
     ## FIXME: requires S, i.e. similarity. Need to change to only need dissimilarity because copying the large matrix (not only here, but below too).
     S<-round(1-inputMatrix,10)
-    inputMatrix<-switch(whichHierDist,
-                        "dist"=dist(S),
-                        "as.dist"=as.dist(inputMatrix))
-    hDmat<-do.call(stats::hclust,c(list(d=inputMatrix),passedArgs))
-    ##Could this be just done by cut with hierarchical cophenic value? Should make it an option to do that. Probably a lot faster...
+    d<-switch(whichHierDist,"dist"=dist(S),"as.dist"=as.dist(inputMatrix))
+    hDmat<-do.call(stats::hclust,c(list(d=d),passedArgs))##Could this be just done by cut with hierarchical cophenic value? Should make it an option to do that. Probably a lot faster...
     method<-evalClusterMethod
     phylo4Obj<-.convertToPhyClasses(hDmat,returnClass=c("phylo4"))
     allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))

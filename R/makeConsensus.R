@@ -136,9 +136,10 @@ setMethod(
       ## Once do that, need to deal with fact return sharedPerct.
       sharedPerct<-.clustersHammingDistance(t(clusterMat))
       cl <- mainClustering(inputMatrix=sharedPerct,
-               inputType="diss",clusterFunction=clusterFunction,
-                           minSize=minSize, format="vector",
-                           clusterArgs=clustArgs)
+               inputType="diss",
+               clusterFunction=clusterFunction,
+               minSize=minSize, format="vector",
+               clusterArgs=clustArgs)
       
       if(is.character(cl)) {
         stop("coding error -- mainClustering should return numeric vector")
