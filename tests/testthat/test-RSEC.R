@@ -38,47 +38,59 @@ test_that("`RSEC` works through whole series of steps",{
     skip_on_os("windows")
 	
 #bigger example where actually goes through all the steps, takes some time:
-  expect_message(rsecOut<-RSEC(
-      x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
-      k0s=4:5,clusterFunction="tight", alphas=0.1,
-      betas=0.9,dendroReduce="none",minSizes=1,
-      subsampleArgs=list(resamp.num=5),random.seed=seedValue),
-      "Merging will be done on")
-   expect_silent(ceOut<- 
-       clusterMany(x=assay(seSimCount), ks=4:5, 
-       clusterFunction="tight", alphas=0.1, 
-       betas=0.9, minSizes=1,
-       isCount=TRUE, reduceMethod="none", 
-       transFun = NULL,
-       sequential=TRUE,removeSil=FALSE,subsample=TRUE,
-       silCutoff=0,distFunction=NA,
-       nFilterDims=NA,nReducedDims=NA,
-       mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
-       ncores=1,run=TRUE,
-       seqArgs=list(verbose=FALSE),random.seed=seedValue
-       ))
-	expect_equal(clusterMatrix(rsecOut,whichClusters="clusterMany"),clusterMatrix(ceOut))
- expect_message(combOut<-makeConsensus(ceOut, proportion = 0.7,minSize = 5),"no clusters specified to combine")
-  expect_equal(clusterMatrix(rsecOut,whichClusters="makeConsensus"),clusterMatrix(combOut,whichClusters="makeConsensus"))
- expect_equal(coClustering(rsecOut),coClustering(combOut))
+    expect_message(rsecOut<-RSEC(
+        x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
+        k0s=4:5,clusterFunction="tight", alphas=0.1,
+        betas=0.9,dendroReduce="none",minSizes=1,
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue),
+        "Merging will be done on")
+    expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, 
+        clusterFunction="tight", alphas=0.1, 
+        betas=0.9, minSizes=1,
+        isCount=TRUE, reduceMethod="none", 
+        transFun = NULL,
+        sequential=TRUE,removeSil=FALSE,subsample=TRUE,
+        silCutoff=0,distFunction=NA,
+        nFilterDims=NA,nReducedDims=NA,
+        mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
+        ncores=1,run=TRUE, verbose=FALSE,
+        seqArgs=list(verbose=FALSE),random.seed=seedValue
+        ))
+	expect_equal(clusterMatrix(rsecOut,
+        whichClusters="clusterMany"),clusterMatrix(ceOut))
+    expect_message(combOut<-makeConsensus(ceOut, 
+        proportion = 0.7,minSize = 5),
+        "no clusters specified to combine")
+    expect_equal(clusterMatrix(rsecOut,
+            whichClusters="makeConsensus"),
+        clusterMatrix(combOut,
+            whichClusters="makeConsensus"))
+    expect_equal(coClustering(rsecOut),coClustering(combOut))
 
- expect_silent(dendOut<-makeDendrogram(combOut,reduceMethod="none",nDims=NA))
-#they differ in tdata:
- expect_equal(as(dendOut@dendro_clusters,"phylo4"), as(rsecOut@dendro_clusters,"phylo4"))
- tdRsec<-phylobase::tdata(rsecOut@dendro_clusters)
- tdRsec<-tdRsec[,-grep("ClusterIdMerge",colnames(tdRsec))]
- td<-phylobase::tdata(dendOut@dendro_clusters)
- td<-td[,-grep("ClusterIdMerge",colnames(td))]
- expect_equal(td, tdRsec)
- expect_equal(clusterExperiment:::.hasOutBranch(dendOut), clusterExperiment:::.hasOutBranch(rsecOut))
+    expect_silent(dendOut<-makeDendrogram(combOut,
+        reduceMethod="none",nDims=NA))
+    #they differ in tdata:
+    expect_equal(as(dendOut@dendro_clusters,"phylo4"), 
+        as(rsecOut@dendro_clusters,"phylo4"))
+    tdRsec<-phylobase::tdata(rsecOut@dendro_clusters)
+    tdRsec<-tdRsec[,-grep("ClusterIdMerge",colnames(tdRsec))]
+    td<-phylobase::tdata(dendOut@dendro_clusters)
+    td<-td[,-grep("ClusterIdMerge",colnames(td))]
+    expect_equal(td, tdRsec)
+    expect_equal(clusterExperiment:::.hasOutBranch(dendOut),
+        clusterExperiment:::.hasOutBranch(rsecOut))
  #now should be the same, check all objects except dendro_samples because very big:
- mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", DEMethod="edgeR",cutoff = 0.05)
- expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
- expect_equal(mergeOut@dendro_clusters,rsecOut@dendro_clusters)
- expect_equal(clusterExperiment:::.hasOutBranch(mergeOut),clusterExperiment:::.hasOutBranch(rsecOut))
- expect_equal(coClustering(mergeOut),coClustering(rsecOut))
- expect_equal(clusterMatrix(rsecOut,whichClusters="mergeClusters"), clusterMatrix(mergeOut,whichClusters="mergeClusters"))
- expect_equal(clusterTypes(rsecOut),clusterTypes(mergeOut))
+    expect_message(mergeOut<-mergeClusters(dendOut,mergeMethod = "adjP", 
+        DEMethod="edgeR",cutoff = 0.05),
+        "Merging will be done on")
+    expect_equal(dendroClusterIndex(mergeOut),dendroClusterIndex(rsecOut))
+    expect_equal(mergeOut@dendro_clusters,rsecOut@dendro_clusters)
+    expect_equal(clusterExperiment:::.hasOutBranch(mergeOut),
+        clusterExperiment:::.hasOutBranch(rsecOut))
+    expect_equal(coClustering(mergeOut),coClustering(rsecOut))
+    expect_equal(clusterMatrix(rsecOut,whichClusters="mergeClusters"),
+         clusterMatrix(mergeOut,whichClusters="mergeClusters"))
+    expect_equal(clusterTypes(rsecOut),clusterTypes(mergeOut))
 })
 
 test_that("`RSEC` works with no merging",{
