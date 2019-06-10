@@ -115,7 +115,7 @@ test_that("`RSEC` returns clusterMany even when errors later",{
         isCount=TRUE,reduceMethod="none",
         k0s=4:5,clusterFunction="pam", alphas=0.1,
         betas=0.9,dendroReduce="none",minSizes=1,
-        subsampleArgs=list(resamp.num=5),
+        subsampleArgs=list(resamp.num=5,clusterFunction="kmeans"),
         random.seed=seedValue,
 		mergeMethod="fakeMerge"
   	 	),"mergeClusters encountered following error")
