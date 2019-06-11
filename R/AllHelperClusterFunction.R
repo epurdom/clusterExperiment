@@ -165,7 +165,9 @@ setMethod(
   signature = c("character"),
   definition = function(object) {
     clObjects<-getBuiltInFunction(object)
-    if(length(clObjects)>1) return(sapply(clObjects,inputType))
+    if(length(clObjects)>1){
+        return(lapply(clObjects,inputType))
+    }
     else return(inputType(clObjects))
   }
 )

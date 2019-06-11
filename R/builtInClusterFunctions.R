@@ -28,9 +28,16 @@ NULL
     distMat<-pracma::distmat(t(inputMatrix),centers)
     apply(distMat,1,which.min)	
 }
+## Function to get the passed args (i.e. from a list(...)) and keep only those that are needed by FUN. If checkArgs=TRUE, then will give a warning that not all of the arguments passed are used by FUN. 
+## This is mainly used as a way for all the ClusterFunctions to have a certain required arguments and the others get passed by ... mechanism, and how to keep them apart. 
+.myArgNames<-c("removeDup")
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
     funArgs<-names(as.list(args(FUN)))
     funName<-tail(as.character(substitute(FUN)),1)
+    whMine<-which(names(passedArgs) %in% .myArgNames)
+    if(length(whMine)>0){
+        passedArgs<-passedArgs[-whMine]
+    }
     if(any(wh<-!names(passedArgs) %in% funArgs)){
         passedArgs<-passedArgs[-which(wh)]
         if(checkArgs) warning(.wrongArgsWarning(funName))
@@ -42,11 +49,13 @@ NULL
 ## Function to remove duplicates and return index of old to new
 ## clusterMat is BxN matrix of clusterings
 .dupRemove<-function(clusterMat){
-    smMat<-clusterMat[,!duplicated(t(clusterMat))]
-    val<-apply(clusterMat,2,paste,collapse=",")
-    valSm<-apply(smMat,2,paste,collapse=",")
+    whDup<-which(duplicated(t(clusterMat)))
+    val<-apply(clusterMat,2,paste,collapse=",") #all combinations
+    if(length(whDup)>0)
+        clusterMat<-clusterMat[,-whDup,drop=FALSE]
+    valSm<-apply(clusterMat,2,paste,collapse=",") #unique combinations
     ind<-match(val,valSm)
-    return(list(smallMat=smMat,mapping=ind))
+    return(list(smallMat=clusterMat,mapping=ind))
 }
 
 ## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
@@ -164,23 +173,28 @@ NULL
 
 #' @importFrom cluster pam
 .pamCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
-    
-    passedArgs<-.getPassedArgs(FUN=cluster::pam,passedArgs=list(...) ,checkArgs=checkArgs)
+    passedArgs<-list(...)
     convertCat<-FALSE
     if(inputType=="cat"){
-        smallInput<-.dupRemove(inputMatrix)
-        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
+        if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
+            inputMatrix<-.dupRemove(inputMatrix)
+            mapping<-inputMatrix$mapping            
+            convertCat<-TRUE
+            inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
+        }
+        else inputMatrix<-.clustersHammingDistance(inputMatrix)
         inputType<-"diss"
-        convertCat<-TRUE
     }
+    passedArgs<-.getPassedArgs(FUN=cluster::pam, passedArgs=passedArgs, 
+        checkArgs=checkArgs)
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
     if(inputType=="diss"){
         out<-do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs))
         if(convertCat){
-            if(cluster.only) out<-out[smallInput$mapping]
+            if(cluster.only) out<-out[mapping]
             else{
                 #this is a problem for silhouette stuff!
-                out$clustering<-clustering[smallInput$mapping]
+                out$clustering<-clustering[mapping]
             }
         }
         return(out)
@@ -217,16 +231,25 @@ NULL
 ##---------
 #' @importFrom stats hclust cutree
 .hierKCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
-    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
+    passedArgs<-list(...)
+    convertCat<-FALSE
     if(inputType=="cat"){
-        smallInput<-.dupRemove(inputMatrix)
-        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
+        if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
+            inputMatrix<-.dupRemove(inputMatrix)
+            mapping<-inputMatrix$mapping
+            convertCat<-TRUE
+            inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
+        }
+        else inputMatrix<-.clustersHammingDistance(inputMatrix)
+        
     }
+    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
+        checkArgs=checkArgs)
     hclustOut<-do.call(stats::hclust,
         c(list(d=as.dist(inputMatrix)),passedArgs))
     out<-stats::cutree(hclustOut,k)
-    if(inputType=="cat"){
-        out<-out[smallInput$mapping]
+    if(inputType=="cat" & convertCat){
+        out<-out[mapping]
     }
     return(out)
 }
@@ -239,17 +262,26 @@ NULL
 ##Hiearchical01
 ##---------
 #' @importFrom stats hclust 
-.hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,inputType,cluster.only,...)
+.hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),doDuplicates=TRUE,checkArgs,inputType,cluster.only,...)
 {
     whichHierDist<-match.arg(whichHierDist)
     evalClusterMethod<-match.arg(evalClusterMethod)
+    passedArgs<-list(...)
+    convertCat<-FALSE
     if(inputType=="cat"){
-        smallInput<-.dupRemove(inputMatrix)
-        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
-        #inputMatrix<-.clustersHammingDistance(inputMatrix)
+        if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
+            inputMatrix<-.dupRemove(inputMatrix)
+            mapping<-inputMatrix$mapping            
+            convertCat<-TRUE
+            inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
+        }
+        else inputMatrix<-.clustersHammingDistance(inputMatrix)
+        
     }
-    if(is.null(rownames(inputMatrix))) rownames(inputMatrix)<-colnames(inputMatrix)<-as.character(seq_len(nrow(inputMatrix)))
-    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=list(...) ,checkArgs=checkArgs)
+    # CHECKME: I changed this to make this for all, not just if missing, so as to guarantee that they are unique, but I don't know if it will break something downstream
+     rownames(inputMatrix)<- colnames(inputMatrix)<- as.character(seq_len(nrow(inputMatrix)))
+    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
+        checkArgs=checkArgs)
     ## FIXME: requires S, i.e. similarity. Need to change to only need dissimilarity because copying the large matrix (not only here, but below too).
     S<-round(1-inputMatrix,10)
     d<-switch(whichHierDist,"dist"=dist(S),"as.dist"=as.dist(inputMatrix))
@@ -287,10 +319,10 @@ NULL
     })
     clusterListIndices<-.orderByAlpha(clusterListIndices,S)
     ##Need to update this code so converts vector result into lists of indices ...
-    if(inputType=="cat"){
+    if(inputType=="cat" & convertCat){
         ## FIXME: this seems very akward. Should be able to do better!
         clusterListIndices<-lapply(clusterListIndices,function(x){
-            unlist(lapply(x,function(i){which(smallInput$mapping==i)}))
+            unlist(lapply(x,function(i){which(mapping==i)}))
         })
     }
     return(clusterListIndices)
@@ -306,15 +338,21 @@ NULL
 ##---------
 .tightCluster <- function(inputMatrix, alpha, minSize.core=2,checkArgs,inputType,cluster.only,...)
 {
+    passedArgs<-list(...)
+    convertCat<-FALSE
     if(inputType=="cat"){
-        smallInput<-.dupRemove(inputMatrix)
-        inputMatrix<-.clustersHammingDistance(smallInput$smallMat)
-        #inputMatrix<-.clustersHammingDistance(inputMatrix)
+        inputMatrix<-.clustersHammingDistance(inputMatrix)
+        
     }
     
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
     inputMatrix<-1-inputMatrix #now is similarity matrix...
-    if(length(list(...))>0 & checkArgs) 	warning(.wrongArgsWarning("tight"))
+    if(!is.null(passedArgs[["removeDup"]])){
+        passedArgs<-passedArgs[-grep("removeDup",names(passedArgs))]
+    }
+    if(length(passedArgs)>0 & checkArgs){
+        warning(.wrongArgsWarning("tight"))
+    } 	
     find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
         #what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is.
@@ -363,10 +401,10 @@ NULL
     }
     res<-.orderByAlpha(res,inputMatrix)
     ##Need to update this code so converts vector result into lists of indices ...
-    if(inputType=="cat"){
+    if(inputType=="cat" & convertCat){
         ## FIXME: this seems very akward. Should be able to do better!
         res<-lapply(res,function(x){
-            unlist(lapply(x,function(i){which(smallInput$mapping==i)}))
+            unlist(lapply(x,function(i){which(mapping==i)}))
         })
     }
     return(res)
