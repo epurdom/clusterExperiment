@@ -97,6 +97,7 @@ setMethod(
     
     if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
     if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
+    #FIXME: unnecessary duplication
     clusterMat <- x
     if(proportion == 1) {
       #have to repeat from mainClustering because didn't
@@ -128,7 +129,7 @@ setMethod(
       clustArgs<-list(alpha=1-proportion)
       clustArgs<-c(clustArgs,list(...))
       if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
-        clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
+        clustArgs<-c(clustArgs,list(evalClusterMethod=c("maximum")))
       }
            
       cl <- mainClustering(inputMatrix=t(clusterMat),
@@ -152,6 +153,10 @@ setMethod(
   }
 )
 
+.unassignLargeMissing<-function(clusterMat,propUnassigned){
+    
+}
+
 #' @rdname makeConsensus
 #' @export
 #' @param clusterLabel a string used to describe the type of clustering. By
@@ -174,9 +179,7 @@ setMethod(
 	else{
 		whichClusters <-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
 	}
-	clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
-    
-    outlist <- makeConsensus(clusterMat, ...)
+	outlist <- makeConsensus(clusterMatrix(x)[, whichClusters, drop=FALSE], ...)
     newObj <- ClusterExperiment(x, outlist$clustering,
                                 transformation=transformation(x),
                                 clusterTypes="makeConsensus",checkTransformAndAssay=FALSE)
@@ -190,6 +193,7 @@ setMethod(
     # if(!is.null(outlist$percentageShared)) {
     #   coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
     # }
+    coClustering(newObj) <- clusterMatrix(x)[, whichClusters, drop=FALSE]
     ##Check if pipeline already ran previously and if so increase
 		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
 		

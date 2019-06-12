@@ -131,26 +131,28 @@ However, to exactly replicate the results here, we will set a large number of pa
 
 ```{r RSECExact, eval=FALSE}
 library(clusterExperiment)
+rsecFluidigm<-RSEC(se, 
+                     isCount = TRUE, 
+                     k0s = 4:15, 
+                     alphas=c(0.1, 0.2, 0.3), 
+                     betas = 0.9,
+                     reduceMethod="PCA", 
+                     nReducedDims=10,
+                     minSizes=1, 
+                     clusterFunction="hierarchical01",
+                     consensusMinSize=3,
+                     consensusProportion=0.7,
+                     dendroReduce= "mad",
+                     dendroNDims=1000,
+                     mergeMethod="adjP",
+	                    mergeDEMethod="limma",
+                     mergeCutoff=0.01,
+                     ncores=1, 
+                     subsampleArgs=list(clusterFunction="pam",
+                         classifyMethod="All"),
+                     random.seed=176201)
+)
 
-system.time(rsecFluidigm<-RSEC(se, 
-  isCount = TRUE, 
-	k0s = 4:15, 
-  alphas=c(0.1, 0.2, 0.3), 
-  betas = 0.9, 
-  reduceMethod="PCA",
-  nReducedDims=10,
-  minSizes=1,
- clusterFunction="hierarchical01",
- consensusMinSize=3,
- consensusProportion=0.7,
- dendroReduce= "mad",
- dendroNDims=1000,
- mergeMethod="adjP",
- mergeDEMethod="limma",
- mergeCutoff=0.01,
- ncores=1,
- subsampleArgs=list(clusterFunction="hierarchical01"),
- random.seed=176201))
 ```
 
 Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:

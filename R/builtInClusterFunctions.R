@@ -48,14 +48,19 @@ NULL
 
 ## Function to remove duplicates and return index of old to new
 ## clusterMat is BxN matrix of clusterings
+## mapping is such that
+## all(dupTest$smallMat[,dupTest$mapping]==inputMatrix)
+## and
+## all(dupTest$smallMat[,dupTest$mapping]==inputMatrix)
 .dupRemove<-function(clusterMat){
     whDup<-which(duplicated(t(clusterMat)))
     val<-apply(clusterMat,2,paste,collapse=",") #all combinations
     if(length(whDup)>0)
         clusterMat<-clusterMat[,-whDup,drop=FALSE]
-    valSm<-apply(clusterMat,2,paste,collapse=",") #unique combinations
+    valSm<-apply(clusterMat,2,paste,collapse=",") #unique combinations, in order
+    tab<-table(val)[valSm]
     ind<-match(val,valSm)
-    return(list(smallMat=clusterMat,mapping=ind))
+    return(list(smallMat=clusterMat,mapping=ind,replicates=unname(unclass(tab))))
 }
 
 ## Function to return "our hamming" distance (1-% clustering shared) between samples. Input a BxN matrix of clusterings
@@ -272,6 +277,7 @@ NULL
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
             mapping<-inputMatrix$mapping            
+            dupTab<-inputMatrix$replicates
             convertCat<-TRUE
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
         }
@@ -289,7 +295,13 @@ NULL
     method<-evalClusterMethod
     phylo4Obj<-.convertToPhyClasses(hDmat,returnClass=c("phylo4"))
     allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
-    #each internal node (including root) calculate whether passes value of alpha or not
+    
+    ###
+    #the following code 
+    #each internal node (starting at root) calculate whether passes value of alpha or not
+    ##
+    
+    ##Initialize:
     nodesToCheck<-phylobase::rootNode(phylo4Obj)
     clusterList<-list()
     
@@ -301,15 +313,30 @@ NULL
             check<-TRUE
         }
         else{
-            currTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
-            if(method=="maximum") check<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
-            if(method=="average") check<-all(rowMeans(S[currTips,currTips,drop=FALSE])>=(1-alpha))
+            currTips<-checkTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
+            if(convertCat){
+                ## FIXME: if at top, will result in needing NxN matrix again!
+                ## Because this function starts at top and then goes down!
+                ## Also, really shouldn't be different if method=="maximum" anyway
+                m<-match(checkTips,rownames(inputMatrix))
+                checkTips<-rep(checkTips,times=dupTab[m])
+            }
+            if(method=="maximum"){
+                check<-all(S[checkTips,checkTips,drop=FALSE]>=(1-alpha))
+                check2<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
+                if(check!=check2) browser()
+            }
+            if(method=="average"){
+                check<-all(rowMeans(S[checkTips,checkTips,drop=FALSE])>=(1-alpha))
+                check2<-all(rowMeans(S[currTips,currTips,drop=FALSE])>=(1-alpha))
+                if(check!=check2) browser()
+            } 
             
         }
         if(check){ #found a block that satisfies
             clusterList<-c(clusterList,list(currTips))
         }
-        else{ #not satisfy
+        else{ #not satisfy, add children to check.
             childNodes<-phylobase::descendants(phylo4Obj,currNode,"children")
             nodesToCheck<-c(nodesToCheck,childNodes)
         }
@@ -318,8 +345,8 @@ NULL
         match(tipNames,rownames(inputMatrix))
     })
     clusterListIndices<-.orderByAlpha(clusterListIndices,S)
-    ##Need to update this code so converts vector result into lists of indices ...
-    if(inputType=="cat" & convertCat){
+    
+    if(convertCat){
         ## FIXME: this seems very akward. Should be able to do better!
         clusterListIndices<-lapply(clusterListIndices,function(x){
             unlist(lapply(x,function(i){which(mapping==i)}))

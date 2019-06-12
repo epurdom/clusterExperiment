@@ -26,7 +26,7 @@
 #'   \code{reduceMethod} will be given as the name; if a filtering statistic,
 #'   "filteredBy_" followed by \code{reduceMethod}.
 #' @inheritParams getClusterIndex
-#' @details This function determines the matrix of values that can be used for
+#' @details \code{getReducedData} determines the matrix of values that can be used for
 #'   computation based on the user's choice of dimensionality methods. The
 #'   methods can be either of the filtering kind or the more general
 #'   dimensionality reduction. The function will first look at any stored
@@ -65,6 +65,7 @@
 #' columns, features in rows} }
 #' @seealso \code{\link{makeFilterStats}},\code{\link{makeReducedDims}},
 #'   \code{\link{filterData}}, \code{\link[SingleCellExperiment]{reducedDim}}
+#' @export
 setMethod(
   f = "getReducedData",
   signature = "ClusterExperiment",

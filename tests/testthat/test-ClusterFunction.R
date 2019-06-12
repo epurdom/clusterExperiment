@@ -16,14 +16,22 @@ test_that("cat inputType works on relevant cluster functions", {
     catMat<-cbind(catMat,catMat)
     set.seed(32590)
     catMat<-catMat[,sample(1:ncol(catMat))]
+    expect_silent(pMat<-.clustersHammingDistance(catMat))
+    
     kMethods<-listBuiltInTypeK()
     kMethods<-kMethods[sapply(inputType(kMethods),function(x){"cat" %in% x})]
     for(cf in kMethods){
         expect_silent(cfObj<-getBuiltInFunction(cf))
+        
+        set.seed(782935)
+        expect_silent(pOut<-cfObj@clusterFUN(inputMatrix=pMat,
+            inputType="diss",k=3,cluster.only=TRUE,
+            removeDup=TRUE, checkArgs=TRUE))
         set.seed(782935)
         expect_silent(allOut<-cfObj@clusterFUN(inputMatrix=catMat,
             inputType="cat",k=3,cluster.only=TRUE,
             removeDup=FALSE,checkArgs=TRUE))
+        expect_equal(allOut,pOut)
         set.seed(782935)
         expect_silent(nodupOut<-cfObj@clusterFUN(inputMatrix=catMat,
             inputType="cat",k=3,cluster.only=TRUE,
@@ -36,9 +44,14 @@ test_that("cat inputType works on relevant cluster functions", {
     for(cf in aMethods){
         expect_silent(cfObj<-getBuiltInFunction(cf))
         set.seed(782935)
+        expect_silent(pOut<-cfObj@clusterFUN(inputMatrix=pMat,
+            inputType="diss",alpha=0.3,cluster.only=TRUE,
+            removeDup=TRUE, checkArgs=TRUE))
+        set.seed(782935)
         expect_silent(allOut<-cfObj@clusterFUN(inputMatrix=catMat,
             inputType="cat",alpha=0.3,cluster.only=TRUE,
             removeDup=FALSE,checkArgs=TRUE))
+        expect_equal(allOut,pOut)
         set.seed(782935)
         expect_silent(nodupOut<-cfObj@clusterFUN(inputMatrix=catMat,
             inputType="cat",alpha=0.3,cluster.only=TRUE,

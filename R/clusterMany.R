@@ -483,6 +483,7 @@ setMethod(
             }
             #those that use reducedDims will not use dist
             #but those that filter could use different distances...
+						# FIXME: should there be some kind of warning if wind up completely ignoring 'distFunction' that user gave? Ditto on other parameters.
             whDimReduce<-which(param[,"reduceMethod"]!="none" & isReducedDims(x,param[,"reduceMethod"]) )
             if(length(whDimReduce)>0){
                 param[whDimReduce,"distFunction"]<-NA
