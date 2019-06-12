@@ -188,8 +188,10 @@ seqCluster<-function(inputMatrix, inputType, k0,
         # note is subsample=TRUE, and alg. of main is type K, 
         # means k is always equal at subsample and main step. 
         tempMainArgs<-mainClusterArgs
-        tempMainArgs[["clusterArgs"]]<-c(list(k=newk),
+        if(algorithmType(tempMainArgs[["clusterFunction"]])=="K")
+            tempMainArgs[["clusterArgs"]]<-c(list(k=newk),
 			mainClusterArgs[["clusterArgs"]])       
+        else tempMainArgs<-mainClusterArgs
         tempSubArgs<-subsampleArgs
         # set k to new k in subsampling step.
         if(subsample){

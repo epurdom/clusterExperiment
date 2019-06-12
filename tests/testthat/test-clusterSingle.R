@@ -740,17 +740,17 @@ test_that("Different options of mainClustering",{
 })
 
 test_that("Different options of subsampling",{
-
-	expect_message(clustSubsample <- clusterSingle(mat,  
+    #Check saving of subsampling matrix
+	expect_silent(clustSubsample <- clusterSingle(mat,  
         inputType="X",
         subsample=TRUE, 
         saveSubsamplingMatrix=TRUE,
-        sequential=FALSE, 
-        subsampleArgs=list(resamp.num=3, clusterArgs=list(k=3)), 
-        mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)), 
-        isCount=FALSE),
-        "a clusterFunction was not given for subsampleClustering")
-	
+        sequential=FALSE, makeMissingDiss=FALSE, warnings=TRUE,
+        subsampleArgs=list(resamp.num=3, 
+             clusterFunction="kmeans",clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="hierarchical01",
+             clusterArgs=list(alpha=.3)), 
+        isCount=FALSE))
     expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
     expect_false(is.null(coClustering(clustSubsample)))
     expect_message(clustSubsample <- clusterSingle(mat,  
@@ -906,6 +906,61 @@ test_that("Different options of subsampling",{
 
 })
 
+test_that("Interactions of mainClustering and subsampling options",{
+    ##This once creates unexpected errors even on master, because subsampleArgs not given (even though mainClusterArgs has k, because k isn't the right one for clusterFunction of main (hierarchical01), they aren't passed on to subsample. Unclear if this is the best option...)
+    expect_error(ce<-clusterSingle(se, 
+         isCount = FALSE, 
+         reduceMethod="PCA",
+         nDims=10,
+         subsample=TRUE,
+         sequential=FALSE,
+         mainClusterArgs=list( clusterFunction="hierarchical01",minSize=1, clusterArgs=list(alpha=0.1,k = 4))
+         )
+         ,"must supply arguments: k"
+    )
+    #check totally weird names passed are caught
+    expect_warning(ce<-clusterSingle(se, 
+         isCount = FALSE, 
+         reduceMethod="PCA",
+         nDims=10,
+         subsample=TRUE,
+         sequential=FALSE,
+         subsampleArgs=list(clusterArgs=list(k=3)),
+         mainClusterArgs=list( clusterFunction="hierarchical01",myFunkyName=1, clusterArgs=list(alpha=0.1))
+         )
+         ,"Some arguments passed via mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object: myFunkyName"
+    )
+    # check: if provide diss and mainClust okay with that but 
+    # subsampling not, should get error (even if say makeDiss)
+	expect_message(clustSubsample <- clusterSingle(dissMat,  
+        inputType="diss",
+        subsample=TRUE, 
+        sequential=FALSE, makeMissingDiss=TRUE, warnings=TRUE,
+        subsampleArgs=list(resamp.num=3, clusterFunction="kmeans",clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=.3)), 
+        isCount=FALSE),
+        "In subsampling clustering step")
+    # check: should be okay even though main doesn't take type X
+    # Should NOT trigger calculation of diss matrix.
+	expect_silent(clustSubsample <- clusterSingle(mat,  
+        inputType="X",
+        subsample=TRUE, 
+        sequential=FALSE, makeMissingDiss=TRUE, warnings=TRUE,
+        subsampleArgs=list(resamp.num=3, clusterFunction="kmeans",clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=.3)), 
+        isCount=FALSE))
+    # check: should be okay but must calculate diss
+	expect_message(clustSubsample <- clusterSingle(mat,  
+        inputType="X",
+        subsample=TRUE, 
+        sequential=FALSE, makeMissingDiss=TRUE, warnings=TRUE,
+        subsampleArgs=list(resamp.num=3, classifyMethod="InSample",
+             clusterFunction="hierarchicalK",clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="hierarchical01",
+             clusterArgs=list(alpha=.3)), 
+        isCount=FALSE),"Making nxn dissimilarity matrix")
+
+})
 
 test_that("Different passed options of seqCluster",{
     #check sequential

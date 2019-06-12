@@ -267,12 +267,13 @@ setMethod(
                           subsample=TRUE, sequential=FALSE, distFunction=NA,
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
                           isCount=FALSE,transFun=NULL, 
-                          reduceMethod=if(inputType=="X") c("none", listBuiltInReducedDims(), listBuiltInFilterStats()) else "none",
+                          reduceMethod="none",
                           nDims=defaultNDims(inputMatrix, reduceMethod),
                           makeMissingDiss=FALSE,
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, 
                           checkDiss=FALSE, warnings=TRUE) {
+        
         transInputType<-inputType
         doDiss<-FALSE
         if(is.function(distFunction) || !is.na(distFunction)){
@@ -297,7 +298,6 @@ setMethod(
         ## if makeMissingDiss=TRUE, then will tell whether to create diss from X with euclidean distance
         if(!doDiss){
             doDiss<-checkOut$doDiss
-            if(doDiss) distFunction<-function(x){dist(x)}
         } 
         
         if(sequential){
@@ -324,7 +324,9 @@ setMethod(
             ##transformation to data x that will be input to clustering
             ##########
             transFun<-.makeTransFun(transFun=transFun,isCount=isCount) #need this later to build clusterExperiment object
-            reduceMethod<-match.arg(reduceMethod) #because this is matrix method, will always have to be a built in value.
+            reduceMethod<-match.arg(reduceMethod,c("none",
+                                   listBuiltInReducedDims(), 
+                                   listBuiltInFilterStats())) #because this is matrix method, will always have to be a built in value.
             if(length(nDims)>1 || length(reduceMethod)>1) {
                 stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
             }
@@ -351,13 +353,21 @@ setMethod(
         
         
         #Make dissimilarity AFTER transforming data
+        cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
         if(doDiss){
-            if(warnings) .mynote("Making nxn dissimilarity matrix.")
+            mess<-"Making nxn dissimilarity matrix"
+            if(!is.function(distFunction) && is.character(distFunction)){
+                mess<-paste(mess,sprintf("(with distance function %s)",distFunction))
+            }
+            else if(is.na(distFunction)) mess<-paste(mess,"(with default distance function, determined by algorithm type of clustering function)")
+            else mess<-paste(mess,"(with user defined distance function)")
+            if(warnings) .mynote(mess)
             inputMatrix<-.makeDiss(inputMatrix,
                 distFunction=distFunction,
-                checkDiss=FALSE)
+                checkDiss=FALSE, algType=algorithmType(cf))
+            inputType<-"diss"
         }
-        cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
+        
         if(inputType=="diss" & checkDiss){
             .checkDissFunction(inputMatrix, algType = algorithmType(cf))
         }

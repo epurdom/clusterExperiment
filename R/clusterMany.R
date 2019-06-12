@@ -331,13 +331,16 @@ setMethod(
                     if(length(nReducedDims)==0)
                         stop("Must give nReducedDims values if choose a reduceMethod option not equal to 'none' and not in stored reducedDims slot.")
                     maxDims<-max(nReducedDims)
-                    x<-makeReducedDims(x,reducedDims=dimNam, whichAssay = whichAssay,
-                                       maxDims=maxDims,transFun=transFun,isCount=isCount)
+                    x<-makeReducedDims(x,reducedDims=dimNam, 
+                        whichAssay = whichAssay,
+                        maxDims=maxDims,transFun=transFun,
+                        isCount=isCount)
                 }
                 if(length(filtNam)>0){
                     #Need to think how can pass options to filterData...
-                    x<-makeFilterStats(x,filterStat=filtNam, whichAssay = whichAssay,
-                                       transFun=transFun,isCount=isCount)
+                    x<-makeFilterStats(x,filterStat=filtNam, 
+                        whichAssay = whichAssay,
+                        transFun=transFun,isCount=isCount)
                 }
             }
         }
@@ -359,7 +362,8 @@ setMethod(
             }
             #check if nReducedDims values
             if(any(isReducedDims(x,reduceMethod))){
-                maxDimValues<-ncolReducedDims(x)[isReducedDims(x,reduceMethod)]
+                maxDimValues<- 
+                    ncolReducedDims(x)[isReducedDims(x,reduceMethod)]
                 if(length(na.omit(nReducedDims))>0 && all(na.omit(nReducedDims) > max(maxDimValues)))
                     stop("The values of nReducedDims given are all higher than the maximum components stored in the reducedDims slot of the input object. Run 'makeReducedDims' to get larger number of components.")
                 
@@ -532,8 +536,10 @@ setMethod(
             # Deal with those that are invalid combinations:
             # Also, if ever reinstate param option, then should apply these checks to that param
             ######
-            if(is.null(mainClusterArgs)) mainClusterArgs<-list(clusterArgs=list())
-            if(is.null(subsampleArgs)) subsampleArgs<-list(clusterArgs=list())
+            if(is.null(mainClusterArgs)) 
+                mainClusterArgs<-list(clusterArgs=list())
+            if(is.null(subsampleArgs)) 
+                subsampleArgs<-list(clusterArgs=list())
             paramCheck<-function(paramRow, returnValue, warn){
                 totalArgs<- .makeArgsFromParam(paramRow,
                     mainClusterArgs=mainClusterArgs,
@@ -568,13 +574,13 @@ setMethod(
             if(length(whInvalid)>0) {
                 if(length(whInvalid)==nrow(param)){
                     checksFull<-lapply(1:nrow(param), 
-                        function(i){paramCheck(param[i,],returnValue="full")})
+                        function(i){paramCheck(param[i,],returnValue="full",warn=parameterWarnings)})
                     stop(sprintf("Set of parameters imply %s combinations, none of which are valid (note that if clustering matrix requires calculation of distance matrix, user must now set `makeMissingDiss=TRUE`).  Errors given are:\n\n %s",nrow(param),paste(checksFull[whInvalid],collapse="\n")))
                     
                 }
                 param <- param[-whInvalid, ,drop=FALSE]
             }
-            # Do second run to get rid of any duplicates, 
+            # Do second run to get full warnings that remain
             # & deal with creating distances
             # FIXME: Haven't done duplicates, since not clear how work with CF
             checks<-lapply(1:nrow(param), 
@@ -590,8 +596,11 @@ setMethod(
                 param[missDiss,"distFunction"]<-"default"
             }
             
-            if(any(!is.na(param[,"nFilterDims"]) & !is.na(param[,"nReducedDims"])))
+            if(any(!is.na(param[,"nFilterDims"]) &
+             !is.na(param[,"nReducedDims"]))){
                 stop("Internal error: failed to properly remove inconsistent nFilterDims, nReducedDims combination.")
+                
+            }
             if(any(is.na(param[,"nFilterDims"]) &
                 is.na(param[,"nReducedDims"] & 
                 !param[,"reduceMethod"] %in% "none"))) stop("Internal error: NA in both nFilterDims, nReducedDims combination without equal to 'none'")
@@ -719,24 +728,35 @@ setMethod(
                 ##Get the parameters that imply different datasets.
                 distParam<-unique(param[, c("reduceMethod", "nFilterDims", "distFunction")])
                 distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
-                ##Assume only take distances on original data (or filtered version of it)
-                if(verbose) {
-                    cat(sprintf("Calculating the %s Requested Distance Matrix needed to run clustering comparasions...\n",nrow(distParam)))
-                }
+                uniqueId<-apply(distParam,1,paste,collapse=",")
+                ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
+                if(verbose)
+                    cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
                 
-                #need to update here when have filter
+                
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
-                    #be conservative and check for the 01 type if any of clusterFunctions are 01.
+                    # be conservative and check for the 01 type 
+                    # if any of clusterFunctions are 01.
                     algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K"
                     redM<-as.character(distParam[ii,"reduceMethod"])
-                    if(redM=="none")  dat<-transformData(x,transFun=transFun, whichAssay=whichAssay)
-                    else if(isFilterStats(x,redM))
-                        dat<-transformData( filterData(x, filterStats=redM,
-                                                       percentile=distParam[ii,"nFilterDims"]),
-                                            transFun=transFun,whichAssay=whichAssay)
-                    else stop("Internal error: distance should only be will full or filtered data")
-                    distMat<-.makeDiss(dat, distFunction=distFun, checkDiss=TRUE, algType=algCheckType)
+                    if(redM=="none"){
+                        dat<-transformData(x,
+                            transFun=transFun, whichAssay=whichAssay)
+                        
+                    }
+                    else if(isFilterStats(x,redM)){
+                        dat<-transformData( filterData(x, 
+                            filterStats=redM,
+                            percentile=distParam[ii,"nFilterDims"]),
+                            transFun=transFun,whichAssay=whichAssay)
+                    }
+                    else if(makeMissingDiss & any(doDiss)){
+                        dat<-t(reducedDim(x,type=redM))
+                    }
+                    else stop("Internal error: should have removed any combinations that included a dimensionality reduction and a distance unless due to makeMissingDiss=TRUE")
+                    distMat<-.makeDiss(dat, distFunction=distFun, 
+                        checkDiss=TRUE, algType=algCheckType)
                     return(distMat)
                 })
                 #need to update here when have filter

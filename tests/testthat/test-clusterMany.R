@@ -77,6 +77,43 @@ test_that("`clusterMany` works with SingleCellExperiment", {
 
 })
 
+# # FIXME: need to make this operational
+# test_that("`clusterMany` matches `clusterSingle` results", {
+#
+#     subArgs<-list(clusterFunction="kmeans",classifyMethod="All")
+#     expect_message(ce<-clusterMany(smSimSE,
+#         isCount = FALSE,
+#         ks = 4:5,
+#         alphas=c(0.1),
+#         reduceMethod="PCA",
+#         nReducedDims=10,
+#         minSizes=1,
+#         subsample=TRUE,
+#         sequential=TRUE,
+#         clusterFunction="hierarchical01",
+#         subsampleArgs=subArgs,
+#         makeMissingDiss=TRUE, verbose=FALSE,
+#         random.seed=176201),"Not all of the methods requested in 'reduceMethod' have been calculated")
+#
+#     mainArgs<-list( clusterFunction="hierarchical01",minSize=1,
+#         clusterArgs=list(alpha=0.1))
+#     seqArgs<-list(k0=4,beta=0.9)
+#     set.seed(176201)
+#     expect_silent(ce1<-clusterSingle(smSimSE,
+#         isCount = FALSE,
+#         saveSubsamplingMatrix=TRUE,
+#         reduceMethod="PCA",
+#         nDims=10,
+#         subsample=TRUE,
+#         sequential=TRUE,
+#         mainClusterArgs=mainArgs,
+#         subsampleArgs=subArgs,
+#         seqArgs=seqArgs,
+#         makeMissingDiss=TRUE
+#         ))
+#     expect_equal(primaryCluster(ce),primaryCluster(ce1))
+#
+# })
 test_that("`clusterMany` works with reduceMethod a reducedDims",{
   #check picking all dims in single reduceMethod same as apply directly to matrix 
     expect_silent(clustNothing <-

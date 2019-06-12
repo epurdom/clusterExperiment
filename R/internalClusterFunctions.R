@@ -50,6 +50,13 @@
 
 
 .defaultDiss<-c("euclidean", "maximum", "manhattan", "canberra", "binary" ,"minkowski")
+.myDefaultDiss<-c("01","K")
+.diss01<-function(x) {
+    (1 - cor(t(x))) / 2
+}
+.dissK<-function(x) {
+    dist(x)
+}
 .makeDiss <- function(x, distFunction, algType, checkDiss) {
     if (!is.function(distFunction)) {
         if (length(distFunction) > 1)
@@ -60,17 +67,19 @@
                 distMethod<-distFunction
                 distFunction<-function(x){dist(x,method=distMethod)}
             }
-            else distFunction <- get(distFunction, envir = globalenv())
+            else{
+                if(distFunction %in% .myDefaultDiss){
+                    if(distFunction=="01") distFunction<-.diss01
+                    else if(distFunction=="K") distFunction<-.dissK
+                }
+                else distFunction <- get(distFunction, envir = globalenv())
+            }
         } else if (is.na(distFunction) || distFunction=="default") {
             distFunction <-
                 switch(
                     algType,
-                    "01" = function(x) {
-                        (1 - cor(t(x))) / 2
-                    },
-                    "K" = function(x) {
-                        dist(x)
-                    }
+                    "01" = .diss01,
+                    "K" = .dissK
                 )
         } else
             stop("if distFunction is not a function, it must be either NA or a character")
@@ -80,10 +89,10 @@
     D <-try(as.matrix(distFunction(data.matrix(t(x)))))
     #distances assumed to be of observations on rows
     if (inherits(D, "try-error"))
-        stop("input distance function gives error when applied to x")
+        stop("given distance function gives error when applied to x")
     if (!all(dim(D) == c(ncol(x), ncol(x))))
         stop(
-            "input distance function must result in a ",
+            "given distance function must result in a ",
             ncol(x),
             "by",
             ncol(x),
@@ -170,20 +179,26 @@
                         )
                 }
                 else mainInputType<-inputType
-                input <- try(.checkCFInput(
+                inputMain <- try(.checkCFInput(
                     inputType=mainInputType,
                     desiredInputType = inputType(clusterFunction)),
                     silent=TRUE)
-                if(inherits(input, "try-error")){
+                if(inherits(inputMain, "try-error")){
                     ##In clusterSingle, can build diss if should.
+                    mess<-paste("In mainClustering step,",inputMain)
                     if(allowMakeDiss){
-                       if(mainInputType=="X" & "diss" %in% inputType(clusterFunction)){
-                           doDiss<-TRUE 
-                           input<-"diss"
+                        ## Reason: if subsample=TRUE, then don't want to calculate dissimilarity matrix or anything. Just want check that it is categorical. 
+                       if(!subsample){
+                           if(mainInputType=="X" & "diss" %in% inputType(clusterFunction)){
+                               doDiss<-TRUE 
+                               inputMain<-"diss"
+                           }
+                           else return(mess) 
                        }
+                       else return(mess) 
                     }
                     else{
-                        return(paste("In mainClustering step,",input)) 
+                        return(mess) 
                     }
                 } 
                 algType <- algorithmType(clusterFunction)
@@ -280,12 +295,17 @@
                     # remove existing ones, and only keep usable ones.
                     # Only relevant in the check run in mainClustering, 
                     # where need get rid of extra ones.
+                    exArgsNames<-mainClusterArgs[["extraArguments"]]
                     if (length(whPostProcessArgs) !=
-                         length(mainClusterArgs[["extraArguments"]]) & warn)
-                        warning(
-                            "Some arguments passed via mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object"
-                        )
-                    whRm<-which(names(mainClusterArgs) %in% mainClusterArgs[["extraArguments"]])
+                         length(exArgsNames) & warn){
+                             
+                             whNotMatch<- !exArgsNames %in%
+                                  names(mainClusterArgs)[whPostProcessArgs]
+                             warning(
+                                 sprintf("Some arguments passed via mainClusterArgs in mainClustering step do not match the algorithmType of the given ClusterFunction object: %s",paste(exArgsNames[whNotMatch],collapse=",")))
+                         }
+                        
+                    whRm<-which(names(mainClusterArgs) %in% exArgsNames)
                     if(length(whRm)>0){
                         mainClusterArgs<-mainClusterArgs[-whRm]
                         mainClusterArgs<-c(mainClusterArgs,postProcessArgs)           
@@ -297,7 +317,7 @@
             
 
 
-            mainClusterArgs[["inputType"]]<-input
+            mainClusterArgs[["inputType"]]<-inputMain
 			if(!"checkArgs" %in% names(mainClusterArgs[["clusterArgs"]]))
                 mainClusterArgs[["clusterArgs"]][["checkArgs"]]<-warn
             mainClusterArgs[["warnings"]]<-warn
@@ -355,6 +375,13 @@
         # Checks related to subsample=TRUE
         #########
         if (subsample) {
+            if(is.null(subsampleArgs)){
+                if(main) subsampleArgs<-list()
+                else{
+                    #I don't think this can ever actually happen:
+                    return("if subsample=TRUE and mainClusterArgs not given, must give argument subsampleArgs so as to identify the clusterFunction")}
+            }
+            
             # Note if subsample=TRUE, then inputType refers to the subsampling, not the main step.
             inputSub<-inputType
             # Set default for when clusterFunction for subsampling 
@@ -380,15 +407,24 @@
                     diffSubsampleCF <- FALSE
                 }
                 else{
-                    if (warn & sequential){
-                        mess<-sprintf("a clusterFunction was not given for subsampleClustering (and inputMatrix is not of type allowed by clusterFunction of mainClustering step). The clusterFunction for subsampling was set to the default of %s",
-                                default
-                            )
-                        .mynote(mess)
+                    if(doDiss & inputSub=="X" & "diss" %in% cfInp){
+                        # If already going to be calculating 
+                        # the dissimilarity matrix for the main step
+                        # go ahead and reuse for the subsample step. 
+                        mess<-sprintf("a clusterFunction was not given for subsampleClustering -- set to be the same as the mainClustering step")
+                        if(warn) .mynote(mess)
+                        subsampleArgs[["clusterFunction"]] <- clusterFunction
+                        diffSubsampleCF <- FALSE
                     }
-                    subsampleArgs[["clusterFunction"]] <- default
-                    diffSubsampleCF <- TRUE
-                    
+                    else{
+                        if(warn){
+                            mess<-sprintf("a clusterFunction was not given for subsampleClustering (and inputMatrix is not of type allowed by clusterFunction of mainClustering step). The clusterFunction for subsampling was set to the default of %s",
+                                default)
+                            .mynote(mess)
+                        }
+                        subsampleArgs[["clusterFunction"]] <- default
+                        diffSubsampleCF <- TRUE
+                    }
                 }
             }
             
@@ -407,15 +443,17 @@
                     desiredInputType=inputType(subsampleCF)),
                     silent=TRUE)
                 if(inherits(inputSub, "try-error")){
+                    mess<-paste("In subsampling clustering step,",inputSub)
                     ##In clusterSingle, can build diss if should.
                     if(allowMakeDiss){
                        if(inputType=="X" & "diss" %in% inputType(subsampleCF)){
                            doDiss<-TRUE 
                            inputSub<-"diss"
                        }
+                       else return(mess) 
                     }
                     else{
-                        return(paste("In subsampling clustering step,",inputSub)) 
+                        return(mess) 
                     }
                 } 
                 
@@ -470,14 +508,17 @@
                     if ("clusterArgs" %in% names(mainClusterArgs)) {
                         mainReqArgs <- requiredArgs(clusterFunction)
                         mainReqArgs <-
-                            mainReqArgs[mainReqArgs %in% names(mainClusterArgs[["clusterArgs"]])]
+                            mainReqArgs[mainReqArgs %in%
+                            names(mainClusterArgs[["clusterArgs"]])]
                         if (!is.null(subsampleArgs) &&
                             "clusterArgs" %in% names(subsampleArgs)) {
-                            #check if existing clusterArgs has required names already
-                            #if not, give them those of mainClustering if exist.
-                            if (!all(reqSubArgs %in% names(subsampleArgs[["clusterArgs"]]))) {
+                            # check if existing clusterArgs has required names already
+                            # Define missingArgs to be those that are needed and available from main 
+                            if (!all(reqSubArgs %in%
+                                names(subsampleArgs[["clusterArgs"]]))) {
                                 missingArgs <-
-                                    reqSubArgs[!reqSubArgs %in% names(subsampleArgs[["clusterArgs"]])]
+                                    reqSubArgs[!reqSubArgs %in%
+                                    names(subsampleArgs[["clusterArgs"]])]
                                 missingArgs <- missingArgs[missingArgs %in% mainReqArgs]
                                 
                             }

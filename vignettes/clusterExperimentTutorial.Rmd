@@ -131,6 +131,7 @@ However, to exactly replicate the results here, we will set a large number of pa
 
 ```{r RSECExact, eval=FALSE}
 library(clusterExperiment)
+
 system.time(rsecFluidigm<-RSEC(se, 
   isCount = TRUE, 
 	k0s = 4:15, 
@@ -148,6 +149,7 @@ system.time(rsecFluidigm<-RSEC(se,
  mergeDEMethod="limma",
  mergeCutoff=0.01,
  ncores=1,
+ subsampleArgs=list(clusterFunction="hierarchical01"),
  random.seed=176201))
 ```
 

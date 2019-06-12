@@ -10,3 +10,5 @@ TO DO:
 
 -- type "cat" problem in load built in because needs C code that is not recognized. 
 -- figure out what to do for the coClustering slot.
+
+-- Major error in clusterMany in the combination of distFunction and dim reduction -- doesn't get combination. Not fixing it yet, because want to be able to reproduce results before make fix. 
