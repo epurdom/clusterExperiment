@@ -101,8 +101,12 @@ NULL
 #' 	                    mergeDEMethod="limma",
 #'                      mergeCutoff=0.01,
 #'                      ncores=ncores, 
+#'                      makeMissingDiss=TRUE,
 #'                      subsampleArgs=list(clusterFunction="pam",
 #'                          classifyMethod="All"),
+#'                      consensusArgs=list(clusterFunction="hierarchical01",
+#'                            whenUnassign="after",
+#'                         clusterArgs=list(evalClusterMethod=c("average"), removeDup=FALSE))                    
 #'                      random.seed=176201)
 #' )
 #' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")

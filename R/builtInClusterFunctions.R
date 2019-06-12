@@ -267,7 +267,7 @@ NULL
 ##Hiearchical01
 ##---------
 #' @importFrom stats hclust 
-.hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),doDuplicates=TRUE,checkArgs,inputType,cluster.only,...)
+.hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,inputType,cluster.only,...)
 {
     whichHierDist<-match.arg(whichHierDist)
     evalClusterMethod<-match.arg(evalClusterMethod)
@@ -313,23 +313,29 @@ NULL
             check<-TRUE
         }
         else{
-            currTips<-checkTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
-            if(convertCat){
-                ## FIXME: if at top, will result in needing NxN matrix again!
-                ## Because this function starts at top and then goes down!
-                ## Also, really shouldn't be different if method=="maximum" anyway
-                m<-match(checkTips,rownames(inputMatrix))
-                checkTips<-rep(checkTips,times=dupTab[m])
-            }
+            currTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
+            
             if(method=="maximum"){
-                check<-all(S[checkTips,checkTips,drop=FALSE]>=(1-alpha))
-                check2<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
-                if(check!=check2) browser()
+                check<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
+                
             }
             if(method=="average"){
-                check<-all(rowMeans(S[checkTips,checkTips,drop=FALSE])>=(1-alpha))
-                check2<-all(rowMeans(S[currTips,currTips,drop=FALSE])>=(1-alpha))
-                if(check!=check2) browser()
+                if(convertCat){
+                    m<-match(currTips,rownames(inputMatrix))
+                    rm<- rowSums(
+                        sweep(S[currTips,currTips,drop=FALSE],
+                            2, dupTab[m], FUN="*")
+                        )
+                    rm<-rm/sum(dupTab[m])
+                    # rm2<- rowMeans(
+                   #      S[currTips,rep(currTips,times=dupTab[m]),drop=FALSE]
+                   #      )
+                   #  if(!is.logical(all.equal(rm,rm2))) browser()
+                }
+                else{
+                    rm<-rowMeans(S[currTips,currTips,drop=FALSE])
+                }
+                check<-all(rm>=(1-alpha))
             } 
             
         }

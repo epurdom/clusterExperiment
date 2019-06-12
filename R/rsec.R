@@ -135,7 +135,9 @@ setMethod(
                           parameterWarnings=FALSE,
                           mainClusterArgs=NULL,
                           subsampleArgs=NULL,
-                          seqArgs=NULL, whichAssay = 1,
+                          seqArgs=NULL, 
+                          consensusArgs=NULL,
+                          whichAssay = 1,
                           ncores=1, random.seed=NULL,
                           stopOnErrors=FALSE, run=TRUE
     )
@@ -167,7 +169,8 @@ setMethod(
             #first add ones that have default value
             passedArgs<-list(ce=ce,consensusProportion=consensusProportion,
                              mergeMethod=mergeMethod,whichAssay=whichAssay,
-                             stopOnErrors=stopOnErrors)
+                             stopOnErrors=stopOnErrors,
+                             consensusArgs=consensusArgs)
             #add those who will use default value from the function -- is there easier way
             if(!missing(consensusProportion))
                 passedArgs<-c(passedArgs,consensusProportion=consensusProportion)
@@ -217,17 +220,24 @@ setMethod(
 .postClusterMany<-function(ce,stopOnErrors=FALSE,...){
     defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
     #remove those without anything defined
-    defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",signature="SingleCellExperiment"),function(x){!isTRUE(x=="")}))]
+    defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",
+                                                         signature="SingleCellExperiment"),
+                                          function(x){!isTRUE(x=="")}))]
     passedArgs<-list(...)
     whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
-    if(length(whNotShared)>0) passedArgs<-c(passedArgs,defaultArgs[whNotShared])
+    if(length(whNotShared)>0) 
+        passedArgs<-c(passedArgs,defaultArgs[whNotShared])
     #------------
-    ###CombineMany
+    ## makeConsensus
     #------------
-    args1<-list()
-    if("consensusProportion" %in% names(passedArgs)) args1<-c(args1,"proportion"=passedArgs$consensusProportion)
-    if("consensusMinSize" %in% names(passedArgs)) args1<-c(args1,"minSize"=passedArgs$consensusMinSize)
-    whClusters<-if("whichClusters" %in% names(passedArgs)) passedArgs$whichClusters  	else "clusterMany"
+    args1<-passedArgs$consensusArgs
+    if("consensusProportion" %in% names(passedArgs))
+        args1[["proportion"]]=passedArgs$consensusProportion
+    if("consensusMinSize" %in% names(passedArgs))
+        args1[["minSize"]]<-passedArgs$consensusMinSize
+    whClusters<-if("whichClusters" %in% names(passedArgs)) 
+        passedArgs$whichClusters  	
+        else "clusterMany"
     combineTry<-try(do.call("makeConsensus",
                             c(list(x=ce,whichClusters=whClusters),args1)), 
                     silent=TRUE)
@@ -238,7 +248,8 @@ setMethod(
         #------------
         args1<-list()
         if("dendroReduce" %in% names(passedArgs)){
-            args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce, "whichAssay"=passedArgs$whichAssay)
+            args1<-c(args1,"reduceMethod"=passedArgs$dendroReduce, 
+                "whichAssay"=passedArgs$whichAssay)
             if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
         }
         if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)

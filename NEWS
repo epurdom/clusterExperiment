@@ -4,7 +4,11 @@ Changes in version 2.5.3-9002 (Release date: )
 	- no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added. 
 	- Allow input of categorical matrix to all the intermediate functions
 	- no longer allow distFunction as argument to internal functions (subsampleClustering, mainClustering, seqCluster). These functions no longer will calculate distances, only the top level function, `clusterSingle`. 
-
+* Add to `makeConsensus`:
+    - `clusterArgs`: list of arguments that will be passed to `clusterArgs` argument of `mainClustering` to allow control of the clustering
+    - `whenUnassign`: when to forcibly set unassigned to -1 for those. option `whenUnassin="after"` corresponds to previous version, but now default is to cluster without those samples, so don't affect the clustering of those that will get assignments. 
+    - The matrix version of `makeConsensus` no longer returns both the final clustering and the clustering from unclustering samples with large number of -1. 
+    
 Bugs:
 * Fix so export getReducedData
 
