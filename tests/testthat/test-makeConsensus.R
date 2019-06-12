@@ -115,7 +115,7 @@ test_that("`makeConsensus` more esoteric options", {
        isCount=FALSE,verbose=FALSE))
 
     #----
-    #check passing to clusterArgsargs
+    #check passing to clusterArgs
     #----
     expect_silent(shared1 <- makeConsensus(clustNothing, "all",
         proportion=0.7,clusterArgs=list(removeDup=FALSE)))
@@ -128,17 +128,57 @@ test_that("`makeConsensus` more esoteric options", {
             evalClusterMethod=c("maximum"))))
     
     #----
-    # Check whenUnassing
+    # Check whenUnassign
     #----
     expect_silent(makeConsensus(clustNothing, "all",
         proportion=0.7,whenUnassign="before"))
     expect_silent(makeConsensus(clustNothing, "all",
         proportion=0.7,whenUnassign="after"))
-    expect_silent(makeConsensus(clustNothing, "all",
-        proportion=0.7,whenUnassign="never"))
 
 })
 
+test_that("`RSEC` pass options to `makeConsensus`", {
+	## these examples don't do dendrogram/merge because all -1 after makeConsensus
+	## only tests clusterMany, makeConsensus parts.
+	## so can't do expect_silent, because returns NOTE about that issue.
+    seedValue<-495 
+	expect_message(rsecOut1<-RSEC(x=mat,
+        isCount=FALSE,reduceMethod="none",k0s=4:5,
+		clusterFunction="tight", alphas=0.1,dendroReduce="none",
+        subsampleArgs=list(resamp.num=5), consensusProportion=0.7,
+        consensusMinSize=3, sequential=FALSE,
+        consensusArgs=list(clusterFunction="tight"),
+        random.seed=seedValue
+  	 	),"makeDendrogram encountered following error")
+    test<-makeConsensus(clusterMatrix(rsecOut1,
+        whichClusters="clusterMany"),
+        proportion=0.7,minSize=3,
+        clusterFunction="tight")
+    expect_equal(test,
+        clusterMatrix(rsecOut1,"makeConsensus")[,1])
+
+	expect_message(rsecOut1<-RSEC(x=mat,
+        isCount=FALSE,reduceMethod="none",k0s=4:5,
+		clusterFunction="tight", alphas=0.1,dendroReduce="none",
+        subsampleArgs=list(resamp.num=5),
+        consensusProportion=0.7,sequential=FALSE,
+        consensusMinSize=3,
+        consensusArgs=list(
+            clusterFunction="hierarchical01",
+            clusterArgs=list(removeDup=FALSE,
+                evalClusterMethod=c("maximum") )),
+        random.seed=seedValue
+  	 	),"makeDendrogram encountered following error")
+    test<-makeConsensus(clusterMatrix(rsecOut1,
+        whichClusters="clusterMany"),
+        proportion=0.7,minSize=3,
+        clusterArgs=list(removeDup=FALSE,
+            evalClusterMethod=c("maximum")),
+        clusterFunction="hierarchical01")
+    expect_equal(test,
+        clusterMatrix(rsecOut1,"makeConsensus")[,1])
+
+})
 
 test_that("`makeConsensus` preserves the colData and rowData of SE", {
     expect_silent(cl <- clusterMany(se, verbose=FALSE,

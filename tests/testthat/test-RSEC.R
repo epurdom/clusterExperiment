@@ -1,9 +1,9 @@
 context("RSEC")
 seedValue<-495 #01875 works for sample.kind="Rejection"
 test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
-	##these examples don't do dendrogram/merge because all -1 after makeConsensus
-	##only tests clusterMany, makeConsensus parts.
-	##so can't do expect_silent, because returns NOTE about that issue.
+	## these examples don't do dendrogram/merge because all -1 after makeConsensus
+	## only tests clusterMany, makeConsensus parts.
+	## so can't do expect_silent, because returns NOTE about that issue.
 	expect_message(rsecOut1<-RSEC(x=mat, isCount=FALSE,reduceMethod="none",k0s=4:5,
 		clusterFunction="tight", alphas=0.1,dendroReduce="none",
         subsampleArgs=list(resamp.num=5),random.seed=seedValue

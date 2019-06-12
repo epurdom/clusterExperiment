@@ -94,7 +94,7 @@ setMethod(
     definition = function(x, proportion,
                           clusterFunction="hierarchical01",
                           minSize=5, propUnassigned=.5, 
-                          whenUnassign=c("before","after","never"),
+                          whenUnassign=c("before","after"),
                           clusterArgs=NULL) {
         whenUnassign<-match.arg(whenUnassign)
         if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
@@ -102,62 +102,75 @@ setMethod(
         #FIXME: unnecessary duplication
         clusterMat <- x
         ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
-        whUnassigned <- which(apply(clusterMat, 2, function(x){
-            sum(x== -1)/length(x)>propUnassigned}))
         N<-nrow(clusterMat)
-        if(length(whUnassigned)>0 && whUnassigned=="before") clusterMat<-clusterMat[-whUnassigned,]
-        if(proportion == 1) {
-            #have to repeat from mainClustering because didn't
-            if(!is.numeric(minSize) || minSize<0) 
-                stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
-            else minSize<-round(minSize) #incase not integer.
-            singleValueClusters <- apply(clusterMat, 1, paste, collapse=";")
-            allUnass <- paste(rep("-1", length=ncol(clusterMat)), collapse=";")
-            uniqueSingleValueClusters <- unique(singleValueClusters)
-            tab <-	table(singleValueClusters)
-            tab <- tab[tab >= minSize]
-            tab <- tab[names(tab) != allUnass]
-            cl <- match(singleValueClusters, names(tab))
-            cl[is.na(cl)] <- -1
-        } else{
+        ## Doing >= means that all -1 will be in -1 cluster, no matter what
+        ## (protects against chance that they get assigned to a cluster)
+        whUnassigned <- which(apply(clusterMat, 2, function(x){
+            sum(x== -1)/length(x)>=propUnassigned}))
+        if(length(whUnassigned)>0 && whenUnassign=="before") {           
+            temp<-rep(-1,length=N)
+            names(temp)<-rownames(clusterMat)
+            clusterMat<-clusterMat[-whUnassigned, ,drop=FALSE]
+        }
+        
+        #Skip clustering altogether if just going to assign all to -1
+        if(length(whUnassigned)!=N){
+            if(proportion == 1) {
+                #have to repeat from mainClustering because didn't
+                if(!is.numeric(minSize) || minSize<0) 
+                    stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
+                else minSize<-round(minSize) #incase not integer.
+                singleValueClusters <- apply(clusterMat, 1, paste, collapse=";")
+                allUnass <- paste(rep("-1", length=ncol(clusterMat)), collapse=";")
+                uniqueSingleValueClusters <- unique(singleValueClusters)
+                tab <-	table(singleValueClusters)
+                tab <- tab[tab >= minSize]
+                tab <- tab[names(tab) != allUnass]
+                cl <- match(singleValueClusters, names(tab))
+                cl[is.na(cl)] <- -1
+            } else{
             
-            if(is.character(clusterFunction)) 
-                typeAlg <- algorithmType(clusterFunction)
-            else{
-                if(is(clusterFunction,"ClusterFunction")) 
-                    typeAlg<-algorithmType(clusterFunction) 
-                else 
-                    stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
-            }
-            if(typeAlg!="01") {
-                stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
-            }
-            #overwrite if given
-            clusterArgs[["alpha"]]<-1-proportion
-            if(!"evalClusterMethod" %in% names(clusterArgs) &&
-                clusterFunction=="hierarchical01"){
-                clusterArgs<-c(clusterArgs,
-                    list(evalClusterMethod=c("average")))
-            }
-            cl <- mainClustering(inputMatrix=t(clusterMat),
-                                 inputType="cat",
-                                 clusterFunction=clusterFunction,
-                                 minSize=minSize, format="vector",
-                                 clusterArgs=clusterArgs)
+                if(is.character(clusterFunction)) 
+                    typeAlg <- algorithmType(clusterFunction)
+                else{
+                    if(is(clusterFunction,"ClusterFunction")) 
+                        typeAlg<-algorithmType(clusterFunction) 
+                    else 
+                        stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
+                }
+                if(typeAlg!="01") {
+                    stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
+                }
+                #overwrite if given
+                clusterArgs[["alpha"]]<-1-proportion
+                if(!"evalClusterMethod" %in% names(clusterArgs) &&
+                    clusterFunction=="hierarchical01"){
+                    clusterArgs<-c(clusterArgs,
+                        list(evalClusterMethod=c("average")))
+                }
+                cl <- mainClustering(inputMatrix=t(clusterMat),
+                                     inputType="cat",
+                                     clusterFunction=clusterFunction,
+                                     minSize=minSize, format="vector",
+                                     clusterArgs=clusterArgs)
             
-            if(is.character(cl)) {
-                stop("coding error -- mainClustering should return numeric vector")
+                if(is.character(cl)) {
+                    stop("coding error -- mainClustering should return numeric vector")
+                }
+            }
+            if(whenUnassign!="never" && length(whUnassigned)>0){
+                if(whenUnassign=="after") cl[whUnassigned]<- -1
+                if(whenUnassign=="before"){
+                    #put back in the -1 values
+                    temp[-whUnassigned]<-cl
+                    cl<-temp
+                    rm(temp)
+                }                    
             }
         }
-        if(length(whUnassigned)>0){
-            if(whUnassigned=="after") cl[whUnassigned]<- -1
-            if(whUnassigned=="before"){
-                #put back in the -1 values
-                temp<-rep(-1,length=N)
-                if(length(whUnassigned)!=N) temp[-whUnassigned]<-cl
-                cl<-temp
-                rm(temp)
-            }                    
+        else{
+            cl<-rep(-1,length=N)
+            names(cl)<-rownames(clusterMat)
         }
         return(cl)
     }
