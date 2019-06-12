@@ -216,7 +216,7 @@ setMethod(
         # if(!is.null(outlist$percentageShared)) {
         #   coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
         # }
-        coClustering(newObj) <- clusterMatrix(x)[, whichClusters, drop=FALSE]
+        coClustering(newObj) <- whichClusters
         ##Check if pipeline already ran previously and if so increase
         x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
         

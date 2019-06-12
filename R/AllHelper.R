@@ -282,7 +282,8 @@ setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="matrix"),
   definition = function(object, value) {
-    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)
+    #This appears to detect if matrix is symmetric without any further effort
+    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)        
     ch<-.checkCoClustering(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
@@ -293,6 +294,19 @@ setReplaceMethod(
 setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="dsCMatrix"),
+  definition = function(object, value) {
+    object@coClustering <- value
+    ch<-.checkCoClustering(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases coClustering<-
+setReplaceMethod(
+  f = "coClustering",
+  signature = signature(object="ClusterExperiment", value="numeric"),
   definition = function(object, value) {
     object@coClustering <- value
     ch<-.checkCoClustering(object)

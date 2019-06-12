@@ -12,7 +12,7 @@ setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray","HDF5Matrix")) #Sometimes it appears necessary to have HDF5Matrix listed separately, not sure why, but otherwise not finding it. 
 setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix","NULL"))
-setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5Matrix","NULL"))
+setClassUnion("sparseOrHDF5OrNULL",members=c("numeric","sparseMatrix","DelayedArray","HDF5Matrix","NULL"))
 
 #############################################################
 #############################################################

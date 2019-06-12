@@ -232,6 +232,9 @@
     #     | NCOL(object@coClustering) != NCOL(object))) {
     #     return("`coClustering` must be a sample by sample matrix.")
     # }
+    if(is.null(dim(object))){
+        if(!all(object$coClustering %in% 1:nClusterings(object)) ) return("CoClustering slot is a vector, but doesn't match indices of clusterMatrix of the object")
+    }
     return(TRUE)
 }
 

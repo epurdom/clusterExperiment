@@ -932,13 +932,30 @@ setMethod(
 setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
-  definition = function(data, invert= ifelse(!is.null(data@coClustering) && all(diag(data@coClustering)==0), TRUE, FALSE), ...){
+  definition = function(data, invert, saveDistance=FALSE,...){
 	if(is.null(data@coClustering)) stop("coClustering slot is empty")
-	
-	if(invert) data@coClustering <- 1-as(data@coClustering,"matrix")
-	
-	#remove merge info in dendrogram so will make valid CE object
-	data<-eraseMergeInfo(data)
+    if(is.null(dim(data@coClustering))){
+        #calculate the distance
+        coClustering(data)<-.clustersHammingDistance(
+            t(clusterMatrix(data,whichClusters=data@coClustering)))        
+    }
+    else{
+        #Need to catch if not a symmetric matrix
+        #(case of subsampling matrix)
+        if(!isSymmetric(data@coClustering)){
+            #calculate the distance
+            coClustering(data)<-.clustersHammingDistance(
+                t(coClustering(data)))        
+            
+        }
+    }
+	if(missing(invert)) 
+        invert<-ifelse(all(diag(data@coClustering)==0),TRUE,FALSE)
+    if(invert){
+        coClustering(data) <- as(as(1-data@coClustering,"sparseMatrix"),"symmetricMatrix")
+    }	
+    # #remove merge info in dendrogram so will make valid CE object
+    # data<-eraseMergeInfo(data)
     fakeCE<-ClusterExperiment(as(data@coClustering,"matrix"),
                               clusterMatrix(data),
                               transformation=function(x){x},
@@ -954,7 +971,8 @@ setMethod(
 
 
     )
-    # clusterLegend(fakeCE)<-clusterLegend(data)
     colData(fakeCE)<-colData(data)
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
+    if(saveDistance) return(data)
+    else invisible()
   })
