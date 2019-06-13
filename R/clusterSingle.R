@@ -264,7 +264,7 @@ setMethod(
     f = "clusterSingle",
     signature = signature(inputMatrix = "matrixOrHDF5OrNULL"),
     definition = function(inputMatrix, inputType="X", 
-                          subsample=TRUE, sequential=FALSE, distFunction=NA,
+                          subsample=FALSE, sequential=FALSE, distFunction=NA,
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
                           isCount=FALSE,transFun=NULL, 
                           reduceMethod="none",
@@ -296,22 +296,11 @@ setMethod(
         mainClusterArgs<-checkOut$mainClusterArgs
         subsampleArgs<-checkOut$subsampleArgs
         ## if makeMissingDiss=TRUE, then will tell whether to create diss from X with euclidean distance
+        doDissPost<-checkOut$doDissPost
         if(!doDiss){
             doDiss<-checkOut$doDiss
         } 
         
-        if(sequential){
-            if(is.null(seqArgs)) {
-                ##To DO: Question: if missing seqArgs, should we grab k0 from subsampleArgs?
-                stop("if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
-            }
-            if(!"k0"%in%names(seqArgs)) {
-                stop("seqArgs must contain element 'k0'")
-            }
-            if(!"beta"%in%names(seqArgs)) {
-                stop("seqArgs must contain element 'beta'")
-            }
-        }
         ##########
         ## Handle dimensionality reduction:
         ##########
@@ -353,6 +342,7 @@ setMethod(
         
         
         #Make dissimilarity AFTER transforming data
+        
         cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
         if(doDiss){
             mess<-"Making nxn dissimilarity matrix"
@@ -366,6 +356,15 @@ setMethod(
                 distFunction=distFunction,
                 checkDiss=FALSE, algType=algorithmType(cf))
             inputType<-"diss"
+        }
+        else if(doDissPost & inputType!="diss"){
+            mess<-"Making nxn dissimilarity matrix in order to do post-processing (e.g. arguments findBestK=TRUE or removeSil=TRUE)."
+            if(warnings) .mynote(mess)
+            cfPost<- mainClusterArgs[["clusterFunction"]]
+            mainClusterArgs[["diss"]]<-.makeDiss(inputMatrix,
+                distFunction=distFunction,
+                checkDiss=FALSE, algType=algorithmType(cfPost))
+            if(checkDiss) .checkDissFunction(mainClusterArgs[["diss"]], algType = algorithmType(cfPost))
         }
         
         if(inputType=="diss" & checkDiss){

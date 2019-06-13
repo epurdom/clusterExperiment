@@ -1,7 +1,7 @@
 TO DO:
 -- figure out what to do for the coClustering slot.
 -- Major error in clusterMany in the combination of distFunction and dim reduction -- doesn't get combination. Not fixing it yet, because want to be able to reproduce results before make fix. 
--- post-processing needs diss matrix; by not passing both, have disabled ability to do the post-processing unless have clustering function that takes diss. The main reason might calculate the dissimilarity in clusterSingle? Might allow it there and then have a post-processing argument that is the diss...
+-- post-processing needs diss matrix; by not passing both, have disabled ability to do the post-processing unless have clustering function that takes diss. The main reason might calculate the dissimilarity in clusterSingle? Might allow it there and then have a post-processing argument that is the diss... but means that if do it in clusterMany, will recalculate the diss every time -- no way to pass X for clustering and diss for the post-processing (e.g. doing it for kmeans). Right now clusterSingle kills on all attempts to do it if inputMatrix isn't dissimilarity. 
 -- clusterSingle -- have intersection between type of data and dimensionality reduction! need to go back to this for what it means for type="cat". 
 -- Add some kind of bare check that diss are at least symmetric dimensions!
 -- check in seqCluster status of verbose versus checking arguments. 

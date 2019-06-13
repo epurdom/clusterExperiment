@@ -158,6 +158,7 @@
         ########
         inputType<-match.arg(inputType,.inputTypes)
         doDiss<-FALSE #If returns TRUE, then was a mismatch, but could be fixed by X -> Diss
+        doDissPost<-FALSE
         if (main) {
             if ("clusterFunction" %in% names(mainClusterArgs)) {
                 #get clusterFunction for cluster D
@@ -278,10 +279,14 @@
             ## Check post-processing arguments
             #-------
             doKPostProcess <- FALSE
+            
+            # whPostProcess args are which of given minClusterArgs are user options to give to .postProcess
+            # They will ultimately be the only ones returned back to mainClustering to pass along.
             whPostProcessArgs <-
                 which(names(mainClusterArgs) %in% getPostProcessingArgs(clusterFunction))
             if (length(whPostProcessArgs) > 0 | !is.null(mainClusterArgs[["extraArguments"]])) {
                 #get rid of wrong args passed because of user confusion between the two
+                
                 postProcessArgs <- mainClusterArgs[whPostProcessArgs]
                 if (clusterFunction@algorithmType == "K") {
                     if ("findBestK"  %in% names(postProcessArgs) &&
@@ -290,12 +295,27 @@
                     if ("removeSil"  %in% names(postProcessArgs) &&
                         postProcessArgs[["removeSil"]])
                         doKPostProcess <- TRUE
+                    if(doKPostProcess){
+                        if(mainInputType !="diss"){
+                            if(!"diss" %in% names(mainClusterArgs)){
+                                if(allowMakeDiss & mainInputType=="X"){
+                                    doDissPost<-TRUE
+                                }
+                                else{
+                                    return("Cannot do requested post processing (e.g. from arguments 'findBestK' or 'removeSil') without calculating distance matrix")
+                                }
+                            }
+                        }
+                    }
                 }
+                
+                
+                # remove existing ones, and only keep usable ones.
+                # Only relevant in the check run in mainClustering, 
+                # where need get rid of extra ones.
                 if(!is.null(mainClusterArgs[["extraArguments"]])){
-                    # remove existing ones, and only keep usable ones.
-                    # Only relevant in the check run in mainClustering, 
-                    # where need get rid of extra ones.
                     exArgsNames<-mainClusterArgs[["extraArguments"]]
+                    
                     if (length(whPostProcessArgs) !=
                          length(exArgsNames) & warn){
                              
@@ -631,7 +651,8 @@
                 mainClusterArgs = mainClusterArgs,
                 subsampleArgs = subsampleArgs,
                 seqArgs = seqArgs,
-                doDiss=doDiss
+                doDiss=doDiss,
+                doDissPost=doDissPost
             )
         )
         

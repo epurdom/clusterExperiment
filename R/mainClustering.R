@@ -105,7 +105,8 @@ setMethod(
         ### Check arguments.
         #######################
         postProcessArgs<-list(...)
-        #remove those based added by clusterSingle/seqCluster
+        # remove those based added by checkArgs
+        # from clusterMany/clusterSingle/seqCluster
 		if("doKPostProcess" %in% names(postProcessArgs)) 
             postProcessArgs <- postProcessArgs[-grep("doKPostProcess", names(postProcessArgs))]
         mainArgs<-c(list(clusterFunction=clusterFunction,
@@ -131,10 +132,9 @@ setMethod(
         N <- dim(inputMatrix)[2]
         argsClusterList<-c(clusterArgs, list("cluster.only"=TRUE,
 					inputMatrix=inputMatrix,inputType=inputType))
+        # if(doKPostProcess & inputType!="diss") stop("Cannot do the post-processing (findBestK or remove due to silhouette score) without input Matrix that is dissimilarity.")
         if(doKPostProcess) {
-            if(inputType=="diss") giveDiss<-TRUE
-            else giveDiss<-FALSE
-            res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy, giveDiss=giveDiss), postProcessArgs))
+            res<-do.call(".postProcessClusterK", c(list(clusterFunction=clusterFunction, clusterArgs=argsClusterList, N=N, orderBy=orderBy), postProcessArgs))
             ###Note to self: .postProcessClusterK returns clusters in list form.
         }
         else{
@@ -196,14 +196,14 @@ setMethod(
     }
 )
 
+### Provide the post-processing args that can be provided by user
 .argsPostCluster01<-c("")
-.argsPostClusterK<-c("findBestK","kRange","removeSil","silCutoff")
+.argsPostClusterK<-c("findBestK","kRange","removeSil","silCutoff","diss")
 
 #' @importFrom cluster silhouette
-.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,clusterArgs,N,orderBy,giveDiss=FALSE)
+.postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,diss=NULL,clusterArgs,N,orderBy)
 {
-    # FIXME: this new strategy (where not have diss and x given) makes it not possible to do these post-processing steps unless inputMatrix is a dissimilarity matrix (and so clustering function works on diss)
-    doPostProcess<-(findBestK | removeSil ) & giveDiss #whether will calculate silhouette or not; if not, speeds up the function... 
+    if(is.null(diss) && clusterArgs[["inputType"]]!="diss") stop("Internal error: ran post-processing without a dissimilarity matrix being provided")
     k<-clusterArgs[["k"]]
     if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
     if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]
@@ -225,50 +225,43 @@ setMethod(
         if(clusterFunction@outputType=="list") cl<-.clusterListToVector(cl,N=N)
         return(cl)
     })
-    if(doPostProcess){
-        ###FIXME: Here is problem with post-processing -- has to use the input matrix...
-        silClusters<-lapply(clusters,function(cl){
-            cluster::silhouette(cl,dmatrix=clusterArgs[["inputMatrix"]])
-        })
-        if(length(ks)>1){
-            whichBest<-which.max(sapply(silClusters, mean))
-            finalCluster<-clusters[[whichBest]]
-            sil<-silClusters[[whichBest]][,"sil_width"]
-        }
-        else{
-            finalCluster<-clusters[[1]]
-            sil<-silClusters[[1]][,"sil_width"]
-        }
-        if(removeSil){
-            cl<-as.numeric(sil>silCutoff)
-            cl[cl==0]<- -1
-            cl[cl>0]<-finalCluster[cl>0]
-            sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
-        }
-        else{
-            cl<-finalCluster
-        }
+    if(is.null(diss)) diss<-clusterArgs[["inputMatrix"]]
+    silClusters<-lapply(clusters,function(cl){
+        cluster::silhouette(cl,
+            dmatrix=diss
+        )
+    })
+    if(length(ks)>1){
+        whichBest<-which.max(sapply(silClusters, mean))
+        finalCluster<-clusters[[whichBest]]
+        sil<-silClusters[[whichBest]][,"sil_width"]
     }
     else{
-        cl<-clusters[[1]]
+        finalCluster<-clusters[[1]]
+        sil<-silClusters[[1]][,"sil_width"]
     }
-    
+    if(removeSil){
+        cl<-as.numeric(sil>silCutoff)
+        cl[cl==0]<- -1
+        cl[cl>0]<-finalCluster[cl>0]
+        sil[cl == -1] <- -Inf #make the -1 cluster the last one in order
+    }
+    else{
+        cl<-finalCluster
+    }
     
     #make list of indices and put in order of silhouette width (of positive)
     clList<-tapply(seq_along(cl),cl,function(x){x},simplify=FALSE)
-    if(doPostProcess){
-        if(orderBy=="best"){
-            clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
-            clList[order(clAveWidth,decreasing=TRUE)]
-        }
-        #remove -1 group
-        if(removeSil){
-            whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
-            if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
-            if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
-        }
+    if(orderBy=="best"){
+        clAveWidth<-tapply(sil,cl,mean,na.rm=TRUE)
+        clList[order(clAveWidth,decreasing=TRUE)]
     }
-    
+    #remove -1 group
+    if(removeSil){
+        whNotAssign<-which(sapply(clList,function(x){all(cl[x]== -1)}))
+        if(length(whNotAssign)>1) stop("Coding error in removing unclustered samples")
+        if(length(whNotAssign)>0) clList<-clList[-whNotAssign]
+    }    
     return(clList)
     
 }

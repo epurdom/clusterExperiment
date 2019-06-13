@@ -605,7 +605,8 @@ test_that("Different clustering algorithms of `mainClustering` ", {
             #Upped
             expect_silent(clusterSingle(biggerMat, 
                   makeMissingDiss=TRUE,
-                  mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), 
+                  mainClusterArgs= list(clusterArgs=list(k=3),
+                      clusterFunction=cf,findBestK=TRUE,removeSil=TRUE), 
                   subsample=FALSE, sequential=FALSE,isCount=FALSE))
         }
         else{
@@ -671,8 +672,37 @@ test_that("Different options of mainClustering",{
         mainClusterArgs=list(clusterFunction="tight", clusterArgs=list(alpha=0.1)),
         checkDiss=TRUE,isCount=FALSE),
         "Dissimilarity matrix must have zero values on the diagonal")
+#nReducedDims=5,k=NA,findBestK=TRUE
 
-
+    #-------
+    ## Check findBestK=TRUE (i.e. post-processing)
+    #-------
+    # Error, because needs calculate diss
+    expect_error(clusterSingle(simData,
+        subsample=FALSE,
+        mainClusterArgs=list(clusterFunction="pam",
+            kRange=2:4,
+            findBestK=TRUE)),
+        "Cannot do requested post processing (e.g. from arguments 'findBestK' or 'removeSil') without calculating distance matrix")
+    #Should find best K is K=4
+    expect_message(out<-clusterSingle(simData,
+        subsample=FALSE, 
+        makeMissingDiss=TRUE,
+        mainClusterArgs=list(clusterFunction="pam",
+            kRange=2:4,
+            findBestK=TRUE)),
+        "Making nxn dissimilarity matrix in order to do post-processing")
+    expect_equal(length(tableClusters(out)),4)
+    
+    ## Should be same as if gave distance, since its pam at main clustering 
+    ## (and if give distance, shouldn't get message)
+    d<-as.matrix(dist(t(simData)))
+    expect_silent(out2<-clusterSingle(d, inputType="diss",
+            subsample=FALSE,
+            mainClusterArgs=list(clusterFunction="pam",
+                kRange=2:4,
+                findBestK=TRUE)))
+    expect_equal(primaryCluster(out),out2$clustering)
 })
 
 test_that("Different options of subsampling",{
