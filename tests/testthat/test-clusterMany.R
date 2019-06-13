@@ -536,21 +536,28 @@ test_that("`clusterMany` consistent results (no transformation)", {
     testSCE<-as(testSE,"SingleCellExperiment")
     
 	#matrix
-	expect_silent(ccVar<-clusterSingle(contData, 
-	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
-	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-	 	   isCount=FALSE))
+	expect_silent(ccVar<-clusterSingle(contData,
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+        isCount=FALSE))
    	expect_silent(ccPCA<-clusterSingle(contData, 
-   	        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
-   	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-   	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+        isCount=FALSE))
   	expect_silent(ccNone<-clusterSingle(contData, 
-  	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
-  	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-  	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="none",
+        nDims=NA, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+        isCount=FALSE))
 	expect_silent(cm<-clusterMany(contData, clusterFunction="pam",ks=3,
-	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, 
+        reduceMethod=c("PCA","var","none"), verbose=FALSE,
+        nReducedDims=3, nFilterDims=3,isCount=FALSE))
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
     
@@ -563,19 +570,27 @@ test_that("`clusterMany` consistent results (no transformation)", {
    #SE
 	expect_silent(ccVar<-clusterSingle(testSE, 
         subsample=FALSE, sequential=FALSE, reduceMethod="var",
-        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
  	   isCount=FALSE))
   	expect_silent(ccPCA<-clusterSingle(testSE, 
-  	        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
-  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-  	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
  	expect_silent(ccNone<-clusterSingle(testSE, 
- 	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
- 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
- 	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="none",
+        nDims=NA, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
 	expect_message(cm<-clusterMany(testSE, clusterFunction="pam",ks=3,
-	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
+   	        subsample=FALSE, sequential=FALSE, 
+            reduceMethod=c("PCA","var","none"),
+   	        nReducedDims=3, nFilterDims=3,isCount=FALSE),
+            "Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -588,19 +603,27 @@ test_that("`clusterMany` consistent results (no transformation)", {
    #SCE
 	expect_silent(ccVar<-clusterSingle(testSCE, 
         subsample=FALSE, sequential=FALSE, reduceMethod="var",
-        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
  	   isCount=FALSE))
   	expect_silent(ccPCA<-clusterSingle(testSCE, 
-  	        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
-  	        nDims=3, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
-  	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
+        nDims=3, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
  	expect_silent(ccNone<-clusterSingle(testSCE, 
- 	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
- 	        nDims=NA, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
- 	 	   isCount=FALSE))
+        subsample=FALSE, sequential=FALSE, reduceMethod="none",
+        nDims=NA, 
+        mainClusterArgs=list(clusterFunction="pam",
+            clusterArgs=list(k=3)),
+ 	   isCount=FALSE))
 	expect_message(cm<-clusterMany(testSCE, clusterFunction="pam",ks=3,
-	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3,isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated.")
+        subsample=FALSE, sequential=FALSE, 
+        reduceMethod=c("PCA","var","none"),
+        nReducedDims=3, nFilterDims=3,isCount=FALSE),
+        "Not all of the methods requested in 'reduceMethod' have been calculated.")
 	expect_equal(nClusterings(cm),3)	
 	expect_silent(params<-getClusterManyParams(cm))	
    
@@ -612,20 +635,21 @@ test_that("`clusterMany` consistent results (no transformation)", {
 
    #CE
 	expect_silent(ccVar2<-clusterSingle(ccVar, 
-	        subsample=FALSE, sequential=FALSE, reduceMethod="var",
-	        nDims=3, clusterLabel="redo",
-			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+        subsample=FALSE, sequential=FALSE, reduceMethod="var",
+        nDims=3, clusterLabel="redo",
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
 	expect_silent(ccPCA2<-clusterSingle(ccPCA, 
-	        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
-	        nDims=3, clusterLabel="redo",
-			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+        subsample=FALSE, sequential=FALSE, reduceMethod="PCA",
+        nDims=3, clusterLabel="redo",
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
 	expect_silent(ccNone2<-clusterSingle(ccNone, 
-	        subsample=FALSE, sequential=FALSE, reduceMethod="none",
-	        nDims=NA,clusterLabel="redo",
-			 mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
+        subsample=FALSE, sequential=FALSE, reduceMethod="none",
+        nDims=NA,clusterLabel="redo",
+		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3))))
 	expect_silent(cm2<-clusterMany(cm, clusterFunction="pam",ks=3,
-	   	        subsample=FALSE, sequential=FALSE, reduceMethod=c("PCA","var","none"),
-	   	        nReducedDims=3, nFilterDims=3))
+        subsample=FALSE, sequential=FALSE, 
+        reduceMethod=c("PCA","var","none"), verbose=FALSE,
+        nReducedDims=3, nFilterDims=3))
 	expect_equal(nClusterings(cm2),6)	
 	expect_silent(params<-getClusterManyParams(cm2))	
    
