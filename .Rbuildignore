@@ -2,7 +2,8 @@
 # Git and SVN related
 ^.svn
 ^.git
-*.md
+
+^.*\\.md$
 
 # Travis-CI et al.
 ^[.]travis[.]yml$
