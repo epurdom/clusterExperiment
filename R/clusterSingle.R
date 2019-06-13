@@ -410,7 +410,7 @@ setMethod(
                 xMatrix=origX,
                 clustering=outlist$clustering,
                 clusterInfo=clInfo,
-                coClusterMatrix=if(!sequential) finalClusterList$inputMatrix else NULL, 
+                coClusterMatrix=if(!sequential) t(finalClusterList$inputMatrix) else NULL, 
                 transFun=transFun,
                 clusterLabel=clusterLabel,
                 sequential=sequential, 

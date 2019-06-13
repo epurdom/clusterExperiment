@@ -1372,7 +1372,7 @@ To illustrate this point, we show an example of the $D$ matrix from subsampling.
 
 ```{r visualizeSubsamplingD}
 ceSub<-clusterSingle(ce,reduceMethod="mad",nDims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), saveSubsamplingMatrix=TRUE)
-plotCoClustering(ceSub,colorScale=rev(seqPal5))
+plotCoClustering(ceSub)
 ```
 
 We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (at leastwith size greater than 5).
@@ -1381,7 +1381,7 @@ However, the distances based on correlation calculated directly on the data, suc
 
 ```{r visualizeSpearmanDist}
 dSp<-spearDist(t(transformData(ce,reduceMethod="mad",nFilterDims=1000)))
-plotHeatmap(dSp,isSymmetric=TRUE,colorScale=rev(seqPal5))
+plotHeatmap(dSp,isSymmetric=TRUE)
 ```
 
 We can see that the choice of $\alpha$ must be much higher (and we are likely to be more sensitive to it).

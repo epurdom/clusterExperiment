@@ -949,11 +949,14 @@ setMethod(
             
         }
     }
-	if(missing(invert)) 
+    if(missing(invert)) 
         invert<-ifelse(all(diag(data@coClustering)==0),TRUE,FALSE)
     if(invert){
-        coClustering(data) <- as(as(1-data@coClustering,"sparseMatrix"),"symmetricMatrix")
-    }	
+        #Make it a similarity matrix (better anyway for the sparse representation)
+        coClustering(data) <- 
+            as(as(1-data@coClustering,"sparseMatrix"),"symmetricMatrix")
+    }
+    	
     # Do all this so don't have to erase merge info from data (so can return calculated distance to user)
     fakeCE<-ClusterExperiment(as(data@coClustering,"matrix"),
                               clusterMatrix(data),
@@ -966,10 +969,9 @@ setMethod(
         'clusterTypes', 'dendro_samples', 'dendro_clusters', 'dendro_index', 
         'clusterLegend', 'orderSamples', 'merge_index', 
         'merge_dendrocluster_index', 'merge_method', 'merge_demethod', 
-        'merge_cutoff', 'merge_nodeProp', 'merge_nodeMerge')){
+        'merge_cutoff', 'merge_nodeProp', 'merge_nodeMerge','colData')){
         slot(fakeCE, sName)<-slot(data,sName)
     }   
-    colData(fakeCE)<-colData(data)
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
     if(saveDistance) return(data)
     else invisible()
