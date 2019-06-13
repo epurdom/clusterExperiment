@@ -288,17 +288,25 @@ test_that("`clusterMany` works changing parameters", {
 	#--------
   #check dim reduce in combination
 	#--------
-  expect_silent(cc <- clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
-  	reduceMethod=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
-    subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE))
+    expect_silent(cc <- clusterMany(mat, 
+        ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
+  	    reduceMethod=c("none","PCA","var","abscv","mad"),
+        clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE,
+        verbose=FALSE, isCount=FALSE))
 	expect_equal(sort(reducedDimNames(cc)),sort(c("PCA")))
 	expect_equal(sort(filterNames(cc)),sort(c("var","abscv","mean","mad")))
 
-	expect_message(cc2 <- clusterMany(se, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
-	reduceMethod=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
-  subsample=FALSE, sequential=FALSE,verbose=FALSE, isCount=FALSE),"Not all of the methods requested in 'reduceMethod' have been calculated")
-expect_equal(sort(reducedDimNames(cc2)),sort(c("PCA")))
-expect_equal(sort(filterNames(cc2)),sort(c("b","var","abscv","mean","mad")))
+	expect_message(cc2 <- clusterMany(se, 
+        ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
+	    reduceMethod=c("none","PCA","var","abscv","mad"),
+        clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE,
+        verbose=FALSE, isCount=FALSE),
+        "Not all of the methods requested in 'reduceMethod' have been calculated")
+    expect_equal(sort(reducedDimNames(cc2)),sort(c("PCA")))
+    expect_equal(sort(filterNames(cc2)),
+        sort(c("b","var","abscv","mean","mad")))
 
 	expect_message(cc3 <- clusterMany(sce, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),
 	reduceMethod=c("none","PCA","var","abscv","mad"),clusterFunction="pam",
