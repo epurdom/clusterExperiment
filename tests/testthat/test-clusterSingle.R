@@ -148,14 +148,22 @@ test_that("`clusterSingle` works with reduceMethod", {
 test_that("`clusterSingle` works with hdf5Matrix",{
     ## Loops over all built-in clusterFunctions and makes sure they work with hdf5
     kMethods<-listBuiltInTypeK()
+    aMethods<-listBuiltInType01()
 	seedValue<-571839
-  	for(cf in kMethods){
+    kClusterArgs<-list(k=3)
+    aClusterArgs<-list(alpha=0.3)
+  	for(cf in c(aMethods,kMethods)){
 		#print(cf)
+        clArgs<-switch(algorithmType(cf),
+            "K"=kClusterArgs,
+            "01"=aClusterArgs)
+        ### Annoyingly, have to separately for "X" and "diss"
 		if("X" %in% inputType(cf)){
     		set.seed(seedValue)
   	        expect_silent(clust1<-clusterSingle(sceSimDataDimRed,   
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs,
+                    clusterFunction=cf),
       	  		subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -164,7 +172,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
       	    expect_silent(clust2<-clusterSingle(hdfSCE, 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs,
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -173,7 +182,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
       	    expect_silent(clust3<-clusterSingle(hdfObj, 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -182,7 +192,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
       	    expect_silent(clust4<-clusterSingle(assay(hdfSCE), 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -193,7 +204,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
   	        expect_message(clust1<-clusterSingle(sceSimDataDimRed,   
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
       	  		subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -202,7 +214,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
   	        expect_message(clust2<-clusterSingle(hdfSCE, 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -212,7 +225,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
       	    expect_message(clust3<-clusterSingle(hdfObj, 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -221,7 +235,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
     		set.seed(seedValue)
       	    expect_message(clust4<-clusterSingle(assay(hdfSCE), 
                 reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(k=3), clusterFunction=cf),
+                mainClusterArgs= list(clusterArgs=clArgs, 
+                    clusterFunction=cf),
                 subsample=FALSE, 
                 makeMissingDiss=TRUE,
                 sequential=FALSE,
@@ -232,87 +247,7 @@ test_that("`clusterSingle` works with hdf5Matrix",{
 		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust3))
 		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust4))
   	}
-    aMethods<-listBuiltInType01()
-    for(cf in aMethods){
-		#print(cf)
-        if("X" %in% inputType(cf)){
-    		set.seed(seedValue)
-      	    expect_silent(clust1<-clusterSingle(sceSimDataDimRed, 
-                reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE)
-     		)
-    		set.seed(seedValue)
-     	    expect_silent(clust2<-clusterSingle(hdfSCE, reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE)
-     		)
-    		set.seed(seedValue)
-     	    expect_silent(clust3<-clusterSingle(hdfObj, reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE)
-     		)
-    	    expect_silent(clust4<-clusterSingle(assay(hdfSCE), 
-                reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE)
-     		)
-        }
-        else{
-    		set.seed(seedValue)
-      	    expect_message(clust1<-clusterSingle(sceSimDataDimRed, 
-                reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE),"Note: Making nxn dissimilarity matrix."
-     		)
-    		set.seed(seedValue)
-     	    expect_message(clust2<-clusterSingle(hdfSCE, reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE),"Note: Making nxn dissimilarity matrix."
-     		)
-    		set.seed(seedValue)
-     	    expect_message(clust3<-clusterSingle(hdfObj, reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE),"Note: Making nxn dissimilarity matrix."
-     		)
-    	    expect_message(clust4<-clusterSingle(assay(hdfSCE), 
-                reduceMethod = "none", 
-                mainClusterArgs= list(clusterArgs=list(alpha=0.1), clusterFunction=cf),
-     	  		subsample=FALSE, 
-                makeMissingDiss=TRUE,
-                sequential=FALSE,
-                isCount=FALSE),"Note: Making nxn dissimilarity matrix."
-     		)
-        }
-		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust2))
-		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust3))
-		expect_equal(clusterMatrix(clust1) ,clusterMatrix(clust4))
-
-  	 }
-	
-
-	 ####Test sequential option
+ 	 ####Test sequential option,
      expect_silent(clustSeq <- clusterSingle(hdfObj,
          reduceMethod="none",
          subsample=FALSE, 
@@ -336,7 +271,8 @@ test_that("`clusterSingle` works with hdf5Matrix",{
         sequential=FALSE,
 		mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=3)),
 		isCount=FALSE,
-	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, clusterArgs=list(k=3))
+	 	subsampleArgs=list(clusterFunction="pam",resamp.num=3, 
+            clusterArgs=list(k=3))
 		)
 	 )
 	 expect_silent(clusterSingle(assay(hdfObj), reduceMethod="none", 
@@ -751,7 +687,7 @@ test_that("Different options of subsampling",{
         mainClusterArgs=list(clusterFunction="hierarchical01",
              clusterArgs=list(alpha=.3)), 
         isCount=FALSE))
-    expect_equal(NCOL(coClustering(clustSubsample)),NCOL(mat))
+    expect_equal(NROW(coClustering(clustSubsample)),nSamples(clustSubsample))
     expect_false(is.null(coClustering(clustSubsample)))
     expect_message(clustSubsample <- clusterSingle(mat,  
         subsample=TRUE, 
@@ -932,12 +868,14 @@ test_that("Interactions of mainClustering and subsampling options",{
     )
     # check: if provide diss and mainClust okay with that but 
     # subsampling not, should get error (even if say makeDiss)
-	expect_message(clustSubsample <- clusterSingle(dissMat,  
+	expect_error(clustSubsample <- clusterSingle(dissMat,  
         inputType="diss",
         subsample=TRUE, 
         sequential=FALSE, makeMissingDiss=TRUE, warnings=TRUE,
-        subsampleArgs=list(resamp.num=3, clusterFunction="kmeans",clusterArgs=list(k=3)), 
-        mainClusterArgs=list(clusterFunction="hierarchical01", clusterArgs=list(alpha=.3)), 
+        subsampleArgs=list(resamp.num=3,
+            clusterFunction="kmeans",clusterArgs=list(k=3)), 
+        mainClusterArgs=list(clusterFunction="hierarchical01", 
+            clusterArgs=list(alpha=.3)), 
         isCount=FALSE),
         "In subsampling clustering step")
     # check: should be okay even though main doesn't take type X

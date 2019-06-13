@@ -186,6 +186,7 @@ NULL
             mapping<-inputMatrix$mapping            
             convertCat<-TRUE
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
+            
         }
         else inputMatrix<-.clustersHammingDistance(inputMatrix)
         inputType<-"diss"
@@ -194,7 +195,13 @@ NULL
         checkArgs=checkArgs)
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
     if(inputType=="diss"){
-        out<-do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs))
+        if(nrow(inputMatrix)<=k){
+            ## Note: this can happen when remove duplicates, especially in unit tests. 
+            if(cluster.only) 
+                out<-c(1:nrow(inputMatrix))
+            else stop("number of observations less than requested k, cannot give results if cluster.only=FALSE.")
+        }
+        else out<-do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs))
         if(convertCat){
             if(cluster.only) out<-out[mapping]
             else{
@@ -252,7 +259,13 @@ NULL
         checkArgs=checkArgs)
     hclustOut<-do.call(stats::hclust,
         c(list(d=as.dist(inputMatrix)),passedArgs))
-    out<-stats::cutree(hclustOut,k)
+    if(nrow(inputMatrix)<=k){
+        ## Note: this can happen when remove duplicates, especially in unit tests. 
+        if(cluster.only) 
+            out<-list(clustering=c(1:nrow(inputMatrix)))
+        else stop("number of observations less than requested k, cannot give results if cluster.only=FALSE.")
+    }
+    else out<-stats::cutree(hclustOut,k)
     if(inputType=="cat" & convertCat){
         out<-out[mapping]
     }
