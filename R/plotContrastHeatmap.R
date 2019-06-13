@@ -97,17 +97,26 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-	  ##Assign colors to the contrasts (only does anything if contrast is oneAgainstAll)
-	  whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
+	  ## Assign colors to the contrasts 
+      ## (only if contrast is oneAgainstAll)
+	  whichCluster<-getSingleClusterIndex(object,
+          whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives
-      ###If the contrast is one against all, should have name of cluster so give color
-	  ###Note that need to use InternalId, in case the names are not unique?
-	  internalNames<-gsub("Cl","",internalNames)
-      if(is.null(contrastColors) & identical(sort(as.numeric(internalNames)),unname(sort(as.numeric(clMat[,"clusterIds"]))))){
-        contrastColors<-clMat[,"color"]
-        names(contrastColors)<-names(geneByContrast)
+      ### If the contrast is one against all, should have name of cluster so give color
+      ### Note that need to use InternalId, in case the names are not unique?
+      internalNames<-gsub("Cl","",internalNames)
+      # This can give warnings for NAs, and if option(warn=2) create error...
+      internalNames<-try(sort(as.numeric(internalNames)),silent=TRUE)
+      if(inherits(internalNames, "try-error") ||
+          any(is.na(internalNames))) isOneVAll<-FALSE
+      else isOneVAll<-TRUE
+      clIds<-unname(sort(as.numeric(clMat[,"clusterIds"])))
+      if(is.null(contrastColors) && isOneVAll &&
+          identical(internalNames, clIds)){
+              contrastColors<-clMat[,"color"]
+              names(contrastColors)<-names(geneByContrast)
       }
     }
     if(is.null(contrastColors)){
@@ -116,7 +125,9 @@ setMethod(
       names(contrastColors)<-names(geneByContrast)
     }
     
-    plotHeatmap(object,clusterFeaturesData=geneByContrast,clusterLegend=list("Gene Group"=contrastColors),...)
+    plotHeatmap(object,
+        clusterFeaturesData=geneByContrast,
+        clusterLegend=list("Gene Group"=contrastColors),...)
     
   }
 )

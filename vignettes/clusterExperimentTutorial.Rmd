@@ -1426,8 +1426,8 @@ First, we need to define a wrapper function that performs the clustering. Here, 
 ```{r custom}
 library(scran)
 library(igraph)
-SNN_wrap <- function(x, k, steps = 4, ...) {
-  snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE) ##scran package
+SNN_wrap <- function(inputMatrix, k, steps = 4, ...) {
+  snn <- buildSNNGraph(inputMatrix, k = k, d = NA, transposed = FALSE) ##scran package
   res <- cluster_walktrap(snn, steps = steps) #igraph package
   return(res$membership)
 }
