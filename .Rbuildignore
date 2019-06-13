@@ -2,9 +2,8 @@
 # Git and SVN related
 ^.svn
 ^.git
-README[.]md
-update2[.]0[.]md
-update2[.]2[.]md
+
+^.*\\.md$
 
 # Travis-CI et al.
 ^[.]travis[.]yml$
