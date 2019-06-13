@@ -1466,20 +1466,22 @@ In this example, we use `clusterSingle` to implement a subsample clustering base
 We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
 
 ```{r custom_clusterSingle}
-ceCustom <- clusterSingle(
-  ce, reduceMethod="PCA", nDims=50,
-  subsample = TRUE, sequential = FALSE,
-  mainClusterArgs = list(clusterFunction = "hierarchical01",
+ceCustom <- clusterSingle(ce, reduceMethod="PCA", 
+    nDims=50, subsample = TRUE, 
+    sequential = FALSE,
+    mainClusterArgs = list(clusterFunction = "hierarchical01",
                          clusterArgs = list(alpha = 0.3),
                          minSize = 1),
-  subsampleArgs = list(resamp.num=100,
+    subsampleArgs = list(resamp.num=100,
                        samp.p = 0.7,
                        clusterFunction = SNN,
                        clusterArgs = list(k = 10),
-                       ncores = 1)
+                       ncores = 1,
+                       classifyMethod='InSample')
 )
 ceCustom
 ```
+
 
 Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. To mix and match built-in functions, you need to get the actual `ClusterFunction` objects that match their names, using the `getBuiltInFunction` function. 
 
