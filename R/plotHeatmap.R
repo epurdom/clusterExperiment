@@ -954,23 +954,21 @@ setMethod(
     if(invert){
         coClustering(data) <- as(as(1-data@coClustering,"sparseMatrix"),"symmetricMatrix")
     }	
-    # #remove merge info in dendrogram so will make valid CE object
-    # data<-eraseMergeInfo(data)
+    # Do all this so don't have to erase merge info from data (so can return calculated distance to user)
     fakeCE<-ClusterExperiment(as(data@coClustering,"matrix"),
                               clusterMatrix(data),
                               transformation=function(x){x},
-                              clusterInfo=clusteringInfo(data),
-                              clusterTypes=clusterTypes(data),
-                              orderSamples=orderSamples(data),
-                              dendro_samples=data@dendro_samples,
-                              dendro_clusters=data@dendro_clusters,
-                              dendro_index=data@dendro_index,
-                              primaryIndex=data@primaryIndex,
-                              clusterLegend=clusterLegend(data),
                               checkTransformAndAssay=FALSE
 
 
     )
+    for(sName in c('clusterMatrix', 'primaryIndex', 'clusterInfo', 
+        'clusterTypes', 'dendro_samples', 'dendro_clusters', 'dendro_index', 
+        'clusterLegend', 'orderSamples', 'merge_index', 
+        'merge_dendrocluster_index', 'merge_method', 'merge_demethod', 
+        'merge_cutoff', 'merge_nodeProp', 'merge_nodeMerge')){
+        slot(fakeCE, sName)<-slot(data,sName)
+    }   
     colData(fakeCE)<-colData(data)
     plotHeatmap(fakeCE,isSymmetric=TRUE,clusterFeaturesData="all",...)
     if(saveDistance) return(data)

@@ -183,14 +183,26 @@ test_that("`makeBlankData` works", {
 })
 
 test_that("`plotCoClustering` works", {
-  expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-  #following gives all -1, but creates coClustering
-  expect_silent(smMin1<-
-      makeConsensus(smSimCE,whichClusters=10:13,proportion=.99))
-#  smMin1<-makeConsensus(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
-  expect_silent(plotCoClustering(smMin1,clusterSamplesData="hclust"))
-  ## Have changed so now changes it internally to primary cluster then hclust
-  expect_warning( plotCoClustering(smMin1, clusterSamplesData="dendrogramValue", plot=plotAll), "cannot make dendrogram from 'data'")
-  expect_silent(sm<-makeConsensus(smSimCE,whichClusters=1:4,proportion=.5))
-  expect_silent(plotCoClustering(sm,clusterSamplesData="dendrogramValue"))
+    expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
+    #following gives all -1, but creates coClustering
+    expect_silent(smMin1<-
+        makeConsensus(smSimCE,whichClusters=10:13,proportion=.99))
+    #  smMin1<-makeConsensus(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
+    expect_silent(plotCoClustering(smMin1,clusterSamplesData="hclust"))
+    ## Have changed so now changes it internally to primary cluster then hclust
+    expect_warning( plotCoClustering(smMin1, clusterSamplesData="dendrogramValue", plot=plotAll), "cannot make dendrogram from 'data'")
+    expect_silent(sm<-makeConsensus(smSimCE,whichClusters=1:4,proportion=.5))
+    expect_silent(plotCoClustering(sm,clusterSamplesData="dendrogramValue"))
+
+    ## Test on object that has a merge done on it
+    expect_silent(clustNothing <- clusterMany(mat,
+        ks=c(3,4),clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE,
+        isCount=FALSE,verbose=FALSE))
+    expect_silent(clustNothing<-makeConsensus(clustNothing,
+        proportion=1,whichClusters = "clusterMany"))
+    expect_silent(clustNothing <- makeDendrogram(clustNothing))
+    expect_message(clustNothing<- mergeClusters(clustNothing, DEMethod="limma",
+        mergeMethod="adjP",plotInfo="none"),"Note: Merging will be done on")
+    expect_silent(plotCoClustering(clustNothing))
 })

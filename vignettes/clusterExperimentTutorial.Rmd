@@ -148,6 +148,8 @@ rsecFluidigm<-RSEC(se,
 	                    mergeDEMethod="limma",
                      mergeCutoff=0.01,
                      ncores=1, 
+                     consensusArgs=list(whenUnassign="after",   
+                         clusterArgs=list(removeDup=FALSE)),
                      subsampleArgs=list(clusterFunction="pam",
                          classifyMethod="All"),
                      random.seed=176201)
@@ -360,7 +362,9 @@ rsecFluidigm<-RSEC(rsecFluidigm,
  dendroReduce= "mad",
  dendroNDims=1000,
  mergeMethod="adjP",
- mergeCutoff=0.01
+ mergeCutoff=0.01,
+ consensusArgs=list(whenUnassign="after",   
+         clusterArgs=list(removeDup=FALSE)),
  )
 par(mar=plotCMar)
 plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
