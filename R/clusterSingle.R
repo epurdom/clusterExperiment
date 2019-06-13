@@ -359,7 +359,7 @@ setMethod(
             if(!is.function(distFunction) && is.character(distFunction)){
                 mess<-paste(mess,sprintf("(with distance function %s)",distFunction))
             }
-            else if(is.na(distFunction)) mess<-paste(mess,"(with default distance function, determined by algorithm type of clustering function)")
+            else if(!is.function(distFunction) && is.na(distFunction)) mess<-paste(mess,"(with default distance function, determined by algorithm type of clustering function)")
             else mess<-paste(mess,"(with user defined distance function)")
             if(warnings) .mynote(mess)
             inputMatrix<-.makeDiss(inputMatrix,
