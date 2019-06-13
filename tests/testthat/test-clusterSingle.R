@@ -703,6 +703,16 @@ test_that("Different options of mainClustering",{
                 kRange=2:4,
                 findBestK=TRUE)))
     expect_equal(primaryCluster(out),out2$clustering)
+    
+    ## Also same as if gave distance to mainClusterArgs
+    expect_silent(out3<-clusterSingle(simData, 
+            subsample=FALSE,
+            mainClusterArgs=list(clusterFunction="pam",
+                kRange=2:4, diss=d,
+                findBestK=TRUE)))
+    expect_equal(clusterMatrix(out),clusterMatrix(out3))
+    
+    
 })
 
 test_that("Different options of subsampling",{

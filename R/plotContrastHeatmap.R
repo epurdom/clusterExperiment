@@ -57,9 +57,9 @@ setMethod(
     })
     ##Check names of contrastColors
     if(!is.null(contrastColors)){
-      if(!all(sort(names(contrastColors))==sort(unique(signifTable$Contrast)))){
+      if(!all(sort(names(contrastColors)) == sort(unique(signifTable$Contrast))) ){
         if("ContrastName" %in% colnames(signifTable)){
-          if(!all(sort(names(contrastColors))==sort(unique(signifTable$ContrastName)))){
+          if(!all(sort(names(contrastColors)) == sort(unique(signifTable$ContrastName))) ){
             warning("names of contrastColors do not match 'Contrast' or 'ContrastName' values; will be ignored.")
             contrastColors<-NULL
             
@@ -77,7 +77,7 @@ setMethod(
 	if("ContrastName" %in% colnames(signifTable)){
       #give names to be contrast names
 	  internalNames<-names(geneByContrast) #incase need the Contrast name later in code
-      gpnames<-unique(signifTable[,c("Contrast","ContrastName","InternalName")])
+      gpnames<-unique(signifTable[,c("Contrast", "ContrastName", "InternalName")])
       if(nrow(gpnames)==length(geneByContrast)){
         m<-match(names(geneByContrast),gpnames[,"Contrast"])
         names(geneByContrast)<-gpnames[m,"ContrastName"]
@@ -124,6 +124,7 @@ setMethod(
       contrastColors<-tail(massivePalette,length(geneByContrast)) #least likely to be important colors by accident
       names(contrastColors)<-names(geneByContrast)
     }
+    browser()
     
     plotHeatmap(object,
         clusterFeaturesData=geneByContrast,

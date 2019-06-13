@@ -432,7 +432,9 @@ setMethod(
             
             # small function to pull the list of all functions 
             # from current param matrix            
-            cf<-function(param){clusterFunctionList[param[,"clusterFunction"]]}
+            cf<-function(param){
+                clusterFunctionList[param[,"clusterFunction"]]
+            }
             paramAlgTypes<-algorithmType(cf(param))
             if(length(paramAlgTypes)!=nrow(param)) stop("Internal coding error in clusterMany: not getting right number of type of algorithms from param")
             #---
@@ -533,10 +535,10 @@ setMethod(
             # get rid of duplicates
             param <- unique(param)
             
-            #####
+            #####################
             # Deal with those that are invalid combinations:
             # Also, if ever reinstate param option, then should apply these checks to that param
-            ######
+            #####################
             if(is.null(mainClusterArgs)) 
                 mainClusterArgs<-list(clusterArgs=list())
             if(is.null(subsampleArgs)) 
@@ -554,7 +556,7 @@ setMethod(
                                  mainClusterArgs=totalArgs$mainClusterArgs,
                                  subsampleArgs=totalArgs$subsampleArgs,
                                  seqArgs=totalArgs$seqArgs,
-                                 allowMakeDiss=makeMissingDiss,
+                                 allowMakeDiss=TRUE,
                                  warn = warn) #most of these are because have extra parameters 
                 if(returnValue=="logical"){
                     if(is.character(checkOut)) return(FALSE)
@@ -565,9 +567,11 @@ setMethod(
                 }
             
             }
+            #-----
             # Do first run to get rid of invalid selections (i.e. silently)
             # Note! Cannot run apply on param if don't want all character values.
             # e.g. checks<-apply(param,1,paramCheck,returnValue="logical")
+            #-----
             checks<-sapply(1:nrow(param), 
                 function(i){paramCheck(param[i,],returnValue="logical",
                     warn=FALSE)})
@@ -581,20 +585,37 @@ setMethod(
                 }
                 param <- param[-whInvalid, ,drop=FALSE]
             }
+            #-----
             # Do second run to get full warnings that remain
             # & deal with creating distances
-            # FIXME: Haven't done duplicates, since not clear how work with CF
+            #-----
             checks<-lapply(1:nrow(param), 
                 function(i){paramCheck(param[i,],returnValue="full",
                     warn=parameterWarnings)})
-            
             doDiss<-sapply(checks,function(x){x$doDiss})
-            missDiss<-any(doDiss) & is.na(param[,"distFunction"])
+            doDissPost<-sapply(checks,function(x){x$doDissPost})
+            missDiss<-(doDiss | doDissPost) & is.na(param[,"distFunction"])
             if(any(missDiss) & !makeMissingDiss){
                 stop("Parameter combinations requested require calculation of at least one distance matrix. User must now set `makeMissingDiss=TRUE` to have clusterMany calculated the necessary distances.")
             }
             if(any(missDiss) & makeMissingDiss){
                 param[missDiss,"distFunction"]<-"default"
+                
+                ## expand param matrix to include additional information for calculating/passing distances
+                subCF<-sapply(checks,function(x){
+                    cf<-x$subsampleArgs[["clusterFunction"]]
+                    if(!is.null(cf)) algorithmType(cf) else NA})
+                mainCF<-sapply(checks,function(x){
+                    algorithmType(x$mainClusterArgs[["clusterFunction"]])})                
+                # Need clustering algorithm for calculating distances
+                param$distAlgType<-NA
+                param$distAlgType[missDiss]<-
+                    ifelse(param[missDiss,"subsample"],subCF,mainCF)
+                param$distAlgType[!doDiss & doDissPost]<-
+                    mainCF[!doDiss & doDissPost]
+                
+                param$passDistToInput<-doDiss
+                param$passDistToMain<-!doDiss & doDissPost
             }
             
             if(any(!is.na(param[,"nFilterDims"]) &
@@ -678,34 +699,59 @@ setMethod(
             #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
             distFunction<-totalArgs$distFunction
             if(!is.null(distFunction)){
-                #need to update here when have filter (see below)
-                diss<- allDist[[distFunction]]
-                ### this is the one place where I wanted both x and diss!
-                ###   if only give a diss, it will not create output as clusterExperiment object. Sigh. 
-                out<-clusterSingle(inputMatrix=diss,
-                    inputType="diss",
-                    sequential=totalArgs$sequential, 
-                    subsample=totalArgs$subsample, 
-                    reduceMethod="none",
-                    mainClusterArgs=totalArgs$mainClusterArgs,
-                    subsampleArgs=totalArgs$subsampleArgs, 
-                    seqArgs=totalArgs$seqArgs,
-                    transFun=function(x){x},
-                    checkDiss=FALSE,
-                    makeMissingDiss=FALSE,
-                    warnings=parameterWarnings)
-                #because a distance, have to convert it back to a CE object.
-                #Using same internal function as clusterSingle
-                return(.convertOutListToCE(xMatrix=dat,
-                        clustering=out$clustering,
-                        clusterInfo=out$clusterInfo,
-                        coClusterMatrix=NULL, 
-                        clusterLabel="clusterSingle",
+                ###FIXME: Error here! Needs to call name that is specific to combination of reduce/dist/algType in allDist[[distFunction]]
+                passInput<- as.logical(gsub(" ","",par["passDistToInput"]))
+                passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
+
+                if(passInput){
+                    out<-clusterSingle(inputMatrix=allDist[[distFunction]],
+                        inputType="diss",
                         sequential=totalArgs$sequential, 
-                        subsample=totalArgs$subsample,
+                        subsample=totalArgs$subsample, 
+                        reduceMethod="none",
+                        mainClusterArgs=totalArgs$mainClusterArgs,
+                        subsampleArgs=totalArgs$subsampleArgs, 
+                        seqArgs=totalArgs$seqArgs,
                         transFun=function(x){x},
-                        saveSubsamplingMatrix=FALSE, existingCE=NULL))
+                        checkDiss=FALSE,
+                        makeMissingDiss=FALSE,
+                        warnings=parameterWarnings)
+                    #because a distance, have to convert it back to a CE object.
+                    #Using same internal function as clusterSingle
+                    return(.convertOutListToCE(xMatrix=dat,
+                            clustering=out$clustering,
+                            clusterInfo=out$clusterInfo,
+                            coClusterMatrix=NULL, 
+                            clusterLabel="clusterSingle",
+                            sequential=totalArgs$sequential, 
+                            subsample=totalArgs$subsample,
+                            transFun=function(x){x},
+                            saveSubsamplingMatrix=FALSE, existingCE=NULL))
+            
                 
+                }
+                else{
+                    if(passMain){
+                        return(clusterSingle(inputMatrix=dat,
+                            inputType="X",
+                            sequential=totalArgs$sequential, 
+                            subsample=totalArgs$subsample, 
+                            reduceMethod="none",
+                            mainClusterArgs=c(totalArgs$mainClusterArgs,
+                                list(diss=allDist[[distFunction]])),
+                            subsampleArgs=totalArgs$subsampleArgs, 
+                            seqArgs=totalArgs$seqArgs,
+                            transFun=function(x){x},
+                            checkDiss=FALSE,
+                            makeMissingDiss=FALSE,
+                            warnings=parameterWarnings))
+                    }
+                    else{
+                        stop("Internal Error: didn't parse distance passing correctly.")
+                    }
+                    
+                }
+
             }
             else
                 return(clusterSingle(inputMatrix=dat, 
@@ -727,19 +773,18 @@ setMethod(
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-unique(param[, c("reduceMethod", "nFilterDims", "distFunction")])
+                distParam<-unique(param[, c("reduceMethod", "nFilterDims", "distFunction","distAlgType")])
                 distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
                 uniqueId<-apply(distParam,1,paste,collapse=",")
                 ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
                 if(verbose)
                     cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
                 
-                
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
                     # be conservative and check for the 01 type 
                     # if any of clusterFunctions are 01.
-                    algCheckType<-if(any(paramAlgTypes=="01")) "01" else "K"
+                    algCheckType<-distParam[ii,"distAlgType"]
                     redM<-as.character(distParam[ii,"reduceMethod"])
                     if(redM=="none"){
                         dat<-transformData(x,
@@ -752,7 +797,7 @@ setMethod(
                             percentile=distParam[ii,"nFilterDims"]),
                             transFun=transFun,whichAssay=whichAssay)
                     }
-                    else if(makeMissingDiss & any(doDiss)){
+                    else if(makeMissingDiss & any(doDiss || doDissPost)){
                         dat<-t(reducedDim(x,type=redM))
                     }
                     else stop("Internal error: should have removed any combinations that included a dimensionality reduction and a distance unless due to makeMissingDiss=TRUE")
@@ -872,11 +917,14 @@ setMethod(
 
     #The following fixes logical values that got messed up
     #otherwise adds a space before the TRUE and doesn't recognize.
-    #well, sometimes. Maybe don't need this?
+    #well, sometimes. 
     removeSil <- as.logical(gsub(" ","",paramRow["removeSil"]))
     sequential <- as.logical(gsub(" ","",paramRow["sequential"]))
     subsample <- as.logical(gsub(" ","",paramRow["subsample"]))
     findBestK <- as.logical(gsub(" ","",paramRow["findBestK"]))
+    mainClusterArgs[["findBestK"]] <- findBestK 
+    mainClusterArgs[["removeSil"]] <- removeSil
+    
     clusterFunctionName <- as.character(paramRow[["clusterFunction"]])
     distFunction <- if(!is.na(paramRow[["distFunction"]])) as.character(paramRow[["distFunction"]]) else NULL
     if(!is.null(clusterFunctionList)){
@@ -896,8 +944,6 @@ setMethod(
     mainClusterArgs[["clusterArgs"]][["alpha"]] <- paramRow[["alpha"]]
     seqArgs[["beta"]] <- paramRow[["beta"]]
     mainClusterArgs[["minSize"]] <- paramRow[["minSize"]]
-    mainClusterArgs[["findBestK"]] <- findBestK
-    mainClusterArgs[["removeSil"]] <- removeSil
     mainClusterArgs[["silCutoff"]] <- paramRow[["silCutoff"]]
     mainClusterArgs[["clusterFunction"]]<-clusterFunction
     seqArgs[["verbose"]]<-FALSE

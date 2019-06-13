@@ -70,7 +70,7 @@ seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,me
 test<- clusterMany(simCount,reduceMethod="PCA",
     nReducedDims=c(5,10,50), 
     isCount=TRUE, verbose=FALSE,
-    clusterFunction="pam",
+    clusterFunction="pam", makeMissingDiss=TRUE,
     ks=2:4,
     findBestK=c(TRUE,FALSE))
 						

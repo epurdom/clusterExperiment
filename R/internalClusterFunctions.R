@@ -296,7 +296,7 @@
                         postProcessArgs[["removeSil"]])
                         doKPostProcess <- TRUE
                     if(doKPostProcess){
-                        if(mainInputType !="diss"){
+                        if(inputMain !="diss"){
                             if(!"diss" %in% names(mainClusterArgs)){
                                 if(allowMakeDiss & mainInputType=="X"){
                                     doDissPost<-TRUE
