@@ -6,10 +6,16 @@ test_that("`makeConsensus` works with matrix and ClusterExperiment objects", {
         ks=c(3,4),clusterFunction="pam",
         subsample=FALSE, sequential=FALSE,
         isCount=FALSE,verbose=FALSE))
+        
+    #check proportion=1
     expect_silent(x1<-makeConsensus(clustNothing,
-        proportion=1,whichClusters = "clusterMany"))
+        proportion=1,minSize=1,
+        whichClusters = "clusterMany"))
+    expect_equal(nClusters(x1)[["makeConsensus"]],
+        nrow(unique(clusterMatrix(clustNothing))))
     expect_message(x2<-makeConsensus(clustNothing,
-        proportion=1),"no clusters specified to combine")
+        proportion=1,minSize=1),
+        "no clusters specified to combine")
     expect_equal(x1,x2)
 
 
@@ -134,6 +140,31 @@ test_that("`makeConsensus` more esoteric options", {
         proportion=0.7,whenUnassign="before"))
     expect_silent(makeConsensus(clustNothing, "all",
         proportion=0.7,whenUnassign="after"))
+        
+    #check if all -1 values
+  	expect_silent(cc<-clusterMany(x=mat, 
+  				   isCount=FALSE,reduceMethod="none",ks=4:5,
+  	               clusterFunction="tight", alphas=0.1, 
+                   sequential=TRUE, subsample=TRUE, verbose=FALSE,
+  	               subsampleArgs=list(resamp.num=5),random.seed=495))
+    #check all -1 assignments
+    expect_equal(unname(unique(clusterMatrix(cc))),matrix(-1,nrow=1,ncol=2))
+    expect_silent(makeConsensus(cc, "all",
+       proportion=0.7,whenUnassign="before"))
+    expect_silent(makeConsensus(cc, "all",
+       proportion=0.7,whenUnassign="after"))
+    #check all but one sample have -1 assignments
+    test<-clusterMatrix(cc)
+    test[1,]<-c(1,2)
+    expect_silent(makeConsensus(test, 
+       proportion=1,minSize=1,whenUnassign="before"))
+    expect_silent(makeConsensus(test, 
+        proportion=1,minSize=1,whenUnassign="after"))
+    expect_silent(makeConsensus(test, 
+       proportion=0.7,minSize=1,whenUnassign="before"))
+    expect_silent(makeConsensus(test, 
+        proportion=0.7,minSize=1,whenUnassign="after"))
+
 
 })
 
@@ -183,7 +214,8 @@ test_that("`RSEC` pass options to `makeConsensus`", {
 test_that("`makeConsensus` preserves the colData and rowData of SE", {
     expect_silent(cl <- clusterMany(se, verbose=FALSE,
         clusterFunction="pam", ks=2:4, findBestK=c(FALSE),
-        removeSil=TRUE, subsample=FALSE))
+        removeSil=TRUE, subsample=FALSE,
+        makeMissingDiss=TRUE))
 
     expect_silent(cl <- makeConsensus(cl, 
         whichClusters="workflow", proportion=0.5))

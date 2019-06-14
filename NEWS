@@ -14,9 +14,11 @@ Changes in version 2.5.3-9002 (Release date: )
     - index of clusterings used (from `clusterMatrix` of object)
     - NxB matrix of clusterings (also in sparse format)
     - `plotClusterings` now calculates the hamming distance of clusterings; if requested, will return object with distance to avoid having to calculate in future plots. 
+* Add checks in builtin functions for very small numbers of observations (mainly for unit tests)
     
 Bugs:
-* Fix so export getReducedData
+* Fix so export `getReducedData`
+* Fix error in `makeConsensus` so doing unassignment and proportion=1 correctly (matrix inversion problem). 
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============

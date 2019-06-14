@@ -57,6 +57,7 @@
 .dissK<-function(x) {
     dist(x)
 }
+
 .makeDiss <- function(x, distFunction, algType, checkDiss) {
     if (!is.function(distFunction)) {
         if (length(distFunction) > 1)

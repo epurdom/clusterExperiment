@@ -88,6 +88,28 @@ NULL
     rownames(sharedPerct)<-colnames(sharedPerct)<-idnames
     return(1-sharedPerct)
 }
+#### For handling very small matrices -- mainly just for unit tests
+#returning false means should return vector of 1:nrow(inputMatrix)
+.checkInput<-function(inputMatrix, requiredN=2,cluster.only){
+    if(ncol(inputMatrix)<requiredN){
+        if(cluster.only) return(FALSE)
+        else stop(sprintf("Must have at least %s observations, cannot create clustering object for cluster.only=FALSE"),requiredN)
+    }
+    else return(TRUE)
+}
+### Make a cluster based on unique values of rows of inputMatrix
+.uniqueCluster<-function(inputMatrix, minSize=1){
+    clusterComb <- apply(inputMatrix, 2, paste, collapse=";")
+    allUnass <- paste(rep("-1", length=nrow(inputMatrix)), collapse=";")
+    tab <-	table(clusterComb)
+    tab <- tab[tab >= minSize]
+    tab <- tab[names(tab) != allUnass]
+    cl <- match(clusterComb, names(tab))
+    cl[is.na(cl)] <- -1
+    return(cl)
+}
+
+
 # ##---------
 # ##KNN for consensus
 # ##---------
@@ -102,6 +124,7 @@ NULL
 # ## Total hack to get the infrastructure in place -- cannot use for real sized data!!
 
 
+
 ##---------
 ##Spectral
 ##---------
@@ -110,6 +133,9 @@ NULL
 #' @importFrom kernlab specc
 .speccCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     passedArgs<-.getPassedArgs(FUN=kernlab::specc,passedArgs=list(...) ,checkArgs=checkArgs)
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
     #add data.matrix here for hdf5Matrix. Not optimized
     out<-try(do.call(kernlab::specc,c(list(x=data.matrix(t(inputMatrix)), centers=k),passedArgs)))
     if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
@@ -125,6 +151,9 @@ NULL
 #' @importFrom stats kmeans
 .kmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) { 
     passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
     out<-do.call(stats::kmeans,
         c(list(x=t(inputMatrix),centers=k),passedArgs))
     if(cluster.only) return(out$cluster)
@@ -157,8 +186,13 @@ NULL
 #   initializer = "kmeans++", calc_wcss = FALSE, early_stop_iter = 10,
 #   verbose = FALSE, CENTROIDS = NULL, tol = 1e-04)
 .mbkmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) { 
-    passedArgs<-.getPassedArgs(FUN=mbkmeans::mbkmeans,passedArgs=list(...) ,checkArgs=checkArgs)
-    out<-do.call(mbkmeans::mbkmeans,c(list(x=inputMatrix,clusters=k),passedArgs))
+    passedArgs<-.getPassedArgs(FUN=mbkmeans::mbkmeans,
+        passedArgs=list(...) ,checkArgs=checkArgs)
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
+    out<-do.call(mbkmeans::mbkmeans,
+        c(list(x=inputMatrix,clusters=k),passedArgs))
     if(cluster.only) return(out$Clusters)
     else return(out) 
 } 
@@ -180,6 +214,10 @@ NULL
 .pamCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     passedArgs<-list(...)
     convertCat<-FALSE
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
+
     if(inputType=="cat"){
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
@@ -195,11 +233,11 @@ NULL
         checkArgs=checkArgs)
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
     if(inputType=="diss"){
-        if(nrow(inputMatrix)<=k){
-            ## Note: this can happen when remove duplicates, especially in unit tests. 
-            if(cluster.only) 
-                out<-c(1:nrow(inputMatrix))
-            else stop("number of observations less than requested k, cannot give results if cluster.only=FALSE.")
+        #Checks for enough observations
+        check<-.checkInput(inputMatrix,requiredN=k+1,
+            cluster.only=cluster.only)
+        if(!check){
+            out<-1:nrow(inputMatrix)
         }
         else out<-do.call(cluster::pam, c(list(x=inputMatrix, k=k, diss=TRUE, cluster.only=cluster.only), passedArgs))
         if(convertCat){
@@ -228,6 +266,9 @@ NULL
 
 #' @importFrom cluster pam
 .claraCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,samples=50,keep.data=FALSE,rngR=TRUE,pamLike=TRUE,correct.d=TRUE,medoids.x=FALSE,...){
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
     passedArgs<-.getPassedArgs(FUN=cluster::clara,passedArgs=list(...) ,checkArgs=checkArgs)
     passedArgs<-c(passedArgs, list(samples=samples, keep.data=keep.data, rngR=rngR, pamLike=pamLike, correct.d=correct.d))
     out<-(do.call(cluster::clara, c(list(x=t(inputMatrix),k=k), passedArgs)))
@@ -245,6 +286,12 @@ NULL
 .hierKCluster<-function(inputMatrix,k,checkArgs,inputType,cluster.only,...){
     passedArgs<-list(...)
     convertCat<-FALSE
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
+    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
+        checkArgs=checkArgs)
+
     if(inputType=="cat"){
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
@@ -255,17 +302,14 @@ NULL
         else inputMatrix<-.clustersHammingDistance(inputMatrix)
         
     }
-    passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
-        checkArgs=checkArgs)
-    hclustOut<-do.call(stats::hclust,
-        c(list(d=as.dist(inputMatrix)),passedArgs))
-    if(nrow(inputMatrix)<=k){
-        ## Note: this can happen when remove duplicates, especially in unit tests. 
-        if(cluster.only) 
-            out<-list(clustering=c(1:nrow(inputMatrix)))
-        else stop("number of observations less than requested k, cannot give results if cluster.only=FALSE.")
+    
+    check<-.checkInput(inputMatrix,requiredN=k+1,cluster.only=cluster.only)
+    if(!check) out<-1:nrow(inputMatrix)
+    else{
+        hclustOut<-do.call(stats::hclust,
+            c(list(d=as.dist(inputMatrix)),passedArgs))
+        out<-stats::cutree(hclustOut,k)
     }
-    else out<-stats::cutree(hclustOut,k)
     if(inputType=="cat" & convertCat){
         out<-out[mapping]
     }
@@ -282,6 +326,9 @@ NULL
 #' @importFrom stats hclust 
 .hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,inputType,cluster.only,...)
 {
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
     whichHierDist<-match.arg(whichHierDist)
     evalClusterMethod<-match.arg(evalClusterMethod)
     passedArgs<-list(...)
@@ -298,6 +345,8 @@ NULL
         
     }
     # CHECKME: I changed this to make this for all, not just if missing, so as to guarantee that they are unique, but I don't know if it will break something downstream
+    check<-.checkInput(inputMatrix,cluster.only=cluster.only)
+    if(!check) return(lapply(1:nrow(inputMatrix),function(x){x}))
     rownames(inputMatrix)<- colnames(inputMatrix)<- 
         as.character(seq_len(nrow(inputMatrix)))
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
@@ -384,13 +433,18 @@ NULL
 ##---------
 .tightCluster <- function(inputMatrix, alpha, minSize.core=2,checkArgs,inputType,cluster.only,...)
 {
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
     passedArgs<-list(...)
     convertCat<-FALSE
     if(inputType=="cat"){
         inputMatrix<-.clustersHammingDistance(inputMatrix)
         
     }
-    
+    check<-.checkInput(inputMatrix,cluster.only=cluster.only)
+    if(!check) return(lapply(1:nrow(inputMatrix),function(x){x}))
+   
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
     inputMatrix<-1-inputMatrix #now is similarity matrix...
     if(!is.null(passedArgs[["removeDup"]])){
@@ -446,7 +500,6 @@ NULL
         i = i + 1
     }
     res<-.orderByAlpha(res,inputMatrix)
-    ##Need to update this code so converts vector result into lists of indices ...
     if(inputType=="cat" & convertCat){
         ## FIXME: this seems very akward. Should be able to do better!
         res<-lapply(res,function(x){

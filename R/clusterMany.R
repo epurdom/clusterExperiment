@@ -404,20 +404,22 @@ setMethod(
                 clusterFunctionNames<-clusterFunction
             }
             if(doNone) reduceMethod<-c(reduceMethod,"none")
-            param <- expand.grid(reduceMethod=reduceMethod,
-                                 nReducedDims=nReducedDims, 
-                                 nFilterDims=nFilterDims,
-                                 k=ks, 
-                                 alpha=alphas, 
-                                 findBestK=findBestK,
-                                 beta=betas, 
-                                 minSize=minSizes,
-                                 sequential=sequential, 
-                                 distFunction=distFunction,
-                                 removeSil=removeSil, 
-                                 subsample=subsample,
-                                 clusterFunction=clusterFunctionNames,
-                                 silCutoff=silCutoff)
+            param <- expand.grid(clusterFunction=clusterFunctionNames,
+                k=ks, 
+                alpha=alphas, 
+                beta=betas, 
+                sequential=sequential, 
+                subsample=subsample,
+                reduceMethod=reduceMethod,
+                nReducedDims=nReducedDims, 
+                nFilterDims=nFilterDims,
+                minSize=minSizes,
+                findBestK=findBestK,
+                removeSil=removeSil, 
+                silCutoff=silCutoff,
+                distFunction=distFunction
+                )
+            
             if(nrow(param)<=1) {
                 stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
             }
@@ -641,6 +643,13 @@ setMethod(
             #give names to the parameter combinations.
             #####
             charParam<-as.matrix(param)
+            ## Make default distance more interpretable
+            whDefault<-which(charParam[,"distFunction"]=="default")
+            if(length(whDefault)>0){
+                charParam[whDefault,"distFunction"]<-
+                    paste(charParam[whDefault,"distFunction"],
+                        charParam[whDefault,"distAlgType"],sep="")           
+            }
             ## Remove those that I added
             myAdditions<-c("distAlgType","passDistToMain","passDistToInput")
             wh<-which(names(param) %in% myAdditions)

@@ -56,11 +56,11 @@ test_that("`mainClustering` options", {
         clusterArgs=list(k=3,alpha=0.1),
     	minSize=5),
         "arguments passed via clusterArgs to the clustering function tight are not all applicable")
-    expect_warning(mainClustering(mat, 
-        inputType="X",
+    expect_warning(mainClustering(dissMat, 
+        inputType="diss",
         clusterFunction="pam", 
         clusterArgs=list(k=3,alpha=0.1),
-        minSize=5, 
+        minSize=5,
         removeSil=TRUE),
         "arguments passed via clusterArgs to the clustering function pam are not all applicable")
     expect_warning(mainClustering(dissMat, 
@@ -85,6 +85,17 @@ test_that("`mainClustering` options", {
 
 })
 
+
+test_that("`mainClustering` post-processing", {
+    #pass diss matrix
+    expect_silent(mainClustering(mat, 
+        inputType="X",
+        clusterFunction="pam", 
+        clusterArgs=list(k=3),
+        minSize=5,
+        removeSil=TRUE,diss=dissMat))
+     
+})
 
 test_that("`mainClustering` works with cat", {
     #test default 01 distance
