@@ -97,7 +97,7 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-	  ## Assign colors to the contrasts 
+      ## Assign colors to the contrasts 
       ## (only if contrast is oneAgainstAll)
 	  whichCluster<-getSingleClusterIndex(object,
           whichCluster,passedArgs=list(...))
@@ -124,7 +124,6 @@ setMethod(
       contrastColors<-tail(massivePalette,length(geneByContrast)) #least likely to be important colors by accident
       names(contrastColors)<-names(geneByContrast)
     }
-    browser()
     
     plotHeatmap(object,
         clusterFeaturesData=geneByContrast,

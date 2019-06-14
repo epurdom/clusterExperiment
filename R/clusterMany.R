@@ -637,12 +637,16 @@ setMethod(
             #give names to the parameter combinations.
             #####
             charParam<-as.matrix(param)
-            whVary <- which(apply(param,2,function(x){length(unique(x))>1}))
+            ## Remove those that I added
+            myAdditions<-c("distAlgType","passDistToMain","passDistToInput")
+            wh<-which(names(param) %in% myAdditions)
+            if(length(wh)>0) charParam<-charParam[,-wh]
+            whVary <- which(apply(charParam,2,function(x){length(unique(x))>1}))
             if(length(whVary)>0) {
                 makeLabel<- function(ii){
-                    paste(colnames(param)[whVary],charParam[ii,whVary],sep="=",collapse=",")
+                    paste(colnames(charParam)[whVary],charParam[ii,whVary],sep="=",collapse=",")
                 }
-                cnames<-sapply(seq_len(nrow(param)),makeLabel)
+                cnames<-sapply(seq_len(nrow(charParam)),makeLabel)
             } else {
                 stop("set of parameters imply only 1 combination. If you wish to run a single clustering, use 'clusterSingle'")
             }
