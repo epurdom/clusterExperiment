@@ -43,9 +43,9 @@ following classes: matrix (with genes in rows),
 \code{\link[SingleCellExperiment]{SingleCellExperiment}}
 or \code{ClusterExperiment}.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+\item{...}{For signature \code{matrix}, arguments to be passed on to mclapply
 (if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+method for signature \code{matrix}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
@@ -115,6 +115,14 @@ documentation of \code{\link{seqCluster}}.}
 \item{minSizes}{the minimimum size required for a cluster (in the
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
+
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
 
 \item{consensusProportion}{passed to \code{proportion} in
 \code{\link{makeConsensus}}}

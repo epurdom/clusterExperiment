@@ -26,6 +26,22 @@ set to "pam".}
 
 \item{...}{arguments passed to mclapply (if ncores>1).}
 
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
+
+\item{inputType}{a character vector defining what type(s) of input 
+\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
+indicate the type of matrix that is being provided to \code{inputMatrix}.
+(see details). 
+"X" and "cat" should be indicate matrices with features in the row and
+samples in the column; "cat" corresponds to the features being numerical
+integers corresponding to categories, while "X" are continuous valued
+features. "diss" corresponds to an \code{inputMatrix} that is a NxN
+dissimilarity matrix. "cat" is largely used internal for clustering of sets
+of clusterings.}
+
 \item{clusterArgs}{a list of parameter arguments to be passed to the function
 defined in the \code{clusterFunction} slot of the \code{ClusterFunction}
 object. For any given \code{\link{ClusterFunction}} object, use function

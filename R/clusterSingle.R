@@ -3,13 +3,20 @@
 #' Given input data, this function will find clusters, based on a single
 #' specification of parameters.
 #'
-#' @param x numerical data on which to run the clustering (features in rows), or a
+#' @param inputType a character vector defining what type(s) of input 
+#'   \code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
+#'   indicate the type of matrix that is being provided to \code{inputMatrix}.
+#'   (see details). 
+#'   "X" and "cat" should be indicate matrices with features in the row and
+#'   samples in the column; "cat" corresponds to the features being numerical
+#'   integers corresponding to categories, while "X" are continuous valued
+#'   features. "diss" corresponds to an \code{inputMatrix} that is a NxN
+#'   dissimilarity matrix. "cat" is largely used internal for clustering of sets
+#'   of clusterings.
+#' @param inputMatrix numerical matrix on which to run the clustering or a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 #'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
-#' @param diss \code{n x n} data matrix of dissimilarities between the samples
-#'   on which to run the clustering.
-#' @param cat data matrix (features in rows) of all categorical features, encoded by positive integers (mainly used internally for clustering sets of clusterings).
 #' @param subsample logical as to whether to subsample via
 #'   \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
 #'   step is done on the co-occurance between clusterings in the subsampled
@@ -34,9 +41,11 @@
 #' @param clusterLabel a string used to describe the clustering. By default it
 #'   is equal to "clusterSingle", to indicate that this clustering is the result
 #'   of a call to \code{clusterSingle}.
-#' @param checkDiss logical. Whether to check whether the input \code{diss} is
-#'   valid.
-#' @param warnings logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters. 
+#' @param checkDiss logical. Whether to check whether the dissimilarities
+#'   matrices (whether given by the user or calculated because
+#'   \code{makeMissingDiss=TRUE} are valid.
+#' @param warnings logical. Whether to print out the many possible warnings and
+#'   messages regarding checking the internal consistency of the parameters.
 #' @param ... arguments to be passed on to the method for signature
 #'   \code{matrix}.
 #' @inheritParams transformData
@@ -55,9 +64,9 @@
 #'   \code{subsampleArgs}, and \code{seqArgs}. These arguments should be
 #'   \emph{named} lists with parameters that match the corresponding functions:
 #'   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
-#'   \code{\link{seqCluster}}. These functions are not meant to be called by the
-#'   user, but rather accessed via calls to \code{clusterSingle}. But the user
-#'   can look at the help files of those functions for more information
+#'   \code{\link{seqCluster}}. These three functions are not meant to be called
+#'   by the user, but rather accessed via calls to \code{clusterSingle}. But the
+#'   user can look at the help files of those functions for more information 
 #'   regarding the parameters that they take.
 #' @details Only certain combinations of parameters are possible for certain
 #'   choices of \code{sequential} and \code{subsample}. These restrictions are
@@ -121,7 +130,8 @@
 #'   user can change \code{kRange} to not depend on \code{k} and to be fixed
 #'   across all of the sequential steps by setting \code{kRange} explicitly in
 #'   the \code{mainClusterArgs} list.} }
-#' @return A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
+#' @return A \code{\link{ClusterExperiment}} object if
+#'   \code{inputType} is not "diss".
 #' @return If input was \code{diss}, then the result is a list with values
 #'   \itemize{ 
 #'        \item{clustering: }{The vector of clustering results}
@@ -258,10 +268,17 @@ setMethod(
 
 #' @rdname clusterSingle
 #' @export
-#' @param saveSubsamplingMatrix logical. If TRUE, the co-clustering matrix resulting from
-#'   subsampling is returned in the coClustering slot (and replaces any
-#'   existing coClustering object in the slot \code{coClustering} if input object is a
-#' 	 \code{ClusterExperiment} object.)
+#' @param saveSubsamplingMatrix logical. If TRUE, the co-clustering matrix
+#'   resulting from subsampling is returned in the coClustering slot (and
+#'   replaces any existing coClustering object in the slot \code{coClustering}
+#'   if input object is a \code{ClusterExperiment} object.)
+#' @param makeMissingDiss logical. Whether to calculate necessary distance 
+#'   matrices needed when input is not "diss". If TRUE, then when a clustering 
+#'   function calls for a inputType "diss", but the given matrix is of type "X",
+#'   the function will calculate a distance function. A dissimilarity matrix
+#'   will also be calculated if a post-processing argument like \code{findBestK}
+#'   or \code{removeSil} is chosen, since these rely on calcualting silhouette
+#'   widths from distances.
 setMethod(
     f = "clusterSingle",
     signature = signature(inputMatrix = "matrixOrHDF5OrNULL"),
@@ -389,7 +406,8 @@ setMethod(
             ##########
             finalClusterList <- .clusterWrapper(inputMatrix=inputMatrix,
                     subsample=subsample,
-                    subsampleArgs=subsampleArgs,                                                mainClusterArgs=mainClusterArgs)
+                    subsampleArgs=subsampleArgs,
+                    mainClusterArgs=mainClusterArgs)
             outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N))
             
         }

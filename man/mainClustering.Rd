@@ -33,6 +33,22 @@ The available post-processing arguments for a \code{ClusterFunction} object
 depend on it's algorithm type and can be found by calling
 \code{getPostProcessingArgs}. See details below for documentation.}
 
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
+
+\item{inputType}{a character vector defining what type(s) of input 
+\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
+indicate the type of matrix that is being provided to \code{inputMatrix}.
+(see details). 
+"X" and "cat" should be indicate matrices with features in the row and
+samples in the column; "cat" corresponds to the features being numerical
+integers corresponding to categories, while "X" are continuous valued
+features. "diss" corresponds to an \code{inputMatrix} that is a NxN
+dissimilarity matrix. "cat" is largely used internal for clustering of sets
+of clusterings.}
+
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
 

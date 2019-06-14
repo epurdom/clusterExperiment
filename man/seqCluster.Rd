@@ -10,6 +10,22 @@ seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
   warnings = FALSE)
 }
 \arguments{
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
+
+\item{inputType}{a character vector defining what type(s) of input 
+\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
+indicate the type of matrix that is being provided to \code{inputMatrix}.
+(see details). 
+"X" and "cat" should be indicate matrices with features in the row and
+samples in the column; "cat" corresponds to the features being numerical
+integers corresponding to categories, while "X" are continuous valued
+features. "diss" corresponds to an \code{inputMatrix} that is a NxN
+dissimilarity matrix. "cat" is largely used internal for clustering of sets
+of clusterings.}
+
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
 
@@ -46,7 +62,8 @@ progress.}
 \item{mainClusterArgs}{list of arguments to be passed to
 \code{\link{mainClustering}}).}
 
-\item{warnings}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
+\item{warnings}{logical. Whether to print out the many possible warnings and
+messages regarding checking the internal consistency of the parameters.}
 
 \item{x}{\code{p x n} data matrix on which to run the clustering (samples in
 columns).}

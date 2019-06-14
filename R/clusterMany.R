@@ -68,9 +68,9 @@
 #'   that would be returned if \code{run=TRUE}). Even if \code{run=FALSE},
 #'   however, the function will create the dimensionality reductions of the data
 #'   indicated by the user input.
-#' @param ... For signature \code{list}, arguments to be passed on to mclapply
+#' @param ... For signature \code{matrix}, arguments to be passed on to mclapply
 #'   (if ncores>1). For all the other signatures, arguments to be passed to the
-#'   method for signature \code{list}.
+#'   method for signature \code{matrix}.
 #' @param verbose logical. If TRUE it will print informative messages.
 #' @details Some combinations of these parameters are not feasible. See the
 #'   documentation of \code{\link{clusterSingle}} for important information on
@@ -105,7 +105,7 @@
 #' @details If the input is a \code{ClusterExperiment} object, current
 #'   implementation is that existing \code{orderSamples},\code{coClustering} or
 #'   the many dendrogram slots will be retained.
-#' @return If \code{run=TRUE} and the input is not a list of data matrices, will
+#' @return If \code{run=TRUE} will
 #'   return a \code{ClusterExperiment} object, where the results are stored as
 #'   clusterings with clusterTypes \code{clusterMany}. Depending on
 #'   \code{eraseOld} argument above, this will either delete existing such
@@ -113,21 +113,18 @@
 #'   \code{eraseOld} above. Arbitrarily the first clustering is set as the
 #'   primaryClusteringIndex.
 #'
-#' @return If \code{run=TRUE} and the input is a list of data sets, a list with
-#'   the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-#'   column corresponding to a clustering and each row to a sample.}
-#'   \item{\code{clusterInfo}}{ a list with information regarding clustering
-#'   results (only relevant entries for those clusterings with sequential=TRUE)}
+#' @return If \code{run=FALSE} a list with elements:
+#' \itemize{
 #'   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
 #'   clustering, where each column is a possible parameter set by the user and
 #'   passed to \code{\link{clusterSingle}} and each row of paramMatrix
-#'   corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+#'   corresponds to a clustering in \code{clMat}} 
+#'   \item{\code{mainClusterArgs}}{
 #'   a list of (possibly modified) arguments to mainClusterArgs}
 #'   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
-#'   seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified)
+#'   seqArgs} 
+#'   \item{\code{subsampleArgs}}{a list of (possibly modified)
 #'   arguments to subsampleArgs} }
-#' @return If \code{run=FALSE} a list similar to that described above, but
-#'   without the clustering results.
 #'
 #' @examples
 #' data(simData)

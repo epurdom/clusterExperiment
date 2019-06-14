@@ -27,6 +27,11 @@
   checkDiss = FALSE, warnings = TRUE)
 }
 \arguments{
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
+
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
 
@@ -41,6 +46,17 @@ in the reduction specified by \code{reduceMethod}. Defaults to output of
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
+
+\item{inputType}{a character vector defining what type(s) of input 
+\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
+indicate the type of matrix that is being provided to \code{inputMatrix}.
+(see details). 
+"X" and "cat" should be indicate matrices with features in the row and
+samples in the column; "cat" corresponds to the features being numerical
+integers corresponding to categories, while "X" are continuous valued
+features. "diss" corresponds to an \code{inputMatrix} that is a NxN
+dissimilarity matrix. "cat" is largely used internal for clustering of sets
+of clusterings.}
 
 \item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
@@ -74,32 +90,33 @@ function will throw an error. If object is of class
 \code{ClusterExperiment}, the stored transformation will be used and giving
 this parameter will result in an error.}
 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
+
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result
 of a call to \code{clusterSingle}.}
 
-\item{saveSubsamplingMatrix}{logical. If TRUE, the co-clustering matrix resulting from
-subsampling is returned in the coClustering slot (and replaces any
-existing coClustering object in the slot \code{coClustering} if input object is a
-   \code{ClusterExperiment} object.)}
+\item{saveSubsamplingMatrix}{logical. If TRUE, the co-clustering matrix
+resulting from subsampling is returned in the coClustering slot (and
+replaces any existing coClustering object in the slot \code{coClustering}
+if input object is a \code{ClusterExperiment} object.)}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
+\item{checkDiss}{logical. Whether to check whether the dissimilarities
+matrices (whether given by the user or calculated because
+\code{makeMissingDiss=TRUE} are valid.}
 
-\item{warnings}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
-
-\item{x}{numerical data on which to run the clustering (features in rows), or a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}},
-\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
-object.}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering.}
-
-\item{cat}{data matrix (features in rows) of all categorical features, encoded by positive integers (mainly used internally for clustering sets of clusterings).}
+\item{warnings}{logical. Whether to print out the many possible warnings and
+messages regarding checking the internal consistency of the parameters.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
+A \code{\link{ClusterExperiment}} object if
+  \code{inputType} is not "diss".
 
 If input was \code{diss}, then the result is a list with values
   \itemize{ 
@@ -131,9 +148,9 @@ Unlike \code{\link{clusterMany}}, most of the relevant arguments for
   \code{subsampleArgs}, and \code{seqArgs}. These arguments should be
   \emph{named} lists with parameters that match the corresponding functions:
   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
-  \code{\link{seqCluster}}. These functions are not meant to be called by the
-  user, but rather accessed via calls to \code{clusterSingle}. But the user
-  can look at the help files of those functions for more information
+  \code{\link{seqCluster}}. These three functions are not meant to be called
+  by the user, but rather accessed via calls to \code{clusterSingle}. But the
+  user can look at the help files of those functions for more information 
   regarding the parameters that they take.
 
 Only certain combinations of parameters are possible for certain

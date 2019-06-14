@@ -62,9 +62,9 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+\item{...}{For signature \code{matrix}, arguments to be passed on to mclapply
 (if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+method for signature \code{matrix}.}
 
 \item{ks}{the range of k values (see details for the meaning of \code{k} for
 different choices of other parameters).}
@@ -135,6 +135,14 @@ step, see help pages of \code{\link{mainClustering}}.}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
+
 \item{ncores}{the number of threads}
 
 \item{random.seed}{a value to set seed before each run of clusterSingle (so
@@ -158,7 +166,7 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \value{
-If \code{run=TRUE} and the input is not a list of data matrices, will
+If \code{run=TRUE} will
   return a \code{ClusterExperiment} object, where the results are stored as
   clusterings with clusterTypes \code{clusterMany}. Depending on
   \code{eraseOld} argument above, this will either delete existing such
@@ -166,22 +174,18 @@ If \code{run=TRUE} and the input is not a list of data matrices, will
   \code{eraseOld} above. Arbitrarily the first clustering is set as the
   primaryClusteringIndex.
 
-If \code{run=TRUE} and the input is a list of data sets, a list with
-  the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-  column corresponding to a clustering and each row to a sample.}
-  \item{\code{clusterInfo}}{ a list with information regarding clustering
-  results (only relevant entries for those clusterings with sequential=TRUE)}
+If \code{run=FALSE} a list with elements:
+\itemize{
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
   clustering, where each column is a possible parameter set by the user and
   passed to \code{\link{clusterSingle}} and each row of paramMatrix
-  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+  corresponds to a clustering in \code{clMat}} 
+  \item{\code{mainClusterArgs}}{
   a list of (possibly modified) arguments to mainClusterArgs}
   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
-  seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified)
+  seqArgs} 
+  \item{\code{subsampleArgs}}{a list of (possibly modified)
   arguments to subsampleArgs} }
-
-If \code{run=FALSE} a list similar to that described above, but
-  without the clustering results.
 }
 \description{
 Given a range of parameters, this function will return a matrix with the
