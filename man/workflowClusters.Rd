@@ -76,7 +76,7 @@ data(simData)
 
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-subsample=FALSE)
+subsample=FALSE, makeMissingDiss=TRUE)
 
 clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 minSize=10)

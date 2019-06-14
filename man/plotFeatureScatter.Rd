@@ -58,7 +58,7 @@ data(simData)
 #Create a ClusterExperiment object
 cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
    clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-   removeSil=c(TRUE,FALSE))
+   removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE)
 #give names to the clusters
 cl<-renameClusters(cl, whichCluster=1, 
    value=letters[1:nClusters(cl)[1]])

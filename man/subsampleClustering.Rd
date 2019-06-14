@@ -96,7 +96,8 @@ co-occurance.
 \dontrun{
 #takes a bit of time, not run on checks:
 data(simData)
-coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData,
+coOccur <- subsampleClustering( inputMatrix=simData, inputType="X",
+clusterFunction="kmeans",
 clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
 
 #visualize the resulting co-occurance matrix

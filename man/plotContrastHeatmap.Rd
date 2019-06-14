@@ -52,7 +52,8 @@ no automatic match of colors with contrasts based on the information in
 data(simData)
 
 cl <- clusterSingle(simData, subsample=FALSE,
-sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+sequential=FALSE, 
+mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 
 #Do all pairwise, only return significant, try different adjustments:
 pairsPerC <- getBestFeatures(cl, contrastType="Pairs", number=5,
