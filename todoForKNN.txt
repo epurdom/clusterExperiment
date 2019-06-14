@@ -8,3 +8,4 @@ TO DO:
 -- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff?
 -- RSEC has no @example!
 -- Introduced error in calculating distFunction in clusterMany -- need to check the distance needed for a particular row, not all (right now have any(doDiss|doDissPost))
+-- Error in makeConsensus (present in release) that not doing unassigned values right. Using wrong margin. Haven't fixed it yet, because want to check if pass tests, and will have to redo a lot of tests (e.g. RSEC will need new seed value.)

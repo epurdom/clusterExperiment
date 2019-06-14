@@ -114,7 +114,9 @@ setMethod(
         N<-nrow(x)
         ## Doing >= means that all -1 will be in -1 cluster, no matter what
         ## (protects against chance that they get assigned to a cluster)
-        whUnassigned <- which(apply(x, 1, function(dat){
+        
+        ## FIXME: temporarily put back in the error, just to see if reproducible. Fix this in the release, etc!
+        whUnassigned <- which(apply(x, 2, function(dat){
             sum(dat== -1)/length(dat)>=propUnassigned}))
         if(length(whUnassigned)>0 && whenUnassign=="before") {           
             temp<-rep(-1,length=N)
