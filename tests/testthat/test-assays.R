@@ -13,7 +13,7 @@ test_that("clusterSingle works with non defalt assays", {
     ###Apply to SE
     expect_silent(cl1 <- clusterSingle(multi_se, 
       whichAssay = "counts",
-      mainClusterArgs=list(clusterArgs=list(k=3)
+      mainClusterArgs=list(clusterArgs=list(k=3),
           clusterFunction="pam"), 
       subsample=FALSE, sequential=FALSE))
 

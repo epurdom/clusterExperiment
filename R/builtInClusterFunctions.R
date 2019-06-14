@@ -98,8 +98,10 @@ NULL
     else return(TRUE)
 }
 ### Make a cluster based on unique values of rows of inputMatrix
+### inputMatrix has samples in columns
 .uniqueCluster<-function(inputMatrix, minSize=1){
     clusterComb <- apply(inputMatrix, 2, paste, collapse=";")
+    #create what all -1 values would be
     allUnass <- paste(rep("-1", length=nrow(inputMatrix)), collapse=";")
     tab <-	table(clusterComb)
     tab <- tab[tab >= minSize]
