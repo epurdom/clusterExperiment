@@ -925,9 +925,18 @@ setMethod(
 #'   coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
 #'   output from \code{\link{clusterSingle}}, then the user should manually set
 #'   this parameter to FALSE.)
-#' @details \code{plotCoClustering} is a convenience function to plot the heatmap
-#' of the co-clustering matrix stored in the \code{coClustering} slot of a
-#' \code{ClusterExperiment} object.
+#' @param saveDistance logical. When the \code{coClustering} slot contains the
+#'   NxB matrices of clusterings, the hamming distance will be calculated before
+#'   running the plot. This argument determines whether the
+#'   \code{ClusterExperiment} object with that distance in \code{coClustering}
+#'   slot should be returned (so as to avoid re-calculating it in the future) or
+#'   not.
+#' @details \code{plotCoClustering} is a convenience function to plot the
+#'   heatmap of the co-clustering distance matrix from the \code{coClustering}
+#'   slot of a \code{ClusterExperiment} object (either by calculating the
+#'   hamming distance of the clusterings stored in the \code{coClustering} slot,
+#'   or the distance stored in the \code{coClustering} slot if it has already
+#'   been calculated.
 #' @export
 setMethod(
   f = "plotCoClustering",
