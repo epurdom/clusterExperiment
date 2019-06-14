@@ -8,8 +8,9 @@
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{makeConsensus}{matrix}(x, proportion,
-  clusterFunction = "hierarchical01", propUnassigned = 0.5,
-  minSize = 5, ...)
+  clusterFunction = "hierarchical01", minSize = 5,
+  propUnassigned = 0.5, whenUnassign = c("before", "after"),
+  clusterArgs = NULL)
 
 \S4method{makeConsensus}{ClusterExperiment}(x, whichClusters,
   eraseOld = FALSE, clusterLabel = "makeConsensus", ...)
@@ -24,16 +25,13 @@ mainClustering via alpha = 1 - proportion)}
 \item{clusterFunction}{the clustering to use (passed to 
 \code{\link{mainClustering}}); currently must be of type '01'.}
 
-\item{propUnassigned}{samples with greater than this proportion of assignments
-equal to '-1' are assigned a '-1' cluster value as a last step (only if
-proportion < 1)}
-
 \item{minSize}{minimum size required for a set of samples to be considered in 
 a cluster because of shared clustering, passed to
 \code{\link{mainClustering}}}
 
-\item{...}{arguments to be passed on to the method for signature 
-\code{matrix,missing}.}
+\item{propUnassigned}{samples with greater than this proportion of assignments
+equal to '-1' are assigned a '-1' cluster value as a last step (only if
+proportion < 1)}
 
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
@@ -49,6 +47,9 @@ clusterTypes.}
 default it is equal to "makeConsensus", to indicate that this clustering is
 the result of a call to makeConsensus. However, a more informative label can
 be set (see vignette).}
+
+\item{...}{arguments to be passed on to the method for signature 
+\code{matrix,missing}.}
 }
 \value{
 If x is a matrix, a list with values \itemize{ 
@@ -98,7 +99,7 @@ data(simData)
 
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-subsample=FALSE)
+makeMissingDiss=TRUE, subsample=FALSE)
 
 #make names shorter for plotting
 clMat <- clusterMatrix(cl)
@@ -112,10 +113,10 @@ clCommon100 <- makeConsensus(clMat, proportion=1, minSize=10)
 #require 70\% agreement based on clustering of overlap
 clCommon70 <- makeConsensus(clMat, proportion=0.7, minSize=10)
 
-oldpar <- par()
+oldpar <- par(no.readonly = TRUE)
 par(mar=c(1.1, 12.1, 1.1, 1.1))
-plotClusters(cbind("70\%Similarity"=clCommon70$clustering, clMat,
-"100\%Similarity"=clCommon100$clustering), axisLine=-2)
+plotClusters(cbind("70\%Similarity"=clCommon70, clMat,
+"100\%Similarity"=clCommon100), axisLine=-2)
 
 #method for ClusterExperiment object
 clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,

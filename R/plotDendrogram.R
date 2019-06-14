@@ -72,12 +72,14 @@
 #' 
 #' #create a clustering, for 8 clusters (truth was 3) 
 #' cl <-clusterSingle(simData, subsample=FALSE, 
-#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+#' sequential=FALSE, 
+#' mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #' 
 #' #create dendrogram of clusters and then 
 #' # merge clusters based ondendrogram: 
 #' cl <- makeDendrogram(cl) 
-#' cl <- mergeClusters(cl,mergeMethod="adjP",DEMethod="limma",cutoff=0.1,plot=FALSE) 
+#' cl <- mergeClusters(cl,mergeMethod="adjP",DEMethod="limma",
+#'    cutoff=0.1,plot=FALSE) 
 #' plotDendrogram(cl) 
 #' plotDendrogram(cl,leafType="samples",whichClusters="all",plotType="colorblock")
 #' 

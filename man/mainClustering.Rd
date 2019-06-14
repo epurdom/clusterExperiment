@@ -102,33 +102,35 @@ Post-processing Arguments: For post-processing the clustering,
 }
 \examples{
 data(simData)
-cl1<-mainClustering(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
-cl2<-mainClustering(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
-cl3<-mainClustering(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
-#supply a dissimilarity
-diss<-dist(t(simData),method="manhattan")
-cl4<-mainClustering(diss=diss,clusterFunction="pam",clusterArgs=list(k=3))
+cl1<-mainClustering(inputMatrix=simData, inputType="X", 
+    clusterFunction="pam",clusterArgs=list(k=3))
+#supply a dissimilarity, use algorithm type "01"
+diss<-as.matrix(dist(t(simData),method="manhattan"))
+cl2<-mainClustering(diss, inputType="diss", clusterFunction="hierarchical01",
+    clusterArgs=list(alpha=.1))
+cl3<-mainClustering(inputMatrix=diss, inputType="diss", clusterFunction="pam",
+    clusterArgs=list(k=3))
 
-#run hierarchical method for finding blocks, with method of evaluating
-#coherence of block set to evalClusterMethod="average", and the hierarchical
-#clustering using single linkage:
-clustSubHier <- mainClustering(simData, clusterFunction="hierarchical01",
-minSize=5, clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
+# run hierarchical method for finding blocks, with method of evaluating
+# coherence of block set to evalClusterMethod="average", and the hierarchical
+# clustering using single linkage:
+# (clustering function requires type 'diss'),
+clustSubHier <- mainClustering(diss, inputType="diss",
+    clusterFunction="hierarchical01", minSize=5,
+    clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
 
-#do tight
-clustSubTight <- mainClustering(simData, clusterFunction="tight", clusterArgs=list(alpha=0.1),
-minSize=5)
-
-#two twists to pam
-clustSubPamK <- mainClustering(simData, clusterFunction="pam", silCutoff=0, minSize=5,
-removeSil=TRUE, clusterArgs=list(k=3))
-clustSubPamBestK <- mainClustering(simData, clusterFunction="pam", silCutoff=0,
-minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
+#post-process results of pam -- must pass diss for silhouette calculation
+clustSubPamK <- mainClustering(simData, inputType="X", clusterFunction="pam", 
+    silCutoff=0, minSize=5, diss=diss, removeSil=TRUE, clusterArgs=list(k=3))
+clustSubPamBestK <- mainClustering(simData, inputType="X", clusterFunction="pam", silCutoff=0,
+    minSize=5, diss=diss, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 
 # note that passing the wrong arguments for an algorithm results in warnings
 # (which can be turned off with warnings=FALSE)
-clustSubTight_test <- mainClustering(simData, clusterFunction="tight",
-clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
-clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",
-clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
+clustSubTight_test <- mainClustering(diss, inputType="diss", 
+   clusterFunction="tight", 
+   clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
+clustSubTight_test2 <- mainClustering(diss, inputType="diss",
+   clusterFunction="tight",
+   clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
 }

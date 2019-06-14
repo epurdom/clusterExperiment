@@ -43,14 +43,23 @@ system.time(
 	                    mergeDEMethod="limma",
                      mergeCutoff=0.01,
                      ncores=ncores, 
+                     makeMissingDiss=TRUE,
+                     subsampleArgs=list(clusterFunction="pam",
+                         classifyMethod="All"),
+                     consensusArgs=list(clusterFunction="hierarchical01",
+                           whenUnassign="after",
+                        clusterArgs=list(evalClusterMethod=c("average"), removeDup=FALSE))                    
                      random.seed=176201)
 )
 metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
 ## Tests that haven't changed the clustering results.
+tabk0<-tableClusters(rsecFluidigm,whichClusters="k0=4,alpha=0.1")
+if(length(tabk0)!=7 || !all(tabk0 == c(28, 15, 13,  3,  2,  2,  2)))
+   stop("rsecFluidigm object has changed -- clusterMany")
 x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) 
   stop("rsecFluidigm object has changed -- makeConsensus")
+y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(y[y>0]) != 6) 
   stop("rsecFluidigm object has changed -- different # of mergeClusters")
 adjPValues<-c(0.049794879, 0.007356062, 0.008204838, 

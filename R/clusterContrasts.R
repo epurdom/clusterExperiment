@@ -52,7 +52,8 @@
 #'   single-cell RNA sequencing data. Genome Biology (2015).
 #' @examples 
 #' data(simData)
-#' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
+#' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  
+#' reduceMethod="PCA", makeMissingDiss=TRUE,
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
 #' subsample=FALSE)
 #' #Pairs:

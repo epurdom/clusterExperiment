@@ -132,10 +132,11 @@
 #' data(simData)
 #'
 #' set.seed(12908)
-#' clustSeqHier <- seqCluster(simData, k0=5, subsample=TRUE,
-#' beta=0.8, subsampleArgs=list(resamp.n=100,
-#' samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-#' mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+#' clustSeqHier <- seqCluster(simData, inputType="X", k0=5, subsample=TRUE,
+#'    beta=0.8, subsampleArgs=list(resamp.n=100,
+#'    samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+#'    mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",
+#'    clusterArgs=list(alpha=0.1)))
 #' }
 #' @export
 #' @rdname seqCluster

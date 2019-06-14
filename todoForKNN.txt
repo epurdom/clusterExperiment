@@ -5,3 +5,5 @@ TO DO:
 -- Add some kind of bare check that diss are at least symmetric dimensions!
 -- check in seqCluster status of verbose versus checking arguments. 
 -- Take off names have added to the labels from clusterMany (distAlgType, etc.)
+-- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff?
+-- RSEC has no @example!

@@ -1,7 +1,7 @@
-#'Find sets of samples that stay together across clusterings
+#' Find sets of samples that stay together across clusterings
 #'
-#'Find sets of samples that stay together across clusterings in order to define 
-#'a new clustering vector.
+#' Find sets of samples that stay together across clusterings in order to define 
+#' a new clustering vector.
 #'
 #' @aliases makeConsensus
 #'  
@@ -61,7 +61,7 @@
 #'
 #' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-#' subsample=FALSE)
+#' makeMissingDiss=TRUE, subsample=FALSE)
 #'
 #' #make names shorter for plotting
 #' clMat <- clusterMatrix(cl)
@@ -75,7 +75,7 @@
 #' #require 70% agreement based on clustering of overlap
 #' clCommon70 <- makeConsensus(clMat, proportion=0.7, minSize=10)
 #'
-#' oldpar <- par()
+#' oldpar <- par(no.readonly = TRUE)
 #' par(mar=c(1.1, 12.1, 1.1, 1.1))
 #' plotClusters(cbind("70%Similarity"=clCommon70, clMat,
 #' "100%Similarity"=clCommon100), axisLine=-2)

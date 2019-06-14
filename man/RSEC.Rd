@@ -32,8 +32,9 @@
   mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff,
   mergeDEMethod = if (isCount) "limma-voom" else "limma",
   verbose = FALSE, parameterWarnings = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
-  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
+  subsampleArgs = NULL, seqArgs = NULL, consensusArgs = NULL,
+  whichAssay = 1, ncores = 1, random.seed = NULL,
+  stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the

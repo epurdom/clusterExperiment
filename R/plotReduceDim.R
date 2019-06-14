@@ -49,7 +49,7 @@
 #'
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-#' removeSil=c(TRUE,FALSE))
+#' removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE)
 #'
 #' plotReducedDims(cl,legend="bottomright")
 #' @export

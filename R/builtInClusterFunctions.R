@@ -298,7 +298,8 @@ NULL
         
     }
     # CHECKME: I changed this to make this for all, not just if missing, so as to guarantee that they are unique, but I don't know if it will break something downstream
-     rownames(inputMatrix)<- colnames(inputMatrix)<- as.character(seq_len(nrow(inputMatrix)))
+    rownames(inputMatrix)<- colnames(inputMatrix)<- 
+        as.character(seq_len(nrow(inputMatrix)))
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
         checkArgs=checkArgs)
     ## FIXME: requires S, i.e. similarity. Need to change to only need dissimilarity because copying the large matrix (not only here, but below too).
@@ -374,7 +375,6 @@ NULL
     return(clusterListIndices)
 }
 # .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list")
-#FIXME: load_all not working with inputType="cat" because doesn't like to call C code (can't find it), and since these objects are tested on load_all, hits error. Might need to turn off testing for this one function temporarily.
 .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list",checkFunctions=FALSE)
 #internalFunctionCheck(.hier01Cluster,inputType=c("diss","cat"),algorithmType="01",outputType="list")
 

@@ -18,14 +18,13 @@
   reduceMethod), whichAssay = 1, ...)
 
 \S4method{clusterSingle}{matrixOrHDF5OrNULL}(inputMatrix,
-  inputType = "X", subsample = TRUE, sequential = FALSE,
+  inputType = "X", subsample = FALSE, sequential = FALSE,
   distFunction = NA, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
-  reduceMethod = if (inputType == "X") c("none",
-  listBuiltInReducedDims(), listBuiltInFilterStats()) else "none",
-  nDims = defaultNDims(inputMatrix, reduceMethod),
-  makeMissingDiss = FALSE, clusterLabel = "clusterSingle",
-  saveSubsamplingMatrix = FALSE, checkDiss = FALSE, warnings = TRUE)
+  reduceMethod = "none", nDims = defaultNDims(inputMatrix,
+  reduceMethod), makeMissingDiss = FALSE,
+  clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
+  checkDiss = FALSE, warnings = TRUE)
 }
 \arguments{
 \item{...}{arguments to be passed on to the method for signature
@@ -220,15 +219,22 @@ data(simData)
 #following code takes some time.
 #use clusterSingle to do sequential clustering
 #(same as example in seqCluster only using clusterSingle ...)
-   clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+set.seed(44261)
+clustSeqHier_v2 <- clusterSingle(simData,
+     sequential=TRUE, subsample=TRUE, 
+     subsampleArgs=list(resamp.n=100, samp.p=0.7,
+     clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+     seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,
+     clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
 }
 
 #use clusterSingle to do just clustering k=3 with no subsampling
-clustNothing <- clusterSingle(simData,
+clustObject <- clusterSingle(simData,
     subsample=FALSE, sequential=FALSE,
     mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #compare to standard pam
-cluster::pam(t(simData),k=3,cluster.only=TRUE)
+pamOut<-cluster::pam(t(simData),k=3,cluster.only=TRUE)
+all(pamOut==primaryCluster(clustObject))
 }
 \seealso{
 \code{\link{clusterMany}} to compare multiple choices of parameters,

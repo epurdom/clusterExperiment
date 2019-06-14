@@ -202,7 +202,7 @@ Functions for calculating and manipulating either filtering
   stored in reducedDims.
 }
 \details{
-This function determines the matrix of values that can be used for
+\code{getReducedData} determines the matrix of values that can be used for
   computation based on the user's choice of dimensionality methods. The
   methods can be either of the filtering kind or the more general
   dimensionality reduction. The function will first look at any stored

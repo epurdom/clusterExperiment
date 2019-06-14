@@ -45,9 +45,8 @@
   isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE,
   labelTracks = TRUE, ...)
 
-\S4method{plotCoClustering}{ClusterExperiment}(data,
-  invert = ifelse(!is.null(data@coClustering) &&
-  all(diag(data@coClustering) == 0), TRUE, FALSE), ...)
+\S4method{plotCoClustering}{ClusterExperiment}(data, invert,
+  saveDistance = FALSE, ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,

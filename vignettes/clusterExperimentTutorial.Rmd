@@ -1517,7 +1517,7 @@ In the following we consider expanding our original clustering choices to consid
 ```{r clusterManyCheckParam}
 checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,
                         removeSil=c(TRUE,FALSE), isCount=TRUE,
-                        reduceMethod=c("PCA","var"),
+                        reduceMethod=c("PCA","var"), makeMissingDiss=TRUE,
                         nFilterDims=c(100,500,1000),nReducedDims=c(5,15,50),run=FALSE)
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```

@@ -135,14 +135,15 @@
 #' #Example: clustering using pam with different dimensions of pca and different
 #' #k and whether remove negative silhouette values
 #' #check how many and what runs user choices will imply:
-#' checkParams <- clusterMany(simData,reduceMethod="PCA",
-#' nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
-#' ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
+#' checkParams <- clusterMany(simData,reduceMethod="PCA", makeMissingDiss=TRUE,
+#'    nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+#'    ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 #' print(head(checkParams$paramMatrix))
 #'
 #' #Now actually run it
 #' cl <- clusterMany(simData,reduceMethod="PCA", nReducedDims=c(5,10,50),  isCount=FALSE,
-#' clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
+#'    clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),makeMissingDiss=TRUE, 
+#'    removeSil=c(TRUE,FALSE))
 #' print(cl)
 #' head(colnames(clusterMatrix(cl)))
 #'
@@ -160,9 +161,10 @@
 #'	#following code takes around 1+ minutes to run because of the subsampling
 #'	#that is redone each time:
 #'	system.time(clusterTrack <- clusterMany(simData, ks=2:15,
-#'	alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
-#'	subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam",
-#'	mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
+#'	    alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
+#'	    subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam", 
+#'	    makeMissingDiss=TRUE,
+#'      mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
 #' }
 #'
 #' @rdname clusterMany
@@ -776,20 +778,24 @@ setMethod(
                     makeMissingDiss=FALSE,
                     warnings=parameterWarnings))
         }
+        
+        ## Run this even if run=FALSE so see message.
+        if(any(!is.na(param[,"distFunction"]))){
+            ##Get the parameters that imply different datasets.
+            distParam<-unique(param[, c("reduceMethod", "nFilterDims",
+                 "distFunction","distAlgType")])
+            distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
+            uniqueId<-apply(distParam,1,paste,collapse=",")
+            ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
+            if(verbose)
+                cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
+        }
+
         if(run){
             ##------------
             ##Calculate distances necessary only once
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
-                ##Get the parameters that imply different datasets.
-                distParam<-unique(param[, c("reduceMethod", "nFilterDims",
-                     "distFunction","distAlgType")])
-                distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
-                uniqueId<-apply(distParam,1,paste,collapse=",")
-                ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
-                if(verbose)
-                    cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
-                
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
                     # be conservative and check for the 01 type 

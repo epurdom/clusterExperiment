@@ -352,21 +352,25 @@
 #' @aliases internalFunctionCheck
 #' @examples
 #' #Use internalFunctionCheck to check possible function
-#' goodFUN<-function(x,diss,k,checkArgs,cluster.only,...){
-#'	cluster::pam(x=t(x),k=k,cluster.only=cluster.only)
+#' goodFUN<-function(inputMatrix,k,cluster.only,...){
+#'	cluster::pam(x=t(inputMatrix),k=k,cluster.only=cluster.only)
 #' }
 #' #passes internal check
-#' internalFunctionCheck(goodFUN,inputType="X",algorithmType="K",outputType="vector")
-#' #Note it doesn't pass if inputType="either" because no catches for x=NULL
-#' internalFunctionCheck(goodFUN, inputType="either",algorithmType="K",outputType="vector")
-#' myCF<-ClusterFunction(clusterFUN=goodFUN, inputType="X",algorithmType="K", outputType="vector")
-#' badFUN<-function(x,diss,k,checkArgs,cluster.only,...){cluster::pam(x=x,k=k)}
-#' internalFunctionCheck(badFUN,inputType="X",algorithmType="K",outputType="vector")
+#' internalFunctionCheck(goodFUN,inputType=c("X","diss"),
+#'    algorithmType="K",outputType="vector")
+#' myCF<-ClusterFunction(clusterFUN=goodFUN, inputType="X",
+#'    algorithmType="K", outputType="vector")
+#' #doesn't work, because haven't made results return vector when cluster.only=TRUE
+#' badFUN<-function(inputMatrix,k,cluster.only,...){cluster::pam(x=inputMatrix,k=k)}
+#' internalFunctionCheck(badFUN,inputType=c("X","diss"),
+#'    algorithmType="K",outputType="vector")
 #' @details \code{internalFunctionCheck} is the function that is called by the 
 #'   validity check of the \code{ClusterFunction} constructor (if 
 #'   \code{checkFunctions=TRUE}). It is available as an S3 function for the user
 #'   to be able to test their functions and debug them, which is difficult to do
 #'   with a S4 validity function.
+#' @return Returns a logical value of TRUE if there are no problems. If there is 
+#'   a problem, returns a character string describing the problem encountered.
 internalFunctionCheck<-function(clusterFUN,inputType,algorithmType,outputType){
     #--- Make small data
     N<-20
