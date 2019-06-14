@@ -1401,9 +1401,10 @@ ceDist
 
 ```{r clusterManyDiffDist,fig.width=15,fig.height=6}
 ceDist<-clusterMany(ceDist, k=7:9, alpha=c(0.35,0.4,0.45), 
-	 clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
-	 findBestK=FALSE,removeSil=c(FALSE),dist=c("corDist","spearDist"),
-          reduceMethod=c("mad"),nFilterDims=1000,run=TRUE)
+    clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
+    findBestK=FALSE,removeSil=c(FALSE), distFunction=c("corDist","spearDist"),
+    makeMissingDiss=TRUE,
+    reduceMethod=c("mad"),nFilterDims=1000,run=TRUE)
 clusterLabels(ceDist)<-gsub("clusterFunction","alg",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("Dist","",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("distFunction","dist",clusterLabels(ceDist))

@@ -592,14 +592,22 @@ setMethod(
             checks<-lapply(1:nrow(param), 
                 function(i){paramCheck(param[i,],returnValue="full",
                     warn=parameterWarnings)})
-            doDiss<-sapply(checks,function(x){x$doDiss})
+            # doDiss means will send diss as inputMatrix
+            # doDissPost means will pass diss to mainClusterArgs        
+            doDiss<-sapply(checks,function(x){x$doDiss}) | !is.na(distFunction)
             doDissPost<-sapply(checks,function(x){x$doDissPost})
-            missDiss<-(doDiss | doDissPost) & is.na(param[,"distFunction"])
-            if(any(missDiss) & !makeMissingDiss){
+            #in case user asked for distFunction, don't do again:
+            doDissPost[doDiss]<-FALSE 
+            param$passDistToInput <- doDiss
+            param$passDistToMain <- doDissPost
+            # missDiss is all places where will need calculate distance
+            missDiss<-doDiss | doDissPost
+            if(any(doDiss | doDissPost) & !makeMissingDiss){
                 stop("Parameter combinations requested require calculation of at least one distance matrix. User must now set `makeMissingDiss=TRUE` to have clusterMany calculated the necessary distances.")
             }
             if(any(missDiss) & makeMissingDiss){
-                param[missDiss,"distFunction"]<-"default"
+                # give "default" to those not assigned
+                param[is.na(distFunction) & missDiss,"distFunction"]<-"default"
                 
                 ## expand param matrix to include additional information for calculating/passing distances
                 subCF<-sapply(checks,function(x){
@@ -613,9 +621,6 @@ setMethod(
                     ifelse(param[missDiss,"subsample"],subCF,mainCF)
                 param$distAlgType[!doDiss & doDissPost]<-
                     mainCF[!doDiss & doDissPost]
-                
-                param$passDistToInput<-doDiss
-                param$passDistToMain<-!doDiss & doDissPost
             }
             
             if(any(!is.na(param[,"nFilterDims"]) &
@@ -777,7 +782,8 @@ setMethod(
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-unique(param[, c("reduceMethod", "nFilterDims", "distFunction","distAlgType")])
+                distParam<-unique(param[, c("reduceMethod", "nFilterDims",
+                     "distFunction","distAlgType")])
                 distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
                 uniqueId<-apply(distParam,1,paste,collapse=",")
                 ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
