@@ -7,11 +7,11 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
     expect_silent(clustNothing <- clusterMany(mat, 
 		ks=c(3,4),clusterFunction=listBuiltInFunctions(),
         subsample=FALSE, sequential=FALSE,
-        isCount=FALSE,verbose=FALSE))
+        isCount=FALSE,verbose=FALSE, makeMissingDiss=TRUE))
 	expect_silent(clustDF <- clusterMany(data.frame(mat),
 		ks=c(3,4),clusterFunction=listBuiltInFunctions(),
 		subsample=FALSE, sequential=FALSE,
-		isCount=FALSE,verbose=FALSE))
+		isCount=FALSE,verbose=FALSE, makeMissingDiss=TRUE))
 		   
     expect_is(clustNothing, "ClusterExperiment")
     expect_is(clustNothing, "SingleCellExperiment")
@@ -30,8 +30,9 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
     expect_true(all(clusterTypes(clustNothing)=="clusterMany"))
 
     #test running on ClusterExperiment Object -- should add the new clustering
-    expect_silent(clustNothing3 <- clusterMany(ccSE, ks=c(3,4),clusterFunction="pam",
-                                 subsample=FALSE, sequential=FALSE,verbose=FALSE))
+    expect_silent(clustNothing3 <- clusterMany(ccSE, 
+        ks=c(3,4),clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE, verbose=FALSE))
     expect_true(nClusterings(clustNothing3) == nClusterings(ccSE) + 2)
     expect_equal(colData(clustNothing3),colData(ccSE))
     expect_equal(rownames(clustNothing3),rownames(ccSE))
@@ -39,15 +40,21 @@ test_that("`clusterMany` works with matrix, list of data, ClusterExperiment obje
     expect_equal(metadata(clustNothing3),metadata(ccSE))
     expect_equal(rowData(clustNothing3),rowData(ccSE))
     
-    expect_silent(test <- clusterSingle(se,  subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=4)),isCount=FALSE))
-    expect_silent(clustNothing3<- clusterMany(test, ks=c(3,4),clusterFunction="pam",
-                                   subsample=FALSE, sequential=FALSE,verbose=FALSE))
-    expect_silent(clustNothing4<- clusterMany(clustNothing3, ks=c(3:4),clusterFunction="pam",
-                                   subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=TRUE))
+    expect_silent(test <- clusterSingle(se,  subsample=FALSE, 
+        sequential=FALSE, 
+        mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=4)),
+        isCount=FALSE))
+    expect_silent(clustNothing3<- clusterMany(test, 
+        ks=c(3,4),clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE, verbose=FALSE))
+    expect_silent(clustNothing4<- clusterMany(clustNothing3, 
+        ks=c(3:4),clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=TRUE))
     expect_equal(clustNothing3,clustNothing4)
 
-    expect_silent(clustNothing5<- clusterMany(clustNothing3, ks=c(5:6),clusterFunction="pam",
-            subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=FALSE))
+    expect_silent(clustNothing5<- clusterMany(clustNothing3, 
+        ks=c(5:6),clusterFunction="pam",
+        subsample=FALSE, sequential=FALSE,verbose=FALSE, eraseOld=FALSE))
     expect_equal(NCOL(clusterMatrix(clustNothing5)),5)
 
     expect_silent(ppIndex<-workflowClusterDetails(clustNothing5))
