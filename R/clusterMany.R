@@ -601,7 +601,7 @@ setMethod(
             param$passDistToMain <- doDissPost
             # missDiss is all places where will need calculate distance
             missDiss<-doDiss | doDissPost
-            if(any(doDiss | doDissPost) & !makeMissingDiss){
+            if(any(missDiss) & !makeMissingDiss){
                 stop("Parameter combinations requested require calculation of at least one distance matrix. User must now set `makeMissingDiss=TRUE` to have clusterMany calculated the necessary distances.")
             }
             if(any(missDiss) & makeMissingDiss){
@@ -810,7 +810,8 @@ setMethod(
                             percentile=distParam[ii,"nFilterDims"]),
                             transFun=transFun,whichAssay=whichAssay)
                     }
-                    else if(makeMissingDiss & any(doDiss || doDissPost)){
+                    else if(makeMissingDiss & any(missDiss)){
+                        ### FIXME: shouldn't be any(missDiss) -- should be only the one for this row!
                         dat<-t(reducedDim(x,type=redM))
                     }
                     else stop("Internal error: should have removed any combinations that included a dimensionality reduction and a distance unless due to makeMissingDiss=TRUE")

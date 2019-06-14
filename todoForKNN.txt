@@ -7,3 +7,4 @@ TO DO:
 -- Take off names have added to the labels from clusterMany (distAlgType, etc.)
 -- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff?
 -- RSEC has no @example!
+-- Introduced error in calculating distFunction in clusterMany -- need to check the distance needed for a particular row, not all (right now have any(doDiss|doDissPost))
