@@ -1,6 +1,8 @@
 Changes in version 2.5.3-9001 (Release date: )
 ==============
-
+Bugs:
+* Fix bug in `makeConsensus` that was calculating the unassigned proportion in the wrong margin.
+* Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============
