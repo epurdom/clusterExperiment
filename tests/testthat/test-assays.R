@@ -146,6 +146,7 @@ test_that("RSEC works independent of assay order", {
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
+  #had to change the tests, because with new version of bioconductor, order of assays being different is caught, and for some reason wasn't caught before. Very strange. 
   expect_equal(out1, out2)
 
   #use numeric
