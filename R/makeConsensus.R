@@ -145,7 +145,7 @@ setMethod(
       }
     }
     ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
-    whUnassigned <- which(apply(clusterMat, 2, function(x){
+    whUnassigned <- which(apply(clusterMat, 1, function(x){
       sum(x== -1)/length(x)>propUnassigned}))
     clUnassigned <- cl
     clUnassigned[whUnassigned] <- -1
