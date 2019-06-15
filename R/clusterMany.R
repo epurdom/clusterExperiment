@@ -644,7 +644,10 @@ setMethod(
         #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
         if(!is.null(distFunction)){
           #need to update here when have filter (see below)
-          diss<- allDist[[distFunction]]
+          dnm<-paste(as.character(par[["distFunction"]]),
+                  as.character(par[["nFilterDims"]]),
+                  as.character(par[["reduceMethod"]]),collapse=",")
+          diss<- allDist[[dnm]]
           clusterSingle(x=dat, diss=diss,subsample=subsample, reduceMethod="none",
                         mainClusterArgs=mainClusterArgs,
                         subsampleArgs=subsampleArgs, seqArgs=seqArgs,
@@ -679,7 +682,9 @@ setMethod(
           })
           #need to update here when have filter
           ##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
-          names(allDist)<-distParam[,"distFunction"]
+          nms<-paste(distParam[,"distFunction"],distParam[,"nFilterDims"],
+              distParam[,"reduceMethod"],sep=",")
+          names(allDist)<-nms
 
         }
 
