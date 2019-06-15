@@ -68,7 +68,8 @@ We will make use of a single cell RNA sequencing experiment made available in th
 ```{r,cache=FALSE}
 set.seed(14456) ## for reproducibility, just in case
 library(scRNAseq)
-fluidigm <- ReprocessedFluidigmData()
+if(packageVersion("scRNASeq")>="1.11.0") fluidigm <- ReprocessedFluidigmData()
+    else data(fluidigm)
 ```
 
 We will use the `fluidigm` dataset (see `help("fluidigm")`). This dataset is stored as a SummarizedExperiment object. We can access the data with `assay` and metadata on the samples with `colData`. 
