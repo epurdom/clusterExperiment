@@ -16,7 +16,8 @@
   eraseOld = FALSE, clusterLabel = "makeConsensus", ...)
 }
 \arguments{
-\item{x}{a matrix or \code{\link{ClusterExperiment}} object.}
+\item{x}{a matrix with samples on the rows and different clusterings on the
+columns or \code{\link{ClusterExperiment}} object.}
 
 \item{proportion}{The proportion of times that two sets of samples should be 
 together in order to be grouped into a cluster (if <1, passed to
@@ -32,6 +33,17 @@ a cluster because of shared clustering, passed to
 \item{propUnassigned}{samples with greater than this proportion of assignments
 equal to '-1' are assigned a '-1' cluster value as a last step (only if
 proportion < 1)}
+
+\item{whenUnassign}{one of "before" or "after", indicating at what point are
+samples with greater than \code{propUnassigned} '-1' cluster values given a
+'-1' value. If "before", then these samples are removed and not used for
+clustering. If "after", these samples are included in the clustering step,
+but then the cluster values they receive are assigned a '-1. These may
+result in different clusterings, because if these samples are included in
+the clustering (i.e. \code{whenUnassign="after"}, then these samples may
+affect the cluster assignments of other samples. The default is "before",
+but previous to version 2.5.4, it was internally set to "after", so for
+reproducibility with older results, users may need to set this option.}
 
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}

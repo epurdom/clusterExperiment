@@ -10,6 +10,7 @@ Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
+Encoding: UTF-8
 Depends:
     R (>= 3.6.0),
     SingleCellExperiment,

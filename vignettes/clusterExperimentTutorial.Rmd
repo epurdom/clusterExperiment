@@ -118,52 +118,12 @@ colnames(colData(se))[wh]<-c("Published1","Published2")
 
 We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`consensusMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
 
-Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the example of a common run of RSEC: 
-
-```{r RSEC, eval=FALSE}
-library(clusterExperiment)
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
-	reduceMethod="PCA", nReducedDims=10,
-	ncores=1, random.seed=176201))
-```
-
-However, to exactly replicate the results here, we will set a large number of parameters to make sure that the vignette is back-compatible in case some defaults change. We will explain these parameters as we go along, but many of these parameters are the default. 
-
-```{r RSECExact, eval=FALSE}
-library(clusterExperiment)
-rsecFluidigm<-RSEC(se, 
-                     isCount = TRUE, 
-                     k0s = 4:15, 
-                     alphas=c(0.1, 0.2, 0.3), 
-                     betas = 0.9,
-                     reduceMethod="PCA", 
-                     nReducedDims=10,
-                     minSizes=1, 
-                     clusterFunction="hierarchical01",
-                     consensusMinSize=3,
-                     consensusProportion=0.7,
-                     dendroReduce= "mad",
-                     dendroNDims=1000,
-                     mergeMethod="adjP",
-	                    mergeDEMethod="limma",
-                     mergeCutoff=0.01,
-                     ncores=1, 
-                     consensusArgs=list(whenUnassign="after",   
-                         clusterArgs=list(removeDup=FALSE)),
-                     subsampleArgs=list(clusterFunction="pam",
-                         classifyMethod="All"),
-                     random.seed=176201)
-)
-
-```
-
-Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
+Because this procedure is slightly computationally intensive, depending on the user's machine, we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
 
 ```{r RSECLoad}
-#don't call this routine if you ran the above code.
-#it will overwrite the rsecFluidigm you made
 library(clusterExperiment)
 data("rsecFluidigm")
+# package version the object was created under
 metadata(rsecFluidigm)$packageVersion
 ```
 
@@ -178,6 +138,24 @@ y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
 if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
 if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
 ```
+
+However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the example of a common run of RSEC corresponding to the above object (the vignette does not run this code but the user can): 
+
+```{r RSEC, eval=FALSE}
+## Example of RSEC call (not run by vignette)
+## Will overwrite the rsecFluidigm brought in above.
+library(clusterExperiment)
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
+    reduceMethod="PCA", nReducedDims=10,
+    k0s = 4:15, 
+    alphas=c(0.1, 0.2, 0.3),
+    ncores=1, random.seed=176201))
+```
+
+
+However, to be sure that we exactly replicate the data object `rsecFluidigm` that is provided in the package, you would need to set a large number of parameters to make sure that the vignette is back-compatible (in different versions of the package, some defaults have changed). The code that created `rsecFluidigm` found with this version of the vignette can be found in the help file (`?rsecFluidigm`)
+
+
 ### The output 
 
 We can look at the object that was created.
@@ -333,7 +311,7 @@ In the next section, we will describe more about the options we could adjust in 
  * decide to use a different method of estimating the proportion differential for merge by setting `mergeMethod="Storey"` instead of the default ("adjP"). 
  * no longer adjust the minimum cluster size and use the default (`consensusMinSize=5`).
  
- These are the main parameters we might frequently want to tweak in `RSEC`.
+ These are common parameters we might frequently want to tweak in `RSEC`.
  
 ```{r recallRSEC}
 rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
@@ -393,13 +371,20 @@ pairsAllRSEC<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05,
 head(pairsAllRSEC)
 ```
 
-We can visualize only these significantly different pair-wise features with `plotHeatmap` by using the column "IndexInOriginal" in the result of `getBestFeatures` to quickly identify the genes to be used in the heatmap. Notice that the same genes can be replicated across different contrasts, so we will not always have unique genes:
+### Heatmaps of features
+
+We can visualize only these significantly different pair-wise features with a heatmap using the `plotHeatmap` function. 
+
+First we need to identify the genes to plot for the heatmap. Our output `pairsAllRSEC` has a column `IndexInOriginal` that identifies the index of the genes in the original data matrix. 
+
+However, notice that the same genes can be found in different contrasts, meaning our list of significant genes will not be unique:
 
 ```{r getBestFeatures_size}
-length(pairsAllRSEC$Feature)==length(unique(pairsAllRSEC$Feature))
+# We have duplicates of some genes:
+any(duplicated(pairsAllRSEC$Feature))
 ```
 
-In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
+So some genes are significant for multiple of the tests. For our heatmap, we will descide to show only unique gene values so that they are not plotted multiple times in our heatmap. We will signify which genes to plot with the argument `clusterFeaturesData` (i.e. which data to use for the rows of the heatmap). 
 
 ```{r getBestFeatures_heatmap}
 plotHeatmap(rsecFluidigm, whichClusters=c("makeConsensus","mergeClusters"),clusterSamplesData="dendrogramValue",
@@ -408,9 +393,10 @@ plotHeatmap(rsecFluidigm, whichClusters=c("makeConsensus","mergeClusters"),clust
             breaks=.99)
 ```
 
-Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram (described below). These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
+Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram of the clusters was created (described below). These samples can also be mixed into the dendrogram at the time of creation (see [makeDendrogram](#makeDendrogram))
 
-We can identify the genes corresponding to the different contrasts with the `plotContrastHeatmap` function where the genes (rows) are organized by what contrast for which they are significant. The option `nBlankLines` controls the space between the groups of genes from each contrast. We also give the argument `whichCluster="primary"` to indicate that the contrasts were created with the primary clustering -- this means that the legend will put in the names of the clusters rather than their (internal) numeric id. 
+
+We can alternatively show a heatmap that will sort the genes by the different contrasts they correspond to using the `plotContrastHeatmap` function. The genes (rows) will be grouped by what contrast they are with. The option `nBlankLines` controls the space between the groups of genes from each contrast. We also give the argument `whichCluster="primary"` to indicate that the contrasts were created with the primary clustering (this means that the legend will put in the names of the clusters rather than their (internal) numeric id). 
 
 ```{r plotContrastHeatmap}
 plotContrastHeatmap(rsecFluidigm, signif=pairsAllRSEC,nBlankLines=40,whichCluster="primary")
@@ -463,13 +449,6 @@ We can visualize the resulting clusterings using the `plotClusters` command as w
 defaultMar<-par("mar")
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", colData=c("Biological_Condition","Published2"), axisLine=-1)
-
-ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
-      isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),
-      nReducedDims=c(5,15,50),run=TRUE)
-test<-getClusterManyParams(ce)
-ord<-order(test[,"k"],test[,"nFilterDims"],test[,"nReducedDims"])
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
@@ -479,17 +458,19 @@ Notice that again some samples are white (i.e the value -1, meaning they were no
 
 We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow (so far we only have the 1 step, which is the `clusterMany` step). We seen already that `whichClusters` can be set to limit to specific clusterings or specific steps in the workflow .
 
-We cal also give to the `whichClusters` an argument indices of clusters stored in the `ClusterExperiment` object, which can allow us to show the clusters in a different order. Here we'll pick an order which corresponds to varying the number of dimensions, rather than k. We can find the parameters for each clustering using the `getClusterManyParams`
+*Using `whichClusters` to reorder the clusterings in `plotClusters`* We can also give to the `whichClusters` an vector argument corresponding to the indices of clusters stored in the `ClusterExperiment` object. This can allow us to show the clusters in a different order. Here we'll pick an order which corresponds to varying the number of dimensions, rather than varying $k$.
+
+We first find the parameters for each clustering using the `getClusterManyParams`
 
 ```{r plotCluster_params}
 cmParams<-getClusterManyParams(ce)
 head(cmParams)
 ```
 
-`getClusterManyParams` returns the parameter values, as well as the index of the corresponding clustering (i.e. what column it is in the matrix of clusterings). It is important to note that the index will change if we add additional clusterings, as we will do later.
+`getClusterManyParams` returns the parameter values, as well as the index of the corresponding clustering (i.e. what column it is in the matrix of clusterings). It is important to note that the index will change if we add additional clusterings, as we will do later, in which case we'd need to recall `getClusterManyParams`.
 
 
-We will set an order with first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
+We will set an order to show first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
 
 ```{r plotCluster_newOrder}
 ord<-order(cmParams[,"reduceMethod"],cmParams[,"nReducedDims"])
@@ -498,8 +479,9 @@ par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. 
-The labels shown are those given automatically by `clusterMany` but can be a bit much for plotting. We choose to remove "Features" as being too wordy:
+We see that the order in which the clusters are given to `plotClusters` changes the plot greatly, since the order of each subsequent clustering depends on the order of the line above it.
+ 
+The labels shown are those given automatically by `clusterMany` (and can be accessed with `clusterLabels`) but can be a bit much for plotting. We choose to remove "Features" as being too wordy:
 
 ```{r plotCluster_newLabels}
 clOrig<-clusterLabels(ce)
@@ -508,7 +490,7 @@ par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. 
+We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (`clusterLabels(ce)<- ...`). 
 
 There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
@@ -1547,7 +1529,7 @@ After creating many clusterings, `makeConsensus` finds a single cluster based on
 
 As mentioned in the Quick Start section, the default option for `makeConsensus` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
 
-Instead `makeConsensus` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `makeConsensus` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `makeConsensus` (`proportion=0.7` and `minSize=3`). 
+Instead `makeConsensus` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `makeConsensus` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `makeConsensus` (`proportion=0.7` and `minSize=3`). 
 
 ```{r makeConsensus_detailed}
 plotCoClustering(ce)
@@ -1555,10 +1537,10 @@ plotCoClustering(ce)
 
 `makeConsensus` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimum size of a cluster.
 
-**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `makeConsensus`.
+**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is forced to be -1 (unassigned) in the clustering returned by `makeConsensus`.
 
 
-**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that will provide you (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
 ### Consensus from subsets of clusterings
 
