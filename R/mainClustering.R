@@ -40,9 +40,13 @@
 #'   \code{mainClusterArgs} in functions like \code{\link{clusterSingle}} and
 #'   \code{\link{clusterMany}}.
 #'   
-#' @return mainClustering returns a vector of cluster assignments (if
+#' @return If \code{returnData=FALSE}, mainClustering returns a vector of cluster assignments (if
 #'   format="vector") or a list of indices for each cluster (if format="list").
-#'   Clusters less than minSize are removed.
+#'   Clusters less than minSize are removed. If \code{returnData=TRUE}, then mainClustering returns a list
+#' \itemize{
+#' \item{results}{The clusterings of each sample.}
+#' \item{inputMatrix}{The input matrix given to argument \code{inputMatrix}. Useful if input is result of subsampling, in which case input is the set of clusterings found over subsampling.}
+#' }
 #'
 #' @examples
 #' data(simData)

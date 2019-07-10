@@ -3,16 +3,14 @@
 #' Given input data, this function will find clusters, based on a single
 #' specification of parameters.
 #'
-#' @param inputType a character vector defining what type(s) of input 
-#'   \code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
-#'   indicate the type of matrix that is being provided to \code{inputMatrix}.
-#'   (see details). 
-#'   "X" and "cat" should be indicate matrices with features in the row and
-#'   samples in the column; "cat" corresponds to the features being numerical
-#'   integers corresponding to categories, while "X" are continuous valued
-#'   features. "diss" corresponds to an \code{inputMatrix} that is a NxN
-#'   dissimilarity matrix. "cat" is largely used internal for clustering of sets
-#'   of clusterings.
+#' @param inputType a character vector defining what type of input is given in
+#'   the \code{inputMatrix} argument. Must consist of values "diss","X", or
+#'   "cat" (see details). "X" and "cat" should be indicate
+#'   matrices with features in the row and samples in the column; "cat"
+#'   corresponds to the features being numerical integers corresponding to
+#'   categories, while "X" are continuous valued features. "diss" corresponds to
+#'   an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+#'   used internally for clustering of sets of clusterings.
 #' @param inputMatrix numerical matrix on which to run the clustering or a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 #'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
@@ -42,8 +40,8 @@
 #'   is equal to "clusterSingle", to indicate that this clustering is the result
 #'   of a call to \code{clusterSingle}.
 #' @param checkDiss logical. Whether to check whether the dissimilarities
-#'   matrices (whether given by the user or calculated because
-#'   \code{makeMissingDiss=TRUE} are valid.
+#'   matrices  are valid (whether given by the user or calculated because
+#'   \code{makeMissingDiss=TRUE}).
 #' @param warnings logical. Whether to print out the many possible warnings and
 #'   messages regarding checking the internal consistency of the parameters.
 #' @param ... arguments to be passed on to the method for signature
@@ -131,14 +129,13 @@
 #'   across all of the sequential steps by setting \code{kRange} explicitly in
 #'   the \code{mainClusterArgs} list.} }
 #' @return A \code{\link{ClusterExperiment}} object if
-#'   \code{inputType} is not "diss".
-#' @return If input was \code{diss}, then the result is a list with values
+#'   \code{inputType} is of type "X".
+#' @return If input was not of type "X", then the result is a list with values
 #'   \itemize{ 
 #'        \item{clustering: }{The vector of clustering results}
 #'        \item{clusterInfo: }{A list with information about the parameters run in
 #'   the clustering} 
-#'        \item{diss: }{The dissimilarity matrix used in the
-#'   clustering} 
+#'        \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.} 
 #'   }
 #' @details To provide a distance matrix via the argument \code{distFunction},
 #'   the function must be defined to take the distance of the rows of a matrix
@@ -292,8 +289,12 @@ setMethod(
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, 
                           checkDiss=FALSE, warnings=TRUE) {
-        
-        transInputType<-inputType
+                             
+        origInputType<-inputType
+        if(saveSubsamplingMatrix & !subsample){
+            warning("Setting saveSubsamplingMatrix=TRUE has no effect if subsample=FALSE")
+            saveSubsamplingMatrix<-FALSE
+        }
         doDiss<-FALSE
         if(is.function(distFunction) || !is.na(distFunction)){
             if(inputType!="diss"){
@@ -325,7 +326,7 @@ setMethod(
         ##########
         ###Don't do this until after do the checks, because takes some time.
         transObj<-NULL
-        if(transInputType == "X"){
+        if(origInputType == "X"){
             origX<-inputMatrix # Need this to make CE object later!
             N <- dim(inputMatrix)[2] #ngenes x nsamples
             ##########
@@ -408,7 +409,7 @@ setMethod(
                     subsample=subsample,
                     subsampleArgs=subsampleArgs,
                     mainClusterArgs=mainClusterArgs)
-            outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N))
+            outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N), coClusterMatrix=t(finalClusterList$inputMatrix))
             
         }
         clInfo<-list(list(clusterInfo = outlist$clusterInfo,
@@ -424,12 +425,12 @@ setMethod(
         ##########
         ## Convert to ClusterExperiment Object
         ##########
-        if(transInputType == "X"){ 
+        if(origInputType == "X"){ 
             retval<-.convertOutListToCE(
                 xMatrix=origX,
                 clustering=outlist$clustering,
                 clusterInfo=clInfo,
-                coClusterMatrix=if(!sequential) t(finalClusterList$inputMatrix) else NULL, 
+                coClusterMatrix=outlist$coClusterMatrix,
                 transFun=transFun,
                 clusterLabel=clusterLabel,
                 sequential=sequential, 
@@ -440,8 +441,10 @@ setMethod(
         }
         else{
             out<-list(clustering=outlist$clustering, 
-				clusterInfo=clInfo,
-				diss=outlist$diss)
+				clusterInfo=clInfo)
+            if(saveSubsamplingMatrix) 
+                out<-c(out,list(coClusterMatrix=outlist$coClusterMatrix))
+            return(out)
         }
         
     }

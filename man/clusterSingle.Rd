@@ -47,16 +47,14 @@ in the reduction specified by \code{reduceMethod}. Defaults to output of
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{inputType}{a character vector defining what type(s) of input 
-\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
-indicate the type of matrix that is being provided to \code{inputMatrix}.
-(see details). 
-"X" and "cat" should be indicate matrices with features in the row and
-samples in the column; "cat" corresponds to the features being numerical
-integers corresponding to categories, while "X" are continuous valued
-features. "diss" corresponds to an \code{inputMatrix} that is a NxN
-dissimilarity matrix. "cat" is largely used internal for clustering of sets
-of clusterings.}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
@@ -108,23 +106,22 @@ replaces any existing coClustering object in the slot \code{coClustering}
 if input object is a \code{ClusterExperiment} object.)}
 
 \item{checkDiss}{logical. Whether to check whether the dissimilarities
-matrices (whether given by the user or calculated because
-\code{makeMissingDiss=TRUE} are valid.}
+matrices  are valid (whether given by the user or calculated because
+\code{makeMissingDiss=TRUE}).}
 
 \item{warnings}{logical. Whether to print out the many possible warnings and
 messages regarding checking the internal consistency of the parameters.}
 }
 \value{
 A \code{\link{ClusterExperiment}} object if
-  \code{inputType} is not "diss".
+  \code{inputType} is of type "X".
 
-If input was \code{diss}, then the result is a list with values
+If input was not of type "X", then the result is a list with values
   \itemize{ 
        \item{clustering: }{The vector of clustering results}
        \item{clusterInfo: }{A list with information about the parameters run in
   the clustering} 
-       \item{diss: }{The dissimilarity matrix used in the
-  clustering} 
+       \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.} 
   }
 }
 \description{

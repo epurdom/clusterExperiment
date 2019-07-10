@@ -15,16 +15,14 @@ seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
 \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
-\item{inputType}{a character vector defining what type(s) of input 
-\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
-indicate the type of matrix that is being provided to \code{inputMatrix}.
-(see details). 
-"X" and "cat" should be indicate matrices with features in the row and
-samples in the column; "cat" corresponds to the features being numerical
-integers corresponding to categories, while "X" are continuous valued
-features. "diss" corresponds to an \code{inputMatrix} that is a NxN
-dissimilarity matrix. "cat" is largely used internal for clustering of sets
-of clusterings.}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}

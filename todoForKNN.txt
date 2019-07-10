@@ -1,11 +1,14 @@
 URGENT TO DO:
 -- Major error found in clusterMany (present in release!!!) in the combination of distFunction and dim reduction -- doesn't get combination. Not fixing it yet, because want to be able to reproduce results before make fix. 
 -- Major error found in makeConsensus (present in release!!!) that not doing unassigned values right. Using wrong margin. Haven't fixed it yet, because want to check if pass tests, and will have to redo a lot of tests (e.g. RSEC will need new seed value.)
+-- Remove/update depricated functions (in develop!!)
 -- Introduced error in calculating distFunction in clusterMany -- need to check the distance needed for a particular row, not all (right now have any(doDiss|doDissPost))
+-- Need to update the indices of coClustering if add/subtract any clusterings! Create a test.
 
 MINOR TO DO:
 -- clusterSingle -- have intersection between type of data and dimensionality reduction! need to go back to this for what it means for type="cat". 
 -- Add some kind of bare check that diss are at least symmetric dimensions!
 -- check in seqCluster status of verbose versus checking arguments. 
 -- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff (it shouldn't!)?
--- RSEC has no @example!
+-- RSEC has no @example! (add one with no run)
+-- Make makeMissingDiss dependent on the dimension (i.e. TRUE for smallish matrices)

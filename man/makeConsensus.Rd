@@ -23,8 +23,9 @@ columns or \code{\link{ClusterExperiment}} object.}
 together in order to be grouped into a cluster (if <1, passed to
 mainClustering via alpha = 1 - proportion)}
 
-\item{clusterFunction}{the clustering to use (passed to 
-\code{\link{mainClustering}}); currently must be of type '01'.}
+\item{clusterFunction}{the clustering function to use (passed to 
+\code{\link{mainClustering}}); currently must be of type '01' and accept as
+input matrices of type "cat" (see details of ?ClusterFunction).}
 
 \item{minSize}{minimum size required for a set of samples to be considered in 
 a cluster because of shared clustering, passed to
@@ -34,16 +35,18 @@ a cluster because of shared clustering, passed to
 equal to '-1' are assigned a '-1' cluster value as a last step (only if
 proportion < 1)}
 
-\item{whenUnassign}{one of "before" or "after", indicating at what point are
-samples with greater than \code{propUnassigned} '-1' cluster values given a
-'-1' value. If "before", then these samples are removed and not used for
-clustering. If "after", these samples are included in the clustering step,
-but then the cluster values they receive are assigned a '-1. These may
-result in different clusterings, because if these samples are included in
-the clustering (i.e. \code{whenUnassign="after"}, then these samples may
-affect the cluster assignments of other samples. The default is "before",
-but previous to version 2.5.4, it was internally set to "after", so for
-reproducibility with older results, users may need to set this option.}
+\item{whenUnassign}{(provided for back compatibility with previous versions).
+Must be one of "before" or "after", indicating at what point are samples
+with a proportion of assignments of -1 greater than \code{propUnassigned}
+forced to have a '-1' value. If "before", then these samples are removed
+and not used for clustering. If "after", these samples are included in the
+clustering step, but then the cluster values they receive are assigned a
+'-1. These choices may result in different clusterings, because if these
+samples are included in the clustering (i.e. \code{whenUnassign="after"},
+then these samples may affect the cluster assignments of other samples. The
+default is currently "before", but previous to version 2.5.4, there was no
+such option and the code internally set to "after", so for reproducibility
+with older results, users may need to set this option.}
 
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}

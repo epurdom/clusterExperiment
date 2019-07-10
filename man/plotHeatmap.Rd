@@ -186,12 +186,12 @@ coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
 output from \code{\link{clusterSingle}}, then the user should manually set
 this parameter to FALSE.)}
 
-\item{saveDistance}{logical. When the \code{coClustering} slot contains the
-NxB matrices of clusterings, the hamming distance will be calculated before
-running the plot. This argument determines whether the
-\code{ClusterExperiment} object with that distance in \code{coClustering}
-slot should be returned (so as to avoid re-calculating it in the future) or
-not.}
+\item{saveDistance}{logical. When the \code{coClustering} slot contains
+indices of the clusterings or a NxB set of clusterings, the hamming
+distance will be calculated before running the plot. This argument
+determines whether the \code{ClusterExperiment} object with that distance
+in \code{coClustering} slot should be returned (so as to avoid
+re-calculating it in the future) or not.}
 }
 \value{
 Returns (invisibly) a list with elements

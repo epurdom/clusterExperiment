@@ -15,21 +15,24 @@
 #'   required arguments.
 #' @slot inputType a character vector defining what type(s) of input
 #'   \code{clusterFUN} takes. Must consist of values "diss","X", or "cat"
-#'   indicate the set of input values that the algorithm can handle (see details
+#'   indicating the set of input values that the algorithm can handle (see details
 #'   below).
 #' @slot algorithmType a character defining what type of clustering algorithm 
 #'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN} 
-#'   must take the corresponding required arguments (see details below).
-#' @slot classifyFUN a function that takes as input new data and the output of 
-#'   \code{clusterFUN} (where the output is from when \code{cluster.only=FALSE})
-#'   and results in cluster assignments of the new data.  Used in subsampling
-#'   clustering. Note that the function should assume that the input 'x' is not
-#'   the same samples that were input to the ClusterFunction (but does assume
-#'   that it is the same number of features/columns). If given value \code{NULL}
-#'   then subsampling type can only be \code{"InSample"}, see
+#'   must take the corresponding required arguments for its type (see details
+#'   below).
+#' @slot classifyFUN a function that has takes as input new data and the output
+#'   of \code{clusterFUN} (where the output is from when
+#'   \code{cluster.only=FALSE}) and results in cluster assignments of the new
+#'   data.  Used in subsampling clustering. Note that the function should assume
+#'   that the data given to the \code{inputMatrix} argument is not the same
+#'   samples that were input to the ClusterFunction (but does assume that it is
+#'   the same number of features/columns). If slot \code{classifyFUN} is given
+#'   value \code{NULL} then subsampling type can only be \code{"InSample"}, see
 #'   \code{\link{subsampleClustering}}.
-#' @slot inputClassifyType the input type for the classification function (if
-#'   not NULL); like \code{inputType}, must vector containing "diss","X", or "cat"
+#' @slot inputClassifyType the input type for the classification function (if 
+#'   not NULL); like \code{inputType}, must be a vector containing "diss","X",
+#'   or "cat"
 #' @slot outputType the type of output given by \code{clusterFUN}. Must either
 #'   be "vector" or "list". If "vector" then the output should be a vector of
 #'   length equal to the number of observations   with integer-valued elements
@@ -49,9 +52,9 @@
 #' @slot checkFunctions logical. If TRUE, the validity check of the
 #'   \code{ClusterFunction} object will check the \code{clusterFUN} with simple
 #'   toy data using the function \code{internalFunctionCheck}.
-#' @details The following arguments are required to be accepted for
-#'   \code{clusterFUN}: as higher-level code may pass these arguments (but could
-#'   be ignored, or handled with a ... )
+#' @details clusterFUN: The following arguments are required to be accepted for 
+#'   \code{clusterFUN} -- higher-level code may pass these arguments (but the
+#'   function can ignore them or just have be handled with a ... )
 #' \itemize{ 
 #'	\item{"inputMatrix"}{will be the matrix of data}
 #'	\item{"inputType"}{one of "X", "diss", or "cat".  If
@@ -83,9 +86,20 @@
 #'   passed via arguments to \code{clusterFUN}} 
 #'  \item{"Other required arguments"}{\code{clusterFUN} must also accept 
 #'   arguments required for its \code{algorithmType} (see Details below).} }
-#'
-#'
-#' @details \code{algorithmType}: Type "01" is for clustering functions that
+#' @details classifyFUN: The following arguments are required to be accepted for 
+#'   \code{classifyFUN} (if not NULL) 
+#'   \itemize{ 
+#'   \item{inputMatrix}{the
+#'   \emph{new} data that will be classified into the clusters} 
+#'   \item{inputType}{the inputType of the new data (see above)} 
+#'   \item{clusterResult}{the result of running \code{clusterFUN} on the
+#'   training data, when \code{cluster.only=FALSE}. Whatever is returned by
+#'   \code{clusterFUN} is assumed to be sufficient for this function to classify
+#'   new objects (e.g. could return the centroids of the clustering, if
+#'   clustering based on nearest centroid).} 
+#'   }
+#' 
+#' @details algorithmType: Type "01" is for clustering functions that
 #'   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
 #'   from subclustering) with 1 indicating more dissimilarity between samples.
 #'   "01" algorithm types must also have \code{inputType} equal to

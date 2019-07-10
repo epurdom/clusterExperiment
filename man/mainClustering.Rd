@@ -38,16 +38,14 @@ depend on it's algorithm type and can be found by calling
 \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
 
-\item{inputType}{a character vector defining what type(s) of input 
-\code{clusterFUN} takes. Must consist of values "diss","X", or "cat" 
-indicate the type of matrix that is being provided to \code{inputMatrix}.
-(see details). 
-"X" and "cat" should be indicate matrices with features in the row and
-samples in the column; "cat" corresponds to the features being numerical
-integers corresponding to categories, while "X" are continuous valued
-features. "diss" corresponds to an \code{inputMatrix} that is a NxN
-dissimilarity matrix. "cat" is largely used internal for clustering of sets
-of clusterings.}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
@@ -82,9 +80,13 @@ columns).}
 on which to run the clustering}
 }
 \value{
-mainClustering returns a vector of cluster assignments (if
+If \code{returnData=FALSE}, mainClustering returns a vector of cluster assignments (if
   format="vector") or a list of indices for each cluster (if format="list").
-  Clusters less than minSize are removed.
+  Clusters less than minSize are removed. If \code{returnData=TRUE}, then mainClustering returns a list
+\itemize{
+\item{results}{The clusterings of each sample.}
+\item{inputMatrix}{The input matrix given to argument \code{inputMatrix}. Useful if input is result of subsampling, in which case input is the set of clusterings found over subsampling.}
+}
 }
 \description{
 Given input data, this function will try to find the clusters

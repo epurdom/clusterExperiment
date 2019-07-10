@@ -7,9 +7,9 @@
 #'  
 #' @param x a matrix with samples on the rows and different clusterings on the
 #'   columns or \code{\link{ClusterExperiment}} object.
-
-#' @param clusterFunction the clustering to use (passed to 
-#'  \code{\link{mainClustering}}); currently must be of type '01'.
+#' @param clusterFunction the clustering function to use (passed to 
+#'   \code{\link{mainClustering}}); currently must be of type '01' and accept as
+#'   input matrices of type "cat" (see details of ?ClusterFunction).
 #' @param minSize minimum size required for a set of samples to be considered in 
 #'  a cluster because of shared clustering, passed to
 #'  \code{\link{mainClustering}}
@@ -21,16 +21,18 @@
 #'  proportion < 1)
 #' @param ... arguments to be passed on to the method for signature 
 #'  \code{matrix,missing}.
-#' @param whenUnassign one of "before" or "after", indicating at what point are
-#'   samples with greater than \code{propUnassigned} '-1' cluster values given a
-#'   '-1' value. If "before", then these samples are removed and not used for
-#'   clustering. If "after", these samples are included in the clustering step,
-#'   but then the cluster values they receive are assigned a '-1. These may
-#'   result in different clusterings, because if these samples are included in
-#'   the clustering (i.e. \code{whenUnassign="after"}, then these samples may
-#'   affect the cluster assignments of other samples. The default is "before",
-#'   but previous to version 2.5.4, it was internally set to "after", so for
-#'   reproducibility with older results, users may need to set this option.
+#' @param whenUnassign (provided for back compatibility with previous versions).
+#'   Must be one of "before" or "after", indicating at what point are samples
+#'   with a proportion of assignments of -1 greater than \code{propUnassigned}
+#'   forced to have a '-1' value. If "before", then these samples are removed
+#'   and not used for clustering. If "after", these samples are included in the
+#'   clustering step, but then the cluster values they receive are assigned a
+#'   '-1. These choices may result in different clusterings, because if these
+#'   samples are included in the clustering (i.e. \code{whenUnassign="after"},
+#'   then these samples may affect the cluster assignments of other samples. The
+#'   default is currently "before", but previous to version 2.5.4, there was no
+#'   such option and the code internally set to "after", so for reproducibility
+#'   with older results, users may need to set this option.
 #' @inheritParams clusterMany
 #' @inheritParams getClusterIndex
 #' @details This function was previously called \code{combineMany} (versions <=
@@ -133,17 +135,18 @@ setMethod(
                 else minSize<-round(minSize) #incase not integer.
                 cl<-.uniqueCluster(inputMatrix=t(x), minSize=minSize)
             } else{
-                if(is.character(clusterFunction)) 
+                if(is.character(clusterFunction) || is(clusterFunction,"ClusterFunction")){
                     typeAlg <- algorithmType(clusterFunction)
+                    inputType<-inputType(clusterFunction)
+                } 
                 else{
-                    if(is(clusterFunction,"ClusterFunction")) 
-                        typeAlg<-algorithmType(clusterFunction) 
-                    else 
-                        stop("clusterFunction must be either a builtin clusterFunction name or a ClusterFunction object")
+                    stop("clusterFunction must be either a builtin clusterFunction name or a ClusterFunction object")
                 }
                 if(typeAlg!="01") {
                     stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
                 }
+                if(!"cat" %in% inputType)
+                    stop("makeConsensus is only implemented for clustering functions that permit inputType 'cat'.")
                 #overwrites alpha if given
                 clusterArgs[["alpha"]]<-1-proportion
                 if(!"evalClusterMethod" %in% names(clusterArgs) &&
