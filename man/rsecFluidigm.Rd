@@ -13,17 +13,17 @@ RSEC run for vignette
 \examples{
 #code used to create rsecFluidigm:
 \dontrun{
-library(scRNAseq)
-data("fluidigm")
-se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-wh_zero <- which(rowSums(assay(se))==0)
+library(clusterExperiment)
+data(fluidigmData)
+data(fluidigmColData)
+se<-SummarizedExperiment(assays=fluidigmData,
+       colData=fluidigmColData)
 pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
 se <- se[pass_filter,]
 fq <- round(limma::normalizeQuantiles(assay(se)))
-assays(se) <- list(normalized_counts=fq)
+assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
 wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
 colnames(colData(se))[wh]<-c("Published1","Published2")
-library(clusterExperiment)
 ncores<-1
 system.time(
   rsecFluidigm<-RSEC(se, 

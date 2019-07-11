@@ -63,32 +63,30 @@ In this section we give a quick introduction to the package and the `RSEC` wrapp
 
 ## The Data {#data}
 
-We will make use of a single cell RNA sequencing experiment made available in the `scRNAseq` package.
+We will make use of a small single cell RNA sequencing experiment produced by Fluidigm and made available in the `scRNAseq` package. Fluidigm's original data (and that provided by  `scRNASeq`) contained 130 samples, there are only 65 actual cells, because each cell is sequenced twice, but at different sequencing depth. We have provided within our package subset of this data set, limited to only those 65 cells sequenced at high depth[^1]. See `?fluidigmData` to see the code to recreate the data we provide here. 
+
+
+We will load the datasets, and data containing information about each of the samples, and then store that information together in a `SummarizedExperiment` object. 
 
 ```{r,cache=FALSE}
 set.seed(14456) ## for reproducibility, just in case
-library(scRNAseq)
-fluidigm <- ReprocessedFluidigmData()
+data(fluidigmData) ## list of the two datasets (tophat_counts and rsem_tpm)
+data(fluidigmColData)
+se<-SummarizedExperiment(fluidigmData,colData=fluidigmColData)
 ```
 
-We will use the `fluidigm` dataset (see `help("fluidigm")`). This dataset is stored as a SummarizedExperiment object. We can access the data with `assay` and metadata on the samples with `colData`. 
+We can access the gene counts data with `assay` and the metadata on the samples with `colData`. 
 
 ```{r}
-assay(fluidigm)[1:5,1:10]
-colData(fluidigm)[,1:5]
-NCOL(fluidigm) #number of samples
+assay(se)[1:5,1:10]
+colData(se)[,1:5]
+NCOL(se) #number of samples
 ```
 
 
 ## Filtering and normalization {#step0}
 
-While there are `r NCOL(fluidigm)` samples, there are only 65 cells, because each cell is sequenced twice at different sequencing depth. We will limit the analysis to the samples corresponding to high sequencing depth. 
-
-```{r filter_high}
-se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-```
-
-We also filter out lowly expressed genes: we retain only those genes with at least 10 reads in at least 10 cells.
+We will filter out lowly expressed genes: we retain only those genes with at least 10 reads in at least 10 cells.
 
 ```{r filter}
 wh_zero <- which(rowSums(assay(se))==0)
@@ -97,16 +95,25 @@ se <- se[pass_filter,]
 dim(se)
 ```
 
-This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigm)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to remove genes with zero counts in all samples (we had `r length(wh_zero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
+This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigmData)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to at least remove genes with zero counts in all samples (we had `r length(wh_zero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will at least make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
 ```{r normalization}
+#provides matrix of normalized counts
 fq <- round(limma::normalizeQuantiles(assay(se)))
-assays(se) <- list(normalized_counts=fq)
 ```
 
-As one last step, we are going to change the name of the columns "Cluster1" and "Cluster2" that some in the dataset and refer to published clustering results from the paper; we will use the terms "Published1" and "Published2" to better distinguish them in later plots from other clustering we will do.
+`SummarizedExperiment` objects allow for the storage of multiple data matrices of the same dimensions, so we will add this normalized data as an additional assay in our `se` object. Note that we will put the normalized counts first, since by default the `clusterExperiment` package uses the first assay in the object (see [Working with other assays](#multipleAssays) for how to switch between different assays)
+
+```{r addToAssays}
+assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
+assays(se)
+```
+
+We see that we've the normalized counts to our two existing datasets already (we've been working with the tophat counts, as the first assay, but also saved in our object are RSEM TPM values). 
+
+As one last step, we are going to change the name of the columns "Cluster1" and "Cluster2" that came in the dataset; they refer to published clustering results from the paper. We will use the terms "Published1" and "Published2" to better distinguish them in later plots from other clustering we will do.
 
 ```{r colnames}
 wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
@@ -2037,35 +2044,34 @@ As mentioned, `getBestFeatures` accepts arguments to `limma`'s function `topTabl
 
 
 
-# Working with other `assays()`
+# Working with other `assays()` {#multipleAssays}
 
 By default, `RSEC` and all the other user-facing functions in `clusterExperiment` will use the first `assay` if applied to `SummarizedExperiment`-like objects (including `SingleCellExperiment` and `ClusterExperiment`).
 
 However, it is often the case that one needs to use the data saved in a different `assay` slot for clustering, or even two different `assays` for clustering and visualization. `clusterExperiment` allows for this level of flexibility, by using the `whichAssay` option in all the relevant functions.
 
-As an example, consider the `fluidigm` dataset: it is saved as a `SummarizedExperiment` with `assay` several slots.
+Our `se` object has different assays, which we can see with the `assayNames` function:
 
 ```{r slotnames}
-assayNames(fluidigm)
+assayNames(se)
 ```
 
-Assume that we want to use the RSEM TPM values to cluster the data with RSEM.
+These correspond to our normalized counts and the original counts.  The first assay (the normalized tophat counts) were used by default in all our above calculations. But we also have RSEM estimates that we might want to try clustering with to evaluate their effect. We can do this with the `whichAssay` argument. 
 
-```{r clusterTPM, eval=FALSE}
-se2 <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-wh_zero <- which(rowSums(assay(se2, "rsem_tpm"))==0)
-pass_filter <- apply(assay(se2, "rsem_tpm"), 1, function(x) length(x[x >= 10]) >= 10)
-se2 <- se2[pass_filter,]
-dim(se2)
 
-rsecTPM <- RSEC(se2, whichAssay = "rsem_tpm", transFun = log1p, mergeDEMethod="limma",
+```{r clusterUnnormalized, eval=FALSE}
+rsecTPM <- RSEC(se, whichAssay = "rsem_tpm", transFun = log1p, mergeDEMethod="limma",
               reduceMethod="PCA", nReducedDims=10, consensusMinSize=3, 
               ncores=1, random.seed=176201)
 ```
 
-Note that in this case, the merging is done after determining DE with `limma` rather than `edgeR` since we no longer have count values. 
+Since RSEM TPM values are not counts, we did not set `isCount=TRUE`. Instead we  specified the transformation we want to use before doing PCA and clustering with the argument `transFun`. Similarly, the merging is done after determining DE with `limma` rather than `edgeR` since we no longer have count values. 
+
+Another common example might be that we have normalized expression values that are not counts that we want to use for clustering, but we would like to visualize the actual counts in a heatmap or plot. 
 
 **Switching between assays and transformations** If you plan to use different assays for different functions, be careful about the built-in transformation function that is saved in `ClusterExperiment` objects -- and which will be applied to any assay! The data will be silently transformed by pretty much every function in the package before any calculations are performed. You can set the transformation function with the command `transformation(x)<-...`, including setting it to the identify `function(x){x}`. If you plan on using a dimensionality reduction like PCA, then if they are already saved in the object (using `reducedDims`) then the functions in the `RSEC` workflow will use those and not need to transform the data. But setting `isCount=TRUE` in `RSEC` will set the transformation of the object (and also by default sets the `DEMethod` for `mergeClusters` unless the user over-rides it) even if RSEC uses the saved dimensionality reductions and the data is never transformed for the clustering analysis. 
+
+[^1]: `scRNAseq` also provides multiple gene summaries of the data, and we save only the "tophat_counts" and "rsem_tpm" values. 
 
 # Session Information
 This vignette was compiled under:

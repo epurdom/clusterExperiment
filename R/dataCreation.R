@@ -56,8 +56,6 @@
 NULL
 
 
-
-
 #' RSEC run for vignette
 #'
 #' @name rsecFluidigm
@@ -71,17 +69,17 @@ NULL
 #' @examples
 #' #code used to create rsecFluidigm:
 #' \dontrun{
-#' library(scRNAseq)
-#' data("fluidigm")
-#' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-#' wh_zero <- which(rowSums(assay(se))==0)
+#' library(clusterExperiment)
+#' data(fluidigmData)
+#' data(fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmData,
+#'        colData=fluidigmColData)
 #' pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
 #' se <- se[pass_filter,]
 #' fq <- round(limma::normalizeQuantiles(assay(se)))
-#' assays(se) <- list(normalized_counts=fq)
+#' assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
 #' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
 #' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(clusterExperiment)
 #' ncores<-1
 #' system.time(
 #'   rsecFluidigm<-RSEC(se, 
@@ -122,5 +120,30 @@ NULL
 NULL
 
 
+
+
+
+
+#' Subset of fluidigm data
+#'
+#' @name fluidigmData
+#' @aliases fluidigmColData
+#' @docType data
+#' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
+#' @format subset of fluidigm data used in vignette
+#' package.
+#' @seealso \code{\link[scRNAseq]{fluidigm}}
+#' @keywords data
+#' @examples
+#' #code used to create objects:
+#' \dontrun{
+#' library(scRNAseq)
+#' if(packageVersion("scRNAseq")>="1.11.0") fluidigm <- ReprocessedFluidigmData() else data(fluidigm)
+#' fluidSubset<- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
+#' fluidigmData<-assays(fluidSubset)[c("tophat_counts","rsem_tpm")]
+#' fluidigmColData<-as.data.frame(colData(fluidSubset))
+#' usethis::use_data(fluidigmData, fluidigmColData, overwrite=FALSE)
+#' }
+NULL
 
 
