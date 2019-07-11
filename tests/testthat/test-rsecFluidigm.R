@@ -8,7 +8,13 @@ test_that("saved rsecFluidigm is still valid object", {
     # takes a bit of time, so skip on bioc, just want on travis so get alert
     # that need to deal with this.
     skip_on_bioc()
+    data(fluidigmData)
+    data(fluidigmColData)
+    se<-SummarizedExperiment(assays=fluidigmData,colData=fluidigmColData)
     rsecFluidigmNew<-makeRsecFluidigmObject(se)
-    checkRsecFluidigmObject(rsecFluidigmNew)
+    expect_silent(checkRsecFluidigmObject(rsecFluidigmNew))
+    data(rsecFluidigm)
+    expect_equal(clusterMatrix(rsecFluidigmNew),clusterMatrix(rsecFluidigm))
+    
     
 })
