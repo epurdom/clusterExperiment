@@ -113,7 +113,7 @@ NULL
 #'   0.013156033, 0.009336540, 0.007497524, 0.033526666)
 #' if(nrow(rsecFluidigm@merge_nodeProp)!=length(adjPValues)) 
 #'   stop("rsecFluidigm object has changed -- makeDendrogram")
-#' if(!all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"])) 
+#' if(!is.logical(all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"]))) 
 #'   stop("rsecFluidigm object has changed -- different percentages")	
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
