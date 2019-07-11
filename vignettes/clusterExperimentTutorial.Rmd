@@ -96,7 +96,7 @@ se <- se[pass_filter,]
 dim(se)
 ```
 
-This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigmData)`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to at least remove genes with zero counts in all samples (we had `r length(wh_zero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
+This removed `r sum(!pass_filter)` genes out of `r NROW(fluidigmData[[1]])`. We now have `r NROW(se)` genes (or features) remaining. Notice that it is important to at least remove genes with zero counts in all samples (we had `r length(wh_zero)` genes which were zero in all samples here). Otherwise, PCA dimensionality reductions and other implementations may have a problem. 
 
 Normalization is an important step in any RNA-seq data analysis and many different normalization methods have been proposed in the literature. Comparing normalization methods or finding the best performing normalization in this dataset is outside of the scope of this vignette. Instead, we will use a simple quantile normalization that will at least make our clustering reflect the biology rather than the difference in sequencing depth among the different samples.
 
