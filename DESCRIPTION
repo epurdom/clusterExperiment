@@ -46,7 +46,6 @@ Suggests:
 	BiocStyle,
 	knitr,
 	testthat,
-	scRNAseq,
 	MAST,
 	Rtsne,
 	scran,
