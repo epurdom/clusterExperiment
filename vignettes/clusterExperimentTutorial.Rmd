@@ -126,60 +126,39 @@ colnames(colData(se))[wh]<-c("Published1","Published2")
 
 We will now run `RSEC` to find clusters of the cells using the default settings. We set `isCount=TRUE` to indicate that the data in `se` is count data, so that the log-transform and other count methods should be applied. We also choose the number of cores on which we want to run the operation in parallel via the parameter `ncores`. This is a relatively small number of samples, compared to most single-cell sequencing experiments, so we choose cluster on the top 10 PCAs of the data by setting `reduceMethod="PCA"` and `nReducedDims=10` (the default is 50). Finally, we set  the minimum cluster size in our ensemble clustering to be 3 cells (`consensusMinSize=3`). We do this not for biological reasons, but for instructional purposes to allow us to get a larger number of clusters. 
 
-Because this procedure is slightly computationally intensive, depending on the user's machine, we have set this code to not run so that the vignette will compile quickly upon installation. However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the example of a common run of RSEC: 
 
-```{r RSEC, eval=FALSE}
-library(clusterExperiment)
-system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
-	reduceMethod="PCA", nReducedDims=10,
-	ncores=1, random.seed=176201))
-```
-
-However, to exactly replicate the results here, we will set a large number of parameters to make sure that the vignette is back-compatible in case some defaults change. We will explain these parameters as we go along, but many of these parameters are the default. 
-
-```{r RSECExact, eval=FALSE}
-library(clusterExperiment)
-system.time(rsecFluidigm<-RSEC(se, 
-  isCount = TRUE, 
-	k0s = 4:15, 
-  alphas=c(0.1, 0.2, 0.3), 
-  betas = 0.9, 
-  reduceMethod="PCA",
-  nReducedDims=10,
-  minSizes=1,
- clusterFunction="hierarchical01",
- consensusMinSize=3,
- consensusProportion=0.7,
- dendroReduce= "mad",
- dendroNDims=1000,
- mergeMethod="adjP",
- mergeDEMethod="limma",
- mergeCutoff=0.01,
- ncores=1,
- random.seed=176201))
-```
-
-Instead we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
+Because this procedure is slightly computationally intensive, depending on the user's machine, we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
 
 ```{r RSECLoad}
-#don't call this routine if you ran the above code.
-#it will overwrite the rsecFluidigm you made
 library(clusterExperiment)
 data("rsecFluidigm")
+# package version the object was created under
 metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
-#temporarily, used while testing vignette during development.
-rsecFluidigm<-updateObject(rsecFluidigm)
 #check still valid object, in case updated class definitions
 if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
-# a simple check to make sure have same clusterings as expected
-x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
+checkRsecFluidigmObject(rsecFluidigm)
 ```
+
+However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
+
+```{r RSEC, eval=FALSE}
+## Example of RSEC call (not run by vignette)
+## Will overwrite the rsecFluidigm brought in above.
+library(clusterExperiment)
+system.time(rsecFluidigm<-RSEC(se, isCount = TRUE, 
+    reduceMethod="PCA", nReducedDims=10,
+    k0s = 4:15, 
+    alphas=c(0.1, 0.2, 0.3),
+    ncores=1, random.seed=176201))
+```
+
+
+However, to exactly replicate the data object `rsecFluidigm` that is provided in the package, you would need to set a large number of parameters to be exactly the same as this object (in different versions of the package, some defaults have changed). The code that created `rsecFluidigm` can be found by printing out the function `makeRsecFluidigmObject` in the command line (see `?rsecFluidigm`).
+
+
 ### The output 
 
 We can look at the object that was created.
