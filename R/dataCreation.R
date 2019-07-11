@@ -134,6 +134,7 @@ NULL
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
 #' @keywords data
+#' @details \code{fluidigmData} and \code{fluidigmColData} are portions of the \code{fluidigm} data distributed in the package \code{scRNAseq} package. We have subsetted to only the cells sequenced under high depth, and limited our selves to only two of the four gene estimates provided by \code{scRNAseq} ("tophat_counts" and "rsem_tpm").
 #' @examples
 #' #code used to create objects:
 #' \dontrun{

@@ -72,6 +72,7 @@ We will load the datasets, and data containing information about each of the sam
 set.seed(14456) ## for reproducibility, just in case
 data(fluidigmData) ## list of the two datasets (tophat_counts and rsem_tpm)
 data(fluidigmColData)
+library(SummarizedExperiment)
 se<-SummarizedExperiment(fluidigmData,colData=fluidigmColData)
 ```
 
