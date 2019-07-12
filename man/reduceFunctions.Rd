@@ -7,6 +7,7 @@
 \alias{getReducedData}
 \alias{defaultNDims,SingleCellExperiment-method}
 \alias{defaultNDims}
+\alias{defaultNDims,matrixOrHDF5}
 \alias{reduceFunctions}
 \alias{makeFilterStats}
 \alias{makeFilterStats,SummarizedExperiment-method}

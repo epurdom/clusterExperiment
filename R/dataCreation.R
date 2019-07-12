@@ -56,15 +56,25 @@
 NULL
 
 
-#' RSEC run for vignette
+#' @title Documentation of rsecFluidigm object
+#' @description  Documentation of the creation of rsecFluidigm, result of RSEC
+#'   run on fluidigm data for vignette
 #'
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on
-#' fluidigm data described in vignette and available in the \code{scRNAseq}
-#' package.
-#' @seealso \code{\link[scRNAseq]{fluidigm}}
+#' @format \code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
+#'   of running \code{\link{RSEC}} on fluidigm data described in vignette and
+#'   available in the \code{scRNAseq} package.
+#' @details The functions \code{makeRsecFluidigmObject} and 
+#'   \code{checkRsecFluidigmObject} are helper functions whose sole purpose is 
+#'   to create \code{rsecFluidigm} and check that the results are the same as 
+#'   expected. \code{makeRsecFluidigmObject} also serves as documentation of the
+#'   specific RSEC call that was made to create the \code{rsecFluidigm} object, 
+#'   as well as filtering and normalization of the fluidigm data.
+#'   The purpose of making them functions is internal, to help more easily
+#'   mantain and check if changes to the package have affected the results.
+#' @seealso \code{\link[scRNAseq]{fluidigm}}. 
 #' @keywords data
 #' @examples
 #' # see code used create rsecFluidigm 
@@ -79,21 +89,20 @@ NULL
 #'        colData=fluidigmColData)
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
 #' checkRsecFluidigmObject(rsecFluidigm)
-#' devtools::use_data(rsecFluidigm,overwrite=FALSE)
+#' usethis::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 #' @aliases makeRsecFluidigmObject
 #' @export
-makeRsecFluidigmObject<-function(se){
-    pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
-    se <- se[pass_filter,]
-    fq <- round(limma::normalizeQuantiles(assay(se)))
-    assays(se) <- list(normalized_counts=fq)
-    #assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
-    wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
-    colnames(colData(se))[wh]<-c("Published1","Published2")
+makeRsecFluidigmObject<-function(object){
+    pass_filter <- apply(assay(object), 1, function(x) length(x[x >= 10]) >= 10)
+    object <- object[pass_filter,]
+    fq <- round(limma::normalizeQuantiles(assay(object)))
+    assays(object) <- c(SimpleList(normalized_counts=fq),assays(object))
+    wh<-which(colnames(colData(object)) %in% c("Cluster1","Cluster2"))
+    colnames(colData(object))[wh]<-c("Published1","Published2")
     ncores<-1
     system.time(
-      rsecFluidigm<-RSEC(se, 
+      rsecFluidigm<-RSEC(object, 
                          isCount = TRUE, 
                          k0s = 4:15, 
                          alphas=c(0.1, 0.2, 0.3), 
@@ -112,8 +121,6 @@ makeRsecFluidigmObject<-function(se){
                          ncores=ncores, 
                          random.seed=176201)
     )
-
-    
     metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
@@ -122,22 +129,50 @@ makeRsecFluidigmObject<-function(se){
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
-    x<-unique(clusterMatrix(object)[,"makeConsensus"])
-    if(length(x[x>0]) != 8)
+
+    ## Expected Results
+    
+    ## Previous expected results -- can't recreate!
+    # nMakeConsensus<-8
+    # nMerge<-6
+    # contrasts<-c('(X6+X1+X4)/3-(X8+X2+X5+X3+X7)/5','X6-(X1+X4)/2','X8-(X2+X5+X3+X7)/4','(X2+X5)/2-(X3+X7)/2','X2-X5','X3-X7','X1-X4')
+    # adjPValues<-c(0.049794879, 0.007356062, 0.008204838,
+    #               0.013156033, 0.009336540, 0.007497524, 0.033526666)
+
+    ## Results as of 07/12/2019 -- 2.5.4.9002
+    nMakeConsensus<-10
+    nMerge<-6
+    contrasts<-c('(X10+X2+X3+X6+X8)/5-(X4+X5+X9+X1+X7)/5','(X10+X2+X3)/3-(X6+X8)/2','(X4+X5)/2-(X9+X1+X7)/3','X4-X5','X9-(X1+X7)/2','X1-X7','X10-(X2+X3)/2','X6-X8','X2-X3')
+    adjPValues<-c(0.08374593,0.03762908,0.01372188,0.0072146,0.00778045,0.01018532,0.00056585,0.00650729,0.00183902)
+
+        
+    ## Test same
+    checkValues<-.getCheckValues(object)
+    if(checkValues$nMakeConsensus != nMakeConsensus)
       stop("rsecFluidigm has changed -- makeConsensus")
-contrasts<-c('(X6+X1+X4)/3-(X8+X2+X5+X3+X7)/5','X6-(X1+X4)/2','X8-(X2+X5+X3+X7)/4','(X2+X5)/2-(X3+X7)/2','X2-X5','X3-X7','X1-X4')
-    if(!is.logical(all.equal(contrasts,object@merge_nodeProp[,"Contrast"])))
+    if(!is.logical(all.equal(contrasts,checkValues$contrasts)))
         stop("rsecFluidigm has changed -- different dendrogram")
-    adjPValues<-c(0.049794879, 0.007356062, 0.008204838,
-      0.013156033, 0.009336540, 0.007497524, 0.033526666)
-    if(!is.logical(all.equal(adjPValues,object@merge_nodeProp[,"adjP"])))
+    if(!is.logical(all.equal(adjPValues,checkValues$adjPValues)))
       stop("rsecFluidigm has changed -- different merge percentages")
-    y<-unique(clusterMatrix(object)[,"mergeClusters"])
-    if(length(y[y>0]) != 6)
+    if(checkValues$nMerge != nMerge)
       stop("rsecFluidigm has changed -- different # of mergeClusters")
     
 }
-
+.getCheckValues<-function(object, printout=FALSE){
+    x<-unique(clusterMatrix(object)[,"makeConsensus"])
+    y<-unique(clusterMatrix(object)[,"mergeClusters"])
+    out<-list(
+        nMakeConsensus=length(x[x>0]),
+        nMerge=length(y[y>0]),
+        contrasts=object@merge_nodeProp[,"Contrast"],
+        adjPValues=round(object@merge_nodeProp[,"adjP"],8)
+        )
+    if(printout){
+        out$contrasts<-paste("c('",paste(out$contrasts,collapse="','"),"')",sep="")
+        out$adjPValues<-paste("c(",paste(out$adjPValues,collapse=","),")",sep="")
+    }
+    return(out)
+}
 
 
 

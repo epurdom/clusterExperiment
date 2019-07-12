@@ -63,7 +63,7 @@ In this section we give a quick introduction to the package and the `RSEC` wrapp
 
 ## The Data {#data}
 
-We will make use of a small single cell RNA sequencing experiment produced by Fluidigm and made available in the `scRNAseq` package. Fluidigm's original data (and that provided by  `scRNASeq`) contained 130 samples, there are only 65 actual cells, because each cell is sequenced twice, but at different sequencing depth. We have provided within our package subset of this data set, limited to only those 65 cells sequenced at high depth[^1]. See `?fluidigmData` to see the code to recreate the data we provide here. 
+We will make use of a small single cell RNA sequencing experiment produced by Fluidigm and made available in the `scRNAseq` package. Fluidigm's original data (and that provided by  `scRNASeq`) contained 130 samples, but there are only 65 actual cells, because each cell library is sequenced twice at different sequencing depth. We have provided within the  `clusterExperiment` package a subset of this data set, limited to only those 65 cells sequenced at high depth[^1]. See `?fluidigmData` to see the code to recreate the data we provide here. 
 
 
 We will load the datasets, and data containing information about each of the samples, and then store that information together in a `SummarizedExperiment` object. 
@@ -112,7 +112,7 @@ assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
 assays(se)
 ```
 
-We see that we've the normalized counts to our two existing datasets already (we've been working with the tophat counts, as the first assay, but also saved in our object are RSEM TPM values). 
+We see that we've added the normalized counts to our two existing datasets already (we've been working with the tophat counts, as the first assay, but also saved in our object are RSEM TPM values). 
 
 As one last step, we are going to change the name of the columns "Cluster1" and "Cluster2" that came in the dataset; they refer to published clustering results from the paper. We will use the terms "Published1" and "Published2" to better distinguish them in later plots from other clustering we will do.
 
@@ -306,7 +306,7 @@ In this case we can see that higher dimensions show us a greater amount of separ
 ## Rerunning RSEC with different parameters 
 
 In the next section, we will describe more about the options we could adjust in `RSEC`. As an example of a few options, we might, for example, want to change the proportion of co-clustering we required in making our `makeConsensus`
- clustering (which used the default of 0.7), or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm` and it will not redo the many individual clustering steps which are time intensive (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We demonstrate this in our next command where we change these choices in the following ways:
+ clustering (which used the default of 0.7), or change the proportion of genes that must show differences in order to not merge clusters or the method of deciding. We can call `RSEC` again on our object `rsecFluidigm`,  and it will not redo the many individual clustering steps which are time intensive (unless we request it to rerun it by including the argument `rerunClusterMany=TRUE`). We demonstrate this in our next command where we change these choices in the following ways:
  
  * set the proportion of co-clustering required by the argument `consensusProportion=0.6`, 
  * make the merge cutoff `mergeCutoff=0.01`
@@ -332,30 +332,17 @@ plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClust
 
 The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
 
-In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering). Again, we will set a lot of parameters to keep the object the same as before:
 
-```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,
-	isCount=TRUE,
- consensusMinSize=3,
- consensusProportion=0.7,
- dendroReduce= "mad",
- dendroNDims=1000,
- mergeMethod="adjP",
- mergeCutoff=0.01
- )
-par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
-```
-
-```{r checkRedoIsSame,include=FALSE}
-# a small check to make sure have same clusterings as before
-if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.1"])) stop("rerunning rsec has changed clustering")
-```
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
 
 ## Finding Features related to the clusters {#step4}
+
+For this last section of the quickstart, we are for convenience going to reload the `rsecFluidigm` object so that we can go back to the original RSEC results (we could also rerun `RSEC` with the right parameters). 
+
+```{r plotClusterRSECReset}
+data(rsecFluidigm)
+```
 
 A common practice after determining a set of clusters is to perform differential gene expression analysis in order to find genes that show the greatest differences amongst the clusters. We would stress that this is purely an exploratory technique, and any p-values that result from this analysis are not valid, in the sense that they are likely to be inflated. This is because the same data was used to define the clusters and to perform differential expression analysis.
 

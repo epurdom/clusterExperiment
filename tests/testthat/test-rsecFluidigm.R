@@ -11,7 +11,7 @@ test_that("saved rsecFluidigm is still valid object", {
     data(fluidigmData)
     data(fluidigmColData)
     se<-SummarizedExperiment(assays=fluidigmData,colData=fluidigmColData)
-    rsecFluidigmNew<-makeRsecFluidigmObject(se)
+    expect_message(rsecFluidigmNew<-makeRsecFluidigmObject(se),"Will calculate all the methods requested")
     expect_silent(checkRsecFluidigmObject(rsecFluidigmNew))
     data(rsecFluidigm)
     expect_equal(clusterMatrix(rsecFluidigmNew),clusterMatrix(rsecFluidigm))

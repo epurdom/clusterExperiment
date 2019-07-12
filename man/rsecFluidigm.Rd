@@ -5,17 +5,28 @@
 \alias{rsecFluidigm}
 \alias{makeRsecFluidigmObject}
 \alias{checkRsecFluidigmObject}
-\title{RSEC run for vignette}
-\format{ClusterExperiment object, the result of running \code{\link{RSEC}} on
-fluidigm data described in vignette and available in the \code{scRNAseq}
-package.}
+\title{Documentation of rsecFluidigm object}
+\format{\code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
+  of running \code{\link{RSEC}} on fluidigm data described in vignette and
+  available in the \code{scRNAseq} package.}
 \usage{
-makeRsecFluidigmObject(se)
+makeRsecFluidigmObject(object)
 
 checkRsecFluidigmObject(object)
 }
 \description{
-RSEC run for vignette
+Documentation of the creation of rsecFluidigm, result of RSEC
+  run on fluidigm data for vignette
+}
+\details{
+The functions \code{makeRsecFluidigmObject} and 
+  \code{checkRsecFluidigmObject} are helper functions whose sole purpose is 
+  to create \code{rsecFluidigm} and check that the results are the same as 
+  expected. \code{makeRsecFluidigmObject} also serves as documentation of the
+  specific RSEC call that was made to create the \code{rsecFluidigm} object, 
+  as well as filtering and normalization of the fluidigm data.
+  The purpose of making them functions is internal, to help more easily
+  mantain and check if changes to the package have affected the results.
 }
 \examples{
 # see code used create rsecFluidigm 
@@ -30,11 +41,11 @@ se<-SummarizedExperiment(assays=fluidigmData,
        colData=fluidigmColData)
 rsecFluidigm<-makeRsecFluidigmObject(se)
 checkRsecFluidigmObject(rsecFluidigm)
-devtools::use_data(rsecFluidigm,overwrite=FALSE)
+usethis::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }
 \seealso{
-\code{\link[scRNAseq]{fluidigm}}
+\code{\link[scRNAseq]{fluidigm}}.
 }
 \author{
 Elizabeth Purdom \email{epurdom@stat.berkeley.edu}
