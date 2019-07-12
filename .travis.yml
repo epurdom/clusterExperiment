@@ -13,13 +13,13 @@
 language: r
 cache: packages
 # Temporarily enable when caching Bioconductor packages
-#script: true
+script: true
 
 
 # R versions to be tested on
 r:
-  - bioc-release
-#  - bioc-devel
+#  - bioc-release
+  - bioc-devel
 
 # External dependencies
 addons:
