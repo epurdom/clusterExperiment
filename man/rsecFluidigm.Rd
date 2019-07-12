@@ -3,62 +3,33 @@
 \docType{data}
 \name{rsecFluidigm}
 \alias{rsecFluidigm}
+\alias{makeRsecFluidigmObject}
+\alias{checkRsecFluidigmObject}
 \title{RSEC run for vignette}
 \format{ClusterExperiment object, the result of running \code{\link{RSEC}} on
 fluidigm data described in vignette and available in the \code{scRNAseq}
 package.}
+\usage{
+makeRsecFluidigmObject(se)
+
+checkRsecFluidigmObject(object)
+}
 \description{
 RSEC run for vignette
 }
 \examples{
-#code used to create rsecFluidigm:
+# see code used create rsecFluidigm 
+# (print out the function)
+makeRsecFluidigmObject
+#code actualy run to create rsecFluidigm:
 \dontrun{
 library(clusterExperiment)
 data(fluidigmData)
 data(fluidigmColData)
 se<-SummarizedExperiment(assays=fluidigmData,
        colData=fluidigmColData)
-pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
-se <- se[pass_filter,]
-fq <- round(limma::normalizeQuantiles(assay(se)))
-assays(se) <- c(SimpleList(normalized_counts=fq),assays(se))
-wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
-colnames(colData(se))[wh]<-c("Published1","Published2")
-ncores<-1
-system.time(
-  rsecFluidigm<-RSEC(se, 
-                     isCount = TRUE, 
-                     k0s = 4:15, 
-                     alphas=c(0.1, 0.2, 0.3), 
-                     betas = 0.9,
-                     reduceMethod="PCA", 
-                     nReducedDims=10,
-                     minSizes=1, 
-                     clusterFunction="hierarchical01",
-                     consensusMinSize=3,
-                     consensusProportion=0.7,
-                     dendroReduce= "mad",
-                     dendroNDims=1000,
-                     mergeMethod="adjP",
-	                    mergeDEMethod="limma",
-                     mergeCutoff=0.01,
-                     ncores=ncores, 
-                     random.seed=176201)
-)
-metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
-## Tests that haven't changed the clustering results.
-x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-if(length(x[x>0]) != 8) 
-  stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 6) 
-  stop("rsecFluidigm object has changed -- different # of mergeClusters")
-adjPValues<-c(0.049794879, 0.007356062, 0.008204838, 
-  0.013156033, 0.009336540, 0.007497524, 0.033526666)
-if(nrow(rsecFluidigm@merge_nodeProp)!=length(adjPValues)) 
-  stop("rsecFluidigm object has changed -- makeDendrogram")
-if(!is.logical(all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"]))) 
-  stop("rsecFluidigm object has changed -- different percentages")	
+rsecFluidigm<-makeRsecFluidigmObject(se)
+checkRsecFluidigmObject(rsecFluidigm)
 devtools::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }

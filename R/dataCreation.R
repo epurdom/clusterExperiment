@@ -81,8 +81,8 @@ NULL
 #' checkRsecFluidigmObject(rsecFluidigm)
 #' devtools::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
-#' @export
 #' @aliases makeRsecFluidigmObject
+#' @export
 makeRsecFluidigmObject<-function(se){
     pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
     se <- se[pass_filter,]
@@ -117,8 +117,8 @@ makeRsecFluidigmObject<-function(se){
     metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
-#' @export
 #' @rdname rsecFluidigm
+#' @export
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
