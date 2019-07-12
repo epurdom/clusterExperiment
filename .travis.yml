@@ -53,7 +53,6 @@ r_github_packages:
 ## BiocCheck
 bioc_packages:
   - BiocCheck
-  - scRNAseq
 
 after_success:
 #  - Rscript -e 'covr::coveralls(quiet=FALSE)'
