@@ -136,9 +136,9 @@ metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
-#check still valid object, in case updated class definitions
-if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
-checkRsecFluidigmObject(rsecFluidigm)
+# #check still valid object, in case updated class definitions
+# if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
+# checkRsecFluidigmObject(rsecFluidigm)
 ```
 
 However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
@@ -155,7 +155,7 @@ system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,
 ```
 
 
-However, to exactly replicate the data object `rsecFluidigm` that is provided in the package, you would need to set a large number of parameters to be exactly the same as this object (in different versions of the package, some defaults have changed). The code that created `rsecFluidigm` can be found by printing out the function `makeRsecFluidigmObject` in the command line (see `?rsecFluidigm`).
+However, to exactly replicate the data object `rsecFluidigm` that is provided in the package, you would need to set a large number of parameters to be exactly the same as this object (in different versions of the package, some defaults have changed and we try to not change the `rsecFluidigm` object everytime). The code that creates `rsecFluidigm` can be found by typing `makeRsecFluidigmObject` in the command line (see `?rsecFluidigm`).
 
 
 ### The output 
