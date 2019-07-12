@@ -70,9 +70,9 @@ We will load the datasets, and data containing information about each of the sam
 
 ```{r,cache=FALSE}
 set.seed(14456) ## for reproducibility, just in case
+library(clusterExperiment)
 data(fluidigmData) ## list of the two datasets (tophat_counts and rsem_tpm)
 data(fluidigmColData)
-library(SummarizedExperiment)
 se<-SummarizedExperiment(fluidigmData,colData=fluidigmColData)
 ```
 
@@ -130,7 +130,6 @@ We will now run `RSEC` to find clusters of the cells using the default settings.
 Because this procedure is slightly computationally intensive, depending on the user's machine, we have saved the results from this call as a data object in the package and will use the following code to load it into the vignette:
 
 ```{r RSECLoad}
-library(clusterExperiment)
 data("rsecFluidigm")
 # package version the object was created under
 metadata(rsecFluidigm)$packageVersion
