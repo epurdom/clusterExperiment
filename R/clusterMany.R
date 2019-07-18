@@ -715,13 +715,17 @@ setMethod(
             else stop("Internal error: reduceMethod value that not in filtering statistics or reducedDimNames")
             #(Note, computational inefficiency: means reordering each time, even if same filter. But not recalculating filter.)
             distFunction<-totalArgs$distFunction
+            
             if(!is.null(distFunction)){
                 ###FIXME: Error here! Needs to call name that is specific to combination of reduce/dist/algType in allDist[[distFunction]]
                 passInput<- as.logical(gsub(" ","",par["passDistToInput"]))
                 passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
-
+                dnm<-paste(as.character(distFunction),
+                        as.character(par[["nFilterDims"]]),
+                        as.character(par[["reduceMethod"]]),collapse=",")
+                
                 if(passInput){
-                    out<-clusterSingle(inputMatrix=allDist[[distFunction]],
+                    out<-clusterSingle(inputMatrix=allDist[[dnm]],
                         inputType="diss",
                         sequential=totalArgs$sequential, 
                         subsample=totalArgs$subsample, 
@@ -755,7 +759,7 @@ setMethod(
                             subsample=totalArgs$subsample, 
                             reduceMethod="none",
                             mainClusterArgs=c(totalArgs$mainClusterArgs,
-                                list(diss=allDist[[distFunction]])),
+                                list(diss=allDist[[dnm]])),
                             subsampleArgs=totalArgs$subsampleArgs, 
                             seqArgs=totalArgs$seqArgs,
                             transFun=function(x){x},
@@ -798,10 +802,16 @@ setMethod(
         }
 
         if(run){
+
+               
+
             ##------------
             ##Calculate distances necessary only once
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
+                ##Get the parameters that imply different datasets.
+                distParam<-unique(param[,c("reduceMethod","nFilterDims","distFunction")])
+                distParam<-distParam[!is.na(distParam[,"distFunction"]),]
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
                     # be conservative and check for the 01 type 
@@ -828,9 +838,13 @@ setMethod(
                         checkDiss=TRUE, algType=algCheckType)
                     return(distMat)
                 })
+            
                 #need to update here when have filter
                 ##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
-                names(allDist)<-distParam[,"distFunction"]
+                nms<-paste(distParam[,"distFunction"],distParam[,"nFilterDims"],
+                    distParam[,"reduceMethod"],sep=",")
+                names(allDist)<-nms
+                
                 if(verbose) cat("\tdone.\n\n")
             }
             

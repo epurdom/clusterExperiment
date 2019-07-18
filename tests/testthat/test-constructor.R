@@ -1,12 +1,4 @@
 context("Constructor")
-
-
-
-test_that("saved rsecFluidigm is still valid object", {
-	data(rsecFluidigm)
-	expect_true(validObject(rsecFluidigm))
-		  })
-
 		  
 test_that("`ClusterExperiment` constructor works with matrix and SummarizedExperiments and SingleCellExperiment", {
             expect_error(ClusterExperiment(mat), 

@@ -1,4 +1,4 @@
-Changes in version 2.5.3-9002 (Release date: )
+Changes in version 2.5.3-9003 (Release date: )
 ==============
 * Changes to internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added. 
@@ -18,7 +18,8 @@ Changes in version 2.5.3-9002 (Release date: )
     
 Bugs:
 * Fix so export function`getReducedData`
-* Fix error in `makeConsensus` so doing unassignment and proportion=1 correctly (matrix inversion problem). 
+* Fix error in `makeConsensus` was calculating the unassigned proportion in the wrong margin and and proportion=1 correctly (matrix inversion problem). 
+* Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============

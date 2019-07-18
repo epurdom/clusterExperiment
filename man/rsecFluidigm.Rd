@@ -3,76 +3,48 @@
 \docType{data}
 \name{rsecFluidigm}
 \alias{rsecFluidigm}
-\title{RSEC run for vignette}
-\format{ClusterExperiment object, the result of running \code{\link{RSEC}} on
-fluidigm data described in vignette and available in the \code{scRNAseq}
-package.}
+\alias{makeRsecFluidigmObject}
+\title{Documentation of rsecFluidigm object}
+\format{\code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
+  of running \code{\link{RSEC}} on fluidigm data described in vignette and
+  available in the \code{scRNAseq} package.}
+\usage{
+makeRsecFluidigmObject(object)
+}
+\arguments{
+\item{object}{object given to functions}
+}
 \description{
-RSEC run for vignette
+Documentation of the creation of rsecFluidigm, result of RSEC
+  run on fluidigm data for vignette
+}
+\details{
+The functions \code{makeRsecFluidigmObject} and 
+  \code{checkRsecFluidigmObject} are helper functions whose sole purpose is 
+  to create \code{rsecFluidigm} and check that the results are the same as 
+  expected. \code{makeRsecFluidigmObject} also serves as documentation of the
+  specific RSEC call that was made to create the \code{rsecFluidigm} object, 
+  as well as filtering and normalization of the fluidigm data.
+  The purpose of making them functions is internal, to help more easily
+  mantain and check if changes to the package have affected the results.
 }
 \examples{
-#code used to create rsecFluidigm:
+# see code used create rsecFluidigm 
+# (print out the function)
+makeRsecFluidigmObject
+#code actualy run to create rsecFluidigm:
 \dontrun{
-library(scRNAseq)
-data("fluidigm")
-se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-wh_zero <- which(rowSums(assay(se))==0)
-pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
-se <- se[pass_filter,]
-fq <- round(limma::normalizeQuantiles(assay(se)))
-assays(se) <- list(normalized_counts=fq)
-wh<-which(colnames(colData(se)) \%in\% c("Cluster1","Cluster2"))
-colnames(colData(se))[wh]<-c("Published1","Published2")
 library(clusterExperiment)
-ncores<-1
-system.time(
-  rsecFluidigm<-RSEC(se, 
-                     isCount = TRUE, 
-                     k0s = 4:15, 
-                     alphas=c(0.1, 0.2, 0.3), 
-                     betas = 0.9,
-                     reduceMethod="PCA", 
-                     nReducedDims=10,
-                     minSizes=1, 
-                     clusterFunction="hierarchical01",
-                     consensusMinSize=3,
-                     consensusProportion=0.7,
-                     dendroReduce= "mad",
-                     dendroNDims=1000,
-                     mergeMethod="adjP",
-	                    mergeDEMethod="limma",
-                     mergeCutoff=0.01,
-                     ncores=ncores, 
-                     makeMissingDiss=TRUE,
-                     subsampleArgs=list(clusterFunction="pam",
-                         classifyMethod="All"),
-                     consensusArgs=list(clusterFunction="hierarchical01",
-                           whenUnassign="after",
-                        clusterArgs=list(evalClusterMethod=c("average"), removeDup=FALSE))                    
-                     random.seed=176201)
-)
-metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
-## Tests that haven't changed the clustering results.
-tabk0<-tableClusters(rsecFluidigm,whichClusters="k0=4,alpha=0.1")
-if(length(tabk0)!=7 || !all(tabk0 == c(28, 15, 13,  3,  2,  2,  2)))
-   stop("rsecFluidigm object has changed -- clusterMany")
-x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-if(length(x[x>0]) != 8) 
-  stop("rsecFluidigm object has changed -- makeConsensus")
-y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-if(length(y[y>0]) != 6) 
-  stop("rsecFluidigm object has changed -- different # of mergeClusters")
-adjPValues<-c(0.049794879, 0.007356062, 0.008204838, 
-  0.013156033, 0.009336540, 0.007497524, 0.033526666)
-if(nrow(rsecFluidigm@merge_nodeProp)!=length(adjPValues)) 
-  stop("rsecFluidigm object has changed -- makeDendrogram")
-if(!all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"])) 
-  stop("rsecFluidigm object has changed -- different percentages")	
-devtools::use_data(rsecFluidigm,overwrite=FALSE)
+data(fluidigmData)
+data(fluidigmColData)
+se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+rsecFluidigm<-makeRsecFluidigmObject(se)
+checkRsecFluidigmObject(rsecFluidigm)
+usethis::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }
 \seealso{
-\code{\link[scRNAseq]{fluidigm}}
+\code{\link[scRNAseq]{fluidigm}}.
 }
 \author{
 Elizabeth Purdom \email{epurdom@stat.berkeley.edu}

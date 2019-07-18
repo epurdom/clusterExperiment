@@ -56,80 +56,155 @@
 NULL
 
 
-
-
-#' RSEC run for vignette
+#' @title Documentation of rsecFluidigm object
+#' @description  Documentation of the creation of rsecFluidigm, result of RSEC
+#'   run on fluidigm data for vignette
 #'
 #' @name rsecFluidigm
 #' @docType data
 #' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
-#' @format ClusterExperiment object, the result of running \code{\link{RSEC}} on
-#' fluidigm data described in vignette and available in the \code{scRNAseq}
+#' @format \code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
+#'   of running \code{\link{RSEC}} on fluidigm data described in vignette and
+#'   available in the \code{scRNAseq} package.
+#' @details The functions \code{makeRsecFluidigmObject} and 
+#'   \code{checkRsecFluidigmObject} are helper functions whose sole purpose is 
+#'   to create \code{rsecFluidigm} and check that the results are the same as 
+#'   expected. \code{makeRsecFluidigmObject} also serves as documentation of the
+#'   specific RSEC call that was made to create the \code{rsecFluidigm} object, 
+#'   as well as filtering and normalization of the fluidigm data.
+#'   The purpose of making them functions is internal, to help more easily
+#'   mantain and check if changes to the package have affected the results.
+#' @seealso \code{\link[scRNAseq]{fluidigm}}. 
+#' @keywords data
+#' @examples
+#' # see code used create rsecFluidigm 
+#' # (print out the function)
+#' makeRsecFluidigmObject
+#' #code actualy run to create rsecFluidigm:
+#' \dontrun{
+#' library(clusterExperiment)
+#' data(fluidigmData)
+#' data(fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+#' rsecFluidigm<-makeRsecFluidigmObject(se)
+#' checkRsecFluidigmObject(rsecFluidigm)
+#' usethis::use_data(rsecFluidigm,overwrite=FALSE)
+#' }
+#' @aliases makeRsecFluidigmObject
+#' @param object object given to functions
+#' @export
+makeRsecFluidigmObject<-function(object){
+    pass_filter <- apply(assay(object), 1, function(x) length(x[x >= 10]) >= 10)
+    object <- object[pass_filter,]
+    fq <- round(limma::normalizeQuantiles(assay(object)))
+    assays(object) <- c(SimpleList(normalized_counts=fq),assays(object))
+    wh<-which(colnames(colData(object)) %in% c("Cluster1","Cluster2"))
+    colnames(colData(object))[wh]<-c("Published1","Published2")
+    ncores<-1
+    rsecFluidigm<-RSEC(se,
+                      isCount = TRUE,
+                      k0s = 4:15,
+                      alphas=c(0.1, 0.2, 0.3),
+                      betas = 0.9,
+                      reduceMethod="PCA",
+                      nReducedDims=10,
+                      minSizes=1,
+                      clusterFunction="hierarchical01",
+                      consensusMinSize=3,
+                      consensusProportion=0.7,
+                      dendroReduce= "mad",
+                      dendroNDims=1000,
+                      mergeMethod="adjP",
+                         mergeDEMethod="limma",
+                      mergeCutoff=0.01,
+                      ncores=ncores,
+                      makeMissingDiss=TRUE,
+                      subsampleArgs=list(clusterFunction="pam",
+                          classifyMethod="All"),
+                      consensusArgs=list(clusterFunction="hierarchical01",
+                            whenUnassign="after",
+                         clusterArgs=list(evalClusterMethod=c("average"),
+                         removeDup=FALSE)),
+                      random.seed=176201
+    )
+    SummarizedExperiment::metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
+    return(rsecFluidigm)
+}
+#' @rdname makeRsecFluidigmObject
+#' @export
+checkRsecFluidigmObject<-function(object){
+    ## Simple Tests that haven't changed the clustering algorithms such that get different results.
+    ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
+
+    ## Expected Results
+    
+    ## Previous expected results -- can't recreate!
+    # nMakeConsensus<-8
+    # nMerge<-6
+    # contrasts<-c('(X6+X1+X4)/3-(X8+X2+X5+X3+X7)/5','X6-(X1+X4)/2','X8-(X2+X5+X3+X7)/4','(X2+X5)/2-(X3+X7)/2','X2-X5','X3-X7','X1-X4')
+    # adjPValues<-c(0.049794879, 0.007356062, 0.008204838,
+    #               0.013156033, 0.009336540, 0.007497524, 0.033526666)
+
+    ## Results as of 07/12/2019 -- 2.5.4.9002
+    nMakeConsensus<-10
+    nMerge<-6
+    contrasts<-c('(X10+X2+X3+X6+X8)/5-(X4+X5+X9+X1+X7)/5','(X10+X2+X3)/3-(X6+X8)/2','(X4+X5)/2-(X9+X1+X7)/3','X4-X5','X9-(X1+X7)/2','X1-X7','X10-(X2+X3)/2','X6-X8','X2-X3')
+    adjPValues<-c(0.08374593,0.03762908,0.01372188,0.0072146,0.00778045,0.01018532,0.00056585,0.00650729,0.00183902)
+
+        
+    ## Test same
+    checkValues<-.getCheckValues(object)
+    if(checkValues$nMakeConsensus != nMakeConsensus)
+      stop("rsecFluidigm has changed -- makeConsensus")
+    if(!is.logical(all.equal(contrasts,checkValues$contrasts)))
+        stop("rsecFluidigm has changed -- different dendrogram")
+    if(!is.logical(all.equal(adjPValues,checkValues$adjPValues)))
+      stop("rsecFluidigm has changed -- different merge percentages")
+    if(checkValues$nMerge != nMerge)
+      stop("rsecFluidigm has changed -- different # of mergeClusters")
+    
+}
+.getCheckValues<-function(object, printout=FALSE){
+    x<-unique(clusterMatrix(object)[,"makeConsensus"])
+    y<-unique(clusterMatrix(object)[,"mergeClusters"])
+    out<-list(
+        nMakeConsensus=length(x[x>0]),
+        nMerge=length(y[y>0]),
+        contrasts=object@merge_nodeProp[,"Contrast"],
+        adjPValues=round(object@merge_nodeProp[,"adjP"],8)
+        )
+    if(printout){
+        out$contrasts<-paste("c('",paste(out$contrasts,collapse="','"),"')",sep="")
+        out$adjPValues<-paste("c(",paste(out$adjPValues,collapse=","),")",sep="")
+    }
+    return(out)
+}
+
+
+
+
+
+#' Subset of fluidigm data
+#'
+#' @name fluidigmData
+#' @aliases fluidigmColData
+#' @docType data
+#' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
+#' @format subset of fluidigm data used in vignette
 #' package.
 #' @seealso \code{\link[scRNAseq]{fluidigm}}
 #' @keywords data
+#' @details \code{fluidigmData} and \code{fluidigmColData} are portions of the \code{fluidigm} data distributed in the package \code{scRNAseq} package. We have subsetted to only the cells sequenced under high depth, and limited our selves to only two of the four gene estimates provided by \code{scRNAseq} ("tophat_counts" and "rsem_tpm").
 #' @examples
-#' #code used to create rsecFluidigm:
+#' #code used to create objects:
 #' \dontrun{
 #' library(scRNAseq)
-#' data("fluidigm")
-#' se <- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
-#' wh_zero <- which(rowSums(assay(se))==0)
-#' pass_filter <- apply(assay(se), 1, function(x) length(x[x >= 10]) >= 10)
-#' se <- se[pass_filter,]
-#' fq <- round(limma::normalizeQuantiles(assay(se)))
-#' assays(se) <- list(normalized_counts=fq)
-#' wh<-which(colnames(colData(se)) %in% c("Cluster1","Cluster2"))
-#' colnames(colData(se))[wh]<-c("Published1","Published2")
-#' library(clusterExperiment)
-#' ncores<-1
-#' system.time(
-#'   rsecFluidigm<-RSEC(se, 
-#'                      isCount = TRUE, 
-#'                      k0s = 4:15, 
-#'                      alphas=c(0.1, 0.2, 0.3), 
-#'                      betas = 0.9,
-#'                      reduceMethod="PCA", 
-#'                      nReducedDims=10,
-#'                      minSizes=1, 
-#'                      clusterFunction="hierarchical01",
-#'                      consensusMinSize=3,
-#'                      consensusProportion=0.7,
-#'                      dendroReduce= "mad",
-#'                      dendroNDims=1000,
-#'                      mergeMethod="adjP",
-#' 	                    mergeDEMethod="limma",
-#'                      mergeCutoff=0.01,
-#'                      ncores=ncores, 
-#'                      makeMissingDiss=TRUE,
-#'                      subsampleArgs=list(clusterFunction="pam",
-#'                          classifyMethod="All"),
-#'                      consensusArgs=list(clusterFunction="hierarchical01",
-#'                            whenUnassign="after",
-#'                         clusterArgs=list(evalClusterMethod=c("average"), removeDup=FALSE))                    
-#'                      random.seed=176201)
-#' )
-#' metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
-#' ## Tests that haven't changed the clustering results.
-#' tabk0<-tableClusters(rsecFluidigm,whichClusters="k0=4,alpha=0.1")
-#' if(length(tabk0)!=7 || !all(tabk0 == c(28, 15, 13,  3,  2,  2,  2)))
-#'    stop("rsecFluidigm object has changed -- clusterMany")
-#' x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-#' if(length(x[x>0]) != 8) 
-#'   stop("rsecFluidigm object has changed -- makeConsensus")
-#' y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-#' if(length(y[y>0]) != 6) 
-#'   stop("rsecFluidigm object has changed -- different # of mergeClusters")
-#' adjPValues<-c(0.049794879, 0.007356062, 0.008204838, 
-#'   0.013156033, 0.009336540, 0.007497524, 0.033526666)
-#' if(nrow(rsecFluidigm@merge_nodeProp)!=length(adjPValues)) 
-#'   stop("rsecFluidigm object has changed -- makeDendrogram")
-#' if(!all.equal(adjPValues,rsecFluidigm@merge_nodeProp[,"adjP"])) 
-#'   stop("rsecFluidigm object has changed -- different percentages")	
-#' devtools::use_data(rsecFluidigm,overwrite=FALSE)
+#' if(packageVersion("scRNAseq")>="1.11.0") fluidigm <- ReprocessedFluidigmData() else data(fluidigm)
+#' fluidSubset<- fluidigm[,colData(fluidigm)[,"Coverage_Type"]=="High"]
+#' fluidigmData<-assays(fluidSubset)[c("tophat_counts","rsem_tpm")]
+#' fluidigmColData<-as.data.frame(colData(fluidSubset))
+#' usethis::use_data(fluidigmData, fluidigmColData, overwrite=FALSE)
 #' }
 NULL
-
-
 
 

@@ -148,7 +148,7 @@ listBuiltInReducedDims<-function(){c("PCA")}
 
 #' @importFrom RSpectra svds
 .pca <- function(x, center=TRUE, scale=FALSE, k) {
-  svd_raw <- svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
+  svd_raw <- RSpectra::svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
   pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
   rownames(pc_raw) <- rownames(x)
   return(pc_raw)

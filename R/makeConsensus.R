@@ -112,13 +112,11 @@ setMethod(
         whenUnassign<-match.arg(whenUnassign)
         if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
         if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
-        ##Now define as unassigned any samples with >= propUnassigned '-1' values in x
         N<-nrow(x)
+        ## Now define as unassigned any samples with >= propUnassigned '-1' values in x
         ## Doing >= means that all -1 will be in -1 cluster, no matter what
         ## (protects against chance that they get assigned to a cluster)
-        
-        ## FIXME: temporarily put back in the error, just to see if reproducible. Fix this in the release, etc!
-        whUnassigned <- which(apply(x, 2, function(dat){
+        whUnassigned <- which(apply(x, 1, function(dat){
             sum(dat== -1)/length(dat)>=propUnassigned}))
         if(length(whUnassigned)>0 && whenUnassign=="before") {           
             temp<-rep(-1,length=N)
