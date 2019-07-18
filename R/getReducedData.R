@@ -185,7 +185,7 @@ setMethod(
 #'   se<-SingleCellExperiment(matrix(rnorm(5000*100),nrow=5000,ncol=100))
 #'   defaultNDims(se,"PCA")
 #'   defaultNDims(se,"mad")
-#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method defaultNDims,matrixOrHDF5
+#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
 #' @export
 setMethod( 
   f="defaultNDims",
@@ -216,7 +216,7 @@ setMethod(
     
   })
 
-#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
+#' @rdname reduceFunctions
 #' @export
 setMethod( 
   f="defaultNDims","matrixOrHDF5",function(object,...){

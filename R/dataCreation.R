@@ -85,13 +85,13 @@ NULL
 #' library(clusterExperiment)
 #' data(fluidigmData)
 #' data(fluidigmColData)
-#' se<-SummarizedExperiment(assays=fluidigmData,
-#'        colData=fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
 #' checkRsecFluidigmObject(rsecFluidigm)
 #' usethis::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 #' @aliases makeRsecFluidigmObject
+#' @param object object given to functions
 #' @export
 makeRsecFluidigmObject<-function(object){
     pass_filter <- apply(assay(object), 1, function(x) length(x[x >= 10]) >= 10)
@@ -121,10 +121,10 @@ makeRsecFluidigmObject<-function(object){
                          ncores=ncores, 
                          random.seed=176201)
     )
-    metadata(rsecFluidigm)$packageVersion<-packageVersion("clusterExperiment")
+    SummarizedExperiment::metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
-#' @rdname rsecFluidigm
+#' @rdname makeRsecFluidigmObject
 #' @export
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.

@@ -7,7 +7,7 @@
 \alias{getReducedData}
 \alias{defaultNDims,SingleCellExperiment-method}
 \alias{defaultNDims}
-\alias{defaultNDims,matrixOrHDF5}
+\alias{defaultNDims,matrixOrHDF5-method}
 \alias{reduceFunctions}
 \alias{makeFilterStats}
 \alias{makeFilterStats,SummarizedExperiment-method}
@@ -33,6 +33,8 @@
 
 \S4method{defaultNDims}{SingleCellExperiment}(object, reduceMethod,
   typeToShow)
+
+\S4method{defaultNDims}{matrixOrHDF5}(object, ...)
 
 \S4method{makeFilterStats}{SummarizedExperiment}(object,
   filterStats = listBuiltInFilterStats(), transFun = NULL,
@@ -108,6 +110,8 @@ default name: if \code{reduceMethod} is a dimensionality reduction, then
 reduceMethod vector, only show those corresponding to "filterStats" or
 "reducedDims" options.}
 
+\item{...}{Values passed on the the 'SingleCellExperiment' method.}
+
 \item{filterStats}{character vector of statistics to calculate. Must be one
 of the character values given by \code{listBuildInFilterStats()}.}
 
@@ -127,8 +131,6 @@ giving this parameter will result in an error.}
 \item{filterNames}{if given, defines the names that will be assigned to the 
 filtering statistics in the \code{rowData} of the object. If missing, will be 
 just the value of \code{filterStats} argument}
-
-\item{...}{Values passed on the the 'SingleCellExperiment' method.}
 
 \item{whichClusterIgnoreUnassigned}{indicates clustering that should be used
 to filter out unassigned samples from the calculations. If \code{NULL} no

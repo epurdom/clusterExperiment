@@ -4,15 +4,15 @@
 \name{rsecFluidigm}
 \alias{rsecFluidigm}
 \alias{makeRsecFluidigmObject}
-\alias{checkRsecFluidigmObject}
 \title{Documentation of rsecFluidigm object}
 \format{\code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
   of running \code{\link{RSEC}} on fluidigm data described in vignette and
   available in the \code{scRNAseq} package.}
 \usage{
 makeRsecFluidigmObject(object)
-
-checkRsecFluidigmObject(object)
+}
+\arguments{
+\item{object}{object given to functions}
 }
 \description{
 Documentation of the creation of rsecFluidigm, result of RSEC
@@ -37,8 +37,7 @@ makeRsecFluidigmObject
 library(clusterExperiment)
 data(fluidigmData)
 data(fluidigmColData)
-se<-SummarizedExperiment(assays=fluidigmData,
-       colData=fluidigmColData)
+se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
 rsecFluidigm<-makeRsecFluidigmObject(se)
 checkRsecFluidigmObject(rsecFluidigm)
 usethis::use_data(rsecFluidigm,overwrite=FALSE)
