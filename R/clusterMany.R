@@ -810,12 +810,11 @@ setMethod(
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-unique(param[,c("reduceMethod","nFilterDims","distFunction")])
-                distParam<-distParam[!is.na(distParam[,"distFunction"]),]
+                distParam<-unique(param[,c("reduceMethod","nFilterDims",
+                    "distFunction","distAlgType")])
+                distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
-                    # be conservative and check for the 01 type 
-                    # if any of clusterFunctions are 01.
                     algCheckType<-distParam[ii,"distAlgType"]
                     redM<-as.character(distParam[ii,"reduceMethod"])
                     if(redM=="none"){
@@ -839,8 +838,6 @@ setMethod(
                     return(distMat)
                 })
             
-                #need to update here when have filter
-                ##paste(distParam[,"dataset"],distParam[,"distFunction"],sep="--")
                 nms<-paste(distParam[,"distFunction"],distParam[,"nFilterDims"],
                     distParam[,"reduceMethod"],sep=",")
                 names(allDist)<-nms
