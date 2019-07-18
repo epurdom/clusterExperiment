@@ -55,9 +55,10 @@
     (1 - cor(t(x))) / 2
 }
 .dissK<-function(x) {
-    dist(x)
+    dist(x) #distance finds between rows of matrix
 }
 
+## x is a nfeatures x nsamples matrix
 .makeDiss <- function(x, distFunction, algType, checkDiss) {
     if (!is.function(distFunction)) {
         if (length(distFunction) > 1)
