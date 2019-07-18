@@ -121,7 +121,7 @@ makeRsecFluidigmObject<-function(object){
                          ncores=ncores, 
                          random.seed=176201)
     )
-    SummarizedExperiment::metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
+    metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
 #' @rdname makeRsecFluidigmObject
