@@ -108,6 +108,7 @@ setMethod(
                         resamp.num = 100, samp.p = 0.7,
 						ncores=1,warnings=TRUE,... )
     {
+        
         classifyMethod<-match.arg(classifyMethod)
         ###########################
         ######## CHECKS
@@ -201,8 +202,5 @@ setMethod(
         }
         idnames<-colnames(inputMatrix)
         # DList is a NxB matrix
-        # FIXME: Replace with returning DList, the NxB matrix. Or perhaps have an argument?
-        # FIXME: This returns the distance, rather than the percentage shared. Previously returned percentage... Need to check on that.
-        #return(.clustersHammingDistance(t(DList)))
         return(DList)
     })

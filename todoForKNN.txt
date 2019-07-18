@@ -12,3 +12,4 @@ MINOR TO DO:
 -- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff (it shouldn't!)?
 -- RSEC has no @example! (add one with no run)
 -- Make makeMissingDiss dependent on the dimension (i.e. TRUE for smallish matrices)
+-- Make check that the inputs are actually matrices? (e.g. in subsamplingCluster)
