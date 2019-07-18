@@ -85,7 +85,7 @@ NULL
 #' library(clusterExperiment)
 #' data(fluidigmData)
 #' data(fluidigmColData)
-#' se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmobject,colData=fluidigmColData)
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
 #' checkRsecFluidigmObject(rsecFluidigm)
 #' usethis::use_data(rsecFluidigm,overwrite=FALSE)
@@ -101,7 +101,7 @@ makeRsecFluidigmObject<-function(object){
     wh<-which(colnames(colData(object)) %in% c("Cluster1","Cluster2"))
     colnames(colData(object))[wh]<-c("Published1","Published2")
     ncores<-1
-    rsecFluidigm<-RSEC(se,
+    rsecFluidigm<-RSEC(object,
                       isCount = TRUE,
                       k0s = 4:15,
                       alphas=c(0.1, 0.2, 0.3),
@@ -119,6 +119,7 @@ makeRsecFluidigmObject<-function(object){
                       mergeCutoff=0.01,
                       ncores=ncores,
                       makeMissingDiss=TRUE,
+                      mainClusterArgs=list(clusterArgs=list(removeDup=FALSE)),
                       subsampleArgs=list(clusterFunction="pam",
                           classifyMethod="All"),
                       consensusArgs=list(clusterFunction="hierarchical01",
@@ -127,7 +128,7 @@ makeRsecFluidigmObject<-function(object){
                          removeDup=FALSE)),
                       random.seed=176201
     )
-    SummarizedExperiment::metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
+    metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
 #' @rdname makeRsecFluidigmObject

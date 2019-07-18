@@ -687,7 +687,23 @@ setMethod(
             cat(nrow(param),"parameter combinations,",sum(param[,"sequential"]),"use sequential method,",sum(param[,"subsample"]),"use subsampling method\n")
         }
            
+        
+        ## Uniform way to create and access names of the list of the list of the distances
+        createDistNames<-function(paramMatrix,returnNames=TRUE){
+            paramNames<-c("reduceMethod", "nFilterDims",
+                             "distFunction")
+            if(!returnNames) paramNames<-c(paramNames,"distAlgType")
+            if(any(! paramNames %in% colnames(paramMatrix)))
+                 stop("Internal error: must have names", paste(paramNames,collapse=","))
+            distParam<-unique(paramMatrix[, paramNames,drop=FALSE])
+            distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
+            if(returnNames){
+                uniqueId<-apply(distParam,1,paste,collapse=",")
+                return(uniqueId)
+            }
+            else return(distParam)
             
+        }
         ################
         ## Function that will call clusterSingle for each row of param matrix
         ################
@@ -720,9 +736,10 @@ setMethod(
                 ###FIXME: Error here! Needs to call name that is specific to combination of reduce/dist/algType in allDist[[distFunction]]
                 passInput<- as.logical(gsub(" ","",par["passDistToInput"]))
                 passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
-                dnm<-paste(as.character(distFunction),
-                        as.character(par[["nFilterDims"]]),
-                        as.character(par[["reduceMethod"]]),collapse=",")
+                distParamMatrix<-cbind(distFunction=as.character(distFunction),
+                    nFilterDims=as.character(par[["nFilterDims"]]),
+                    reduceMEthod=as.character(par[["reduceMethod"]]))
+                dnm<-createDistNames(distParam,returnNames=TRUE)
                 
                 if(passInput){
                     out<-clusterSingle(inputMatrix=allDist[[dnm]],
@@ -792,10 +809,7 @@ setMethod(
         ## Run this even if run=FALSE so see message.
         if(any(!is.na(param[,"distFunction"]))){
             ##Get the parameters that imply different datasets.
-            distParam<-unique(param[, c("reduceMethod", "nFilterDims",
-                 "distFunction","distAlgType")])
-            distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
-            uniqueId<-apply(distParam,1,paste,collapse=",")
+            uniqueId<-createDistNames(param)
             ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
             if(verbose)
                 cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
@@ -810,9 +824,7 @@ setMethod(
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-unique(param[,c("reduceMethod","nFilterDims",
-                    "distFunction","distAlgType")])
-                distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
+                distParam<-createDistNames(param,returnNames=FALSE)
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
                     algCheckType<-distParam[ii,"distAlgType"]
@@ -838,8 +850,7 @@ setMethod(
                     return(distMat)
                 })
             
-                nms<-paste(distParam[,"distFunction"],distParam[,"nFilterDims"],
-                    distParam[,"reduceMethod"],sep=",")
+                nms<-createDistNames(distParam,returnNames=TRUE)
                 names(allDist)<-nms
                 
                 if(verbose) cat("\tdone.\n\n")

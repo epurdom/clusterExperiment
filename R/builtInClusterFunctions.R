@@ -425,7 +425,6 @@ NULL
     }
     return(clusterListIndices)
 }
-# .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list")
 .hier01CF<-ClusterFunction(clusterFUN=.hier01Cluster, inputType=c("diss","cat"), algorithmType="01",outputType="list",checkFunctions=FALSE)
 #internalFunctionCheck(.hier01Cluster,inputType=c("diss","cat"),algorithmType="01",outputType="list")
 
