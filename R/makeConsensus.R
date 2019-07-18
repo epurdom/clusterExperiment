@@ -117,11 +117,8 @@ setMethod(
         ## Doing >= means that all -1 will be in -1 cluster, no matter what
         ## (protects against chance that they get assigned to a cluster)
 
-        ## FIXME: keeping 2 to check back compatibility.
-        whUnassigned <- which(apply(x, 2, function(dat){
+        whUnassigned <- which(apply(x, 1, function(dat){
             sum(dat== -1)/length(dat)>=propUnassigned}))
-        # whUnassigned <- which(apply(x, 1, function(dat){
-        #     sum(dat== -1)/length(dat)>=propUnassigned}))
         if(length(whUnassigned)>0 && whenUnassign=="before") {           
             temp<-rep(-1,length=N)
             names(temp)<-rownames(x)
