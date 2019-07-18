@@ -120,7 +120,7 @@ makeRsecFluidigmObject<-function(object){
                       ncores=ncores,
                       makeMissingDiss=TRUE,
                       mainClusterArgs=list(clusterArgs=list(removeDup=FALSE)),
-                      subsampleArgs=list(clusterFunction="pam",
+                      subsampleArgs=list(clusterFunction="kmeans",
                           classifyMethod="All"),
                       consensusArgs=list(clusterFunction="hierarchical01",
                             whenUnassign="after",

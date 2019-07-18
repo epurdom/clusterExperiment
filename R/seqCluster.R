@@ -331,29 +331,12 @@ seqCluster<-function(inputMatrix, inputType, k0,
             k = k + 1
         }
     }
-<<<<<<< Local Changes
-    return(res)
-  }
-  while (remain >= remain.n && (found || k <= k.max)) {
-    if (found) { #i.e. start finding new cluster
-      if(verbose) cat(paste("Looking for cluster", nfound + 1, "...\n"))
-      k <- k.start
-      currentStart<-k.start #will add this to kstart if successful in finding cluster
-      #find clusters for K,K+1
-      for (i in seq_len(seq.num)) {
-        newk<-k + i - 1
-        res<-updateClustering(newk)
-        if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
-        candidates[[i]]<-res
-      }
-=======
     ###############
     # Clean up and return results
     ###############
     if(is.null(whyStop)){
         if(remain< remain.n) whyStop<-"Ran out of samples"
         if(!found & k>k.max) whyStop<-paste("Went past k.max=",k.max,"in looking for cluster with similarity to previous.")
->>>>>>> External Changes
     }
     clusterVector<-.clusterListToVector(tclust,N)
     if(all(clusterVector==-1) & length(tclust)>0) stop("coding error")
