@@ -87,7 +87,109 @@ test_that("whichClusters works with clusterMatrix",{
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters=1:3)),3)
 	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="dendro")),0)
 })
- 
+
+test_that("subsetting works as promised",{
+	#test zero-length subsetting
+	expect_output(show(cc[,logical(length=0L)]))
+	
+  ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
+	newName<-letters[1:nClusters(cc)["Cluster1"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
+	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName,matchTo="clusterIds"))
+	expect_equal(tableClusters(cc,whichCluster="Cluster1",useNames =FALSE),tableClusters(ccNamed,whichCluster="Cluster1",useNames =FALSE))
+	
+	cc<-ccNamed
+	expect_silent(test1<-clusterMatrix(cc[1:2,2]))
+	expect_silent(test2<-clusterMatrix(cc)[2,,drop=FALSE])
+  expect_equal(test1,test2) 
+  
+	#test if have duplicated names
+	# changed ccNamed so not unique names in Cluster1 
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"),matchTo="clusterIds")
+	newName<-LETTERS[1:nClusters(cc)["Cluster2"]]
+	names(newName)<-as.character(1:nClusters(cc)["Cluster2"])
+	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName,matchTo="clusterIds")	
+	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
+	
+	#####
+	#test pulls colors and names correctly. 
+	#####
+	# get clusterLegend info without subsetting
+	expect_silent(ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]) 
+	expect_silent(cl<-clusterLegend(cc)[["Cluster1"]])
+	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
+
+	# get it via subsetting
+	expect_silent(cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]) #do it via subsetting
+	#check that all of new in old and vice versa(i.e. didn't give them new names)
+	expect_equal(sort(cl2[,"name"]),oldNames)
+	#check right color with name
+	m<-match(cl2[,"name"],cl[,"name"])
+	expect_equal(cl2[,c("color","name")],cl[m,c("color","name")])
+	
+	###Subset entire clusters and check get them all, etc.
+	wh<-which(clusterMatrixNamed(cc) %in% oldNames)
+	#check same tabulations
+	expect_equal(tableClusters(cc[,wh],whichCluster="Cluster1"),tableClusters(cc,whichCluster="Cluster1")[oldNames])
+	
+  ###But this tests names stay the same regardless, even when renumber.
+  expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 
+  
+  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
+  
+  #test subsetting of genes
+  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
+  expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
+  
+  #test subsetting of samples
+  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2), ,drop=FALSE])
+  logVec<-rep(FALSE,length=nSamples(cc))
+  logVec[1:2]<-TRUE
+  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec, ,drop=FALSE]) 
+  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
+
+  
+  
+  ##########
+  #checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)
+  #therefore currently just really checks no errors. 
+  expect_silent(x1<-ccSE[,5:8])
+  ###Check retain SE info
+  expect_equal(colData(x1),colData(se[,5:8]) )
+  expect_equal(rownames(x1),rownames(se[,5:8])) 
+  expect_equal(colnames(x1),colnames(se[,5:8])) 
+  expect_equal(metadata(x1),metadata(se[,5:8])) 
+  expect_equal(rowData(x1),rowData(se[,5:8])) 
+  
+  expect_silent(x2<-ccSE[1:2,])
+  ###Check retain SE info
+  expect_equal(colData(x2),colData(se[1:2,]) )
+  expect_equal(rownames(x2),rownames(se[1:2,])) 
+  expect_equal(colnames(x2),colnames(se[1:2,])) 
+  expect_equal(metadata(x2),metadata(se[1:2,])) 
+  expect_equal(rowData(x2),rowData(se[1:2,])) 
+  
+  expect_silent(x3<-ccSE[,3])
+  ###Check retain SE info
+  expect_equal(colData(x3),colData(se[,3]) )
+  expect_equal(rownames(x3),rownames(se[,3])) 
+  expect_equal(colnames(x3),colnames(se[,3])) 
+  expect_equal(metadata(x3),metadata(se[,3])) 
+  expect_equal(rowData(x3),rowData(se[,3])) 
+  
+  expect_silent(x4<-ccSE[3,])
+  ###Check retain SE info
+  expect_equal(colData(x4),colData(se[3,]) )
+  expect_equal(rownames(x4),rownames(se[3,])) 
+  expect_equal(colnames(x4),colnames(se[3,])) 
+  expect_equal(metadata(x4),metadata(se[3,])) 
+  expect_equal(rowData(x4),rowData(se[3,])) 
+  
+  
+  expect_equal(clusterExperiment:::filterStats(sceSimData[1:10,]),head(clusterExperiment:::filterStats(sceSimData),10))
+})
+
+
 test_that("adding clusters work as promised",{
   ##########
   #addClusterings
@@ -256,107 +358,7 @@ test_that("rename/color works as promised",{
 	expect_silent(ccColored<-recolorClusters(cc,whichCluster="Cluster1",value=newColors))
 })
 
-test_that("subsetting works as promised",{
-	#test zero-length subsetting
-	expect_output(show(cc[,logical(length=0L)]))
-	
-  ###Note, this test only works because grabbing samples with clustering Index 1. Otherwise will renumber.
-	newName<-letters[1:nClusters(cc)["Cluster1"]]
-	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
-	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName,matchTo="clusterIds"))
-	expect_equal(tableClusters(cc,whichCluster="Cluster1",useNames =FALSE),tableClusters(ccNamed,whichCluster="Cluster1",useNames =FALSE))
-	
-	cc<-ccNamed
-	expect_silent(test1<-clusterMatrix(cc[1:2,2]))
-	expect_silent(test2<-clusterMatrix(cc)[2,,drop=FALSE])
-  expect_equal(test1,test2) 
-  
-	#test if have duplicated names
-	# changed ccNamed so not unique names in Cluster1 
-	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster1",c("1"="b"),matchTo="clusterIds")
-	newName<-LETTERS[1:nClusters(cc)["Cluster2"]]
-	names(newName)<-as.character(1:nClusters(cc)["Cluster2"])
-	ccNamed<-renameClusters(ccNamed,whichCluster="Cluster2",newName,matchTo="clusterIds")	
-	expect_warning(sub<-ccNamed[,1:5],"Some clusterings do not have unique names")
-	
-	#####
-	#test pulls colors and names correctly. 
-	#####
-	# get clusterLegend info without subsetting
-	expect_silent(ids<-clusterMatrix(cc)[c(13,10,4),"Cluster1"]) 
-	expect_silent(cl<-clusterLegend(cc)[["Cluster1"]])
-	oldNames<-cl[cl[,"clusterIds"] %in% as.character(ids),"name"]
-
-	# get it via subsetting
-	expect_silent(cl2<-clusterLegend(cc[,c(13,10,4)])[["Cluster1"]]) #do it via subsetting
-	#check that all of new in old and vice versa(i.e. didn't give them new names)
-	expect_equal(sort(cl2[,"name"]),oldNames)
-	#check right color with name
-	m<-match(cl2[,"name"],cl[,"name"])
-	expect_equal(cl2[,c("color","name")],cl[m,c("color","name")])
-	
-	###Subset entire clusters and check get them all, etc.
-	wh<-which(clusterMatrixNamed(cc) %in% oldNames)
-	#check same tabulations
-	expect_equal(tableClusters(cc[,wh],whichCluster="Cluster1"),tableClusters(cc,whichCluster="Cluster1")[oldNames])
-	
-  ###But this tests names stay the same regardless, even when renumber.
-  expect_equal(clusterMatrixNamed(cc[1:2,1:5]),clusterMatrixNamed(cc)[1:5,,drop=FALSE]) 
-  
-  expect_equal(clusterMatrix(cc[1:2,-c(1, 2)]),clusterMatrix(cc)[-c(1, 2),,drop=FALSE]) 
-  
-  #test subsetting of genes
-  expect_equal(clusterMatrix(cc[1:2,c(1, 2)]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
-  expect_equal(dim(cc[1:2,c(1, 2)]),c(2,2))
-  
-  #test subsetting of samples
-  expect_equal(clusterMatrix(cc[,c(1, 2)]),clusterMatrix(cc)[c(1, 2), ,drop=FALSE])
-  logVec<-rep(FALSE,length=nSamples(cc))
-  logVec[1:2]<-TRUE
-  expect_equal(clusterMatrix(cc[,logVec]),clusterMatrix(cc)[logVec, ,drop=FALSE]) 
-  expect_equal(clusterMatrix(cc[,c("Sample 1" , "Sample 2")]),clusterMatrix(cc)[c(1, 2),,drop=FALSE]) 
-
-  
-  
-  ##########
-  #checks SE info (which isn't biggest place needs unit tests since uses callNextMethod() so should work)
-  #therefore currently just really checks no errors. 
-  expect_silent(x1<-ccSE[,5:8])
-  ###Check retain SE info
-  expect_equal(colData(x1),colData(se[,5:8]) )
-  expect_equal(rownames(x1),rownames(se[,5:8])) 
-  expect_equal(colnames(x1),colnames(se[,5:8])) 
-  expect_equal(metadata(x1),metadata(se[,5:8])) 
-  expect_equal(rowData(x1),rowData(se[,5:8])) 
-  
-  expect_silent(x2<-ccSE[1:2,])
-  ###Check retain SE info
-  expect_equal(colData(x2),colData(se[1:2,]) )
-  expect_equal(rownames(x2),rownames(se[1:2,])) 
-  expect_equal(colnames(x2),colnames(se[1:2,])) 
-  expect_equal(metadata(x2),metadata(se[1:2,])) 
-  expect_equal(rowData(x2),rowData(se[1:2,])) 
-  
-  expect_silent(x3<-ccSE[,3])
-  ###Check retain SE info
-  expect_equal(colData(x3),colData(se[,3]) )
-  expect_equal(rownames(x3),rownames(se[,3])) 
-  expect_equal(colnames(x3),colnames(se[,3])) 
-  expect_equal(metadata(x3),metadata(se[,3])) 
-  expect_equal(rowData(x3),rowData(se[,3])) 
-  
-  expect_silent(x4<-ccSE[3,])
-  ###Check retain SE info
-  expect_equal(colData(x4),colData(se[3,]) )
-  expect_equal(rownames(x4),rownames(se[3,])) 
-  expect_equal(colnames(x4),colnames(se[3,])) 
-  expect_equal(metadata(x4),metadata(se[3,])) 
-  expect_equal(rowData(x4),rowData(se[3,])) 
-  
-  
-  expect_equal(clusterExperiment:::filterStats(sceSimData[1:10,]),head(clusterExperiment:::filterStats(sceSimData),10))
-})
-test_that("subsetting by clusterworks as promised",{
+test_that("subsetting by cluster works as promised",{
 	newName<-letters[1:nClusters(cc)["Cluster1"]]
 	names(newName)<-as.character(1:nClusters(cc)["Cluster1"])
 	expect_silent(ccNamed<-renameClusters(cc,whichCluster="Cluster1",value=newName))

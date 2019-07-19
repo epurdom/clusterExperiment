@@ -16,7 +16,8 @@
 #' @return A \code{ClusterExperiment} object.
 #' @details addClusterings adds y to x, and is thus not symmetric in the two
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
-#'   information, \code{coClustering}, and \code{orderSamples} are all kept from
+#'   information, the merge information, \code{coClustering}, and 
+#'   \code{orderSamples} are all kept from
 #'   the x object, even if y is a ClusterExperiment.
 #' @export
 #' @examples

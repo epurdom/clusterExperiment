@@ -942,8 +942,9 @@ setMethod(
   f = "plotCoClustering",
   signature = "ClusterExperiment",
   definition = function(data, invert, saveDistance=FALSE,...){
-	if(is.null(data@coClustering)) stop("coClustering slot is empty")
-    if(is.null(dim(data@coClustering))){
+    typeCoCl<-.typeOfCoClustering(data)
+    if(is.null(typeCoCl)) stop("coClustering slot is empty")
+    if(typeCoCl=="indices"){
         #calculate the distance
         coClustering(data)<-.clustersHammingDistance(
             t(clusterMatrix(data,whichClusters=data@coClustering)))        
@@ -951,7 +952,7 @@ setMethod(
     else{
         #Need to catch if not a symmetric matrix
         #(case of subsampling matrix)
-        if(!isSymmetric(data@coClustering)){
+        if(typeCoCl=="clusterings"){
             #calculate the distance
             coClustering(data)<-.clustersHammingDistance(
                 t(coClustering(data)))        

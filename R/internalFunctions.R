@@ -6,6 +6,15 @@
 	message(paste("Note:",x))
 }
 
+# Small function to identify what type of CoClustering information is stored in co-clustering slot
+# (might make sense to make it a slot, but then have to update object, for something not so important...)
+.typeOfCoClustering<-function(ceObj){
+	if(is.null(ceObj@coClustering)) return(NULL)
+    if(is.null(dim(ceObj@coClustering))) return("indices")
+        else if(!isSymmetric(ceObj@coClustering)) return("clusterings")
+            else return("distance")
+}
+
 .addPrefixToClusterNames<-function(ceObj,prefix,whCluster){
   ceLegend<-clusterLegend(ceObj)[[whCluster]]
   cl<-ceLegend[,"clusterIds"]
