@@ -812,7 +812,7 @@ setMethod(
             uniqueId<-createDistNames(param)
             ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
             if(verbose)
-                cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",nrow(distParam)))
+                cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",length(uniqueId)))
         }
 
         if(run){
