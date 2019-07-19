@@ -739,7 +739,7 @@ setMethod(
                 distParamMatrix<-cbind(distFunction=as.character(distFunction),
                     nFilterDims=as.character(par[["nFilterDims"]]),
                     reduceMEthod=as.character(par[["reduceMethod"]]))
-                dnm<-createDistNames(distParam,returnNames=TRUE)
+                dnm<-createDistNames(distParamMatrix,returnNames=TRUE)
                 
                 if(passInput){
                     out<-clusterSingle(inputMatrix=allDist[[dnm]],

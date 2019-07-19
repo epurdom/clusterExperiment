@@ -5,7 +5,11 @@ Changes in version 2.5.3-9003 (Release date: )
 	- Introduce `inputType="cat"` for categorical matrix to all the intermediate functions
 	- no longer allow `distFunction` as argument to internal functions. These functions no longer will calculate distances, only the top level function, `clusterSingle`. 
     - error handling is different, as are warnings/messages. Single internal function `.checkArgs` checks match between arguments and combinations of arguments, used at all functions (e.g. `clusterMany` as well).  
-    - does not calculate dissimilarity matrices unless `makeMissingDiss=TRUE` (new argument). This argument is also in `clusterMany` and `RSEC`, so that no distances are calculated without explicit user request.
+    - There is no calculating of dissimilarity matrices unless `makeMissingDiss=TRUE` (new argument). This argument is also in `clusterMany` and `RSEC`, so that no distances are calculated without explicit user request.
+* Changes to clustering functions:
+    - In order to cluster the results of subsampling, a clustering function must now accept data of form `cat` (not `dist` as before), i.e. the BxN matrix of clusterings from subsampling. Built in clustering techniques that took type `diss` (`pam`, `hier01` and `hierK`) have been adapted to do this.
+    - Built-in functions that accept `cat` can also reduce the BxN matrix to a B x m matrix, where m is the number of unique values of clusterings. This does affect the clustering results, as taking the average, etc. between samples will be affected, but for extremely large datasets can make the clustering more feasible. This option can be set in the `clusterArgs` list of options sent to the function: `clusterArgs=list(removeDup=TRUE)`.
+    - The data types that the clustering function takes should now be defined as a *vector* of acceptable types (previously when only two options, was a single value, one of `diss`, `X`, and `both`). 
 * Changes to `makeConsensus`:
     - `clusterArgs`: list of arguments that will be passed to `clusterArgs` argument of `mainClustering` to allow control of the clustering
     - `whenUnassign`: when to forcibly set unassigned to -1 for those. option `whenUnassign="after"` corresponds to previous version, but now default is `before`, i.e. to cluster without those samples, so those samples don't affect the clustering of those that will get assignments. 
@@ -18,7 +22,7 @@ Changes in version 2.5.3-9003 (Release date: )
     
 Bugs:
 * Fix so export function`getReducedData`
-* Fix error in `makeConsensus` was calculating the unassigned proportion in the wrong margin and and proportion=1 correctly (matrix inversion problem). 
+* Fix error in `makeConsensus` was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 
 * Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
