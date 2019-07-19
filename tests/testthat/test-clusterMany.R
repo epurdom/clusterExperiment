@@ -464,12 +464,10 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
   # 	 seqArgs=param$seqArgs,subsampleArgs=param$subsampleArgs)
   # expect_equal(cc,cc2)
   
-  #check giving distance -- this still doesn't work.
-  #problem to just give dist because need to grab from global environment
   expect_silent(cc2 <- clusterMany(mat, ks=c(3,4),clusterFunction="pam",
                     distFunction=c("euclidean","manhattan",NA),
                     subsample=FALSE, sequential=FALSE,verbose=FALSE,
-                    isCount=FALSE))
+                    isCount=FALSE, makeMissingDiss=TRUE))
 
   # # #check giving distance -- this still doesn't work.
   # # #problem to just give dist because need to grab from global environment

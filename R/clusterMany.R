@@ -595,7 +595,7 @@ setMethod(
                     warn=parameterWarnings)})
             # doDiss means will send diss as inputMatrix
             # doDissPost means will pass diss to mainClusterArgs        
-            doDiss<-sapply(checks,function(x){x$doDiss}) | !is.na(distFunction)
+            doDiss<-sapply(checks,function(x){x$doDiss}) | !is.na(param$distFunction)
             doDissPost<-sapply(checks,function(x){x$doDissPost})
             #in case user asked for distFunction, don't do again:
             doDissPost[doDiss]<-FALSE 
@@ -608,7 +608,7 @@ setMethod(
             }
             if(any(missDiss) & makeMissingDiss){
                 # give "default" to those not assigned
-                param[is.na(distFunction) & missDiss,"distFunction"]<-"default"
+                param[is.na(param$distFunction) & missDiss,"distFunction"]<-"default"
                 
                 ## expand param matrix to include additional information for calculating/passing distances
                 subCF<-sapply(checks,function(x){
@@ -694,7 +694,7 @@ setMethod(
                              "distFunction")
             if(!returnNames) paramNames<-c(paramNames,"distAlgType")
             if(any(! paramNames %in% colnames(paramMatrix)))
-                 stop("Internal error: must have names", paste(paramNames,collapse=","))
+                 stop("Internal error: must have following names: ", paste(paramNames,collapse=","))
             distParam<-unique(paramMatrix[, paramNames,drop=FALSE])
             distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
             if(returnNames){
@@ -738,7 +738,7 @@ setMethod(
                 passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
                 distParamMatrix<-cbind(distFunction=as.character(distFunction),
                     nFilterDims=as.character(par[["nFilterDims"]]),
-                    reduceMEthod=as.character(par[["reduceMethod"]]))
+                    reduceMethod=as.character(par[["reduceMethod"]]))
                 dnm<-createDistNames(distParamMatrix,returnNames=TRUE)
                 
                 if(passInput){
