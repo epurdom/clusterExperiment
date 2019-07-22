@@ -253,6 +253,14 @@ test_that("adding clusters work as promised",{
   expect_equal(colnames(c4),colnames(se)) 
   expect_equal(metadata(c4),metadata(se)) 
   expect_equal(rowData(c4),rowData(se)) 
+  
+  ## Check coCluster slot with indices
+  expect_silent(c5<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+  expect_silent(coClustering(c5)<-c(4,1))
+  expect_silent(c6<-addClusterings(c5,ccSE))
+  expect_equal(coClustering(c5),coClustering(c6))
+  expect_null(coClustering(addClusterings(ccSE,c5)))
+  
 })  
 
 test_that("removeClusterings work as promised",{
