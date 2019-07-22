@@ -19,6 +19,7 @@ Changes in version 2.5.3-9003 (Release date: )
     - NxB matrix of clusterings (also in sparse format)
     - `plotClusterings` now calculates the hamming distance of clusterings; if requested, will return object with distance to avoid having to calculate in future plots (meaning the NxN matrix must be saved, in sparse format). 
 * Added checks in builtin functions for very small numbers of observations (mainly for unit tests)
+* `addClusterings` applied to two CE objects now gives more arguments about how will copy over the clustering information of one to the other. 
     
 Bugs:
 * Fix so export function`getReducedData`

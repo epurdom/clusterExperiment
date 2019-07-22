@@ -51,30 +51,89 @@ setMethod(
 )
 
 #' @rdname addClusterings
+#' @param transferFrom If x and y are both \code{ClusterExperiment} objects
+#'   indicates from which object the clustering info should be taken (regarding merging, dendrogram, etc). Does not affect the order of the clusterings, which will always be the clusterings of x, followed by those of y (along with slots `clusterType`, `clusterInfo`, `clusterLegend`)
+#' @param mergeCEObjects logical If x and y are both \code{ClusterExperiment} objects indicates as to whether should try to grab in the information missing from x from y (or vice versa if transferFrom=y).
+
 #' @export
 setMethod(
-  f = "addClusterings",
-  signature = signature("ClusterExperiment", "ClusterExperiment"),
-  definition = function(x, y) {
+    f = "addClusterings",
+    signature = signature("ClusterExperiment", "ClusterExperiment"),
+    definition = function(x, y, transferFrom=c("x","y"),mergeCEObjects=FALSE) 
+{
+    transferFrom<-match.arg(transferFrom)
     if(!all(dim(assay(y)) == dim(assay(x))) || !all(assay(y) == assay(x))) {
       stop("Cannot merge clusters from different data.")
     }
-    x@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
-    x@clusterTypes <- c(x@clusterTypes, y@clusterTypes)
-    x@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
-    x@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
-    if(any(duplicated(colnames(x@clusterMatrix)))){
-      colnames(x@clusterMatrix)<-make.names(colnames(x@clusterMatrix),unique=TRUE)
+    ## FIXME: does make copy -- could be much more memory than before. 
+    if(transferFrom=="x") retval<-x
+    else retval<-y
+    retval@clusterMatrix <- cbind(x@clusterMatrix, y@clusterMatrix)
+    retval@clusterTypes <- c(x@clusterTypes, y@clusterTypes)
+    retval@clusterInfo<-c(x@clusterInfo,y@clusterInfo)
+    retval@clusterLegend<-c(x@clusterLegend,y@clusterLegend)
+    if(any(duplicated(colnames(retval@clusterMatrix)))){
+      colnames(retval@clusterMatrix)<-
+          make.names(colnames(retval@clusterMatrix),unique=TRUE)
     }
-    x<-.unnameClusterSlots(x) #just gets rid of the names of objects that shouldn't have them
-    ch<-.checkClusterMatrix(x)
+    if(transferFrom=="y"){
+        retval@dendro_index<-y@dendro_index+nClusterings(x)
+        retval@merge_index<-y@merge_index+nClusterings(x) #update index to where merge from
+        retval@merge_dendrocluster_index <- 
+            y@merge_dendrocluster_index + nClusterings(x)
+        if(.typeOfCoClustering(y)=="indices")
+            retval@coClustering<-y@coClustering+nClusterings(x)
+    }
+
+    if(mergeCEObjects){
+        ### If missing in transfer object, pull from the other one
+        if(transferFrom=="x"){
+            addedObj<-y
+            defaultObj<-x
+        }
+        else{
+            addedObj<-x
+            defaultObj<-y
+        }
+        if(is.na(retval@dendro_index) & !is.na(addedObj@dendro_index)){
+            retval@dendro_samples<-addedObj@dendro_samples
+            retval@dendro_clusters<-addedObj@dendro_clusters
+            if(transferFrom=="x") 
+                retval@dendro_index <- 
+                    addedObj@dendro_index+ nClusterings(defaultObj) 
+        }
+        if(is.na(retval@merge_index) & !is.na(addedObj@merge_index)){
+            if(transferFrom=="x") 
+                retval@merge_index<-addedObj@merge_index+nClusterings(defaultObj) 
+            retval@merge_nodeMerge<-addedObj@merge_nodeMerge
+            retval@merge_cutoff<-addedObj@merge_cutoff
+            retval@merge_method<-addedObj@merge_method
+            retval@merge_demethod<-addedObj@merge_demethod
+        }
+        if(is.null(retval@merge_nodeProp) & !is.null(addedObj@merge_nodeProp)){
+            retval@merge_nodeProp<-addedObj@merge_nodeProp
+            retval@merge_dendrocluster_index<-
+                addedObj@merge_dendrocluster_index+nClusterings(defaultObj)                }
+        #put back orderSamples
+        if(all(retval@orderSamples==seq_len(nSamples(retval))) & 
+            !all(addedObj@orderSamples==seq_len(nSamples(retval)))) 
+                retval@orderSamples<-addedObj@orderSamples
+        if(is.null(retval@coClustering)){
+            if(transferFrom=="x" & .typeOfCoClustering(addedObj)=="indices")    
+                retval@coClustering<-addedObj@coClustering + nClusterings(defaultObj)
+            else retval@coClustering<-addedObj@coClustering
+        }
+    }
+    retval<-.unnameClusterSlots(retval) #just gets rid of the names of objects that shouldn't have them
+
+    ch<-.checkClusterMatrix(retval)
     if(!is.logical(ch)) stop(ch)
-    ch<-.checkClusterTypes(x)
+    ch<-.checkClusterTypes(retval)
     if(!is.logical(ch)) stop(ch)
-    ch<-.checkClusterLegend(x)
+    ch<-.checkClusterLegend(retval)
     if(!is.logical(ch)) stop(ch)
     #would it be less memory to do a call to "new"? What is difference versus having to check dendrogram, coClustering, etc if they exists? Should do checks on large data.
-    return(x)
+    return(retval)
   }
 )
 

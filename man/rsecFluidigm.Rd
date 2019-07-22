@@ -37,7 +37,7 @@ makeRsecFluidigmObject
 library(clusterExperiment)
 data(fluidigmData)
 data(fluidigmColData)
-se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+se<-SummarizedExperiment(assays=fluidigmobject,colData=fluidigmColData)
 rsecFluidigm<-makeRsecFluidigmObject(se)
 checkRsecFluidigmObject(rsecFluidigm)
 usethis::use_data(rsecFluidigm,overwrite=FALSE)

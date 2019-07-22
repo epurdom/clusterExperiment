@@ -316,7 +316,7 @@ In the next section, we will describe more about the options we could adjust in 
  These are common parameters we might frequently want to tweak in `RSEC`.
  
 ```{r recallRSEC}
-rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
+rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05,stopOnErrors =TRUE)
 ```
 
 Notice that we save the output over our original object. This is the standard way to work with the `ClusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).

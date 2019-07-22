@@ -57,33 +57,15 @@ numericalAsCharacter<-function(values,prefix=""){
 	return(values)
 }
 
+## FIXME: Some day, if update addClusterings so could choose where to put new clusterings, could just use that so don't replicate code here.
 .addNewResult<-function(newObj,oldObj){
-  retval<-addClusterings(newObj,oldObj) #want most recent addition on top of clusterMatrix
-  #erases dendrogram from oldObj -- only keeps newObj -- so need to put it back if wasn't already there
-  if(is.na(retval@dendro_index) & !is.na(newObj@dendro_index)) stop("Coding error -- addClusterings lost dendro_index")
-  if(is.na(retval@merge_index) & !is.na(newObj@merge_index)) stop("Coding error -- addClusterings lost merge_index")
-  if(is.na(retval@dendro_index) & !is.na(oldObj@dendro_index)){
-    retval@dendro_samples<-oldObj@dendro_samples
-    retval@dendro_clusters<-oldObj@dendro_clusters
-    retval@dendro_index<-oldObj@dendro_index+nClusterings(newObj) #update index to where dendrogram from
-  }
-  if(is.na(retval@merge_index) & !is.na(oldObj@merge_index)){
-    retval@merge_index<-oldObj@merge_index+nClusterings(newObj) #update index to where merge from
-    retval@merge_nodeMerge<-oldObj@merge_nodeMerge
-    retval@merge_cutoff<-oldObj@merge_cutoff
-    retval@merge_method<-oldObj@merge_method
-		retval@merge_demethod<-oldObj@merge_demethod
-  }
-  if(is.null(retval@merge_nodeProp) & !is.null(oldObj@merge_nodeProp)){
-    retval@merge_nodeProp<-oldObj@merge_nodeProp
-    retval@merge_dendrocluster_index<-oldObj@merge_dendrocluster_index+nClusterings(newObj) #update index to where merge from
-  }
-  #put back orderSamples, coClustering
-  if(all(retval@orderSamples==seq_len(nSamples(retval))) & !all(oldObj@orderSamples==seq_len(nSamples(retval)))) retval@orderSamples<-oldObj@orderSamples
-  if(is.null(retval@coClustering)) retval@coClustering<-oldObj@coClustering
-  retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
-  #   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
-  return(retval)
+    # want most recent addition on top of clusterMatrix
+    # mergeCEObjects=TRUE means will keep any CE info in newObj, but add CE info in oldObj if not in new object (used to be done by this function, but updated `addClusterings` to do that for me so all in one place). 
+    retval<-addClusterings(x=newObj, y= oldObj, 
+        transferFrom="x", mergeCEObjects=TRUE) 
+    retval<-.addBackSEInfo(newObj=retval,oldObj=oldObj) #make sure keeps SE info
+    #   Note: .addBackSEInfo calls ClusterExperiment (i.e. validates)
+    return(retval)
 }
 
 #this function keeps everything from new, except grabs SE info from old

@@ -12,7 +12,8 @@
 \S4method{addClusterings}{ClusterExperiment,matrix}(x, y,
   clusterTypes = "User", clusterLabels = NULL, clusterLegend = NULL)
 
-\S4method{addClusterings}{ClusterExperiment,ClusterExperiment}(x, y)
+\S4method{addClusterings}{ClusterExperiment,ClusterExperiment}(x, y,
+  transferFrom = c("x", "y"), mergeCEObjects = FALSE)
 
 \S4method{addClusterings}{ClusterExperiment,vector}(x, y,
   makePrimary = FALSE, ...)
@@ -34,6 +35,11 @@ matrix, the column names of that matrix will be used by default, if
 
 \item{clusterLegend}{a list giving the cluster legend for the clusters added.}
 
+\item{transferFrom}{If x and y are both \code{ClusterExperiment} objects
+indicates from which object the clustering info should be taken (regarding merging, dendrogram, etc). Does not affect the order of the clusterings, which will always be the clusterings of x, followed by those of y (along with slots `clusterType`, `clusterInfo`, `clusterLegend`)}
+
+\item{mergeCEObjects}{logical If x and y are both \code{ClusterExperiment} objects indicates as to whether should try to grab in the information missing from x from y (or vice versa if transferFrom=y).}
+
 \item{makePrimary}{whether to make the added cluster the primary cluster
 (only relevant if \code{y} is a vector)}
 
@@ -52,7 +58,8 @@ Function for adding new clusterings in form of vector (single
 \details{
 addClusterings adds y to x, and is thus not symmetric in the two
   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
-  information, \code{coClustering}, and \code{orderSamples} are all kept from
+  information, the merge information, \code{coClustering}, and 
+  \code{orderSamples} are all kept from
   the x object, even if y is a ClusterExperiment.
 }
 \examples{
