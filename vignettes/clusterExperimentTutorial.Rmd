@@ -1701,10 +1701,10 @@ descendants(clusterDendrogram(ce),node="NodeId3")
 
 The main reason to really ever work with these dendrograms directly is  to link it back with the (merging results)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. In particular, one feature of the cluster dendrogram can be set by the user is the labels for the internal nodes of the cluster hierarchy. Because of this there is a function `nodeLabels` that can be called *directly on the `ClusterExperiment` object* to see and update these values. Unlike our previous code, where we extracted the dendrogram and then used the functions in `phylobase` to look at it, these functions will update the actual dendrograms inside the object.
 
-We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the new replacement vector of names have names that match the internal node ids (the `NodeId` column). 
+We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the vector of new names have names that match the internal node ids (the `NodeId` column). These are the default names of the node, we can use the default names (given by `nodeLabels`) to grab them. 
 
 ```{r changeNodeLabels}
-newNodeLabels<-LETTERS[1:6]
+newNodeLabels<-LETTERS[1:nNodes(ce)]
 names(newNodeLabels)<-nodeLabels(ce)
 nodeLabels(ce)<-newNodeLabels
 ```
