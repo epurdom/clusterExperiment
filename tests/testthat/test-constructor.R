@@ -256,40 +256,53 @@ test_that("adding clusters work as promised",{
 })  
 
 test_that("removeClusterings work as promised",{
-  ##########
-  #check removeClusterings
-  #single cluster
-  expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
-  expect_silent(c5<-removeClusterings(c4,1))
-  expect_equal(NCOL(clusterMatrix(c5)), nClusterings(c4)-1)
-  expect_equal(length(clusterTypes(c5)), nClusterings(c4)-1)
-  expect_equal(length(clusteringInfo(c5)), nClusterings(c4)-1)
-  expect_equal(primaryCluster(c4), primaryCluster(removeClusterings(c4,2)))
-  ###Check retain SE info 
-  expect_equal(colData(c5),colData(se)) 
-  expect_equal(rownames(c5),rownames(se)) 
-  expect_equal(colnames(c5),colnames(se)) 
-  expect_equal(metadata(c5),metadata(se)) 
-  expect_equal(rowData(c5),rowData(se)) 
-  
-  #vector clusters
-  expect_silent(c6<-removeClusterings(c4,c(1,3)))
-  expect_equal(NCOL(clusterMatrix(c6)), nClusterings(c4)-2)
-  expect_equal(length(clusterTypes(c6)), nClusterings(c4)-2)
-  expect_equal(length(clusteringInfo(c6)), nClusterings(c4)-2)
-  ###Check retain SE info 
-  expect_equal(colData(c6),colData(se)) 
-  expect_equal(rownames(c6),rownames(se)) 
-  expect_equal(colnames(c6),colnames(se)) 
-  expect_equal(metadata(c6),metadata(se)) 
-  expect_equal(rowData(c6),rowData(se)) 
-  
-  expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),"Invalid value for 'whichCluster'")
-  
-  expect_silent(c7<-removeClusterings(c4,"User")) #two have "user" label
-  expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)
-  expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
-  expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
+    ##########
+    #check removeClusterings
+    #single cluster
+    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+    expect_silent(c5<-removeClusterings(c4,1))
+    expect_equal(NCOL(clusterMatrix(c5)), nClusterings(c4)-1)
+    expect_equal(length(clusterTypes(c5)), nClusterings(c4)-1)
+    expect_equal(length(clusteringInfo(c5)), nClusterings(c4)-1)
+    expect_equal(primaryCluster(c4), primaryCluster(removeClusterings(c4,2)))
+    ###Check retain SE info 
+    expect_equal(colData(c5),colData(se)) 
+    expect_equal(rownames(c5),rownames(se)) 
+    expect_equal(colnames(c5),colnames(se)) 
+    expect_equal(metadata(c5),metadata(se)) 
+    expect_equal(rowData(c5),rowData(se)) 
+
+    #vector clusters
+    expect_silent(c6<-removeClusterings(c4,c(1,3)))
+    expect_equal(NCOL(clusterMatrix(c6)), nClusterings(c4)-2)
+    expect_equal(length(clusterTypes(c6)), nClusterings(c4)-2)
+    expect_equal(length(clusteringInfo(c6)), nClusterings(c4)-2)
+    ###Check retain SE info 
+    expect_equal(colData(c6),colData(se)) 
+    expect_equal(rownames(c6),rownames(se)) 
+    expect_equal(colnames(c6),colnames(se)) 
+    expect_equal(metadata(c6),metadata(se)) 
+    expect_equal(rowData(c6),rowData(se)) 
+
+    expect_error(removeClusterings(c4,c(1,nClusterings(c4)+1)),
+        "Invalid value for 'whichCluster'")
+
+    expect_silent(c7<-removeClusterings(c4,"User")) #two have "user" label
+    expect_equal(NCOL(clusterMatrix(c7)), nClusterings(c4)-2)
+    expect_equal(length(clusterTypes(c7)), nClusterings(c4)-2)
+    expect_equal(length(clusteringInfo(c7)), nClusterings(c4)-2)
+
+    ## Check coCluster slot with indices
+    expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New"))
+    expect_error(coClustering(c4)<-c(4,7,1),"CoClustering slot is a vector, but doesn't match indices of clusterMatrix of the object") #can't give more than 4
+    expect_silent(coClustering(c4)<-c(4,1))
+    ## remove one of the co-clusterings
+    expect_warning(c8<-removeClusterings(c4,c(4,3)), "removing clusterings that were used in makeConsensus")
+    expect_null(coClustering(c8))
+    ## remove separate clustering
+    ## remove one of the co-clusterings
+    expect_silent(c9<-removeClusterings(c4,c(2)))
+    expect_equal(coClustering(c9),c(3,1))
   
 })
 

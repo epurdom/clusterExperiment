@@ -39,8 +39,8 @@ setMethod(
         
         ## Fix CoClustering information
         ## Erase if any are part of clusters to remove
-        coMat<-coClustering(data)
-        typeCoCl<-.typeOfCoClustering(data)
+        coMat<-coClustering(x)
+        typeCoCl<-.typeOfCoClustering(x)
         if(typeCoCl=="indices"){
             if(any(coMat %in% whichClusters)){
                 warning("removing clusterings that were used in makeConsensus (i.e. stored in CoClustering slot). Will delete the coClustering slot")

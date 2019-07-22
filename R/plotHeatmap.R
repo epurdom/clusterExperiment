@@ -943,7 +943,7 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(data, invert, saveDistance=FALSE,...){
     typeCoCl<-.typeOfCoClustering(data)
-    if(is.null(typeCoCl)) stop("coClustering slot is empty")
+    if(typeCoCl=="null") stop("coClustering slot is empty")
     if(typeCoCl=="indices"){
         #calculate the distance
         coClustering(data)<-.clustersHammingDistance(
