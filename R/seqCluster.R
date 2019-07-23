@@ -242,24 +242,27 @@ seqCluster<-function(inputMatrix, inputType, k0,
     #iterative loop
     #-------
     while (remain >= remain.n && (found || k <= k.max)) {
+        if(nfound>0 ) browser()
         if (found) { 
-            #i.e. previous iteration found cluster; 
-            #need to start finding new cluster
+            # i.e. previous iteration found cluster; 
+            # need to start finding new cluster
             if(verbose) cat(paste("Looking for cluster", nfound + 1, "...\n"))
             k <- k.start
             currentStart<-k.start #will add this to kstart if successful in finding cluster
-            #find clusters for K,K+1
-            for (i in seq_len(seq.num)) {
-                newk<-k + i - 1
+            # find clusters for K,K+1
+            # Note, candidates should be empty, so filling first two slots
+            for (ii in seq_len(seq.num)) {
+                newk<-k + ii - 1
                 res<-updateClustering(newk)
                 if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
-                candidates[[i]]<-res
+                candidates[[ii]]<-res
             }
         }
         else { 
-            #previous iteration clustering wasn't good enough
-            #need to go increase to K+2,K+3, etc.
+            # previous iteration clustering wasn't good enough
+            # need to go increase to K+2,K+3, etc.
             candidates <- candidates[-1] #remove old k
+            if(length(candidates)!=1 ) stop("Internal coding error in seqCluster -- more candidates than considering")
             newk<-k + seq.num - 1
             if(verbose) cat(paste("k =", newk, "\n"))
             #add new k (because always list o)
@@ -271,18 +274,20 @@ seqCluster<-function(inputMatrix, inputType, k0,
         #check whether all got top.can values for each -- could be less.
         #find which rows of index.m define cluster combinations that don't exist
         ##################
-        nClusterPerK<-sapply(candidates,length) #number of clusters found per k sequence
-        whInvalid<-unique(unlist(lapply(seq_len(ncol(index.m)), 
-                                        function(i){ which(index.m[,i] > nClusterPerK[i])}
-        )))
+        # number of clusters found in each of clusterings (candidates of length 2).
+        # Note, number of clusters should be <= top.can (# top candidates to keep)
+        nClusterPerK<-sapply(candidates,length) 
+        whInvalid<-sweep(index.m,MARGIN=2,STATS=nClusterPerK, FUN=">")
+        # vector (of length equal to number of combinations) saying which of the clusterings didn't have at least top.can clusters:
+        whInvalid<-which(apply(whInvalid,1,any))
         if(length(whInvalid)==nrow(index.m)){
             #all invalid -- probably means that for some k there were no candidates found. So should stop.
             if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
-            whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+i-1,"and previous clusters not similar enough.")
+            whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+1,"and previous clusters not similar enough.")
             break
         }
         if(length(whInvalid)>0){
-            if(verbose) cat("Did not find", top.can,"clusters: ")
+            if(verbose) cat("Did not find", top.can,"clusters for all k: ")
             if(verbose) cat(paste("found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively\n"))
             
             tempIndex<-index.m[-whInvalid,,drop=FALSE]
