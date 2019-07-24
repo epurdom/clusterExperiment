@@ -948,7 +948,12 @@ test_that("Different passed options of seqCluster",{
         isCount=FALSE,
         seqArgs=list(k0=5,beta=0.9,verbose=FALSE))
         )
-    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE), "if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE), 
+        "if sequential=TRUE, must give seqArgs so as to identify k0 and beta")
+
+        
     expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(k0=5,verbose=FALSE)), "required argument 'beta' is missing")
 	expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,mainClusterArgs=list(clusterFunction="pam"),isCount=FALSE,seqArgs=list(beta=0.9,verbose=FALSE)), "required argument 'k0' is missing")
 
@@ -1001,7 +1006,37 @@ test_that("Different passed options of seqCluster",{
 	        isCount=FALSE,seqArgs=list(k0=5,beta=0.9,verbose=FALSE)))
 	}
 
-
+    ## Check warnings for esoteric arguments
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,top.can=5.5)), 
+        "If top.can parameter of seqArgs is not a whole number, must be between 0 and 1.")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,top.can=-1)), 
+        "top.can parameter of seqArgs cannot be NA or negative value")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,remain.n=3.4)), 
+        "remain.n argument of seqArgs must be a positive whole number")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,k.min=3.4)), 
+        "k.min argument of seqArgs must be a positive whole number")
+    expect_error(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,k.max=20.5)), 
+        "k.max argument of seqArgs must be a positive whole number")
+    expect_silent(clusterSingle(mat,subsample=FALSE, sequential=TRUE,
+        mainClusterArgs=list(clusterFunction="pam"),
+        isCount=FALSE,
+        seqArgs=list(k0=5,beta=0.9,verbose=FALSE,top.can=0.1)))
+        
 })
 
 test_that("Different direct options of `clusterSingle` ", {

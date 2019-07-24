@@ -18,10 +18,9 @@
 #'   has to be before 'finding' and removing the cluster.
 #' @param top.can only the top.can clusters from \code{\link{mainClustering}} (ranked
 #'   by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
-#'   pairwise for stability. Making this very big will effectively remove this
+#'   pairwise for stability. Can be either an integer value, identifying the absolute number of clusters, or a value between 0 and 1, meaning to keep all clusters with at least this proportion of the remaining samples in the cluster. Making this either a very big integer or equal to 0 will effectively remove this
 #'   parameter and all pairwise comparisons of all clusters found will be
-#'   considered. This might result in smaller clusters being found. The current
-#'   default is fairly large, so probably will have little effect.
+#'   considered; this might result in smaller clusters being found. If top.can is between 0 and 1, then there is still a hard threshold of at least 5 samples in a cluster to be considered as a cluster. 
 #' @param remain.n when only this number of samples are left (i.e. not yet
 #'   clustered) then algorithm will stop.
 #' @param k.min each iteration of sequential detection of clustering will
@@ -166,6 +165,7 @@ seqCluster<-function(inputMatrix, inputType, k0,
     k0=seqArgs[["k0"]]
     beta=seqArgs[["beta"]]
     top.can = seqArgs[["top.can"]]
+    isIntegerTop<-is.whole(top.can) & top.can >0
     remain.n = seqArgs[["remain.n"]]
     k.min = seqArgs[["k.min"]]
     k.max=seqArgs[["k.max"]]
@@ -203,7 +203,34 @@ seqCluster<-function(inputMatrix, inputType, k0,
                 mainClusterArgs=tempMainArgs)$results
         return(res)
     }
-    
+    trimResults<-function(res){
+        if(length(res)>0){
+            if(isIntegerTop){
+                res <- res[seq_len(min(top.can,length(res)))]
+            } 
+            else{
+                currN<-ncol(inputMatrix)
+                requiredN<-floor(currN*top.can)
+                NPerCluster<-sapply(res,length)
+                if(isTRUE(all.equal(top.can,0))){
+                    requiredN<-0
+                }
+                else{
+                    requiredN<-max(requiredN,5)
+                }
+                whLarger<-which(NPerCluster>=requiredN)
+                # cat("Npercluster:\n")
+                # print(NPerCluster)
+                if(length(whLarger)>0){
+                    res<-res[whLarger]
+                    #cat(sprintf("Npercluster that larger than %s:\n",max(requiredN,5)))
+                    #print(NPerCluster[whLarger])
+                }
+                else res<-res[seq_len(min(10,length(res)))]
+            }
+        } 
+        return(res)
+    }
     #########
     ## Iteration code
     #########
@@ -219,7 +246,8 @@ seqCluster<-function(inputMatrix, inputType, k0,
     betaNum<-match.arg(betaNum,c("all","last","first"))
     #This makes all combinations of 1:top.can, seq.num times (could be simplified if seq.num=2):
     #a ncombinations x seq.num matrix -- each row gives a combination of clusters to compare stability
-    index.m <- as.matrix(expand.grid(lapply(seq_len(seq.num), function(x) seq_len(top.can))))
+    if( isIntegerTop) index.m <- as.matrix(expand.grid(lapply(seq_len(seq.num), function(x) seq_len(top.can))))
+    else index.m<-NULL
     whReturn<-switch(kReturn,"last"=seq.num,"first"=1) #way to index which one gets returned.
     ###---------
     ###---------
@@ -242,7 +270,6 @@ seqCluster<-function(inputMatrix, inputType, k0,
     #iterative loop
     #-------
     while (remain >= remain.n && (found || k <= k.max)) {
-        if(nfound>0 ) browser()
         if (found) { 
             # i.e. previous iteration found cluster; 
             # need to start finding new cluster
@@ -254,8 +281,7 @@ seqCluster<-function(inputMatrix, inputType, k0,
             for (ii in seq_len(seq.num)) {
                 newk<-k + ii - 1
                 res<-updateClustering(newk)
-                if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
-                candidates[[ii]]<-res
+                candidates[[ii]]<-trimResults(res)
             }
         }
         else { 
@@ -264,41 +290,46 @@ seqCluster<-function(inputMatrix, inputType, k0,
             candidates <- candidates[-1] #remove old k
             if(length(candidates)!=1 ) stop("Internal coding error in seqCluster -- more candidates than considering")
             newk<-k + seq.num - 1
-            if(verbose) cat(paste("k =", newk, "\n"))
             #add new k (because always list o)
             res<-updateClustering(newk)
-            if(length(res)>0) res <- res[seq_len(min(top.can,length(res)))]
-            candidates[[seq.num]] <- res
+            candidates[[seq.num]] <- trimResults(res)
         }
         ##################
-        #check whether all got top.can values for each -- could be less.
-        #find which rows of index.m define cluster combinations that don't exist
+        #check whether all got candidates for each iteration
         ##################
         # number of clusters found in each of clusterings (candidates of length 2).
         # Note, number of clusters should be <= top.can (# top candidates to keep)
         nClusterPerK<-sapply(candidates,length) 
-        whInvalid<-sweep(index.m,MARGIN=2,STATS=nClusterPerK, FUN=">")
-        # vector (of length equal to number of combinations) saying which of the clusterings didn't have at least top.can clusters:
-        whInvalid<-which(apply(whInvalid,1,any))
-        if(length(whInvalid)==nrow(index.m)){
-            #all invalid -- probably means that for some k there were no candidates found. So should stop.
-            if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
+        if(any(nClusterPerK==0)){
             whyStop<-paste("Stopped in midst of searching for cluster",nfound+1," because no clusters meeting criteria found for iteration k=",k+1,"and previous clusters not similar enough.")
+            if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively. Stopping iterating because no clusters meet trimming criteria found for this iteration and previous clusters not similar enough.\n"))
             break
         }
-        if(length(whInvalid)>0){
-            if(verbose) cat("Did not find", top.can,"clusters for all k: ")
-            if(verbose) cat(paste("found",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively\n"))
-            
-            tempIndex<-index.m[-whInvalid,,drop=FALSE]
+        if(isIntegerTop){ 
+            whInvalid<-sweep(index.m,MARGIN=2,STATS=nClusterPerK, FUN=">")
+            # vector (of length equal to number of combinations) saying which of the clusterings didn't have at least top.can clusters:
+            whInvalid<-which(apply(whInvalid,1,any))
+            if(length(whInvalid)==nrow(index.m)){
+                #all invalid -- probably means that for some k there were no candidates found. So should stop.
+                stop("Internal coding error -- shouldn't have reached this point in seqCluster")
+            }
+            if(length(whInvalid)>0){
+                if(verbose) cat("Did not find", top.can,"clusters for all k: ")
+                if(verbose) cat(sprintf("found %s clusters for k= %s, respectively\n",paste(nClusterPerK,collapse=","),paste(k+seq_len(seq.num)-1,collapse=",")))
+                tempIndex<-index.m[-whInvalid,,drop=FALSE]
+            }
+            else tempIndex<-index.m
         }
-        else tempIndex<-index.m
-        
+        else{
+            tempIndex<- as.matrix(expand.grid(lapply(nClusterPerK, 
+                function(ii) seq_len(ii))))
+        }
+
         ##################
         #Calculate the stability pairwise between all of cluster combinations
         ##################
         #function to calculate the stability across the given combination
-        #	y is a combination (row of index.m) giving clusters to compare stability from k, k+1
+        #	y is a combination (row of tempIndex) giving clusters to compare stability from k, k+1
         calc.beta <- function(y) {
             #written generally enough to deal with seq.num>2; could be a lot simpler with seq.num=2.
             temp <- lapply(seq_len(seq.num), function(z) candidates[[z]][[y[z]]]) #each
@@ -324,8 +355,8 @@ seqCluster<-function(inputMatrix, inputType, k0,
             kstart[[nfound]]<-currentStart
             tclust[[nfound]]<-colnames(inputMatrix)[found.temp]
             tclust[[nfound]]<-as.numeric(tclust[[nfound]])
-            if(input == "diss") inputMatrix<-inputMatrix[-found.temp,-found.temp]
-            else inputMatrix<-inputMatrix[,-found.temp]
+            if(input == "diss") inputMatrix<-inputMatrix[-found.temp, -found.temp, drop=FALSE]
+            else inputMatrix<-inputMatrix[ , -found.temp, drop=FALSE]
             remain <- remain - length(tclust[[nfound]])
             if(verbose) cat(paste("Cluster size:", length(tclust[[nfound]]),
                                   "\tRemaining number of points:", remain, "\n"),

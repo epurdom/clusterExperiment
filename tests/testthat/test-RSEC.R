@@ -36,13 +36,14 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 
 test_that("`RSEC` works through whole series of steps",{
     skip_on_os("windows")
-	seedValue<-1208
 #bigger example where actually goes through all the steps, takes some time:
     expect_message(rsecOut<-RSEC(
         x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
-        k0s=4:5,clusterFunction="tight", alphas=0.1, consensusProportion=0.3,
+        k0s=4:5,clusterFunction="tight", alphas=0.1, 
+        consensusProportion=0.3,
         betas=0.9,dendroReduce="none",minSizes=1, stopOnErrors = FALSE,
-        subsampleArgs=list(resamp.num=5),random.seed=seedValue),
+        subsampleArgs=list(resamp.num=5), seqArgs=list(top.can=0),
+        random.seed=seedValue),
         "Merging will be done on")
     expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, 
         clusterFunction="tight", alphas=0.1, 
@@ -54,7 +55,7 @@ test_that("`RSEC` works through whole series of steps",{
         nFilterDims=NA,nReducedDims=NA,
         mainClusterArgs=NULL,subsampleArgs=list(resamp.num=5),
         ncores=1,run=TRUE, verbose=FALSE,stopOnErrors = TRUE,
-        seqArgs=list(verbose=FALSE),random.seed=seedValue
+        seqArgs=list(verbose=FALSE,top.can=0),random.seed=seedValue
         ))
 	expect_equal(clusterMatrix(rsecOut,
         whichClusters="clusterMany"),clusterMatrix(ceOut))
@@ -95,11 +96,13 @@ test_that("`RSEC` works through whole series of steps",{
 
 test_that("`RSEC` works with no merging",{
   #bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
-  rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
+  expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
                 k0s=4:5,clusterFunction="tight", alphas=0.1,
                 betas=0.9,dendroReduce="none",minSizes=1,
+                seqArgs=list(top.can=0),
                 subsampleArgs=list(resamp.num=5),random.seed=seedValue,
-                mergeMethod="none")
+                mergeMethod="none"),
+                "clusters will not be merged because argument")
 })
 
 test_that("`RSEC` returns clusterMany even when errors later",{

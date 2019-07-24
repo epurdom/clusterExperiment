@@ -991,7 +991,7 @@ setMethod(
     mainClusterArgs[["minSize"]] <- paramRow[["minSize"]]
     mainClusterArgs[["silCutoff"]] <- paramRow[["silCutoff"]]
     mainClusterArgs[["clusterFunction"]]<-clusterFunction
-    seqArgs[["verbose"]]<-FALSE
+    if(!"verbose" %in% names(seqArgs)) seqArgs[["verbose"]]<-FALSE
     
     return(list(
         distFunction=distFunction,

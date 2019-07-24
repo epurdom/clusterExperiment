@@ -624,8 +624,8 @@
             
             ## Test parameters that need to be whole positive numbers
             testFUN<-function(name){
-                if(name %in% seqArgs){
-                    if(is.na(seqArgs[[name]]) || !is.whole(seqArgs[[name]]) || seqArgs[[name]]<0) return(sprintf("%s must be a positive whole number",name))
+                if(name %in% names(seqArgs)){
+                    if(is.na(seqArgs[[name]]) || !is.whole(seqArgs[[name]]) || seqArgs[[name]]<0) return(sprintf("%s argument of seqArgs must be a positive whole number",name))
                     else return(TRUE)                    
                 }
                 else return(TRUE)
@@ -642,9 +642,16 @@
             else{
                 if(is.na(seqArgs[["beta"]]) || seqArgs[["beta"]]<=0 || seqArgs[["beta"]]>=1 ) return("beta parameter for sequential clustering step must be in (0,1)")
             }
-            for(nam in c("top.can","remain.n","k.min","k.max")){
+            for(nam in c("remain.n","k.min","k.max")){
                 out<-testFUN(nam)
                 if(!is.logical(out)) return(out)
+            }
+            if("top.can" %in% names(seqArgs)){
+                if(is.na(seqArgs[["top.can"]]) || seqArgs[["top.can"]]<0) 
+                    return("top.can parameter of seqArgs cannot be NA or negative value")             
+                if(!is.whole(seqArgs[["top.can"]])){
+                    if(seqArgs[["top.can"]]>1) return("If top.can parameter of seqArgs is not a whole number, must be between 0 and 1.")
+                }
             }
             seqArgs[["warnings"]]<-warn
         }    
