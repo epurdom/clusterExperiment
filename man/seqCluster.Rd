@@ -5,7 +5,7 @@
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
 seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
-  top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
+  top.can = 0.01, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
   warnings = FALSE)
 }
@@ -37,10 +37,9 @@ has to be before 'finding' and removing the cluster.}
 
 \item{top.can}{only the top.can clusters from \code{\link{mainClustering}} (ranked
 by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
-pairwise for stability. Making this very big will effectively remove this
+pairwise for stability. Can be either an integer value, identifying the absolute number of clusters, or a value between 0 and 1, meaning to keep all clusters with at least this proportion of the remaining samples in the cluster. Making this either a very big integer or equal to 0 will effectively remove this
 parameter and all pairwise comparisons of all clusters found will be
-considered. This might result in smaller clusters being found. The current
-default is fairly large, so probably will have little effect.}
+considered; this might result in smaller clusters being found. If top.can is between 0 and 1, then there is still a hard threshold of at least 5 samples in a cluster to be considered as a cluster.}
 
 \item{remain.n}{when only this number of samples are left (i.e. not yet
 clustered) then algorithm will stop.}

@@ -20,7 +20,9 @@ Changes in version 2.5.3-9003 (Release date: )
     - `plotClusterings` now calculates the hamming distance of clusterings; if requested, will return object with distance to avoid having to calculate in future plots (meaning the NxN matrix must be saved, in sparse format). 
 * Added checks in builtin functions for very small numbers of observations (mainly for unit tests)
 * `addClusterings` applied to two CE objects now gives more arguments about how will copy over the clustering information of one to the other. 
-* For sequential clustering, can make `top.can` be fraction between 0 and 1 indicating keep all candidate clusterings that have at least this proportion of the remaining data in the clustering. 
+* For sequential clustering, can make `top.can` be fraction between 0 and 1 indicating keep all candidate clusterings that have at least this proportion (of the remaining data) in the clustering. Default is now 0.01 (only clusters with at least 1% of clustered data can be considered as stable over different choices). 
+
+
 Bugs:
 * Fix so export function`getReducedData`
 * Fix error in `makeConsensus` was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 

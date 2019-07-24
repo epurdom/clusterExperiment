@@ -87,7 +87,8 @@ NULL
 #' data(fluidigmColData)
 #' se<-SummarizedExperiment(assays=fluidigmobject,colData=fluidigmColData)
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
-#' checkRsecFluidigmObject(rsecFluidigm)
+#' # Internal function for checking got correct results...
+#' clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 #' usethis::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 #' @aliases makeRsecFluidigmObject
@@ -119,7 +120,9 @@ makeRsecFluidigmObject<-function(object){
                       mergeCutoff=0.01,
                       ncores=ncores,
                       makeMissingDiss=TRUE,
-                      mainClusterArgs=list(clusterArgs=list(removeDup=FALSE)),
+                      mainClusterArgs=list(
+                          clusterArgs=list(removeDup=FALSE)),
+                      seqArgs=list(top.can=5),
                       subsampleArgs=list(clusterFunction="kmeans",
                           classifyMethod="All"),
                       consensusArgs=list(clusterFunction="hierarchical01",
@@ -131,8 +134,7 @@ makeRsecFluidigmObject<-function(object){
     metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
-#' @rdname makeRsecFluidigmObject
-#' @export
+#' @rdname rsecFluidigm
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
