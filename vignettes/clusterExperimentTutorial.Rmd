@@ -136,9 +136,9 @@ metadata(rsecFluidigm)$packageVersion
 ```
 
 ```{r include=FALSE}
-#check still valid object, in case updated class definitions
-if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
-clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
+# #check still valid object, in case updated class definitions
+# if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
+# clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 ```
 
 However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
