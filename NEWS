@@ -1,3 +1,8 @@
+Changes in version 2.4.6 (Release date: July 25, 2019)
+==============
+Bugs:
+* Fix bug in `makeConsensus` that was not catching -1 values of clusterings. 
+
 Changes in version 2.4.5 (Release date: June 14, 2019)
 ==============
 Bugs:

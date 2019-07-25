@@ -144,9 +144,9 @@ setMethod(
         stop("coding error -- mainClustering should return numeric vector")
       }
     }
-    ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
+    ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat. May be NA from conversion above
     whUnassigned <- which(apply(clusterMat, 1, function(x){
-      sum(x== -1)/length(x)>propUnassigned}))
+      sum(x<0 | is.na(x))/length(x)>propUnassigned}))
     clUnassigned <- cl
     clUnassigned[whUnassigned] <- -1
     
