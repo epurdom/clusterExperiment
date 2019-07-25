@@ -141,7 +141,7 @@ metadata(rsecFluidigm)$packageVersion
 # clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 ```
 
-However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
+However, it doesn't take very long (roughly 1-2 minutes or less) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
 
 ```{r RSEC, eval=FALSE}
 ## Example of RSEC call (not run by vignette)
