@@ -113,6 +113,7 @@ setMethod(
         if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
         if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
         N<-nrow(x)
+        
         ## Now define as unassigned any samples with >= propUnassigned '-1' values in x
         ## Doing >= means that all -1 will be in -1 cluster, no matter what
         ## (protects against chance that they get assigned to a cluster)
@@ -180,10 +181,6 @@ setMethod(
     }
 )
 
-.unassignLargeMissing<-function(clusterMat,propUnassigned){
-    
-}
-
 #' @rdname makeConsensus
 #' @export
 #' @param clusterLabel a string used to describe the type of clustering. By
@@ -195,7 +192,9 @@ setMethod(
     signature = signature(x = "ClusterExperiment"),
     definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
         if(missing(whichClusters)){
-            whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="silentlyRemove")
+            whichClusters <- getClusterIndex(x, 
+                                whichClusters="clusterMany", 
+                                noMatch="silentlyRemove")
             if(length(whichClusters)>0){
                 .mynote("no clusters specified to combine, using results from clusterMany")
             }
@@ -204,12 +203,14 @@ setMethod(
             }
         }
         else{
-            whichClusters <-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
+            whichClusters <-getClusterIndex(x,
+                whichClusters=whichClusters,noMatch="throwError")
         }
-        outlist <- makeConsensus(clusterMatrix(x)[, whichClusters, drop=FALSE], ...)
+        outlist <- makeConsensus(clusterMatrix(x,whichClusters), ...)
         newObj <- ClusterExperiment(x, outlist,
-                                    transformation=transformation(x),
-                                    clusterTypes="makeConsensus",checkTransformAndAssay=FALSE)
+                        transformation=transformation(x),
+                        clusterTypes="makeConsensus",
+                        checkTransformAndAssay=FALSE)
         #add "c" to name of cluster
         newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
         clusterLabels(newObj) <- clusterLabel
@@ -222,10 +223,10 @@ setMethod(
         # }
         ##Check if pipeline already ran previously and if so increase
         x<-.updateCurrentWorkflow(x,eraseOld,
-            newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
+            newTypeToAdd="makeConsensus", newLabelToAdd=clusterLabel)
         if(!is.null(x)){
             coClustering(x) <- whichClusters
-            retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
+            retval<-.addNewResult(newObj=newObj, oldObj=x) #make decisions about what to keep.
         }
         else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
         return(retval)

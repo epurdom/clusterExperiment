@@ -95,7 +95,8 @@ NULL
 #' @param object object given to functions
 #' @export
 makeRsecFluidigmObject<-function(object){
-    pass_filter <- apply(assay(object), 1, function(x) length(x[x >= 10]) >= 10)
+    pass_filter <- apply(assay(object), 1, 
+        function(x) length(x[x >= 10]) >= 10)
     object <- object[pass_filter,]
     fq <- round(limma::normalizeQuantiles(assay(object)))
     assays(object) <- c(SimpleList(normalized_counts=fq),assays(object))
@@ -110,6 +111,8 @@ makeRsecFluidigmObject<-function(object){
                       reduceMethod="PCA",
                       nReducedDims=10,
                       minSizes=1,
+                      sample=TRUE,
+                      sequential=TRUE,
                       clusterFunction="hierarchical01",
                       consensusMinSize=3,
                       consensusProportion=0.7,
@@ -127,14 +130,16 @@ makeRsecFluidigmObject<-function(object){
                           classifyMethod="All"),
                       consensusArgs=list(clusterFunction="hierarchical01",
                             whenUnassign="after",
-                         clusterArgs=list(evalClusterMethod=c("average"),
-                         removeDup=FALSE)),
+                            clusterArgs=list(
+                                evalClusterMethod=c("average"),
+                                removeDup=FALSE)),
                       random.seed=176201
     )
-    metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
+    metadata(rsecFluidigm)$packageVersion <- 
+        packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
-#' @rdname rsecFluidigm
+
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
