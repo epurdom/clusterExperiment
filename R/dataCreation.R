@@ -85,7 +85,7 @@ NULL
 #' library(clusterExperiment)
 #' data(fluidigmData)
 #' data(fluidigmColData)
-#' se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmData, colData=fluidigmColData)
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
 #' checkRsecFluidigmObject(rsecFluidigm)
 #' usethis::use_data(rsecFluidigm,overwrite=FALSE)
@@ -116,7 +116,7 @@ makeRsecFluidigmObject<-function(object){
                          dendroReduce= "mad",
                          dendroNDims=1000,
                          mergeMethod="adjP",
-    	                    mergeDEMethod="limma",
+    	                 mergeDEMethod="limma",
                          mergeCutoff=0.01,
                          ncores=ncores, 
                          random.seed=176201)
