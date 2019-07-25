@@ -179,6 +179,7 @@ setMethod(
         }
         return(cl)
     }
+
 )
 
 #' @rdname makeConsensus
