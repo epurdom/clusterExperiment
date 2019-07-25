@@ -15,7 +15,7 @@ Depends:
     SingleCellExperiment,
 	SummarizedExperiment,
 	BiocGenerics
-CommentsImports:
+Imports:
 	methods,
 	NMF,
 	RColorBrewer,
