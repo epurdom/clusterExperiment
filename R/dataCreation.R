@@ -86,6 +86,7 @@ NULL
 #' data(fluidigmData)
 #' data(fluidigmColData)
 #' se<-SummarizedExperiment(assays=fluidigmData, colData=fluidigmColData)
+#' RNGversion("3.5.0")
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
 #' # Internal function for checking got correct results...
 #' clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
@@ -145,14 +146,14 @@ checkRsecFluidigmObject<-function(object){
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
 
     ## Results for feature/knn 
-    nMakeConsensus<-5
+    nMakeConsensus<-7
 
-    nMerge<-4
+    nMerge<-5
 
-    contrasts<-c('(X2+X3)/2-(X4+X1+X5)/3','X2-X3','X4-(X1+X5)/2','X1-X5')
+    contrasts<-c('(X4+X1+X5)/3-(X6+X7+X2+X3)/4','X4-(X1+X5)/2',
+        'X6-(X7+X2+X3)/3','X7-(X2+X3)/2','X1-X5','X2-X3')                  
 
-    adjPValues<-c(0.10807752,0.00311218,0.01923893,0.01499505)
-
+    adjPValues<-c(0.06167775,0.01117556,0.01697553,0.00042439,0.01004385,0.00155609)
     
 
     # ## Results after fixing mistake 07/25/2019 -- 2.5.4.9003
