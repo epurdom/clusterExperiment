@@ -121,7 +121,7 @@ makeRsecFluidigmObject<-function(object){
                          ncores=ncores, 
                          random.seed=176201)
     )
-    SummarizedExperiment::metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
+    metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
 #' @rdname makeRsecFluidigmObject
@@ -139,13 +139,20 @@ checkRsecFluidigmObject<-function(object){
     # adjPValues<-c(0.049794879, 0.007356062, 0.008204838,
     #               0.013156033, 0.009336540, 0.007497524, 0.033526666)
 
-    ## Results as of 07/12/2019 -- 2.5.4.9002
-    nMakeConsensus<-10
-    nMerge<-6
-    contrasts<-c('(X10+X2+X3+X6+X8)/5-(X4+X5+X9+X1+X7)/5','(X10+X2+X3)/3-(X6+X8)/2','(X4+X5)/2-(X9+X1+X7)/3','X4-X5','X9-(X1+X7)/2','X1-X7','X10-(X2+X3)/2','X6-X8','X2-X3')
-    adjPValues<-c(0.08374593,0.03762908,0.01372188,0.0072146,0.00778045,0.01018532,0.00056585,0.00650729,0.00183902)
+    # ## Results as of 07/12/2019 -- 2.5.4.9002
+    # nMakeConsensus<-10
+    # nMerge<-6
+    # contrasts<-c('(X10+X2+X3+X6+X8)/5-(X4+X5+X9+X1+X7)/5','(X10+X2+X3)/3-(X6+X8)/2','(X4+X5)/2-(X9+X1+X7)/3','X4-X5','X9-(X1+X7)/2','X1-X7','X10-(X2+X3)/2','X6-X8','X2-X3')
+    # adjPValues<-c(0.08374593,0.03762908,0.01372188,0.0072146,0.00778045,0.01018532,0.00056585,0.00650729,0.00183902)
 
-        
+    ## Results after fixing mistake 07/25/2019 -- 2.5.4.9003
+    nMakeConsensus<- 6
+    nMerge<-4
+    contrasts<-c('(X6+X2+X3)/3-(X4+X1+X5)/3',
+        'X6-(X2+X3)/2','X4-(X1+X5)/2','X1-X5','X2-X3')
+    adjPValues<-c(0.08798981,0.00084878,0.01386335,0.01230726,0.00240487)
+    
+    
     ## Test same
     checkValues<-.getCheckValues(object)
     if(checkValues$nMakeConsensus != nMakeConsensus)
