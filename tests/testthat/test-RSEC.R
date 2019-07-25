@@ -40,10 +40,12 @@ test_that("`RSEC` works through whole series of steps",{
     expect_message(rsecOut<-RSEC(
         x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
         k0s=4:5,clusterFunction="tight", alphas=0.1, 
-        consensusProportion=0.3,
+        consensusProportion=0.7, consensusMinSize=5,
         betas=0.9,dendroReduce="none",minSizes=1, stopOnErrors = FALSE,
         subsampleArgs=list(resamp.num=5), seqArgs=list(top.can=0),
-        random.seed=seedValue),
+        random.seed=seedValue,
+        mergeMethod = "adjP", 
+                mergeDEMethod="edgeR",mergeCutoff = 0.05),
         "Merging will be done on")
     expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, 
         clusterFunction="tight", alphas=0.1, 
@@ -66,7 +68,8 @@ test_that("`RSEC` works through whole series of steps",{
             whichClusters="makeConsensus"),
         clusterMatrix(combOut,
             whichClusters="makeConsensus"))
-    expect_equal(coClustering(rsecOut),coClustering(combOut))
+    expect_equal(clusterMatrix(rsecOut,which=coClustering(rsecOut)),
+        clusterMatrix(combOut,which=coClustering(combOut)))
 
     expect_silent(dendOut<-makeDendrogram(combOut,
         reduceMethod="none",nDims=NA))

@@ -145,25 +145,13 @@ checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
 
-    ## Results for feature/knn 
+    ## Results for feature/knn 07/25/2019 -- 2.5.4.9005
     nMakeConsensus<-7
-
     nMerge<-5
-
     contrasts<-c('(X4+X1+X5)/3-(X6+X7+X2+X3)/4','X4-(X1+X5)/2',
         'X6-(X7+X2+X3)/3','X7-(X2+X3)/2','X1-X5','X2-X3')                  
-
     adjPValues<-c(0.06167775,0.01117556,0.01697553,0.00042439,0.01004385,0.00155609)
-    
-
-    # ## Results after fixing mistake 07/25/2019 -- 2.5.4.9003
-    # nMakeConsensus<- 6
-    # nMerge<-4
-    # contrasts<-c('(X6+X2+X3)/3-(X4+X1+X5)/3',
-    #     'X6-(X2+X3)/2','X4-(X1+X5)/2','X1-X5','X2-X3')
-    # adjPValues<-c(0.08798981,0.00084878,0.01386335,0.01230726,0.00240487)
-    
-    
+       
     ## Test same
     checkValues<-.getCheckValues(object)
     if(nMakeConsensus==nMerge) warning("having same number of clusters before and after merge won't be great for the vignette!")
