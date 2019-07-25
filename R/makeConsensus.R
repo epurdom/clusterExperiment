@@ -117,9 +117,8 @@ setMethod(
         ## Now define as unassigned any samples with >= propUnassigned '-1' values in x
         ## Doing >= means that all -1 will be in -1 cluster, no matter what
         ## (protects against chance that they get assigned to a cluster)
-
         whUnassigned <- which(apply(x, 1, function(dat){
-            sum(dat== -1)/length(dat)>=propUnassigned}))
+            sum(dat<0)/length(dat)>=propUnassigned}))
         if(length(whUnassigned)>0 && whenUnassign=="before") {           
             temp<-rep(-1,length=N)
             names(temp)<-rownames(x)
