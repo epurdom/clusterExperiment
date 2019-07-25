@@ -8,6 +8,8 @@ output:
     toc: true
 vignette: >
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{clusterExperiment Vignette}
 editor_options: 
   chunk_output_type: console
 ---
