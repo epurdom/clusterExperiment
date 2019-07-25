@@ -1,0 +1,70 @@
+---
+title: "Working with Large Datasets"
+author: "Elizabeth Purdom and Davide Risso"
+date: "`r Sys.Date()`"
+bibliography: bibFile.bib
+output: 
+  BiocStyle::html_document:
+    toc: true
+vignette: >
+  %\VignetteEncoding{UTF-8}
+editor_options: 
+  chunk_output_type: console
+---
+<!--
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{clusterExperiment Vignette}
+-->
+
+```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "clusterExperimentTutorial_cache/",  fig.path="clusterExperimentTutorial_figure/",error=FALSE, #make it stop on error
+fig.width=6,fig.height=6,autodep=TRUE,out.width="600px",out.height="600px",
+message=FALSE)
+#knitr::opts_knit$set(stop_on_error = 2L) #really make it stop
+#knitr::dep_auto()
+```
+
+
+# Avoid NxN matrices
+
+The best advice on using the clustering functions in `clusterExperiment` for large datasets is to avoid calculating any $NxN$ distance or similarity matrix. They take a long time to calculate, and a large amount of memory to store. 
+
+The most likely reason to calculate such a matrix is because of the clustering routine used. Methods like PAM or hierarchical clustering use a distance matrix.
+
+Prior to version `2.5.4`, our functions would internally calculate a distance matrix if the clustering algorithm needed it, and it would be hard for the user to realize that they selected a choice that needed such a matrix. Now we have added the argument `makeMissingDiss`, which if `FALSE` will not calculate any needed distance matrices and instead return an error. We recommend setting this argument to `FALSE` with large datasets as a caution, and if you discover that you are hitting an error select a different clustering algorithm that does not need a $NxN$ distance matrix. 
+
+Note, that even though PAM may *take as input* a matrix $x$, it will calculate internally the distance matrix! PAM or hierarchical clustering are not good choices for large datasets. The option `makeMissingDiss=FALSE` may not catch this, since the actual clustering function allows for using an input matrix $x$ and converts the $x$ to a $NxN$ distance matrix internally. (This is an unfortunate for large datasets, and we may in the future change how we classify PAM to classify it as only accepting distance matrices. )
+
+Similarly, using any options regarding silhouette distance will create a nxn matrix as part of the silhouette computation in `cluster` package. This includes `findBestK=TRUE` argument. These options should only be considered for moderate sized datasets where the calculation (and storage) of the $NxN$ matrix is not a problem. 
+
+## Subsampling and Consensus clustering
+
+Unfortunately, subsampling and consensus clustering (with `makeConsensus`) operate by clustering based on the proportion of shared clusterings per pairs of sample, as stored in a $NxN$ matrix (see the main tutorial vignette for an explanation of these methods). While we are working on methods to avoid calculating this matrix, they are not yet operational. 
+
+We have, however, in version `2.5.4` made some infrastructure changes to allow for avoidance of the $NxN$ matrix for subsampling and consensus clustering if the user has defined a clustering function to do this (see details below). 
+
+We have also in version `2.5.4` changed the clustering functions to allow the user to request clustering of only unique representations of the combinations of clusterings from subsampling or in `makeConsensus`, significantly reducing the size of the $NxN$ matrix used in the actual clustering step (see below). 
+
+## Technical details
+
+Here we document some infrastructure changes made to allow for avoidance of the $NxN$ matrix for subsampling and consensus clustering. These do not, as of yet, actually provide the ability to avoid the $NxN$ calculation, but do set up an infrastructure where the user can now provide the appropriate clustering routine to avoid it. 
+
+* *Subsampling:* In versions prior to `2.5.4` the results of subsampling would be saved as a NxN matrix, corresponding to the proportion of times two samples were clustered together in across the $B$ subsamples. As of `2.5.4` the results are simply saved as a $NxB$ matrix, giving the (integer-valued) cluster assigments of each sample in each subsample. This $NxB$ matrix will need to be clustered to get anything interesting, and whether the clustering of that matrix will require calculating a NxN matrix depends on the clustering routine (see below).
+* *Consensus clustering* Similarly, as of version `2.5.4` the `makeConsensus` command now uses clustering techniques that work on $NxB$ matrices of clusterings, rather than directly calculating the $NxN$ matrix. This $NxB$ matrix will need to be clustered to get anything interesting, and whether the clustering of that matrix will require calculating a NxN matrix depends on the clustering routine (see below).
+* *plotCoClustering and the coClustering slot*: Because of these changes, we no longer store only a $NxN$ matrix in the coClustering slot of the `ClusterExperiment` object. Instead we allow for either storage of the $NxN$ matrix or the $NxB$ matrix, or even just the indices of the clusterings that make up the $NxB$ matrix. This slot was primarily used for the `plotCoClustering` command (basically a heatmap of the $NxN$ matrix), which is unlikely to be of practical use for extremely large datasets. However, the `plotCoClustering` command will calculate that $NxN$ matrix on the fly from the $NxB$ matrix that is stored, so again should be avoided for large datasets.
+* *Clustering routines for $NxB$ matrices*  While we currently have set up an infrastructure that allows for clustering directly on the $NxB$ matrix, and thus avoiding calculation of the $NxN$ matrix of distances, we do not currently provide a clustering method that does this. In particular, the default option (`hierarchical01`) takes a $NxB$ matrix, but simply internally calculates the $NxN$ matrix (this is NOT controlled by `makeMissingDiss` argument as the actual clustering function that is called calculates it, not the `clusterExperiment` infrastructure). We are working on creating such a clustering routine; if the user has such a clustering routine, they can provide this clustering routine to the functions (see main vignette and  `?ClusterFunction` for how to integrate a user-defined function)
+* *Removing Duplicates from the $NxB$ matrix* We have, however, implemented an option to reduce the $NxB$ matrix of clusterings to a $MxB$ matrix, where $M$ is the unique such values across the $N$ samples. This means that in `makeConsensus`, only the $M$ unique combinations of clusters are clustered; this can effect the results, since it ignores the number of samples represented by each of the $M$ combinations (important for methods like kmeans that take the average acrosss the samples in the cluster). However, it can dramatically reduce the size, no longer requiring calculation or storage of the dissimilarities between identically clustered samples. To choose this option, set `clusterArgs=list(removeDup=TRUE)` in the list of arguments passed to either `mainClusteringArgs` or `subsampleArgs`. 
+
+
+# Data in Memory versus HDF5
+
+The package is compatible with HDF5 Matrices, meaning that the package will run if the data given is a reference to a HDF5 file. However, in certain locations, the code may acheive such this compatibility by bringing the matrix into memory. In particular, the default clustering routines are not compatible with the HDF5 implementation, meaning that they must bring the full dataset into memory for calculations. 
+
+The only exception to this is the method "mbkmeans" which calls on the clustering routine in the package of the same name. This package implements a version of kmeans ("Mini-Batch kmeans") for HDF5 datasets. "Mini-batch kmeans" refers to only using a proportion of the data (a "batch") at each iteration of the clustering. The `mbkmeans` package integrates this with HDF5 files, among others, meaning that mbkmeans actually is written (in C code) to interact with HDF5 files so as to not bring the entire dataset into memory but only the subset (or batch) needed for any particular calculation. 
+
+Even with `mbkmeans`, however, the integration of `mbkmeans` into `clusterExperiment` has only been tested so far that it successfully runs the clustering routine. Unlike the `mbkmeans` package, the integration in `clusterExperiment` has not been tested to ensure that the full dataset is not inadvertantly brought into memory by other components of `clusterExperiment` infrastructure. This is an ongoing area for improvement. 
+
+Further comments:
+
+* random subsampling from a HDF5 can be *slow*, which will affect subsampling (and `mbkmeans`). 
+* *known problem interacting with `mbkmeans`:* if using `mbkmeans` with subsample=TRUE, then the 'classify' function (i.e. the assignment of samples that were not part of the subsample to a clustering) is not part of `mbkmeans`, and may bring the entire matrix into memory (when classify is `All` or `OutOfSample`)
