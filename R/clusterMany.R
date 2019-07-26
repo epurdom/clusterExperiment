@@ -29,6 +29,8 @@
 #' @param minSizes the minimimum size required for a cluster (in the
 #'   \code{mainClustering} step). Clusters smaller than this are not kept and samples
 #'   are left unassigned.
+#' @param parameterWarnings logical, as to whether warnings and comments 
+#'   from checking the validity of the parameter combinations should be printed. 
 #' @param distFunction a vector of character strings that are the names of
 #'   distance functions found in the global environment. See the help pages of
 #'   \code{\link{clusterSingle}} for details about the required format of

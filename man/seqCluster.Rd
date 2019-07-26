@@ -61,12 +61,6 @@ progress.}
 
 \item{warnings}{logical. Whether to print out the many possible warnings and
 messages regarding checking the internal consistency of the parameters.}
-
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
-columns).}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering}
 }
 \value{
 A list with values

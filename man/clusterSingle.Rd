@@ -3,7 +3,7 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
-\alias{clusterSingle,missing,matrixOrNULL-method}
+\alias{clusterSingle,SummarizedExperiment-method}
 \alias{clusterSingle,ClusterExperiment-method}
 \alias{clusterSingle,SingleCellExperiment-method}
 \alias{clusterSingle,matrixOrHDF5OrNULL-method}
@@ -65,6 +65,11 @@ on \code{x}/\code{diss}}
 \item{sequential}{logical whether to use the sequential strategy (see details
 of \code{\link{seqCluster}}). Can be used in combination with
 \code{subsample=TRUE} or \code{FALSE}.}
+
+\item{distFunction}{a distance function to be applied to \code{inputMatrix}. Only
+  relevant if \code{inputType="X"}. 
+See details of \code{\link{clusterSingle}} for the
+  required format of the distance function.}
 
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}

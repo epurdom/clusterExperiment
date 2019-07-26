@@ -61,10 +61,6 @@ be called.}
 \item{warnings}{logical as to whether should give warning if arguments given
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
-
-\item{x}{the data on which to run the clustering (samples in columns).}
-
-\item{diss}{a dissimilarity matrix on which to run the clustering.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with

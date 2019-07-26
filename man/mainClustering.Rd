@@ -50,6 +50,10 @@ used internally for clustering of sets of clusterings.}
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
 
+\item{minSize}{the minimum number of samples in a cluster. Clusters found 
+below this size will be discarded and samples in the cluster will be given 
+a cluster assignment of "-1" to indicate that they were not clustered.}
+
 \item{orderBy}{how to order the cluster (either by size or by maximum alpha 
 value). If orderBy="size" the numbering of the clusters are reordered by 
 the size of the cluster, instead of by the internal ordering of the 

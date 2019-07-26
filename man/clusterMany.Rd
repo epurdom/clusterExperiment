@@ -123,6 +123,9 @@ are left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
+\item{parameterWarnings}{logical, as to whether warnings and comments 
+from checking the validity of the parameter combinations should be printed.}
+
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
 

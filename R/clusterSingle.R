@@ -15,6 +15,10 @@
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 #'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
+#' @param distFunction a distance function to be applied to \code{inputMatrix}. Only
+#'   relevant if \code{inputType="X"}. 
+#' See details of \code{\link{clusterSingle}} for the
+#'   required format of the distance function.
 #' @param subsample logical as to whether to subsample via
 #'   \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
 #'   step is done on the co-occurance between clusterings in the subsampled
@@ -180,11 +184,7 @@
 #' #compare to standard pam
 #' pamOut<-cluster::pam(t(simData),k=3,cluster.only=TRUE)
 #' all(pamOut==primaryCluster(clustObject))
-#' @aliases clusterSingle,missing,matrixOrNULL-method
-#' @rdname clusterSingle
-#' @export
-
-
+#' @aliases clusterSingle,SummarizedExperiment-method
 #' @rdname clusterSingle
 #' @export
 setMethod(

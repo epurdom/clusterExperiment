@@ -8,8 +8,6 @@ NULL
 #' subsamples, and return a \code{n x n} matrix with the probability of
 #' co-occurance.
 #' @name subsampleClustering
-#' @param x the data on which to run the clustering (samples in columns).
-#' @param diss a dissimilarity matrix on which to run the clustering.
 #' @param clusterFunction a \code{\link{ClusterFunction}} object that defines
 #'   the clustering routine. See \code{\link{ClusterFunction}} for required
 #'   format of user-defined clustering routines. User can also give a character

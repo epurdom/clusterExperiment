@@ -3,8 +3,6 @@
 #' Find sets of samples that stay together across clusterings in order to define 
 #' a new clustering vector.
 #'
-#' @aliases makeConsensus
-#'  
 #' @param x a matrix with samples on the rows and different clusterings on the
 #'   columns or \code{\link{ClusterExperiment}} object.
 #' @param clusterFunction the clustering function to use (passed to 
@@ -33,7 +31,10 @@
 #'   default is currently "before", but previous to version 2.5.4, there was no
 #'   such option and the code internally set to "after", so for reproducibility
 #'   with older results, users may need to set this option.
-#' @inheritParams clusterMany
+#' @inheritParams clusterSingle
+#' @param clusterArgs list of arguments to be passed to the call to 
+#'  \code{\link{mainClustering}} that is used to cluster the proportion 
+#'  overlap between samples. 
 #' @inheritParams getClusterIndex
 #' @details This function was previously called \code{combineMany} (versions <=
 #'   2.0.0). \code{combineMany} is still available, but is considered defunct
@@ -99,6 +100,7 @@
 #' plotClusters(clCommon)
 #' par(oldpar)
 #'
+#' @aliases makeConsensus,matrix-method
 #' @rdname makeConsensus
 #' @export
 setMethod(

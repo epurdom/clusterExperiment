@@ -4,10 +4,6 @@
 #' routines, and sequentially remove best clusters, and iterate to find
 #' clusters.
 #'
-#' @param x \code{p x n} data matrix on which to run the clustering (samples in
-#'   columns).
-#' @param diss \code{n x n} data matrix of dissimilarities between the samples
-#'   on which to run the clustering
 #' @param k0 the value of K at the first iteration of sequential algorithm, see
 #'   details below or vignette.
 #' @param subsample logical as to whether to subsample via 

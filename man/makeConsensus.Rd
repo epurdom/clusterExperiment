@@ -3,7 +3,6 @@
 \docType{methods}
 \name{makeConsensus,matrix-method}
 \alias{makeConsensus,matrix-method}
-\alias{makeConsensus}
 \alias{makeConsensus,ClusterExperiment-method}
 \title{Find sets of samples that stay together across clusterings}
 \usage{
@@ -48,15 +47,12 @@ default is currently "before", but previous to version 2.5.4, there was no
 such option and the code internally set to "after", so for reproducibility
 with older results, users may need to set this option.}
 
+\item{clusterArgs}{list of arguments to be passed to the call to 
+\code{\link{mainClustering}} that is used to cluster the proportion 
+overlap between samples.}
+
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
-
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results
-(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterTypes value,
-where \code{i} is one more than the largest such existing workflow
-clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By
 default it is equal to "makeConsensus", to indicate that this clustering is

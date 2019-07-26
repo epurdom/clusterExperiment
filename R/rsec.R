@@ -10,6 +10,8 @@
 #'   \code{\link{makeConsensus}}
 #' @param consensusMinSize passed to \code{minSize} in
 #'   \code{\link{makeConsensus}}
+#' @param consensusArgs list of additional arguments to be passed to
+#'    \code{\link{makeConsensus}}
 #' @param dendroReduce passed to \code{reduceMethod} in
 #'   \code{\link{makeDendrogram}}
 #' @param dendroNDims passed to \code{nDims} in \code{\link{makeDendrogram}}

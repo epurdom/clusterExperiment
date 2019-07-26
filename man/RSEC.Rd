@@ -152,6 +152,9 @@ on smaller datasets of counts.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
+\item{parameterWarnings}{logical, as to whether warnings and comments 
+from checking the validity of the parameter combinations should be printed.}
+
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
 
@@ -160,6 +163,9 @@ step, see help pages of \code{\link{mainClustering}}.}
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
+
+\item{consensusArgs}{list of additional arguments to be passed to
+\code{\link{makeConsensus}}}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}

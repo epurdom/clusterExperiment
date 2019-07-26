@@ -10,6 +10,9 @@
 #'   \code{clusterFUN} defined in the \code{ClusterFunction} object (an internal
 #'   ordering is only possible if slot \code{outputType} of the
 #'   \code{ClusterFunction} is \code{"list"}).
+#' @param minSize the minimum number of samples in a cluster. Clusters found 
+#'   below this size will be discarded and samples in the cluster will be given 
+#'   a cluster assignment of "-1" to indicate that they were not clustered.
 #' @param format whether to return a list of indices in a cluster or a vector of
 #'   clustering assignments. List is mainly for compatibility with sequential 
 #'   part.
