@@ -1,8 +1,5 @@
 URGENT TO DO:
 -- Remove/update depricated functions (in develop!!)
--- Introduced error in calculating distFunction in clusterMany -- need to check the distance needed for a particular row, not all (right now have any(doDiss|doDissPost))
--- Need to update the indices of coClustering if add/subtract any clusterings! Create a test. (have done removeClusterings; addClusterings didn't need anything. still need to create a test...)
--- look at seqCluster and see if parameters make sense. In particular, top.can takes top 5 candidates, but maybe better to take top that are at least x% of data. Would splinter less.
 
 MINOR TO DO:
 -- RSEC has no @example! (add one with no run)

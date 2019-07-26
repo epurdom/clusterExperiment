@@ -50,7 +50,7 @@
 
 
 .defaultDiss<-c("euclidean", "maximum", "manhattan", "canberra", "binary" ,"minkowski")
-.myDefaultDiss<-c("01","K")
+.myDefaultDiss<-.algTypes
 .diss01<-function(x) {
     (1 - cor(t(x))) / 2
 }

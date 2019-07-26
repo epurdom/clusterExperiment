@@ -582,7 +582,8 @@ setMethod(
             if(length(whInvalid)>0) {
                 if(length(whInvalid)==nrow(param)){
                     checksFull<-lapply(1:nrow(param), 
-                        function(i){paramCheck(param[i,],returnValue="full",warn=parameterWarnings)})
+                        function(i){paramCheck(param[i,],
+                            returnValue="full",warn=parameterWarnings)})
                     stop(sprintf("Set of parameters imply %s combinations, none of which are valid (note that if clustering matrix requires calculation of distance matrix, user must now set `makeMissingDiss=TRUE`).  Errors given are:\n\n %s",nrow(param),paste(checksFull[whInvalid],collapse="\n")))
                     
                 }
@@ -596,7 +597,7 @@ setMethod(
                 function(i){paramCheck(param[i,],returnValue="full",
                     warn=parameterWarnings)})
             # doDiss means will send diss as inputMatrix
-            # doDissPost means will pass diss to mainClusterArgs        
+            # doDissPost means will pass to diss= in mainClusterArgs        
             doDiss<-sapply(checks,function(x){x$doDiss}) | !is.na(param$distFunction)
             doDissPost<-sapply(checks,function(x){x$doDissPost})
             #in case user asked for distFunction, don't do again:
@@ -609,9 +610,6 @@ setMethod(
                 stop("Parameter combinations requested require calculation of at least one distance matrix. User must now set `makeMissingDiss=TRUE` to have clusterMany calculated the necessary distances.")
             }
             if(any(missDiss) & makeMissingDiss){
-                # give "default" to those not assigned
-                param[is.na(param$distFunction) & missDiss,"distFunction"]<-"default"
-                
                 ## expand param matrix to include additional information for calculating/passing distances
                 subCF<-sapply(checks,function(x){
                     cf<-x$subsampleArgs[["clusterFunction"]]
@@ -624,6 +622,12 @@ setMethod(
                     ifelse(param[missDiss,"subsample"],subCF,mainCF)
                 param$distAlgType[!doDiss & doDissPost]<-
                     mainCF[!doDiss & doDissPost]
+
+                # give "default" to those not assigned
+                # make sure it is default that corresponds to algorithm.
+                param[is.na(param$distFunction) & missDiss, "distFunction"] <-
+                    param$distAlgType[is.na(param$distFunction) & missDiss]
+            
             }
             
             if(any(!is.na(param[,"nFilterDims"]) &
@@ -690,22 +694,7 @@ setMethod(
         }
            
         
-        ## Uniform way to create and access names of the list of the list of the distances
-        createDistNames<-function(paramMatrix,returnNames=TRUE){
-            paramNames<-c("reduceMethod", "nFilterDims",
-                             "distFunction")
-            if(!returnNames) paramNames<-c(paramNames,"distAlgType")
-            if(any(! paramNames %in% colnames(paramMatrix)))
-                 stop("Internal error: must have following names: ", paste(paramNames,collapse=","))
-            distParam<-unique(paramMatrix[, paramNames,drop=FALSE])
-            distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
-            if(returnNames){
-                uniqueId<-apply(distParam,1,paste,collapse=",")
-                return(uniqueId)
-            }
-            else return(distParam)
-            
-        }
+
         ################
         ## Function that will call clusterSingle for each row of param matrix
         ################
@@ -735,14 +724,11 @@ setMethod(
             distFunction<-totalArgs$distFunction
             
             if(!is.null(distFunction)){
-                ###FIXME: Error here! Needs to call name that is specific to combination of reduce/dist/algType in allDist[[distFunction]]
-                passInput<- as.logical(gsub(" ","",par["passDistToInput"]))
-                passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
                 distParamMatrix<-cbind(distFunction=as.character(distFunction),
                     nFilterDims=as.character(par[["nFilterDims"]]),
                     reduceMethod=as.character(par[["reduceMethod"]]))
-                dnm<-createDistNames(distParamMatrix,returnNames=TRUE)
-                
+                dnm<-.createDistNames(distParamMatrix,returnNames=TRUE)
+                if(!dnm %in% names(allDist)) stop("internal coding error -- created name that doesn't correspond to calculated distance")
                 if(passInput){
                     out<-clusterSingle(inputMatrix=allDist[[dnm]],
                         inputType="diss",
@@ -811,22 +797,19 @@ setMethod(
         ## Run this even if run=FALSE so see message.
         if(any(!is.na(param[,"distFunction"]))){
             ##Get the parameters that imply different datasets.
-            uniqueId<-createDistNames(param)
+            uniqueId<-.createDistNames(param)
             ## Use to assume only take distances on original data (or filtered version of it). But in fact, it meant previously if needed dissimilarity, would silently calculate it to each call (e.g. if diss->X). So now can get it if makeMissingDiss=TRUE
             if(verbose)
                 cat(sprintf("Calculating the %s Requested Distance Matrices needed to run clustering comparisions (if 'distFunction=NA', then needed because of choices of clustering algorithms and 'makeMissingDiss=TRUE').\n",length(uniqueId)))
         }
 
         if(run){
-
-               
-
             ##------------
             ##Calculate distances necessary only once
             ##------------
             if(any(!is.na(param[,"distFunction"]))){
                 ##Get the parameters that imply different datasets.
-                distParam<-createDistNames(param,returnNames=FALSE)
+                distParam<-.createDistNames(param,returnNames=FALSE)
                 allDist<-lapply(seq_len(nrow(distParam)),function(ii){
                     distFun<-as.character(distParam[ii,"distFunction"])
                     algCheckType<-distParam[ii,"distAlgType"]
@@ -852,7 +835,7 @@ setMethod(
                     return(distMat)
                 })
             
-                nms<-createDistNames(distParam,returnNames=TRUE)
+                nms<-.createDistNames(distParam,returnNames=TRUE)
                 names(allDist)<-nms
                 
                 if(verbose) cat("\tdone.\n\n")
@@ -1003,4 +986,21 @@ setMethod(
         subsampleArgs=subsampleArgs,
         seqArgs=seqArgs
         ))
+}
+
+## Uniform way to create and access names of the list of the list of the distances
+.createDistNames<-function(paramMatrix,returnNames=TRUE){
+    paramNames<-c("reduceMethod", "nFilterDims",
+                     "distFunction")
+    if(!returnNames) paramNames<-c(paramNames,"distAlgType")
+    if(any(! paramNames %in% colnames(paramMatrix)))
+         stop("Internal error: must have following names: ", paste(paramNames,collapse=","))
+    distParam<-unique(paramMatrix[, paramNames,drop=FALSE])
+    distParam<-distParam[!is.na(distParam[,"distFunction"]), ,drop=FALSE]
+    if(returnNames){
+        uniqueId<-apply(distParam,1,paste,collapse=",")
+        return(uniqueId)
+    }
+    else return(distParam)
+    
 }
