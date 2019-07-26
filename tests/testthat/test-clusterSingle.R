@@ -756,7 +756,7 @@ test_that("Different options of mainClustering",{
         mainClusterArgs=list(clusterFunction="pam",
             kRange=2:4,
             findBestK=TRUE)),
-        "Cannot do requested post processing (e.g. from arguments 'findBestK' or 'removeSil') without calculating distance matrix")
+        "Cannot do requested post processing")
     #Should find best K is K=4
     expect_message(out<-clusterSingle(simData,
         subsample=FALSE, 

@@ -173,14 +173,14 @@ test_that("`RSEC` works with hdf5",{
 	expect_equal(clusterMatrix(rsecOut2),clusterMatrix(rsecOut3))
 	
 	#no reduce method, do everything on raw data
-	#currently error: Error in tcrossprod(x, y) : 
-#  requires numeric/complex matrix/vector arguments
+    #requires numeric/complex matrix/vector arguments
 	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,
         k0s=4:5,reduceMethod="none",
 		clusterFunction="tight", alphas=0.1, 
+        seqArgs=list(top.can=0), 
         subsampleArgs=list(resamp.num=5,clusterFunction="pam"),
         random.seed=seedValue),
-		"All samples are unassigned for"
+		"Merging will be done on"
 		)
 })
 

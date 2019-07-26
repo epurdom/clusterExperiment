@@ -488,7 +488,7 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
       ks=c(3,4),
       alphas=c(0.1,0.2),
       subsample=FALSE, sequential=FALSE,
-      verbose=FALSE,
+      verbose=FALSE, makeMissingDiss=TRUE,
       mainClusterArgs=list(clusterArgs=list(evalClusterMethod="average")),
       isCount=FALSE))
   
@@ -496,7 +496,7 @@ expect_equal(sort(filterNames(cc4)),sort(c("b","Filter1","Filter2")))
   expect_silent(clusterMany(mat, 
       clusterFunction=c("pam","hierarchical01"),ks=c(3,4),
       betas=c(.7,.9), minSizes=c(3,5),
-      subsample=FALSE, sequential=FALSE,verbose=FALSE,
+      subsample=FALSE, makeMissingDiss=TRUE, sequential=FALSE,verbose=FALSE,
       mainClusterArgs=list(clusterArgs=list(evalClusterMethod="average")),
       isCount=FALSE))
 })
@@ -508,7 +508,7 @@ test_that("`getClusterManyParams` works", {
 	    isCount=FALSE)
 	cc<-makeConsensus(cc,proportion=1,whichClusters = "clusterMany")
 	expect_silent(paramAll<-getClusterManyParams(cc))
-	expect_equal(colnames(paramAll),c("clusteringIndex", "reduceMethod", "nReducedDims", "nFilterDims", "k"))
+	expect_equal(sort(colnames(paramAll)),sort(c("clusteringIndex", "reduceMethod", "nReducedDims", "nFilterDims", "k")))
 	expect_true(is.data.frame(paramAll))
 	expect_equal(sort(as.character(unique(paramAll[,"reduceMethod"]))),sort(c("none","var","PCA")))
 	
@@ -519,7 +519,7 @@ test_that("`getClusterManyParams` works", {
     # check simplify=TRUE
 	expect_silent(paramSub<-getClusterManyParams(cc,whichClusters=c(4,6),
         simplify=TRUE))
-	expect_equal(colnames(paramSub),c("clusteringIndex", "reduceMethod","nFilterDims"))
+	expect_equal(sort(colnames(paramSub)),sort(c("clusteringIndex", "reduceMethod","nFilterDims")))
 	expect_true(is.data.frame(paramSub))
 	expect_equal(sort(unique(paramSub[,"nFilterDims"]),na.last=TRUE),c(10,NA))
 	
