@@ -516,7 +516,9 @@ test_that("`getClusterManyParams` works", {
 	expect_equal(sort(unique(paramAll[,"nFilterDims"]),na.last=TRUE),sort(c(NA,10,15),na.last=TRUE))
 	expect_true(is.numeric(paramAll[,"k"]))
 	
-	paramSub<-getClusterManyParams(cc,whichClusters=3:4)
+    # check simplify=TRUE
+	expect_silent(paramSub<-getClusterManyParams(cc,whichClusters=c(4,6),
+        simplify=TRUE))
 	expect_equal(colnames(paramSub),c("clusteringIndex", "reduceMethod","nFilterDims"))
 	expect_true(is.data.frame(paramSub))
 	expect_equal(sort(unique(paramSub[,"nFilterDims"]),na.last=TRUE),c(10,NA))
