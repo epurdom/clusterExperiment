@@ -86,42 +86,6 @@ test_that("mergeClusters works with non default assays", {
 
 })
 
-test_that("RSEC works wih non default assays", {
-  skip_on_os("windows")
-  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
-                            k0s=4:5, clusterFunction="tight", alphas=0.1,
-                            betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
-                            random.seed=seedValue, whichAssay = "counts"),
-                 "Merging will be done on")
-
-  expect_message(out2<-RSEC(x=multi_cc, reduceMethod="none",
-                            k0s=4:5, clusterFunction="tight", alphas=0.1,
-                            betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
-                            random.seed=seedValue, whichAssay = "logcounts"),
-                 "Merging will be done on")
-
-  expect_message(out3<-RSEC(x=ccTrue, reduceMethod="none",
-                            k0s=4:5, clusterFunction="tight", alphas=0.1,
-                            betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
-                            random.seed=seedValue),
-                 "Merging will be done on")
-
-  expect_message(out4<-RSEC(x=ccTrue2, reduceMethod="none",
-                            k0s=4:5, clusterFunction="tight", alphas=0.1,
-                            betas=0.9, dendroReduce="none", minSizes=1,
-                            subsampleArgs=list(resamp.num=5),
-                            random.seed=seedValue),
-                 "Merging will be done on")
-
-  expect_false(all(primaryCluster(out1) == primaryCluster(out2)))
-
-  expect_equivalent(out1, out3)
-  expect_equivalent(out2, out4)
-})
-
 test_that("plotting works wih non default assays", {
   expect_silent(plotFeatureBoxplot(object=multi_cc,feature=1,whichAssay=1))
   expect_silent(plotFeatureBoxplot(object=multi_cc,feature=1,whichAssay=2))
@@ -131,6 +95,46 @@ test_that("plotting works wih non default assays", {
   expect_silent(plotHeatmap(small_cc, whichAssay=1))
   expect_silent(plotHeatmap(small_cc, whichAssay=2))
 
+})
+
+test_that("RSEC works wih non default assays", {
+  skip_on_os("windows")
+  expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),   
+                            seqArgs=list(top.can=0),
+                            random.seed=seedValue, whichAssay = "counts"),
+                 "Merging will be done on")
+
+  expect_message(out2<-RSEC(x=multi_cc, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
+                            random.seed=seedValue, whichAssay = "logcounts"),
+                 "Merging will be done on")
+
+  expect_message(out3<-RSEC(x=ccTrue, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
+                            random.seed=seedValue),
+                 "Merging will be done on")
+
+  expect_message(out4<-RSEC(x=ccTrue2, reduceMethod="none",
+                            k0s=4:5, clusterFunction="tight", alphas=0.1,
+                            betas=0.9, dendroReduce="none", minSizes=1,
+                            subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
+                            random.seed=seedValue),
+                 "Merging will be done on")
+
+  expect_false(all(primaryCluster(out1) == primaryCluster(out2)))
+
+  expect_equivalent(out1, out3)
+  expect_equivalent(out2, out4)
 })
 
 test_that("RSEC works independent of assay order", {
@@ -148,6 +152,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
@@ -155,6 +160,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
@@ -168,6 +174,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = 2),
                  "Merging will be done on")
 
@@ -175,6 +182,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = 1),
                  "Merging will be done on")
     # Want to test everything same but assays
@@ -186,6 +194,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "counts"),
                  "Merging will be done on")
 
@@ -193,6 +202,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "counts"),
                  "Merging will be done on")
 
@@ -205,6 +215,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
@@ -212,6 +223,7 @@ test_that("RSEC works independent of assay order", {
                             k0s=4:5, clusterFunction="tight", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5),
+                            seqArgs=list(top.can=0),
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
