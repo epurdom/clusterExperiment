@@ -166,11 +166,6 @@ metadata(rsecFluidigm)$packageVersion
 rsecFluidigm<-updateObject(rsecFluidigm)
 #check still valid object, in case updated class definitions
 if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
-# a simple check to make sure have same clusterings as expected
-x<-unique(clusterMatrix(rsecFluidigm)[,"makeConsensus"])
-y<-unique(clusterMatrix(rsecFluidigm)[,"mergeClusters"])
-if(length(x[x>0]) != 8) stop("rsecFluidigm object has changed -- makeConsensus")
-if(length(y[y>0]) != 6) stop("rsecFluidigm object has changed -- mergeClusters")
 ```
 ### The output 
 
@@ -346,28 +341,14 @@ plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClust
 
 The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
 
-In what follows, we'll go back to the original (default) RSEC settings by rerunning RSEC (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering). Again, we will set a lot of parameters to keep the object the same as before:
+In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
+
+In what follows, we'll go back to the original (default) RSEC settings by reloading the RSEC object (the original clusters are saved in the `rsecFluidigm` object, but there is useful information about the merging that is overwritten by our latest call so we will just rerun it to recreate the clustering). 
 
 ```{r plotClusterRSECReset}
-rsecFluidigm<-RSEC(rsecFluidigm,
-	isCount=TRUE,
- consensusMinSize=3,
- consensusProportion=0.7,
- dendroReduce= "mad",
- dendroNDims=1000,
- mergeMethod="adjP",
- mergeCutoff=0.01
- )
-par(mar=plotCMar)
-plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClusters","makeConsensus"), colData=c("Biological_Condition","Published2"), axisLine=-1)
+data(rsecFluidigm)
 ```
 
-```{r checkRedoIsSame,include=FALSE}
-# a small check to make sure have same clusterings as before
-if(!all(primaryCluster(rsecFluidigm)==clusterMatrix(rsecFluidigm)[,"mergeClusters.1"])) stop("rerunning rsec has changed clustering")
-```
-
-In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
 
 ## Finding Features related to the clusters {#step4}
 
