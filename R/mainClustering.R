@@ -4,13 +4,6 @@
 #'   based on the given ClusterFunction object.
 #' @name mainClustering
 #'   
-#' @param x \code{p x n} data matrix on which to run the clustering (samples in 
-#'   columns).
-#' @param diss \code{n x n} data matrix of dissimilarities between the samples 
-#'   on which to run the clustering
-#' @param minSize the minimum number of samples in a cluster. Clusters found 
-#'   below this size will be discarded and samples in the cluster will be given 
-#'   a cluster assignment of "-1" to indicate that they were not clustered.
 #' @param orderBy how to order the cluster (either by size or by maximum alpha 
 #'   value). If orderBy="size" the numbering of the clusters are reordered by 
 #'   the size of the cluster, instead of by the internal ordering of the 
@@ -209,7 +202,9 @@ setMethod(
 #' @importFrom cluster silhouette
 .postProcessClusterK<-function(clusterFunction,findBestK=FALSE,  kRange,removeSil=FALSE,silCutoff=0,diss=NULL,clusterArgs,N,orderBy)
 {
-    if(is.null(diss) && clusterArgs[["inputType"]]!="diss") stop("Internal error: ran post-processing without a dissimilarity matrix being provided")
+    if(is.null(diss)){
+        if(clusterArgs[["inputType"]]!="diss") stop("Internal error: ran post-processing without a dissimilarity matrix being provided")
+    }
     k<-clusterArgs[["k"]]
     if(!findBestK && is.null(k)) stop("If findBestK=FALSE, must provide k")
     if(!is.null(k)) clusterArgs<-clusterArgs[-which(names(clusterArgs)=="k")]

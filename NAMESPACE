@@ -3,7 +3,6 @@
 export(ClusterExperiment)
 export(ClusterFunction)
 export(bigPalette)
-export(checkRsecFluidigmObject)
 export(internalFunctionCheck)
 export(listBuiltInFilterStats)
 export(listBuiltInFunctions)
