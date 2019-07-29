@@ -724,6 +724,8 @@ setMethod(
             distFunction<-totalArgs$distFunction
             
             if(!is.null(distFunction)){
+                passInput<- as.logical(gsub(" ","",par["passDistToInput"]))
+                passMain<- as.logical(gsub(" ","",par["passDistToMain"]))
                 distParamMatrix<-cbind(distFunction=as.character(distFunction),
                     nFilterDims=as.character(par[["nFilterDims"]]),
                     reduceMethod=as.character(par[["reduceMethod"]]))
