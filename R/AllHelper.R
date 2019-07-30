@@ -512,13 +512,13 @@ setMethod(
 #' @title Change assigned names or colors of clusters
 #' @description Change the assigned names or colors of the clusters in a
 #'   clustering stored in the clusterLegend slot of the object.
-#' @rdname renameClusters
+#' @name renameClusters
 #' @return \code{renameClusters} changes the names assigned to clusters within a
 #'   clustering
 #' @export
 #' @inheritParams subset
 #' @inheritParams ClusterExperiment-methods
-#' @aliases renameClusters
+#' @aliases renameClusters,ClusterExperiment,character-method
 setMethod( 
   f = "renameClusters",
   signature = signature(object="ClusterExperiment", value="character"),
