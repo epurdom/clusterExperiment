@@ -43,7 +43,7 @@ setMethod( "anyValidFilterStats","SummarizedExperiment",function(object){
 	length(filterNames(object))>0
 
 })		
-setMethod( "anyValidReducedDims","SummarizedExperiment",function(object){
+setMethod( "anyValidReducedDims","SingleCellExperiment",function(object){
 	length(reducedDimNames(object))>0
 
 })		

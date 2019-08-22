@@ -149,20 +149,25 @@
   ############
   ##Check merge related slots
   ############
-  #these slots must all be same (either all empty or all set)	
-  if(is.na(object@merge_index) & !is.na(object@merge_method)) return("merge_index NA but merge_method has value")
-  if(!is.na(object@merge_index) & is.na(object@merge_method)) return("if merge_index not NA, must have value for merge_method")
-  if(is.na(object@merge_index) & !is.na(object@merge_cutoff)) return("merge_index NA but merge_cutoff has value")
-  if(!is.na(object@merge_index) & is.na(object@merge_cutoff)) return("if merge_index not NA, must have value for merge_cutoff")
-  if(is.na(object@merge_index) & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
-  if(!is.na(object@merge_index) & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
+  #these slots must all be same (either all empty or all set)
+  emptyMergeMethod<-is.na(object@merge_method) || length(object@merge_method)==0
+  emptyMergeIndex<- is.na(object@merge_index) || length(object@merge_index)==0
+  if(emptyMergeIndex & !emptyMergeMethod) return("merge_index NA but merge_method has value")
+  if(!emptyMergeIndex & emptyMergeMethod) return("if merge_index not NA, must have value for merge_method")
+  emptyCutoff<-is.na(object@merge_cutoff) || length(object@merge_cutoff)==0
+  if(emptyMergeIndex & !emptyCutoff) return("merge_index NA but merge_cutoff has value")
+  if(!emptyMergeIndex & emptyCutoff) return("if merge_index not NA, must have value for merge_cutoff")
+  if(emptyMergeIndex & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
+  if(!emptyMergeIndex & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
   
   #these slots can be set even if no merge, but not vice versa
-  if(!is.na(object@merge_index) & is.na(object@merge_demethod)) return("if merge_index not NA, must have value for merge_demethod")  
-  if(!is.na(object@merge_index) & is.na(object@merge_dendrocluster_index)) return("if merge_index not NA, must have value for merge_dendrocluster_index")
+  emptyDEMethod<-is.na(object@merge_demethod) || length(object@merge_demethod)
+  if(!emptyMergeIndex & emptyDEMethod) return("if merge_index not NA, must have value for merge_demethod") 
+  emptyDendroIndex<-is.na(object@merge_dendrocluster_index) || length(object@merge_dendrocluster_index) 
+  if(!emptyMergeIndex & emptyDendroIndex) return("if merge_index not NA, must have value for merge_dendrocluster_index")
   
   ##Check when there is actual merging:
-  if(!is.na(object@merge_index)){
+  if(!emptyMergeIndex){
     if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
     if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
     if(!length(object@merge_method)==1) return("merge_method must be of length 1")
@@ -191,7 +196,7 @@
 	
   }
   if(!is.null(object@merge_nodeProp)){
-    if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
+    if(emptyDendroIndex){return("merge_nodeProp is not NULL but merge_dendrocluster_index has no value")
       
     }
     if(length(object@merge_demethod)!=1 || !object@merge_demethod %in% .demethods)
@@ -214,7 +219,8 @@
 	
   }
   #Check that dendro node ids match those in merge tables.
-  if(!is.na(object@merge_dendrocluster_index) && !is.na(object@dendro_index) && object@merge_dendrocluster_index==object@dendro_index){
+  emptyDendro<-is.na(object@dendro_index) || length(object@dendro_index)==0
+  if(!emptyDendroIndex && !emptyDendro && object@merge_dendrocluster_index==object@dendro_index){
 	dendroNodes<-phylobase::tdata(object@dendro_clusters,type="internal")[,"NodeId"]
 	nodes<-object@merge_nodeMerge[,"NodeId"]
 	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeMerge")
@@ -332,12 +338,15 @@
   ####
   #test orderSamples
   ####
-  if(length(object@orderSamples)!=NCOL(assay(object))) {
-    return("`orderSamples` must be of same length as number of samples
-	       (NCOL(assay(object)))")
-  }
-  if(any(!object@orderSamples %in% seq_len(NCOL(assay(object))))) {
-    return("`orderSamples` must be values between 1 and the number of samples.")
+  if(length(object@orderSamples)>0){
+      if(length(object@orderSamples)!=NCOL(assay(object))) {
+        return("`orderSamples` must be of same length as number of samples
+    	       (NCOL(assay(object)))")
+      }
+      if(any(!object@orderSamples %in% seq_len(NCOL(assay(object))))) {
+        return("`orderSamples` must be values between 1 and the number of samples.")
+      }
+      
   }
   return(TRUE)
 }
