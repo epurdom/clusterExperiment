@@ -208,8 +208,10 @@ setMethod(
 			newOrder<-NA_real_
 			newMat<-subMat
 		}
+       # Previously was this, not sure why the simpler didn't work. ##as(selectMethod("[",c("SingleCellExperiment","ANY","ANY"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
+        
     out<- ClusterExperiment(
-      object=as(selectMethod("[",c("SingleCellExperiment","ANY","numeric"))(x,i,j),"SingleCellExperiment"),#have to explicitly give the inherintence... not great.
+      object= as(x,"SingleCellExperiment")[i,j],          
       clusters = newMat,
       transformation=x@transformation,
       primaryIndex = x@primaryIndex,
