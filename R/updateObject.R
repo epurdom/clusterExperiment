@@ -271,14 +271,22 @@ setMethod(
 	}
 
 	##Fix class of coClustering
-	if(!is.null(object@coClustering) && inherits(object@coClustering,"matrix")){
+	if(!is.null(object@coClustering) && 
+        inherits(object@coClustering,"matrix")){
 		object@coClustering<-Matrix::Matrix(object@coClustering,sparse=TRUE)
 	}
+    passedSlots<-attributes(object)[snames]
+    ### NULL values will be turned into `\001NULL\001` (class 'name', but appears to work to compare to character value)
+    whNULL<-which(sapply(passedSlots,function(x){inherits(x,"name") && 
+            x=="\001NULL\001"}))
+    
+    
     object<-try(do.call("ClusterExperiment",c(list(
         object=se,
         clusters=object@clusterMatrix,
-        checkTransformAndAssay=checkTransformAndAssay),
-        attributes(object)[snames])),silent=TRUE)
+        checkTransformAndAssay=checkTransformAndAssay), 
+        passedSlots[-whNULL])
+        ),silent=TRUE)
 	if(!inherits(object,"try-error")){
 		return(object)
 	} 
