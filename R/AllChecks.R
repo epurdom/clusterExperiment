@@ -161,9 +161,9 @@
   if(!emptyMergeIndex & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
   
   #these slots can be set even if no merge, but not vice versa
-  emptyDEMethod<-is.na(object@merge_demethod) || length(object@merge_demethod)
+  emptyDEMethod<-is.na(object@merge_demethod) || length(object@merge_demethod)==0
   if(!emptyMergeIndex & emptyDEMethod) return("if merge_index not NA, must have value for merge_demethod") 
-  emptyDendroIndex<-is.na(object@merge_dendrocluster_index) || length(object@merge_dendrocluster_index) 
+  emptyDendroIndex<-is.na(object@merge_dendrocluster_index) || length(object@merge_dendrocluster_index)==0
   if(!emptyMergeIndex & emptyDendroIndex) return("if merge_index not NA, must have value for merge_dendrocluster_index")
   
   ##Check when there is actual merging:

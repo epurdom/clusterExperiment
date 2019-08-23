@@ -41,7 +41,7 @@ setMethod(
   f = "updateObject",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, checkTransformAndAssay=FALSE,...,verbose=FALSE){
-	#create snames, which is the slots the object actually has
+    #create snames, which is the slots the object actually has
 	#and will eventually be narrowed down to only those slots will pass to `ClusterExperiment`
 	#list names of all current required slots
 	ceSlots<-slotNames(object)
@@ -274,8 +274,11 @@ setMethod(
 	if(!is.null(object@coClustering) && inherits(object@coClustering,"matrix")){
 		object@coClustering<-Matrix::Matrix(object@coClustering,sparse=TRUE)
 	}
-
-	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
+    object<-try(do.call("ClusterExperiment",c(list(
+        object=se,
+        clusters=object@clusterMatrix,
+        checkTransformAndAssay=checkTransformAndAssay),
+        attributes(object)[snames])),silent=TRUE)
 	if(!inherits(object,"try-error")){
 		return(object)
 	} 
