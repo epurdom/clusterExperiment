@@ -127,16 +127,16 @@ setClass(
 	merge_nodeMerge="data.frameOrNULL"
 
     ),
-    prototype=(    
+    prototype = prototype(    
         dendro_samples = NULL,
         dendro_clusters = NULL,
         dendro_index=NA_real_, 
         merge_index=NA_real_,
-    	merge_dendrocluster_index=NA_real,
+    	merge_dendrocluster_index=NA_real_,
         coClustering = NULL,
-    	merge_method=NA_character,
-    	merge_demethod=NA_character,
-    	merge_cutoff=NA_real,
+    	merge_method=NA_character_,
+    	merge_demethod=NA_character_,
+    	merge_cutoff=NA_real_,
         merge_nodeProp=NULL,
     	merge_nodeMerge=NULL
         
