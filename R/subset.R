@@ -203,14 +203,14 @@ setMethod(
 	    #
     	
     }
-		else{
-			newClLegend<-list()
-			newOrder<-NA_real_
-			newMat<-subMat
-		}
-       # as(x,"SingleCellExperiment")[i,j] doesn't work because can't find i
-       # (i is ANY) so may be missing. 
-       # do.call("[",list(x=as(x,"SingleCellExperiment"),i=i,j=j)) also doesn't work for same reason
+	else{
+		newClLegend<-list()
+		newOrder<-NA_real_
+		newMat<-subMat
+	}
+   # as(x,"SingleCellExperiment")[i,j] doesn't work because can't find i
+   # (i is ANY) so may be missing. 
+   # do.call("[",list(x=as(x,"SingleCellExperiment"),i=i,j=j)) also doesn't work for same reason
       
     out<- ClusterExperiment(
       object= 
