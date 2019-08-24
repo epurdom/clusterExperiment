@@ -70,11 +70,11 @@ setMethod(
 	#--------
 	# if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
 	if(canCoerce(object,"SingleCellExperiment")){
-		#if object was from before SCE requirement (2.0.0)
 		se<-updateObject(as(object,"SingleCellExperiment"))
 	}
 	else{
-		if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
+		#if object was from before SCE requirement (2.0.0)
+        if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
 		else stop("cannot coerce object to SummarizedExperiment")
 	}
 
@@ -279,7 +279,6 @@ setMethod(
     ### NULL values will be turned into `\001NULL\001` (class 'name', but appears to work to compare to character value)
     whNULL<-which(sapply(passedSlots,function(x){inherits(x,"name") && 
             x=="\001NULL\001"}))
-    
     
     object<-try(do.call("ClusterExperiment",c(list(
         object=se,
