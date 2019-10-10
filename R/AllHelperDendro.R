@@ -85,7 +85,7 @@
 #' @importMethodsFrom phylobase nodeLabels nodeLabels<- nTips nNodes
 #' @export
 #' @examples
-#' load(rsecFluidigm)
+#' data(rsecFluidigm)
 #' # retrieve the dendrogram of the clusters:
 #' clusterDendrogram(rsecFluidigm)
 #' # retrieve the dendrogram of the samples:

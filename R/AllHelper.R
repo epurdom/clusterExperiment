@@ -12,7 +12,7 @@
 #' @aliases show show,ClusterExperiment-method
 #' @examples
 #' # load data:
-#' load(rsecFluidigm)
+#' data(rsecFluidigm)
 #' show(rsecFluidigm)
 #' #Number of clusterings
 #' nClusterings(rsecFluidigm)
