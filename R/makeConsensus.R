@@ -32,6 +32,7 @@
 #'   such option and the code internally set to "after", so for reproducibility
 #'   with older results, users may need to set this option.
 #' @inheritParams clusterSingle
+#' @inheritParams clusterMany
 #' @param clusterArgs list of arguments to be passed to the call to 
 #'  \code{\link{mainClustering}} that is used to cluster the proportion 
 #'  overlap between samples. 

@@ -38,3 +38,23 @@ indicating the \emph{single} clustering to be used. Giving values that result in
 Change the assigned names or colors of the clusters in a
   clustering stored in the clusterLegend slot of the object.
 }
+\examples{
+#load CE object
+data(simData)
+
+cl1 <- clusterSingle(simData, subsample=FALSE,
+sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
+clusterFunction="pam"))
+clusterLegend(cl1)
+cl1<-renameClusters(cl1, c("1"="A","2"="B","3"="C"), matchTo="clusterIds")
+clusterLegend(cl1)
+# Change name of single one
+cl1<-renameClusters(cl1, c("1"="D"), matchTo="clusterIds")
+clusterLegend(cl1)
+# Match to existing name, rather than clusterId
+cl1<-renameClusters(cl1, c("B"="N"), matchTo="name")
+clusterLegend(cl1)
+# Change colors in similar way
+cl1<-recolorClusters(cl1, c("N"="red"),matchTo=c("name"))
+clusterLegend(cl1)
+}

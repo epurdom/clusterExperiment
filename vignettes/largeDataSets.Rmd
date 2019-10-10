@@ -13,10 +13,7 @@ vignette: >
 editor_options: 
   chunk_output_type: console
 ---
-<!--
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{clusterExperiment Vignette}
--->
+
 
 ```{r GlobalOptions, results="hide", include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(fig.align="center", cache=FALSE, cache.path = "largeDatasets_cache/",  fig.path="largeDatasets_figure/",error=FALSE, #make it stop on error

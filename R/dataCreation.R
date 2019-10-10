@@ -95,6 +95,7 @@ NULL
 #' @aliases makeRsecFluidigmObject
 #' @param object object given to functions
 #' @export
+#' @importFrom S4Vectors metadata
 makeRsecFluidigmObject<-function(object){
     pass_filter <- apply(assay(object), 1, 
         function(x) length(x[x >= 10]) >= 10)

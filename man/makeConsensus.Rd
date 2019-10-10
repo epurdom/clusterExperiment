@@ -54,6 +54,13 @@ overlap between samples.}
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
 
+\item{eraseOld}{logical. Only relevant if input \code{x} is of class
+\code{ClusterExperiment}. If TRUE, will erase existing workflow results
+(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
+workflow results will have "\code{_i}" added to the clusterTypes value,
+where \code{i} is one more than the largest such existing workflow
+clusterTypes.}
+
 \item{clusterLabel}{a string used to describe the type of clustering. By
 default it is equal to "makeConsensus", to indicate that this clustering is
 the result of a call to makeConsensus. However, a more informative label can
