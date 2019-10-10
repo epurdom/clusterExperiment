@@ -140,7 +140,7 @@ NULL
     if(!check) return(.uniqueCluster(inputMatrix))
     #add data.matrix here for hdf5Matrix. Not optimized
     out<-try(do.call(kernlab::specc,c(list(x=data.matrix(t(inputMatrix)), centers=k),passedArgs)))
-    if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(x),"). k must be less than the number of samples, but how much less is not straightforward.")
+    if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(inputMatrix),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
     else return(out) 
 }
@@ -246,7 +246,7 @@ NULL
             if(cluster.only) out<-out[mapping]
             else{
                 #this is a problem for silhouette stuff!
-                out$clustering<-clustering[mapping]
+                out$clustering<-out$clustering[mapping]
             }
         }
         return(out)
@@ -440,8 +440,14 @@ NULL
     passedArgs<-list(...)
     convertCat<-FALSE
     if(inputType=="cat"){
-        inputMatrix<-.clustersHammingDistance(inputMatrix)
-        
+        if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
+            inputMatrix<-.dupRemove(inputMatrix)
+            mapping<-inputMatrix$mapping            
+            dupTab<-inputMatrix$replicates
+            convertCat<-TRUE
+            inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
+        }
+        else inputMatrix<-.clustersHammingDistance(inputMatrix)
     }
     check<-.checkInput(inputMatrix,cluster.only=cluster.only)
     if(!check) return(lapply(1:nrow(inputMatrix),function(x){x}))
